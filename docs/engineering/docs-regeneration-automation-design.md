@@ -7,9 +7,15 @@ that item states the problem and points here for the constraints an implementati
 
 ## Why this needs a design step
 
-Four review rounds each proposed a concrete repair, and each was refuted by a different
-interaction. The constraints below are what survived. **Two of them conflict**, so "design
-something that satisfies all nine" is the work — this is not a preamble to an obvious one-liner.
+Six review rounds each proposed a concrete repair, and each was refuted by a different interaction.
+The constraints below are what survived.
+
+**They are not jointly satisfiable, and that is the note's main conclusion.** Direct pushes to
+`main` are prohibited, a `merge_group` tree is synthetic and cannot be written to, and the
+artifacts must stay tracked — so no design achieves "no manual toll, ever". The work is to pick
+which outcome to relax, deliberately, and record the residual manual gate. Constraint 7 sets out
+the two implementable shapes. Anyone who arrives here planning a quick fix should read that
+constraint first.
 
 The scope was also mis-stated repeatedly — first by enumerating affected artifacts, then by taking
 the `core` profile as the boundary, and each version was still incomplete. Constraint 4 records the
@@ -65,7 +71,12 @@ covering `docs/**` and some script paths. That is narrower than the generators' 
 Nothing else catches the gap: `scripts/ci.sh`'s `verify-docs` lane runs `run-docs-automation.py`
 with an explicit `--scripts` list that omits both generators, so stale output lands silently.
 
-Compute the trigger set from the generators rather than maintaining a parallel path list.
+Compute the trigger set from the generators rather than maintaining a parallel path list — but note
+that this cannot be done *inside* the workflow. GitHub evaluates `pull_request.paths` before it
+creates a run, so no generator in that workflow can decide whether the workflow starts. Closing the
+missed-trigger cases therefore requires either removing the restrictive `paths` filter outright, or
+adding an always-triggered discovery job that decides what to run. Runtime filtering alone leaves
+additions and renames outside the current paths landing stale artifacts exactly as they do today.
 
 ### 4. Derive the repair scope from the job's whole generation sequence; do not enumerate it
 
@@ -128,8 +139,23 @@ protected and `AGENTS.md:12-15` forbids bypassing branch protections, so a privi
 prohibited rather than merely awkward. Routing the repair through a follow-up pull request is
 policy-compliant but reintroduces a human merge, which does not meet the no-manual-toll outcome.
 
-A merge-group-safe pre-merge design is therefore the only route that fully satisfies the item. If a
-repair pull request is chosen instead, its manual gate must be stated as an accepted limitation.
+Nor is a merge-group-safe pre-merge repair actually available. A `merge_group` SHA names a
+synthetic, non-writable tree: there is nothing to push to. Committing the repair to either
+constituent pull request head invalidates that group and causes it to be rebuilt, which discards
+the output computed from the combined tree rather than preserving it.
+
+**Taken together these constraints have no fully-satisfying solution, and the design must therefore
+relax one of its own outcomes.** Direct post-merge pushes are prohibited, in-place merge-group
+repair does not exist, and the artifacts must stay tracked — so "no manual toll, ever" is not
+achievable. The implementable shapes are:
+
+- **repair the pull-request head** and accept that a merge-queue combination can still land stale
+  artifacts, fixed by a follow-up repair pull request; or
+- **route every repair through a follow-up pull request**, which is policy-compliant and complete
+  but reintroduces a human merge for the affected cases.
+
+Pick one deliberately and record the residual manual gate in the item as an accepted limitation.
+What is *not* acceptable is presenting pre-merge repair as though it closes the merge-queue case.
 
 ### 8. Fork pull requests cannot be repaired automatically — say so
 
@@ -165,21 +191,26 @@ reviewed as one.
 
 ## Verification
 
-Assert the outcome — every artifact the profile regenerates matching the merged tree — rather than
-the mechanism. Cover:
+Assert the outcome — every artifact produced by the **full `regenerate-docs` generation sequence**,
+including the post-profile diagram, workflow-overview, and manifest steps, matching the merged tree
+— rather than the mechanism. Cover:
 
 1. a merge of a branch editing in-corpus markdown into a branch editing different in-corpus
    markdown, confirming `regenerate-docs` ends green **on the final head** with no human running
    the profile;
-2. the same for two pull requests entering the merge queue together, asserting the tree that
-   actually merges;
+2. two pull requests entering the merge queue together — asserting whichever behaviour constraint
+   7's chosen shape commits to, since the combined tree cannot be repaired in place: either the
+   follow-up repair pull request is raised, or the documented staleness window is what occurs;
 3. a pull request that adds or renames a **non-markdown** tracked file, exercising
    `repository-structure.md` through a path the current triggers miss;
 4. a documentation pull request that adds a `TODO:` annotation, exercising `docs/status/TODO.md`;
 5. a pull request that changes a generator itself;
-6. a concurrent-update case where the head advances between generation and the privileged write,
-   asserting the writer refuses the stale artifact rather than committing it;
-7. a fork pull request, asserting the documented fallback path is what runs rather than a silent
+6. a concurrent-update case where the **head** advances between generation and the privileged
+   write, asserting the writer refuses the stale artifact rather than committing it;
+7. a second concurrent-update case where the **head is unchanged and `main` advances**, which a
+   writer checking only the head would wrongly accept — this is the case that actually exercises
+   the base half of constraint 6's compare-and-swap;
+8. a fork pull request, asserting the documented fallback path is what runs rather than a silent
    failure or a red check with no route forward.
 
 ## Also document

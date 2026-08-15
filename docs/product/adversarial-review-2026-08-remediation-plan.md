@@ -773,15 +773,17 @@ still `in_progress`.
   which paid it three times. Not a correctness bug — a standing toll on everyone who merges `main`,
   which trains contributors to read a red `regenerate-docs` as noise rather than signal.
   **Change:** automate the regeneration, keeping the artifacts tracked as
-  `docs/documentation-ownership.md:23` requires. The design is genuinely constrained — a write
-  token must not reach pull-request code, the repair scope must be derived from the workflow's full
-  generation sequence rather than enumerated, and neither the merge-queue nor the fork case has a
-  free answer — so the constraints live in
-  [Docs Regeneration Automation — Design Constraints](../engineering/docs-regeneration-automation-design.md)
-  rather than here. Read that note before implementing; four earlier attempts at a one-line fix
-  were each refuted by a different interaction.
-  **Verify:** per the note's verification section, which enumerates seven scenarios. Assert that
-  every artifact the profile regenerates matches the merged tree, on the SHA that actually merges.
+  `docs/documentation-ownership.md:23` requires. **The constraints are not jointly satisfiable**, so
+  part of this item's work is deciding which outcome to relax: a write token must not reach
+  pull-request code, direct pushes to protected `main` are prohibited, and a `merge_group` tree is
+  synthetic and cannot be written to, which means no design removes the manual toll in every case.
+  The full analysis and the two implementable shapes live in
+  [Docs Regeneration Automation — Design Constraints](../engineering/docs-regeneration-automation-design.md).
+  Read that note before implementing; six earlier attempts at a one-line fix were each refuted by a
+  different interaction.
+  **Verify:** per the note's verification section, which enumerates eight scenarios. Assert that
+  every artifact produced by the full `regenerate-docs` generation sequence matches the merged tree,
+  and that the accepted residual manual gate is documented rather than silently present.
   **Effort:** L, with a design step before implementation · **Sequence:** independent of the other
   W10 items, but **gated** on governance review — the implementation edits a protected workflow
   file and introduces a privileged token

@@ -1,11 +1,11 @@
 {
   "total_files": 649,
-  "total_lines": 128703,
+  "total_lines": 128736,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 238,
-  "average_lines": 198.3,
+  "average_lines": 198.4,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2209,7 +2209,7 @@
     },
     {
       "path": "docs/engineering/docs-regeneration-automation-design.md",
-      "line_count": 188,
+      "line_count": 219,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2937,7 +2937,7 @@
     },
     {
       "path": "docs/product/adversarial-review-2026-08-remediation-plan.md",
-      "line_count": 1205,
+      "line_count": 1207,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
