@@ -6,6 +6,7 @@ using Meridian.Identity.Auth;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Wpf.Services;
 using System.Globalization;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 
@@ -1979,8 +1980,4 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
 
     private static string NormalizeRequired(string? value, string fallback)
         => string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
 }

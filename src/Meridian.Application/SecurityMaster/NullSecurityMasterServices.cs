@@ -173,6 +173,9 @@ internal sealed class NullSecurityMasterConflictService : ISecurityMasterConflic
 
     public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
         => Task.CompletedTask;
+
+    public Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct)
+        => Task.CompletedTask;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -278,4 +281,28 @@ internal sealed class NullOperatorOverridesStore : IOperatorOverridesStore
         => Task.FromException<OperatorOverridesDto>(new InvalidOperationException(
             "Security Master is not configured. " +
             "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable operator overrides."));
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Field-level provenance store — inert when Security Master is offline
+// ──────────────────────────────────────────────────────────────────────────────
+
+/// <summary>
+/// Field provenance is best-effort lineage, not a workflow gate: with no Security Master backend
+/// there is nothing to attribute, so writes are no-ops and reads are empty rather than failures.
+/// </summary>
+internal sealed class NullSecurityFieldProvenanceStore : ISecurityFieldProvenanceStore
+{
+    private static readonly IReadOnlyList<SecurityFieldProvenanceRecord> Empty = [];
+
+    public Task UpsertAsync(SecurityFieldProvenanceRecord record, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task RemoveAsync(
+        Guid securityId, string fieldPath, string origin, DateTimeOffset clearedAt,
+        long? maxSourceVersion = null, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task<IReadOnlyList<SecurityFieldProvenanceRecord>> GetAsync(Guid securityId, CancellationToken ct = default)
+        => Task.FromResult(Empty);
 }

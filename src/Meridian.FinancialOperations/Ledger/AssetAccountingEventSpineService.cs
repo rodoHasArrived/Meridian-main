@@ -1,10 +1,12 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -1240,14 +1242,11 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             JsonSerializer.SerializeToElement(left, CanonicalJsonOptions),
             JsonSerializer.SerializeToElement(right, CanonicalJsonOptions));
 
+    // An all-zero digest is a placeholder sentinel rather than a real fingerprint, so it is
+    // rejected on top of the shared digest contract.
     private static bool IsSha256(string? value)
-        => !string.IsNullOrWhiteSpace(value) &&
-           value.Length == 64 &&
-           value.All(static character => Uri.IsHexDigit(character)) &&
-           value.Any(static character => character != '0');
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        => Sha256Digest.IsWellFormed(value)
+           && value!.Any(static character => character != '0');
 
     private static void RequireAssertion(bool condition, string message)
     {

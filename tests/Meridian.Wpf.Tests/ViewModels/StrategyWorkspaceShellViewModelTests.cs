@@ -217,6 +217,34 @@ public sealed class StrategyWorkspaceShellViewModelTests
         group.PrimaryCommands.Single(command => command.Id == "OpenTradingCockpit").IsEnabled.Should().BeTrue();
     }
 
+    [Fact]
+    public void BuildCommandGroup_WhenPromotionAndTradingAreBlocked_ExplainsWhyRatherThanRestatingTheDescription()
+    {
+        var group = StrategyWorkspaceShellPresentationService.BuildCommandGroup(
+            canPromoteActiveRun: false,
+            canOpenTradingCockpit: false);
+
+        var promote = group.PrimaryCommands.Single(command => command.Id == "PromoteToPaper");
+        var cockpit = group.PrimaryCommands.Single(command => command.Id == "OpenTradingCockpit");
+
+        promote.DisabledReason.Should().Be("Select a completed run that is eligible for paper promotion.");
+        cockpit.DisabledReason.Should().Be("Select a run before opening it in the trading cockpit.");
+
+        promote.DisabledReason.Should().NotBe(promote.Description);
+        cockpit.DisabledReason.Should().NotBe(cockpit.Description);
+    }
+
+    [Fact]
+    public void BuildCommandGroup_WhenPromotionAndTradingAreAvailable_PublishesNoDisabledReason()
+    {
+        var group = StrategyWorkspaceShellPresentationService.BuildCommandGroup(
+            canPromoteActiveRun: true,
+            canOpenTradingCockpit: true);
+
+        group.PrimaryCommands.Single(command => command.Id == "PromoteToPaper").DisabledReason.Should().BeEmpty();
+        group.PrimaryCommands.Single(command => command.Id == "OpenTradingCockpit").DisabledReason.Should().BeEmpty();
+    }
+
     private static WorkspaceWorkflowSummary CreateWorkflow(
         string statusLabel,
         string targetPageTag,

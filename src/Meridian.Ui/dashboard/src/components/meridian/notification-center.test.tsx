@@ -10,9 +10,9 @@ import type { OperatorInbox, SystemOverviewResponse } from "@/types";
 function memoryStorage() {
   const map = new Map<string, string>();
   return {
-    getItem: (key) => map.get(key) ?? null,
-    setItem: (key, value) => void map.set(key, value),
-    removeItem: (key) => void map.delete(key)
+    getItem: (key: string) => map.get(key) ?? null,
+    setItem: (key: string, value: string) => void map.set(key, value),
+    removeItem: (key: string) => void map.delete(key)
   };
 }
 

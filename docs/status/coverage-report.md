@@ -5,17 +5,17 @@
 
 ## Overall Coverage
 
-**2749 / 8779** items documented (**31.3%**) &mdash; Grade: **F**
+**2791 / 8796** items documented (**31.7%**) &mdash; Grade: **F**
 
 ```text
-[======--------------] 31.3%
+[======--------------] 31.7%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2652 | 8297 | 32.0% | F |
+| Public Classes / Interfaces | 2694 | 8314 | 32.4% | F |
 | API Endpoints | 85 | 329 | 25.8% | F |
 | Configuration Options | 1 | 142 | 0.7% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,7 +23,7 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (5645 undocumented)
+### Public Classes / Interfaces (5620 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -64,7 +64,6 @@
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
 | `IBackfillExecutionGateway` | `src/Meridian.Application/Backfill/IBackfillExecutionGateway.cs:9` |
 | `EtlInspectionMode` | `src/Meridian.Application/Commands/EtlCommands.cs:263` |
-| `StatementImportCommands` | `src/Meridian.Application/Commands/StatementImportCommands.cs:8` |
 | `DatabaseMigrationReadinessReceipt` | `src/Meridian.Application/Composition/DatabaseMigrationReadinessReceipt.cs:7` |
 | `DefaultProviderSetupHandlerRegistration` | `src/Meridian.Application/Composition/DefaultProviderSetupHandlerRegistration.cs:9` |
 | `IHostAdapter` | `src/Meridian.Application/Composition/HostAdapters.cs:16` |
@@ -77,7 +76,8 @@
 | `MeridianDataProvenanceDeclaration` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:33` |
 | `MeridianDeploymentPostureServiceCollectionExtensions` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:34` |
 | `PersistenceStatusSnapshot` | `src/Meridian.Application/Composition/PersistenceConfigurationStatus.cs:11` |
-| ... and 5595 more | |
+| `PersistenceConfigurationStatus` | `src/Meridian.Application/Composition/PersistenceConfigurationStatus.cs:28` |
+| ... and 5570 more | |
 
 ### API Endpoints (244 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 5645 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 5620 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 244 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 141 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 

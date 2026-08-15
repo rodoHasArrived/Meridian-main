@@ -107,12 +107,82 @@ public interface IPortfolioExposureProvider
     decimal? TryGetReferencePrice(string symbol) => null;
 
     /// <summary>
-    /// Reference price for valuing an order about to route on <paramref name="side"/>. A
+    /// Reference price for <b>valuing</b> an order about to route on <paramref name="side"/>. A
     /// midpoint is the right mark for a position already held, but it is not what an
     /// order pays: with a bid of $1 and an ask of $100, a market buy valued at the $50.50
     /// mid measures roughly half of what it will actually route. Implementations that can
     /// see the touch return the executable side of the book; the default falls back to the
     /// symbol mark.
+    /// <para>
+    /// <b>Deliberately conservative, and therefore not a touch price.</b> An implementation may
+    /// return the larger of mark and touch so a sell never under-measures the short it creates —
+    /// which on a normal book means it returns the <i>midpoint</i> for a sell, not the bid. That
+    /// is correct for notional, exposure, and concentration ceilings, and wrong for any control
+    /// that compares an operator's price against the market. Those use
+    /// <see cref="TryGetTouchPrice"/>.
+    /// </para>
     /// </summary>
     decimal? TryGetExecutablePrice(string symbol, OrderSide side) => TryGetReferencePrice(symbol);
+
+    /// <summary>
+    /// The price this order would actually cross at — the ask for a buy, the bid for a sell —
+    /// with no conservatism applied in either direction.
+    /// <para>
+    /// Separate from <see cref="TryGetExecutablePrice"/> because the two want opposite things. A
+    /// sizing control must never under-measure, so it takes the larger of mark and touch. A
+    /// <i>price</i> control must compare against what the order can actually trade at: measuring a
+    /// sell limit against the midpoint makes an ordinary marketable sell at the bid look like it
+    /// is priced through the market by half the spread, which on a wide book rejects a perfectly
+    /// normal order. Implementations without a two-sided book fall back to the executable price.
+    /// </para>
+    /// </summary>
+    decimal? TryGetTouchPrice(string symbol, OrderSide side) => TryGetExecutablePrice(symbol, side);
+
+    /// <summary>
+    /// The most recent trade print for <paramref name="symbol"/>, or <see langword="null"/> when
+    /// none is current. Distinct from every quote-derived accessor above: a print is what the
+    /// market <i>did</i>, not what it is showing.
+    /// </summary>
+    decimal? TryGetLastTradePrice(string symbol) => null;
+
+    /// <summary>
+    /// The most recent completed bar's close for <paramref name="symbol"/>, or
+    /// <see langword="null"/> when none is current. Sits between the print and the quote in
+    /// <see cref="TryGetTriggerReferencePrice"/> because that is where the matcher puts it: on a
+    /// bar-driven session there is no print to prefer, and the close is what fires a stop.
+    /// Implementations without a bar feed return <see langword="null"/>, which degrades the
+    /// precedence exactly as the matcher's own does when no bar is present.
+    /// </summary>
+    decimal? TryGetBarClosePrice(string symbol) => null;
+
+    /// <summary>
+    /// The reference a <b>stop trigger</b> is measured against, resolved in the same order the
+    /// matcher resolves it: last trade, then bar close, then the crossing side.
+    /// <para>
+    /// The <i>precedence</i> is the point, not just the sources.
+    /// <see cref="Meridian.Execution.PaperMatching.PaperOrderMatchingPolicy"/> fires a stop off
+    /// <c>LastTradePrice ?? BarClose</c> and reaches for the touch only when neither exists.
+    /// Anything that checks the quote earlier disagrees with it whenever the two differ, and it
+    /// does so in both directions: with a 100/120 quote and the last trade at 100, a buy stop at
+    /// 105 is resting but reads 4.5% crossed against the 110 midpoint and worse against the 120
+    /// ask — a false rejection; while a buy stop above the ask but below the last trade looks
+    /// correctly placed as the matcher fires it — a false approval, and an unbounded market order.
+    /// </para>
+    /// <para>
+    /// The bar close earns its place for the same reason: on a bar-driven session there is no
+    /// print, and skipping to the quote reproduces the false approval in different clothing — no
+    /// print, a 130 close, a 100 ask, and a buy stop at 125 reads as resting while the matcher
+    /// triggers it. All three legs, in this order, or the control and the engine disagree
+    /// somewhere.
+    /// </para>
+    /// <para>
+    /// This deliberately differs from <see cref="TryGetTouchPrice"/>, which is what a <i>limit</i>
+    /// is measured against — a limit trades at the touch, so for a limit the touch is not a
+    /// fallback but the answer.
+    /// </para>
+    /// </summary>
+    decimal? TryGetTriggerReferencePrice(string symbol, OrderSide side) =>
+        TryGetLastTradePrice(symbol)
+        ?? TryGetBarClosePrice(symbol)
+        ?? TryGetTouchPrice(symbol, side);
 }

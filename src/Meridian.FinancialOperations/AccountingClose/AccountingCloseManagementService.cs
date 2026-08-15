@@ -599,7 +599,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
         }
 
         var currentPlan = BuildPeriodPlan(workflow);
-        var targetId = NormalizeOptional(request.TargetId);
+        var targetId = Meridian.Contracts.Text.TextPrimitives.NormalizeOptional(request.TargetId);
         var issue = currentPlan.ValidationIssues.FirstOrDefault(candidate =>
             string.Equals(candidate.Code, issueCode, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(candidate.TargetId ?? string.Empty, targetId ?? string.Empty, StringComparison.OrdinalIgnoreCase));

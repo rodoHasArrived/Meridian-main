@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
 using Meridian.Strategies.Services;
@@ -317,10 +318,7 @@ public sealed class ReportingReconciliationEvidenceSource : IReportingReconcilia
         && string.Equals(receipt.AccountingBasis, source.AccountingBasis, StringComparison.Ordinal)
         && receipt.AsOfDate == source.AsOfDate;
 
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 } && value.All(Uri.IsHexDigit);
-
     private static bool IsLowercaseSha256(string? value) =>
-        IsSha256(value)
+        Sha256Digest.IsWellFormed(value)
         && string.Equals(value, value!.ToLowerInvariant(), StringComparison.Ordinal);
 }

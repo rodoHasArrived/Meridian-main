@@ -1,8 +1,8 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
@@ -707,7 +707,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
     {
         if (string.IsNullOrWhiteSpace(result.BulkActionId) ||
             string.IsNullOrWhiteSpace(result.IdempotencyKey) ||
-            !IsSha256(result.InputHashSha256) ||
+            !Sha256Digest.IsWellFormed(result.InputHashSha256) ||
             result.RequestedCount < 0 ||
             result.SucceededCount < 0 ||
             result.FailedCount < 0 ||
@@ -789,7 +789,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
 
     private static CaseworkCommandReceipt MigrateLegacyCommandReceipt(CaseworkCommandReceipt receipt)
     {
-        var hash = IsSha256(receipt.InputHashSha256)
+        var hash = Sha256Digest.IsWellFormed(receipt.InputHashSha256)
             ? receipt.InputHashSha256
             : HashPayload($"meridian.reconciliation-legacy-command-receipt.v1\n{receipt.CommandId}|{receipt.BreakId}|{receipt.Action}|{receipt.Result.Version}")!;
         return receipt with
@@ -880,7 +880,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
         if (string.IsNullOrWhiteSpace(receipt.BulkActionId) ||
             string.IsNullOrWhiteSpace(receipt.CommandId) ||
             string.IsNullOrWhiteSpace(receipt.IdempotencyKey) ||
-            !IsSha256(receipt.InputHashSha256) ||
+            !Sha256Digest.IsWellFormed(receipt.InputHashSha256) ||
             !string.Equals(receipt.BulkActionId, receipt.CommandId, StringComparison.OrdinalIgnoreCase) ||
             !string.Equals(receipt.Result.BulkActionId, receipt.BulkActionId, StringComparison.OrdinalIgnoreCase) ||
             !string.Equals(receipt.Result.IdempotencyKey, receipt.IdempotencyKey, StringComparison.OrdinalIgnoreCase) ||
@@ -916,7 +916,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
 
         if (string.IsNullOrWhiteSpace(receipt.CommandId) ||
             string.IsNullOrWhiteSpace(receipt.BreakId) ||
-            !IsSha256(receipt.InputHashSha256) ||
+            !Sha256Digest.IsWellFormed(receipt.InputHashSha256) ||
             !string.Equals(receipt.Result.BreakId, receipt.BreakId, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidDataException(
@@ -995,6 +995,4 @@ public sealed partial class FileReconciliationBreakQueueRepository
         }
     }
 
-    private static bool IsSha256(string? value)
-        => value is { Length: 64 } && value.All(Uri.IsHexDigit);
 }

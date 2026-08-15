@@ -127,7 +127,7 @@ internal static class ReconciliationRunContinuity
         {
             LogicalBreakIdentity = identity,
             BankEntityId = bankEntityId,
-            SourceScope = NormalizeOptional(match.SourceScope),
+            SourceScope = NormalizeOptionalLowerInvariant(match.SourceScope),
             CorrelationKeys = correlationKeys
         };
     }
@@ -148,7 +148,7 @@ internal static class ReconciliationRunContinuity
         {
             LogicalBreakIdentity = identity,
             BankEntityId = bankEntityId,
-            SourceScope = NormalizeOptional(breakItem.SourceScope),
+            SourceScope = NormalizeOptionalLowerInvariant(breakItem.SourceScope),
             CorrelationKeys = correlationKeys
         };
     }
@@ -171,7 +171,13 @@ internal static class ReconciliationRunContinuity
     private static bool IsBankScopedCheck(string checkId) =>
         checkId.StartsWith("bank-", StringComparison.OrdinalIgnoreCase);
 
-    private static string? NormalizeOptional(string? value) =>
+    /// <summary>Trims to null and lower-cases.</summary>
+    /// <remarks>
+    /// Named for the case folding. It previously shared the name and signature of the plain
+    /// trim-to-null helper used in dozens of other files, so the difference was invisible at
+    /// the call site even though this one changes the value it returns.
+    /// </remarks>
+    private static string? NormalizeOptionalLowerInvariant(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim().ToLowerInvariant();
 
     private static bool IsUnresolvedStatus(ReconciliationBreakStatus status) =>

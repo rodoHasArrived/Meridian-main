@@ -1541,6 +1541,13 @@ export interface SecurityAssetProfileDefinition {
   approvedBy: string;
   approvedAtUtc: string;
   changeReason: string;
+  /**
+   * The governance approval reference recorded on this catalog version. The write seam verifies a
+   * created record's profileApproval.approvalReference against this value when present, so the
+   * creation flow must copy it verbatim rather than fabricating its own reference. Absent on
+   * definitions predating the field.
+   */
+  approvalReference?: string | null;
 }
 
 export interface SecurityAssetProfileDraftRequest {

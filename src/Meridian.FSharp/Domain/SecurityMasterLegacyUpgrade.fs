@@ -411,6 +411,18 @@ module SecurityMasterLegacyUpgrade =
         | SecurityKind.StructuredCredit terms ->
             {
                 SecurityTermModules.empty with
+                    // The persisted legal final maturity must reach the shared economic-terms
+                    // document too: consumers of SecurityEconomicDefinitionRecord.EconomicTerms
+                    // (the accounting adapter among them) read maturity only from the Maturity
+                    // module, not from the retained asset-specific terms.
+                    Maturity =
+                        terms.Maturity
+                        |> Option.map (fun maturity ->
+                            {
+                                EffectiveDate = None
+                                IssueDate = None
+                                MaturityDate = Some maturity
+                            })
                     Issuer =
                         Some {
                             IssuerName = terms.PoolId
@@ -588,6 +600,10 @@ module SecurityMasterLegacyUpgrade =
                             LiquidityFeeEligible = None
                         }
             }
+        | SecurityKind.CustomAsset _ ->
+            // Custom-asset terms are an opaque profile-governed document; no structural
+            // economic-term modules can be extracted without interpreting the profile.
+            SecurityTermModules.empty
 
     let toEconomicDefinition (record: SecurityMasterRecord) =
         {

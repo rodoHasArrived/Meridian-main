@@ -3,6 +3,7 @@ using System.Data;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
 using Npgsql;
 using NpgsqlTypes;
@@ -1079,12 +1080,12 @@ public sealed class PostgresReportingRunStore : IReportingRunStore
                 manifestHash,
                 auditHash,
                 certifiedDatasetHash);
-            if (!ReportingOperationalStoreJson.FixedHashEquals(retainedManifestHash, manifestHash)
-                || !ReportingOperationalStoreJson.FixedHashEquals(retainedAuditHash, auditHash)
-                || !ReportingOperationalStoreJson.FixedHashEquals(
+            if (!Sha256Digest.FixedEquals(retainedManifestHash, manifestHash)
+                || !Sha256Digest.FixedEquals(retainedAuditHash, auditHash)
+                || !Sha256Digest.FixedEquals(
                     retainedDatasetHash,
                     certifiedDatasetHash)
-                || !ReportingOperationalStoreJson.FixedHashEquals(retainedStateHash, stateHash))
+                || !Sha256Digest.FixedEquals(retainedStateHash, stateHash))
             {
                 throw new InvalidDataException("one or more canonical JSON integrity digests do not match");
             }
@@ -1392,27 +1393,13 @@ internal static class ReportingOperationalStoreJson
         }
     }
 
+    // Delegating rather than rewriting call sites: this type declares both overloads and its
+    // callers qualify them, so which overload a call resolves to depends on the argument type.
     internal static string ComputeSha256(string value) =>
-        ComputeSha256(Encoding.UTF8.GetBytes(value));
+        Sha256Digest.ComputeUtf8(value);
 
     internal static string ComputeSha256(ReadOnlySpan<byte> value) =>
-        Convert.ToHexString(SHA256.HashData(value)).ToLowerInvariant();
-
-    internal static bool FixedHashEquals(string? retained, string computed)
-    {
-        if (!IsSha256(retained) || !IsSha256(computed))
-        {
-            return false;
-        }
-
-        return CryptographicOperations.FixedTimeEquals(
-            Convert.FromHexString(retained!),
-            Convert.FromHexString(computed));
-    }
-
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 }
-        && value.All(static character => character is >= '0' and <= '9' or >= 'a' and <= 'f');
+        Sha256Digest.Compute(value);
 
     private static void WriteCanonical(Utf8JsonWriter writer, JsonElement element)
     {

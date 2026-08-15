@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
@@ -795,7 +796,7 @@ public static class ReportingGovernanceCanonicalValidation
         if (artifacts.IsDefaultOrEmpty
             || artifacts.Any(static artifact =>
                 string.IsNullOrWhiteSpace(artifact.ArtifactId)
-                || !IsSha256(artifact.ArtifactHash)
+                || !Sha256Digest.IsCanonical(artifact.ArtifactHash)
                 || artifact.ByteLength <= 0)
             || artifacts.Select(static artifact => artifact.ArtifactId)
                 .Distinct(StringComparer.Ordinal).Count() != artifacts.Length)
@@ -1516,14 +1517,9 @@ public static class ReportingGovernanceCanonicalValidation
         }
     }
 
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 }
-        && value.All(Uri.IsHexDigit)
-        && string.Equals(value, value.ToLowerInvariant(), StringComparison.Ordinal);
-
     private static void RequireSha256(string? value, string name)
     {
-        if (!IsSha256(value))
+        if (!Sha256Digest.IsCanonical(value))
         {
             throw new ReportingGovernanceException(
                 $"'{name}' must be a lowercase SHA-256 value.");
