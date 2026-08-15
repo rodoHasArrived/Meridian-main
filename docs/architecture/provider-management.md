@@ -44,15 +44,15 @@ UI / API Layer
                         ├── [DataSource] attribute (ADR-005)
                         └── IProviderModule (DI registration)
                             └── Concrete Providers
-                                ├── Streaming: Alpaca, Polygon, IB, NYSE, StockSharp
+                                ├── Streaming: Alpaca, Polygon, IB, NYSE, Synthetic
                                 │   (base: WebSocketProviderBase)
                                 ├── Historical: Alpaca, Polygon, Tiingo, Yahoo, Stooq,
                                 │              Finnhub, AlphaVantage, NasdaqDataLink,
-                                │              IB, StockSharp
+                                │              IB
                                 │   (base: BaseHistoricalDataProvider)
                                 └── Symbol Search: Alpaca, AlphaVantage,
                                                    Finnhub, Polygon, Tiingo,
-                                                   TwelveData, OpenFIGI, StockSharp
+                                                   TwelveData, OpenFIGI
                                     (base: BaseSymbolSearchProvider)
 ```
 
@@ -206,7 +206,7 @@ public interface IProviderModule
 | Polygon | `PolygonMarketDataClient` | `Streaming/Polygon/` | Yes | Yes | Yes | WebSocket |
 | Interactive Brokers | `IBMarketDataClient` | `Streaming/InteractiveBrokers/` | Yes | Yes | Yes | TWS/Gateway |
 | NYSE | `NYSEDataSource` | `Streaming/NYSE/` | Yes | Yes | L1/L2 | Hybrid (streaming + historical) |
-| StockSharp | `StockSharpMarketDataClient` | `Streaming/StockSharp/` | Yes | Yes | Yes | 90+ connectors |
+| StockSharp | _not implemented_ | _no such directory_ | — | — | — | Deferred/unwired; see `docs/reference/provider-integration-status.md` |
 | IB Simulation | `IBSimulationClient` | `Streaming/InteractiveBrokers/` | N/A | N/A | N/A | Testing only |
 | Failover | `FailoverAwareMarketDataClient` | `Streaming/Failover/` | Delegated | Delegated | Delegated | Composite wrapper |
 | NoOp | `NoOpMarketDataClient` | `Infrastructure/` | N/A | N/A | N/A | Placeholder |
@@ -230,7 +230,7 @@ All locations relative to `src/Meridian.Infrastructure/Adapters/`.
 | Twelve Data | `TwelveDataHistoricalDataProvider`, `TwelveDataSymbolSearchProvider`, `TwelveDataCorporateActionProvider` | Yes | 8/min | Daily bars, credential-gated `/symbol_search` discovery, paid-plan `/dividends` and `/splits` corporate actions |
 | Nasdaq Data Link | `NasdaqDataLinkHistoricalDataProvider`, `NasdaqDataLinkSymbolSearchProvider`, `NasdaqDataLinkCorporateActionProvider` | Limited | Varies | Time-series datasets, credential-gated dataset-code search, adjusted dataset dividend/split extraction |
 | Interactive Brokers | `IBHistoricalDataProvider` | With account | IB pacing | All types |
-| StockSharp | `StockSharpHistoricalDataProvider` | With account | Varies | Multi-exchange |
+| StockSharp | _not implemented_ | — | — | Deferred/unwired; see `docs/reference/provider-integration-status.md` |
 
 All located under `src/Meridian.Infrastructure/Adapters/`.
 
@@ -247,7 +247,7 @@ All located under `src/Meridian.Infrastructure/Adapters/`.
 | Finnhub | `FinnhubSymbolSearchProvider` | Yes | US, International | 60/min |
 | Polygon | `PolygonSymbolSearchProvider` | Yes | US | 5/min (free) |
 | OpenFIGI | `OpenFigiClient` | No | Global (ID mapping) | Varies |
-| StockSharp | `StockSharpSymbolSearchProvider` | No | Multi-exchange | Varies |
+| StockSharp | _not implemented_ | — | — | Deferred/unwired; see `docs/reference/provider-integration-status.md` |
 
 Located under `src/Meridian.Infrastructure/Adapters/` provider folders.
 

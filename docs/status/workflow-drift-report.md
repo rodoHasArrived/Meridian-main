@@ -68,8 +68,8 @@
 - `build/scripts/ci/check-duplicate-helpers.py`
 - `build/scripts/ci/check-file-size.py`
 - `build/scripts/ci/check-lane-manifest.py`
+- `build/scripts/ci/check-sample-config-datasources.py`
 - `build/scripts/ci/check-test-skip-register.py`
 - `build/scripts/ci/check-warning-suppressions.py`
 - `build/scripts/ci/check-workflow-hygiene.py`
 - `build/scripts/ci/generate-release-evidence-manifest.py`
-- `build/scripts/ci/run-dotnet-ci-tests.py`

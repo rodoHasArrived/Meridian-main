@@ -52,7 +52,14 @@ export function createApiErrorFromResponseBody(path: string, status: number, bod
         path,
         status,
         title: readString(parsed.title),
-        detail: readString(parsed.detail) ?? readString(parsed.message) ?? readString(parsed.title),
+        // `error` is the shape most workstation endpoints still return (`new { error = "..." }`)
+        // rather than RFC-7807 problem details. Without it the operator sees only
+        // "Request failed (400)" instead of the reason the server actually gave.
+        detail:
+          readString(parsed.detail) ??
+          readString(parsed.message) ??
+          readString(parsed.error) ??
+          readString(parsed.title),
         validationIssues: parseValidationIssues(parsed.errors),
         responseBody: trimmed
       });
