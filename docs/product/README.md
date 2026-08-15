@@ -34,10 +34,15 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 - Treat the following as dated working design inputs, not canonical status sources:
   - [Adversarial Program Review (2026-08)](adversarial-program-review-2026-08.md) — independent
     source-evidence pass at commit `01ad9aeb`; scores the 2026-07 reviews' items as fixed or open.
-    Seven of its first-draft claims were corrected after automated review found them wrong or
-    overstated; the surviving findings are unwired tracing, uneven concurrency-guard coverage, an
-    unversioned route surface, file-store rewrite cost, and bulk casework that is built but reachable
-    from no screen. Read the corrected document, not summaries of the original
+    **Twenty-three of its claims were found wrong, overstated, unsupported, or internally inconsistent
+    across six rounds of automated review and have been rewritten** — its own method section records
+    why, and warns that its positive observations are more reliable than its negative ones. The seven
+    surviving findings are: unwired distributed tracing (N1), 409 conflict contracts that differ in
+    shape per route family (N2), an unversioned route surface behind a served Swagger document (N3),
+    file-store locking that is inconsistent by design with declared single-writer constraints
+    unenforced (N4), bulk reconciliation casework built end-to-end and reachable from no screen (N5),
+    two governed coverage dashboards that score prose as documentation (N6), and god files shrinking
+    too slowly to matter (N7). Read the corrected document, not summaries of the original
   - [Adversarial Program Review (2026-07)](adversarial-program-review-2026-07.md) — the prior
     independent pass this review re-tests; retained for the "built but not wired" framing
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched

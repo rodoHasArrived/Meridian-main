@@ -2,7 +2,7 @@
 
 **Status:** independent review input; not a governance or roadmap-status document
 **Owner:** review author (independent adversarial pass)
-**Reviewed:** 2026-08-11 at commit `01ad9aeb`; corrected 2026-08-15 across five review rounds on PR #2698
+**Reviewed:** 2026-08-11 at commit `01ad9aeb`; corrected 2026-08-15 across six review rounds on PR #2698
 **Scope:** whole-program review of Meridian's high-level functionality, focused on end-user value
 **Method:** source-evidence audit of the wired code paths. This checkout has no .NET SDK, so **no
 finding below was confirmed at runtime** — every claim is anchored to `file:line` and is a
@@ -11,12 +11,12 @@ This pass deliberately re-tests the [2026-07-21](adversarial-program-review-2026
 [2026-07-26](../../archive/docs/assessments/adversarial-program-review-2026-07-26.md) reviews before
 adding new findings, so remediated items are credited rather than re-litigated.
 
-> **Corrected five times, 2026-08-15, across five rounds of automated review on PR #2698.**
-> **Nineteen** claims were checked against source and found wrong, overstated, unsupported, or
-> internally inconsistent — seven in the first draft, four in the first correction, four in the second,
-> one in the third (partly), three in the fourth. All are rewritten below rather than annotated.
+> **Corrected six times, 2026-08-15, across six rounds of automated review on PR #2698.**
+> **Twenty-three** claims were checked against source and found wrong, overstated, unsupported, or
+> internally inconsistent — seven in the first draft, then four, four, one (partly), three, and four
+> across the corrections. All are rewritten below rather than annotated.
 >
-> Five failure modes, recorded because they are what this review method does wrong:
+> Six failure modes, recorded because they are what this review method does wrong:
 >
 > 1. **Truncated searches read as exhaustive.** "Version-checked writes exist in exactly two
 >    subsystems" came from a `grep … | head -10`. The real count is 366.
@@ -33,8 +33,14 @@ adding new findings, so remediated items are credited rather than re-litigated.
 >
 > 5. **Corrections left the document internally inconsistent.** Round five found a heading still
 >    asserting "no HTTP-level contract" after the body retracted it, and a priority-table effort
->    estimate still at `S–M` after the detailed finding raised it to `M`. A reader skimming headings
->    and tables would have taken away the retracted claims.
+>    estimate still at `S–M` after the detailed finding raised it to `M`. Round six found the product
+>    index still summarizing the first draft, and a "every still-open row is systemic" claim the
+>    document's own findings contradict. A reader skimming headings, tables, and index entries would
+>    have taken away claims the body had retracted.
+> 6. **Asserting no-change without measuring change.** "Maintainability hazards have not improved" was
+>    stated against a baseline that shows every named file shrinking. The real finding was the *rate*
+>    (−0.5% to −3.6% in three weeks), which is a more useful claim and required the same measurement
+>    the draft skipped.
 >
 > Worth stating plainly: **the second round of errors repeated the first.** After documenting
 > "truncated searches read as exhaustive" as a root cause, the correction then counted version
@@ -53,7 +59,7 @@ unsupported last mile." Sixteen days on, **the first mile is genuinely fixed** �
 bundle is committed, the demo seeds six subsystems, paper fills cost money, and two institutional
 statement formats landed. The theme has moved again:
 
-> **Meridian's remaining gap is mostly the last mile of things already built.** After five rounds of
+> **Meridian's remaining gap is mostly the last mile of things already built.** After six rounds of
 > correction, this review found almost nothing missing outright. What it found is capability that is
 > present but unreachable or inconsistent: bulk reconciliation casework implemented end-to-end and
 > called by no screen; a tracing layer with seven span-producing sites and no registered provider;
@@ -89,10 +95,14 @@ Two corrections to prior reviews, both of which this pass tested and found overs
 | Money-path stores fall back to in-memory | **Corrected — announced, not silent.** Forced non-real provenance label, a registration guard, and a `PERSISTENCE: NONE` readiness line. Durability limit, not a truthfulness gap | `src/Meridian/UiServer.cs:516-519,968-988`; `ProductionRegistrationGuardService.cs:30-43` |
 | Reconciliation never sees the ledger side | **Corrected — partially open.** Cash and positions populate and match; only ledger-transaction population is empty, so transaction rows alone become breaks | `RetainedInternalReconciliationPopulationProvider.cs:86-89`; `StatementMatchingEngine.cs:111-163` |
 
-The remediation stream is real and is hitting the things prior reviews named. The pattern worth
-noting: **every fixed row was a bounded, in-product defect; every still-open row is a systemic or
-architectural posture.** The team is very good at closing the first kind and has not yet started on
-the second.
+The remediation stream is real and is hitting the things prior reviews named. The rough pattern —
+stated as a tendency, not a rule — is that **the closed rows were bounded, in-product defects, while
+the ones still open lean systemic or architectural.** Fail-closed tenancy and a hash-chained journal
+are posture changes; the fixed rows were bugs and gaps with clear edges.
+
+The tendency is not exhaustive, and this review's own findings show why: the remaining
+journal→transaction projection is bounded modelling work, not a systemic posture, and it is open.
+Read the pattern as "the harder-to-bound work is what remains," not as a claim about every row.
 
 ## New findings
 
@@ -302,7 +312,7 @@ are presented. Then extend the same selection pattern to the close checklist and
 keep receipts distinguishable from N individually reviewed decisions.
 **Value: high. Effort: M** — raised from S–M, since the cap makes this more than pure wiring.
 
-### N6. The API contract-coverage metric can be moved by prose (medium)
+### N6. Two governed coverage metrics can be moved by prose (medium)
 
 Found accidentally, by this PR moving it. The generated dashboard scores an endpoint as `Documented`
 if its route path appears anywhere in the documentation corpus — including documents that describe no
@@ -325,25 +335,48 @@ gameable by accident — any prose naming a path raises it. The number therefore
 is silent and one-directional: scores drift up as documentation volume grows, regardless of whether
 contract documentation was written.
 
-**Improvement:** restrict the generator's coverage corpus to actual contract/reference documentation
-(`docs/reference/**`, the OpenAPI document from N3), or require a route to appear in a structured
-contract block rather than free text. Tracked separately — this is a generator fix in
-`build/scripts/docs/**`, which is a governed surface and does not belong in this PR.
+**The same flaw affects `coverage-report.md`, and this PR moved that too.** Documented public types
+went 2,791 → 2,801. All ten additions are incidental mentions in this review — including
+`FileDropRouter`, `FilePermissionsOptions`, `FileSearchResult`, and `FileToDelete`, which appear here
+**only in a rebuttal explaining that they are not stores.** Arguing that four classes were miscounted
+caused them to be counted as documented.
 
-### N7. Maintainability hazards have not improved (medium)
+So two governed dashboards score prose as documentation, and a single review document moved both
+without documenting anything. That is the strongest available evidence that the corpus rule, not the
+individual metric, is what needs fixing.
 
-The 07-21 review flagged 4,000–7,400-line files. At this commit the largest are:
+**Improvement:** restrict both generators' corpora to actual contract/reference documentation
+(`docs/reference/**`, the OpenAPI document from N3), or require the symbol to appear in a structured
+block rather than free text. Tracked separately — this is a generator fix in `build/scripts/docs/**`,
+which is a governed surface and does not belong in this PR. Both inflations are committed here because
+`regenerate-docs` requires the artifacts to match a fresh regeneration; expect both to fall when the
+corpus rule is fixed.
 
-| File | Lines |
-| --- | --- |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 7,397 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 7,147 |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 6,673 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx` | 6,126 |
-| `src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs` | 5,357 |
+### N7. God files are shrinking, but too slowly to matter yet (low–medium)
 
-The built workstation is 4.2 MB, with a 465 KB entry chunk and a 431 KB accounting chunk. A god-file
-ratchet exists in CI, which stops regression but has not driven reduction.
+**Corrected.** An earlier draft titled this "have not improved," which the 07-21 baseline contradicts.
+Every file that review named is smaller now:
+
+| File | 07-21 | Now | Δ |
+| --- | ---: | ---: | ---: |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 7,428 | 7,391 | −37 |
+| `src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs` | 5,556 | 5,357 | −199 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4,630 | 4,478 | −152 |
+
+Other current large files: `accounting-screen.view-model.ts` (7,147), `dev-fixtures.ts` (6,673),
+`accounting-screen.tsx` (6,126).
+
+So the direction is right and the rate is the finding: **−0.5% to −3.6% over three weeks on files of
+5,000–7,400 lines.** At that rate `settings-screen.tsx` reaches a reviewable size somewhere past 2030.
+The CI god-file ratchet prevents regression, which is why the numbers move down rather than up, but a
+ratchet only forbids growth — nothing drives decomposition, so files shrink by whatever incidental
+tidying a feature change happens to include.
+
+The built workstation is 4.2 MB, with a 465 KB entry chunk and a 431 KB accounting chunk.
+
+**Improvement:** if these files matter, the ratchet needs a step target rather than a ceiling — a
+scheduled reduction per file per quarter — otherwise the current trajectory is indistinguishable from
+noise. **Value: low–medium** (developer velocity, not user-facing). **Effort: L** and ongoing.
 
 ## Still-open structural items (unchanged, restated with current evidence)
 
@@ -441,7 +474,7 @@ baseline-accuracy question on `W9-GOV-008`
 [#2633](https://github.com/rodoHasArrived/Meridian-main/issues/2633). Both carry follow-up comments
 correcting the same errors.
 
-**On the review method itself.** Across five rounds, automated review found **nineteen** wrong,
+**On the review method itself.** Across six rounds, automated review found **twenty-three** wrong,
 overstated, unsupported, or internally inconsistent claims. No new finding survived entirely unchanged: N1 held in substance
 but overcounted its evidence (eleven "instrumented sites" were seven span-producing calls); N5
 survived with its scope inverted from "missing" to "built but unwired," then had a 100-case backend
