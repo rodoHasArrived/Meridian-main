@@ -397,7 +397,7 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
             ? JsonSerializer.SerializeToElement(
                 new Dictionary<string, object?>
                 {
-                    ["schemaVersion"] = 1,
+                    ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
                     ["category"] = "MutualFund",
                     ["subType"] = association.SecurityType,
                     ["issuerName"] = association.Name ?? filer?.Name
@@ -406,7 +406,7 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
             : JsonSerializer.SerializeToElement(
                 new Dictionary<string, object?>
                 {
-                    ["schemaVersion"] = 1,
+                    ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
                     ["classification"] = "Common",
                     ["shareClass"] = snapshot?.Security12bTitle?.RawValue
                 },
