@@ -130,7 +130,7 @@ public sealed class FakeFundStructureStore : IFundStructureStore
     {
         lock (_links)
         {
-            _links.RemoveAll(existing => existing.LinkId == dto.LinkId);
+            _links.RemoveAll(existing => existing.OwnershipLinkId == dto.OwnershipLinkId);
             _links.Add(dto);
         }
 
