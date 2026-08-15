@@ -238,6 +238,12 @@ public static class CheckpointEndpoints
                     result.Success
                 }, jsonOptions);
             }
+            catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+            {
+                // The request was aborted; propagate so the host treats it as a cancellation
+                // instead of reporting an error response to a client that is no longer listening.
+                throw;
+            }
             catch (Exception ex)
             {
                 return Results.BadRequest(new { error = $"Resume failed: {ex.Message}" });

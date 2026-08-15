@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Text;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
@@ -113,9 +114,9 @@ public sealed class TiingoSymbolSearchProvider : BaseSymbolSearchProvider
                     Symbol: symbol,
                     Name: name,
                     Exchange: FirstNonBlank(match.ExchangeCode, match.Exchange, match.ExchangeName),
-                    AssetType: Normalize(match.AssetType),
-                    Country: Normalize(match.CountryCode),
-                    Currency: Normalize(match.Currency),
+                    AssetType: TextPrimitives.NormalizeOptional(match.AssetType),
+                    Country: TextPrimitives.NormalizeOptional(match.CountryCode),
+                    Currency: TextPrimitives.NormalizeOptional(match.Currency),
                     Source: Name,
                     MatchScore: CalculateMatchScore(query, symbol, name, index));
             });
@@ -159,9 +160,6 @@ public sealed class TiingoSymbolSearchProvider : BaseSymbolSearchProvider
 
     private static string? FirstNonBlank(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
-
-    private static string? Normalize(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed class TiingoSearchMatch
     {
