@@ -968,9 +968,12 @@ summary labels, empty states, disabled reasons, and ownership graph/table access
 Family Office view-model seam. The screen view model now derives summary panels and ownership graph
 rows from a family-office entity structure shaped like the shared `FamilyOfficeOverviewDto`/
 `FamilyEntityDto` contracts, so React renders entity, asset, commitment, reconciliation, and stale
-valuation projections instead of carrying a separate graph fixture. The workspace navigation and
-command palette surface the route from their route-catalog/view-model seams so discovery labels
-remain centralized.
+valuation projections instead of carrying a separate graph fixture. The route is **deliberately
+withheld from discovery**: it is listed in `UNWIRED_WORKSTATION_ROUTES`, so neither the workspace
+navigation nor the command palette offers it while the screen still renders a permanent
+not-connected state. It stays mounted, so existing deep links and bookmarks resolve rather than
+404. Restore it to both seams — which still read their labels from the route-catalog/view-model
+seams, so discovery labels remain centralized — when the family-office endpoints are wired.
 Strategy workspace navigation uses canonical Strategy labels for subroutes, including the retained
 `/strategy/lab` route, so browser discovery does not expose `Research` as a visible root or
 lane name while compatibility routes continue to resolve.

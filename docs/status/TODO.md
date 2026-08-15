@@ -15,8 +15,8 @@ Total items: **239**
 | `Meridian Design System/components/core/MultiSelect.jsx` | 23 | `NOTE` | ❌ | // Note: caller must provide all IDs; this component only tracks selection state. |
 | `Meridian Design System/tests/test_design_system_governance.py` | 28 | `NOTE` | ❌ | # NOTE: this exercises the real, current tree (ROOT), not a synthetic fixture. If this |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
-| `config/appsettings.sample.json` | 404 | `NOTE` | ❌ | // NOTE: This key is a duplicate of the one near the top of this file for documentation purposes. |
-| `config/appsettings.sample.json` | 413 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
+| `config/appsettings.sample.json` | 397 | `NOTE` | ❌ | // NOTE: This key is a duplicate of the one near the top of this file for documentation purposes. |
+| `config/appsettings.sample.json` | 406 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
 | `docs/operators/provider-backfill-operations.md` | 89 | `NOTE` | ❌ | > Note: in examples above, use lowercase `dotnet` command. |
