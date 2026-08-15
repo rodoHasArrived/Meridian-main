@@ -1043,6 +1043,62 @@ public sealed class OrderManagementSystemTests : IDisposable
             "a price-only amendment cannot change the dollars the broker routed");
     }
 
+    /// <summary>
+    /// A quantity amendment ends the dollar sizing rather than preserving it.
+    /// <c>AlpacaBrokerageGateway.ModifyOrderAsync</c> serializes <c>NewQuantity</c> as <c>qty</c> and
+    /// sends no notional field, so the replacement the venue holds is unit-sized. Carrying the old
+    /// dollars past that point under-reserves — 100 shares of a $100 symbol is $10,000 at the broker
+    /// against a $2,500 reserve — and the retained marker would also make the fat-finger quantity
+    /// limb read the new share count as dollars and skip its ceiling on the one amendment that
+    /// actually changed the size.
+    /// </summary>
+    [Fact]
+    public async Task ModifyOrderAsync_NotionalSizedOrder_DropsDollarSizingWhenQuantityIsAmended()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            new NotionalSizingPaperExecutionGateway("alpaca"),
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 2_500m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-NOTIONAL-QTY-AMEND",
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = "2500"
+            }
+        });
+        placed.Success.Should().BeTrue();
+
+        var probes = new List<OrderRequest>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                probes.Add(call.Arg<OrderRequest>());
+                return Task.FromResult(RiskValidationResult.Approved());
+            });
+
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewQuantity = 100m });
+
+        modified.Success.Should().BeTrue();
+        probes.Should().NotBeEmpty();
+
+        BrokerNotionalMetadata.TryRead(probes[^1].Metadata, probes[^1].Quantity).Should().BeNull(
+            "the amended order is unit-sized, so the unit rails must apply to it");
+        oms.GetOrder(placed.OrderId)!.RoutedNotional.Should().BeNull(
+            "keeping the old dollars would reserve $2,500 against $10,000 at the broker");
+    }
+
     private sealed class NotionalSizingPaperExecutionGateway(string gatewayId)
         : TypedPaperExecutionGatewayBase(gatewayId), INotionalOrderSizingGateway
     {

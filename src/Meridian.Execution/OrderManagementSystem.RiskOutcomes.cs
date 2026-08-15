@@ -797,9 +797,23 @@ public sealed partial class OrderManagementSystem
     /// </summary>
     private static bool RequiresRiskRevalidation(OrderState state, OrderModification modification)
     {
-        if (modification.NewQuantity is { } newQuantity && Math.Abs(newQuantity) > Math.Abs(state.Quantity))
+        if (modification.NewQuantity is { } newQuantity)
         {
-            return true;
+            // A quantity amendment on a broker-notional order changes the sizing BASIS, so the two
+            // numbers are not comparable and "smaller" does not mean smaller. The order's Quantity
+            // is dollars (or a placeholder standing in for them), while the amended value is units
+            // the gateway sends as qty with no notional field: $2,500 becoming 100 shares of a $100
+            // symbol is $10,000 at the venue, and comparing 100 against 2,500 reads it as a
+            // reduction and skips the gate on a fourfold increase. Any such amendment revalidates.
+            if (state.RoutedNotional is > 0m)
+            {
+                return true;
+            }
+
+            if (Math.Abs(newQuantity) > Math.Abs(state.Quantity))
+            {
+                return true;
+            }
         }
 
         return modification.NewLimitPrice is not null || modification.NewStopPrice is not null;
@@ -820,7 +834,7 @@ public sealed partial class OrderManagementSystem
         ClientOrderId = state.OrderId,
         StrategyId = state.StrategyId,
         FundAccountId = state.FundAccountId,
-        Metadata = BuildAmendedSizingMetadata(state),
+        Metadata = BuildAmendedSizingMetadata(state, modification),
         // Without the derivative identity the rules re-value the amended order as shares,
         // repeating the 1x mistake the multiplier above exists to prevent.
         OptionContract = state.OptionContract,
@@ -835,13 +849,13 @@ public sealed partial class OrderManagementSystem
     /// against exposure understated by more than an order of magnitude. Under-reserving is the
     /// direction that admits a breach, so this errs the other way.
     /// <para>
-    /// A price-only amendment cannot change the routed dollars at all, so they carry over. A
-    /// quantity amendment is ambiguous without knowing which shape the order is — <c>notional=2500</c>
-    /// beside a placeholder quantity, or <c>notional=true</c> where the quantity field <em>is</em> the
-    /// dollars — and the resolved value no longer distinguishes them. Taking the larger of the two is
-    /// correct for the first shape, correct for an increase in the second, and over-reserves for a
-    /// decrease in the second, which is the only one of those three that can be wrong and is wrong
-    /// in the safe direction.
+    /// A price-only amendment cannot change the routed dollars, so they carry over. A quantity
+    /// amendment ends the dollar sizing outright: <c>AlpacaBrokerageGateway.ModifyOrderAsync</c>
+    /// serializes <c>NewQuantity</c> as <c>qty</c> and sends no notional field, so the replacement
+    /// the venue holds is unit-sized. Keeping the old dollars past that point under-reserves rather
+    /// than over-reserves — a $2,500 notional order amended to 100 shares of a $100 symbol leaves
+    /// the broker holding $10,000 against a $2,500 reserve — so the classification is dropped and
+    /// every unit-based rail, the fat-finger quantity ceiling included, applies to the new size.
     /// </para>
     /// </summary>
     private static decimal? ResolveAmendedRoutedNotional(OrderState state, OrderModification modification)
@@ -851,9 +865,7 @@ public sealed partial class OrderManagementSystem
             return null;
         }
 
-        return modification.NewQuantity is { } newQuantity
-            ? Math.Max(routedNotional, Math.Abs(newQuantity))
-            : routedNotional;
+        return modification.NewQuantity is null ? routedNotional : null;
     }
 
     /// <summary>
@@ -870,13 +882,21 @@ public sealed partial class OrderManagementSystem
     /// it was, refused for a size it does not have.
     /// </para>
     /// </summary>
-    private static IReadOnlyDictionary<string, string>? BuildAmendedSizingMetadata(OrderState state)
+    private static IReadOnlyDictionary<string, string>? BuildAmendedSizingMetadata(
+        OrderState state,
+        OrderModification modification)
     {
         var metadata = state.UsesFaceValuePercentageOfPar
             ? new Dictionary<string, string>(OrderSizingMetadata.WithFaceValuePercentageOfPar(metadata: null))
             : null;
 
-        if (state.RoutedNotional is not { } routedNotional || routedNotional <= 0m)
+        // Dropped for a quantity amendment for the reason ResolveAmendedRoutedNotional gives: the
+        // gateway sends the new quantity as qty and no notional field, so the replacement is
+        // unit-sized. Carrying the marker would also make the fat-finger quantity limb read the new
+        // share count as dollars and skip its ceiling on the one amendment that changed the size.
+        if (modification.NewQuantity is not null
+            || state.RoutedNotional is not { } routedNotional
+            || routedNotional <= 0m)
         {
             return metadata;
         }
