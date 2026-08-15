@@ -212,4 +212,53 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
         resolvedWithoutProvider.Should().BeNull();
         resolvedWithWrongProvider.Should().BeNull();
     }
+
+    [SecurityMasterDatabaseFact]
+    public async Task EquityProjection_CustomClassification_ShouldPreserveRawOtherLabel()
+    {
+        var securityId = Guid.NewGuid();
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        await store.UpsertProjectionAsync(new SecurityProjectionRecord(
+            SecurityId: securityId,
+            AssetClass: "Equity",
+            Status: SecurityStatusDto.Active,
+            DisplayName: "Acme Tracking Stock",
+            Currency: "USD",
+            PrimaryIdentifierKind: "Ticker",
+            PrimaryIdentifierValue: "ACMTS",
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                currency = "USD",
+                exchange = "XNAS",
+                countryOfRisk = "US",
+                issuerName = "Acme Corp"
+            }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = 1,
+                shareClass = "Class T",
+                classification = "Other",
+                otherClassification = "TrackingStock"
+            }),
+            Provenance: JsonSerializer.SerializeToElement(new { sourceSystem = "test" }),
+            Version: 1,
+            EffectiveFrom: effectiveFrom,
+            EffectiveTo: null,
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Ticker,
+                    "ACMTS",
+                    true,
+                    effectiveFrom)
+            ],
+            Aliases: []));
+
+        var equityStore = new PostgresEquityReferenceProjectionStore(_fixture.Options);
+        var projected = await equityStore.GetEquityAsync(securityId);
+
+        projected.Should().NotBeNull();
+        projected!.Classification.Should().Be("TrackingStock");
+    }
 }

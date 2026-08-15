@@ -115,6 +115,63 @@ public sealed class SecurityMasterQueryServiceEquityTermsTests
     }
 
     [Fact]
+    public async Task EquityTermQueries_CustomClassification_ShouldReturnRawOtherLabel()
+    {
+        var securityId = Guid.NewGuid();
+        var underlyingSecurityId = Guid.NewGuid();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(CreateEquityProjection(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    schemaVersion = 1,
+                    classification = "Other",
+                    otherClassification = "CustomHybrid",
+                    preferredTerms = new { dividendRate = 5.5m },
+                    convertibleTerms = new
+                    {
+                        underlyingSecurityId,
+                        conversionRatio = 1.5m
+                    }
+                })));
+        var service = CreateQueryService(store);
+
+        var preferred = await service.GetPreferredEquityTermsAsync(securityId);
+        var convertible = await service.GetConvertibleEquityTermsAsync(securityId);
+
+        preferred.Should().NotBeNull();
+        preferred!.Classification.Should().Be("CustomHybrid");
+        convertible.Should().NotBeNull();
+        convertible!.Classification.Should().Be("CustomHybrid");
+    }
+
+    [Fact]
+    public async Task GetConvertibleEquityTermsAsync_MalformedNumericClassification_ShouldRemainUnset()
+    {
+        var securityId = Guid.NewGuid();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(CreateEquityProjection(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    schemaVersion = 1,
+                    classification = 123,
+                    convertibleTerms = new
+                    {
+                        underlyingSecurityId = Guid.NewGuid(),
+                        conversionRatio = 1m
+                    }
+                })));
+
+        var result = await CreateQueryService(store).GetConvertibleEquityTermsAsync(securityId);
+
+        result.Should().NotBeNull();
+        result!.Classification.Should().BeNull();
+    }
+
+    [Fact]
     public async Task GetPreferredEquityTermsAsync_ReturnsNull_WhenProjectionIsNotPreferred()
     {
         var securityId = Guid.NewGuid();

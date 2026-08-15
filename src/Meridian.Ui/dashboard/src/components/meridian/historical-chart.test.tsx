@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
@@ -82,7 +82,9 @@ describe("formatIntervalLabel", () => {
 });
 
 describe("HistoricalChartCard", () => {
-  let getBarsSpy: ReturnType<typeof vi.spyOn>;
+  // Typed from the function being spied on rather than `ReturnType<typeof vi.spyOn>`, which
+  // resolves to the unparameterised overload and leaves every `mock.calls` entry implicitly `any`.
+  let getBarsSpy: MockInstance<typeof api.getHistoricalBars>;
 
   beforeEach(() => {
     getBarsSpy = vi.spyOn(api, "getHistoricalBars").mockResolvedValue(response([]));

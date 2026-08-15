@@ -9280,6 +9280,9 @@ public sealed partial class WorkstationEndpointsTests
 
         public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
             => Task.CompletedTask;
+
+        public Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct)
+            => Task.CompletedTask;
     }
 
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore

@@ -74,6 +74,73 @@ public sealed class SecurityMasterAccountingEventServiceTests
     }
 
     [Fact]
+    public void Generate_FactorRowOnExclusivePeriodEnd_BelongsToTheNextPeriod()
+    {
+        // PeriodEnd is EXCLUSIVE (the production adapter supplies the next month's first day,
+        // matching the coupon window). An adapter that supplies the full retained schedule must
+        // not have a next-month-first-day observation generate the same paydown in two adjacent
+        // runs — the row belongs to the NEXT period only.
+        var service = new SecurityMasterAccountingEventService();
+        var request = CreateRequest(
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 2, 1),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "evidence://factor/bond-2026-02",
+                    SourceContentHash: "sha256:bond-factor-2026-02")
+            ]);
+
+        var result = service.Generate(request);
+
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown,
+            "a factor row dated on the exclusive period end belongs to the next period's run");
+    }
+
+    [Fact]
+    public void Generate_ShortPosition_FailsClosedWithUnsupportedBreak()
+    {
+        // Position magnitudes are absolute, so a short run through the long-side generators would
+        // manufacture positive interest-income, coupon-receipt, and principal-receipt events for a
+        // liability. Until short-liability accounting exists the short fails closed: no events, no
+        // previews — an explicit completeness break instead.
+        var service = new SecurityMasterAccountingEventService();
+        var request = CreateRequest(
+            position: new SecurityMasterAccountingPosition(
+                Symbol: "BOND1",
+                SecurityId: BondSecurityId,
+                AccountId: "acct-1",
+                ParAmount: 100_000m,
+                CarryingPrice: 0.94m,
+                PositionId: BondPositionId)
+            {
+                IsShort = true
+            },
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 20),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "evidence://factor/bond-2026-01",
+                    SourceContentHash: "sha256:bond-factor-2026-01")
+            ]);
+
+        var result = service.Generate(request);
+
+        result.ExpectedEvents.Should().BeEmpty("a short position must not generate long-side expected events");
+        result.AccrualCalculations.Should().BeEmpty();
+        result.JournalPreviews.Should().BeEmpty();
+        result.Issues.Should().ContainSingle(issue => issue.Code == "SM_SHORT_POSITION_UNSUPPORTED");
+    }
+
+    [Fact]
     public void Generate_MortgageBackedFactorPaydown_ShouldUseSecurityMasterFactorSchedule()
     {
         var service = new SecurityMasterAccountingEventService();
@@ -204,6 +271,100 @@ public sealed class SecurityMasterAccountingEventServiceTests
             issue.Severity == ReconciliationBreakSeverity.High);
         result.ExpectedEvents.Should().NotContain(item =>
             item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+    }
+
+    [Fact]
+    public void Generate_CouponCoverageGap_ShouldStillGenerateFactorPaydowns()
+    {
+        // A canonical StructuredCredit legitimately carries no coupon rate, day count, or payment
+        // frequency: those coverage gaps gate COUPON accrual generation only. Factor paydowns are
+        // principal events driven by the retained factor evidence alone — skipping them for
+        // missing accrual inputs would silently drop principal events the schedule fully supports.
+        var service = new SecurityMasterAccountingEventService();
+        var request = CreateRequest(
+            security: new SecurityMasterAccountingSecurity(
+                BondSecurityId,
+                "SCIO1",
+                "MortgageBackedSecurity",
+                "USD",
+                new SecurityFixedIncomeTerms(
+                    CouponRate: null,
+                    CouponType: null,
+                    DayCountConvention: null,
+                    PaymentFrequencyPerYear: null,
+                    CurrentFactor: 0.97m,
+                    OriginalFace: 100_000m,
+                    CurrentFace: 97_000m),
+                new SecurityAccountingRule("AvailableForSale", "GAAP")),
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 20),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "trustee-report",
+                    EvidenceLink: "evidence://factor/scio-2026-01",
+                    SourceContentHash: "sha256:scio-factor-2026-01")
+            ]);
+
+        var result = service.Generate(request);
+
+        result.Issues.Should().Contain(issue => issue.Code == "SM_COUPON_TERMS_MISSING");
+        result.ExpectedEvents.Should().Contain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.PrincipalAmount == 3_000m);
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome);
+    }
+
+    [Fact]
+    public void Generate_MissingAccountingRule_ShouldKeepFactorPaydownEventWithoutPreview()
+    {
+        // Valid factor evidence with NO accounting rule: the expected principal event still
+        // surfaces (the retained evidence supports it) alongside the high-severity missing-rule
+        // issue, but no journal preview is fabricated from an absent classification — previously
+        // this dereferenced the null rule and crashed the reconciliation run.
+        var service = new SecurityMasterAccountingEventService();
+        var request = CreateRequest(
+            security: new SecurityMasterAccountingSecurity(
+                BondSecurityId,
+                "BOND1",
+                "Bond",
+                "USD",
+                new SecurityFixedIncomeTerms(
+                    CouponRate: 0.06m,
+                    CouponType: "Fixed",
+                    DayCountConvention: "ACT/365",
+                    PaymentFrequencyPerYear: 2,
+                    IssueDate: new DateOnly(2025, 1, 1),
+                    NextCouponDate: new DateOnly(2026, 1, 31),
+                    MaturityDate: new DateOnly(2030, 1, 1),
+                    AccrualStartDate: new DateOnly(2026, 1, 1),
+                    CurrentFactor: 0.97m,
+                    OriginalFace: 100_000m,
+                    CurrentFace: 97_000m),
+                AccountingRule: null),
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 20),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "evidence://factor/bond-2026-01",
+                    SourceContentHash: "sha256:bond-factor-2026-01")
+            ]);
+
+        var result = service.Generate(request);
+
+        result.Issues.Should().Contain(issue => issue.Code == "SECURITY_ACCOUNTING_RULE_MISSING");
+        var factorEvent = result.ExpectedEvents.Should().ContainSingle(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown).Subject;
+        factorEvent.PrincipalAmount.Should().Be(3_000m);
+        result.JournalPreviews.Should().NotContain(preview => preview.ExpectedEventId == factorEvent.EventId,
+            "a journal preview needs the accounting rule's ledger classification");
     }
 
     [Fact]
@@ -352,6 +513,121 @@ public sealed class SecurityMasterAccountingEventServiceTests
         second.EventId.Should().Be(first.EventId);
         second.IdempotencyKey.Should().Be(first.IdempotencyKey);
         second.EconomicEvent!.EventId.Should().Be(first.EconomicEvent!.EventId);
+    }
+
+    [Fact]
+    public void Generate_IdentifiedPositionWithUnknownSecurityId_DoesNotBorrowAnotherListingsTerms()
+    {
+        // An IDENTIFIED position resolves by id or not at all: when its id has no accounting
+        // record but another security shares the ticker, falling back to the symbol map would
+        // generate accruals from the OTHER security's terms and accounting rule. The position must
+        // surface the SECURITY_ACCOUNTING_RULE_MISSING completeness break instead.
+        var service = new SecurityMasterAccountingEventService();
+        var unknownSecurityId = Guid.Parse("99999999-9999-9999-9999-999999999999");
+        var result = service.Generate(CreateRequest(
+            position: new SecurityMasterAccountingPosition(
+                Symbol: "BOND1",
+                SecurityId: unknownSecurityId,
+                AccountId: "acct-1",
+                ParAmount: 100_000m,
+                CarryingPrice: 0.94m,
+                PositionId: BondPositionId)));
+
+        result.ExpectedEvents.Should().BeEmpty(
+            "an identified position with no matching accounting record must not borrow the same-ticker security's terms");
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "SECURITY_ACCOUNTING_RULE_MISSING" &&
+            issue.Severity == ReconciliationBreakSeverity.High);
+    }
+
+    [Fact]
+    public void Generate_CouponOnExclusivePeriodEnd_BelongsToTheNextPeriod()
+    {
+        // The period end is EXCLUSIVE (the adapter supplies the next month's first day): a coupon
+        // dated exactly on the boundary is the NEXT period's event, where the same date is that
+        // run's PeriodStart. Emitting it here too would duplicate the expected cash event and
+        // journal preview for every security paying on the first of a month.
+        var service = new SecurityMasterAccountingEventService();
+        var result = service.Generate(CreateRequest(security: new SecurityMasterAccountingSecurity(
+            BondSecurityId,
+            "BOND1",
+            "Bond",
+            "USD",
+            new SecurityFixedIncomeTerms(
+                CouponRate: 0.06m,
+                CouponType: "Fixed",
+                DayCountConvention: "ACT/365",
+                PaymentFrequencyPerYear: 2,
+                IssueDate: new DateOnly(2025, 1, 1),
+                NextCouponDate: new DateOnly(2026, 2, 1),
+                MaturityDate: new DateOnly(2030, 1, 1),
+                AccrualStartDate: new DateOnly(2026, 1, 1),
+                CurrentFactor: 1m),
+            new SecurityAccountingRule("AvailableForSale", "GAAP"))));
+
+        result.ExpectedEvents.Should().Contain(item => item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome);
+        result.ExpectedEvents.Should().NotContain(
+            item => item.EventKind == ExpectedAccountingEventKindDto.ReceiveCashInterest,
+            "a coupon dated on the exclusive period end is emitted by the next period's run, not this one");
+    }
+
+    [Fact]
+    public void Generate_UnchangedFactorWithoutDurablePosition_DoesNotRequireAPositionIdentity()
+    {
+        // An unchanged observation is factor COVERAGE — no principal moved, so there is no
+        // paydown to attribute and no durable position identity to demand. A period whose only
+        // observation is unchanged must not fail closed on FACTOR_PAYDOWN_POSITION_REQUIRED for
+        // an event that does not exist.
+        var result = new SecurityMasterAccountingEventService().Generate(CreateRequest(
+            position: new SecurityMasterAccountingPosition(
+                Symbol: "BOND1",
+                SecurityId: BondSecurityId,
+                AccountId: "acct-1",
+                ParAmount: 100_000m,
+                CarryingPrice: 0.94m,
+                PositionId: null),
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 20),
+                    PriorFactor: 0.80m,
+                    CurrentFactor: 0.80m,
+                    Source: "trustee-report",
+                    SourceContentHash: "sha256:unchanged-factor-no-position")
+            ]));
+
+        result.Issues.Should().NotContain(issue => issue.Code == "FACTOR_PAYDOWN_POSITION_REQUIRED",
+            "coverage-only observations attribute nothing and need no position identity");
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+    }
+
+    [Fact]
+    public void Generate_UnchangedFactorObservation_IsCoverageNotAPaydown()
+    {
+        // An observation whose factor equals its prior is the period's factor COVERAGE — no
+        // principal moved. It must neither project a paydown nor fail closed on the evidence
+        // requirement (this entry carries no evidence link, which for a REAL paydown is a
+        // high-severity issue).
+        var result = new SecurityMasterAccountingEventService().Generate(CreateRequest(
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 20),
+                    PriorFactor: 0.80m,
+                    CurrentFactor: 0.80m,
+                    Source: "trustee-report",
+                    SourceContentHash: "sha256:unchanged-factor")
+            ]));
+
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+        result.Issues.Should().NotContain(issue => issue.Code == "FACTOR_PAYDOWN_EVIDENCE_REQUIRED",
+            "a no-change observation has nothing to evidence");
+        result.Issues.Should().NotContain(issue => issue.Code == "FACTOR_SCHEDULE_MISSING",
+            "the unchanged observation still counts as the period's factor coverage");
     }
 
     [Fact]

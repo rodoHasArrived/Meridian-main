@@ -238,7 +238,8 @@ public sealed class SecurityMasterQueryService :
 
         return new PreferredEquityTermsDto(
             SecurityId: securityId,
-            Classification: ReadString(assetSpecific, "classification") ?? ReadString(pt, "classification"),
+            Classification: SecurityTermReader.ReadEquityClassification(assetSpecific)
+                ?? ReadString(pt, "classification"),
             DividendRate: ReadDecimal(pt, "dividendRate"),
             DividendType: dividendType,
             IsCumulative: ReadBool(pt, "isCumulative") ?? (string.Equals(dividendType, "Cumulative", StringComparison.OrdinalIgnoreCase) ? true : null),
@@ -271,7 +272,7 @@ public sealed class SecurityMasterQueryService :
         }
 
         var assetSpecific = projection.AssetSpecificTerms;
-        var classification = ReadString(assetSpecific, "classification");
+        var classification = SecurityTermReader.ReadEquityClassification(assetSpecific);
 
         return new ConvertibleEquityTermsDto(
             SecurityId: securityId,

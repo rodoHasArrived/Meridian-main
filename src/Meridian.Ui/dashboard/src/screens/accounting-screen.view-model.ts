@@ -3533,7 +3533,7 @@ export function useSecurityMasterViewModel(
     setConflictActionError(null);
 
     try {
-      const updated = await services.resolveConflict({ conflictId, resolution, resolvedBy: "operator" });
+      const updated = await services.resolveConflict({ conflictId, resolution, resolvedBy: "operator", reason: `${resolution} action from the shared conflict queue.` });
       setConflicts((current) => current?.map((conflict) => (
         conflict.conflictId === conflictId ? updated : conflict
       )) ?? current);
