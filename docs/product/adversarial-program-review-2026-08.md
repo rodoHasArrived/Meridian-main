@@ -2,7 +2,7 @@
 
 **Status:** independent review input; not a governance or roadmap-status document
 **Owner:** review author (independent adversarial pass)
-**Reviewed:** 2026-08-11 at commit `01ad9aeb`; corrected 2026-08-15 across six review rounds on PR #2698
+**Reviewed:** 2026-08-11 at commit `01ad9aeb`; corrected 2026-08-15 across seven review rounds on PR #2698
 **Scope:** whole-program review of Meridian's high-level functionality, focused on end-user value
 **Method:** source-evidence audit of the wired code paths. This checkout has no .NET SDK, so **no
 finding below was confirmed at runtime** — every claim is anchored to `file:line` and is a
@@ -11,10 +11,14 @@ This pass deliberately re-tests the [2026-07-21](adversarial-program-review-2026
 [2026-07-26](../../archive/docs/assessments/adversarial-program-review-2026-07-26.md) reviews before
 adding new findings, so remediated items are credited rather than re-litigated.
 
-> **Corrected six times, 2026-08-15, across six rounds of automated review on PR #2698.**
-> **Twenty-three** claims were checked against source and found wrong, overstated, unsupported, or
-> internally inconsistent — seven in the first draft, then four, four, one (partly), three, and four
-> across the corrections. All are rewritten below rather than annotated.
+> **Corrected seven times, 2026-08-15, across seven rounds of automated review on PR #2698.**
+> **Twenty-five** claims were checked against source and found wrong, overstated, unsupported, or
+> internally inconsistent — seven in the first draft, then four, four, one (partly), three, four, and
+> two across the corrections. All are rewritten below rather than annotated.
+>
+> **Read this document accordingly.** Its surviving findings are modest and heavily qualified. Its most
+> reliable content is the record of how a source-only review fails, below. If you want to know what to
+> fix in Meridian, the issues linked at the end are better maintained than the narrative here.
 >
 > Six failure modes, recorded because they are what this review method does wrong:
 >
@@ -42,6 +46,13 @@ adding new findings, so remediated items are credited rather than re-litigated.
 >    (−0.5% to −3.6% in three weeks), which is a more useful claim and required the same measurement
 >    the draft skipped.
 >
+> **The same failure mode recurred at round seven.** Failure mode 2 — asserting absence without
+> searching — was documented after round one and then produced two more errors six rounds later:
+> "nothing enforces the single-writer constraint" (three enforcement mechanisms exist) and "the ratchet
+> needs step targets" (a burn-down plan with those exact targets already existed, and an open issue
+> #2675 already covers the ratchet mechanism). Seven rounds of documenting a bias did not stop it. The
+> only thing that has reliably caught it is someone else running the counter-search.
+>
 > Worth stating plainly: **the second round of errors repeated the first.** After documenting
 > "truncated searches read as exhaustive" as a root cause, the correction then counted version
 > references inside `FileManualJournalEntryDraftStore`, found zero, and reported journal drafts as
@@ -59,7 +70,7 @@ unsupported last mile." Sixteen days on, **the first mile is genuinely fixed** �
 bundle is committed, the demo seeds six subsystems, paper fills cost money, and two institutional
 statement formats landed. The theme has moved again:
 
-> **Meridian's remaining gap is mostly the last mile of things already built.** After six rounds of
+> **Meridian's remaining gap is mostly the last mile of things already built.** After seven rounds of
 > correction, this review found almost nothing missing outright. What it found is capability that is
 > present but unreachable or inconsistent: bulk reconciliation casework implemented end-to-end and
 > called by no screen; a tracing layer with seven span-producing sites and no registered provider;
@@ -251,12 +262,20 @@ produced the error.
    process may write a base directory; cross-process transactional locking is intentionally outside
    this local-file store's contract"* — it serialises appends on a process-local `SemaphoreSlim` only.
 
-   That is a deliberate, documented design decision rather than an oversight, and it narrows the
-   question usefully: the issue is not whether each store locks, but **whether the single-writer
-   constraint some of them declare is actually enforced at deployment**. Nothing found in this review
-   asserts it — no startup check refuses to serve a declared single-writer store when more than one
-   host instance is configured. A documented constraint that nothing enforces is a runtime hazard
-   wearing a comment.
+   That is a deliberate, documented design decision rather than an oversight.
+
+   **Corrected:** the first version of this said "nothing enforces the single-writer constraint."
+   Wrong again, and by the same method as every other error here — asserting absence without
+   searching. Single-instance enforcement exists for the supported deployments:
+   `src/Meridian.Wpf/App.xaml.cs:158-165` acquires a single-instance lock and exits secondary desktop
+   instances; `src/Meridian.LifecycleSupervisor/Program.cs:61-78` takes a named mutex so one supervisor
+   owns the host lifecycle; and `deploy/k8s/deployment.yaml:15` sets `replicas: 1`, with the manifest
+   noting that multi-replica needs a coordination-capable shared volume.
+
+   So the residual hazard is narrow: a direct-host launch that bypasses the supervisor, or the
+   experimental multi-replica path. Neither is a supported configuration, which makes this a
+   consistency question — should the 52 stores' locking postures be classified and documented — rather
+   than a live end-user risk.
 
 *On the count.* Earlier drafts said "56 production classes." Enumerating the distinct class names
 matched by the pattern used (`class File*Store`, `class File*Repository`, `class Jsonl*`) gives **56
@@ -374,9 +393,18 @@ tidying a feature change happens to include.
 
 The built workstation is 4.2 MB, with a 465 KB entry chunk and a 431 KB accounting chunk.
 
-**Improvement:** if these files matter, the ratchet needs a step target rather than a ceiling — a
-scheduled reduction per file per quarter — otherwise the current trajectory is indistinguishable from
-noise. **Value: low–medium** (developer velocity, not user-facing). **Effort: L** and ongoing.
+**Corrected:** an earlier version recommended adding step targets to the ratchet. Those already exist.
+`docs/development/god-file-burn-down-plan.md:125-137` proposes retiring **at least two files per
+release** and reducing capped lines **15% per quarter**, with concrete sequencing at `:142-191` — and
+it prefers *files retired* over *lines removed* precisely because lines can fall by moving code
+sideways. The plan also names its own gap: the targets are "**proposed**, not yet a registered
+commitment," because `docs/roadmap/data/` holds no god-file item, so nothing tracks them.
+
+**Improvement:** adopt the existing plan into the roadmap registry so the targets become tracked scope,
+and give the ratchet a downward-only mechanism to lock in reductions (already open as
+[#2675](https://github.com/rodoHasArrived/Meridian-main/issues/2675)). Nothing here needs designing.
+**Value: low–medium** (developer velocity, not user-facing). **Effort: S** to adopt; **L** and ongoing
+to execute.
 
 ## Still-open structural items (unchanged, restated with current evidence)
 
@@ -423,7 +451,7 @@ which is both the cheapest and the most reliable kind of change.
 | 3 | **Fix the authorization sweep to post valid bodies, then re-derive the count** | The ratchet is a good primitive currently producing a number nobody should quote; today it conflates 400-on-bad-body with unguarded | S |
 | 4 | **Register the TracerProvider so the seven existing span sites emit** | Turns aggregate counters into per-request diagnosis across pipeline stages; the layer is written | S |
 | 5 | **Freeze a `/api/v1` surface for the routes external systems bind to** | The contract is already discoverable via Swagger; what is missing is a stability promise | M |
-| 6 | **Audit file stores for lease coverage, and enforce declared single-writer constraints** | Locking is inconsistent by design: the break queue leases, `JsonlFilePaperSessionStore` documents itself as single-process. Nothing enforces the latter at startup | S |
+| 6 | **Classify and document the 52 file stores' locking postures** | Locking is inconsistent by design: the break queue leases, `JsonlFilePaperSessionStore` is single-process. Supported deployments already enforce single-instance, so this is consistency work, not a live risk | S |
 | 7 | **Standardize the 409 conflict contract across route families** | Concurrency control works; its request/response shape differs per family, so no generic client can handle conflicts once | S–M |
 | 8 | **Fail-closed tenancy and a hash-chained journal** | The two governance claims the brand rests on that are genuinely not yet true | L |
 
@@ -474,7 +502,7 @@ baseline-accuracy question on `W9-GOV-008`
 [#2633](https://github.com/rodoHasArrived/Meridian-main/issues/2633). Both carry follow-up comments
 correcting the same errors.
 
-**On the review method itself.** Across six rounds, automated review found **twenty-three** wrong,
+**On the review method itself.** Across seven rounds, automated review found **twenty-five** wrong,
 overstated, unsupported, or internally inconsistent claims. No new finding survived entirely unchanged: N1 held in substance
 but overcounted its evidence (eleven "instrumented sites" were seven span-producing calls); N5
 survived with its scope inverted from "missing" to "built but unwired," then had a 100-case backend
