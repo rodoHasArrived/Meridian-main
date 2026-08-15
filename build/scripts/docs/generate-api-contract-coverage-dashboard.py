@@ -54,34 +54,32 @@ DATA_SOURCES = [
 # converge, since each run's output changes the next run's input.
 GENERATED_DOC_ROOTS = ("docs/status", "docs/generated")
 
-# A root whose purpose is to argue and assess rather than to describe a contract. A symbol named
+# A root whose documents mostly argue and assess rather than describe a contract. A symbol named
 # in prose is "mentioned", not "documented", and crediting it moves the score without a document
 # being written -- the same failure GENERATED_DOC_ROOTS guards against, arriving by a different
-# route (#2703). The issue was found by tripping it: a draft under docs/product/ that documented no
-# API flipped an endpoint to Documented on the strength of one sentence explaining why an
-# authorization sweep misclassifies it.
+# route (#2703). Found by tripping it: a draft under docs/product/ that documented no API flipped
+# an endpoint to Documented on one sentence explaining why an authorization sweep misclassifies it.
 #
-# Measured per file rather than assumed per root, because root-level exclusion is a blunt
-# instrument and this generator's sibling already carries a scar from over-excluding (see
-# generate-coverage.py: dropping docs/generated/ wholesale cost 763 genuinely documented types).
-# Of the eight docs/product files that credit anything, seven are prose -- adversarial reviews,
-# brainstorms, a todo list, a delivery plan -- together supplying every one of the 3 endpoint
-# credits and 13 of the 14 contract credits.
+# Membership of this tuple does not exclude a file on its own. Each document is checked for a
+# contract heading, because a root is the wrong granularity: two rounds of review on #2703 each
+# produced a blueprint filed under a prose root whose contract section defines shipped types
+# verbatim, and excluding the root wholesale turned those into false gaps.
 #
-# The known cost is one credit: portfolio-cash-ladder-blueprint-2026-07.md carries a real contract
-# section and is the only source for one workstation contract. Accepted deliberately -- a metric
-# that under-counts by one is worth more than one that over-counts by thirteen -- and recorded here
-# so it is a known false negative rather than a silent one.
-#
-# docs/plans is deliberately NOT excluded. The issue groups it with docs/product, but all 18 of its
-# contract credits come from a single blueprint, security-master-passport-workbench.md, whose
-# "Interface & API Contracts" section defines those contracts verbatim. Excluding that root would
-# drop 18 legitimate credits and no prose ones.
+# docs/plans is not listed at all. All 18 of its contract credits come from one blueprint,
+# security-master-passport-workbench.md, so there is no prose inflation there to remove.
 #
 # docs/ai, docs/architecture, and docs/development each contribute credits that are arguably real
 # documentation, so they stay in pending a decision on what the corpus is meant to contain; see the
 # attribution table on the pull request for #2703.
 NON_CONTRACT_DOC_ROOTS = ("docs/product",)
+
+# A markdown heading that introduces a contract description. Validated against every docs/product
+# file that credits anything: the six prose files match none, the two blueprints match five and
+# one. Kept deliberately tight -- a bare "API" would match "## API notes" in a review.
+CONTRACT_SECTION_HEADING_RE = re.compile(
+    r"^#{1,6}\s+.*\b(?:Contracts?|Interfaces?|API Surface|DTOs?)\b",
+    re.MULTILINE | re.IGNORECASE,
+)
 
 
 def _should_skip(path: Path) -> bool:
@@ -210,7 +208,22 @@ def _is_generated_doc(root: Path, path: Path) -> bool:
 
 
 def _is_non_contract_doc(root: Path, path: Path) -> bool:
-    return _is_under(root, path, NON_CONTRACT_DOC_ROOTS)
+    """True for a prose-root document that describes no contract.
+
+    Checked per document rather than per root. Two rounds of review on #2703 each produced a
+    blueprint filed under a prose root whose contract section defines shipped types verbatim, so
+    excluding the root wholesale manufactured false gaps. A heading is the discriminator because
+    it is what separates the two kinds cleanly here: across every docs/product file that credits
+    anything, the six prose ones carry no contract heading at all, while the two blueprints carry
+    five and one.
+
+    A heuristic, and it fails in a knowable direction either way -- a prose file that grows a
+    contract heading is let back in, a blueprint that describes contracts under some other heading
+    stays out. That is preferable to the root rule, which had no way to tell the two apart.
+    """
+    if not _is_under(root, path, NON_CONTRACT_DOC_ROOTS):
+        return False
+    return CONTRACT_SECTION_HEADING_RE.search(_read_text(path)) is None
 
 
 def _load_docs_text(root: Path) -> str:

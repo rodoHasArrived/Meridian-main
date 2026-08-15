@@ -194,6 +194,22 @@ class GeneratorContractTests(unittest.TestCase):
             # corpus rather than breaking the metric.
             self.assertTrue(documents_route(route, module._load_docs_text(root)))
 
+    def test_a_contract_bearing_blueprint_in_a_prose_root_is_kept(self) -> None:
+        # Two rounds of review on #2703 each found a blueprint filed under a prose root whose
+        # contract section defines shipped types. A root-level exclusion turned those into false
+        # gaps; the per-document check is what stops that.
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            route = "/api/fund-structure/reporting/runs/{runId}/stream"
+            blueprint = root / "docs/product/report-run-stream-blueprint.md"
+            blueprint.parent.mkdir(parents=True, exist_ok=True)
+            blueprint.write_text(
+                f"## 7. Contracts summary\n\n- **New wire:** `GET {route}`\n", encoding="utf-8")
+
+            self.assertTrue(documents_route(route, module._load_docs_text(root)))
+
     def test_the_boundary_rule_is_reachable_from_the_dashboard(self) -> None:
         # `_index_docs` replaced a per-item scan that these tests used to call directly. Once the
         # scan was no longer on the hot path, tests against it proved nothing about the artifact.
@@ -218,10 +234,21 @@ class _CoverageModuleTestCase(unittest.TestCase):
 class CoverageCorpusExclusionTests(_CoverageModuleTestCase):
     """The public-type metric shares the corpus flaw, so it takes the same exclusion (#2703)."""
 
-    def test_prose_roots_are_excluded_from_the_type_corpus(self) -> None:
+    def test_prose_roots_are_filtered_from_the_type_corpus(self) -> None:
         # Ten types were credited by one draft under docs/product/, four of them appearing only
-        # inside a passage arguing that those very classes are not persistent stores.
-        self.assertIn("docs/product/", self.cov.DOC_CONTENT_EXCLUDE_PREFIXES)
+        # inside a passage arguing that those very classes are not persistent stores. Filtered per
+        # document rather than per root, so blueprints filed there keep their credits.
+        self.assertIn("docs/product/", self.cov.PROSE_DOC_PREFIXES)
+        self.assertNotIn("docs/product/", self.cov.DOC_CONTENT_EXCLUDE_PREFIXES)
+
+    def test_a_contract_heading_keeps_a_prose_root_document(self) -> None:
+        self.assertIsNotNone(
+            self.cov.CONTRACT_SECTION_HEADING_RE.search("## 7. Contracts summary\n\n- `FooDto`"))
+        self.assertIsNotNone(
+            self.cov.CONTRACT_SECTION_HEADING_RE.search("## Interface & API Contracts\n"))
+        # A review that merely discusses an API is not a contract description.
+        self.assertIsNone(
+            self.cov.CONTRACT_SECTION_HEADING_RE.search("## API notes\n\nthe sweep misreads it"))
 
     def test_reference_roots_stay_in_the_type_corpus(self) -> None:
         # The counterweight: an earlier over-exclusion here dropped 41 files and marked 763
@@ -541,7 +568,7 @@ class CoverageReportBoundaryTests(_CoverageModuleTestCase):
         self.assertTrue(self._documented("PriceMark", "The `PriceMark` record carries"))
         self.assertTrue(self._documented("PriceMark", "PriceMark."))
 
-    def test_the_corpus_excludes_self_referential_reports_and_prose_roots(self) -> None:
+    def test_only_the_self_referential_reports_are_hard_excluded(self) -> None:
         # Two separate reasons, both narrow on purpose.
         #
         # Self-referential: `repository-structure.md` lists every path in the repository and
@@ -550,14 +577,13 @@ class CoverageReportBoundaryTests(_CoverageModuleTestCase):
         # whole `docs/generated/` subtree instead — which an earlier revision of this branch did —
         # dropped 41 files and marked 763 genuinely documented types as gaps.
         #
-        # Prose: `docs/product/` and `docs/plans/` argue and plan rather than describe contracts,
-        # so a type named there is mentioned rather than documented (#2703).
+        # Prose roots are handled separately by PROSE_DOC_PREFIXES, which filters per document
+        # rather than per root so contract-bearing blueprints keep their credits (#2703).
         self.assertEqual(
             (
                 "docs/status/",
                 "docs/generated/documentation-coverage.md",
                 "docs/generated/repository-structure.md",
-                "docs/product/",
             ),
             self.cov.DOC_CONTENT_EXCLUDE_PREFIXES,
         )

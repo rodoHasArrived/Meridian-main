@@ -62,7 +62,8 @@ DOC_FILE_EXTENSIONS: Tuple[str, ...] = (".md",)
 # excluded the whole subtree: 41 files left the corpus and 763 genuinely documented types were
 # marked as gaps.
 #
-# docs/product/ is excluded for a different reason: it argues and assesses rather than describing
+# docs/product/ is filtered for a different reason (see PROSE_DOC_PREFIXES below): it mostly
+# argues and assesses rather than describing
 # contracts, so a type named there is "mentioned", not "documented" (#2703). The issue was found by
 # tripping it -- a draft under docs/product/ moved documented types from 2,791 to 2,801, and four
 # of the ten additions appeared *only inside a passage arguing that those classes are not
@@ -76,7 +77,19 @@ DOC_CONTENT_EXCLUDE_PREFIXES: Tuple[str, ...] = (
     "docs/status/",
     "docs/generated/documentation-coverage.md",
     "docs/generated/repository-structure.md",
-    "docs/product/",
+)
+
+# Prose roots are filtered per document rather than wholesale. A root is the wrong granularity:
+# two rounds of review on #2703 each produced a blueprint filed under one of these roots whose
+# contract section defines shipped types verbatim, so excluding the root manufactured false gaps.
+# A document here is dropped only when it carries no contract heading.
+PROSE_DOC_PREFIXES: Tuple[str, ...] = ("docs/product/",)
+
+# Validated against every docs/product file that credits anything: the six prose files match none
+# of these, the blueprints match. Kept tight -- a bare "API" would match "## API notes" in a review.
+CONTRACT_SECTION_HEADING_RE = re.compile(
+    r"^#{1,6}\s+.*\b(?:Contracts?|Interfaces?|API Surface|DTOs?)\b",
+    re.MULTILINE | re.IGNORECASE,
 )
 
 # Regex: public (static )?(sealed )?(partial )?(class|interface|record|enum) Name
@@ -844,7 +857,10 @@ def _load_doc_contents(root: Path) -> Dict[str, str]:
             rel_path = _rel(md_file, root)
             if rel_path.startswith(DOC_CONTENT_EXCLUDE_PREFIXES):
                 continue
-            contents[rel_path] = _read_text_safe(md_file)
+            text = _read_text_safe(md_file)
+            if rel_path.startswith(PROSE_DOC_PREFIXES) and not CONTRACT_SECTION_HEADING_RE.search(text):
+                continue
+            contents[rel_path] = text
     # Also include CLAUDE.md at repo root
     claude_md = root / "CLAUDE.md"
     if claude_md.is_file():

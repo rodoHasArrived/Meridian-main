@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 28.4,
+  "score_percent": 28.6,
   "endpoint_coverage_percent": 39.8,
-  "contract_coverage_percent": 11.2,
+  "contract_coverage_percent": 11.7,
   "summary": {
     "endpoint_count": 621,
     "documented_endpoint_count": 247,
     "undocumented_endpoint_count": 374,
     "workstation_contract_count": 917,
-    "documented_workstation_contract_count": 103,
-    "undocumented_workstation_contract_count": 814
+    "documented_workstation_contract_count": 107,
+    "undocumented_workstation_contract_count": 810
   },
   "endpoints": [
     {
@@ -5420,7 +5420,7 @@
     {
       "name": "ReportingRunAuditTrailDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1331",
-      "documented": false
+      "documented": true
     },
     {
       "name": "ReportPackWorkflowStateDto",
@@ -5850,7 +5850,7 @@
     {
       "name": "NullReportingRunNotifier",
       "source": "src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:21",
-      "documented": false
+      "documented": true
     },
     {
       "name": "MarginControlAccountDto",
@@ -7595,7 +7595,7 @@
     {
       "name": "CashLadderBucketDto",
       "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:942",
-      "documented": false
+      "documented": true
     },
     {
       "name": "RunCashLadder",
@@ -8110,7 +8110,7 @@
     {
       "name": "WorkstationReportingRunPayload",
       "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:585",
-      "documented": false
+      "documented": true
     },
     {
       "name": "WorkstationReportingDailyWorkItemDto",
