@@ -7,11 +7,16 @@ let positionLimit (ctx: RiskContext) : RiskDecision =
     match ctx.MaxPositionSize with
     | None -> Approve
     | Some maxPositionSize ->
+        // Anything that is not a Buy is oriented as a sell, rather than matched exhaustively
+        // against Sell alone. OrderSide is an enum over the wire and System.Text.Json accepts
+        // undefined numeric values, so a third value can reach here — and it does not route as
+        // "neither": AlpacaBrokerageGateway maps every non-Buy value to "sell". A neutral arm
+        // would contribute zero to this projection, so a real short would pass the position
+        // ceiling as though it changed nothing. Measure what routes.
         let signedQuantity =
             match ctx.Request.Side with
             | OrderSide.Buy -> ctx.Request.Quantity
-            | OrderSide.Sell -> -ctx.Request.Quantity
-            | _ -> 0m
+            | _ -> -ctx.Request.Quantity
 
         let projectedQuantity = ctx.CurrentPositionQuantity + signedQuantity
         if abs projectedQuantity > maxPositionSize then
@@ -148,11 +153,13 @@ let fatFinger (ctx: RiskContext) : RiskDecision =
             // Positive means the order is priced aggressively against the operator: a buy
             // paying above the reference, or a sell hitting below it. A negative value is a
             // passive resting order and never breaches.
+            // Non-Buy is oriented as a sell rather than matched against Sell alone: an undefined
+            // enum value routes as a sell, and a neutral arm would return zero deviation and
+            // approve any price at all — the band would simply not apply to it.
             let aggressiveDeviation =
                 match ctx.Request.Side with
                 | OrderSide.Buy -> signedDeviation
-                | OrderSide.Sell -> -signedDeviation
-                | _ -> 0m
+                | _ -> -signedDeviation
 
             if aggressiveDeviation > maxDeviation then
                 Reject (
@@ -194,11 +201,12 @@ let fatFingerStopTrigger (ctx: RiskContext) : RiskDecision =
         // Positive means the trigger is already crossed or heading that way: a buy stop below
         // the market, or a sell stop above it. A negative value is a correctly placed stop
         // waiting for the market to come to it, and never breaches.
+        // Same orientation rule as the limbs above: non-Buy is a sell, so an undefined enum
+        // value cannot present an already-crossed stop as a correctly placed one.
         let crossedDeviation =
             match ctx.Request.Side with
             | OrderSide.Buy -> -signedDeviation
-            | OrderSide.Sell -> signedDeviation
-            | _ -> 0m
+            | _ -> signedDeviation
 
         if crossedDeviation > maxDeviation then
             Reject (

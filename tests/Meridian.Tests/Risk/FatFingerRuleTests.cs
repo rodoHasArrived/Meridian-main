@@ -606,6 +606,36 @@ public sealed class FatFingerRuleTests
         result.LimitValue.Should().Be(1_000m);
     }
 
+    /// <summary>
+    /// <c>OrderSide</c> crosses the wire as an enum and System.Text.Json accepts undefined numeric
+    /// values, so a third value can reach the rules — and it does not route as "neither":
+    /// `AlpacaBrokerageGateway` maps every non-<c>Buy</c> value to <c>"sell"</c>. Matching
+    /// <c>Sell</c> exhaustively and falling through to a neutral arm therefore disabled the price
+    /// limbs entirely for such a request, which is a bypass rather than an edge case: the band
+    /// approves any price, and the trigger limb approves an already-crossed stop.
+    /// </summary>
+    [Theory]
+    [InlineData(50.0, null, "a sell limited far below the market is measured, not waved through")]
+    [InlineData(null, 200.0, "a sell stop above the market is already crossed and must be caught")]
+    public async Task UndefinedSide_IsOrientedAsASell_BecauseThatIsHowItRoutes(
+        double? limitPrice,
+        double? stopPrice,
+        string because)
+    {
+        var rule = Rule(maxDeviationPercent: 10m);
+
+        // Not Buy and not Sell: the shape System.Text.Json admits without validation.
+        var order = Order(
+            limitPrice: (decimal?)limitPrice,
+            stopPrice: (decimal?)stopPrice,
+            side: (OrderSide)7,
+            type: stopPrice.HasValue ? OrderType.StopMarket : OrderType.Limit);
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse(because);
+    }
+
     [Fact]
     public async Task Quantity_LimbDisabled_DoesNotEvaluateEffectiveQuantityForAnExcludedPackage()
     {

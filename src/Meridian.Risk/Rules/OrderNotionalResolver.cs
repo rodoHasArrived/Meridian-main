@@ -188,13 +188,22 @@ internal static class OrderNotionalResolver
         // else, scaled by the contract multiplier — no Greeks, no VaR, just the notional
         // the contracts actually represent. A multi-leg order's top-level price is the net
         // debit/credit of the combination, so each leg is valued on its own instead.
-        if (request.Legs is { Count: > 0 } || request.OptionContract is not null)
+        var usesFaceValuePercentageOfPar =
+            OrderSizingMetadata.UsesFaceValuePercentageOfPar(request.Metadata);
+
+        // Face value outranks an incidental derivative identity, and the order matters. The marker
+        // is server-stamped from the active gateway; OptionContract is caller-supplied and carries a
+        // caller-supplied multiplier. Alpaca decides fixed-income routing from asset_class alone and
+        // ignores OptionContract entirely, so it routes Quantity as face value at percentage-of-par
+        // regardless — and valuing the same order as contracts would measure 1,000,000 face at 100
+        // with Multiplier "0.000001" as $100 rather than $1,000,000, clearing the notional,
+        // gross-exposure, and concentration rails by six orders of magnitude. A leg list still wins,
+        // because a package's top-level price is a net debit or credit belonging to no single symbol.
+        if (request.Legs is { Count: > 0 }
+            || (request.OptionContract is not null && !usesFaceValuePercentageOfPar))
         {
             return ResolveDerivative(request, snapshot, referencePriceLookup, sideAwarePriceLookup);
         }
-
-        var usesFaceValuePercentageOfPar =
-            OrderSizingMetadata.UsesFaceValuePercentageOfPar(request.Metadata);
 
         // Broker-native notional sizing (Alpaca metadata "notional"/"alpaca:notional")
         // routes the metadata dollars, not quantity x price — value exactly what routes. Fixed
