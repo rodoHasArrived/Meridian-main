@@ -303,6 +303,14 @@ public sealed class ConfigTemplateGenerator
             // offline without keys, and MDC_DATASOURCE still overrides it through the normal
             // environment path.
             DataSource = "Synthetic",
+            // DataSource: Synthetic without this section is a template that loads but fails its
+            // own documented validation. DryRunService.ValidateProvidersAsync asserts
+            // `config.Synthetic?.Enabled == true` and reports "Synthetic dataset disabled" for a
+            // null section, so `--generate-config --template docker` followed by the `--dry-run`
+            // the docs prescribe would fail out of the box. SyntheticMarketDataClient treats a
+            // null config as enabled, so this only ever tripped the validator — which is exactly
+            // the kind of gap an operator reads as "the tool is broken".
+            Synthetic = new { Enabled = true },
             Alpaca = new
             {
                 // The credential placeholders stay in "${...}" form because ConfigValidationHelper

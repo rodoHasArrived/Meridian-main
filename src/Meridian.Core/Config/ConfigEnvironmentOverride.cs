@@ -425,10 +425,18 @@ public sealed class ConfigEnvironmentOverride
         // SymbolConfigValidator matches ^[A-Z0-9\-\.\/]+$, so a lowercase ticker typed into the
         // environment would otherwise fail validation rather than subscribe. Character validity
         // is deliberately left to that validator instead of being restated here.
+        // Deduplicated case-insensitively because uppercasing merges spellings the operator wrote
+        // as distinct: "SPY,spy" becomes two identical entries, and per-symbol validation accepts
+        // both. SubscriptionOrchestrator.ApplyAsync then builds its desired set with
+        // ToDictionary(..., StringComparer.OrdinalIgnoreCase), which throws on the duplicate key
+        // and aborts collector startup. Dropping the repeat is the reading that matches intent —
+        // naming a ticker twice means subscribing to it, not failing to start.
         var symbols = value
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(symbol => symbol.ToUpperInvariant())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .Select(symbol => new SymbolConfig(
-                symbol.ToUpperInvariant(),
+                symbol,
                 SubscribeTrades: subscribeTrades,
                 SubscribeDepth: subscribeDepth,
                 DepthLevels: depthLevels))

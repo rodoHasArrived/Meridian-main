@@ -80,6 +80,26 @@ public sealed class ConfigEnvironmentOverrideTests
     }
 
     [Fact]
+    public void ApplyOverrides_Symbols_DeduplicatesCaseInsensitively()
+    {
+        // Uppercasing merges spellings the operator wrote as distinct, and per-symbol validation
+        // accepts both copies. SubscriptionOrchestrator.ApplyAsync then keys its desired set with
+        // ToDictionary(..., StringComparer.OrdinalIgnoreCase), which throws on the duplicate and
+        // aborts collector startup — so the repeat has to be dropped here, before orchestration.
+        using var symbolsVar = new EnvironmentVariableScope("MDC_SYMBOLS", "SPY,spy, QQQ ,Spy,qqq");
+
+        var sut = new ConfigEnvironmentOverride();
+        var result = sut.ApplyOverrides(new AppConfig());
+
+        result.Symbols.Should().NotBeNull();
+        result.Symbols!.Select(s => s.Symbol).Should().Equal("SPY", "QQQ");
+
+        // The same key the orchestrator builds must not throw.
+        var act = () => result.Symbols!.ToDictionary(s => s.Symbol.Trim(), s => s, StringComparer.OrdinalIgnoreCase);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
     public void ApplyOverrides_Symbols_InheritCollectionTogglesWithoutContractIdentity()
     {
         // MDC_SYMBOLS changes which symbols are collected, not how. A configuration that
