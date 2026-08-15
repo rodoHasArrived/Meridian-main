@@ -811,14 +811,45 @@ public sealed partial class OrderManagementSystem
         ClientOrderId = state.OrderId,
         StrategyId = state.StrategyId,
         FundAccountId = state.FundAccountId,
-        Metadata = state.UsesFaceValuePercentageOfPar
-            ? OrderSizingMetadata.WithFaceValuePercentageOfPar(metadata: null)
-            : null,
+        Metadata = BuildAmendedSizingMetadata(state),
         // Without the derivative identity the rules re-value the amended order as shares,
         // repeating the 1x mistake the multiplier above exists to prevent.
         OptionContract = state.OptionContract,
         Legs = state.Legs
     };
+
+    /// <summary>
+    /// Restores the order's sizing classification onto the rebuilt amendment. An amended request is
+    /// reconstructed from <see cref="OrderState"/> rather than carried over, so anything the rules
+    /// need in order to read <c>Quantity</c> correctly has to be put back explicitly — a price-only
+    /// amendment does not change how the venue sizes the order.
+    /// <para>
+    /// Both classifications matter and they are not the same. Face value says the quantity is par
+    /// and the price is a percentage of it; broker-native notional says the quantity field carries
+    /// <em>dollars</em> and the gateway discards it. Dropping the latter makes every rule that reads
+    /// quantity treat a dollar amount as a share count, so a $2,500 notional order cannot amend its
+    /// price under a 1,000-unit fat-finger ceiling — an order the venue would leave sized exactly as
+    /// it was, refused for a size it does not have.
+    /// </para>
+    /// </summary>
+    private static IReadOnlyDictionary<string, string>? BuildAmendedSizingMetadata(OrderState state)
+    {
+        var metadata = state.UsesFaceValuePercentageOfPar
+            ? new Dictionary<string, string>(OrderSizingMetadata.WithFaceValuePercentageOfPar(metadata: null))
+            : null;
+
+        if (state.RoutedNotional is not { } routedNotional || routedNotional <= 0m)
+        {
+            return metadata;
+        }
+
+        metadata ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        // The canonical key, written as the decimal the reader treats as the notional itself
+        // rather than as a boolean over a quantity this request may be amending.
+        metadata[BrokerNotionalMetadata.Keys[0]] =
+            routedNotional.ToString("G29", CultureInfo.InvariantCulture);
+        return metadata;
+    }
 
     /// <summary>
     /// Builds the request the risk rules should evaluate for an amendment. The exposure

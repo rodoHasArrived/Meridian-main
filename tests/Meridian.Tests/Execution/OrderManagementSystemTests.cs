@@ -980,6 +980,61 @@ public sealed class OrderManagementSystemTests : IDisposable
     /// Paper gateway that also advertises broker-native notional sizing, standing in for the
     /// Alpaca adapter in tests that need the notional metadata to be routable.
     /// </summary>
+    /// <summary>
+    /// An amended request is rebuilt from <see cref="OrderState"/>, so a sizing classification that
+    /// is not put back is lost. Broker-native notional sizing means the quantity field carries
+    /// dollars and the gateway discards it — dropping that makes every rule reading quantity treat a
+    /// dollar amount as a share count, and a price-only amendment does not change how the venue
+    /// sizes the order.
+    /// </summary>
+    [Fact]
+    public async Task ModifyOrderAsync_NotionalSizedOrder_KeepsItsDollarClassificationInTheProbe()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            new NotionalSizingPaperExecutionGateway("alpaca"),
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        // Alpaca-style: the quantity field carries dollars and the gateway routes those.
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 2_500m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-NOTIONAL-AMEND",
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = "2500"
+            }
+        });
+        placed.Success.Should().BeTrue();
+
+        var probes = new List<OrderRequest>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                probes.Add(call.Arg<OrderRequest>());
+                return Task.FromResult(RiskValidationResult.Approved());
+            });
+
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewLimitPrice = 101m });
+
+        modified.Success.Should().BeTrue();
+        probes.Should().NotBeEmpty("the amendment is revalidated");
+
+        var probe = probes[^1];
+        BrokerNotionalMetadata.TryRead(probe.Metadata, probe.Quantity).Should().Be(
+            2_500m,
+            "the rules must still read this order's quantity as dollars, not as 2,500 shares");
+    }
+
     private sealed class NotionalSizingPaperExecutionGateway(string gatewayId)
         : TypedPaperExecutionGatewayBase(gatewayId), INotionalOrderSizingGateway
     {
