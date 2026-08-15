@@ -763,35 +763,49 @@ still `in_progress`.
 
 ## W10 — Make CI verify what users run
 
-- [ ] **AR8-57 — Stop paying the post-merge docs-regeneration tax by hand.**
-  **Evidence:** `docs/status/doc-health-dashboard.{json,md}` and the coverage/API dashboards are
-  derived from line counts across every tracked markdown file, so *any* merge that combines two
-  branches' documentation edits leaves them stale — neither parent's copy describes the merge
-  result. The `regenerate-docs` job in `.github/workflows/documentation.yml` re-runs the core
-  docs-automation profile and fails on the diff, which catches the drift only after the merge is
-  already pushed. Fifteen commits since June exist for no other purpose than re-running that
-  profile and committing the result — `2368b43b2`, `f4d900d67`, `0535db058`, `d8554cefe`,
-  `603d98cfe`, `fc8344145`, and `fb94b95cd` among them, across several unrelated branches. The
-  same branch paid it three separate times. This is not a correctness bug; it is a recurring toll
-  on every contributor who merges `main`, and it trains people to read a red `regenerate-docs` as
-  routine noise rather than signal.
+- [ ] **AR8-57 — Stop paying the post-merge docs-regeneration toll by hand.**
+  **Evidence:** `docs/status/doc-health-dashboard.{json,md}` reports totals derived from markdown
+  line counts, over a corpus `build/scripts/docs/generate-health-dashboard.py:52-57` narrows by
+  excluding `.github`, `.claude`, `.codex`, `archive`, `artifacts`, vendor trees, and
+  `docs/status/` itself. Any merge that combines two branches' edits to markdown *inside* that
+  corpus leaves the dashboard stale, because neither parent's copy describes the merged tree. The
+  `regenerate-docs` job in `.github/workflows/documentation.yml` re-runs the core docs-automation
+  profile and fails on the diff, catching the drift only after the merge is pushed. Fifteen
+  commits since June exist for no purpose other than re-running that profile and committing the
+  result — `2368b43b2`, `f4d900d67`, `0535db058`, `d8554cefe`, `603d98cfe`, `fc8344145`, and
+  `fb94b95cd` among them, across several unrelated branches, one of which paid it three times.
+  Scope note: the coverage and API-contract dashboards are *not* part of this class.
+  `generate-coverage.py` and `generate-api-contract-coverage-dashboard.py` measure documented
+  source constructs — public types, endpoint mappings — so they drift when a merge combines
+  changes to `src/`, not to prose. A documentation-only edit moves the health dashboard alone.
+  This is not a correctness bug; it is a standing toll on everyone who merges `main`, and it
+  trains contributors to read a red `regenerate-docs` as routine noise rather than signal.
   **Change:** keep the artifacts tracked — `docs/documentation-ownership.md:23` designates
   `docs/status/` automation-owned output that must stay "at the paths consumed by tooling", so
   untracking them in favour of CI-only artifacts is out of policy. Automate the regeneration
-  instead. Preferred: have `regenerate-docs` commit the regenerated artifacts back to the pull
-  request branch when it detects drift, and fail only where it cannot push (forks, protected
-  contexts), so the job repairs the condition it currently just reports. Cheaper alternative if a
-  bot commit on PR branches is unwanted: register a git merge driver in `.gitattributes` for these
-  paths that re-runs the generator instead of attempting a textual merge, which also removes the
-  conflicts these files produce on every merge. Either way, document the single regeneration
-  command next to the check so a contributor who hits it does not have to reconstruct it from the
-  workflow.
-  **Verify:** merge a branch that edits any tracked markdown into a branch that edits different
-  markdown, and confirm `regenerate-docs` ends green without a human running the profile. Assert
-  the outcome — a clean dashboard matching the merged tree — not the mechanism, so either design
-  above satisfies it.
-  **Effort:** S · **Sequence:** independent of the other W10 items; the sooner it lands, the fewer
-  merges pay the toll
+  instead: have the docs workflow commit the regenerated artifacts back to the pull-request branch
+  when it detects drift, and fail only where it cannot push (forks, protected contexts), so the
+  job repairs the condition it currently only reports. **The push must be made with a GitHub App
+  token or PAT, not the default `GITHUB_TOKEN`** — GitHub suppresses workflow runs triggered by a
+  `GITHUB_TOKEN` push, which would move the PR head while the authoritative `regenerate-docs` run
+  stayed attached to the superseded SHA, leaving the new head unchecked. A `.gitattributes` merge
+  driver is **not** a viable alternative and was considered and rejected: a custom driver runs only
+  where `merge.<driver>.driver` is configured locally, and GitHub's server-side merge inherits no
+  contributor configuration, so it would not run for the normal pull-request merge this item
+  exists to fix. Whichever design is chosen, document the single regeneration command next to the
+  check so a contributor who hits it need not reconstruct it from the workflow.
+  **Governance:** the implementation necessarily edits `.github/workflows/documentation.yml`,
+  including its `permissions` block. That is a protected governance file under
+  `.github/pull_request_template.md`, so the implementing pull request must declare the governance
+  change and carry explicit human approval. It is not an ordinary automation task, and this item
+  does not authorise treating it as one.
+  **Verify:** merge a branch that edits markdown inside the health dashboard's corpus into a branch
+  that edits different such markdown, and confirm `regenerate-docs` ends green on the final head
+  without a human running the profile. Assert the outcome — a clean dashboard matching the merged
+  tree, checked on the SHA that is actually merged — rather than the mechanism.
+  **Effort:** S to implement, but **gated**: governance review of the workflow change is the long
+  pole, not the code · **Sequence:** independent of the other W10 items; the sooner it lands, the
+  fewer merges pay the toll
 
 - [ ] **AR8-56 — Wire Polygon streaming credentials, or keep it unadvertised.**
   **Evidence:** `ProviderFeatureRegistration.Registry.cs:77-82` constructs `PolygonMarketDataClient`
