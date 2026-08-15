@@ -1676,6 +1676,55 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     }
 
     /// <summary>
+    /// Metadata is not the only caller-owned collection on a request. <c>Legs</c> is a list the
+    /// caller may still hold, and the fat-finger quantity limb multiplies by the largest leg ratio,
+    /// so a ratio raised while validation is awaiting would route more contracts than the ceiling
+    /// approved. Snapshotting one collection and not the other only moves the race.
+    /// </summary>
+    [Fact]
+    public async Task PlaceOrderAsync_WhenCallerMutatesLegsMidFlight_ValidatesAndRoutesOneOrder()
+    {
+        var callerLegs = new List<OrderLeg>
+        {
+            new() { Symbol = "AAPL_C1", Side = OrderSide.Buy, RatioQuantity = 1m }
+        };
+
+        IReadOnlyList<OrderLeg>? seenByRisk = null;
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                seenByRisk = call.Arg<OrderRequest>().Legs;
+                // The caller inflates the ratio while validation is in flight.
+                callerLegs[0] = new OrderLeg { Symbol = "AAPL_C1", Side = OrderSide.Buy, RatioQuantity = 1_000m };
+                return Task.FromResult(RiskValidationResult.Approved());
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-LEGS-RACE",
+            Legs = callerLegs
+        });
+
+        placed.Success.Should().BeTrue();
+        seenByRisk.Should().NotBeNull();
+        seenByRisk![0].RatioQuantity.Should().Be(
+            1m,
+            "risk must measure the legs as submitted, not as the caller later rewrote them");
+        seenByRisk.Should().NotBeSameAs(callerLegs);
+    }
+
+    /// <summary>
     /// An amendment that does not raise exposure must not be projected on top of the reservation it
     /// replaces. The snapshot still holds the working order at its original size, so handing the
     /// rules the full amended order reads an unchanged $1,000 sell as $2,000 and a $1,000 buy cut

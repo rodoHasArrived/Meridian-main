@@ -207,11 +207,20 @@ public sealed partial class OrderManagementSystem
                 LogSanitizer.Sanitize(request.Symbol));
         }
 
-        return safeRequest.Metadata is { } callerMetadata
+        // Metadata is not the only caller-owned collection on the request: Legs is a list the caller
+        // may still hold, and the fat-finger quantity limb multiplies by the largest leg ratio, so a
+        // ratio raised after validation routes more contracts than the ceiling approved. Both are
+        // copied here for the same reason and at the same moment — snapshotting one and not the
+        // other just moves the race.
+        return safeRequest with
+        {
             // Same construction the sizing stamp uses, so the request's key comparer and duplicate
             // handling survive: broker metadata readers have ordered alias rules of their own.
-            ? safeRequest with { Metadata = new Dictionary<string, string>(callerMetadata) }
-            : safeRequest;
+            Metadata = safeRequest.Metadata is { } callerMetadata
+                ? new Dictionary<string, string>(callerMetadata)
+                : safeRequest.Metadata,
+            Legs = safeRequest.Legs is { } callerLegs ? [.. callerLegs] : safeRequest.Legs
+        };
     }
 
     /// <summary>
