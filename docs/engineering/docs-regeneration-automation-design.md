@@ -1,9 +1,11 @@
 # Docs Regeneration Automation — Design Constraints
 
-Design constraints for automating the post-merge regeneration of generated documentation
-artifacts. This note is the detail behind roadmap item `AR8-57` in
+Design constraints for automating the regeneration of generated documentation artifacts. This note
+is the detail behind working-plan item `AR8-57` in
 [the 2026-08 adversarial review remediation plan](../product/adversarial-review-2026-08-remediation-plan.md);
 that item states the problem and points here for the constraints an implementation must satisfy.
+`AR8-57` is a plan-local identifier, not a roadmap registry row — there is no entry for it under
+`docs/roadmap/data/`, so do not cite it as roadmap truth.
 
 ## Why this needs a design step
 
@@ -52,7 +54,11 @@ reports them:
   tracked file that moves `repository-structure.md` never starts this workflow at all
   (constraint 3), and `verify-docs` does not run these generators, so stale output lands silently;
 - **merge-queue combinations** — two individually-clean pull requests whose combined tree is stale,
-  with no `merge_group` trigger to notice (constraint 7).
+  with no `merge_group` trigger to notice (constraint 7). Detection is not absent here, only late:
+  `documentation.yml` also triggers on pushes to `main` for the same paths (`:27-41`), so
+  `regenerate-docs` evaluates the merged tree once it has landed. That push failure is the natural
+  trigger and evidence for the follow-up repair pull request constraint 7 requires — model the
+  implementation and its verification on that event flow rather than inventing a new detector.
 
 An implementation that only automates the first case leaves these two; one that assumes the toll is
 post-merge will optimise for the wrong detection point.
