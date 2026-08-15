@@ -2,7 +2,7 @@
 
 **Status:** independent review input; not a governance or roadmap-status document
 **Owner:** review author (independent adversarial pass)
-**Reviewed:** 2026-08-11 at commit `01ad9aeb`; corrected 2026-08-15 after review of PR #2698
+**Reviewed:** 2026-08-11 at commit `01ad9aeb`; corrected 2026-08-15 across five review rounds on PR #2698
 **Scope:** whole-program review of Meridian's high-level functionality, focused on end-user value
 **Method:** source-evidence audit of the wired code paths. This checkout has no .NET SDK, so **no
 finding below was confirmed at runtime** — every claim is anchored to `file:line` and is a
@@ -11,12 +11,12 @@ This pass deliberately re-tests the [2026-07-21](adversarial-program-review-2026
 [2026-07-26](../../archive/docs/assessments/adversarial-program-review-2026-07-26.md) reviews before
 adding new findings, so remediated items are credited rather than re-litigated.
 
-> **Corrected three times, 2026-08-15, across three rounds of automated review on PR #2698.**
-> **Fifteen** claims were checked against source and found wrong, overstated, or unsupported — seven
-> in the first draft, four in the first correction, four in the second. All are rewritten below rather
-> than annotated.
+> **Corrected five times, 2026-08-15, across five rounds of automated review on PR #2698.**
+> **Nineteen** claims were checked against source and found wrong, overstated, unsupported, or
+> internally inconsistent — seven in the first draft, four in the first correction, four in the second,
+> one in the third (partly), three in the fourth. All are rewritten below rather than annotated.
 >
-> Four failure modes, recorded because they are what this review method does wrong:
+> Five failure modes, recorded because they are what this review method does wrong:
 >
 > 1. **Truncated searches read as exhaustive.** "Version-checked writes exist in exactly two
 >    subsystems" came from a `grep … | head -10`. The real count is 366.
@@ -30,6 +30,11 @@ adding new findings, so remediated items are credited rather than re-litigated.
 > 4. **Counting the wrong unit.** "Eleven call sites create spans" counted symbol occurrences, not
 >    span-producing calls (seven). "Exactly one route is versioned" counted a `MapGroup` call, not
 >    routes (seven), against a denominator counting `Map*` call sites. Both were quoted in the headline.
+>
+> 5. **Corrections left the document internally inconsistent.** Round five found a heading still
+>    asserting "no HTTP-level contract" after the body retracted it, and a priority-table effort
+>    estimate still at `S–M` after the detailed finding raised it to `M`. A reader skimming headings
+>    and tables would have taken away the retracted claims.
 >
 > Worth stating plainly: **the second round of errors repeated the first.** After documenting
 > "truncated searches read as exhaustive" as a root cause, the correction then counted version
@@ -48,7 +53,7 @@ unsupported last mile." Sixteen days on, **the first mile is genuinely fixed** �
 bundle is committed, the demo seeds six subsystems, paper fills cost money, and two institutional
 statement formats landed. The theme has moved again:
 
-> **Meridian's remaining gap is mostly the last mile of things already built.** After three rounds of
+> **Meridian's remaining gap is mostly the last mile of things already built.** After five rounds of
 > correction, this review found almost nothing missing outright. What it found is capability that is
 > present but unreachable or inconsistent: bulk reconciliation casework implemented end-to-end and
 > called by no screen; a tracing layer with seven span-producing sites and no registered provider;
@@ -115,7 +120,7 @@ The instrumentation cost is already being paid for no return.
 **Improvement:** call `AddOpenTelemetryTracing` from host composition and point it at the OTLP endpoint
 the config already models. **Value: medium. Effort: S** — the layer is written; this is a wiring fix.
 
-### N2. Concurrency control is real but uneven, and has no HTTP-level contract (medium)
+### N2. The 409 conflict contract differs in shape per route family (low–medium)
 
 **Corrected.** The first draft claimed version-checked writes existed in "exactly two subsystems."
 That was wrong — it came from a truncated search. `expectedVersion` appears **366 times** across
@@ -230,9 +235,18 @@ produced the error.
 1. **O(n) write amplification.** Every mutation re-serializes the whole collection, so cost grows with
    the data an engaged customer accumulates. This is a property of the design, not a defect, and it
    only matters above some volume this review did not establish — no benchmark was run.
-2. **Lease coverage across the other file-backed stores is unverified.** The break queue's
-   `FileShare.None` lease is the correct pattern; whether the others have an equivalent is unknown. A
-   store without one carries a genuine multi-process hazard.
+2. **Lease coverage across the other file-backed stores is inconsistent, and at least one store is
+   documented as single-process.** The break queue's `FileShare.None` lease is the correct pattern.
+   `JsonlFilePaperSessionStore` is the opposite case, and says so in its own summary: *"Exactly one
+   process may write a base directory; cross-process transactional locking is intentionally outside
+   this local-file store's contract"* — it serialises appends on a process-local `SemaphoreSlim` only.
+
+   That is a deliberate, documented design decision rather than an oversight, and it narrows the
+   question usefully: the issue is not whether each store locks, but **whether the single-writer
+   constraint some of them declare is actually enforced at deployment**. Nothing found in this review
+   asserts it — no startup check refuses to serve a declared single-writer store when more than one
+   host instance is configured. A documented constraint that nothing enforces is a runtime hazard
+   wearing a comment.
 
 *On the count.* Earlier drafts said "56 production classes." Enumerating the distinct class names
 matched by the pattern used (`class File*Store`, `class File*Repository`, `class Jsonl*`) gives **56
@@ -371,12 +385,12 @@ which is both the cheapest and the most reliable kind of change.
 
 | # | Improvement | Why it is high-value to the end user | Effort |
 | --- | --- | --- | --- |
-| 1 | **Wire the break-queue grid to the bulk rails that already exist** | Highest value-to-effort item in the review; batch work is why teams keep the spreadsheet, and the idempotent dry-run backend is built and tested | S–M |
+| 1 | **Wire the break-queue grid to the bulk rails that already exist** | Highest value-to-effort item in the review; batch work is why teams keep the spreadsheet, and the idempotent dry-run backend is built and tested. Includes deciding the >100-case path (see N5) | M |
 | 2 | **Agree the journal→transaction projection so imported transactions can match** | Balances and positions already reconcile; transaction rows all become breaks. Bounded modeling decision, not a rebuild | L |
 | 3 | **Fix the authorization sweep to post valid bodies, then re-derive the count** | The ratchet is a good primitive currently producing a number nobody should quote; today it conflates 400-on-bad-body with unguarded | S |
 | 4 | **Register the TracerProvider so the seven existing span sites emit** | Turns aggregate counters into per-request diagnosis across pipeline stages; the layer is written | S |
 | 5 | **Freeze a `/api/v1` surface for the routes external systems bind to** | The contract is already discoverable via Swagger; what is missing is a stability promise | M |
-| 6 | **Audit file stores for cross-process lease coverage** | The break queue's lease pattern is correct — standardize it, and find any store that lacks one | S |
+| 6 | **Audit file stores for lease coverage, and enforce declared single-writer constraints** | Locking is inconsistent by design: the break queue leases, `JsonlFilePaperSessionStore` documents itself as single-process. Nothing enforces the latter at startup | S |
 | 7 | **Standardize the 409 conflict contract across route families** | Concurrency control works; its request/response shape differs per family, so no generic client can handle conflicts once | S–M |
 | 8 | **Fail-closed tenancy and a hash-chained journal** | The two governance claims the brand rests on that are genuinely not yet true | L |
 
@@ -427,18 +441,23 @@ baseline-accuracy question on `W9-GOV-008`
 [#2633](https://github.com/rodoHasArrived/Meridian-main/issues/2633). Both carry follow-up comments
 correcting the same errors.
 
-**On the review method itself.** Across three rounds, automated review found **fifteen** wrong,
-overstated, or unsupported claims. No new finding survived entirely unchanged: N1 held in substance
+**On the review method itself.** Across five rounds, automated review found **nineteen** wrong,
+overstated, unsupported, or internally inconsistent claims. No new finding survived entirely unchanged: N1 held in substance
 but overcounted its evidence (eleven "instrumented sites" were seven span-producing calls); N5
 survived with its scope inverted from "missing" to "built but unwired," then had a 100-case backend
 cap added; N2 and N4 shrank to consistency and audit items; N3 lost its larger half and then its
 numerator. That record, not the findings, is the most useful output of this pass.
 
-A fourth failure mode joins the three above, visible only in the third round: **counting the wrong
-unit.** "Eleven call sites create spans" counted symbol occurrences, not span-producing calls.
+A fourth failure mode, visible only in the third round: **counting the wrong unit.** "Eleven call sites create spans" counted symbol occurrences, not span-producing calls.
 "Exactly one route is versioned" counted a `MapGroup` call, not routes, against a denominator that
 counted `Map*` call sites. Both numbers were quoted in the headline. A ratio is worth stating only
 when numerator and denominator are the same unit and both were counted deliberately.
+
+And a fifth, visible only in the fifth round: **the corrections themselves introduced inconsistency.**
+A heading kept asserting a claim its own body had retracted; a priority table kept an effort estimate
+the detailed finding had raised. Both are what a stakeholder skims. Rewriting a section is not
+finished until every heading, table row, and summary line that references it has been re-read — which
+is more work than the rewrite, and was skipped twice.
 
 Two conclusions follow. First, **a source-evidence review with no ability to build or run the system
 will over-produce absence claims**, because absence is the one thing a search can appear to prove and
