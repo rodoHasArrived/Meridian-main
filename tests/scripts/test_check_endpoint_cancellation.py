@@ -219,6 +219,98 @@ class TokenReachesTheAwaitTests(unittest.TestCase):
         self.assertEqual(len(found), 1)
 
 
+class BareCatchAllTests(unittest.TestCase):
+    """`catch { }` catches cancellation exactly like `catch (Exception)`."""
+
+    def test_bare_catch_all_is_detected(self):
+        found = scan(BARE_WITH_TOKEN.replace("catch (Exception ex)", "catch")
+                     .replace("return Results.BadRequest(new { error = ex.Message });",
+                              "return Results.BadRequest();"))
+        self.assertEqual(len(found), 1)
+
+    def test_bare_catch_all_on_its_own_line_is_detected(self):
+        found = scan(BARE_WITH_TOKEN.replace(
+            "            catch (Exception ex)\n            {\n"
+            "                return Results.BadRequest(new { error = ex.Message });\n",
+            "            catch\n            {\n                return Results.BadRequest();\n"))
+        self.assertEqual(len(found), 1)
+
+    def test_typed_non_generic_catch_is_not_a_catch_all(self):
+        """`catch (ArgumentException ex) { }` does not catch cancellation."""
+        found = scan(BARE_WITH_TOKEN.replace("catch (Exception ex)", "catch (ArgumentException ex)"))
+        self.assertEqual(found, [])
+
+    def test_bare_catch_after_a_guard_is_not_a_violation(self):
+        found = scan(BARE_WITH_TOKEN.replace(
+            "            catch (Exception ex)\n            {\n"
+            "                return Results.BadRequest(new { error = ex.Message });\n",
+            "            catch (OperationCanceledException) when (ct.IsCancellationRequested)\n"
+            "            {\n                throw;\n            }\n"
+            "            catch\n            {\n                return Results.BadRequest();\n"))
+        self.assertEqual(found, [])
+
+
+class GuardFilterTests(unittest.TestCase):
+    """An earlier OperationCanceledException clause only guards if its filter holds on abort."""
+
+    def _with_guard(self, guard_clause: str) -> list:
+        return scan(BARE_WITH_TOKEN.replace(
+            "            catch (Exception ex)",
+            f"            {guard_clause}\n"
+            "            {\n"
+            "                return Results.StatusCode(499);\n"
+            "            }\n"
+            "            catch (Exception ex)",
+        ))
+
+    def test_positive_is_cancellation_requested_filter_guards(self):
+        self.assertEqual(
+            self._with_guard("catch (OperationCanceledException) when (ct.IsCancellationRequested)"), [])
+
+    def test_unfiltered_guard_guards(self):
+        self.assertEqual(self._with_guard("catch (OperationCanceledException)"), [])
+
+    def test_negated_filter_does_not_guard(self):
+        """`when (!ct.IsCancellationRequested)` is false exactly when the caller hung up, so the
+        cancellation falls through to the generic catch."""
+        self.assertEqual(
+            len(self._with_guard("catch (OperationCanceledException) when (!ct.IsCancellationRequested)")), 1)
+
+    def test_opaque_filter_does_not_guard(self):
+        self.assertEqual(
+            len(self._with_guard("catch (OperationCanceledException) when (ShouldRethrow(ex))")), 1)
+
+
+class ExplicitCancellationCheckTests(unittest.TestCase):
+    def test_throw_if_cancellation_requested_is_a_cancellation_source(self):
+        """The token need not reach an awaited call: an explicit check throws on its own."""
+        found = scan(BARE_WITH_TOKEN.replace(
+            "                var result = await service.RunAsync(request, ct);",
+            "                ct.ThrowIfCancellationRequested();\n"
+            "                var result = await service.RunAsync(request);"))
+        self.assertEqual(len(found), 1)
+
+
+class RawStringLiteralTests(unittest.TestCase):
+    def test_quote_inside_a_raw_literal_does_not_hide_a_later_catch(self):
+        """Scanning a raw literal as ordinary strings desyncs on an embedded quote and can
+        swallow the following source — including the catch chain — as string content."""
+        found = scan(BARE_WITH_TOKEN.replace(
+            "                var result = await service.RunAsync(request, ct);",
+            '                var note = """a " quoted " raw literal""";\n'
+            "                var result = await service.RunAsync(request, ct);"))
+        self.assertEqual(len(found), 1)
+
+    def test_catch_written_inside_a_raw_literal_is_not_a_violation(self):
+        found = scan(BARE_WITH_TOKEN.replace(
+            "catch (Exception ex)", "catch (Exception ex) when (ex is ArgumentException)"
+        ).replace(
+            "                var result = await service.RunAsync(request, ct);",
+            '                var sample = """try { } catch (Exception e) { }""";\n'
+            "                var result = await service.RunAsync(request, ct);"))
+        self.assertEqual(found, [])
+
+
 class ScanScopeTests(unittest.TestCase):
     def test_missing_scan_directory_is_an_error(self):
         """Silently scanning zero files would disable the gate exactly when scope drifts."""

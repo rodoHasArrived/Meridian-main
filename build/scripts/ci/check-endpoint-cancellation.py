@@ -45,13 +45,21 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_SCAN_DIRS = ("src/Meridian.Ui.Shared/Endpoints",)
 
-# A `catch (Exception ...)` clause plus its optional `when (...)` filter. The type may be
-# written qualified — `catch (System.Exception ex)` swallows cancellation exactly like the
-# unqualified spelling. The inner alternation lets a filter contain one level of nested
-# parentheses, which covers the `when (ex is A or B)` and `when (Foo(ex))` shapes.
-CATCH_EXCEPTION = re.compile(
-    r"catch\s*\(\s*(?:global::)?(?:System\.)?Exception\b[^()]*\)"
+# Opening delimiter of a C# raw string literal: three or more quotes, optionally interpolated.
+RAW_STRING_OPEN = re.compile(r'\$*(?P<quotes>"{3,})')
+
+# A catch clause that receives every exception type. Three spellings do that:
+#   catch (Exception ex)          the common form
+#   catch (System.Exception ex)   qualified — identical behaviour
+#   catch { }                     a bare catch-all, which also catches cancellation
+# The optional type group only matches `Exception` itself, so `catch (ArgumentException ex)`
+# and `catch (OperationCanceledException)` fall through without matching. Requiring the
+# opening brace is what keeps the bare form from matching a typed clause.
+CATCH_ALL = re.compile(
+    r"\bcatch"
+    r"(?:\s*\(\s*(?:global::)?(?:System\.)?Exception\b[^()]*\))?"
     r"(?:\s*when\s*\((?P<filter>[^()]*(?:\([^()]*\)[^()]*)*)\))?"
+    r"\s*\{"
 )
 
 # The clause that opens the block immediately preceding a catch, used to walk a
@@ -76,11 +84,31 @@ TOKEN_ARGUMENT = re.compile(
     re.IGNORECASE,
 )
 
-# `catch (TaskCanceledException)` is deliberately absent: it derives from
-# OperationCanceledException, so it cannot catch the base type that
-# ct.ThrowIfCancellationRequested() throws, and treating it as a guard would wave through a
-# handler that still swallows a disconnect.
-CANCELLATION_GUARD = re.compile(r"\bcatch\s*\(\s*(?:global::)?(?:System\.)?OperationCanceledException\b")
+# An earlier clause in the chain that catches cancellation. `catch (TaskCanceledException)` is
+# deliberately not accepted: it derives from OperationCanceledException, so it cannot catch the
+# base type that ct.ThrowIfCancellationRequested() throws, and treating it as a guard would
+# wave through a handler that still swallows a disconnect.
+CANCELLATION_GUARD = re.compile(
+    r"\bcatch\s*\(\s*(?:global::)?(?:System\.)?OperationCanceledException\b[^()]*\)"
+    r"(?:\s*when\s*\((?P<filter>[^()]*(?:\([^()]*\)[^()]*)*)\))?"
+)
+# A guard clause only guards if its own filter is true for an aborted request. An unfiltered
+# clause always is; `when (ct.IsCancellationRequested)` is the repo's idiom and is; a negated
+# or opaque filter is not, and then cancellation falls through to the generic handler.
+GUARD_FILTER_HOLDS = re.compile(r"^\s*[\w.]*\bIsCancellationRequested\s*$")
+
+# An explicit check is its own cancellation source: it throws straight into the generic catch
+# even when no awaited call in the body takes a token.
+EXPLICIT_THROW_IF_CANCELLED = re.compile(r"\bThrowIfCancellationRequested\s*\(")
+
+
+def chain_guards_cancellation(chain: str) -> bool:
+    """True when some earlier clause in the chain actually handles an aborted request."""
+    for match in CANCELLATION_GUARD.finditer(chain):
+        filter_text = match.group("filter")
+        if filter_text is None or GUARD_FILTER_HOLDS.match(filter_text):
+            return True
+    return False
 
 # Three filter shapes provably keep a client disconnect out of the generic handler:
 #   ex is not OperationCanceledException          — excludes the type outright
@@ -165,6 +193,18 @@ def blank_literals(text: str) -> str:
         elif text.startswith("/*", i):
             end = text.find("*/", i)
             end = n if end < 0 else end + 2
+            out.append(re.sub(r"[^\n]", " ", text[i:end]))
+            i = end
+        elif (match := RAW_STRING_OPEN.match(text, i)) is not None:
+            # A C# raw literal is delimited by a run of three or more quotes and closed by a
+            # run of at least that many. Scanning it as ordinary strings desyncs on an
+            # embedded quote, which can swallow the following source — including a real catch
+            # chain — as string content, hiding a handler from the scan entirely.
+            fence = match.group("quotes")
+            end = text.find(fence, match.end())
+            while end != -1 and text[end:end + len(fence) + 1] == fence + '"':
+                end = text.find(fence, end + 1)  # a longer run is content, not the terminator
+            end = len(text) if end == -1 else end + len(fence)
             out.append(re.sub(r"[^\n]", " ", text[i:end]))
             i = end
         elif text.startswith('@"', i) or text.startswith('$@"', i) or text.startswith('@$"', i):
@@ -270,7 +310,7 @@ def find_violations(root: Path, scan_dirs: tuple[str, ...] = DEFAULT_SCAN_DIRS) 
                 continue
             raw = path.read_text(encoding="utf-8")
             code = blank_literals(raw)
-            for match in CATCH_EXCEPTION.finditer(code):
+            for match in CATCH_ALL.finditer(code):
                 filter_text = match.group("filter")
                 if filter_text and filter_excludes_cancellation(filter_text):
                     continue  # the filter provably cannot admit a cancellation
@@ -278,12 +318,16 @@ def find_violations(root: Path, scan_dirs: tuple[str, ...] = DEFAULT_SCAN_DIRS) 
                 if walked is None:
                     continue
                 try_index, chain = walked
-                if CANCELLATION_GUARD.search(chain):
+                if chain_guards_cancellation(chain):
                     continue  # an earlier clause in the chain already handles it
                 body_open = code.find("{", try_index)
                 body = code[body_open:matching_close(code, body_open)]
-                if not any(TOKEN_ARGUMENT.search(call) for call in awaited_calls(body)):
-                    continue  # no token reaches an awaited call, so no disconnect can land here
+                reachable = (
+                    EXPLICIT_THROW_IF_CANCELLED.search(body) is not None
+                    or any(TOKEN_ARGUMENT.search(call) for call in awaited_calls(body))
+                )
+                if not reachable:
+                    continue  # no cancellation can land here, so the catch cannot swallow one
                 line = raw.count("\n", 0, match.start()) + 1
                 violations.append((str(path.relative_to(root)), line))
     return violations
