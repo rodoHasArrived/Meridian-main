@@ -117,8 +117,14 @@ def streaming_source_ids() -> frozenset[str]:
 CATALOG_ALIASES = {"ib": "ibkr"}
 
 
-def backfill_activation() -> dict[str, str]:
-    """Map each backfill family to the activation rule its factory actually applies.
+def _backfill_factory_bodies() -> dict[str, str]:
+    """Return each backfill factory's member body, keyed by folded family name.
+
+    Shared by the activation and credential-gating readers so the member-shape parsing —
+    braced bodies and expression-bodied ``=> CreateKeyedProvider(...)`` alike — lives in one
+    place rather than being duplicated and drifting.
+
+    Historic note on why the rule is read rather than assumed:
 
     ``ProviderFactory`` has two, and they invert each other for an unset value:
 
@@ -133,12 +139,12 @@ def backfill_activation() -> dict[str, str]:
     that matches neither helper (TwelveData passes a hardcoded ``enabled: true``) is deliberately
     left out of the map so the caller stays silent rather than guessing.
     """
+    bodies: dict[str, str] = {}
     try:
         text = PROVIDER_FACTORY_SOURCE.read_text(encoding="utf-8")
     except OSError:
-        return {}
+        return bodies
 
-    activation: dict[str, str] = {}
     for match in re.finditer(
         r"private\s+IHistoricalDataProvider\?\s+Create(\w+)BackfillProvider\s*\(", text
     ):
@@ -174,11 +180,43 @@ def backfill_activation() -> dict[str, str]:
         else:
             continue
 
+        bodies[match.group(1).casefold()] = body
+    return bodies
+
+
+def backfill_activation() -> dict[str, str]:
+    """Map each backfill family to the activation rule its factory applies."""
+    activation: dict[str, str] = {}
+    for family, body in _backfill_factory_bodies().items():
         if "EnabledWhenOptedIn" in body:
-            activation[match.group(1).casefold()] = "opt-in"
+            activation[family] = "opt-in"
         elif "EnabledByDefault" in body:
-            activation[match.group(1).casefold()] = "default-on"
+            activation[family] = "default-on"
     return activation
+
+
+def credential_gated_families() -> frozenset[str]:
+    """Families whose backfill factory resolves through the credential-gated helper.
+
+    ``CreateCredentialGatedBackfillProvider`` returns null when its named credential is absent
+    from both config and environment, so passing the ``Enabled`` check is not sufficient for
+    these. The sample is required to be credential-free — this guard rejects secret-shaped keys
+    outright — so a historical default pointing at one of them can never register a provider from
+    the sample alone, however its ``Enabled`` flag reads.
+
+    Two shapes carry the same meaning and both must be matched. Most families delegate to the
+    helper, but Alpaca resolves credentials inline and returns null on a blank key:
+
+    ``if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey)) return null;``
+
+    Matching only the helper name would call Alpaca credential-free and let exactly the default
+    this check exists to reject pass.
+    """
+    return frozenset(
+        family
+        for family, body in _backfill_factory_bodies().items()
+        if "CreateCredentialGated" in body or "CreateCredentialContext" in body
+    )
 
 
 def historical_capable_families() -> frozenset[str]:
@@ -632,6 +670,21 @@ def main() -> int:
         # started this. When the rule cannot be read, no verdict is issued.
         enabled = gate.get("Enabled") if isinstance(gate, dict) else None
         activation = backfill_activation().get(name.casefold())
+
+        # Enabled is necessary but not sufficient. A credential-gated factory returns null when
+        # its key is absent, and this sample must never carry one — the secret-key scan below
+        # rejects exactly that. So an out-of-box historical default has to name a provider that
+        # registers without credentials; anything else synthesizes a binding with nothing behind
+        # it for every operator who has not yet exported a key.
+        if name.casefold() in credential_gated_families():
+            errors.append(
+                f"DataSources.{field} = {default_id!r} resolves to {name}, whose backfill factory "
+                f"returns null when its credentials are absent. This sample is required to be "
+                f"credential-free, so the synthesized historical binding would have no registered "
+                f"provider for a fresh checkout. Point the out-of-box default at a provider that "
+                f"registers without credentials."
+            )
+            continue
 
         if enabled is False:
             errors.append(

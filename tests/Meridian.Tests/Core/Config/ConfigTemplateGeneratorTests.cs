@@ -34,6 +34,24 @@ public sealed class ConfigTemplateGeneratorTests
     }
 
     [Fact]
+    public void GenerateDocker_EmitsAnEnabledSyntheticSectionForItsOwnDefault()
+    {
+        // The template selects DataSource: Synthetic so a container starts without keys, but it
+        // emitted no Synthetic section. DryRunService.ValidateProvidersAsync asserts exactly
+        // `config.Synthetic?.Enabled == true` and reports "Synthetic dataset disabled" otherwise,
+        // so generating this template and running the documented --dry-run failed out of the box
+        // even though SyntheticMarketDataClient treats a null config as enabled. This pins the
+        // validator's predicate, not the client's leniency.
+        var template = new ConfigTemplateGenerator().GenerateDocker();
+        var config = JsonSerializer.Deserialize<AppConfig>(template.Json, AppConfigJsonOptions.Read);
+
+        config.Should().NotBeNull();
+        config!.DataSource.Should().Be(DataSourceKind.Synthetic);
+        (config.Synthetic?.Enabled == true).Should().BeTrue(
+            "DryRunService gates the Synthetic provider check on this exact expression");
+    }
+
+    [Fact]
     public void GenerateDocker_EmitsParseableLiteralsForValidatedFields()
     {
         var template = new ConfigTemplateGenerator().GenerateDocker();
