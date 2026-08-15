@@ -376,6 +376,52 @@ class ExplicitThrowTests(unittest.TestCase):
         self.assertEqual(len(found), 1)
 
 
+class TokenPropertyTests(unittest.TestCase):
+    """A `.Token` property is a cancellation token only when its source says so."""
+
+    def test_unrelated_token_property_is_not_cancellation(self):
+        found = scan(BARE_WITH_TOKEN
+                     .replace("async (Service service, CancellationToken ct)",
+                              "async (Service service, Session session)")
+                     .replace("service.RunAsync(request, ct)", "service.RunAsync(request, session.Token)"))
+        self.assertEqual(found, [])
+
+    def test_cancellation_token_source_token_is_cancellation(self):
+        found = scan(BARE_WITH_TOKEN
+                     .replace("async (Service service, CancellationToken ct)", "async (Service service)")
+                     .replace("                var result = await service.RunAsync(request, ct);",
+                              "                var linked = new CancellationTokenSource();\n"
+                              "                var result = await service.RunAsync(request, linked.Token);"))
+        self.assertEqual(len(found), 1)
+
+    def test_var_alias_of_the_request_token_is_followed(self):
+        found = scan(BARE_WITH_TOKEN
+                     .replace("async (Service service, CancellationToken ct)",
+                              "async (Service service, HttpContext context)")
+                     .replace("                var result = await service.RunAsync(request, ct);",
+                              "                var requestToken = context.RequestAborted;\n"
+                              "                var result = await service.RunAsync(request, requestToken);"))
+        self.assertEqual(len(found), 1)
+
+
+class DeferredCallbackTests(unittest.TestCase):
+    def test_cancellation_check_inside_a_lambda_is_not_reachable(self):
+        """The callback runs later, outside this catch, so crediting it would report a
+        handler that cannot actually swallow a disconnect."""
+        found = scan(BARE_WITH_TOKEN.replace(
+            "                var result = await service.RunAsync(request, ct);",
+            "                service.Register(() => ct.ThrowIfCancellationRequested());\n"
+            "                var result = await service.RunAsync(request);"))
+        self.assertEqual(found, [])
+
+    def test_inline_cancellation_check_is_still_reachable(self):
+        found = scan(BARE_WITH_TOKEN.replace(
+            "                var result = await service.RunAsync(request, ct);",
+            "                ct.ThrowIfCancellationRequested();\n"
+            "                var result = await service.RunAsync(request);"))
+        self.assertEqual(len(found), 1)
+
+
 class ScanScopeTests(unittest.TestCase):
     def test_missing_scan_directory_is_an_error(self):
         """Silently scanning zero files would disable the gate exactly when scope drifts."""

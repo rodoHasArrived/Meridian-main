@@ -81,18 +81,35 @@ CHAIN_CLAUSE = re.compile(
 # anticipate it — and, just as importantly, without matching an `authToken` or `accessToken`
 # that has nothing to do with cancellation.
 TOKEN_DECLARATION = re.compile(r"\bCancellationToken\s+(?P<name>\w+)")
-
-# Token expressions that are not plain parameter names.
-TOKEN_EXPRESSIONS = (
-    r"[\w.]*\bRequestAborted\b",   # context.RequestAborted
-    r"[\w.]*\bToken\b",            # cts.Token, linkedCts.Token
+# A CancellationTokenSource, so that `thatSource.Token` is known to be a token while an
+# unrelated `session.Token` — an auth or continuation token — is not.
+TOKEN_SOURCE_DECLARATION = re.compile(
+    r"\bCancellationTokenSource\s+(?P<name>\w+)"
+    r"|\bvar\s+(?P<inferred>\w+)\s*=\s*(?:new\s+)?CancellationTokenSource\b"
 )
+# `var alias = context.RequestAborted;` — an inferred alias carries the request token onward.
+TOKEN_ALIAS = re.compile(r"\bvar\s+(?P<name>\w+)\s*=\s*[\w.]*\b(?:RequestAborted|Token)\s*;")
+
+# Token expressions that are not plain identifiers.
+TOKEN_EXPRESSIONS = (r"[\w.]*\bRequestAborted\b",)
 
 
 def token_argument_pattern(source: str) -> re.Pattern:
-    """A matcher for "a cancellation token appears as an argument", specific to this file."""
-    names = {match.group("name") for match in TOKEN_DECLARATION.finditer(source)}
-    alternatives = [re.escape(name) for name in sorted(names)] + list(TOKEN_EXPRESSIONS)
+    """A matcher for "a cancellation token appears as an argument", specific to this file.
+
+    Names are harvested rather than guessed, in both directions: an unusual parameter name is
+    recognised, and a `.Token` property is only a cancellation token when it hangs off a
+    declared CancellationTokenSource — otherwise `await auth.RefreshAsync(session.Token)`
+    would be reported as a cancellation path and block valid code.
+    """
+    names = {m.group("name") for m in TOKEN_DECLARATION.finditer(source)}
+    names |= {m.group("name") for m in TOKEN_ALIAS.finditer(source)}
+    sources = {
+        m.group("name") or m.group("inferred") for m in TOKEN_SOURCE_DECLARATION.finditer(source)
+    }
+    alternatives = [re.escape(n) for n in sorted(names)]
+    alternatives += [rf"{re.escape(s)}\.Token" for s in sorted(sources)]
+    alternatives += list(TOKEN_EXPRESSIONS)
     body = "|".join(alternatives)
     # Positional (`, ct)`) or named (`cancellationToken: ct`).
     return re.compile(rf"(?:^|[(,]\s*)(?:\w+\s*:\s*)?(?:{body})\s*[,)]")
@@ -117,6 +134,20 @@ EXPLICIT_CANCELLATION = re.compile(
     r"\bThrowIfCancellationRequested\s*\("
     r"|\bthrow\s+new\s+(?:global::)?(?:System\.)?(?:Operation|Task)CanceledException\b"
 )
+
+
+def throws_cancellation_inline(body: str) -> bool:
+    """True when the try body itself throws cancellation, ignoring deferred callbacks.
+
+    `service.Register(() => ct.ThrowIfCancellationRequested());` runs later, outside this
+    catch, so crediting it would report a handler that cannot actually swallow a disconnect.
+    A `=>` between the start of the statement and the throw marks it as deferred.
+    """
+    for match in EXPLICIT_CANCELLATION.finditer(body):
+        statement_start = max(body.rfind(";", 0, match.start()), body.rfind("{", 0, match.start()))
+        if "=>" not in body[statement_start + 1:match.start()]:
+            return True
+    return False
 
 
 def chain_guards_cancellation(chain: str) -> bool:
@@ -345,7 +376,7 @@ def find_violations(root: Path, scan_dirs: tuple[str, ...] = DEFAULT_SCAN_DIRS) 
                 body_open = code.find("{", try_index)
                 body = code[body_open:matching_close(code, body_open)]
                 reachable = (
-                    EXPLICIT_CANCELLATION.search(body) is not None
+                    throws_cancellation_inline(body)
                     or any(token_argument.search(call) for call in awaited_calls(body))
                 )
                 if not reachable:
