@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Text;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
@@ -1248,7 +1249,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
             StatementReconciliationReportWorkflowStatusDto.InputRetained,
             Version: 1,
             command.TenantId.Trim(),
-            Normalize(command.CompanyId),
+            TextPrimitives.NormalizeOptional(command.CompanyId),
             command.Import.SourceInstitution.Trim(),
             command.Import.FundAccountId.Trim(),
             command.Import.ExternalAccountId.Trim(),
@@ -1465,7 +1466,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
         var contentHash = Convert.ToHexString(SHA256.HashData(command.Import.Document.Content.Span));
         var identity = string.Join('|',
             command.TenantId.Trim(),
-            Normalize(command.CompanyId),
+            TextPrimitives.NormalizeOptional(command.CompanyId),
             CanonicalizeSemanticIdentity(command.Import.SourceInstitution),
             CanonicalizeSemanticIdentity(command.Import.FundAccountId),
             CanonicalizeSemanticIdentity(command.Import.ExternalAccountId),
@@ -1603,7 +1604,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
     private static void EnsureScopeMatches(WorkflowSnapshot snapshot, string tenantId, string? companyId)
     {
         if (!string.Equals(snapshot.Workflow.TenantId, tenantId.Trim(), StringComparison.Ordinal)
-            || !string.Equals(snapshot.Workflow.CompanyId, Normalize(companyId), StringComparison.Ordinal))
+            || !string.Equals(snapshot.Workflow.CompanyId, TextPrimitives.NormalizeOptional(companyId), StringComparison.Ordinal))
             throw new UnauthorizedAccessException("Statement reconciliation report workflow belongs to another tenant or company scope.");
     }
 
@@ -1735,11 +1736,8 @@ public sealed partial class StatementReconciliationReportWorkflowService
            && retained.AccountingPeriodId == expected.AccountingPeriodId
            && retained.AsOfDate == expected.AsOfDate;
 
-    private static string? Normalize(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private static string? CanonicalizeSemanticIdentity(string? value)
-        => Normalize(value)?.ToUpperInvariant();
+        => TextPrimitives.NormalizeOptional(value)?.ToUpperInvariant();
 
     private static bool SemanticIdentityEquals(string? left, string? right)
         => string.Equals(

@@ -1,4 +1,5 @@
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Text;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -34,7 +35,7 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
     {
         ct.ThrowIfCancellationRequested();
 
-        var normalizedFundEventId = Normalize(fundEventId);
+        var normalizedFundEventId = TextPrimitives.NormalizeOptional(fundEventId);
         if (normalizedFundEventId is null)
         {
             return null;
@@ -414,13 +415,10 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
             isReady ? "Ready" : "ReviewRequired",
             isReady,
             summary,
-            Normalize(route),
+            TextPrimitives.NormalizeOptional(route),
             evidenceLinks.Count,
             evidenceLinks,
             isReady ? [] : [requiredAction]);
-
-    private static string? Normalize(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static bool Matches(string? value, string? expected)
         => !string.IsNullOrWhiteSpace(value) &&

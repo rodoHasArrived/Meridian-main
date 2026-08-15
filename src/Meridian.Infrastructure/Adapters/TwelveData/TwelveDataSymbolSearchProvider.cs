@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Text;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
@@ -101,9 +102,9 @@ public sealed class TwelveDataSymbolSearchProvider : BaseSymbolSearchProvider
                     Symbol: symbol,
                     Name: name,
                     Exchange: exchange,
-                    AssetType: Normalize(match.InstrumentType),
+                    AssetType: TextPrimitives.NormalizeOptional(match.InstrumentType),
                     Country: MapCountry(match.Country),
-                    Currency: Normalize(match.Currency),
+                    Currency: TextPrimitives.NormalizeOptional(match.Currency),
                     Source: Name,
                     MatchScore: CalculateMatchScore(query, symbol, name, index));
             });
@@ -142,12 +143,9 @@ public sealed class TwelveDataSymbolSearchProvider : BaseSymbolSearchProvider
     private static string? FirstNonBlank(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
 
-    private static string? Normalize(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private static string? MapCountry(string? country)
     {
-        var normalized = Normalize(country);
+        var normalized = TextPrimitives.NormalizeOptional(country);
         if (normalized is null)
         {
             return null;
