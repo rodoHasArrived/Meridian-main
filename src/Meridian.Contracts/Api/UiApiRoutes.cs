@@ -579,6 +579,10 @@ public static class UiApiRoutes
     public const string ExecutionOrderById = "/api/execution/orders/{orderId}";
     public const string ExecutionOrderSubmit = "/api/execution/orders/submit";
     public const string ExecutionOrderCancel = "/api/execution/orders/{orderId}/cancel";
+    // Mapped on the execution group but absent from this catalogue until now, so a
+    // route-constant search for the kill switch's cancel-all found nothing and every
+    // client following the house pattern had nothing to reference.
+    public const string ExecutionOrdersCancelAll = "/api/execution/orders/cancel-all";
     public const string ExecutionPositionActionClose = "/api/execution/positions/actions/close";
     public const string ExecutionPositionActionUpsize = "/api/execution/positions/actions/upsize";
     public const string ExecutionPortfolio = "/api/execution/portfolio";
