@@ -570,7 +570,7 @@ public sealed class ExecutionOperatorControlService
             return false;
         }
 
-        var held = ResolveHeldQuantity(position, request.FundAccountId);
+        var held = ResolveOwnedQuantity(position, request.FundAccountId);
         if (held == 0m)
         {
             return false;
@@ -622,7 +622,7 @@ public sealed class ExecutionOperatorControlService
     /// number that would be wrong.
     /// </para>
     /// </summary>
-    private static decimal ResolveHeldQuantity(IPosition position, Guid? fundAccountId)
+    internal static decimal ResolveOwnedQuantity(IPosition position, Guid? fundAccountId)
     {
         // Unrounded, for the reason the position-limit gate gives: a fractional holding rounded to
         // zero would read as flat and refuse a legitimate close.

@@ -519,7 +519,9 @@ public static class ExecutionEndpoints
             // book emptied or orders were still working, and could only discover the difference by
             // separately querying the audit trail.
             return Results.Json(
-                sweepOutcome is null ? snapshot : new ExecutionCircuitBreakerActivationResponse(snapshot, sweepOutcome),
+                sweepOutcome is null
+                    ? snapshot
+                    : (object)ExecutionCircuitBreakerActivationResponse.From(snapshot, sweepOutcome),
                 jsonOptions);
         })
         .WithName("UpdateExecutionCircuitBreaker")
@@ -1835,10 +1837,34 @@ public sealed record CreatePaperSessionRequest(
 /// Circuit-breaker activation result: the control state, plus what the coupled kill-switch sweep
 /// achieved. The two travel together so opening the breaker cannot report success over a book that
 /// still has working orders.
+/// <para>
+/// The snapshot's members are repeated at the top level rather than nested under a wrapper
+/// property, so every existing consumer of this route — the browser workstation and the WPF halt
+/// client among them — keeps deserializing the shape it already expects and simply ignores the
+/// added sweep. Nesting them would have reported "Stop did not take effect" on a breaker the server
+/// had just opened.
+/// </para>
 /// </summary>
 public sealed record ExecutionCircuitBreakerActivationResponse(
-    ExecutionControlSnapshot Controls,
-    KillSwitchSweepResult Sweep);
+    ExecutionCircuitBreakerState CircuitBreaker,
+    decimal? DefaultMaxPositionSize,
+    IReadOnlyDictionary<string, decimal> SymbolPositionLimits,
+    IReadOnlyList<ExecutionManualOverride> ManualOverrides,
+    DateTimeOffset AsOf,
+    long Version,
+    KillSwitchSweepResult Sweep)
+{
+    public static ExecutionCircuitBreakerActivationResponse From(
+        ExecutionControlSnapshot snapshot,
+        KillSwitchSweepResult sweep) => new(
+            snapshot.CircuitBreaker,
+            snapshot.DefaultMaxPositionSize,
+            snapshot.SymbolPositionLimits,
+            snapshot.ManualOverrides,
+            snapshot.AsOf,
+            snapshot.Version,
+            sweep);
+}
 
 public sealed record TradingActionResult(
     string ActionId,
