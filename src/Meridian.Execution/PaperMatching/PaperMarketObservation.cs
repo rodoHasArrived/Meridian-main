@@ -92,20 +92,26 @@ public readonly record struct PaperMarketObservation
             return default;
         }
 
+        // One coherent snapshot rather than paired independent reads: reading quote and trade
+        // separately let a capture racing a market update observe the quote from before the
+        // update and the trade from after it, producing a fill envelope that was never in
+        // effect (#2676).
+        var snapshot = feed.GetSnapshot(symbol);
+
         decimal? bid = null;
         decimal? ask = null;
-        if (feed.GetLastQuote(symbol) is { } quote)
+        if (snapshot.Quote is { } quote)
         {
             bid = Positive(quote.BidPrice);
             ask = Positive(quote.AskPrice);
         }
 
-        decimal? lastTrade = feed.GetLastTrade(symbol) is { } trade ? Positive(trade.Price) : null;
+        decimal? lastTrade = snapshot.Trade is { } trade ? Positive(trade.Price) : null;
 
         decimal? barLow = null;
         decimal? barHigh = null;
         decimal? barClose = null;
-        if (feed.GetLastBar(symbol) is { } bar)
+        if (snapshot.Bar is { } bar)
         {
             barLow = Positive(bar.Low);
             barHigh = Positive(bar.High);
