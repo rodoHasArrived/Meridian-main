@@ -59,11 +59,11 @@ DOC_FILE_EXTENSIONS: Tuple[str, ...] = (".md",)
 # documentation. An earlier revision excluded that subtree: 41 files left the corpus and 763
 # genuinely documented types were marked as gaps. It is reference material and belongs here.
 #
-# The two self-referential reports below stay excluded regardless. Neither is reachable under the
-# current allowlist, but the guard is kept so widening the allowlist cannot silently reintroduce
-# them: repository-structure.md lists every path in the repository, so a type would count as
-# documented purely because its own source file exists, and documentation-coverage.md is this
-# generator's own output, so a type would count by being reported as undocumented.
+# The self-referential exclusions below stay regardless. Neither is reachable under the current
+# allowlist, but the guard is kept so widening the allowlist cannot silently reintroduce them:
+# repository-structure.md lists every path in the repository, so a type would count as documented
+# purely because its own source file exists, and docs/status/ holds this generator's own report
+# (docs/status/coverage-report.md), so a type would count by being reported as undocumented.
 DOC_CONTENT_INCLUDE_PREFIXES: Tuple[str, ...] = (
     "docs/reference/",
     "docs/generated/database/",
@@ -71,7 +71,6 @@ DOC_CONTENT_INCLUDE_PREFIXES: Tuple[str, ...] = (
 
 DOC_CONTENT_EXCLUDE_PREFIXES: Tuple[str, ...] = (
     "docs/status/",
-    "docs/generated/documentation-coverage.md",
     "docs/generated/repository-structure.md",
 )
 
@@ -1091,6 +1090,26 @@ def build_report(root: Path) -> CoverageReport:
     return report
 
 
+AUTO_SYNC_COVERAGE_MARKER = "<!-- auto-sync:coverage -->"
+
+
+def _preserved_auto_sync_section(output: Path) -> str:
+    """The nightly test-coverage summary section, carried over from the existing report.
+
+    scripts/update_coverage_report.py appends a marker section with the latest nightly line
+    coverage to the same file this generator writes. Regenerating the documentation-coverage
+    report must not silently delete that reading — the two metrics share one status doc.
+    """
+    try:
+        existing = output.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    index = existing.find(AUTO_SYNC_COVERAGE_MARKER)
+    if index == -1:
+        return ""
+    return "\n" + existing[index:].rstrip() + "\n"
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     """Entry point for the documentation coverage generator."""
     parser = argparse.ArgumentParser(
@@ -1108,7 +1127,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         type=Path,
         default=None,
         help="Path to write the Markdown coverage report. "
-        "Defaults to docs/generated/documentation-coverage.md.",
+        "Defaults to docs/status/coverage-report.md, the copy the docs automation maintains.",
     )
     parser.add_argument(
         "--summary",
@@ -1124,10 +1143,13 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"Error: root directory does not exist: {root}", file=sys.stderr)
         return 1
 
+    # The default matches the path run-docs-automation.py passes explicitly, so a bare CLI run and
+    # the pipeline maintain the same report. The old default, docs/generated/documentation-coverage.md,
+    # was a second tracked copy nothing regenerated, which let it drift into contradiction (#2713).
     output: Path = (
         args.output
         if args.output is not None
-        else root / "docs" / "generated" / "documentation-coverage.md"
+        else root / "docs" / "status" / "coverage-report.md"
     )
 
     try:
@@ -1140,6 +1162,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     md = generate_markdown(report)
     try:
         output.parent.mkdir(parents=True, exist_ok=True)
+        md += _preserved_auto_sync_section(output)
         output.write_text(md, encoding="utf-8")
         print(f"Coverage report written to {output}")
     except OSError as exc:

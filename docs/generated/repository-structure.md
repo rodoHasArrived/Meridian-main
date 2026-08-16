@@ -1721,6 +1721,7 @@ Meridian-main
 │   │   ├── production-certification-evidence-chain.md
 │   │   ├── production-readiness-audit-2026-07-27.md
 │   │   ├── README.md
+│   │   ├── security-master-architecture-audit-2026-08-13.md
 │   │   └── wpf-perf-uiux-audit-2026-06-14.md
 │   ├── examples
 │   │   ├── agent-improvement-loop
@@ -1809,7 +1810,6 @@ Meridian-main
 │   │   │   ├── source-readme-coverage.json
 │   │   │   └── source-readme-coverage.normalized.yml
 │   │   ├── configuration-schema.md
-│   │   ├── documentation-coverage.md
 │   │   ├── interfaces.md
 │   │   ├── project-context.md
 │   │   ├── project-dependencies.md
