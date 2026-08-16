@@ -1,8 +1,8 @@
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using Meridian.Contracts.Integrity;
 using Meridian.Core.Logging;
 using Serilog;
 
@@ -435,14 +435,14 @@ public static partial class AtomicFileWriter
         try
         {
             // Compute checksum
-            var checksum = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+            var checksum = Sha256Digest.Compute(content);
 
             // Write to temp file
             await File.WriteAllBytesAsync(tempPath, content, ct);
 
             // Verify what was written
             var verifyBytes = await File.ReadAllBytesAsync(tempPath, ct);
-            var verifyChecksum = Convert.ToHexString(SHA256.HashData(verifyBytes)).ToLowerInvariant();
+            var verifyChecksum = Sha256Digest.Compute(verifyBytes);
 
             if (checksum != verifyChecksum)
             {
@@ -498,7 +498,7 @@ public static partial class AtomicFileWriter
             .ToLowerInvariant();
 
         var content = await File.ReadAllBytesAsync(filePath, ct);
-        var actualChecksum = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        var actualChecksum = Sha256Digest.Compute(content);
 
         if (expectedChecksum == actualChecksum)
         {

@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
@@ -2391,7 +2392,7 @@ public static partial class LedgerEndpoints
             builder.AppendLine(EscapeSignatureField(BuildDimensionSignature(line.Dimensions)));
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static LedgerLineDimensionSet? ToLineDimensionSet(LedgerDimensionReportFilter filter)

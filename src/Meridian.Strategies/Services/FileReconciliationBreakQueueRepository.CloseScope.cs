@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
@@ -590,9 +589,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
                 generation,
                 items = ordered
             };
-        return Convert.ToHexString(SHA256.HashData(
-                Encoding.UTF8.GetBytes(JsonSerializer.Serialize(checkpoint, _jsonOptions))))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(checkpoint, _jsonOptions));
     }
 
     private static void ValidateCloseScopeReopenCommand(

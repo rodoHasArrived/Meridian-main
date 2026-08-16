@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
 using Meridian.Storage.Export;
@@ -385,7 +386,7 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
             return false;
         }
 
-        var checksum = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        var checksum = Sha256Digest.Compute(content);
         return content.LongLength == expectedArtifact.ByteSize
             && string.Equals(checksum, expectedArtifact.ChecksumSha256, StringComparison.OrdinalIgnoreCase);
     }
@@ -470,7 +471,7 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
                 $"Delivery artifact '{retainedPath}' cannot retain an empty blob.");
         }
 
-        var checksum = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        var checksum = Sha256Digest.Compute(content);
         var blobName = $"{checksum}.blob";
         var blobPath = Path.Combine(GetBlobDirectory(), blobName);
         if (File.Exists(blobPath))
@@ -555,7 +556,7 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
             return null;
         }
 
-        var checksum = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        var checksum = Sha256Digest.Compute(content);
         return content.LongLength == expectedArtifact.ByteSize
             && string.Equals(checksum, expectedArtifact.ChecksumSha256, StringComparison.OrdinalIgnoreCase)
                 ? RetainArtifactBlob(legacyContent.RetainedPath, content)
@@ -620,7 +621,7 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
         }
 
         using var stream = File.OpenRead(blobPath);
-        var actualChecksum = Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
+        var actualChecksum = Sha256Digest.Compute(stream);
         if (!string.Equals(actualChecksum, expectedChecksum, StringComparison.Ordinal))
         {
             throw new InvalidDataException(

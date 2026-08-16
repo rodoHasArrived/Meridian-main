@@ -1,7 +1,7 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using Meridian.Contracts.Integrity;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Execution.Sdk;
 
@@ -410,7 +410,7 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             records,
             issues,
             new StatementFormatFingerprint(
-                Convert.ToHexString(SHA256.HashData(document.Content.Span)).ToLowerInvariant(),
+                Sha256Digest.Compute(document.Content.Span),
                 detected.Select(static column => column.ToLowerInvariant()).ToArray(),
                 "xml"),
             AccountSnapshots: accountSnapshots,

@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Integrity;
 using Meridian.Storage;
 using Meridian.Storage.FundStructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -107,7 +107,7 @@ internal static class FundStructureStartup
         CancellationToken cancellationToken)
     {
         var snapshotBytes = await ReadBoundedSnapshotAsync(snapshotPath, cancellationToken).ConfigureAwait(false);
-        var sourceHash = Convert.ToHexString(SHA256.HashData(snapshotBytes)).ToLowerInvariant();
+        var sourceHash = Sha256Digest.Compute(snapshotBytes);
         await using var snapshotStream = new MemoryStream(snapshotBytes, writable: false);
         var state = await JsonSerializer
             .DeserializeAsync<PersistedState>(snapshotStream, JsonOptions, cancellationToken)

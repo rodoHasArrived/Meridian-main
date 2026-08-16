@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
@@ -886,10 +885,10 @@ public sealed class ReportingRunCertificationService
     }
 
     private static string ComputeHash(string value) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+        Sha256Digest.ComputeUtf8(value);
 
     private static string ComputeHash(ReadOnlySpan<byte> value) =>
-        Convert.ToHexString(SHA256.HashData(value)).ToLowerInvariant();
+        Sha256Digest.Compute(value);
 
     private static bool IsLowercaseSha256(string? value) =>
         Sha256Digest.IsWellFormed(value)

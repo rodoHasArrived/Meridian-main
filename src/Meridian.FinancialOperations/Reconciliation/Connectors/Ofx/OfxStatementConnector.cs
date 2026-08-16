@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors.Ofx;
 
@@ -77,7 +77,7 @@ public sealed class OfxStatementConnector(StatementMappingProfileCatalog catalog
             .ToArray();
         var columnMappings = StatementColumnConfidenceScorer.MapColumns(detectedColumns, profile);
         var fingerprint = new StatementFormatFingerprint(
-            Convert.ToHexString(SHA256.HashData(document.Content.Span)).ToLowerInvariant(),
+            Sha256Digest.Compute(document.Content.Span),
             detectedColumns.Select(static tag => tag.ToLowerInvariant()).ToArray(),
             "ofx");
 

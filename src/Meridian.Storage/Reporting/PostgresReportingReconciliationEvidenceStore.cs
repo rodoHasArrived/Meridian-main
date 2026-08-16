@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Reporting;
@@ -557,7 +556,7 @@ public sealed class PostgresReportingReconciliationEvidenceStore :
             writer.WriteEndObject();
         }
 
-        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     private static void RequireLegacyText(string? value, string parameterName)

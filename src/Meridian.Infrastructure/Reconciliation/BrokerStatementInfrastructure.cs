@@ -155,7 +155,7 @@ internal static class ReconciliationRecordFileName
     }
 
     private static string Hash(string value)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+        => Sha256Digest.ComputeUtf8(value);
 }
 
 public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalStatementStore
@@ -1108,8 +1108,7 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
             $"{ReconciliationRecordFileName.For(breakId)}.json");
 
     private static string CaseworkCommandFileName(string commandId)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(commandId.Trim())))
-            .ToLowerInvariant();
+        => Sha256Digest.ComputeUtf8(commandId.Trim());
 
     private static void ValidateCaseworkUpdate(StatementBreakCaseworkUpdate update)
     {

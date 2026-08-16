@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Banking;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 
 namespace Meridian.Contracts.Workstation;
@@ -890,9 +891,7 @@ public sealed record ReconciliationBulkCaseworkResult(
         int requestedCount,
         int succeededCount,
         int failedCount)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-            $"{bulkActionId}|{idempotencyKey}|{dryRun}|{requestedCount}|{succeededCount}|{failedCount}")))
-            .ToLowerInvariant();
+        => Sha256Digest.ComputeUtf8($"{bulkActionId}|{idempotencyKey}|{dryRun}|{requestedCount}|{succeededCount}|{failedCount}");
 }
 
 /// <summary>

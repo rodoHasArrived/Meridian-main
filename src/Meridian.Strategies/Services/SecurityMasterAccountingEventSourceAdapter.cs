@@ -1,7 +1,7 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 
@@ -576,7 +576,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
     }
 
     private static string HashFactorRow(JsonElement item)
-        => $"sha256:{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(item.GetRawText()))).ToLowerInvariant()}";
+        => $"sha256:{Sha256Digest.ComputeUtf8(item.GetRawText())}";
 
     private static IEnumerable<JsonElement> EnumerateFactorScheduleArrays(SecurityEconomicDefinitionRecord definition)
     {

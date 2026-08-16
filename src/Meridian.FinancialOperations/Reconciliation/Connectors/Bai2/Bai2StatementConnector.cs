@@ -1,6 +1,6 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors.Bai2;
 
@@ -187,7 +187,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
 
         var detectedColumns = new[] { "03/015", "16/TypeCode", "16/Amount", "16/CustomerRef" };
         var fingerprint = new StatementFormatFingerprint(
-            Convert.ToHexString(SHA256.HashData(document.Content.Span)).ToLowerInvariant(),
+            Sha256Digest.Compute(document.Content.Span),
             detectedColumns.Select(static column => column.ToLowerInvariant()).ToArray(),
             "bai2");
 

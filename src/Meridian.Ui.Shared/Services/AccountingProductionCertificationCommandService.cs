@@ -1,8 +1,8 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Evidence;
 
@@ -695,7 +695,7 @@ public sealed class AccountingProductionCertificationCommandService(
                 .OrderBy(static source => source.Evidence.EvidenceId, StringComparer.OrdinalIgnoreCase)
                 .Select(static source =>
                     $"{source.Evidence.EvidenceId}:{source.Evidence.ContentHashSha256}:{source.Evidence.EvidenceVersion}")));
-        return $"accounting-certification-{category}-{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical))).ToLowerInvariant()}";
+        return $"accounting-certification-{category}-{Sha256Digest.ComputeUtf8(canonical)}";
     }
 
     private static IReadOnlyList<string> SourcesFor(
