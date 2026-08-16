@@ -429,6 +429,43 @@ class BodyCloneDetectionTests(unittest.TestCase):
                 ratchet.scan_body_clones(root)
             self.assertIn("RequireText", str(raised.exception))
 
+    def test_a_new_owner_method_does_not_widen_the_ratchet(self):
+        # A method added to TextPrimitives becomes an owner only via CANONICAL_OWNERS.
+        found = clones({
+            "src/Meridian.Contracts/Text/TextPrimitives.cs":
+                FAKE_TEXT_PRIMITIVES.replace(
+                    "public static string? NormalizeOptional",
+                    "public static string Echo(string value) => value;\n\n"
+                    "    public static string? NormalizeOptional"),
+            "src/A/Thing.cs":
+                "    private static string Repeat(string value) => value;\n",
+        })
+        self.assertEqual(found, {})
+
+    def test_a_global_qualified_return_type_still_parses(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static global::System.String? Clean(string? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_an_alias_spelled_receiver_in_the_body_still_matches(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? value)\n"
+                        "        => String.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_null_forgiving_operator_still_matches_and_negation_is_kept(self):
+        found = clones({
+            "src/A/Suppressed.cs":
+                "    private static string? Clean(string? value)\n"
+                "        => string.IsNullOrWhiteSpace(value) ? null : value!.Trim();\n",
+            # Logical negation is behaviour; inverting the predicate is not a clone.
+            "src/A/Negated.cs":
+                "    private static string? Clean(string? value)\n"
+                "        => !string.IsNullOrWhiteSpace(value) ? value.Trim() : null;\n",
+        })
+        self.assertEqual(found, {"src/A/Suppressed.cs": [("Clean", "NormalizeOptional")]})
+
     def test_a_missing_canonical_home_fails_closed(self):
         # A moved TextPrimitives must not silently disable the scan and let the
         # baseline read as an improvement.

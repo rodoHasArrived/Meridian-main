@@ -111,7 +111,7 @@ _TYPE_ALIAS_PATTERN = re.compile(
 # sharing is static by nature; an instance copy is already a different function.
 _METHOD_HEADER = re.compile(
     r"\b(?:(?:private|internal|protected|public|static|readonly|async|sealed|new|virtual|override|unsafe|extern|partial)\s+)+"
-    r"([\w?<>\[\], .]+?)\s+([^\W\d]\w*)\s*\("
+    r"([\w?<>\[\],:. ]+?)\s+([^\W\d]\w*)\s*\("
 )
 # Only modifiers that do not change the call: params is call-site sugar, this marks
 # an extension receiver, scoped is lifetime analysis. ref/out/in/readonly stay in
@@ -434,6 +434,13 @@ def canonicalize_body(body: str, parameter_text: str) -> str:
         renames.setdefault(local, f"§l{index}")
 
     text = _NUMBER_LITERAL.sub("⟪⟫", text)
+    # `String.IsNullOrWhiteSpace(...)` is `string.IsNullOrWhiteSpace(...)`: the alias
+    # fold applies to type references inside bodies exactly as it does to signatures.
+    text = _TYPE_ALIAS_PATTERN.sub(lambda match: _TYPE_ALIASES[match.group(1)], text)
+    # The null-forgiving operator has no runtime effect. Postfix `!` (after a value)
+    # is erased; prefix negation and `!=` are kept.
+    text = re.sub(r"(?<=[\w)\]⟧⟩⟫])!(?!=)", "", text)
+
     def rename(match: re.Match[str]) -> str:
         # An identifier after `.` is a member, never a parameter reference, so a
         # parameter that happens to share a member's name must not rewrite it.
@@ -455,6 +462,11 @@ def owned_bodies(repo_root: Path) -> dict[tuple[str, str], str]:
     text = path.read_text(encoding="utf-8", errors="replace")
     owners: dict[tuple[str, str], str] = {}
     for name, return_type, parameter_text, body in _iter_methods(text):
+        # Only the declared canonical set becomes owners: a new TextPrimitives method
+        # must be added to CANONICAL_OWNERS deliberately, not silently widen the
+        # ratchet to every same-shaped helper in the tree.
+        if name not in CANONICAL_OWNERS:
+            continue
         key = (_canonical_type(return_type), _parameter_types(parameter_text),
                canonicalize_body(body, parameter_text))
         owners[key] = name
