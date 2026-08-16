@@ -71,7 +71,8 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     public long TotalChecked => Interlocked.Read(ref _totalChecked);
 
     /// <summary>
-    /// Total duplicates detected.
+    /// Total deliveries suppressed by a committed ledger entry. Unresolved pending claims are
+    /// deferrals, not detections, and are never counted here.
     /// </summary>
     public long TotalDuplicates => Interlocked.Read(ref _totalDuplicates);
 
@@ -316,7 +317,10 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         var token = Interlocked.Increment(ref _reservationTokenSequence);
         if (!_pendingReservations.TryAdd(key, token))
         {
-            Interlocked.Increment(ref _totalDuplicates);
+            // Not counted as a duplicate: a pending claim is an unresolved deferral, and a
+            // caller waiting on it re-polls this path many times for one delivery. Only a
+            // committed-entry suppression is a detection; callers that suppress on their own
+            // batch-local claims track that in their own counters.
             // Carry the identity key (with no token) so callers such as WAL recovery can tell
             // whether the in-flight claim is one they hold themselves or an external one.
             return ValueTask.FromResult(new DedupReservationResult(

@@ -275,6 +275,35 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         }
     }
 
+    [Fact]
+    public async Task TryReserve_PendingElsewhere_DoesNotInflateDuplicateTelemetry()
+    {
+        await using var ledger = await CreateLedgerAsync("ledger_pending_telemetry");
+        var evt = CreateTradeEvent("PENDTEL", 11);
+
+        var holder = await ledger.TryReserveAsync(evt, DedupLookupScope.LiveIngress, CancellationToken.None);
+        holder.IsReserved.Should().BeTrue();
+
+        // A delivery blocked by the claim re-polls it on every retry (the pipeline retries
+        // every 250 ms); none of these unresolved waits is a detected duplicate.
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            (await ledger.TryReserveAsync(evt, DedupLookupScope.LiveIngress, CancellationToken.None))
+                .Status.Should().Be(DedupReservationStatus.PendingElsewhere);
+        }
+
+        ledger.TotalDuplicates.Should().Be(0,
+            "an unresolved pending claim defers the caller; it must not be counted as a detected duplicate");
+
+        // Once the holder commits, the next retry is suppressed by the committed entry and
+        // counted as exactly one detection.
+        await ledger.CommitDurableAsync(new[] { holder.Reservation }, CancellationToken.None);
+        (await ledger.TryReserveAsync(evt, DedupLookupScope.LiveIngress, CancellationToken.None))
+            .Status.Should().Be(DedupReservationStatus.Duplicate);
+        ledger.TotalDuplicates.Should().Be(1,
+            "only the committed-entry suppression is a real duplicate detection");
+    }
+
     #endregion
 
     #region Pipeline ordering and fault injection

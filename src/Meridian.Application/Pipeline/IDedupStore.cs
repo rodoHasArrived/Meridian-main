@@ -19,7 +19,11 @@ public interface IDedupStore
     /// <summary>Gets the total number of events checked for duplicates.</summary>
     long TotalChecked { get; }
 
-    /// <summary>Gets the total number of duplicate events detected.</summary>
+    /// <summary>
+    /// Gets the total number of duplicate events detected — deliveries suppressed by a
+    /// committed entry. An unresolved pending reservation is not a detection and is not
+    /// counted while it merely defers a caller.
+    /// </summary>
     long TotalDuplicates { get; }
 
     /// <summary>Loads persisted dedup state from durable storage on startup.</summary>
