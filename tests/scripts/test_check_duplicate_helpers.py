@@ -405,6 +405,30 @@ class BodyCloneDetectionTests(unittest.TestCase):
                         "    }\n"})
         self.assertEqual(found, {})
 
+    def test_an_escaped_identifier_spelling_still_normalizes(self):
+        # @value and value are the same identifier in C#.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? @value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_partially_parsed_canonical_home_fails_closed(self):
+        # Two of three owners parsing must not silently retire the third's protection.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            home = root / "src" / "Meridian.Contracts" / "Text"
+            home.mkdir(parents=True)
+            (home / "TextPrimitives.cs").write_text(
+                "public static class TextPrimitives\n{\n"
+                "    public static string? NormalizeOptional(string? value)\n"
+                "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(RuntimeError) as raised:
+                ratchet.scan_body_clones(root)
+            self.assertIn("RequireText", str(raised.exception))
+
     def test_a_missing_canonical_home_fails_closed(self):
         # A moved TextPrimitives must not silently disable the scan and let the
         # baseline read as an improvement.

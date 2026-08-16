@@ -80,6 +80,11 @@ EXCLUDED_DIRECTORY_NAMES = {"bin", "node_modules", "obj"}
 
 TEXT_PRIMITIVES_RELATIVE = "src/Meridian.Contracts/Text/TextPrimitives.cs"
 
+# The methods TextPrimitives must yield to the body scan. Extended together with
+# TRACKED_HELPERS when the shared surface grows; the scan fails closed if any stops
+# parsing, so a shape change cannot silently retire one helper's protection.
+CANONICAL_OWNERS = ("NormalizeOptional", "RequireText", "FirstNonBlank")
+
 _NUMBER_LITERAL = re.compile(r"\b\d[\w.]*")
 _IDENTIFIER = re.compile(r"@?[^\W\d]\w*")
 _STRING_PREFIX = re.compile(r'[$@]*"')
@@ -420,10 +425,12 @@ def canonicalize_body(body: str, parameter_text: str) -> str:
 
     text = _EXPLICIT_FOREACH.sub(r"foreach (var \1 in", text)
 
+    # `@name` and `name` are the same identifier in C#, so both the map keys and every
+    # lookup strip the escape.
     renames: dict[str, str] = {}
     for index, parameter in enumerate(_parameter_names(parameter_text)):
-        renames[parameter] = f"§p{index}"
-    for index, local in enumerate(re.findall(r"\bvar\s+([^\W\d]\w*)", text)):
+        renames[parameter.lstrip("@")] = f"§p{index}"
+    for index, local in enumerate(re.findall(r"\bvar\s+@?([^\W\d]\w*)", text)):
         renames.setdefault(local, f"§l{index}")
 
     text = _NUMBER_LITERAL.sub("⟪⟫", text)
@@ -432,7 +439,7 @@ def canonicalize_body(body: str, parameter_text: str) -> str:
         # parameter that happens to share a member's name must not rewrite it.
         if match.start() > 0 and text[match.start() - 1] == ".":
             return match.group(0)
-        return renames.get(match.group(0), match.group(0))
+        return renames.get(match.group(0).lstrip("@"), match.group(0))
 
     text = _IDENTIFIER.sub(rename, text)
 
@@ -461,13 +468,15 @@ def scan_body_clones(repo_root: Path) -> dict[str, list[tuple[str, str]]]:
     jurisdiction and are skipped here, so one copy is never double-counted.
     """
     owners = owned_bodies(repo_root)
-    if not owners:
-        # Fail closed: an empty owner set means the canonical file moved or its
-        # declarations stopped parsing, and returning no clones would silently disable
-        # this protection -- the baseline would even read as an improvement.
+    missing = set(CANONICAL_OWNERS) - set(owners.values())
+    if missing:
+        # Fail closed, per owner: if the canonical file moved or one declaration
+        # stopped parsing, returning fewer owners would silently retire that helper's
+        # protection -- its baseline entries would even read as improvements.
         raise RuntimeError(
-            f"no canonical helper bodies parsed from {TEXT_PRIMITIVES_RELATIVE}; "
-            "the file may have moved or changed declaration shape"
+            f"canonical helper(s) {sorted(missing)} not parsed from "
+            f"{TEXT_PRIMITIVES_RELATIVE}; the file may have moved or changed "
+            "declaration shape"
         )
     # The cheap signature gate: only a handful of parameter-type shapes can match an
     # owner, so almost every method skips the body canonicalisation entirely.
