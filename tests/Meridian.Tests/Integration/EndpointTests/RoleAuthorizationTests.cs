@@ -909,6 +909,107 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         retained.RevokedBy.Should().BeNull();
     }
 
+    [Fact]
+    public async Task AccountAdministration_SessionlessMalformedBody_IsRefusedBeforeBinding()
+    {
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
+        Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""");
+        try
+        {
+            using var client = isolated.Fixture.CreateNoRedirectClient();
+            foreach (var (method, path) in new[]
+            {
+                (HttpMethod.Put, "/api/auth/accounts/target-user"),
+                (HttpMethod.Post, "/api/auth/sessions/revoke"),
+                (HttpMethod.Post, "/api/auth/role-profiles"),
+                (HttpMethod.Post, "/api/auth/access-assignments")
+            })
+            {
+                using var request = new HttpRequestMessage(method, path)
+                {
+                    // Deliberately malformed JSON: an endpoint filter only runs after binding, so
+                    // this body would be parsed and answered with a binding 400 without ever
+                    // presenting a session. The middleware guard must refuse it first.
+                    Content = new StringContent("{", Encoding.UTF8, "application/json")
+                };
+
+                var response = await client.SendAsync(request);
+
+                response.StatusCode.Should().Be(
+                    HttpStatusCode.Unauthorized,
+                    $"a sessionless {method} {path} with a malformed body must be refused before binding");
+            }
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
+    [Fact]
+    public async Task AccountAdministration_MalformedBodyWithoutManageUsers_IsForbiddenBeforeBinding()
+    {
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
+        Environment.SetEnvironmentVariable(
+            "MDC_USERS",
+            $$"""[{"username":"fund-ops","passwordHash":"{{PwHash}}","role":"Accounting"}]""");
+        try
+        {
+            using var client = isolated.Fixture.CreateNoRedirectClient();
+            var loginResp = await client.PostAsJsonAsync("/api/auth/login", new { Username = "fund-ops", Password = "pw" });
+            loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
+            var authCookies = ExtractAuthCookies(loginResp);
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/role-profiles")
+            {
+                Content = new StringContent("{", Encoding.UTF8, "application/json")
+            };
+            request.Headers.Add("Cookie", authCookies.CookieHeader);
+            request.Headers.Add("X-CSRF-Token", authCookies.CsrfToken);
+
+            var response = await client.SendAsync(request);
+
+            response.StatusCode.Should().Be(
+                HttpStatusCode.Forbidden,
+                "a session without ManageUsers must be refused before its malformed body is bound");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
+    [Fact]
+    public async Task AccountAdministration_MalformedBodyWithManageUsers_StillFailsBinding()
+    {
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
+        Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""");
+        try
+        {
+            using var client = isolated.Fixture.CreateNoRedirectClient();
+            var loginResp = await client.PostAsJsonAsync("/api/auth/login", new { Username = "admin", Password = "pw" });
+            loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
+            var authCookies = ExtractAuthCookies(loginResp);
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/role-profiles")
+            {
+                Content = new StringContent("{", Encoding.UTF8, "application/json")
+            };
+            request.Headers.Add("Cookie", authCookies.CookieHeader);
+            request.Headers.Add("X-CSRF-Token", authCookies.CsrfToken);
+
+            var response = await client.SendAsync(request);
+
+            response.StatusCode.Should().Be(
+                HttpStatusCode.BadRequest,
+                "an authorized caller's malformed body is still answered by binding, proving the guard sits before binding rather than replacing it");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
     private static AuthCookies ExtractAuthCookies(HttpResponseMessage response)
     {
         var setCookies = response.Headers

@@ -557,6 +557,9 @@ public sealed class UiServer : IAsyncDisposable
             // session pass without a key; a no-op when MDC_API_KEY is unset.
             _app.UseApiKeyAuthentication();
             _app.UseCookieCsrfProtection();
+            // Refuse account-administration mutations before binding parses the body; the session
+            // middleware exempts /api/auth, and endpoint filters only run after binding.
+            _app.UseAccountAdministrationGuard();
             _app.UseRateLimiter();
             if (_apiHostOptions.AllowedOrigins.Length > 0)
             {
