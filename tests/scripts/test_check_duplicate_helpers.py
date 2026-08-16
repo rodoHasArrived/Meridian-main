@@ -267,6 +267,45 @@ class BodyCloneDetectionTests(unittest.TestCase):
                         "    }\n"})
         self.assertEqual(found, {"src/A/Thing.cs": [("RequireTrimmed", "RequireText")]})
 
+    def test_a_protected_clone_is_detected(self):
+        # The name scan covers protected declarations; the body scan must match its scope.
+        found = clones({"src/A/Thing.cs":
+                        "    protected static string? NullIfBlank(string? value)"
+                        " => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("NullIfBlank", "NormalizeOptional")]})
+
+    def test_a_raw_interpolated_message_running_code_is_not_a_clone(self):
+        # Raw interpolated strings carry executed code too.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string value, string name)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(value))\n"
+                        "        {\n"
+                        "            throw new ArgumentException($\"\"\"{RecordAndFormat(value)}\"\"\", name);\n"
+                        "        }\n"
+                        "\n"
+                        "        return value.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {})
+
+    def test_an_attribute_named_argument_does_not_hide_the_parameter(self):
+        # `[Example(Name = "x")]` contains an `=` that is not the parameter default; the
+        # real parameter must still be normalised or the clone evades by decoration.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean([Example(Name = \"candidate\")] string? input)\n"
+                        "        => string.IsNullOrWhiteSpace(input) ? null : input.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_dynamic_typed_lookalike_is_not_a_clone(self):
+        # Same text over dynamic dispatches differently; the parameter type is part of
+        # what makes two helpers the same function. Nullability stays erased, though:
+        # `string` vs `string?` differs only at compile time, so it must not demote a
+        # genuine clone (the RequireTrimmed cases above rely on exactly that).
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(dynamic value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {})
+
     def test_a_tracked_name_is_the_name_ratchets_jurisdiction(self):
         # One copy must never be counted by both detectors.
         found = clones({"src/A/Thing.cs":

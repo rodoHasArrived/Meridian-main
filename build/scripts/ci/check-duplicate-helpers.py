@@ -77,12 +77,15 @@ _NUMBER_LITERAL = re.compile(r"\b\d[\w.]*")
 _IDENTIFIER = re.compile(r"[A-Za-z_@][\w]*")
 _STRING_PREFIX = re.compile(r'[$@]{0,2}"')
 _EXPLICIT_FOREACH = re.compile(r"\bforeach\s*\(\s*[\w?<>\[\], .]+?\s+([A-Za-z_]\w*)\s+in\b")
-# The declaration header of any private/internal method: accessibility, optional
-# modifiers, a return type, then the name directly before the parameter list.
+# The declaration header of a method at any accessibility (matching the name-based
+# scan's scope): accessibility keyword(s), optional modifiers, a return type, then the
+# name directly before the parameter list.
 _METHOD_HEADER = re.compile(
-    r"\b(?:private|internal)\s+(?:(?:static|readonly|async|sealed|new)\s+)*"
+    r"\b(?:private|internal|protected|public)\s+"
+    r"(?:(?:static|readonly|async|sealed|new|virtual|override|internal|protected)\s+)*"
     r"[\w?<>\[\], .]+?\s+([A-Za-z_]\w*)\s*\("
 )
+_PARAMETER_MODIFIERS = ("params", "ref", "out", "in", "this", "scoped", "readonly")
 
 
 def _mask_strings_and_comments(text: str) -> str:
@@ -127,8 +130,33 @@ def _mask_strings_and_comments(text: str) -> str:
             verbatim = "@" in prefix.group(0)
             out.append("§str")
             if text.startswith('"""', prefix.end() - 1):
-                closer = text.find('"""', prefix.end() + 2)
+                content_start = prefix.end() + 2
+                closer = text.find('"""', content_start)
                 index = length if closer == -1 else closer + 3
+                if interpolated and closer != -1:
+                    # Raw interpolated strings carry executed code too; preserve their
+                    # expressions exactly as the ordinary $"..." branch below does.
+                    segment = text[content_start:closer]
+                    cursor = 0
+                    while cursor < len(segment):
+                        if segment[cursor] == "{" and segment[cursor : cursor + 2] != "{{":
+                            depth = 0
+                            expr_end = cursor
+                            while expr_end < len(segment):
+                                if segment[expr_end] == "{":
+                                    depth += 1
+                                elif segment[expr_end] == "}":
+                                    depth -= 1
+                                    if depth == 0:
+                                        break
+                                expr_end += 1
+                            out.append(
+                                "{" + _mask_strings_and_comments(segment[cursor + 1 : expr_end]) + "}"
+                            )
+                            out.append("§str")
+                            cursor = expr_end + 1
+                            continue
+                        cursor += 2 if segment[cursor : cursor + 2] == "{{" else 1
                 continue
             cursor = prefix.end()
             while cursor < length:
@@ -223,12 +251,17 @@ def _iter_methods(text: str):
                 yield name, parameter_text, rest[block_open + 1 : block_close - 1]
 
 
-def _parameter_names(parameter_text: str) -> list[str]:
-    """Declared parameter names, in order, ignoring attributes, types, and defaults."""
-    names: list[str] = []
+def _split_parameters(parameter_text: str) -> list[str]:
+    """Top-level comma split, then per piece: attributes stripped, default cut.
+
+    Attributes are removed by bracket matching before the default-value cut, because an
+    attribute's *named argument* (`[Example(Name = "x")]`) contains an `=` that is not
+    the parameter's default; cutting at the first `=` naively would truncate inside the
+    attribute and misread the parameter entirely.
+    """
+    pieces: list[str] = []
     depth = 0
     current: list[str] = []
-    pieces: list[str] = []
     for char in parameter_text:
         if char in "([<":
             depth += 1
@@ -241,12 +274,60 @@ def _parameter_names(parameter_text: str) -> list[str]:
             current.append(char)
     pieces.append("".join(current))
 
+    cleaned: list[str] = []
     for piece in pieces:
-        declaration = piece.split("=", 1)[0]
-        identifiers = _IDENTIFIER.findall(declaration)
+        piece = piece.strip()
+        while piece.startswith("["):
+            closer = _matched_span(piece, 0, "[", "]")
+            if closer is None:
+                break
+            piece = piece[closer:].lstrip()
+        depth = 0
+        for offset, char in enumerate(piece):
+            if char in "([<":
+                depth += 1
+            elif char in ")]>":
+                depth -= 1
+            elif char == "=" and depth == 0:
+                piece = piece[:offset]
+                break
+        cleaned.append(piece.strip())
+    return cleaned
+
+
+def _parameter_names(parameter_text: str) -> list[str]:
+    """Declared parameter names, in order, ignoring attributes, types, and defaults."""
+    names: list[str] = []
+    for piece in _split_parameters(parameter_text):
+        identifiers = _IDENTIFIER.findall(piece)
         if identifiers:
             names.append(identifiers[-1])
     return names
+
+
+def _parameter_types(parameter_text: str) -> str:
+    """Canonical comma-joined parameter types, for the clone key.
+
+    A textually identical body over `dynamic` or a custom implicitly-convertible type
+    can dispatch differently, so types are part of what makes two helpers the same
+    function. Nullability annotations are erased -- `string` and `string?` differ only
+    at compile time -- and calling-convention modifiers are dropped for the same reason.
+    """
+    types: list[str] = []
+    for piece in _split_parameters(parameter_text):
+        declaration = re.sub(r"[A-Za-z_@]\w*\s*$", "", piece).strip()
+        changed = True
+        while changed:
+            changed = False
+            for modifier in _PARAMETER_MODIFIERS:
+                if declaration == modifier or declaration.startswith(modifier + " "):
+                    declaration = declaration[len(modifier):].strip()
+                    changed = True
+        declaration = declaration.replace("?", "")
+        declaration = re.sub(r"\s+", "", declaration)
+        if declaration:
+            types.append(declaration)
+    return ",".join(types)
 
 
 def canonicalize_body(body: str, parameter_text: str) -> str:
@@ -282,18 +363,15 @@ def canonicalize_body(body: str, parameter_text: str) -> str:
     return re.sub(r" ?([^\w§ ]) ?", r"\1", text).strip()
 
 
-def owned_bodies(repo_root: Path) -> dict[str, str]:
-    """Canonical body -> owning method name, for every method TextPrimitives declares."""
+def owned_bodies(repo_root: Path) -> dict[tuple[str, str], str]:
+    """(canonical parameter types, canonical body) -> owning TextPrimitives method name."""
     path = repo_root / TEXT_PRIMITIVES_RELATIVE
     if not path.exists():
         return {}
     text = path.read_text(encoding="utf-8", errors="replace")
-    owners: dict[str, str] = {}
-    # The owner's methods are public, so the private/internal header regex does not see
-    # them; scan with the accessibility widened instead of duplicating the machinery.
-    widened = text.replace("public static", "internal static")
-    for name, parameter_text, body in _iter_methods(widened):
-        owners[canonicalize_body(body, parameter_text)] = name
+    owners: dict[tuple[str, str], str] = {}
+    for name, parameter_text, body in _iter_methods(text):
+        owners[(_parameter_types(parameter_text), canonicalize_body(body, parameter_text))] = name
     return owners
 
 
@@ -324,7 +402,8 @@ def scan_body_clones(repo_root: Path) -> dict[str, list[tuple[str, str]]]:
             for name, parameter_text, body in _iter_methods(text):
                 if name in TRACKED_HELPERS:
                     continue
-                owner = owners.get(canonicalize_body(body, parameter_text))
+                key = (_parameter_types(parameter_text), canonicalize_body(body, parameter_text))
+                owner = owners.get(key)
                 if owner is not None:
                     clones.setdefault(rel, []).append((name, owner))
     return {rel: sorted(entries) for rel, entries in sorted(clones.items())}

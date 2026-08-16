@@ -5,6 +5,7 @@
     "src/Meridian.Application/ProviderRouting/ProviderSetupService.cs": 1,
     "src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineProviderCredentialConnectionStore.cs": 1,
     "src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs": 1,
+    "src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs": 1,
     "src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs": 1,
     "src/Meridian.Execution/Services/ExecutionOperatorControlService.cs": 1,
     "src/Meridian.Execution/Services/ReconciliationSetComparer.cs": 1,
@@ -104,7 +105,7 @@
     "src/Meridian.Wpf/Services/FundLedgerReadService.cs": 1,
     "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.TextHelpers.cs": 1
   },
-  "total": 111,
+  "total": 112,
   "tracked_helpers": [
     "NormalizeOptional",
     "RequireText",
