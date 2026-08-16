@@ -768,7 +768,9 @@ still `in_progress`.
   combining two branches' edits leaves them stale — neither parent's copy describes the merged
   result. `regenerate-docs` in `.github/workflows/documentation.yml` normally catches that
   **pre-merge**, on the simulated merge revision, and the toll is the human regeneration its red
-  check then demands; path-filter misses and merge-queue combinations escape it entirely. Fifteen
+  check then demands. Path-filter misses escape detection silently; merge-queue combinations are
+  detected only late, by the `push` run on `main`, whose failure is the natural evidence for a
+  follow-up repair. Fifteen
   commits since June exist for no purpose other than re-running the profile and committing the
   result (`2368b43b2`, `f4d900d67`, `0535db058`, `d8554cefe`,
   `603d98cfe`, `fc8344145`, `fb94b95cd` among them), across several unrelated branches, one of
@@ -783,9 +785,12 @@ still `in_progress`.
   [Docs Regeneration Automation — Design Constraints](../engineering/docs-regeneration-automation-design.md).
   Read that note before implementing; six earlier attempts at a one-line fix were each refuted by a
   different interaction.
-  **Verify:** per the note's verification section, which enumerates eight scenarios. Assert that
-  every artifact produced by the full `regenerate-docs` generation sequence matches the merged tree,
-  and that the accepted residual manual gate is documented rather than silently present.
+  **Verify:** per the note's verification section, which enumerates nine scenarios — including an
+  adversarial case asserting the privileged writer rejects paths outside its base-owned manifest.
+  Assert that every artifact **the job's final drift check enforces** matches the merged tree; that
+  check deliberately excludes the best-effort UML binaries, so requiring the full generation
+  sequence to match would fail whenever PlantUML is unavailable. Assert too that the accepted
+  residual manual gate is documented rather than silently present.
   **Effort:** L, with a design step before implementation · **Sequence:** independent of the other
   W10 items, but **gated** on governance review — the implementation edits a protected workflow
   file and introduces a privileged token

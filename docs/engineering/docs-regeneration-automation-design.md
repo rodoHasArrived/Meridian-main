@@ -83,7 +83,12 @@ Those two are easy to conflate and must not be:
 - *discovery* scope — which artifacts need regenerating — must be derived from the job's generation
   sequence rather than hand-enumerated (constraint 4);
 - *write* authorization — which paths a privileged writer may commit — must be a **fixed,
-  base-owned manifest** rooted at the generated directories.
+  base-owned manifest**. It cannot simply be "the generated directories": some enforced output
+  lives in hand-authored files as generated *blocks*. `generate-workflow-manifest.py:358-370`
+  rewrites regions inside `docs/HELP.md` and `docs/development/documentation-automation.md`, and
+  the final drift check enforces both, so a manifest rooted only at generated roots would reject
+  required writes and leave `regenerate-docs` red. Enumerate these hybrid paths from the generators
+  that write them, or document a manual fallback for that subset.
 
 Without the second, constraint 5's "commit allowlisted output produced by an unprivileged PR-code
 job" option is a hole: a same-repository pull request can modify a generator to emit a change to an
