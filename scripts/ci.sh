@@ -149,6 +149,9 @@ verify_dotnet() {
   run_step "Enforce consolidated-helper duplication ratchet" \
     "$python_cmd" build/scripts/ci/check-duplicate-helpers.py
 
+  run_step "Enforce inline SHA-256 hashing ratchet" \
+    "$python_cmd" build/scripts/ci/check-inline-sha256.py
+
   run_step "Build web workstation .NET lane" \
     bash -c 'set -euo pipefail; dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore -p:EnableWindowsTargeting=true -p:UseAppHost=false 2>&1 | tee artifacts/build-logs/web-workstation-build.log'
 
