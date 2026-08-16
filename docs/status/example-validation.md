@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1000 |
-| Valid | 579 |
+| Total code blocks | 1001 |
+| Valid | 580 |
 | Invalid | 0 |
 | Skipped | 421 |
 
@@ -24,7 +24,7 @@
 | `csharp` | 322 | 322 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
-| `json` | 63 | 63 | 0 | 0 |
+| `json` | 64 | 64 | 0 | 0 |
 | `jsonc` | 2 | 2 | 0 | 0 |
 | `jsonl` | 1 | 0 | 0 | 1 |
 | `makefile` | 1 | 0 | 0 | 1 |
@@ -134,6 +134,7 @@ No invalid code examples found.
 | `docs/product/web-ui-report-run-stream-blueprint-2026-07.md` | 7 |
 | `docs/product/web-ui-stream-fan-out-blueprint-2026-07.md` | 4 |
 | `docs/reference/accounting-report-packs.md` | 1 |
+| `docs/reference/api-conflict-contract.md` | 1 |
 | `docs/reference/api-reference.md` | 11 |
 | `docs/reference/appsettings-schema.md` | 1 |
 | `docs/reference/contract-compatibility-matrix.md` | 1 |
