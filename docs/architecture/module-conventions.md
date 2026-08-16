@@ -83,7 +83,10 @@ ratchet**: `build/scripts/ci/check-file-size.py` (invoked from `.github/workflow
 - Any hand-authored production source file over **2000 lines** that is not in
   `build/config/file-size-baseline.json` fails CI.
 - Baselined files are frozen at their recorded line count: they may shrink freely but not grow.
-- Legitimately changing a cap requires `python3 build/scripts/ci/check-file-size.py --update-baseline`
+- After a decomposition, lock the reduction in with
+  `python3 build/scripts/ci/check-file-size.py --tighten-baseline` — it only ever lowers caps and
+  retains a working buffer above each file's current size.
+- Legitimately *raising* a cap requires `python3 build/scripts/ci/check-file-size.py --update-baseline`
   and a justification in review — the diff makes the tracked debt visible.
 
 The intent is directional: every baselined file is a decomposition target, and the ratchet only ever

@@ -93,34 +93,32 @@ Reporting only. No enforcement rule is altered, so nothing that passes today sta
    visible before a contributor hits it, and the report names decomposition candidates by urgency
    rather than by size.
 
-## The missing mechanism
+## Locking in a reduction
 
-Reporting makes the problem visible. It does not fix it, and the gap is specific:
+After a decomposition lands, lock the reclaimed lines in with the downward-only tightener (#2675):
 
-**There is no safe way to lock in a reduction.** `--update-baseline` regenerates from the tree, so
-it can raise a cap as easily as lower one — which is why it is the escape hatch that should surface
-in review as tracked debt. Nothing lowers caps only. Until that exists, lines reclaimed by a
-decomposition sit unprotected: the old cap still permits the file to grow straight back.
+```bash
+python3 build/scripts/ci/check-file-size.py --tighten-baseline           # default 50-line buffer
+python3 build/scripts/ci/check-file-size.py --tighten-baseline --buffer 25
+```
 
-**Nothing creates working headroom.** Any mechanism that lowers a cap to the current count re-pins
-the file, which is the state this plan exists to escape. A useful tool has to lock in most of a
-reduction while deliberately leaving room to edit.
+Its contract, shaped by the six defects review found in a withdrawn first attempt:
 
-A first attempt at both — a downward-only `--tighten-baseline` with a `--buffer N` option — was
-drafted alongside this plan and **withdrawn**. Review found six distinct defects in it across five
-rounds: retired files dropped out of the reclaimed total, retirement discarded a cap while the file
-was still within the buffer of the threshold, an unreadable file was counted as empty and had its
-cap written away, the command returned success while the ratchet was failing, `--buffer` was
-accepted and ignored outside tightening, and the resulting slack made the tool recommend a command
-that destroyed the headroom it had just created.
+- **A cap only moves down** — each becomes `min(old cap, current lines + buffer)`. Raising a cap
+  still requires `--update-baseline` plus justification in review.
+- **The buffer is working headroom, not slack.** It is recorded in the baseline's `headroom` map,
+  so the trend report does not count it as reclaimable and nothing recommends re-pinning it away.
+- **An entry retires only when the threshold itself supplies the requested headroom**
+  (`lines + buffer <= threshold`). A file one line under the threshold keeps a lowered cap rather
+  than being handed the harder brand-new-god-file failure.
+- **It refuses to run while the ratchet is failing**, and **fails closed on any unreadable governed
+  source**, tracked or not — a file that cannot be read is not a file with zero lines. A genuinely
+  deleted file retires and its reduction is counted.
+- `--buffer` outside tightening, or `--tighten-baseline` with an explicit `--threshold`, are hard
+  errors rather than accepted-and-ignored options.
 
-Every one of those lived in the same seam: the interaction between *file below threshold*, *file
-still in baseline*, and *tree currently failing*. A read-only check never has to reason about it. A
-mutating one does, on every path. That is the design work the mechanism needs, and it belongs in its
-own change with its own review rather than riding along with a reporting improvement.
-
-Until then, lock in a reduction with `--update-baseline` and justify the diff in review, as the
-ratchet's own documentation already directs.
+The reclaimable figure in the trend report is therefore exactly the reduction not yet locked in;
+run the tightener whenever it is non-zero and the tree is green.
 
 ## Targets
 
@@ -225,8 +223,9 @@ python3 build/scripts/ci/check-file-size.py
 After a decomposition lands, lock in the reduction:
 
 ```bash
-python3 build/scripts/ci/check-file-size.py --update-baseline
+python3 build/scripts/ci/check-file-size.py --tighten-baseline
 ```
 
-Review the diff carefully — this command can raise a cap as well as lower one, which is why a
-downward-only alternative is the missing mechanism described above. Caps should only ever fall.
+This only ever lowers caps and retains a working buffer above each file's current size (see
+"Locking in a reduction" above). `--update-baseline` remains the escape hatch for deliberately
+*raising* a cap, and its diff should be justified in review — caps should only ever fall.

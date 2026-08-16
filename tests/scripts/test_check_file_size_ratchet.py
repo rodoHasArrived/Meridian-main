@@ -251,5 +251,172 @@ class TrendReportingTests(unittest.TestCase):
             self.assertIn("NEW god file", output)
 
 
+def read_payload(root: Path) -> dict:
+    return json.loads((root / "build" / "config" / "file-size-baseline.json").read_text())
+
+
+class TightenBaselineTests(unittest.TestCase):
+    """--tighten-baseline against the numbered defects of #2675's withdrawn first attempt.
+
+    All fixtures use threshold 10 (written into the baseline by fake_repo); tighten reads the
+    threshold from the baseline rather than the command line, so none of these pass --threshold.
+    """
+
+    def test_never_raises_a_cap_and_reports_actual_headroom(self):
+        # Requirements 1 and 7. 29 lines with a buffer of 50 targets a cap of 79, but the old cap
+        # is 30 - so the cap stays 30, and the headroom reported is the 1 line actually retained,
+        # not the 50 requested.
+        with fake_repo({"src/a.cs": 29}, {"src/a.cs": 30}) as root:
+            code, output = run(["--tighten-baseline", "--buffer", "50"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root), {"src/a.cs": 30})
+            self.assertIn("retained 1 line(s) of working headroom (requested 50 per file)", output)
+
+    def test_lowers_a_cap_to_lines_plus_buffer(self):
+        with fake_repo({"src/a.cs": 20}, {"src/a.cs": 90}) as root:
+            code, output = run(["--tighten-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root), {"src/a.cs": 25})
+            self.assertEqual(read_payload(root)["headroom"], {"src/a.cs": 5})
+
+    # Defect 1: a retired entry's reduction vanished from the progress figure at exactly the
+    # moment a decomposition achieved the headline goal.
+    def test_counts_a_retired_entry_in_the_locked_in_figure(self):
+        # 5 lines + buffer 5 = 10 <= threshold 10, so the entry retires. Its future effective cap
+        # is the threshold, so the locked-in reduction is 30 - 10 = 20.
+        with fake_repo({"src/small.cs": 5}, {"src/small.cs": 30}) as root:
+            code, output = run(["--tighten-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root), {})
+            self.assertIn("1 retired", output)
+            self.assertIn("Locked in 20 capped line(s) (20 from retired entries)", output)
+
+    # Defect 2: a file one line under the threshold was retired by the buffer, so its next added
+    # line failed as a brand-new god file - a harder failure than the cap it just lost.
+    def test_keeps_an_entry_until_the_threshold_supplies_the_headroom(self):
+        # 9 lines + buffer 5 = 14 > threshold 10: the threshold alone cannot supply the requested
+        # headroom, so the entry is kept, capped at 14.
+        with fake_repo({"src/edge.cs": 9}, {"src/edge.cs": 21}) as root:
+            code, output = run(["--tighten-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root), {"src/edge.cs": 14})
+            self.assertIn("0 retired", output)
+
+    # Defect 3: an unreadable tracked file counted as empty and had its cap written away.
+    def test_refuses_when_a_tracked_file_is_unreadable(self):
+        with fake_repo({"src/locked.cs": 8}, {"src/locked.cs": 30}) as root:
+            with unreadable("locked.cs"):
+                code, output = run(["--tighten-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 2)
+            self.assertIn("refusing to tighten", output)
+            self.assertIn("src/locked.cs", output)
+            self.assertEqual(read_baseline(root), {"src/locked.cs": 30})
+
+    # Defect 4: an unreadable *untracked* source was silently skipped, so tightening could
+    # rewrite the baseline while missing a new god file entirely.
+    def test_refuses_when_an_untracked_source_is_unreadable(self):
+        with fake_repo({"src/ok.cs": 20, "src/mystery.cs": 40}, {"src/ok.cs": 30}) as root:
+            with unreadable("mystery.cs"):
+                code, output = run(["--tighten-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 2)
+            self.assertIn("refusing to tighten", output)
+            self.assertIn("src/mystery.cs", output)
+            self.assertEqual(read_baseline(root), {"src/ok.cs": 30})
+
+    # Defect 5: tightening wrote the baseline and returned 0 while the ratchet was failing.
+    def test_refuses_while_the_ratchet_is_failing(self):
+        with fake_repo({"src/grown.cs": 40, "src/fresh.cs": 50},
+                       {"src/grown.cs": 30}) as root:
+            code, output = run(["--tighten-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 1)
+            self.assertIn("refusing to tighten while the ratchet is failing", output)
+            self.assertIn("NEW god file: src/fresh.cs", output)
+            self.assertIn("GREW past cap: src/grown.cs", output)
+            self.assertEqual(read_baseline(root), {"src/grown.cs": 30})
+
+    # Defect 6: retained buffer read as reclaimable slack, so the next ordinary run recommended
+    # the command that destroys the headroom the buffer just created.
+    def test_retained_headroom_is_not_reported_as_reclaimable(self):
+        with fake_repo({"src/a.cs": 20}, {"src/a.cs": 90}):
+            code, output = run(["--tighten-baseline", "--buffer", "5"])
+            self.assertEqual(code, 0, output)
+
+            code, output = run(["--threshold", "10"])
+            self.assertEqual(code, 0, output)
+            self.assertIn("0 line(s) reclaimable", output)
+            self.assertIn("5 further line(s) of cap are deliberate working headroom", output)
+            self.assertNotIn("not yet locked in", output)
+
+    def test_a_further_reduction_beyond_the_headroom_is_reclaimable_again(self):
+        with fake_repo({"src/a.cs": 20}, {"src/a.cs": 90}) as root:
+            code, output = run(["--tighten-baseline", "--buffer", "5"])
+            self.assertEqual(code, 0, output)
+
+            # The file shrinks by another 12 lines after the tightening.
+            (root / "src" / "a.cs").write_text("\n".join("x" for _ in range(8)) + "\n")
+            code, output = run(["--threshold", "10"])
+
+            self.assertEqual(code, 0, output)
+            self.assertIn("12 line(s) reclaimable", output)
+            self.assertIn("not yet locked in", output)
+            self.assertIn("--tighten-baseline", output)
+
+    def test_a_deleted_file_retires(self):
+        # Deleted and unreadable are different answers: gone really is zero lines.
+        with fake_repo({"src/kept.cs": 20}, {"src/kept.cs": 30, "src/gone.cs": 40}) as root:
+            code, output = run(["--tighten-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root), {"src/kept.cs": 25})
+            self.assertIn("1 retired", output)
+            self.assertIn("src/gone.cs", output)
+
+    # Contract slip 1: --buffer accepted and ignored outside tightening, so
+    # `--update-baseline --buffer 25` exited 0 while pinning every cap.
+    def test_buffer_without_tighten_is_an_error(self):
+        with fake_repo({"src/a.cs": 20}, {"src/a.cs": 30}) as root:
+            code, output = run(["--update-baseline", "--buffer", "25"])
+
+            self.assertEqual(code, 2)
+            self.assertIn("--buffer is only meaningful with --tighten-baseline", output)
+            self.assertEqual(read_baseline(root), {"src/a.cs": 30})
+
+    # Contract slip 2: an explicit --threshold retired files the baseline still protected.
+    def test_tighten_with_explicit_threshold_is_an_error(self):
+        with fake_repo({"src/a.cs": 20}, {"src/a.cs": 30}) as root:
+            code, output = run(["--tighten-baseline", "--threshold", "50"])
+
+            self.assertEqual(code, 2)
+            self.assertIn("threshold recorded in the baseline", output)
+            self.assertEqual(read_baseline(root), {"src/a.cs": 30})
+
+    def test_tighten_uses_the_baseline_threshold_not_the_default(self):
+        # fake_repo records threshold 10 in the baseline; the module default is 2000. If tighten
+        # used the default, every fixture entry would retire (lines + buffer << 2000).
+        with fake_repo({"src/a.cs": 20}, {"src/a.cs": 90}) as root:
+            code, output = run(["--tighten-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root), {"src/a.cs": 25})
+
+    def test_update_baseline_drops_recorded_headroom(self):
+        # Re-pinning every cap at its exact size leaves nothing deliberate about later slack.
+        with fake_repo({"src/a.cs": 20}, {"src/a.cs": 90}) as root:
+            run(["--tighten-baseline", "--buffer", "5"])
+            self.assertIn("headroom", read_payload(root))
+
+            code, output = run(["--threshold", "10", "--update-baseline"])
+
+            self.assertEqual(code, 0, output)
+            self.assertNotIn("headroom", read_payload(root))
+
+
 if __name__ == "__main__":
     unittest.main()
