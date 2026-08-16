@@ -348,7 +348,9 @@ public static partial class FundStructureEndpoints
         }
         catch (ReportingGovernanceException ex)
         {
-            return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
+            // Includes the release-gate refusal for unreleased primaries. Downloads carry no
+            // expected version, so a concurrency subclass arriving here is still a state conflict.
+            return ApiProblemDetails.Conflict(context, ex.Message);
         }
         catch (IOException ex)
         {

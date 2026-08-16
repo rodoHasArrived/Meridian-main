@@ -13,6 +13,13 @@ posting commands, reconciliation, operations continuity) and the one new contrac
 not introduce `Version`, `RowVersion`, `IfMatch`, or HTTP `ETag`/`If-Match` headers for this
 purpose; Meridian versions in the body.
 
+One existing family spells it differently: the ledger journal-automation schedule endpoints bind
+the full work item (`AutomatedJournalScheduleWorkItem`), whose **`Version`** member is both the
+record's current version on read and the expected version on write — there is no separate
+`ExpectedVersion` field to send. That is a family-specific exception retained until the request
+DTO is next reshaped, not a precedent; its 409 *response* already follows the canonical body
+below.
+
 ## Response side: the canonical 409 body
 
 A stale `ExpectedVersion` maps to `ApiProblemDetails.VersionConflict(...)`
