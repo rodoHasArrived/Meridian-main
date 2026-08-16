@@ -1227,8 +1227,8 @@ public static partial class WorkstationEndpoints
             {
                 Actor = currentUser,
                 ActionOrigin = OperationsActionOriginDto.HumanOperator,
-                ApprovalActor = NormalizeApprovalEvidence(request.ApprovalActor),
-                ApprovalReference = NormalizeApprovalEvidence(request.ApprovalReference)
+                ApprovalActor = NormalizeOptional(request.ApprovalActor),
+                ApprovalReference = NormalizeOptional(request.ApprovalReference)
             };
             var result = await service.ResolveBreakCaseAsync(workflowId, breakId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);

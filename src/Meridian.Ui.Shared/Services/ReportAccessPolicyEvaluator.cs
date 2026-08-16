@@ -95,7 +95,7 @@ public static class ReportAccessPolicyEvaluator
         }
         var groupIds = new HashSet<string>(
             context?.GroupPrincipalIds?
-                .Select(NormalizeId)
+                .Select(NormalizeOptional)
                 .Where(static value => value is not null)
                 .Select(static value => value!)
                 ?? [],
