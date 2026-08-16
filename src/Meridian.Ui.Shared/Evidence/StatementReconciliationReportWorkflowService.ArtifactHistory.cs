@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Ui.Shared.Evidence;
@@ -96,7 +96,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
             }
 
             var receiptBytes = await File.ReadAllBytesAsync(receiptPath, ct).ConfigureAwait(false);
-            var receiptHash = Convert.ToHexString(SHA256.HashData(receiptBytes));
+            var receiptHash = Sha256Digest.Compute(receiptBytes);
             if (!string.Equals(
                     receiptHash,
                     generation.ArchiveReceiptContentHashSha256,
@@ -173,7 +173,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
             }
 
             var manifest = await File.ReadAllBytesAsync(manifestPath, ct).ConfigureAwait(false);
-            var actualManifestHash = Convert.ToHexString(SHA256.HashData(manifest));
+            var actualManifestHash = Sha256Digest.Compute(manifest);
             if (manifest.LongLength != generation.ManifestByteLength
                 || !string.Equals(
                     actualManifestHash,
@@ -277,7 +277,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
         }
 
         var manifestBytes = await File.ReadAllBytesAsync(manifestPath, ct).ConfigureAwait(false);
-        var manifestHash = Convert.ToHexString(SHA256.HashData(manifestBytes));
+        var manifestHash = Sha256Digest.Compute(manifestBytes);
         ValidateCurrentArtifactManifest(manifestBytes, manifestHash, workflow);
     }
 

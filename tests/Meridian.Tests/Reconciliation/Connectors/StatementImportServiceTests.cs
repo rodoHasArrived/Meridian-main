@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
@@ -165,10 +166,10 @@ public sealed class StatementImportServiceTests : IDisposable
         var rawPath = Path.Combine(_root, result.RetainedSourcePath);
         var canonicalPath = Path.Combine(_root, result.RetainedCanonicalPath);
         run.Import.SourceFileHash.Should().Be(
-            Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(rawPath))),
+            Sha256Digest.Compute(await File.ReadAllBytesAsync(rawPath)),
             "the retained source hash is authoritative evidence for the original upload bytes");
         run.Import.CanonicalArtifactHash.Should().Be(
-            Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(canonicalPath))),
+            Sha256Digest.Compute(await File.ReadAllBytesAsync(canonicalPath)),
             "the parse artifact hash is retained separately from the original upload hash");
         run.Cases.Should().HaveCount(6);
         run.Cases.Should().OnlyContain(reconciliationCase => reconciliationCase.Status == "Open");
@@ -352,7 +353,7 @@ public sealed class StatementImportServiceTests : IDisposable
         var run = await _workflow.GetAsync(result.RunId);
         run.Should().NotBeNull();
         run!.Import.SourceFileHash.Should().Be(
-            Convert.ToHexString(SHA256.HashData(expectedSource)));
+            Sha256Digest.Compute(expectedSource));
     }
 
     [Fact]

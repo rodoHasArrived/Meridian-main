@@ -7,6 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Application.Composition;
 
+// Mutates process-global posture variables (ASPNETCORE_ENVIRONMENT, MERIDIAN_API_DEPLOYMENT_MODE,
+// MDC_PACKAGED_BUILD, MERIDIAN_CUSTOMER_BUILD) that concurrent compositions read ambiently, so this
+// class must not run in parallel with other collections (#2680).
+[Collection("Sequential")]
 public sealed class ProductionServiceRegistrationPolicyTests
 {
     [Fact]

@@ -795,6 +795,9 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
             AppendCanonical(canonical, FormatDecimal(line.Credit));
         }
 
+        // Deliberately NOT routed through Sha256Digest (which lowercases): this canonical fill
+        // hash participates in posting dedupe/verification against retained records, so changing
+        // its casing would break recognition of previously posted fills (#2691).
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())));
     }
 

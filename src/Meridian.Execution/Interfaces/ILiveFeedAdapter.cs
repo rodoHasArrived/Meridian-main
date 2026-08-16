@@ -37,4 +37,29 @@ public interface ILiveFeedAdapter
     /// tick-only adapters need not implement bar retention.
     /// </summary>
     HistoricalBar? GetLastBar(string symbol) => null;
+
+    /// <summary>
+    /// Returns one coherent view of the last-known quote, trade, and bar for
+    /// <paramref name="symbol"/>. Consumers that price against a market-data envelope
+    /// (paper matching) must read through here rather than pairing the individual getters:
+    /// two independent reads can observe the quote from before a market update and the trade
+    /// from after it, producing an envelope that was never in effect (#2676).
+    /// <para>
+    /// The default implementation composes the individual getters and is therefore NOT
+    /// atomic; adapters that record fields independently under concurrency should override
+    /// it with a genuinely consistent snapshot, as <c>LiveMarketDataCache</c> does.
+    /// </para>
+    /// </summary>
+    MarketDataSnapshot GetSnapshot(string symbol) =>
+        new(GetLastQuote(symbol), GetLastTrade(symbol), GetLastBar(symbol));
 }
+
+/// <summary>
+/// A single coherent observation of the last-known market data for one symbol: the fields
+/// were read together, so a consumer never sees a quote from before an update paired with a
+/// trade from after it.
+/// </summary>
+public readonly record struct MarketDataSnapshot(
+    BboQuotePayload? Quote,
+    Trade? Trade,
+    HistoricalBar? Bar);

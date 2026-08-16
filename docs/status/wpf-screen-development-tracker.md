@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `6e9ecf7db66a`
+- Source fingerprint: `2bf5863b0731`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `97`
 - Open automated tasks: `5`
@@ -181,7 +181,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as PositionBlotter (PositionBlotterPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-position-blotter.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +10 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +11 more.
 
 #### Run risk (`RunRisk`)
 

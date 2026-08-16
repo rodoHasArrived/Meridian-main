@@ -12,6 +12,12 @@ namespace Meridian.Tests.Application.Services;
 /// Tests for ConfigurationService focusing on self-healing fixes,
 /// credential resolution, validation, and provider filtering.
 /// </summary>
+// Mutates process-global provider-credential variables (ALPACA_KEY_ID/SECRET, POLYGON_API_KEY,
+// TIINGO_API_TOKEN, FINNHUB_API_KEY) that provider constructors and the provider-catalog projection
+// read ambiently at resolve time, so this class must not run in parallel with other collections
+// (#2680/#2682 — key and secret are even set in separate statements, so a concurrent resolve can
+// observe torn credentials).
+[Collection("Sequential")]
 public class ConfigurationServiceTests : IAsyncDisposable
 {
     private readonly ConfigurationService _sut;

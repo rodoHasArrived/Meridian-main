@@ -44,7 +44,7 @@ DATA_SOURCES = [
     "src/**/*.cs endpoint mappings",
     "src/Meridian.Contracts/Api/UiApiRoutes.cs",
     "src/Meridian.Contracts/Workstation/*.cs",
-    "docs/**/*.md (excluding generated report roots)",
+    "docs/reference/**/*.md (contract reference documentation only)",
 ]
 
 # Generated reports live under these roots and echo route paths and contract names verbatim —
@@ -53,6 +53,25 @@ DATA_SOURCES = [
 # run wrote it into a report. That inflates coverage toward 100% and leaves the artifact unable to
 # converge, since each run's output changes the next run's input.
 GENERATED_DOC_ROOTS = ("docs/status", "docs/generated")
+
+# The corpus is an allowlist of roots that exist to describe contracts, not a denylist of prose.
+#
+# Subtracting prose was tried first and does not converge: four review rounds on #2703 each found a
+# document where root-, file-, or heading-level filtering guessed wrong, because these roots
+# interleave description and argument inside single documents. `w9-close-out-delivery-plan` states
+# StatementRunCreateDto's complete field set -- in order to argue the DTO is missing accounting
+# scope. No cheap syntactic proxy separates "describes a contract" from "argues about one".
+#
+# So the metric answers a question that can be answered instead: is this endpoint or contract
+# described in reference documentation? Naming a symbol in a review, brainstorm, roadmap, or
+# delivery plan no longer moves the score, and there is no per-file adjudication to maintain.
+#
+# The cost is a smaller number -- 251 endpoints and 117 contracts become 199 and 34. That drop is
+# the point: the old figures were an unknown mixture of documented and merely-named symbols, which
+# is what #2703 filed. This is the issue's suggestion 1; its suggestion 3, deriving coverage from
+# request/response schemas in a served OpenAPI document, remains the better answer once #2695
+# provides one, and would replace this rule rather than extend it.
+CONTRACT_DOC_ROOTS = ("docs/reference",)
 
 
 def _should_skip(path: Path) -> bool:
@@ -168,12 +187,21 @@ def _scan_workstation_contracts(root: Path) -> list[dict[str, object]]:
     return contracts
 
 
-def _is_generated_doc(root: Path, path: Path) -> bool:
+def _is_under(root: Path, path: Path, doc_roots: tuple[str, ...]) -> bool:
     relative = _rel(root, path)
     return any(
-        relative == generated_root or relative.startswith(generated_root + "/")
-        for generated_root in GENERATED_DOC_ROOTS
+        relative == doc_root or relative.startswith(doc_root + "/")
+        for doc_root in doc_roots
     )
+
+
+def _is_generated_doc(root: Path, path: Path) -> bool:
+    return _is_under(root, path, GENERATED_DOC_ROOTS)
+
+
+def _is_contract_doc(root: Path, path: Path) -> bool:
+    """True for a document under a root that exists to describe contracts."""
+    return _is_under(root, path, CONTRACT_DOC_ROOTS)
 
 
 def _load_docs_text(root: Path) -> str:
@@ -183,7 +211,7 @@ def _load_docs_text(root: Path) -> str:
 
     chunks: list[str] = []
     for path in _iter_files(docs_dir, ".md"):
-        if _is_generated_doc(root, path):
+        if not _is_contract_doc(root, path) or _is_generated_doc(root, path):
             continue
         chunks.append(_read_text(path))
     normalized = "\n".join(chunks)

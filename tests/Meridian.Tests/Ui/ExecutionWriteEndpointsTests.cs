@@ -291,6 +291,51 @@ public sealed class ExecutionWriteEndpointsTests
         orderManager.CancelledOrderIds.Should().ContainSingle().Which.Should().Be("ord-live-001");
     }
 
+    /// <summary>
+    /// A broker that refuses one cancellation leaves that order working, and the operator has to
+    /// be told which one. The endpoint used to report <c>Completed</c> for any sweep that returned
+    /// without throwing, so a half-emptied book produced a success ticket.
+    /// </summary>
+    [Fact]
+    public async Task CancelAllOrders_WhenTheBrokerRefusesOne_ReportsPartialAndNamesTheOrderStillWorking()
+    {
+        var orderManager = new RecordingOrderManager(
+            CreateOrderState("ord-live-001", "AAPL", 1m),
+            CreateOrderState("ord-live-002", "MSFT", 1m));
+        orderManager.RefuseToCancel.Add("ord-live-002");
+
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IOrderManager>(orderManager));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/orders/cancel-all", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Partial", "one order survived the sweep");
+        result.Message.Should().Contain("ord-live-002", "an operator cannot cancel by hand what the ticket does not name");
+        orderManager.CancelledOrderIds.Should().ContainSingle().Which.Should().Be("ord-live-001");
+    }
+
+    /// <summary>
+    /// When nothing could be cancelled the sweep failed outright, which calls for a different
+    /// operator response than a partial one: the kill switch did not fire at all.
+    /// </summary>
+    [Fact]
+    public async Task CancelAllOrders_WhenTheBrokerRefusesEverything_ReportsFailed()
+    {
+        var orderManager = new RecordingOrderManager(CreateOrderState("ord-live-001", "AAPL", 1m));
+        orderManager.RefuseToCancel.Add("ord-live-001");
+
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IOrderManager>(orderManager));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/orders/cancel-all", null);
+
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Failed");
+        orderManager.CancelledOrderIds.Should().BeEmpty();
+    }
+
     // ------------------------------------------------------------------ //
     //  POST /api/execution/positions/*                                    //
     // ------------------------------------------------------------------ //
@@ -1811,15 +1856,27 @@ file sealed class RecordingOrderManager(params OrderState[] openOrders) : IOrder
     public OrderState? GetOrder(string orderId) =>
         _openOrders.FirstOrDefault(order => string.Equals(order.OrderId, orderId, StringComparison.OrdinalIgnoreCase));
 
-    public Task CancelAllAsync(CancellationToken ct = default)
+    /// <summary>Order ids this double refuses to cancel, standing in for a broker that says no.</summary>
+    public HashSet<string> RefuseToCancel { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    public Task<KillSwitchSweepResult> CancelAllAsync(CancellationToken ct = default)
     {
         CancelAllCallCount++;
+        var failures = new List<KillSwitchSweepFailure>();
+        var cancelled = 0;
         foreach (var order in _openOrders)
         {
+            if (RefuseToCancel.Contains(order.OrderId))
+            {
+                failures.Add(new KillSwitchSweepFailure(order.OrderId, order.Symbol, "Broker refused the cancellation."));
+                continue;
+            }
+
             CancelledOrderIds.Add(order.OrderId);
+            cancelled++;
         }
 
-        return Task.CompletedTask;
+        return Task.FromResult(KillSwitchSweepResult.From(_openOrders.Count, cancelled, failures));
     }
 
     public IReadOnlyList<OrderState> GetCompletedOrders(int take = 20) => Array.Empty<OrderState>();
