@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
@@ -176,7 +177,14 @@ public static partial class LedgerEndpoints
             }
             catch (AutomatedJournalScheduleConcurrencyException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                // Canonical optimistic-concurrency contract: the exception's version data reaches
+                // the client instead of being flattened into the message text.
+                return ApiProblemDetails.VersionConflict(
+                    context,
+                    ex.Message,
+                    resourceId: ex.ScheduleId,
+                    expectedVersion: ex.ExpectedVersion.ToString(CultureInfo.InvariantCulture),
+                    currentVersion: ex.ActualVersion.ToString(CultureInfo.InvariantCulture));
             }
             catch (InvalidOperationException)
             {

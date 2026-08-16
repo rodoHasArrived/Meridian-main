@@ -1384,11 +1384,11 @@ public static partial class FundStructureEndpoints
             }
             catch (ReportingGovernanceConcurrencyException ex)
             {
-                return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
+                return ApiProblemDetails.VersionConflict(context, ex.Message);
             }
             catch (ReportingGovernanceException ex)
             {
-                return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
             catch (ReportingArtifactCatalogIntegrityException ex)
             {
@@ -1655,7 +1655,7 @@ public static partial class FundStructureEndpoints
                                            or InvalidDataException
                                            or InvalidOperationException)
             {
-                return Results.Problem(ex.Message, statusCode: ReportingScheduleFailureStatus(ex));
+                return ReportingScheduleFailure(context, ex);
             }
         })
         .WithName("UpsertReportingSchedule")
@@ -1711,7 +1711,7 @@ public static partial class FundStructureEndpoints
             }
             catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or KeyNotFoundException)
             {
-                return Results.Problem(ex.Message, statusCode: ReportingScheduleFailureStatus(ex));
+                return ReportingScheduleFailure(context, ex);
             }
         })
         .WithName("RunReportingScheduleNow")
