@@ -348,7 +348,9 @@ public static partial class FundStructureEndpoints
         }
         catch (ReportingGovernanceException ex)
         {
-            return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
+            // Includes the release-gate refusal for unreleased primaries. Downloads carry no
+            // expected version, so a concurrency subclass arriving here is still a state conflict.
+            return ApiProblemDetails.Conflict(context, ex.Message);
         }
         catch (IOException ex)
         {
@@ -597,11 +599,13 @@ public static partial class FundStructureEndpoints
         }
         catch (ReportingGovernanceConcurrencyException ex)
         {
-            return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
+            // The exception carries no structured version data, so only the canonical type/title
+            // and detail apply; version extensions join once the exception itself grows them.
+            return ApiProblemDetails.VersionConflict(context, ex.Message);
         }
         catch (ReportingGovernanceException ex)
         {
-            return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
+            return ApiProblemDetails.Conflict(context, ex.Message);
         }
         catch (ArgumentException ex)
         {

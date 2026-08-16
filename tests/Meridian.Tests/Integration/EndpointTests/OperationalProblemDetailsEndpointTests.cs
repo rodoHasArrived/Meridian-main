@@ -189,6 +189,59 @@ public sealed class OperationalProblemDetailsEndpointTests
     }
 
     [Fact]
+    public async Task VersionConflict_CarriesResourceAndVersionExtensions()
+    {
+        await using var app = await CreateHostAsync(static (host, _) =>
+            host.MapGet(
+                "/api/problem-details/version-conflict",
+                (HttpContext context) => ApiProblemDetails.VersionConflict(
+                    context,
+                    "Schedule 'sched-1' version is stale.",
+                    resourceId: "sched-1",
+                    expectedVersion: "6",
+                    currentVersion: "7")));
+        using var client = app.GetTestClient();
+
+        var response = await client.GetAsync("/api/problem-details/version-conflict");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        var problem = await AssertProblemDetailsAsync(
+            response,
+            ApiProblemTypes.VersionConflict,
+            "Version Conflict");
+        problem.GetProperty("detail").GetString().Should().Be("Schedule 'sched-1' version is stale.");
+        problem.GetProperty("resourceId").GetString().Should().Be("sched-1");
+        problem.GetProperty("expectedVersion").GetString().Should().Be("6");
+        problem.GetProperty("currentVersion").GetString().Should().Be("7");
+    }
+
+    // Some concurrency exceptions carry only a message. The contract keeps every version
+    // extension optional: an omitted value leaves the member out rather than emitting null,
+    // so clients can probe with TryGetProperty and never parse a placeholder.
+    [Fact]
+    public async Task VersionConflict_OmitsExtensionsItWasNotGiven()
+    {
+        await using var app = await CreateHostAsync(static (host, _) =>
+            host.MapGet(
+                "/api/problem-details/version-conflict-bare",
+                (HttpContext context) => ApiProblemDetails.VersionConflict(
+                    context,
+                    "The resource changed after it was loaded.")));
+        using var client = app.GetTestClient();
+
+        var response = await client.GetAsync("/api/problem-details/version-conflict-bare");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        var problem = await AssertProblemDetailsAsync(
+            response,
+            ApiProblemTypes.VersionConflict,
+            "Version Conflict");
+        problem.TryGetProperty("resourceId", out _).Should().BeFalse();
+        problem.TryGetProperty("expectedVersion", out _).Should().BeFalse();
+        problem.TryGetProperty("currentVersion", out _).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task ExceptionHandler_UnhandledFailure_ReturnsSafeInternalProblem()
     {
         await using var app = await CreateHostAsync(static (host, _) =>
