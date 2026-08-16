@@ -1721,6 +1721,7 @@ Meridian-main
 │   │   ├── production-certification-evidence-chain.md
 │   │   ├── production-readiness-audit-2026-07-27.md
 │   │   ├── README.md
+│   │   ├── security-master-architecture-audit-2026-08-13.md
 │   │   └── wpf-perf-uiux-audit-2026-06-14.md
 │   ├── examples
 │   │   ├── agent-improvement-loop

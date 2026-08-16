@@ -11,10 +11,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 20.7% |
-| Endpoint coverage | 32.0% |
+| Weighted score | 20.8% |
+| Endpoint coverage | 32.2% |
 | Workstation contract coverage | 3.7% |
-| Endpoints documented | 199 / 621 |
+| Endpoints documented | 200 / 621 |
 | Workstation contracts documented | 34 / 917 |
 
 ## Endpoint Coverage
@@ -203,7 +203,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/failover/rules` | Documented | `src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:113` |
 | `POST` | `/api/failover/rules` | Documented | `src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:134` |
 | `GET` | `/api/funds/{fundId:guid}/accounts` | Gap | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:127` |
-| `GET` | `/api/health` | Gap | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:41` |
+| `GET` | `/api/health` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:41` |
 | `GET` | `/api/health/detailed` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:197` |
 | `GET` | `/api/health/diagnostics/bundle` | Gap | `src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:258` |
 | `GET` | `/api/health/events` | Gap | `src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:188` |
@@ -1567,7 +1567,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 422 mapped endpoint gap(s).
+- Document or intentionally suppress 421 mapped endpoint gap(s).
 - Document or intentionally suppress 883 workstation contract gap(s).
 
 ---
