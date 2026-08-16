@@ -1,7 +1,7 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Lifecycle;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.LifecycleSupervisor;
 
@@ -115,7 +115,7 @@ internal sealed record LifecycleSupervisorConfiguration
 
     private static string CreatePipeName(string installRoot)
     {
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(installRoot.ToUpperInvariant()));
+        var hash = Sha256Digest.ComputeBytesUtf8(installRoot.ToUpperInvariant());
         return $"Meridian.LifecycleSupervisor.{Convert.ToHexString(hash.AsSpan(0, 8))}";
     }
 

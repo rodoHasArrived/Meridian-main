@@ -6,6 +6,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Plaid;
 using Meridian.Contracts.Workstation;
 using Meridian.PortfolioRecords.FundAccounts;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -523,7 +524,7 @@ internal static class BankStatementCsvImportMapper
 
     private static Guid BuildGuid(string value)
     {
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+        var hash = Sha256Digest.ComputeBytesUtf8(value);
         var bytes = new byte[16];
         Array.Copy(hash, bytes, bytes.Length);
         return new Guid(bytes);

@@ -1,12 +1,12 @@
 using System.Buffers.Binary;
 using System.Data;
-using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Ledger;
 using Npgsql;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
@@ -358,7 +358,7 @@ public sealed class PostgresOperationsContinuityStore :
 
     private static long CreateWorkflowAuditLockKey(Guid workflowId)
     {
-        var hash = SHA256.HashData(workflowId.ToByteArray());
+        var hash = Sha256Digest.ComputeBytes(workflowId.ToByteArray());
         return BinaryPrimitives.ReadInt64BigEndian(hash.AsSpan(0, sizeof(long)));
     }
 

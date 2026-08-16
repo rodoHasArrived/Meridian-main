@@ -3182,8 +3182,7 @@ public sealed partial class ReportingScheduleService
             return false;
         }
 
-        var computed = SHA256.HashData(Encoding.UTF8.GetBytes(
-            JsonSerializer.Serialize(ReportAccessPolicyEvaluator.Normalize(schedule.AccessPolicySnapshot))));
+        var computed = Sha256Digest.ComputeBytesUtf8(JsonSerializer.Serialize(ReportAccessPolicyEvaluator.Normalize(schedule.AccessPolicySnapshot)));
         return retained.Length == computed.Length
             && CryptographicOperations.FixedTimeEquals(retained, computed);
     }

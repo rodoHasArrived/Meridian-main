@@ -1482,7 +1482,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
             CanonicalizeSemanticIdentity(command.Import.Document.ExternalAccountId),
             CanonicalizeSemanticIdentity(command.Import.ToleranceProfileId),
             contentHash);
-        return prefix + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity)))[..32].ToLowerInvariant();
+        return prefix + Sha256Digest.ComputeUtf8(identity)[..32];
     }
 
     private IReadOnlyList<WorkflowLocation> BuildWorkflowLocations(
@@ -1638,9 +1638,9 @@ public sealed partial class StatementReconciliationReportWorkflowService
                     ResolveDataRootPath(request.RelativeInputPath),
                     ct)
                 .ConfigureAwait(false);
-            identityMatches = SHA256.HashData(retainedInput)
+            identityMatches = Sha256Digest.ComputeBytes(retainedInput)
                 .AsSpan()
-                .SequenceEqual(SHA256.HashData(import.Document.Content.Span));
+                .SequenceEqual(Sha256Digest.ComputeBytes(import.Document.Content.Span));
         }
 
         if (!identityMatches)

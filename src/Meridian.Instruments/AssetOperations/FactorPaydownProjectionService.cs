@@ -1,7 +1,6 @@
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Instruments.AssetOperations;
 
@@ -231,7 +230,7 @@ public sealed class FactorPaydownProjectionService : IFactorPaydownProjectionSer
 
     private static Guid DeterministicGuid(string value)
     {
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+        var hash = Sha256Digest.ComputeBytesUtf8(value);
         Span<byte> bytes = stackalloc byte[16];
         hash.AsSpan(0, 16).CopyTo(bytes);
         bytes[6] = (byte)((bytes[6] & 0x0f) | 0x50);

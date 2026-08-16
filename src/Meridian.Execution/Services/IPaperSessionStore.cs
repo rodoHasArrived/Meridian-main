@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
@@ -143,7 +142,7 @@ public sealed record PaperSessionFillRecord(
             fill.FillPrice is { } fillPrice ? FormatDecimal(fillPrice) : "-",
             FormatDecimal(fill.Commission ?? 0m),
             fill.Timestamp.ToUniversalTime().Ticks.ToString(CultureInfo.InvariantCulture));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonicalIdentity));
+        var hash = Sha256Digest.ComputeBytesUtf8(canonicalIdentity);
         return new Guid(hash.AsSpan(0, 16));
     }
 

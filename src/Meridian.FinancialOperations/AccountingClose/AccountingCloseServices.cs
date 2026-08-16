@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.AccountingClose;
 
@@ -180,7 +180,7 @@ public sealed class FxTranslationService
         LedgerDimensionSetDto? dimensions)
     {
         var input = string.Join('|', ledgerId, period.ToString("yyyy-MM-dd"), accountCode, functionalAmount, reportingAmount, rate.FromCurrency, rate.ToCurrency, rate.RateDate.ToString("yyyy-MM-dd"), rate.Rate, rate.SourceEventId, rate.RateId, TrialBalanceProjectionService.DimensionSignature(dimensions));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        var hash = Sha256Digest.ComputeBytesUtf8(input);
         return new Guid(hash[..16]);
     }
 }
@@ -413,8 +413,7 @@ public sealed class CloseEvidencePackageService
             Append(builder, blocker);
         }
 
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
-        return Convert.ToHexString(hash).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static void Append(StringBuilder builder, string value)

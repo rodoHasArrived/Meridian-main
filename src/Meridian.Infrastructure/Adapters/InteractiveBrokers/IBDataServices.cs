@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Meridian.Contracts.Configuration;
 using Meridian.ProviderSdk;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 
@@ -675,7 +676,7 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             ? capturedCorrelationId
             : throw new KeyNotFoundException($"Unknown IB request correlation for request id {lineage.RequestId}.");
         var keyMaterial = string.Join("|", ProviderId, _providerConnectionId, providerNativeId, descriptor, correlationId);
-        var deduplicationKey = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(keyMaterial))).ToLowerInvariant();
+        var deduplicationKey = Sha256Digest.ComputeUtf8(keyMaterial);
         return new ProviderDataProvenance(ProviderId, _providerConnectionId, sourceTimestamp, receiptTimestamp ?? DateTimeOffset.UtcNow,
             availability == nameof(IBMarketDataAvailability.Unknown) ? "unknown" : "reported", lineage.Subscription ?? "unspecified",
             availability, descriptor, providerNativeId, correlationId, deduplicationKey);

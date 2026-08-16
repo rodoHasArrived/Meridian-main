@@ -4,6 +4,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.SecurityMaster;
 
@@ -327,8 +328,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
 
     private static Guid DeterministicSymbolId(string normalizedSymbol)
     {
-        var hash = System.Security.Cryptography.SHA256.HashData(
-            System.Text.Encoding.UTF8.GetBytes("security-master:coverage:" + normalizedSymbol));
+        var hash = Sha256Digest.ComputeBytesUtf8("security-master:coverage:" + normalizedSymbol);
         return new Guid(hash.AsSpan(0, 16));
     }
 

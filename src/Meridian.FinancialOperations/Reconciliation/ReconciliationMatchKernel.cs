@@ -1,5 +1,4 @@
-using System.Security.Cryptography;
-using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
@@ -219,7 +218,6 @@ public static class ReconciliationMatchKernel
         ArgumentException.ThrowIfNullOrWhiteSpace(prefix);
         ArgumentNullException.ThrowIfNull(parts);
         var payload = string.Join('\u001f', parts);
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(payload));
-        return $"{prefix}-{Convert.ToHexString(hash.AsSpan(0, 12)).ToLowerInvariant()}";
+        return $"{prefix}-{Sha256Digest.ComputeUtf8(payload)[..24]}";
     }
 }

@@ -3229,7 +3229,7 @@ public sealed partial class ReportPackDeliveryService
 
     private static Guid BuildReportingRunReportId(string runId)
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(runId));
+        var bytes = Sha256Digest.ComputeBytesUtf8(runId);
         return new Guid(bytes.AsSpan(0, 16));
     }
 
@@ -3254,8 +3254,7 @@ public sealed partial class ReportPackDeliveryService
 
     private static string ComputeSha256Hex(byte[] value)
     {
-        var bytes = SHA256.HashData(value);
-        return Convert.ToHexString(bytes).ToLowerInvariant();
+        return Sha256Digest.Compute(value);
     }
 
     private ReportPackDeliveryAttemptDto? GetDeliveredAttempt(Guid reportId, Guid attemptId)
