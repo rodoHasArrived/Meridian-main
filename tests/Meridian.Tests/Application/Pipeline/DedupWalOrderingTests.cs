@@ -535,6 +535,36 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
 
         await Assert.ThrowsAsync<InvalidDataException>(() => pipeline.RecoverAsync());
         sink.AppendedEvents.Should().BeEmpty();
+        wal2.CorruptedRecordCount.Should().BeGreaterThanOrEqualTo(1,
+            "a halt caused by semantic corruption must still be counted as corruption");
+        wal2.SkippedRecordCount.Should().Be(0,
+            "Halt mode does not skip the record, so the skipped counter must not claim it did");
+    }
+
+    [Fact]
+    public async Task IsDuplicateAsync_LegacySighting_NeverDowngradesDurabilityConfirmation()
+    {
+        var ledgerDir = Path.Combine(_rootDir, "ledger_no_downgrade");
+        Directory.CreateDirectory(ledgerDir);
+        var evt = CreateTradeEvent("NODOWN", 800);
+
+        await using var ledger = new PersistentDedupLedger(ledgerDir, entryTtl: TimeSpan.FromMilliseconds(50));
+        await ledger.InitializeAsync();
+
+        var reserved = await ledger.TryReserveAsync(evt, DedupLookupScope.LiveIngress, CancellationToken.None);
+        await ledger.CommitDurableAsync(new[] { reserved.Reservation }, CancellationToken.None);
+
+        // Let the durability-confirmed entry expire, then record a legacy sighting of the same
+        // identity — the exact path that could overwrite version 2 with version 1.
+        await Task.Delay(150);
+        (await ledger.IsDuplicateAsync(evt, CancellationToken.None)).Should().BeFalse(
+            "the expired entry no longer suppresses live ingress");
+
+        // The refreshed entry must keep the durability confirmation: sink durability, once
+        // proven, is not retracted by a later legacy sighting.
+        (await ledger.TryReserveAsync(evt, DedupLookupScope.WalRecovery, CancellationToken.None))
+            .Status.Should().Be(DedupReservationStatus.Duplicate,
+                "a legacy sighting must never downgrade a durability-confirmed identity");
     }
 
     [Fact]

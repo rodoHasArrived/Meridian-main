@@ -476,6 +476,10 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     unrecoverable++;
                     if (_wal.CorruptionMode == WalCorruptionMode.Halt)
                     {
+                        // Count the corruption before failing closed — the halt exists because
+                        // corruption was found, so metrics must reflect it — without claiming
+                        // the record was skipped (Halt does not skip it).
+                        _wal.ReportUnreadablePayload(recordSkip: false);
                         throw new InvalidDataException(
                             $"WAL recovery halted: record {walRecord.Sequence} has a checksum-valid but " +
                             "undeserializable payload. Repair or remove the record before restarting.", ex);
@@ -500,6 +504,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     unrecoverable++;
                     if (_wal.CorruptionMode == WalCorruptionMode.Halt)
                     {
+                        _wal.ReportUnreadablePayload(recordSkip: false);
                         throw new InvalidDataException(
                             $"WAL recovery halted: record {walRecord.Sequence} deserialized to a null event. " +
                             "Repair or remove the record before restarting.");

@@ -99,12 +99,15 @@ public sealed class WriteAheadLog : IAsyncDisposable
     /// Records a checksum-valid record whose payload a replay consumer could not deserialize,
     /// applying the same corruption counters and Alert-mode signal as record-level corruption
     /// so semantic payload failures are never dropped without a monitoring signal.
-    /// Callers enforcing <see cref="WalCorruptionMode.Halt"/> should throw instead.
+    /// Callers enforcing <see cref="WalCorruptionMode.Halt"/> should report with
+    /// <paramref name="recordSkip"/> set to <see langword="false"/> before throwing, so the
+    /// corruption is counted without claiming the record was skipped.
     /// </summary>
-    public void ReportUnreadablePayload()
+    public void ReportUnreadablePayload(bool recordSkip = true)
     {
         Interlocked.Increment(ref _corruptedRecordCount);
-        Interlocked.Increment(ref _skippedRecordCount);
+        if (recordSkip)
+            Interlocked.Increment(ref _skippedRecordCount);
 
         // Keep metric-based alerting in step with the Alert-mode event: semantic payload
         // corruption counts toward the same Prometheus series as record-level corruption.
