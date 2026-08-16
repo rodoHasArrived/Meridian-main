@@ -6831,6 +6831,7 @@ Meridian-main
 │   │   │   │   ├── ApiProblemDetails.cs
 │   │   │   │   ├── MeridianApiExceptionHandler.cs
 │   │   │   │   └── MeridianApiProblemDetailsServiceCollectionExtensions.cs
+│   │   │   ├── AccountAdministrationGuardMiddleware.cs
 │   │   │   ├── AccountingSystemEndpoints.cs
 │   │   │   ├── AdminEndpoints.cs
 │   │   │   ├── AnalyticsEndpoints.cs
