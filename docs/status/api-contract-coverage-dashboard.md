@@ -11,18 +11,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 20.8% |
-<<<<<<< HEAD
+| Weighted score | 20.9% |
 | Endpoint coverage | 32.2% |
-| Workstation contract coverage | 3.7% |
-| Endpoints documented | 200 / 621 |
-| Workstation contracts documented | 34 / 917 |
-=======
-| Endpoint coverage | 32.0% |
 | Workstation contract coverage | 3.9% |
-| Endpoints documented | 199 / 621 |
+| Endpoints documented | 200 / 621 |
 | Workstation contracts documented | 36 / 917 |
->>>>>>> origin/main
 
 ## Endpoint Coverage
 
@@ -654,8 +647,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Contract | Status | Source |
 |---|---|---|
-| `AccrualCalculationResultDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:268` |
-| `AccrualInputSnapshotDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:250` |
+| `AccrualCalculationResultDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:269` |
+| `AccrualInputSnapshotDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:251` |
 | `ActivationOutcomeDto` | Gap | `src/Meridian.Contracts/Workstation/FirstRunDtos.cs:76` |
 | `AlpacaBrokerageConnectionRequestDto` | Gap | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:103` |
 | `ApprovalDecision` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:30` |
@@ -788,10 +781,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `EvidenceVaultLookupRequestDto` | Gap | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:613` |
 | `EvidenceVaultRequestListEntryDto` | Gap | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:492` |
 | `EvidenceVaultRequestListQueryDto` | Gap | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:478` |
-| `ExpectedAccountingEventDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:284` |
-| `ExpectedAccountingEventKindDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:229` |
-| `ExpectedJournalPreviewDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:319` |
-| `ExpectedJournalPreviewLineDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:309` |
+| `ExpectedAccountingEventDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:285` |
+| `ExpectedAccountingEventKindDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:230` |
+| `ExpectedJournalPreviewDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:320` |
+| `ExpectedJournalPreviewLineDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:310` |
 | `ExposureSnapshotDto` | Gap | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:2` |
 | `ExposureTrendPointDto` | Gap | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:43` |
 | `FeatureCapabilitySettingsResponse` | Gap | `src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs:2` |
@@ -1076,56 +1069,56 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ProviderShadowBookComparisonLineDto` | Gap | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:401` |
 | `PublishSecurityMasterRevisionRequest` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:116` |
 | `RecommendedActionDto` | Gap | `src/Meridian.Contracts/Workstation/FirstRunDtos.cs:84` |
-| `ReconciliationBreakCategory` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:54` |
-| `ReconciliationBreakDispositionDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:459` |
-| `ReconciliationBreakDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:141` |
-| `ReconciliationBreakExplanationDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:609` |
-| `ReconciliationBreakMeasureDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:449` |
-| `ReconciliationBreakMeasureKindDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:438` |
-| `ReconciliationBreakQueueItem` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:480` |
+| `ReconciliationBreakCategory` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:55` |
+| `ReconciliationBreakDispositionDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:460` |
+| `ReconciliationBreakDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:142` |
+| `ReconciliationBreakExplanationDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:610` |
+| `ReconciliationBreakMeasureDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:450` |
+| `ReconciliationBreakMeasureKindDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:439` |
+| `ReconciliationBreakQueueItem` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:481` |
 | `ReconciliationBreakQueueProjectionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:247` |
 | `ReconciliationBreakQueueProjectionItemDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:262` |
-| `ReconciliationBreakQueueScope` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:588` |
-| `ReconciliationBreakQueueStatus` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:365` |
-| `ReconciliationBreakScore` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:919` |
-| `ReconciliationBreakSeverity` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:41` |
-| `ReconciliationBreakStatus` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:28` |
-| `ReconciliationBulkCaseworkCaseResult` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:750` |
-| `ReconciliationBulkCaseworkRequest` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:726` |
-| `ReconciliationBulkCaseworkResult` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:757` |
-| `ReconciliationCalibrationProfileSummaryDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:966` |
-| `ReconciliationCalibrationStatusDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:470` |
-| `ReconciliationCalibrationSummaryDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:983` |
-| `ReconciliationCaseComment` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:617` |
-| `ReconciliationCaseCommentVisibility` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:411` |
-| `ReconciliationCaseLifecycleState` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:375` |
-| `ReconciliationCasePriority` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:391` |
-| `ReconciliationCaseSignoffRecord` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:910` |
-| `ReconciliationCaseSlaState` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:400` |
-| `ReconciliationCaseStateTransition` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:932` |
-| `ReconciliationCaseTransitionAction` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:943` |
-| `ReconciliationCaseTransitionCommand` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:953` |
-| `ReconciliationCaseworkAction` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:419` |
-| `ReconciliationCaseworkCloseScopeDto` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:721` |
-| `ReconciliationCaseworkCommand` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:680` |
-| `ReconciliationCaseworkOperationResult` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:903` |
-| `ReconciliationCorrelationContext` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1044` |
-| `ReconciliationJobControl` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1067` |
-| `ReconciliationMatchDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:117` |
-| `ReconciliationPayloadEnvelope` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1054` |
-| `ReconciliationProcessingTelemetry` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1082` |
-| `ReconciliationRolloutFlags` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1093` |
-| `ReconciliationRunDetail` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:346` |
-| `ReconciliationRunRequest` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:72` |
-| `ReconciliationRunSummary` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:86` |
-| `ReconciliationSchemaVersion` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1034` |
-| `ReconciliationSecurityCoverageIssueDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:216` |
-| `ReconciliationSlaComputationResult` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:658` |
-| `ReconciliationSlaPolicy` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:637` |
-| `ReconciliationSourceKind` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:14` |
+| `ReconciliationBreakQueueScope` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:589` |
+| `ReconciliationBreakQueueStatus` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:366` |
+| `ReconciliationBreakScore` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:918` |
+| `ReconciliationBreakSeverity` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:42` |
+| `ReconciliationBreakStatus` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:29` |
+| `ReconciliationBulkCaseworkCaseResult` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:751` |
+| `ReconciliationBulkCaseworkRequest` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:727` |
+| `ReconciliationBulkCaseworkResult` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:758` |
+| `ReconciliationCalibrationProfileSummaryDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:965` |
+| `ReconciliationCalibrationStatusDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:471` |
+| `ReconciliationCalibrationSummaryDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:982` |
+| `ReconciliationCaseComment` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:618` |
+| `ReconciliationCaseCommentVisibility` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:412` |
+| `ReconciliationCaseLifecycleState` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:376` |
+| `ReconciliationCasePriority` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:392` |
+| `ReconciliationCaseSignoffRecord` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:909` |
+| `ReconciliationCaseSlaState` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:401` |
+| `ReconciliationCaseStateTransition` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:931` |
+| `ReconciliationCaseTransitionAction` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:942` |
+| `ReconciliationCaseTransitionCommand` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:952` |
+| `ReconciliationCaseworkAction` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:420` |
+| `ReconciliationCaseworkCloseScopeDto` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:722` |
+| `ReconciliationCaseworkCommand` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:681` |
+| `ReconciliationCaseworkOperationResult` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:902` |
+| `ReconciliationCorrelationContext` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1043` |
+| `ReconciliationJobControl` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1066` |
+| `ReconciliationMatchDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:118` |
+| `ReconciliationPayloadEnvelope` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1053` |
+| `ReconciliationProcessingTelemetry` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1081` |
+| `ReconciliationRolloutFlags` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1092` |
+| `ReconciliationRunDetail` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:347` |
+| `ReconciliationRunRequest` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:73` |
+| `ReconciliationRunSummary` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:87` |
+| `ReconciliationSchemaVersion` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1033` |
+| `ReconciliationSecurityCoverageIssueDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:217` |
+| `ReconciliationSlaComputationResult` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:659` |
+| `ReconciliationSlaPolicy` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:638` |
+| `ReconciliationSourceKind` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:15` |
 | `ReconciliationSummary` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:187` |
-| `ReconciliationTaxonomySnapshot` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:675` |
-| `ReconciliationTaxonomyValue` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:667` |
+| `ReconciliationTaxonomySnapshot` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:676` |
+| `ReconciliationTaxonomyValue` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:668` |
 | `RejectWorkflow` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:30` |
 | `RenderReportTemplateRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1627` |
 | `RenderReportTemplateResponseDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1632` |
@@ -1236,11 +1229,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ResearchSavedComparisonMode` | Gap | `src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:73` |
 | `ResearchWhatChangedItem` | Gap | `src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:106` |
 | `ResolveBreakCase` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:27` |
-| `ResolveReconciliationBreakRequest` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1023` |
+| `ResolveReconciliationBreakRequest` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1022` |
 | `ResolveSecurityMasterMappings` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:21` |
 | `ResolveSourceConflictRequest` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:58` |
 | `RestatementCandidateDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:157` |
-| `ReviewReconciliationBreakRequest` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1013` |
+| `ReviewReconciliationBreakRequest` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1012` |
 | `RunAttributionSummary` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:919` |
 | `RunCashFlowSummary` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:966` |
 | `RunCashLadder` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:952` |
@@ -1261,7 +1254,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `SecurityClassificationSummaryDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs:8` |
 | `SecurityEconomicDefinitionSummaryDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs:27` |
 | `SecurityIdentityDrillInDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs:56` |
-| `SecurityMasterAccountingIssueDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:332` |
+| `SecurityMasterAccountingIssueDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:333` |
 | `SecurityMasterChangeHistoryItemDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:194` |
 | `SecurityMasterConflictAssessmentDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:145` |
 | `SecurityMasterConflictAuthorityDecision` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:168` |
@@ -1574,13 +1567,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-<<<<<<< HEAD
 - Document or intentionally suppress 421 mapped endpoint gap(s).
-- Document or intentionally suppress 883 workstation contract gap(s).
-=======
-- Document or intentionally suppress 422 mapped endpoint gap(s).
 - Document or intentionally suppress 881 workstation contract gap(s).
->>>>>>> origin/main
 
 ---
 
