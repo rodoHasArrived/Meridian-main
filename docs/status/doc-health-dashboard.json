@@ -1,7 +1,7 @@
 {
-  "total_files": 649,
-  "total_lines": 129189,
-  "orphaned_count": 254,
+  "total_files": 650,
+  "total_lines": 129422,
+  "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 233,
@@ -215,6 +215,7 @@
     "docs/development/score-reason-taxonomy.md",
     "docs/development/synthetic-provider-test-harness.md",
     "docs/docfx/api/index.md",
+    "docs/engineering/security-master-architecture-audit-2026-08-13.md",
     "docs/engineering/wpf-perf-uiux-audit-2026-06-14.md",
     "docs/generated/configuration-schema.md",
     "docs/generated/documentation-coverage.md",
@@ -2256,6 +2257,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/security-master-architecture-audit-2026-08-13.md",
+      "line_count": 230,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/wpf-perf-uiux-audit-2026-06-14.md",
       "line_count": 79,
       "has_heading": true,
@@ -2609,7 +2618,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10462,
+      "line_count": 10463,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2961,7 +2970,7 @@
     },
     {
       "path": "docs/product/functionality-deepening-brainstorm-2026-07.md",
-      "line_count": 669,
+      "line_count": 670,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5321,7 +5330,7 @@
     },
     {
       "path": "src/Meridian.Risk/README.md",
-      "line_count": 183,
+      "line_count": 184,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
