@@ -334,6 +334,40 @@ class BodyCloneDetectionTests(unittest.TestCase):
                         "        => (string.IsNullOrWhiteSpace(value) ? null : value.Trim());\n"})
         self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
 
+    def test_a_modifier_only_clone_is_detected(self):
+        # `static` without accessibility is implicitly private; the style choice must
+        # not hide the copy.
+        found = clones({"src/A/Thing.cs":
+                        "    static string? Clean(string? x)"
+                        " => string.IsNullOrWhiteSpace(x) ? null : x.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_parameter_named_str_does_not_corrupt_the_literal_sentinel(self):
+        # The sentinels are symbol-only because a marker containing identifier text is
+        # rewritten by the rename pass when a parameter shares its spelling.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string str, string name)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(str))\n"
+                        "        {\n"
+                        "            throw new ArgumentException(\"message\", name);\n"
+                        "        }\n"
+                        "\n"
+                        "        return str.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("RequireTrimmed", "RequireText")]})
+
+    def test_a_four_quote_raw_string_does_not_leak_its_contents(self):
+        # A 4-quote raw delimiter exists so the contents can hold a literal triple
+        # quote; closing on the inner run would scan the rest of the template as code.
+        found = clones({"src/A/Template.cs":
+                        "    private const string Template = \"\"\"\"\n"
+                        "    has \"\"\" inside, then a method shape:\n"
+                        "    private static string? Clean(string? text)\n"
+                        "        => string.IsNullOrWhiteSpace(text) ? null : text.Trim();\n"
+                        "    \"\"\"\";\n"})
+        self.assertEqual(found, {})
+
     def test_a_tracked_name_is_the_name_ratchets_jurisdiction(self):
         # One copy must never be counted by both detectors.
         found = clones({"src/A/Thing.cs":

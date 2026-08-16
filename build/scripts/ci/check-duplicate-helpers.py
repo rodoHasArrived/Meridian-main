@@ -96,20 +96,23 @@ _TYPE_ALIASES = {
 _TYPE_ALIAS_PATTERN = re.compile(
     r"\b(?:System\.)?(" + "|".join(_TYPE_ALIASES) + r")\b"
 )
-# The declaration header of a method at any accessibility (matching the name-based
-# scan's scope): accessibility keyword(s), optional modifiers, a return type, then the
-# name directly before the parameter list.
+# The declaration header of a method: at least one declaration keyword (accessibility
+# or modifier -- `static string? Clean(...)` is implicitly private, and local functions
+# carry no accessibility at all), a return type, then the name directly before the
+# parameter list. Requiring one keyword keeps expression text from matching; a spurious
+# match is further gated by the parameter-type and body lookups.
 _METHOD_HEADER = re.compile(
-    r"\b(?:private|internal|protected|public)\s+"
-    r"(?:(?:static|readonly|async|sealed|new|virtual|override|internal|protected)\s+)*"
+    r"\b(?:(?:private|internal|protected|public|static|readonly|async|sealed|new|virtual|override)\s+)+"
     r"[\w?<>\[\], .]+?\s+([A-Za-z_]\w*)\s*\("
 )
 _PARAMETER_MODIFIERS = ("params", "ref", "out", "in", "this", "scoped", "readonly")
 
 
 def _mask_strings_and_comments(text: str) -> str:
-    """One pass over C# source: comments become spaces, string literals become §str, char
-    literals become §chr.
+    """One pass over C# source: comments become spaces, string literals become ⟦⟧, char
+    literals become ⟨⟩. The sentinels are symbol-only on purpose: a marker that contains
+    identifier characters (an earlier revision used §str) is rewritten by the positional
+    rename pass whenever a parameter happens to share its spelling.
 
     Both jobs have to happen together, in source order, because each hides the other's
     markers: `//` inside a string is text, not a comment, and quotes inside a comment are
@@ -149,7 +152,7 @@ def _mask_strings_and_comments(text: str) -> str:
             cursor = index + 1
             while cursor < length and text[cursor] != "'":
                 cursor += 2 if text[cursor] == "\\" else 1
-            out.append("§chr")
+            out.append("⟨⟩")
             index = cursor + 1
             continue
         prefix = _STRING_PREFIX.match(text, index)
@@ -157,11 +160,18 @@ def _mask_strings_and_comments(text: str) -> str:
             dollars = prefix.group(0).count("$")
             interpolated = dollars > 0
             verbatim = "@" in prefix.group(0)
-            out.append("§str")
+            out.append("⟦⟧")
             if text.startswith('"""', prefix.end() - 1):
-                content_start = prefix.end() + 2
-                closer = text.find('"""', content_start)
-                index = length if closer == -1 else closer + 3
+                # A raw string opens with three or more quotes, and only a run of the
+                # same width closes it -- four-quote delimiters exist so the contents
+                # can hold a literal triple quote.
+                quotes = prefix.end() - 1
+                while quotes < length and text[quotes] == '"':
+                    quotes += 1
+                delimiter_width = quotes - (prefix.end() - 1)
+                content_start = quotes
+                closer = text.find('"' * delimiter_width, content_start)
+                index = length if closer == -1 else closer + delimiter_width
                 if interpolated and closer != -1:
                     # Raw interpolated strings carry executed code too; preserve their
                     # expressions exactly as the ordinary $"..." branch below does. The
@@ -184,7 +194,7 @@ def _mask_strings_and_comments(text: str) -> str:
                             out.append(
                                 "{" + _mask_strings_and_comments(segment[run:expr_end]) + "}"
                             )
-                            out.append("§str")
+                            out.append("⟦⟧")
                             cursor = expr_end + dollars
                         else:
                             cursor = run
@@ -220,7 +230,7 @@ def _mask_strings_and_comments(text: str) -> str:
                                 break
                         closer += 1
                     out.append("{" + _mask_strings_and_comments(text[cursor + 1 : closer]) + "}")
-                    out.append("§str")
+                    out.append("⟦⟧")
                     cursor = closer + 1
                     continue
                 cursor += 1
@@ -397,7 +407,7 @@ def canonicalize_body(body: str, parameter_text: str) -> str:
     for index, local in enumerate(re.findall(r"\bvar\s+([A-Za-z_]\w*)", text)):
         renames.setdefault(local, f"§l{index}")
 
-    text = _NUMBER_LITERAL.sub("§num", text)
+    text = _NUMBER_LITERAL.sub("⟪⟫", text)
     text = _IDENTIFIER.sub(lambda match: renames.get(match.group(0), match.group(0)), text)
 
     text = re.sub(r"\s+", " ", text)
