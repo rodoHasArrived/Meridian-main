@@ -1,3 +1,4 @@
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.FSharp.Operations;
@@ -16,7 +17,8 @@ public sealed record ReportPackValidationContext(
     IReadOnlyList<GovernanceReportArtifactFormatDto> Formats,
     int StaleReplayCount = 0,
     int UnresolvedSecurityMasterConflictCount = 0,
-    IReadOnlyList<SecurityValidationGateResultDto>? SecurityValidationResults = null);
+    IReadOnlyList<SecurityValidationGateResultDto>? SecurityValidationResults = null,
+    string? DataProvenanceToken = null);
 
 public sealed class ReportPackValidationService
 {
@@ -50,6 +52,26 @@ public sealed class ReportPackValidationService
                 EmptyToNull(rule.EvidenceLink))));
 
         issues.AddRange(BuildSecurityMasterValidationIssues(context));
+
+        // W9-TRUTH-001 hard entry-time block: a pack derived from simulated, seeded, or sample
+        // figures always carries a Critical provenance issue, so ResolveStatus can never return
+        // Validated for it — the retained mark blocks the approvable-deliverable path outright
+        // instead of relying on reviewers to notice a carried label.
+        if (!string.IsNullOrWhiteSpace(context.DataProvenanceToken))
+        {
+            var declared = DataProvenanceExtensions.ParseTokenOrSimulated(context.DataProvenanceToken);
+            if (declared.IsNonReal())
+            {
+                issues.Add(Issue(
+                    context,
+                    "report-pack.provenance.simulated-source",
+                    GovernanceReportValidationSeverityDto.Critical,
+                    $"{declared.Label()} data provenance",
+                    $"This report pack derives from {declared.Token()} data and can never validate as an approvable deliverable. It remains review-required with its provenance mark retained.",
+                    affectedSection: "provenance",
+                    suggestedAction: "Generate the pack from real operational data, or keep it for demonstration and review only."));
+            }
+        }
 
         return issues
             .OrderByDescending(static issue => issue.Severity)

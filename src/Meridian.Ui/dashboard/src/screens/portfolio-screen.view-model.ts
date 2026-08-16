@@ -8,7 +8,7 @@ import {
   formatCurrencyPrecise,
   formatDateTime,
   formatNumber,
-  formatPercent,
+  formatRatioAsPercent,
   formatSignedCurrency,
   pnlFieldTone,
   pnlTone,
@@ -1115,7 +1115,7 @@ export function buildPortfolioRunDrillInSummary(
       {
         id: "drawdown",
         label: "Drawdown",
-        value: drawdown ? formatPercent(drawdown.maxDrawdownPercent) : "—",
+        value: drawdown ? formatRatioAsPercent(drawdown.maxDrawdownPercent) : "—",
         detail: drawdown
           ? `${formatCountLabel(drawdown.points.length, "equity point")}; recovery ${drawdown.maxDrawdownRecoveryDays} days; final equity ${formatCurrency(drawdown.finalEquity)}.`
           : "Equity curve and drawdown profile have not been loaded.",

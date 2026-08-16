@@ -1,11 +1,11 @@
-import { act, screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { StrategyScreen } from "@/screens/strategy-screen";
 import { buildPlotToolState } from "@/screens/strategy-screen.view-model";
 import * as api from "@/lib/api";
-import { afterEach } from "vitest";
+import { afterEach, beforeEach } from "vitest";
 import { renderWithRouter as renderRouter } from "@/test/render";
-import type { PromotionEvaluationResult, PromotionRecord, StrategyWorkspaceResponse, RunComparisonRow, RunDiff } from "@/types";
+import type { PromotionEvaluationResult, PromotionRecord, StrategyRunReviewPacket, StrategyWorkspaceResponse, RunComparisonRow, RunDiff } from "@/types";
 
 const twoRuns: StrategyWorkspaceResponse = {
   metrics: [
@@ -61,6 +61,78 @@ const twoRunsWithPlotTool: StrategyWorkspaceResponse = {
   }
 };
 
+function buildRunReviewPacket(operatorAcceptanceCriteria: string[] = []): StrategyRunReviewPacket {
+  const hasEvidenceLoop = operatorAcceptanceCriteria.length > 0;
+  return {
+    runId: "run-1",
+    generatedAt: "2026-08-03T12:00:00Z",
+    run: {
+      summary: {
+        runId: "run-1",
+        strategyId: "strategy-1",
+        strategyName: "Mean Reversion FX",
+        mode: "Paper",
+        engine: "Internal",
+        status: "Running",
+        startedAt: "2026-08-03T11:00:00Z",
+        completedAt: null,
+        datasetReference: "FX Majors",
+        feedReference: "provider-feed:fx",
+        portfolioId: "portfolio-1",
+        ledgerReference: "ledger-1",
+        netPnl: 4200,
+        totalReturn: 0.042,
+        finalEquity: 104200,
+        fillCount: 12,
+        lastUpdatedAt: "2026-08-03T12:00:00Z",
+        auditReference: "audit-1"
+      },
+      parameters: {},
+      portfolio: null,
+      ledger: null,
+      evidenceLoop: hasEvidenceLoop
+        ? {
+            operatorAcceptanceCriteria,
+            retainedEvidenceReferences: ["evidence://strategy-runs/run-1"],
+            accountingRecordReferences: ["ledger://books/book-1/accounts/run-1"],
+            approvalReferences: ["approval://strategy-runs/run-1"],
+            paperValidationReferences: ["workflow://fund/fund-1"],
+            governedReportReferences: ["reporting-run://run-1/manifest"]
+          }
+        : null
+    },
+    continuity: null,
+    fills: null,
+    attribution: null,
+    brokerageSync: null,
+    workItems: [],
+    warnings: []
+  };
+}
+
+function buildPromotionRunReviewPacket(): StrategyRunReviewPacket {
+  const packet = buildRunReviewPacket(["Review the retained Backtest-to-Paper source."]);
+  return {
+    ...packet,
+    runId: "run-2",
+    run: {
+      ...packet.run,
+      summary: {
+        ...packet.run.summary,
+        runId: "run-2",
+        strategyId: "strat-2",
+        strategyName: "Index Momentum",
+        mode: "Backtest",
+        status: "Completed"
+      },
+      evidenceLoop: {
+        ...packet.run.evidenceLoop!,
+        retainedEvidenceReferences: ["evidence://evidence-vault/ev-0123456789abcdef01234567"]
+      }
+    }
+  };
+}
+
 function renderWithRouter(
   ui: Parameters<typeof renderRouter>[0],
   options?: Parameters<typeof renderRouter>[1]
@@ -69,12 +141,17 @@ function renderWithRouter(
 }
 
 describe("StrategyScreen", () => {
+  beforeEach(() => {
+    vi.spyOn(api, "getRunReviewPacket").mockResolvedValue(buildRunReviewPacket());
+  });
+
   afterEach(() => {
     restoreApiSpy(api.compareRuns);
     restoreApiSpy(api.diffRuns);
     restoreApiSpy(api.getPromotionHistory);
     restoreApiSpy(api.evaluatePromotion);
-    restoreApiSpy(api.createPaperSession);
+    restoreApiSpy(api.approvePromotion);
+    restoreApiSpy(api.getRunReviewPacket);
   });
 
   it("renders the Strategy loading state with pending semantics", () => {
@@ -104,6 +181,24 @@ describe("StrategyScreen", () => {
     expect(screen.getByLabelText("Selected strategy run evidence")).toBeInTheDocument();
     expect(screen.getAllByText("run-1").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Close Mean Reversion FX run detail" })).toBeInTheDocument();
+  });
+
+  it("shows required operator acceptance criteria without implying recorded approval", async () => {
+    vi.mocked(api.getRunReviewPacket).mockResolvedValue(buildRunReviewPacket([
+      "Operator reviewed the retained backtest evidence.",
+      "Operator confirmed the paper-validation boundary."
+    ]));
+    const user = userEvent.setup();
+    renderWithRouter(<StrategyScreen data={twoRuns} />);
+
+    await user.click(screen.getAllByRole("button", { name: /open/i })[0]);
+
+    const checklist = await screen.findByRole("list", { name: "Operator acceptance requirements" });
+    expect(within(checklist).getAllByRole("listitem")).toHaveLength(2);
+    expect(checklist).toHaveTextContent("Operator reviewed the retained backtest evidence.");
+    expect(checklist).toHaveTextContent("Operator confirmed the paper-validation boundary.");
+    expect(screen.getByText(/These are requirements, not recorded acceptance decisions/)).toBeInTheDocument();
+    expect(api.getRunReviewPacket).toHaveBeenCalledWith("run-1");
   });
 
   it("closes the run detail dialog with Escape", async () => {
@@ -673,7 +768,7 @@ describe("StrategyScreen", () => {
     });
   });
 
-  it("validates promotion initial cash before starting a paper session", async () => {
+  it("submits the governed Paper approval with canonical checklist and exact retained evidence", async () => {
     vi.spyOn(api, "evaluatePromotion").mockResolvedValue({
       runId: "run-2",
       strategyId: "run-2",
@@ -688,14 +783,14 @@ describe("StrategyScreen", () => {
       found: true,
       ready: true
     });
-    vi.spyOn(api, "createPaperSession").mockResolvedValue({
-      sessionId: "session-1",
-      strategyId: "run-2",
-      strategyName: "Index Momentum",
-      initialCash: 100000,
-      createdAt: "2026-05-09T00:00:00Z",
-      closedAt: null,
-      isActive: true
+    vi.mocked(api.getRunReviewPacket).mockResolvedValue(buildPromotionRunReviewPacket());
+    vi.spyOn(api, "approvePromotion").mockResolvedValue({
+      success: true,
+      promotionId: "promotion-1",
+      newRunId: "paper-run-1",
+      reason: "Strategy promoted from Backtest to Paper.",
+      auditReference: "audit-1",
+      approvedBy: "portfolio-manager"
     });
 
     const user = userEvent.setup();
@@ -704,47 +799,44 @@ describe("StrategyScreen", () => {
     await user.click(screen.getByRole("checkbox", { name: "Select Index Momentum for compare and diff" }));
     await user.click(screen.getByRole("button", { name: /promote to paper/i }));
 
-    const cashInput = await screen.findByLabelText("Initial cash ($)");
-    const acknowledgement = screen.getByRole("checkbox", {
-      name: "I reviewed the promotion gates and paper-capital impact."
+    const acknowledgement = await screen.findByRole("checkbox", {
+      name: "I reviewed the four canonical promotion checks and the exact retained Evidence Vault source."
     });
-    let startButton = screen.getByRole("button", { name: /Start paper session unavailable:/i });
-    expect(startButton).toBeDisabled();
-    expect(startButton).toHaveAttribute(
+    let approveButton = screen.getByRole("button", { name: /Approve Paper promotion unavailable:/i });
+    expect(approveButton).toBeDisabled();
+    expect(approveButton).toHaveAttribute(
       "title",
-      "Acknowledge the evaluated gates and paper-capital impact before starting a paper session."
+      "Acknowledge the canonical checklist and retained source evidence before approving Paper promotion."
     );
 
     await user.click(acknowledgement);
-    startButton = screen.getByRole("button", { name: "Start paper session from selected strategy run" });
-    expect(startButton).toBeEnabled();
-
-    await user.clear(cashInput);
-    expect(screen.getByText("Enter initial paper capital of at least $1,000.")).toBeInTheDocument();
-    expect(startButton).toBeDisabled();
-    expect(startButton).toHaveAttribute("title", "Enter initial paper capital of at least $1,000.");
-
-    await user.type(cashInput, "500");
-
-    expect(cashInput).toHaveAttribute("aria-invalid", "true");
-    expect(screen.getByText("Enter at least $1,000 in whole dollars.")).toBeInTheDocument();
-    expect(startButton).toBeDisabled();
-    expect(startButton).toHaveAttribute("title", "Enter at least $1,000 in whole-dollar paper capital.");
-
-    await user.clear(cashInput);
-    await user.type(cashInput, "125000");
-    expect(screen.getByRole("button", { name: /Start paper session unavailable:/i })).toBeDisabled();
-    await user.click(acknowledgement);
-    startButton = screen.getByRole("button", { name: "Start paper session from selected strategy run" });
-    await user.click(startButton);
+    approveButton = screen.getByRole("button", { name: "Approve governed Paper promotion from selected strategy run" });
+    await user.click(approveButton);
 
     await waitFor(() => {
-      expect(api.createPaperSession).toHaveBeenCalledWith("run-2", "Index Momentum", 125000);
+      expect(api.approvePromotion).toHaveBeenCalledWith(expect.objectContaining({
+        runId: "run-2",
+        approvalChecklist: [
+          "DK1_TRUST_PACKET_REVIEWED",
+          "RUN_LINEAGE_REVIEWED",
+          "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED",
+          "RISK_CONTROLS_REVIEWED"
+        ],
+        evidenceReferences: [
+          "DK1_TRUST_PACKET_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
+          "RUN_LINEAGE_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
+          "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
+          "RISK_CONTROLS_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567"
+        ]
+      }));
     });
-    expect(screen.getByText("Paper session created - session session-1")).toBeInTheDocument();
+    expect(screen.getByText("Paper promotion approved - target run paper-run-1")).toBeInTheDocument();
+    expect(screen.getByRole("button", {
+      name: "Open governed Trading promotion record for target run paper-run-1"
+    })).toBeInTheDocument();
   });
 
-  it("keeps paper-session setup visible and locked while creation is pending", async () => {
+  it("keeps governed promotion review visible and locked while approval is pending", async () => {
     vi.spyOn(api, "evaluatePromotion").mockResolvedValue({
       runId: "run-2",
       strategyId: "run-2",
@@ -759,8 +851,9 @@ describe("StrategyScreen", () => {
       found: true,
       ready: true
     });
-    const pendingSession = createDeferred<Awaited<ReturnType<typeof api.createPaperSession>>>();
-    vi.spyOn(api, "createPaperSession").mockReturnValue(pendingSession.promise);
+    vi.mocked(api.getRunReviewPacket).mockResolvedValue(buildPromotionRunReviewPacket());
+    const pendingDecision = createDeferred<Awaited<ReturnType<typeof api.approvePromotion>>>();
+    vi.spyOn(api, "approvePromotion").mockReturnValue(pendingDecision.promise);
 
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
@@ -768,57 +861,43 @@ describe("StrategyScreen", () => {
     await user.click(screen.getByRole("checkbox", { name: "Select Index Momentum for compare and diff" }));
     await user.click(screen.getByRole("button", { name: /promote to paper/i }));
 
-    await screen.findByLabelText("Initial cash ($)");
-    const acknowledgement = screen.getByRole("checkbox", {
-      name: "I reviewed the promotion gates and paper-capital impact."
+    const acknowledgement = await screen.findByRole("checkbox", {
+      name: "I reviewed the four canonical promotion checks and the exact retained Evidence Vault source."
     });
     await user.click(acknowledgement);
-    await user.click(screen.getByRole("button", { name: "Start paper session from selected strategy run" }));
+    await user.click(screen.getByRole("button", { name: "Approve governed Paper promotion from selected strategy run" }));
 
     await waitFor(() => {
-      expect(api.createPaperSession).toHaveBeenCalledTimes(1);
+      expect(api.approvePromotion).toHaveBeenCalledTimes(1);
     });
-    expect(screen.getByLabelText("Initial cash ($)")).toBeDisabled();
-    expect(screen.getByLabelText("Initial cash ($)")).toHaveAttribute(
-      "title",
-      "Paper-session creation is already running; wait before changing capital."
-    );
-    expect(screen.getByLabelText("Initial cash ($)")).toHaveAttribute(
-      "aria-describedby",
-      "promote-initial-cash-help promote-initial-cash-disabled-reason"
-    );
-    expect(screen.getByLabelText("Initial cash ($)")).toHaveAccessibleDescription(
-      /Paper-session creation is already running\..*wait before changing capital\./s
-    );
     expect(acknowledgement).toBeDisabled();
     expect(acknowledgement).toHaveAttribute(
       "title",
-      "Paper-session creation is already running; wait before changing acknowledgement."
+      "Governed promotion approval is already running; wait before changing acknowledgement."
     );
     expect(acknowledgement).toHaveAttribute(
       "aria-describedby",
-      "promote-paper-session-acknowledgement-disabled-reason"
+      "promote-paper-approval-acknowledgement-disabled-reason"
     );
     expect(acknowledgement).toHaveAccessibleDescription(
-      "Paper-session creation is already running; wait before changing acknowledgement."
+      "Governed promotion approval is already running; wait before changing acknowledgement."
     );
-    expect(screen.getByRole("button", { name: /Start paper session unavailable: Paper-session creation is already running/i }))
-      .toHaveTextContent("Starting paper session...");
+    expect(screen.getByRole("button", { name: /Approve Paper promotion unavailable: Governed promotion approval is already running/i }))
+      .toHaveTextContent("Approving Paper promotion...");
     expect(screen.getByRole("button", {
-      name: "Paper-session creation is already running; wait for the session result before closing setup."
+      name: "Governed promotion approval is already running; wait for the durable decision before closing review."
     })).toBeDisabled();
 
     await act(async () => {
-      pendingSession.resolve({
-        sessionId: "session-pending",
-        strategyId: "run-2",
-        strategyName: "Index Momentum",
-        initialCash: 100000,
-        createdAt: "2026-05-09T00:00:00Z",
-        closedAt: null,
-        isActive: true
+      pendingDecision.resolve({
+        success: true,
+        promotionId: "promotion-pending",
+        newRunId: "paper-run-pending",
+        reason: "Strategy promoted from Backtest to Paper.",
+        auditReference: "audit-pending",
+        approvedBy: "portfolio-manager"
       });
-      await pendingSession.promise;
+      await pendingDecision.promise;
     });
   });
 
@@ -855,7 +934,9 @@ describe("StrategyScreen", () => {
     });
 
     expect(screen.queryByText("Eligible for paper trading")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Initial cash ($)")).not.toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", {
+      name: "I reviewed the four canonical promotion checks and the exact retained Evidence Vault source."
+    })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /promote to paper/i })).toBeDisabled();
   });
 });

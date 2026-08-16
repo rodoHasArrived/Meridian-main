@@ -2,11 +2,25 @@
 
 # `ledger-contracts` data objects - page 4 of 4
 
-Objects 241-283 of 283. References crossing pages remain available in the dependency manifest.
+Objects 241-284 of 284. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto["PostingRuleJournalCandidateRequestDto"] {
+        +AccountingBasisKindDto AccountingBasis
+        +DateTimeOffset AccountingTimestamp
+        +string Actor
+        +LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval
+        +Guid AggregateId
+        +AssetLotMutationInstructionDto? AssetLotMutation
+        +AccountingBookContextDto? BookContext
+        +Guid? BookPositionId
+        +string? CompanyId
+        +Guid? CorrelationId
+        +string? CounterpartyId
+        +string Currency
+    }
     class Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto["PostingRuleJournalCandidateResultDto"] {
         +AccountingBookContextDto? BookContext
         +Guid? BookPositionId
@@ -480,6 +494,7 @@ classDiagram
         +bool PeriodIsLocked
         +string? TenantId
     }
+    Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_TreasuryLedgerContextDto
     Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_RuleDryRunResultDto
     Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountActivityDto
     Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerDto

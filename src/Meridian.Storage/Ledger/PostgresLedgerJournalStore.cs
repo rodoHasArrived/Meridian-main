@@ -5,6 +5,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
 using Meridian.Ledger;
 using Npgsql;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
@@ -702,7 +703,11 @@ public sealed partial class PostgresLedgerJournalStore :
                 effective_date,
                 rationale,
                 created_at,
-                updated_at)
+                updated_at,
+                wash_sale_enabled,
+                wash_sale_window_days,
+                wash_sale_scope,
+                wash_sale_effective_date)
             values (
                 @policy_record_id,
                 @ledger_book_id,
@@ -715,7 +720,11 @@ public sealed partial class PostgresLedgerJournalStore :
                 @effective_date,
                 @rationale,
                 @created_at,
-                @updated_at)
+                @updated_at,
+                @wash_sale_enabled,
+                @wash_sale_window_days,
+                @wash_sale_scope,
+                @wash_sale_effective_date)
             on conflict (policy_record_id) do update
             set ledger_book_id = excluded.ledger_book_id,
                 account_name = excluded.account_name,
@@ -726,7 +735,11 @@ public sealed partial class PostgresLedgerJournalStore :
                 policy_id = excluded.policy_id,
                 effective_date = excluded.effective_date,
                 rationale = excluded.rationale,
-                updated_at = excluded.updated_at
+                updated_at = excluded.updated_at,
+                wash_sale_enabled = excluded.wash_sale_enabled,
+                wash_sale_window_days = excluded.wash_sale_window_days,
+                wash_sale_scope = excluded.wash_sale_scope,
+                wash_sale_effective_date = excluded.wash_sale_effective_date
             returning policy_record_id,
                       ledger_book_id,
                       account_name,
@@ -738,7 +751,11 @@ public sealed partial class PostgresLedgerJournalStore :
                       effective_date,
                       rationale,
                       created_at,
-                      updated_at;
+                      updated_at,
+                      wash_sale_enabled,
+                      wash_sale_window_days,
+                      wash_sale_scope,
+                      wash_sale_effective_date;
             """;
         command.Parameters.AddWithValue("policy_record_id", policy.PolicyRecordId);
         command.Parameters.AddWithValue("ledger_book_id", policy.LedgerBookId);
@@ -749,6 +766,7 @@ public sealed partial class PostgresLedgerJournalStore :
         command.Parameters.AddWithValue("rationale", (object?)NormalizeOptional(policy.Rationale) ?? DBNull.Value);
         command.Parameters.AddWithValue("created_at", policy.CreatedAt.UtcDateTime);
         command.Parameters.AddWithValue("updated_at", policy.UpdatedAt.UtcDateTime);
+        AddWashSalePolicyParameters(command, policy.EffectiveWashSalePolicy);
 
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
@@ -783,7 +801,11 @@ public sealed partial class PostgresLedgerJournalStore :
                    effective_date,
                    rationale,
                    created_at,
-                   updated_at
+                   updated_at,
+                   wash_sale_enabled,
+                   wash_sale_window_days,
+                   wash_sale_scope,
+                   wash_sale_effective_date
             from {Qualified("tax_lot_policies")}
             where ledger_book_id = @ledger_book_id
             order by account_name, effective_date desc, policy_id;
@@ -1766,6 +1788,17 @@ public sealed partial class PostgresLedgerJournalStore :
         command.Parameters.AddWithValue("financial_account_id", (object?)NormalizeOptional(account.FinancialAccountId) ?? DBNull.Value);
     }
 
+    private static void AddWashSalePolicyParameters(NpgsqlCommand command, WashSalePolicy policy)
+    {
+        policy.EnsureValid();
+        command.Parameters.AddWithValue("wash_sale_enabled", policy.Enabled);
+        command.Parameters.AddWithValue("wash_sale_window_days", policy.WindowDays);
+        command.Parameters.AddWithValue("wash_sale_scope", policy.Scope.ToString());
+        command.Parameters.AddWithValue(
+            "wash_sale_effective_date",
+            policy.EffectiveDate is { } effectiveDate ? effectiveDate : (object)DBNull.Value);
+    }
+
     private static LedgerAccount ReadLedgerAccount(NpgsqlDataReader reader, int nameOrdinal)
         => new(
             reader.GetString(nameOrdinal),
@@ -1773,6 +1806,9 @@ public sealed partial class PostgresLedgerJournalStore :
             reader.IsDBNull(nameOrdinal + 2) ? null : reader.GetString(nameOrdinal + 2),
             reader.IsDBNull(nameOrdinal + 3) ? null : reader.GetString(nameOrdinal + 3));
 
+    // Wash-sale columns are appended after the original twelve so every existing ordinal keeps its
+    // meaning; callers that do not select them pass a reader with only 12 fields, which
+    // TryReadWashSalePolicy detects and treats as an unconfigured (disabled) policy.
     private static LedgerAccountTaxLotPolicyRecord ReadTaxLotPolicy(NpgsqlDataReader reader)
         => new(
             reader.GetGuid(0),
@@ -1783,7 +1819,26 @@ public sealed partial class PostgresLedgerJournalStore :
             DateOnly.FromDateTime(reader.GetDateTime(8)),
             ReadUtcDateTimeOffset(reader, 10),
             ReadUtcDateTimeOffset(reader, 11),
-            reader.IsDBNull(9) ? null : reader.GetString(9));
+            reader.IsDBNull(9) ? null : reader.GetString(9),
+            TryReadWashSalePolicy(reader));
+
+    private static WashSalePolicy? TryReadWashSalePolicy(NpgsqlDataReader reader)
+    {
+        const int enabledOrdinal = 12;
+        if (reader.FieldCount <= enabledOrdinal || reader.IsDBNull(enabledOrdinal))
+        {
+            return null;
+        }
+
+        return new WashSalePolicy(
+            reader.GetBoolean(enabledOrdinal),
+            reader.GetInt32(enabledOrdinal + 1),
+            Enum.Parse<WashSaleReplacementScope>(reader.GetString(enabledOrdinal + 2), ignoreCase: true),
+            reader.IsDBNull(enabledOrdinal + 3)
+                ? null
+                : DateOnly.FromDateTime(reader.GetDateTime(enabledOrdinal + 3)))
+            .EnsureValid();
+    }
 
     private static LedgerTaxLotRecord ReadTaxLot(NpgsqlDataReader reader)
         => new(

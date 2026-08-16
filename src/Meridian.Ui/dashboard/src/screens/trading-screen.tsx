@@ -11,10 +11,19 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
+import { GuardrailPanelBody } from "@/components/ui/guardrail-utilization";
 import { Input } from "@/components/ui/input";
-import { RiskControlPanel } from "@/components/ui/risk-control-panel";
+import { OrderStatusBanner } from "@/components/ui/order-status-banner";
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { TradingRiskControls } from "@/components/ui/trading-risk-controls";
+import {
+  promotionEvaluationPanelTone,
+  promotionEvaluationTextTone,
+  promotionOutcomeTone,
+  riskTone,
+  wiringTone
+} from "@/screens/trading-screen.tones";
 import {
   Sheet,
   SheetBody,
@@ -56,7 +65,6 @@ import {
   type OrderPreviewWarning,
   type PaperSessionDetailPanel,
   type PaperSessionReplayPanel,
-  type PromotionOutcomeLevel,
   type TradingLoadingState,
   type TradingBlotterDetail,
   type TradingDataTone,
@@ -66,41 +74,13 @@ import {
   type TradingWorkflowCommandState,
   type TradingConfirmViewModel
 } from "@/screens/trading-screen.view-model";
+import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
   fundAccountId?: string | null;
 }
-
-const riskTone: Record<TradingWorkspaceResponse["risk"]["state"], string> = {
-  Healthy: "text-success",
-  Observe: "text-warning",
-  Constrained: "text-danger"
-};
-
-const wiringTone: Record<TradingWorkspaceResponse["brokerage"]["connection"], string> = {
-  Connected: "text-success",
-  Degraded: "text-warning",
-  Disconnected: "text-danger"
-};
-
-const promotionOutcomeTone: Record<PromotionOutcomeLevel, string> = {
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger"
-};
-
-const promotionEvaluationPanelTone = {
-  success: "border-success/30 bg-success/10 text-success",
-  warning: "border-warning/30 bg-warning/10 text-warning",
-  danger: "border-danger/30 bg-danger/10 text-danger"
-} as const;
-
-const promotionEvaluationTextTone = {
-  success: "text-success",
-  warning: "text-warning"
-} as const;
 
 const promotionChecklistDotTone = {
   ready: "bg-success",
@@ -454,6 +434,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
 
+  const governedApprovals = useGovernedApprovalsViewModel(LIVE_GOVERNED_APPROVAL_SERVICES);
   const orderTicket = useOrderTicketViewModel({
     fundAccountId,
     positions: data?.positions ?? [],
@@ -461,7 +442,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
     onOrderAccepted: async () => {
       await Promise.all([
         executionEvidence.refresh(),
-        tradingReadiness.refresh()
+        tradingReadiness.refresh(),
+        governedApprovals.refresh()
       ]);
     }
   });
@@ -698,11 +680,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 <AlertTriangle className="h-4 w-4" />
                 Active guardrails
               </div>
-              <ul className="list-disc space-y-1 pl-6 text-sm text-foreground">
-                {data.risk.activeGuardrails.map((guardrail) => (
-                  <li key={guardrail}>{guardrail}</li>
-                ))}
-              </ul>
+              <GuardrailPanelBody
+                guardrails={data.risk.guardrails}
+                activeGuardrails={data.risk.activeGuardrails}
+              />
             </div>
             <div className="mt-3 rounded-xl border border-border/70 bg-background/80 p-4">
               <div className="mb-2 flex items-center justify-between gap-3">
@@ -756,9 +737,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 <p className="text-xs text-muted-foreground">{executionEvidence.controlsEmptyText}</p>
               )}
             </div>
-            <div className="mt-3">
-              <RiskControlPanel />
-            </div>
+            <TradingRiskControls governedApprovals={governedApprovals} />
           </CardContent>
         </Card>
 
@@ -1024,13 +1003,12 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </form>
             </CardContent>
           )}
-          {!orderTicket.open && orderTicket.successText && (
-            <CardContent className="border-b border-border/60 pb-4">
-              <div role="status" className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 shrink-0" />
-                {orderTicket.successText}
-              </div>
-            </CardContent>
+          {!orderTicket.open && (
+            <OrderStatusBanner
+              successText={orderTicket.successText}
+              parkedText={orderTicket.parkedText}
+              riskWarnings={orderTicket.riskWarnings}
+            />
           )}
           <CardContent className="space-y-3">
             <DenseDataTable

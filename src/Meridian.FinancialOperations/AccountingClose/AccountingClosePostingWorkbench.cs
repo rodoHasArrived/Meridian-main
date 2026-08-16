@@ -21,7 +21,25 @@ public sealed record AccountingClosePostingCommand(
     OperationsActionOriginDto ActionOrigin,
     string? Role = null,
     string? ApprovalReference = null,
-    string? CorrelationId = null);
+    string? CorrelationId = null)
+{
+    /// <summary>
+    /// Set only by the Financial Operations close coordinator after it acquires the durable
+    /// accounting-period mutation fence. Other callers cannot assert this state.
+    /// </summary>
+    public bool ConsistencyLeaseHeld { get; internal init; }
+}
+
+/// <summary>
+/// Resolves and acquires the durable accounting-period fence shared by governed hard close,
+/// reopen, and final reporting release.
+/// </summary>
+public interface IAccountingCloseMutationGate
+{
+    ValueTask<IAsyncDisposable> AcquireAsync(
+        AccountingClosePostingContext context,
+        CancellationToken ct = default);
+}
 
 /// <summary>
 /// Boundary between Financial Operations close orchestration and the shared governed journal

@@ -107,4 +107,148 @@ public sealed class SourceRegistryPersistenceTests : IDisposable
         var exception = act.Should().Throw<Exception>().Which;
         (exception is IOException || exception is UnauthorizedAccessException).Should().BeTrue();
     }
+
+    [Fact]
+    public async Task RegisterSource_WhenAtomicWriteFails_DoesNotPublishOrSmuggleFailedCandidate()
+    {
+        var persistencePath = Path.Combine(_tempRoot, "faulted-registry.json");
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await File.WriteAllTextAsync(
+            persistencePath,
+            "{\"Sources\":[],\"Symbols\":[]}",
+            timeout.Token);
+        using var writer = new AtomicSnapshotTestWriter();
+        var registry = new SourceRegistry(persistencePath, writer.Write);
+        registry.RegisterSource(new SourceInfo(
+            Id: "baseline-feed",
+            Name: "Baseline Feed",
+            Type: SourceType.Live,
+            Priority: 1,
+            Enabled: true));
+        writer.FailNextWrite();
+
+        var failedSource = new SourceInfo(
+            Id: "failed-feed",
+            Name: "Failed Feed",
+            Type: SourceType.Live,
+            Priority: 2,
+            Enabled: true);
+
+        var act = () => registry.RegisterSource(failedSource);
+
+        act.Should().Throw<IOException>();
+        registry.GetSourceInfo("baseline-feed").Should().NotBeNull();
+        registry.GetSourceInfo("failed-feed").Should().BeNull();
+
+        registry.RegisterSource(new SourceInfo(
+            Id: "committed-feed",
+            Name: "Committed Feed",
+            Type: SourceType.Historical,
+            Priority: 3,
+            Enabled: true));
+
+        var restarted = new SourceRegistry(persistencePath);
+        restarted.GetSourceInfo("baseline-feed").Should().NotBeNull();
+        restarted.GetSourceInfo("failed-feed").Should().BeNull();
+        restarted.GetSourceInfo("committed-feed").Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task RegisterSymbol_WhileAtomicWriteIsBlocked_PublishesSymbolAndAliasTogetherAfterCommit()
+    {
+        var persistencePath = Path.Combine(_tempRoot, "blocked-registry.json");
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await File.WriteAllTextAsync(
+            persistencePath,
+            "{\"Sources\":[],\"Symbols\":[]}",
+            timeout.Token);
+        using var writer = new AtomicSnapshotTestWriter();
+        var registry = new SourceRegistry(persistencePath, writer.Write);
+        var block = writer.BlockNextWrite();
+
+        var registration = Task.Run(() => registry.RegisterSymbol(new SymbolInfo(
+            Symbol: "NVDA",
+            Canonical: "NVDA",
+            Aliases: ["NVDA.OQ"],
+            AssetClass: "equity",
+            Exchange: "XNAS",
+            Currency: "USD")));
+
+        try
+        {
+            await block.WaitUntilEnteredAsync(timeout.Token);
+            registry.GetSymbolInfo("NVDA").Should().BeNull();
+            registry.GetSymbolInfo("NVDA.OQ").Should().BeNull();
+            registry.ResolveSymbolAlias("NVDA.OQ").Should().Be("NVDA.OQ");
+        }
+        finally
+        {
+            block.Release();
+        }
+
+        await registration.WaitAsync(timeout.Token);
+        registry.GetSymbolInfo("NVDA").Should().NotBeNull();
+        registry.GetSymbolInfo("nvda.oq").Should().NotBeNull();
+        registry.ResolveSymbolAlias("nvda.oq").Should().Be("NVDA");
+    }
+
+    [Fact]
+    public async Task RegisterSymbol_CallerAndGetterMutation_DoesNotChangePublishedOrPersistedSnapshot()
+    {
+        var persistencePath = Path.Combine(_tempRoot, "defensive-registry.json");
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await File.WriteAllTextAsync(
+            persistencePath,
+            "{\"Sources\":[],\"Symbols\":[]}",
+            timeout.Token);
+        var aliases = new[] { "AMD.OQ" };
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["region"] = "US"
+        };
+        var registry = new SourceRegistry(persistencePath);
+
+        registry.RegisterSymbol(new SymbolInfo(
+            Symbol: "AMD",
+            Canonical: "AMD",
+            Aliases: aliases,
+            AssetClass: "equity",
+            Exchange: "XNAS",
+            Currency: "USD",
+            Metadata: metadata));
+
+        aliases[0] = "MUTATED";
+        metadata["region"] = "changed";
+        var returned = registry.GetSymbolInfo("AMD")!;
+        returned.Aliases![0] = "LEAKED";
+        returned.Metadata!["region"] = "leaked";
+
+        var retained = registry.GetSymbolInfo("amd")!;
+        retained.Aliases.Should().Equal("AMD.OQ");
+        retained.Metadata.Should().Contain("region", "US");
+        registry.ResolveSymbolAlias("amd.oq").Should().Be("AMD");
+
+        var restarted = new SourceRegistry(persistencePath);
+        restarted.GetSymbolInfo("AMD")!.Aliases.Should().Equal("AMD.OQ");
+        restarted.GetSymbolInfo("AMD")!.Metadata.Should().Contain("region", "US");
+    }
+
+    [Fact]
+    public void RegisterSource_WithoutPersistencePath_RetainsInMemoryModeWithDefensiveCopies()
+    {
+        var assetClasses = new[] { "equity" };
+        var registry = new SourceRegistry();
+
+        registry.RegisterSource(new SourceInfo(
+            Id: "in-memory-feed",
+            Name: "In-Memory Feed",
+            Type: SourceType.Live,
+            AssetClasses: assetClasses));
+
+        assetClasses[0] = "mutated";
+        var returned = registry.GetSourceInfo("in-memory-feed")!;
+        returned.AssetClasses![0] = "leaked";
+
+        registry.GetSourceInfo("IN-MEMORY-FEED")!.AssetClasses.Should().Equal("equity");
+    }
 }

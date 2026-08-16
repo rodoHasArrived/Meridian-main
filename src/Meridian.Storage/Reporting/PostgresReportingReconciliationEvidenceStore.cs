@@ -5,6 +5,7 @@ using System.Text.Json;
 using Meridian.Reporting;
 using Npgsql;
 using NpgsqlTypes;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Reporting;
 
@@ -109,7 +110,7 @@ public sealed class PostgresReportingReconciliationEvidenceStore :
         var payload = JsonSerializer.Serialize(
             receipt,
             ReportingReconciliationEvidenceJsonContext.Default.ReportingReconciliationEvidenceReceipt);
-        var payloadHash = ComputeSha256(payload);
+        var payloadHash = Sha256Digest.ComputeUtf8(payload);
         await using var connection = new NpgsqlConnection(_options.ConnectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
@@ -599,7 +600,7 @@ public sealed class PostgresReportingReconciliationEvidenceStore :
         DateOnly asOfDate,
         string sourceCheckpointId,
         string sourceCheckpointHash) =>
-        ComputeSha256(string.Join('\n',
+        Sha256Digest.ComputeUtf8(string.Join('\n',
             NormalizeKey(tenantId, nameof(tenantId)),
             NormalizeKey(organizationId, nameof(organizationId)),
             NormalizeKey(companyId, nameof(companyId)),
@@ -616,15 +617,12 @@ public sealed class PostgresReportingReconciliationEvidenceStore :
     private static void VerifyPayloadHash(string payload, string declaredHash)
     {
         if (!ReportingReconciliationEvidenceValidation.IsLowercaseSha256(declaredHash)
-            || !string.Equals(declaredHash, ComputeSha256(payload), StringComparison.Ordinal))
+            || !string.Equals(declaredHash, Sha256Digest.ComputeUtf8(payload), StringComparison.Ordinal))
         {
             throw new ReportingArtifactCatalogIntegrityException(
                 "Retained reconciliation evidence payload hash verification failed.");
         }
     }
-
-    private static string ComputeSha256(string value) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 
     private static string NormalizeKey(string? value, string parameterName)
     {

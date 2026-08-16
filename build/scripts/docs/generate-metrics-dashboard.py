@@ -42,7 +42,7 @@ from dashboard_rendering import (
 # ---------------------------------------------------------------------------
 
 EXCLUDE_DIRS: frozenset[str] = frozenset({
-    '.git', 'node_modules', 'bin', 'obj', '__pycache__', '.vs'
+    '.git', 'node_modules', 'bin', 'obj', '__pycache__', '.pytest_cache', '.vs'
 })
 
 DEFAULT_LOOKBACK_DAYS = 30

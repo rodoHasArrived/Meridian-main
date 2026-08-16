@@ -10,7 +10,9 @@ using Xunit;
 namespace Meridian.Tests.Storage.Reporting;
 
 [Trait("Category", "Integration")]
-public sealed class ReportingOperationalStoreTests : IClassFixture<ReportingArtifactDatabaseFixture>
+public sealed class ReportingOperationalStoreTests :
+    IClassFixture<ReportingArtifactDatabaseFixture>,
+    IAsyncLifetime
 {
     private static readonly DateTimeOffset FixedNow =
         new(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
@@ -21,6 +23,10 @@ public sealed class ReportingOperationalStoreTests : IClassFixture<ReportingArti
     {
         _database = database;
     }
+
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    public Task DisposeAsync() => _database.ResetAsync();
 
     [ReportingDatabaseFact]
     public async Task RunStore_IsTenantScopedAndExactRetriesAreIdempotent()
@@ -94,27 +100,7 @@ public sealed class ReportingOperationalStoreTests : IClassFixture<ReportingArti
         var staleStore = new PostgresReportingRunStore(_database.Options);
         var tenantId = $"tenant-cas-{Guid.NewGuid():N}";
         var runId = $"run-cas-{Guid.NewGuid():N}";
-        var templateParameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["z-last"] = "second",
-            ["a-first"] = "first"
-        };
-        var manifest = BuildManifest(runId, tenantId, "company-cas") with
-        {
-            ResolvedParameters = new ReportingRunParametersDto(
-                new ReportingRunScopeDto("fund-cas"),
-                "2026-07",
-                new DateOnly(2026, 7, 25),
-                new ReportingLedgerBookSelectionDto(LedgerBookCode: "primary-book"),
-                ReportingAccountingBasisDto.Gaap,
-                "USD",
-                ReportingConsolidationLevelDto.Fund,
-                ReportingOutputFormatDto.Pdf,
-                ReportingFinalityDto.Draft,
-                IncludeSupportingSchedules: true,
-                IncludeEvidenceAppendix: true,
-                templateParameters)
-        };
+        var manifest = BuildManifest(runId, tenantId, "company-cas");
         var createdAudit = new[]
         {
             new ReportingRunAuditEntry(
@@ -182,8 +168,8 @@ public sealed class ReportingOperationalStoreTests : IClassFixture<ReportingArti
                 update {{QualifiedRunTable}}
                 set manifest_payload = jsonb_set(
                     manifest_payload,
-                    '{templateId}',
-                    to_jsonb('tampered-template'::text))
+                    '{attemptCount}',
+                    to_jsonb(2::integer))
                 where tenant_id = @tenant_id
                   and run_id_key = @identity_key;
                 """,
@@ -761,11 +747,81 @@ public sealed class ReportingOperationalStoreTests : IClassFixture<ReportingArti
         (await _database.HasMigrationAsync("010_reporting_operational_state.sql")).Should().BeTrue();
     }
 
+    [ReportingDatabaseFact]
+    public async Task ReleaseConsistencyGate_SerializesTheSamePeriodAcrossStoreInstances()
+    {
+        var periodId = Guid.NewGuid().ToString("D");
+        var firstGate = new PostgresReportingReleaseConsistencyGate(_database.Options);
+        var secondGate = new PostgresReportingReleaseConsistencyGate(_database.Options);
+        await using var firstLease = await firstGate.AcquireAsync(periodId);
+
+        var blockedAcquire = secondGate.AcquireAsync(periodId).AsTask();
+        await Task.Delay(100);
+        blockedAcquire.IsCompleted.Should().BeFalse(
+            "the first PostgreSQL session still owns the period-scoped advisory lock");
+
+        await firstLease.DisposeAsync();
+        await using var secondLease = await blockedAcquire.WaitAsync(TimeSpan.FromSeconds(5));
+        secondLease.Should().NotBeNull();
+    }
+
     private static ReportingOutputManifest BuildManifest(
         string runId,
         string tenantId,
-        string companyId) =>
-        new(
+        string companyId)
+    {
+        var scope = new ReportingOperationalScope(
+            tenantId,
+            $"organization-{tenantId}",
+            companyId,
+            $"fund-{tenantId}",
+            "primary-book",
+            "44444444-4444-4444-4444-444444444444");
+        var templateParameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["z-last"] = "second",
+            ["a-first"] = "first"
+        };
+        var parameters = new ReportingRunParametersDto(
+            new ReportingRunScopeDto(scope.FundId!),
+            scope.PeriodId,
+            new DateOnly(2026, 7, 25),
+            new ReportingLedgerBookSelectionDto(LedgerBookCode: scope.BookId),
+            ReportingAccountingBasisDto.Gaap,
+            "USD",
+            ReportingConsolidationLevelDto.Fund,
+            ReportingOutputFormatDto.Pdf,
+            ReportingFinalityDto.Draft,
+            IncludeSupportingSchedules: true,
+            IncludeEvidenceAppendix: false,
+            templateParameters);
+        var parametersJson = ReportingCanonicalParameterSerializer.Serialize(parameters);
+        var parametersHash = ReportingCanonicalParameterSerializer.ComputeHash(parameters);
+        var sourceHash = new string('b', 64);
+        var sourceId = $"source-{runId}";
+        var rows = ImmutableArray.Create<IReadOnlyDictionary<string, string>>(
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["account"] = "cash",
+                ["amount"] = "100.00"
+            });
+        var snapshot = new ReportingCertifiedSnapshotScope(
+            scope.TenantId,
+            scope.OrganizationId,
+            scope.CompanyId,
+            scope.FundId,
+            scope.BookId,
+            scope.PeriodId,
+            $"snapshot-{runId}",
+            new string('0', 64),
+            $"reconciliation-{runId}",
+            FixedNow,
+            sourceId,
+            sourceHash,
+            new string('c', 64),
+            parametersJson,
+            parametersHash);
+        var manifest = new ReportingOutputManifest(
             runId,
             "investor-monthly-statement",
             new DateOnly(2026, 7, 25),
@@ -774,13 +830,69 @@ public sealed class ReportingOperationalStoreTests : IClassFixture<ReportingArti
             ImmutableArray<string>.Empty,
             1,
             ReportingRunTrigger.AdHoc,
-            OperationalScope: new ReportingOperationalScope(
-                tenantId,
-                $"organization-{tenantId}",
-                companyId,
-                FundId: null,
-                BookId: "primary-book",
-                PeriodId: "2026-07"));
+            ResolvedTemplate: new VersionedReportTemplateIdDto("investor-monthly-statement", 1),
+            ResolvedParameters: parameters,
+            Readiness: new ReportingRunReadinessDto(
+                $"readiness-{runId}",
+                FixedNow.AddMinutes(-1),
+                new VersionedReportTemplateIdDto("investor-monthly-statement", 1),
+                parameters,
+                ReportingRunReadinessStatusDto.Ready,
+                CanGenerateDraft: true,
+                CanGenerateFinal: false,
+                Checks:
+                [
+                    new ReportingRunReadinessCheckDto(
+                        "source",
+                        "Source",
+                        ReportingRunReadinessStatusDto.Ready,
+                        "Durable source is ready.",
+                        IssueCount: 0,
+                        BlocksDraft: true,
+                        BlocksFinal: true,
+                        EvidenceReferences: ["source:ready"])
+                ],
+                BlockingReasons: [],
+                EvidenceHash: new string('d', 64)),
+            OperationalScope: scope,
+            ImmutableAccessScope: new ReportingAccessScope(
+                "company-reporting",
+                "1",
+                ReportingGovernanceAccessMode.CompanyWide,
+                OwnerPrincipalId: null,
+                AllowOwnerAccess: false,
+                Principals: [],
+                PolicyHash: new string('a', 64)),
+            CertifiedSnapshot: snapshot,
+            AuthoritativeSource: new ReportingAuthoritativeSourceCheckpoint(
+                "durable-ledger",
+                sourceId,
+                scope.TenantId,
+                scope.OrganizationId,
+                scope.CompanyId,
+                scope.FundId!,
+                scope.BookId,
+                scope.PeriodId,
+                "Gaap",
+                new DateOnly(2026, 7, 25),
+                FixedNow.AddMinutes(-2),
+                HighestGlobalSequence: 1,
+                JournalEntryCount: 1,
+                LedgerLineCount: rows.Length,
+                CheckpointId: sourceId,
+                CheckpointHash: sourceHash,
+                CapturedAtUtc: FixedNow.AddMinutes(-2),
+                EvidenceIds: [$"reporting-source-checkpoint:{sourceId}:{sourceHash}"]),
+            CertifiedDatasetRows: rows);
+        return manifest with
+        {
+            CertifiedSnapshot = snapshot with
+            {
+                SnapshotHash =
+                    ReportingCertifiedManifestValidation.ComputeSnapshotHash(manifest)
+            }
+        };
+    }
 
     private static ReportingScheduleRecordDto BuildSchedule(
         string scheduleId,

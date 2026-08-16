@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Core.Scheduling;
 using Meridian.Reporting;
 
 namespace Meridian.Ui.Shared.Services;
@@ -12,19 +13,31 @@ public sealed partial class ReportingScheduleService
         $"reporting-schedule:{Environment.ProcessId}:{Guid.NewGuid():N}";
     private readonly IReportingDeploymentReadinessService? _deploymentReadinessService;
 
-    private void EnsureReportingDeploymentReady(string operation)
+    private void EnsureReportingDeploymentReady(
+        string operation,
+        bool allowSchedulingWorkerBootstrap = false)
     {
         if (_deploymentReadinessService is null)
         {
+            if (_store?.IsDurableAuthority == true)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot {operation}: a durable reporting schedule authority requires the " +
+                    "reporting deployment readiness gate.");
+            }
+
             return;
         }
 
-        var capability = _deploymentReadinessService.Evaluate();
-        if (!capability.IsReady)
+        var blockers = allowSchedulingWorkerBootstrap
+            ? _deploymentReadinessService.GetScheduleWorkerCycleBlockingReasons()
+            : ReportingDeploymentReadinessService.ResolveCapabilityBlockingReasons(
+                _deploymentReadinessService.Evaluate());
+        if (blockers.Count > 0)
         {
             throw new InvalidOperationException(
                 $"Cannot {operation} until the authoritative reporting deployment is ready: " +
-                string.Join(" ", capability.BlockingReasons));
+                string.Join(" ", blockers));
         }
     }
 
@@ -107,6 +120,13 @@ public sealed partial class ReportingScheduleService
         ReportingScheduleRecordDto schedule,
         ReportingScheduleIdentity identity)
     {
+        if (!CronExpressionParser.TryParse(schedule.CronExpression, out var cronSchedule)
+            || cronSchedule.GetNextOccurrenceOrNull(schedule.DueAtUtc, TimeZoneInfo.Utc) is null)
+        {
+            throw new InvalidDataException(
+                $"Reporting schedule '{schedule.ScheduleId}' has an invalid cron expression or no future UTC occurrence.");
+        }
+
         if (identity.TenantId.Length > 0
             && (!HasValidAccessPolicySnapshot(schedule)
                 || !HasValidScheduledExecutionPrincipal(schedule)))
@@ -299,7 +319,7 @@ public sealed partial class ReportingScheduleService
     {
         var nextDue = ResolveNextDue(schedule.CronExpression, schedule.DueAtUtc);
         var nextAsOfDate = schedule.NextAsOfDate.AddDays(
-            Math.Max(1, (nextDue.Date - schedule.DueAtUtc.Date).Days));
+            (nextDue.Date - schedule.DueAtUtc.Date).Days);
         var runAtUtc = DateTimeOffset.UtcNow;
         return schedule with
         {
@@ -317,28 +337,34 @@ public sealed partial class ReportingScheduleService
         string cronExpression,
         DateTimeOffset dueAtUtc)
     {
-        var cron = cronExpression.Trim();
-        if (cron.EndsWith(" 1", StringComparison.Ordinal)
-            || cron.Contains(" * * 5", StringComparison.Ordinal))
+        if (!CronExpressionParser.TryParse(cronExpression, out var schedule))
         {
-            return dueAtUtc.AddDays(7);
+            throw new InvalidDataException(
+                $"Reporting schedule cron expression '{cronExpression}' is invalid.");
         }
 
-        if (cron.Contains(" 1 * *", StringComparison.Ordinal))
+        return schedule.GetNextOccurrenceOrNull(dueAtUtc.ToUniversalTime(), TimeZoneInfo.Utc)
+            ?? throw new InvalidDataException(
+                $"Reporting schedule cron expression '{cronExpression}' has no future UTC occurrence.");
+    }
+
+    private static void ValidateCronExpressionForUpsert(
+        string cronExpression,
+        DateTimeOffset dueAtUtc)
+    {
+        if (!CronExpressionParser.TryParse(cronExpression, out var schedule))
         {
-            return dueAtUtc.AddMonths(1);
+            throw new ArgumentException(
+                $"Invalid reporting schedule cron expression: {cronExpression}",
+                nameof(cronExpression));
         }
 
-        var next = dueAtUtc.AddDays(1);
-        if (cron.EndsWith("1-5", StringComparison.Ordinal))
+        if (schedule.GetNextOccurrenceOrNull(dueAtUtc.ToUniversalTime(), TimeZoneInfo.Utc) is null)
         {
-            while (next.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
-            {
-                next = next.AddDays(1);
-            }
+            throw new ArgumentException(
+                "The reporting schedule cron expression has no future UTC occurrence within the supported calendar horizon.",
+                nameof(cronExpression));
         }
-
-        return next;
     }
 
 }

@@ -22,6 +22,58 @@ public static partial class WorkstationEndpoints
 
     private static void MapStatementConnectorEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationMarginControl), async (
+            HttpContext context,
+            [FromServices] Meridian.Ui.Shared.Services.MarginControlCenterReadService? marginControl) =>
+        {
+            if (marginControl is null)
+                return StatementConnectorsNotRegistered();
+
+            var result = await marginControl.GetAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("GetMarginControlCenter")
+        .Produces<MarginControlCenterDto>(200);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationMarginCertifications), async (
+            MarginCertificationRequestDto request,
+            HttpContext context,
+            [FromServices] Meridian.Ui.Shared.Services.MarginControlCenterReadService? marginControl) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+                return EndpointHelpers.Forbidden();
+            if (marginControl is null)
+                return StatementConnectorsNotRegistered();
+
+            try
+            {
+                var result = await marginControl.CertifyAsync(
+                    request,
+                    ResolveCurrentActor(context),
+                    context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.NotFound(new { error = ex.Message });
+            }
+            catch (InvalidDataException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]> { ["note"] = [ex.Message] });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("CertifyMarginAccountSnapshot")
+        .Produces<MarginCertificationResultDto>(200)
+        .ProducesValidationProblem()
+        .Produces(403)
+        .Produces(404)
+        .Produces(409)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         MapStatementReconciliationReportEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementConnectors), (
@@ -140,6 +192,34 @@ public static partial class WorkstationEndpoints
                 return StatementConnectorsNotRegistered();
             }
 
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (string.IsNullOrWhiteSpace(tenant.TenantId)
+                || string.IsNullOrWhiteSpace(tenant.CompanyId))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!request.HasFormContentType)
+            {
+                return MissingDataUploadPayload("contentType", "Statement import requires multipart/form-data.");
+            }
+
+            var form = await request.ReadFormAsync(context.RequestAborted).ConfigureAwait(false);
+            if (!TryReadStatementReconciliationReportScope(form, out var scope, out var validationProblem))
+            {
+                return validationProblem!;
+            }
+
+            var ownershipProblem = await RequireStatementReconciliationReportAccountOwnershipAsync(
+                    scope,
+                    tenant,
+                    context)
+                .ConfigureAwait(false);
+            if (ownershipProblem is not null)
+            {
+                return ownershipProblem;
+            }
+
             var (document, connectorId, problem) = await ReadStatementDocumentAsync(request, context).ConfigureAwait(false);
             if (problem is not null)
             {
@@ -153,7 +233,8 @@ public static partial class WorkstationEndpoints
         .Produces<StatementImportPreviewDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementImportCommit), async (
             HttpContext context,
@@ -295,9 +376,50 @@ public static partial class WorkstationEndpoints
                 return StatementConnectorsNotRegistered();
             }
 
-            if (string.IsNullOrWhiteSpace(request.ConnectorId) || string.IsNullOrWhiteSpace(request.ExternalAccountId))
+            if (string.IsNullOrWhiteSpace(request.ConnectorId)
+                || string.IsNullOrWhiteSpace(request.ExternalAccountId)
+                || string.IsNullOrWhiteSpace(request.FundAccountId)
+                || string.IsNullOrWhiteSpace(request.SourceInstitution))
             {
-                return MissingDataUploadPayload("connectorId", "Fetch preview requires a connector id and an external account id.");
+                return MissingDataUploadPayload(
+                    "statementScope",
+                    "Fetch preview requires a connector id, fund account id, source institution, and external account id.");
+            }
+
+            var sourceKind = string.IsNullOrWhiteSpace(request.SourceKind)
+                ? "broker"
+                : request.SourceKind.Trim().ToLowerInvariant();
+            if (sourceKind is not ("broker" or "custodian"))
+            {
+                return MissingDataUploadPayload(
+                    "sourceKind",
+                    "Statement source kind must be broker or custodian.");
+            }
+
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (string.IsNullOrWhiteSpace(tenant.TenantId)
+                || string.IsNullOrWhiteSpace(tenant.CompanyId))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var scope = new StatementReconciliationReportScope(
+                sourceKind,
+                request.SourceInstitution,
+                request.FundAccountId,
+                request.ExternalAccountId,
+                default,
+                default,
+                ToleranceProfileId: null,
+                AccountingScope: null);
+            var ownershipProblem = await RequireStatementReconciliationReportAccountOwnershipAsync(
+                    scope,
+                    tenant,
+                    context)
+                .ConfigureAwait(false);
+            if (ownershipProblem is not null)
+            {
+                return ownershipProblem;
             }
 
             try
@@ -318,6 +440,13 @@ public static partial class WorkstationEndpoints
             {
                 return MissingDataUploadPayload("connectorId", ex.Message);
             }
+            catch (Exception ex) when (ex is InvalidDataException or InvalidOperationException)
+            {
+                return Results.Problem(
+                    title: "Statement fetch account scope mismatch",
+                    detail: ex.Message,
+                    statusCode: StatusCodes.Status409Conflict);
+            }
         })
         .WithName("PreviewStatementFetch")
         .Produces<StatementImportPreviewDto>(200)
@@ -325,7 +454,8 @@ public static partial class WorkstationEndpoints
         .Produces(403)
         .Produces(409)
         .Produces(503)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementFetchSchedules), async (
             HttpContext context,
@@ -581,6 +711,9 @@ public static partial class WorkstationEndpoints
     private sealed record StatementFetchPreviewRequest(
         string ConnectorId,
         string ExternalAccountId,
+        string FundAccountId,
+        string SourceInstitution,
+        string? SourceKind = "broker",
         DateTimeOffset? Since = null,
         string? MappingProfileId = null,
         string? Datasets = null);

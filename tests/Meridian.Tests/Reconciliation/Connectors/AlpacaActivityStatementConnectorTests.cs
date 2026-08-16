@@ -76,6 +76,22 @@ public sealed class AlpacaActivityStatementConnectorTests : IDisposable
     }
 
     [Fact]
+    public async Task Parse_SnapshotAccountDiffersFromAuthorizedDocumentAccount_FailsClosed()
+    {
+        var connector = CreateConnector();
+        var document = new StatementSourceDocument(
+            "alpaca-combined-snapshot.json",
+            StatementConnectorTestData.ReadFixture("alpaca-combined-snapshot.json"),
+            ExternalAccountId: "OTHER-ACCOUNT");
+
+        var result = await connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty();
+        result.Issues.Should().ContainSingle(issue => issue.Code == "ACCOUNT_SCOPE_MISMATCH");
+    }
+
+    [Fact]
     public void Descriptor_WithoutGateways_DegradesToFileOnly()
     {
         CreateConnector().Descriptor.SupportsRemoteFetch.Should().BeFalse();
@@ -120,6 +136,20 @@ public sealed class AlpacaActivityStatementConnectorTests : IDisposable
         var result = await connector.ParseAsync(document);
 
         result.Records.Should().ContainSingle().Which.Kind.Should().Be(StatementRecordKind.Transaction);
+    }
+
+    [Fact]
+    public async Task Fetch_ActivitySnapshotAccountDiffersFromRequestedAccount_FailsBeforeRetention()
+    {
+        var connector = CreateConnector(new MismatchedActivitySync());
+
+        var act = () => connector.FetchAsync(new StatementFetchRequest(
+            "alpaca-activity",
+            "PA3ALPACA01",
+            Datasets: StatementFetchDatasets.Activity));
+
+        await act.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*activity snapshot account*requested external account*");
     }
 
     [Fact]
@@ -226,6 +256,23 @@ public sealed class AlpacaActivityStatementConnectorTests : IDisposable
             LastUntilExclusive = untilExclusive;
             return _inner.GetActivitySnapshotAsync(externalAccountId, since, ct);
         }
+    }
+
+    private sealed class MismatchedActivitySync : IBrokerageActivitySync
+    {
+        public string ProviderId => "alpaca";
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since = null,
+            CancellationToken ct = default)
+            => Task.FromResult(new BrokerageActivitySnapshotDto(
+                ProviderId,
+                "CREDENTIAL-ACCOUNT",
+                new DateTimeOffset(2026, 6, 30, 21, 0, 0, TimeSpan.Zero),
+                Orders: [],
+                Fills: [],
+                CashTransactions: []));
     }
 
     private sealed class FakePortfolioSync : IBrokeragePortfolioSync

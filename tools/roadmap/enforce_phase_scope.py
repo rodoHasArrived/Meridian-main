@@ -76,9 +76,17 @@ GENERATED_ARTIFACT_PATTERNS: list[str] = [
     "docs/status/TODO.md",
     "docs/status/coverage-report.md",
     "docs/status/workflow-drift-report.md",
+    "docs/status/example-validation.md",
+    "docs/status/api-contract-coverage-dashboard.md",
+    "docs/status/api-contract-coverage-dashboard.json",
     "docs/diagrams/**",
     "docs/generated/**",
     "docs/**/generated/**",
+    # Schema-control outputs: regenerated mechanically by build/scripts/schema-control.py whenever a
+    # SQL migration or persisted contract changes, and drift-checked by the schema-control workflow.
+    # Without this exemption a PR that adds a migration is trapped between schema-control (which
+    # requires the refreshed manifests committed) and this gate (which rejects them as out of phase).
+    "database/manifest/**",
 ]
 
 

@@ -82,7 +82,49 @@ public sealed record StatementRecordPreviewDto(
     string? SettlementDate,
     string? Currency,
     decimal? FeesCommission,
-    string? ExternalTransactionId);
+    string? ExternalTransactionId,
+    string? ActivityCategory = null,
+    string? ActivitySubtype = null,
+    string? ProviderActivityCode = null,
+    string? RelatedTransactionId = null,
+    string? OrderId = null,
+    string? Description = null);
+
+/// <summary>Provider-reported margin and restriction evidence shown before import.</summary>
+public sealed record StatementAccountSnapshotPreviewDto(
+    string ProviderId = default!,
+    string AccountId = default!,
+    DateTimeOffset AsOf = default,
+    string Currency = default!,
+    string Status = default!,
+    string MarginRegime = default!,
+    decimal Cash = default,
+    decimal Equity = default,
+    decimal BuyingPower = default,
+    decimal? InitialMargin = null,
+    decimal? MaintenanceMargin = null,
+    decimal? ExcessLiquidity = null,
+    decimal? MarginLoan = null,
+    decimal? Multiplier = null,
+    bool TradingBlocked = default,
+    bool TransfersBlocked = default,
+    bool AccountBlocked = default,
+    bool ShortingEnabled = default,
+    int? OptionsApprovedLevel = null,
+    int? OptionsTradingLevel = null,
+    IReadOnlyList<string> Restrictions = default!);
+
+public sealed record StatementActivitySubtypeSummaryDto(
+    string Category = default!,
+    string Subtype = default!,
+    int RecordCount = default);
+
+public sealed record StatementActivityCompletenessDto(
+    string? LastEventId = null,
+    DateTimeOffset? HighWatermark = null,
+    int PageCount = default,
+    int SourceRecordCount = default,
+    bool IsComplete = default);
 
 /// <summary>
 /// Per-kind record breakdown so operators importing a mixed statement see exactly what
@@ -112,7 +154,14 @@ public sealed record StatementImportPreviewDto(
     IReadOnlyList<StatementImportIssueDto> Issues,
     IReadOnlyList<StatementProfileSuggestionDto> ProfileSuggestions,
     string Status,
-    string NextAction);
+    string NextAction = default!)
+{
+    public IReadOnlyList<StatementAccountSnapshotPreviewDto>? AccountSnapshots { get; init; } = [];
+    public IReadOnlyList<StatementActivitySubtypeSummaryDto>? ActivitySubtypeSummaries { get; init; } = [];
+    public IReadOnlyList<StatementActivityCompletenessDto>? ActivityCompleteness { get; init; } = [];
+    public int? TaxLotCount { get; init; }
+    public int? BorrowPositionCount { get; init; }
+}
 
 public sealed record StatementImportCommitResultDto(
     string RunId,
@@ -134,6 +183,7 @@ public sealed record StatementImportCommitResultDto(
     public IReadOnlyList<string> ReconciliationCaseRoutes { get; init; } = [];
     public IReadOnlyList<StatementImportReconciliationCaseLinkDto> ReconciliationCaseLinks { get; init; } = [];
     public IReadOnlyList<string> NextActions { get; init; } = [];
+    public string? RetainedCanonicalEvidencePath { get; init; }
     public string? StatementReconciliationReportWorkflowId { get; init; }
     public string? StatementReconciliationReportStatusRoute { get; init; }
     public Guid? OperationsWorkflowId { get; init; }
@@ -176,6 +226,22 @@ public sealed record StatementReconciliationReportArtifactDto(
     string ContentHashSha256 = default!,
     string DownloadRoute = default!,
     DateTimeOffset RetainedAtUtc = default);
+
+/// <summary>
+/// One superseded artifact generation retained for immutable workflow and audit history.
+/// Artifact descriptors preserve the exact metadata that was current for the generation; their
+/// original download routes are audit metadata and do not authorize historical download.
+/// </summary>
+public sealed record StatementReconciliationReportArtifactGenerationDto(
+    int Generation = default,
+    IReadOnlyList<StatementReconciliationReportArtifactDto> Artifacts = default!,
+    string ManifestFileName = default!,
+    long ManifestByteLength = default,
+    string ManifestContentHashSha256 = default!,
+    DateTimeOffset GeneratedAtUtc = default,
+    DateTimeOffset ArchivedAtUtc = default,
+    IReadOnlyList<string> EvidenceReferences = default!,
+    string ArchiveReceiptContentHashSha256 = default!);
 
 /// <summary>
 /// Exact accounting authority bound to a statement import before it can enter close casework.
@@ -226,6 +292,19 @@ public sealed record StatementReconciliationReportWorkflowDto(
     /// The statement operation does not duplicate that lifecycle.
     /// </summary>
     public Guid? OperationsWorkflowId { get; init; }
+
+    /// <summary>
+    /// Monotonic number of the latest artifact generation produced by this workflow. When the
+    /// workflow is awaiting reconciliation after a reopen, the latest generation is historical and
+    /// <see cref="RetainedArtifacts"/> remains empty until a new current generation completes.
+    /// </summary>
+    public int ArtifactGeneration { get; init; }
+
+    /// <summary>
+    /// Immutable metadata, manifest hashes, descriptors, and audit evidence for superseded artifact
+    /// generations. Current artifact authority remains exclusively in <see cref="RetainedArtifacts"/>.
+    /// </summary>
+    public IReadOnlyList<StatementReconciliationReportArtifactGenerationDto> ArtifactHistory { get; init; } = [];
 }
 
 /// <summary>

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.Tenancy;
 using Meridian.Storage.Archival;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -134,9 +135,6 @@ public sealed class FileFundProfileTenancyRegistry : IFundProfileTenancyRegistry
 
         return normalized;
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed record FundProfileBinding(string FundProfileId, string TenantId, string? CompanyId);
 

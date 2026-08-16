@@ -167,6 +167,37 @@ public sealed record AccountInfo
 
     /// <summary>Timestamp when this info was retrieved.</summary>
     public DateTimeOffset RetrievedAt { get; init; } = DateTimeOffset.UtcNow;
+
+    /// <summary>Provider-reported margin multiplier. One normally indicates a cash account.</summary>
+    public decimal? MarginMultiplier { get; init; }
+
+    public decimal? RegTBuyingPower { get; init; }
+
+    public decimal? InitialMargin { get; init; }
+
+    public decimal? MaintenanceMargin { get; init; }
+
+    public decimal? LastMaintenanceMargin { get; init; }
+
+    public decimal? SpecialMemorandumAccount { get; init; }
+
+    public decimal? LongMarketValue { get; init; }
+
+    public decimal? ShortMarketValue { get; init; }
+
+    public decimal? NonMarginableBuyingPower { get; init; }
+
+    public bool TradingBlocked { get; init; }
+
+    public bool TransfersBlocked { get; init; }
+
+    public bool AccountBlocked { get; init; }
+
+    public bool ShortingEnabled { get; init; }
+
+    public int? OptionsApprovedLevel { get; init; }
+
+    public int? OptionsTradingLevel { get; init; }
 }
 
 /// <summary>

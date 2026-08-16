@@ -11,6 +11,7 @@ using Meridian.FinancialOperations.AccountingClose;
 using Meridian.Reporting;
 using Meridian.Storage.Reporting;
 using Meridian.Strategies.Services;
+using Meridian.Tests.TestSupport;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
 using Npgsql;
@@ -21,7 +22,8 @@ namespace Meridian.Tests.Storage.Reporting;
 
 [Trait("Category", "Integration")]
 public sealed class ReportingReconciliationEvidenceStoreTests :
-    IClassFixture<ReportingGovernanceDatabaseFixture>
+    IClassFixture<ReportingGovernanceDatabaseFixture>,
+    IAsyncLifetime
 {
     private readonly ReportingGovernanceDatabaseFixture _database;
 
@@ -29,6 +31,10 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
     {
         _database = database;
     }
+
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    public Task DisposeAsync() => _database.ResetAsync();
 
     [ReportingDatabaseFact]
     public async Task RetainAndRead_RoundTripsExactTextPayloadIdempotentlyAcrossStoreRestart()
@@ -177,29 +183,33 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
                 "USD",
                 completedAt,
                 completedAt));
-        var periodReadCount = 0;
+        // Model the ledger authority's committed state instead of coupling the fixture to the
+        // bridge's number of defensive boundary reads.
+        var currentPeriod = softClosed;
         ledgerBookService.ListPeriodsAsync(
                 Arg.Any<LedgerPeriodQuery>(),
                 Arg.Any<CancellationToken>())
-            .Returns(_ => ++periodReadCount <= 3
-                ? new[] { softClosed }
-                : new[] { hardClosed });
+            .Returns(_ => new[] { currentPeriod });
         ledgerBookService.GetPeriodSummaryAsync(periodId, Arg.Any<CancellationToken>())
             .Returns(summary);
         ledgerBookService.ClosePeriodAsync(
                 periodId,
                 Arg.Any<CloseLedgerPeriodRequest>(),
                 Arg.Any<CancellationToken>())
-            .Returns(new LedgerPeriodCloseResultDto(
-                hardClosed,
-                summary,
-                new OperatorWorkItemDto(
-                    $"period-close:{periodId:D}",
-                    OperatorWorkItemKindDto.LedgerPeriodClose,
-                    "Period hard closed",
-                    "The reporting close completed.",
-                    OperatorWorkItemToneDto.Success,
-                    completedAt)));
+            .Returns(_ =>
+            {
+                currentPeriod = hardClosed;
+                return new LedgerPeriodCloseResultDto(
+                    hardClosed,
+                    summary,
+                    new OperatorWorkItemDto(
+                        $"period-close:{periodId:D}",
+                        OperatorWorkItemKindDto.LedgerPeriodClose,
+                        "Period hard closed",
+                        "The reporting close completed.",
+                        OperatorWorkItemToneDto.Success,
+                        completedAt));
+            });
 
         var workbench = Substitute.For<IManualJournalEntryWorkbenchService>();
         workbench.GetWorkbenchAsync(
@@ -243,6 +253,31 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
         var breakQueue = Substitute.For<IReconciliationBreakQueueRepository>();
         breakQueue.GetAllAsync(Arg.Any<ReconciliationBreakQueueStatus?>(), Arg.Any<CancellationToken>())
             .Returns(Array.Empty<ReconciliationBreakQueueItem>());
+        var closeScope = new ReconciliationCloseScope(
+            fundId,
+            bookId,
+            periodId,
+            softClosed.EndDate);
+        var closeScopeCheckpoint = new ReconciliationCloseScopeCheckpoint(
+            closeScope,
+            [],
+            new string('c', 64));
+        var closeScopeLease = Substitute.For<IReconciliationCloseScopeLease>();
+        closeScopeLease.Scope.Returns(closeScope);
+        closeScopeLease.Items.Returns(Array.Empty<ReconciliationBreakQueueItem>());
+        closeScopeLease.CheckpointHashSha256.Returns(closeScopeCheckpoint.CheckpointHashSha256);
+        closeScopeLease.Generation.Returns(closeScopeCheckpoint.Generation);
+        closeScopeLease.CommitHardCloseAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+        closeScopeLease.DisposeAsync().Returns(ValueTask.CompletedTask);
+        breakQueue.AcquireCloseScopeLeaseAsync(
+                Arg.Is<ReconciliationCloseScope>(candidate => candidate == closeScope),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(closeScopeLease));
+        breakQueue.RecoverHardClosedScopeCheckpointAsync(
+                Arg.Is<ReconciliationCloseScope>(candidate => candidate == closeScope),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(closeScopeCheckpoint));
         var bridge = new AccountingClosePostingWorkbenchBridge(
             runner,
             workbench,
@@ -250,7 +285,8 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
             ledgerBookService,
             retention,
             tenancy,
-            breakQueue);
+            breakQueue,
+            new ImmediateReportingReleaseConsistencyGate());
 
         var closeContext = new AccountingClosePostingContext(
                 Guid.NewGuid(),
@@ -328,8 +364,10 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
                     RequireBoundScope: true));
 
         var blocked = await certify.Should().ThrowAsync<ReportingRunReadinessBlockedException>();
-        blocked.Which.Message.Should().Contain(
-            "Final reporting requires retained proof that the accounting-close workflow committed");
+        blocked.Which.Readiness.BlockingReasons.Should().ContainSingle(reason =>
+            reason.Contains(
+                "Final reporting requires retained proof that the accounting-close workflow committed",
+                StringComparison.Ordinal));
     }
 
     private static ReportingReconciliationEvidenceReceipt NewReceipt()
@@ -451,7 +489,7 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
-            insert into \"{_database.Options.Schema}\".\"reporting_reconciliation_evidence\" (
+            insert into "{_database.Options.Schema}"."reporting_reconciliation_evidence" (
                 tenant_id, receipt_key_sha256, organization_id, company_id, fund_id, ledger_book_id,
                 accounting_period_id, accounting_basis, as_of_date, source_checkpoint_id,
                 source_checkpoint_hash, reconciliation_checkpoint_id, reconciliation_checkpoint_hash,

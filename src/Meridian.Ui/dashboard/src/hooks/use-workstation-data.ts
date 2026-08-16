@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
+import {
+  useRequestLifecycle,
+  type RequestLifecycleStatus,
+  type RequestLifecycleToken
+} from "@/hooks/use-request-lifecycle";
 import {
   getBrokerageHouseholdPortfolio,
   getDataWorkspace,
@@ -214,6 +218,9 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     staleMessage: "Older workstation refresh response discarded.",
     maxRetries: 2
   });
+  const failFullRefresh = fullRefreshLifecycle.fail;
+  const partialFullRefresh = fullRefreshLifecycle.partial;
+  const succeedFullRefresh = fullRefreshLifecycle.succeed;
   const refreshTradingRef = useRef<(options?: { attempt?: number }) => Promise<void>>(async () => {});
   const tradingRefreshLifecycle = useRequestLifecycle({
     operation: "trading workspace refresh",
@@ -276,6 +283,35 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     tradingRefreshLifecycle.status
   ]);
 
+  const settleFullRefresh = useCallback((
+    token: RequestLifecycleToken,
+    settlements: SettledRefreshEntry[]
+  ) => {
+    const outcome = summarizeRefreshSettlements(settlements);
+    if (outcome.kind === "success") {
+      succeedFullRefresh(token);
+      return;
+    }
+
+    const error = new Error(outcome.failureMessages.join("; "));
+    if (outcome.kind === "partial") {
+      partialFullRefresh(token, error, {
+        message: `Workstation data partially refreshed (${outcome.fulfilledCount} of ${outcome.totalCount} requests succeeded).`,
+        fallback: "Workstation refresh completed with missing evidence."
+      });
+      return;
+    }
+
+    failFullRefresh(token, error, {
+      message: "Workstation refresh failed.",
+      fallback: "Workstation refresh failed."
+    });
+  }, [
+    failFullRefresh,
+    partialFullRefresh,
+    succeedFullRefresh
+  ]);
+
   const refresh = useCallback(async (
     options: { includeDeferred?: boolean } = {}
   ) => {
@@ -320,12 +356,14 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
       replaceErrorsFor: getWorkspaceKeysForEntries(primaryEntries)
     }));
     if (primaryPublished) {
-      hasPublishedBootstrapRef.current = true;
+      if (hasSuccessfulBootstrapEvidence(primaryResults)) {
+        hasPublishedBootstrapRef.current = true;
+      }
       markRefreshEntriesLoaded(primaryResults, lastLoadedAtRef.current);
     }
 
     if (!shouldFetchDeferred || deferredEntries.length === 0) {
-      fullRefreshLifecycle.succeed(token);
+      settleFullRefresh(token, primaryResults);
       return;
     }
 
@@ -340,16 +378,15 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
       replaceErrorsFor: getWorkspaceKeysForEntries(deferredEntries)
     }));
     if (deferredPublished) {
-      hasPublishedBootstrapRef.current = true;
       markRefreshEntriesLoaded(deferredResults, lastLoadedAtRef.current);
     }
-    fullRefreshLifecycle.succeed(token);
+    settleFullRefresh(token, [...primaryResults, ...deferredResults]);
   }, [
     fullRefreshLifecycle.markStale,
     fullRefreshLifecycle.start,
-    fullRefreshLifecycle.succeed,
     portfolioRefreshLifecycle.invalidate,
     providerRoutingRefreshLifecycle.invalidate,
+    settleFullRefresh,
     tradingRefreshLifecycle.invalidate,
     workflowSummaryFundAccountId,
     workflowSummaryFundDisplayName,
@@ -400,11 +437,11 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     if (published) {
       markRefreshEntriesLoaded(settlements, lastLoadedAtRef.current);
     }
-    fullRefreshLifecycle.succeed(token);
+    settleFullRefresh(token, settlements);
   }, [
     fullRefreshLifecycle.markStale,
     fullRefreshLifecycle.start,
-    fullRefreshLifecycle.succeed,
+    settleFullRefresh,
     workflowSummaryFundAccountId,
     workflowSummaryFundDisplayName,
     workflowSummaryFundProfileId,
@@ -728,7 +765,7 @@ function createRefreshEntries(
     { key: "data", category: "workspace", workspaceKeys: ["data"], start: (requestOptions) => getDataWorkspace(requestOptions) },
     { key: "accounting", category: "workspace", workspaceKeys: ["accounting"], start: (requestOptions) => getAccountingWorkspace(requestOptions) },
     { key: "reporting", category: "workspace", workspaceKeys: ["reporting"], start: (requestOptions) => getReportingWorkspace(requestOptions) },
-    { key: "brokerageConnection", category: "workspace", workspaceKeys: ["portfolio"], start: (requestOptions) => getAlpacaConnectionStatus(requestOptions) },
+    { key: "brokerageConnection", category: "workspace", workspaceKeys: ["settings", "portfolio"], start: (requestOptions) => getAlpacaConnectionStatus(requestOptions) },
     {
       key: "robinhoodConnection",
       category: "workspace",
@@ -770,44 +807,11 @@ function createRefreshEntries(
 }
 
 function selectPrimaryRefreshEntries(entries: RefreshEntry[], activeWorkspace: WorkspaceKey): RefreshEntry[] {
-  const primaryKeys = new Set<RefreshDataKey>(["session", "overview", "workflowSummary", "workflowLibrary", "workflowPresets"]);
-  for (const key of getActiveWorkspaceRefreshKeys(activeWorkspace)) {
-    primaryKeys.add(key);
-  }
-
-  return entries.filter((entry) => primaryKeys.has(entry.key));
-}
-
-function getActiveWorkspaceRefreshKeys(activeWorkspace: WorkspaceKey): RefreshDataKey[] {
-  switch (activeWorkspace) {
-    case "portfolio":
-      return ["portfolio", "portfolioMultiAssetCoverage", "brokerageConnection", "brokeragePortfolio"];
-    case "accounting":
-      return ["accounting", "portfolioMultiAssetCoverage"];
-    case "reporting":
-      return ["reporting"];
-    case "strategy":
-      return ["strategy"];
-    case "data":
-      return ["data", "providerConnections", "providerReadiness", "securityAssetProfiles"];
-    case "settings":
-      return [
-        "providerConnections",
-        "providerReadiness",
-        "providerRoutingConnections",
-        "providerRoutingBindings",
-        "providerRoutingTrustSnapshots",
-        "rolePermissionCatalog",
-        "securityAssetProfiles",
-        "ledgerMappingWorkbench",
-        "operationsApprovalPolicyMatrix",
-        "operationsCloseCalendar",
-        "featureCapabilities"
-      ];
-    case "trading":
-    default:
-      return ["trading"];
-  }
+  return entries.filter((entry) => (
+    entry.category === "bootstrap"
+    || entry.category === "workflow"
+    || entry.workspaceKeys?.includes(activeWorkspace) === true
+  ));
 }
 
 async function settleRefreshEntries(
@@ -819,6 +823,34 @@ async function settleRefreshEntries(
     entry,
     result: results[index]
   }));
+}
+
+function summarizeRefreshSettlements(settlements: SettledRefreshEntry[]) {
+  const failures = settlements.filter((
+    settlement
+  ): settlement is SettledRefreshEntry & { result: PromiseRejectedResult } => (
+    settlement.result.status === "rejected"
+  ));
+  const fulfilledCount = settlements.length - failures.length;
+  return {
+    kind: failures.length === 0
+      ? "success" as const
+      : fulfilledCount === 0
+        ? "failure" as const
+        : "partial" as const,
+    fulfilledCount,
+    totalCount: settlements.length,
+    failureMessages: failures.map(({ entry, result }) => formatRequestError(
+      result.reason,
+      `${getRefreshEntryLabel(entry)} request failed.`
+    ))
+  };
+}
+
+function hasSuccessfulBootstrapEvidence(settlements: SettledRefreshEntry[]) {
+  const bootstrapSettlements = settlements.filter((settlement) => settlement.entry.category === "bootstrap");
+  return bootstrapSettlements.length > 0
+    && bootstrapSettlements.every((settlement) => settlement.result.status === "fulfilled");
 }
 
 function mergeRefreshSettlements(

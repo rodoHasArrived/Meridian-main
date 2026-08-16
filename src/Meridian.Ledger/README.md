@@ -44,6 +44,14 @@ income/expense/fee drivers a fund accountant delivers rather than one lumped fig
 never disturbs the existing ending-capital reconciliation, and it flows through both the
 partners-capital CSV artifact and the shared `LedgerReportPresentation` table that drives the Xlsx/Pdf
 renderers.
+`PartnersCapitalStatementLayout` (built by `PartnersCapitalStatementLayoutBuilder`) is a bespoke,
+client-grade projection of that statement for the deliverable: it classifies each capital account by
+partner role (limited partner, general partner, undistributed result, or fund capital), computes each
+partner's ownership share of ending capital, and anchors the whole statement to the fund's
+ledger-backed net asset value (the unitized NAV base) with an explicit reconciliation flag. It keeps
+money typed (not pre-formatted) so `FinancialReportDocumentRenderer` can emit a purpose-built
+partners-capital PDF section and a typed-numeric XLSX sheet instead of the generic table. The
+projection is presentation only — it introduces no ledger fact and never changes a figure.
 `LedgerReportPackBuilder` emits those statements as CSV/JSON pack artifacts, and
 `LedgerScheduledReportExportPackageBuilder` now honors every declared `LedgerReportExportFormat`:
 Csv, Json, RegulatoryXml natively plus real binary Xlsx/Pdf through the
@@ -237,6 +245,11 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
+| `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
+| `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
+| `W10-TAX-001` | Tax character, wash-sale, and lot-relief operator surface |
+| `W10-PERF-001` | Portfolio and investor return measurement |
+| `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

@@ -2224,6 +2224,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Catalog.CanonicalSymbolAliasDefinition"
     },
     {
@@ -4378,6 +4384,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Export.SpecializedExportApiResponse"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Export.StandardPresets"
     },
     {
@@ -5896,6 +5908,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Integrity.Sha256Digest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Integrity.Sha256DigestComparison"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AccountingActionAuditEventDto"
     },
     {
@@ -6671,6 +6695,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionTags"
     },
     {
       "kind": "contract-set-member",
@@ -8686,6 +8716,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema"
     },
     {
@@ -8729,6 +8765,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityFieldProvenance"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord"
     },
     {
       "kind": "contract-set-member",
@@ -9040,6 +9088,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.TradingParametersDto"
     },
     {
@@ -9341,6 +9395,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Tenancy.TenantReadPredicate"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Text.TextPrimitives"
     },
     {
       "kind": "contract-set-member",
@@ -9802,6 +9862,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.DiscardSecurityMasterRevisionRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.EquityCurvePoint"
     },
     {
@@ -10157,6 +10223,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.EvidenceVaultLookupRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.EvidenceVaultReference"
     },
     {
       "kind": "contract-set-member",
@@ -11051,6 +11123,48 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.LedgerTrialBalanceLine"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginCertificationRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginCertificationResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlAccountDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlAlertDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginPositionContributionDto"
     },
     {
       "kind": "contract-set-member",
@@ -11968,6 +12082,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakQueueScope"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus"
     },
     {
@@ -12088,6 +12208,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkCloseScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkCommand"
     },
     {
@@ -12107,6 +12233,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationJobControl"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationLogicalBreakIdentity"
     },
     {
       "kind": "contract-set-member",
@@ -12635,6 +12767,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReportingConsolidationLevelDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReportingDeploymentCapabilityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReportingDeploymentComponentDto"
     },
     {
       "kind": "contract-set-member",
@@ -13252,6 +13396,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementActivityCompletenessDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.StatementBreakDto"
     },
     {
@@ -13384,6 +13546,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationAccountingScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationBreakExplanationDto"
     },
     {
@@ -13415,6 +13583,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationCaseDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportArtifactDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportArtifactGenerationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowStatusDto"
     },
     {
       "kind": "contract-set-member",
@@ -13726,6 +13918,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistItemDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.StrategyRunArtifactCompleteness"
     },
     {
@@ -13823,6 +14027,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.StrategyRunEngine"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StrategyRunEvidenceLoop"
     },
     {
       "kind": "contract-set-member",
@@ -14614,6 +14824,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationReportingDeliveryPayload"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationReportingDeliveryReceiptPayload"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationReportingHistoryPayload"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationReportingPayload"
     },
     {
@@ -14645,6 +14873,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationReportingTemplatePayload"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationRiskGuardrail"
     },
     {
       "kind": "contract-set-member",
@@ -15251,6 +15485,12 @@
       "label": "",
       "source": "contract-set:banking-contracts",
       "target": "contract:Meridian.Contracts.Banking.RejectPaymentRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:banking-contracts",
+      "target": "contract:Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest"
     },
     {
       "kind": "contract-set-member",
@@ -18160,6 +18400,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionTags"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryDto"
     },
     {
@@ -19492,6 +19738,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema"
     },
     {
@@ -19535,6 +19787,18 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityFieldProvenance"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord"
     },
     {
       "kind": "contract-set-member",
@@ -19841,6 +20105,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredFactorScheduleEntry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
     },
     {
       "kind": "contract-set-member",
@@ -20439,8 +20709,26 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationProfileDto",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdminCertificationArtifactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationProfileDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationProfileUpsertRequestDto",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationProfileDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationProfileUpsertRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
@@ -21958,6 +22246,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Banking.RejectPaymentRequest",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
     },
     {
@@ -23633,6 +23927,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Export.ResearchPackageOptions",
       "target": "contract:Meridian.Contracts.Export.DataTypeInclusion"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Export.SpecializedExportApiResponse",
+      "target": "contract:Meridian.Contracts.Export.ExportAnalysisApiFile"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Export.SpecializedExportApiResponse",
+      "target": "contract:Meridian.Contracts.Export.QualityReportSummary"
     },
     {
       "kind": "contract-reference",
@@ -29397,6 +29703,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.UpsertCashFlowSourceRequest",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowSourceKind"
     },
@@ -31695,6 +32007,30 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.MarginControlAccountDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarginPositionContributionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlAccountDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlAlertDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.MeridianAssuranceScoreDto",
       "target": "contract:Meridian.Contracts.Workstation.EvidenceAssuranceComponentDto"
     },
@@ -33435,6 +33771,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkCommand",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkCloseScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkOperationResult",
       "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
     },
@@ -33443,6 +33785,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkOperationResult",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationMatchDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsContinuityCorrelationKeysDto"
     },
     {
       "kind": "contract-reference",
@@ -34193,6 +34541,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReportWriterMetricDefinitionDto",
       "target": "contract:Meridian.Contracts.Workstation.ReportWriterAggregateFunctionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReportingDeploymentCapabilityDto",
+      "target": "contract:Meridian.Contracts.Workstation.ReportingDeploymentComponentDto"
     },
     {
       "kind": "contract-reference",
@@ -35163,6 +35517,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementFetchScheduleDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationAccountingScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StatementImportCommitResultDto",
       "target": "contract:Meridian.Contracts.Workstation.EvidenceVaultIdentityDto"
     },
@@ -35177,6 +35537,30 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StatementImportCommitResultDto",
       "target": "contract:Meridian.Contracts.Workstation.StatementKindSummaryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementImportCommitResultDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationAccountingScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementImportPreviewDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementImportPreviewDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementActivityCompletenessDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementImportPreviewDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto"
     },
     {
       "kind": "contract-reference",
@@ -35261,6 +35645,42 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StatementReconciliationCaseDto",
       "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationCaseCommentThreadDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportArtifactGenerationDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportArtifactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowDto",
+      "target": "contract:Meridian.Contracts.Workstation.EvidenceVaultIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationAccountingScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportArtifactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportArtifactGenerationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowStatusDto"
     },
     {
       "kind": "contract-reference",
@@ -35619,6 +36039,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistItemDto",
+      "target": "contract:Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StrategyRunComparison",
       "target": "contract:Meridian.Contracts.Workstation.StrategyRunArtifactCompleteness"
     },
@@ -35777,6 +36203,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StrategyRunDetail",
       "target": "contract:Meridian.Contracts.Workstation.PortfolioSummary"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StrategyRunDetail",
+      "target": "contract:Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistItemDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StrategyRunDetail",
+      "target": "contract:Meridian.Contracts.Workstation.StrategyRunEvidenceLoop"
     },
     {
       "kind": "contract-reference",
@@ -36729,6 +37167,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationReportingDeliveryPayload",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationReportingDeliveryReceiptPayload"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationReportingHistoryPayload",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationReportingDeliveryPayload"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationReportingHistoryPayload",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationReportingRunPayload"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationReportingPayload",
       "target": "contract:Meridian.Contracts.Workstation.CrossFundReportingConsolidationDto"
     },
@@ -36773,6 +37229,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationReportingPayload",
       "target": "contract:Meridian.Contracts.Workstation.ReportPackDeliveryAttemptDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationReportingPayload",
+      "target": "contract:Meridian.Contracts.Workstation.ReportingDeploymentCapabilityDto"
     },
     {
       "kind": "contract-reference",
@@ -36827,6 +37289,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationReportingPayload",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationReportingDailyWorkItemDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationReportingPayload",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationReportingDeliveryPayload"
     },
     {
       "kind": "contract-reference",
@@ -37055,6 +37523,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationTradingPayload",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationTradingRiskState"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationTradingRiskState",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationRiskGuardrail"
     },
     {
       "kind": "contract-reference",
@@ -37442,6 +37916,79 @@
       "label": "position_id, security_id, ledger_book_id, owner_scope_id, owner_scope_kind",
       "source": "database:asset_operations.position_economic_state_projections",
       "target": "database:asset_operations.book_position_projections"
+    },
+    {
+      "constraint": "fk_bank_transactions_pending_payment",
+      "kind": "foreign-key",
+      "label": "pending_payment_id",
+      "source": "database:banking.bank_transactions",
+      "target": "database:banking.pending_payments"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_bank_transactions_currency on banking.bank_transactions",
+      "target": "database:banking.bank_transactions.currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
+      "target": "database:banking.bank_transactions.canonical_input_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
+      "target": "database:banking.bank_transactions.evidence_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
+      "target": "database:banking.bank_transactions.pending_payment_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_pending_payments_currency on banking.pending_payments",
+      "target": "database:banking.pending_payments.currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+      "target": "database:banking.pending_payments.currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+      "target": "database:banking.pending_payments.currency_remediated_at"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+      "target": "database:banking.pending_payments.currency_remediated_by"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+      "target": "database:banking.pending_payments.currency_remediation_reason"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.fk_bank_transactions_pending_payment on banking.bank_transactions",
+      "target": "database:banking.pending_payments.pending_payment_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.fk_bank_transactions_pending_payment on banking.bank_transactions",
+      "target": "database:banking.pending_payments_pkey"
     },
     {
       "constraint": "account_balance_snapshot_account_id_fkey",
@@ -38194,6 +38741,18 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_tax_lot_policies_wash_sale on ledger.tax_lot_policies",
+      "target": "database:ledger.tax_lot_policies.wash_sale_scope"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_policies_wash_sale on ledger.tax_lot_policies",
+      "target": "database:ledger.tax_lot_policies.wash_sale_window_days"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
       "target": "database:ledger.tax_lots.book_position_id"
     },
@@ -38232,6 +38791,42 @@
       "label": "",
       "source": "database:ledger.ck_tax_lots_version on ledger.tax_lots",
       "target": "database:ledger.tax_lots.version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_wash_sale_deferrals_amount on ledger.wash_sale_deferrals",
+      "target": "database:ledger.wash_sale_deferrals.disallowed_amount"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_wash_sale_deferrals_lot on ledger.wash_sale_deferrals",
+      "target": "database:ledger.wash_sale_deferrals.replacement_lot_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_wash_sale_deferrals_matched_quantity on ledger.wash_sale_deferrals",
+      "target": "database:ledger.wash_sale_deferrals.matched_quantity"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_wash_sale_deferrals_scope on ledger.wash_sale_deferrals",
+      "target": "database:ledger.wash_sale_deferrals.scope"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_wash_sale_deferrals_security on ledger.wash_sale_deferrals",
+      "target": "database:ledger.wash_sale_deferrals.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_wash_sale_deferrals_window on ledger.wash_sale_deferrals",
+      "target": "database:ledger.wash_sale_deferrals.window_days"
     },
     {
       "constraint": "journal_legs_journal_entry_id_fkey",
@@ -38462,6 +39057,63 @@
       "target": "database:ledger.journal_entries_journal_entry_id_key"
     },
     {
+      "constraint": "wash_sale_deferrals_disposal_mutation_batch_id_fkey",
+      "kind": "foreign-key",
+      "label": "disposal_mutation_batch_id",
+      "source": "database:ledger.wash_sale_deferrals",
+      "target": "database:ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "constraint": "wash_sale_deferrals_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.wash_sale_deferrals",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "constraint": "wash_sale_deferrals_replacement_tax_lot_record_id_fkey",
+      "kind": "foreign-key",
+      "label": "replacement_tax_lot_record_id",
+      "source": "database:ledger.wash_sale_deferrals",
+      "target": "database:ledger.tax_lots"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.wash_sale_deferrals_disposal_mutation_batch_id_fkey on ledger.wash_sale_deferrals",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_batch_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.wash_sale_deferrals_disposal_mutation_batch_id_fkey on ledger.wash_sale_deferrals",
+      "target": "database:ledger.atomic_tax_lot_posting_batches_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.wash_sale_deferrals_ledger_book_id_fkey on ledger.wash_sale_deferrals",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.wash_sale_deferrals_ledger_book_id_fkey on ledger.wash_sale_deferrals",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.wash_sale_deferrals_replacement_tax_lot_record_id_fkey on ledger.wash_sale_deferrals",
+      "target": "database:ledger.tax_lots.tax_lot_record_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.wash_sale_deferrals_replacement_tax_lot_record_id_fkey on ledger.wash_sale_deferrals",
+      "target": "database:ledger.tax_lots_pkey"
+    },
+    {
       "kind": "normal",
       "label": "",
       "source": "database:reporting.ck_reporting_access_grant_artifacts_valid on reporting.reporting_access_grants",
@@ -38478,6 +39130,24 @@
       "label": "",
       "source": "database:reporting.ck_reporting_access_grant_audience_trimmed on reporting.reporting_access_grants",
       "target": "database:reporting.reporting_access_grants.audience"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_access_grant_consumed_artifacts on reporting.reporting_access_grants",
+      "target": "database:reporting.reporting_access_grants.artifact_ids"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_access_grant_consumed_artifacts on reporting.reporting_access_grants",
+      "target": "database:reporting.reporting_access_grants.consumed_artifact_ids"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_access_grant_consumed_artifacts on reporting.reporting_access_grants",
+      "target": "database:reporting.reporting_access_grants.use_count"
     },
     {
       "kind": "normal",
@@ -39262,6 +39932,432 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:reporting.ck_reporting_run_create_claim_id on reporting.reporting_run_create_claims",
+      "target": "database:reporting.reporting_run_create_claims.run_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_create_claim_key on reporting.reporting_run_create_claims",
+      "target": "database:reporting.reporting_run_create_claims.run_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_create_claim_key on reporting.reporting_run_create_claims",
+      "target": "database:reporting.reporting_run_create_claims.run_id_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_create_claim_owner on reporting.reporting_run_create_claims",
+      "target": "database:reporting.reporting_run_create_claims.lease_owner"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_create_claim_tenant on reporting.reporting_run_create_claims",
+      "target": "database:reporting.reporting_run_create_claims.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_create_claim_version on reporting.reporting_run_create_claims",
+      "target": "database:reporting.reporting_run_create_claims.lease_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_create_claim_window on reporting.reporting_run_create_claims",
+      "target": "database:reporting.reporting_run_create_claims.claimed_at_utc"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_create_claim_window on reporting.reporting_run_create_claims",
+      "target": "database:reporting.reporting_run_create_claims.lease_expires_at_utc"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_snapshot_audit on reporting.reporting_run_snapshots",
+      "target": "database:reporting.reporting_run_snapshots.audit_payload"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_snapshot_audit_hash on reporting.reporting_run_snapshots",
+      "target": "database:reporting.reporting_run_snapshots.audit_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_snapshot_dataset_hash on reporting.reporting_run_snapshots",
+      "target": "database:reporting.reporting_run_snapshots.certified_dataset_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_snapshot_id on reporting.reporting_run_snapshots",
+      "target": "database:reporting.reporting_run_snapshots.run_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_snapshot_key on reporting.reporting_run_snapshots",
+      "target": "database:reporting.reporting_run_snapshots.run_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_snapshot_key on reporting.reporting_run_snapshots",
+      "target": "database:reporting.reporting_run_snapshots.run_id_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_snapshot_manifest on reporting.reporting_run_snapshots",
+      "target": "database:reporting.reporting_run_snapshots.manifest_payload"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_snapshot_manifest_hash on reporting.reporting_run_snapshots",
+      "target": "database:reporting.reporting_run_snapshots.manifest_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_snapshot_payload_identity on reporting.reporting_run_snapshots",
+      "target": "database:reporting.reporting_run_snapshots.manifest_payload"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_snapshot_payload_identity on reporting.reporting_run_snapshots",
+      "target": "database:reporting.reporting_run_snapshots.run_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_snapshot_payload_identity on reporting.reporting_run_snapshots",
+      "target": "database:reporting.reporting_run_snapshots.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_snapshot_state_hash on reporting.reporting_run_snapshots",
+      "target": "database:reporting.reporting_run_snapshots.state_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_run_snapshot_tenant on reporting.reporting_run_snapshots",
+      "target": "database:reporting.reporting_run_snapshots.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_company on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_due on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.due_at_utc"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_due on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.schedule_payload"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_id on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.schedule_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_key on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.schedule_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_key on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.schedule_id_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_lease_owner on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.lease_owner"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_lease_pair on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.lease_expires_at_utc"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_lease_pair on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.lease_owner"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_lease_version on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.lease_owner"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_lease_version on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.lease_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_payload on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.schedule_payload"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_payload_hash on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.payload_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_payload_identity on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_payload_identity on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.schedule_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_payload_identity on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.schedule_payload"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_payload_identity on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_schedule_snapshot_tenant on reporting.reporting_schedule_snapshots",
+      "target": "database:reporting.reporting_schedule_snapshots.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_document_company on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_statement_reconciliation_documents.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_document_hash on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_statement_reconciliation_documents.content_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_document_identity_utf8_bytes on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_statement_reconciliation_documents.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_document_identity_utf8_bytes on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_statement_reconciliation_documents.document_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_document_identity_utf8_bytes on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_statement_reconciliation_documents.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_document_identity_utf8_bytes on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_statement_reconciliation_documents.workflow_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_document_key on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_statement_reconciliation_documents.document_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_document_size on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_statement_reconciliation_documents.byte_size"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_document_tenant on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_statement_reconciliation_documents.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_document_timestamps on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_statement_reconciliation_documents.stored_at_utc"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_document_timestamps on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_statement_reconciliation_documents.updated_at_utc"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_document_version on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_statement_reconciliation_documents.document_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_document_workflow on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_statement_reconciliation_documents.workflow_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_chain on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.document_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_chain on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.previous_byte_size"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_chain on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.previous_content_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_chain on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.previous_updated_at_utc"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_company on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_hash on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.content_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_identity_utf8_bytes on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_identity_utf8_bytes on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.document_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_identity_utf8_bytes on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_identity_utf8_bytes on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.workflow_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_key on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.document_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_previous_hash on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.previous_content_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_size on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.byte_size"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_tenant on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_timestamps on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.mapping_stored_at_utc"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_timestamps on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.mapping_updated_at_utc"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_timestamps on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.previous_updated_at_utc"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_timestamps on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.recorded_at_utc"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_statement_revision_workflow on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions.workflow_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:reporting.fk_reporting_artifact_catalog_package on reporting.reporting_artifact_catalog",
       "target": "database:reporting.reporting_artifact_packages.package_id"
     },
@@ -39314,6 +40410,60 @@
       "target": "database:reporting.reporting_governed_runs_pkey"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.fk_reporting_statement_document_blob on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_artifact_blobs.content_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.fk_reporting_statement_document_blob on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_artifact_blobs.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.fk_reporting_statement_document_blob on reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_artifact_blobs_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.fk_reporting_statement_revision_blob on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_artifact_blobs.content_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.fk_reporting_statement_revision_blob on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_artifact_blobs.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.fk_reporting_statement_revision_blob on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_artifact_blobs_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.fk_reporting_statement_revision_previous_blob on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_artifact_blobs.content_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.fk_reporting_statement_revision_previous_blob on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_artifact_blobs.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.fk_reporting_statement_revision_previous_blob on reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_artifact_blobs_pkey"
+    },
+    {
       "constraint": "fk_reporting_artifact_catalog_package",
       "kind": "foreign-key",
       "label": "tenant_id, package_id",
@@ -39333,6 +40483,27 @@
       "label": "tenant_id, predecessor_run_id",
       "source": "database:reporting.reporting_restatement_requests",
       "target": "database:reporting.reporting_governed_runs"
+    },
+    {
+      "constraint": "fk_reporting_statement_revision_blob",
+      "kind": "foreign-key",
+      "label": "tenant_id, content_hash_sha256",
+      "source": "database:reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_artifact_blobs"
+    },
+    {
+      "constraint": "fk_reporting_statement_revision_previous_blob",
+      "kind": "foreign-key",
+      "label": "tenant_id, previous_content_hash_sha256",
+      "source": "database:reporting.reporting_statement_reconciliation_document_revisions",
+      "target": "database:reporting.reporting_artifact_blobs"
+    },
+    {
+      "constraint": "fk_reporting_statement_document_blob",
+      "kind": "foreign-key",
+      "label": "tenant_id, content_hash_sha256",
+      "source": "database:reporting.reporting_statement_reconciliation_documents",
+      "target": "database:reporting.reporting_artifact_blobs"
     },
     {
       "constraint": "bond_accrual_convention_projection_security_id_fkey",
@@ -40786,6 +41957,12 @@
       "target": "database:ledger.tax_lots"
     },
     {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.wash_sale_deferrals"
+    },
+    {
       "kind": "hosts-migration-module",
       "label": "",
       "source": "schema:ledger",
@@ -40923,7 +42100,37 @@
       "kind": "contains",
       "label": "",
       "source": "schema:reporting",
+      "target": "database:reporting.reporting_run_create_claims"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:reporting",
+      "target": "database:reporting.reporting_run_snapshots"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:reporting",
+      "target": "database:reporting.reporting_schedule_snapshots"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:reporting",
       "target": "database:reporting.reporting_schema_migrations"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:reporting",
+      "target": "database:reporting.reporting_statement_reconciliation_document_revisions"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:reporting",
+      "target": "database:reporting.reporting_statement_reconciliation_documents"
     },
     {
       "kind": "hosts-migration-module",
@@ -41249,6 +42456,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_field_provenance"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_identifiers"
     },
     {
@@ -41385,7 +42598,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "4457cc5e8dc646e66af1eed81c993e9d42d589f6105905a38ebb2d9be7ff4318",
+  "fingerprint": "d79d268442b47844ef3c11cde67ceff2288e61cad7f8ce40d34a227c2be99a63",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -43659,6 +44872,12 @@
       "label": "Meridian.Contracts.Banking.RejectPaymentRequest"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.Catalog.CanonicalSymbolAliasDefinition",
       "kind": "contract-type",
@@ -45813,6 +47032,12 @@
       "label": "Meridian.Contracts.Export.ResearchPackageResult"
     },
     {
+      "classification": "response",
+      "id": "contract:Meridian.Contracts.Export.SpecializedExportApiResponse",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Export.SpecializedExportApiResponse"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.Export.StandardPresets",
       "kind": "contract-type",
@@ -47331,6 +48556,18 @@
       "label": "Meridian.Contracts.Integrations.ValidationRuleDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Integrity.Sha256Digest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Integrity.Sha256Digest"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Integrity.Sha256DigestComparison",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Integrity.Sha256DigestComparison"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.AccountingActionAuditEventDto",
       "kind": "contract-type",
@@ -48109,6 +49346,12 @@
       "id": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerDimensionTags",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerDimensionTags"
     },
     {
       "classification": "dto",
@@ -50122,6 +51365,12 @@
     },
     {
       "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator"
+    },
+    {
+      "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema"
@@ -50167,6 +51416,18 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityFieldProvenance",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityFieldProvenance"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord"
     },
     {
       "classification": "request",
@@ -50475,6 +51736,12 @@
       "label": "Meridian.Contracts.SecurityMaster.StructuredFactorScheduleEntry"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.TradingParametersDto",
       "kind": "contract-type",
@@ -50779,6 +52046,12 @@
       "id": "contract:Meridian.Contracts.Tenancy.TenantReadPredicate",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Tenancy.TenantReadPredicate"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Text.TextPrimitives",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Text.TextPrimitives"
     },
     {
       "classification": "dto",
@@ -51237,6 +52510,12 @@
       "label": "Meridian.Contracts.Workstation.DesktopLaunchTicketRedemptionDto"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Workstation.DiscardSecurityMasterRevisionRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.DiscardSecurityMasterRevisionRequest"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.EquityCurvePoint",
       "kind": "contract-type",
@@ -51595,6 +52874,12 @@
       "id": "contract:Meridian.Contracts.Workstation.EvidenceVaultLookupRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.EvidenceVaultLookupRequestDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.EvidenceVaultReference",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.EvidenceVaultReference"
     },
     {
       "classification": "dto",
@@ -52489,6 +53774,48 @@
       "id": "contract:Meridian.Contracts.Workstation.LedgerTrialBalanceLine",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.LedgerTrialBalanceLine"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginCertificationRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginCertificationRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginCertificationResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginCertificationResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginControlAccountDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginControlAccountDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginControlAlertDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginControlAlertDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginControlCenterDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginPositionContributionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginPositionContributionDto"
     },
     {
       "classification": "dto",
@@ -53403,6 +54730,12 @@
       "label": "Meridian.Contracts.Workstation.ReconciliationBreakQueueProjectionItemDto"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationBreakQueueScope",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationBreakQueueScope"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus",
       "kind": "contract-type",
@@ -53523,6 +54856,12 @@
       "label": "Meridian.Contracts.Workstation.ReconciliationCaseworkAction"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkCloseScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationCaseworkCloseScopeDto"
+    },
+    {
       "classification": "request",
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkCommand",
       "kind": "contract-type",
@@ -53545,6 +54884,12 @@
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationJobControl",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReconciliationJobControl"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationLogicalBreakIdentity",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationLogicalBreakIdentity"
     },
     {
       "classification": "dto",
@@ -54073,6 +55418,18 @@
       "id": "contract:Meridian.Contracts.Workstation.ReportingConsolidationLevelDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReportingConsolidationLevelDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ReportingDeploymentCapabilityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReportingDeploymentCapabilityDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ReportingDeploymentComponentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReportingDeploymentComponentDto"
     },
     {
       "classification": "dto",
@@ -54688,6 +56045,24 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementActivityCompletenessDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementActivityCompletenessDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.StatementBreakDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.StatementBreakDto"
@@ -54820,6 +56195,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementReconciliationAccountingScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementReconciliationAccountingScopeDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.StatementReconciliationBreakExplanationDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.StatementReconciliationBreakExplanationDto"
@@ -54853,6 +56234,30 @@
       "id": "contract:Meridian.Contracts.Workstation.StatementReconciliationCaseDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.StatementReconciliationCaseDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportArtifactDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementReconciliationReportArtifactDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportArtifactGenerationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementReconciliationReportArtifactGenerationDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowStatusDto"
     },
     {
       "classification": "dto",
@@ -55161,6 +56566,18 @@
       "label": "Meridian.Contracts.Workstation.StrategyDesignValidationResult"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistItemDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistItemDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistStatusDto"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.StrategyRunArtifactCompleteness",
       "kind": "contract-type",
@@ -55261,6 +56678,12 @@
       "id": "contract:Meridian.Contracts.Workstation.StrategyRunEngine",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.StrategyRunEngine"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.StrategyRunEvidenceLoop",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StrategyRunEvidenceLoop"
     },
     {
       "classification": "record",
@@ -56050,6 +57473,24 @@
     },
     {
       "classification": "payload",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationReportingDeliveryPayload",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationReportingDeliveryPayload"
+    },
+    {
+      "classification": "payload",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationReportingDeliveryReceiptPayload",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationReportingDeliveryReceiptPayload"
+    },
+    {
+      "classification": "payload",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationReportingHistoryPayload",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationReportingHistoryPayload"
+    },
+    {
+      "classification": "payload",
       "id": "contract:Meridian.Contracts.Workstation.WorkstationReportingPayload",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.WorkstationReportingPayload"
@@ -56083,6 +57524,12 @@
       "id": "contract:Meridian.Contracts.Workstation.WorkstationReportingTemplatePayload",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.WorkstationReportingTemplatePayload"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationRiskGuardrail",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationRiskGuardrail"
     },
     {
       "classification": "record",
@@ -56819,10 +58266,85 @@
       "schema": "banking"
     },
     {
+      "id": "database:banking.bank_transactions.canonical_input_hash",
+      "kind": "database-object",
+      "label": "banking.bank_transactions.canonical_input_hash"
+    },
+    {
+      "id": "database:banking.bank_transactions.currency",
+      "kind": "database-object",
+      "label": "banking.bank_transactions.currency"
+    },
+    {
+      "id": "database:banking.bank_transactions.evidence_id",
+      "kind": "database-object",
+      "label": "banking.bank_transactions.evidence_id"
+    },
+    {
+      "id": "database:banking.bank_transactions.pending_payment_id",
+      "kind": "database-object",
+      "label": "banking.bank_transactions.pending_payment_id"
+    },
+    {
+      "id": "database:banking.ck_bank_transactions_currency on banking.bank_transactions",
+      "kind": "database-object",
+      "label": "banking.ck_bank_transactions_currency on banking.bank_transactions"
+    },
+    {
+      "id": "database:banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
+      "kind": "database-object",
+      "label": "banking.ck_bank_transactions_payment_evidence on banking.bank_transactions"
+    },
+    {
+      "id": "database:banking.ck_pending_payments_currency on banking.pending_payments",
+      "kind": "database-object",
+      "label": "banking.ck_pending_payments_currency on banking.pending_payments"
+    },
+    {
+      "id": "database:banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+      "kind": "database-object",
+      "label": "banking.ck_pending_payments_currency_remediation on banking.pending_payments"
+    },
+    {
+      "id": "database:banking.fk_bank_transactions_pending_payment on banking.bank_transactions",
+      "kind": "database-object",
+      "label": "banking.fk_bank_transactions_pending_payment on banking.bank_transactions"
+    },
+    {
       "id": "database:banking.pending_payments",
       "kind": "database-table",
       "label": "banking.pending_payments",
       "schema": "banking"
+    },
+    {
+      "id": "database:banking.pending_payments.currency",
+      "kind": "database-object",
+      "label": "banking.pending_payments.currency"
+    },
+    {
+      "id": "database:banking.pending_payments.currency_remediated_at",
+      "kind": "database-object",
+      "label": "banking.pending_payments.currency_remediated_at"
+    },
+    {
+      "id": "database:banking.pending_payments.currency_remediated_by",
+      "kind": "database-object",
+      "label": "banking.pending_payments.currency_remediated_by"
+    },
+    {
+      "id": "database:banking.pending_payments.currency_remediation_reason",
+      "kind": "database-object",
+      "label": "banking.pending_payments.currency_remediation_reason"
+    },
+    {
+      "id": "database:banking.pending_payments.pending_payment_id",
+      "kind": "database-object",
+      "label": "banking.pending_payments.pending_payment_id"
+    },
+    {
+      "id": "database:banking.pending_payments_pkey",
+      "kind": "database-object",
+      "label": "banking.pending_payments_pkey"
     },
     {
       "id": "database:banking.schema_migrations",
@@ -57432,6 +58954,11 @@
       "label": "ledger.ck_tax_lot_policies_relief_method on ledger.tax_lot_policies"
     },
     {
+      "id": "database:ledger.ck_tax_lot_policies_wash_sale on ledger.tax_lot_policies",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_policies_wash_sale on ledger.tax_lot_policies"
+    },
+    {
       "id": "database:ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
       "kind": "database-object",
       "label": "ledger.ck_tax_lots_asset_scope on ledger.tax_lots"
@@ -57455,6 +58982,36 @@
       "id": "database:ledger.ck_tax_lots_version on ledger.tax_lots",
       "kind": "database-object",
       "label": "ledger.ck_tax_lots_version on ledger.tax_lots"
+    },
+    {
+      "id": "database:ledger.ck_wash_sale_deferrals_amount on ledger.wash_sale_deferrals",
+      "kind": "database-object",
+      "label": "ledger.ck_wash_sale_deferrals_amount on ledger.wash_sale_deferrals"
+    },
+    {
+      "id": "database:ledger.ck_wash_sale_deferrals_lot on ledger.wash_sale_deferrals",
+      "kind": "database-object",
+      "label": "ledger.ck_wash_sale_deferrals_lot on ledger.wash_sale_deferrals"
+    },
+    {
+      "id": "database:ledger.ck_wash_sale_deferrals_matched_quantity on ledger.wash_sale_deferrals",
+      "kind": "database-object",
+      "label": "ledger.ck_wash_sale_deferrals_matched_quantity on ledger.wash_sale_deferrals"
+    },
+    {
+      "id": "database:ledger.ck_wash_sale_deferrals_scope on ledger.wash_sale_deferrals",
+      "kind": "database-object",
+      "label": "ledger.ck_wash_sale_deferrals_scope on ledger.wash_sale_deferrals"
+    },
+    {
+      "id": "database:ledger.ck_wash_sale_deferrals_security on ledger.wash_sale_deferrals",
+      "kind": "database-object",
+      "label": "ledger.ck_wash_sale_deferrals_security on ledger.wash_sale_deferrals"
+    },
+    {
+      "id": "database:ledger.ck_wash_sale_deferrals_window on ledger.wash_sale_deferrals",
+      "kind": "database-object",
+      "label": "ledger.ck_wash_sale_deferrals_window on ledger.wash_sale_deferrals"
     },
     {
       "id": "database:ledger.fund_profile_tenancy",
@@ -57733,6 +59290,16 @@
       "label": "ledger.tax_lot_policies.relief_method"
     },
     {
+      "id": "database:ledger.tax_lot_policies.wash_sale_scope",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_policies.wash_sale_scope"
+    },
+    {
+      "id": "database:ledger.tax_lot_policies.wash_sale_window_days",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_policies.wash_sale_window_days"
+    },
+    {
       "id": "database:ledger.tax_lot_policies_ledger_book_id_fkey on ledger.tax_lot_policies",
       "kind": "database-object",
       "label": "ledger.tax_lot_policies_ledger_book_id_fkey on ledger.tax_lot_policies"
@@ -57809,6 +59376,57 @@
       "label": "ledger.tax_lots_source_journal_entry_id_fkey on ledger.tax_lots"
     },
     {
+      "id": "database:ledger.wash_sale_deferrals",
+      "kind": "database-table",
+      "label": "ledger.wash_sale_deferrals",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.wash_sale_deferrals.disallowed_amount",
+      "kind": "database-object",
+      "label": "ledger.wash_sale_deferrals.disallowed_amount"
+    },
+    {
+      "id": "database:ledger.wash_sale_deferrals.matched_quantity",
+      "kind": "database-object",
+      "label": "ledger.wash_sale_deferrals.matched_quantity"
+    },
+    {
+      "id": "database:ledger.wash_sale_deferrals.replacement_lot_id",
+      "kind": "database-object",
+      "label": "ledger.wash_sale_deferrals.replacement_lot_id"
+    },
+    {
+      "id": "database:ledger.wash_sale_deferrals.scope",
+      "kind": "database-object",
+      "label": "ledger.wash_sale_deferrals.scope"
+    },
+    {
+      "id": "database:ledger.wash_sale_deferrals.security_id",
+      "kind": "database-object",
+      "label": "ledger.wash_sale_deferrals.security_id"
+    },
+    {
+      "id": "database:ledger.wash_sale_deferrals.window_days",
+      "kind": "database-object",
+      "label": "ledger.wash_sale_deferrals.window_days"
+    },
+    {
+      "id": "database:ledger.wash_sale_deferrals_disposal_mutation_batch_id_fkey on ledger.wash_sale_deferrals",
+      "kind": "database-object",
+      "label": "ledger.wash_sale_deferrals_disposal_mutation_batch_id_fkey on ledger.wash_sale_deferrals"
+    },
+    {
+      "id": "database:ledger.wash_sale_deferrals_ledger_book_id_fkey on ledger.wash_sale_deferrals",
+      "kind": "database-object",
+      "label": "ledger.wash_sale_deferrals_ledger_book_id_fkey on ledger.wash_sale_deferrals"
+    },
+    {
+      "id": "database:ledger.wash_sale_deferrals_replacement_tax_lot_record_id_fkey on ledger.wash_sale_deferrals",
+      "kind": "database-object",
+      "label": "ledger.wash_sale_deferrals_replacement_tax_lot_record_id_fkey on ledger.wash_sale_deferrals"
+    },
+    {
       "id": "database:money_market.mmf_funds",
       "kind": "database-table",
       "label": "money_market.mmf_funds",
@@ -57846,6 +59464,11 @@
       "id": "database:reporting.ck_reporting_access_grant_audience_trimmed on reporting.reporting_access_grants",
       "kind": "database-object",
       "label": "reporting.ck_reporting_access_grant_audience_trimmed on reporting.reporting_access_grants"
+    },
+    {
+      "id": "database:reporting.ck_reporting_access_grant_consumed_artifacts on reporting.reporting_access_grants",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_access_grant_consumed_artifacts on reporting.reporting_access_grants"
     },
     {
       "id": "database:reporting.ck_reporting_access_grant_id_trimmed on reporting.reporting_access_grants",
@@ -58338,6 +59961,236 @@
       "label": "reporting.ck_reporting_restatement_version on reporting.reporting_restatement_requests"
     },
     {
+      "id": "database:reporting.ck_reporting_run_create_claim_id on reporting.reporting_run_create_claims",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_create_claim_id on reporting.reporting_run_create_claims"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_create_claim_key on reporting.reporting_run_create_claims",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_create_claim_key on reporting.reporting_run_create_claims"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_create_claim_owner on reporting.reporting_run_create_claims",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_create_claim_owner on reporting.reporting_run_create_claims"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_create_claim_tenant on reporting.reporting_run_create_claims",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_create_claim_tenant on reporting.reporting_run_create_claims"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_create_claim_version on reporting.reporting_run_create_claims",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_create_claim_version on reporting.reporting_run_create_claims"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_create_claim_window on reporting.reporting_run_create_claims",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_create_claim_window on reporting.reporting_run_create_claims"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_snapshot_audit on reporting.reporting_run_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_snapshot_audit on reporting.reporting_run_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_snapshot_audit_hash on reporting.reporting_run_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_snapshot_audit_hash on reporting.reporting_run_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_snapshot_dataset_hash on reporting.reporting_run_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_snapshot_dataset_hash on reporting.reporting_run_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_snapshot_id on reporting.reporting_run_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_snapshot_id on reporting.reporting_run_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_snapshot_key on reporting.reporting_run_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_snapshot_key on reporting.reporting_run_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_snapshot_manifest on reporting.reporting_run_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_snapshot_manifest on reporting.reporting_run_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_snapshot_manifest_hash on reporting.reporting_run_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_snapshot_manifest_hash on reporting.reporting_run_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_snapshot_payload_identity on reporting.reporting_run_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_snapshot_payload_identity on reporting.reporting_run_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_snapshot_state_hash on reporting.reporting_run_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_snapshot_state_hash on reporting.reporting_run_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_run_snapshot_tenant on reporting.reporting_run_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_run_snapshot_tenant on reporting.reporting_run_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_schedule_snapshot_company on reporting.reporting_schedule_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_schedule_snapshot_company on reporting.reporting_schedule_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_schedule_snapshot_due on reporting.reporting_schedule_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_schedule_snapshot_due on reporting.reporting_schedule_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_schedule_snapshot_id on reporting.reporting_schedule_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_schedule_snapshot_id on reporting.reporting_schedule_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_schedule_snapshot_key on reporting.reporting_schedule_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_schedule_snapshot_key on reporting.reporting_schedule_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_schedule_snapshot_lease_owner on reporting.reporting_schedule_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_schedule_snapshot_lease_owner on reporting.reporting_schedule_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_schedule_snapshot_lease_pair on reporting.reporting_schedule_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_schedule_snapshot_lease_pair on reporting.reporting_schedule_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_schedule_snapshot_lease_version on reporting.reporting_schedule_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_schedule_snapshot_lease_version on reporting.reporting_schedule_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_schedule_snapshot_payload on reporting.reporting_schedule_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_schedule_snapshot_payload on reporting.reporting_schedule_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_schedule_snapshot_payload_hash on reporting.reporting_schedule_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_schedule_snapshot_payload_hash on reporting.reporting_schedule_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_schedule_snapshot_payload_identity on reporting.reporting_schedule_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_schedule_snapshot_payload_identity on reporting.reporting_schedule_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_schedule_snapshot_tenant on reporting.reporting_schedule_snapshots",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_schedule_snapshot_tenant on reporting.reporting_schedule_snapshots"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_document_company on reporting.reporting_statement_reconciliation_documents",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_document_company on reporting.reporting_statement_reconciliation_documents"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_document_hash on reporting.reporting_statement_reconciliation_documents",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_document_hash on reporting.reporting_statement_reconciliation_documents"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_document_identity_utf8_bytes on reporting.reporting_statement_reconciliation_documents",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_document_identity_utf8_bytes on reporting.reporting_statement_reconciliation_documents"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_document_key on reporting.reporting_statement_reconciliation_documents",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_document_key on reporting.reporting_statement_reconciliation_documents"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_document_size on reporting.reporting_statement_reconciliation_documents",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_document_size on reporting.reporting_statement_reconciliation_documents"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_document_tenant on reporting.reporting_statement_reconciliation_documents",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_document_tenant on reporting.reporting_statement_reconciliation_documents"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_document_timestamps on reporting.reporting_statement_reconciliation_documents",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_document_timestamps on reporting.reporting_statement_reconciliation_documents"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_document_version on reporting.reporting_statement_reconciliation_documents",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_document_version on reporting.reporting_statement_reconciliation_documents"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_document_workflow on reporting.reporting_statement_reconciliation_documents",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_document_workflow on reporting.reporting_statement_reconciliation_documents"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_revision_chain on reporting.reporting_statement_reconciliation_document_revisions",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_revision_chain on reporting.reporting_statement_reconciliation_document_revisions"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_revision_company on reporting.reporting_statement_reconciliation_document_revisions",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_revision_company on reporting.reporting_statement_reconciliation_document_revisions"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_revision_hash on reporting.reporting_statement_reconciliation_document_revisions",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_revision_hash on reporting.reporting_statement_reconciliation_document_revisions"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_revision_identity_utf8_bytes on reporting.reporting_statement_reconciliation_document_revisions",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_revision_identity_utf8_bytes on reporting.reporting_statement_reconciliation_document_revisions"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_revision_key on reporting.reporting_statement_reconciliation_document_revisions",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_revision_key on reporting.reporting_statement_reconciliation_document_revisions"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_revision_previous_hash on reporting.reporting_statement_reconciliation_document_revisions",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_revision_previous_hash on reporting.reporting_statement_reconciliation_document_revisions"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_revision_size on reporting.reporting_statement_reconciliation_document_revisions",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_revision_size on reporting.reporting_statement_reconciliation_document_revisions"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_revision_tenant on reporting.reporting_statement_reconciliation_document_revisions",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_revision_tenant on reporting.reporting_statement_reconciliation_document_revisions"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_revision_timestamps on reporting.reporting_statement_reconciliation_document_revisions",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_revision_timestamps on reporting.reporting_statement_reconciliation_document_revisions"
+    },
+    {
+      "id": "database:reporting.ck_reporting_statement_revision_workflow on reporting.reporting_statement_reconciliation_document_revisions",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_statement_revision_workflow on reporting.reporting_statement_reconciliation_document_revisions"
+    },
+    {
       "id": "database:reporting.fk_reporting_artifact_catalog_package on reporting.reporting_artifact_catalog",
       "kind": "database-object",
       "label": "reporting.fk_reporting_artifact_catalog_package on reporting.reporting_artifact_catalog"
@@ -58351,6 +60204,21 @@
       "id": "database:reporting.fk_reporting_restatement_predecessor on reporting.reporting_restatement_requests",
       "kind": "database-object",
       "label": "reporting.fk_reporting_restatement_predecessor on reporting.reporting_restatement_requests"
+    },
+    {
+      "id": "database:reporting.fk_reporting_statement_document_blob on reporting.reporting_statement_reconciliation_documents",
+      "kind": "database-object",
+      "label": "reporting.fk_reporting_statement_document_blob on reporting.reporting_statement_reconciliation_documents"
+    },
+    {
+      "id": "database:reporting.fk_reporting_statement_revision_blob on reporting.reporting_statement_reconciliation_document_revisions",
+      "kind": "database-object",
+      "label": "reporting.fk_reporting_statement_revision_blob on reporting.reporting_statement_reconciliation_document_revisions"
+    },
+    {
+      "id": "database:reporting.fk_reporting_statement_revision_previous_blob on reporting.reporting_statement_reconciliation_document_revisions",
+      "kind": "database-object",
+      "label": "reporting.fk_reporting_statement_revision_previous_blob on reporting.reporting_statement_reconciliation_document_revisions"
     },
     {
       "id": "database:reporting.reporting_access_grants",
@@ -58372,6 +60240,11 @@
       "id": "database:reporting.reporting_access_grants.audience_kind",
       "kind": "database-object",
       "label": "reporting.reporting_access_grants.audience_kind"
+    },
+    {
+      "id": "database:reporting.reporting_access_grants.consumed_artifact_ids",
+      "kind": "database-object",
+      "label": "reporting.reporting_access_grants.consumed_artifact_ids"
     },
     {
       "id": "database:reporting.reporting_access_grants.created_at_utc",
@@ -58545,6 +60418,11 @@
       "id": "database:reporting.reporting_artifact_blobs.tenant_id",
       "kind": "database-object",
       "label": "reporting.reporting_artifact_blobs.tenant_id"
+    },
+    {
+      "id": "database:reporting.reporting_artifact_blobs_pkey",
+      "kind": "database-object",
+      "label": "reporting.reporting_artifact_blobs_pkey"
     },
     {
       "id": "database:reporting.reporting_artifact_catalog",
@@ -59062,10 +60940,280 @@
       "label": "reporting.reporting_restatement_requests.tenant_id"
     },
     {
+      "id": "database:reporting.reporting_run_create_claims",
+      "kind": "database-table",
+      "label": "reporting.reporting_run_create_claims",
+      "schema": "reporting"
+    },
+    {
+      "id": "database:reporting.reporting_run_create_claims.claimed_at_utc",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_create_claims.claimed_at_utc"
+    },
+    {
+      "id": "database:reporting.reporting_run_create_claims.lease_expires_at_utc",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_create_claims.lease_expires_at_utc"
+    },
+    {
+      "id": "database:reporting.reporting_run_create_claims.lease_owner",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_create_claims.lease_owner"
+    },
+    {
+      "id": "database:reporting.reporting_run_create_claims.lease_version",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_create_claims.lease_version"
+    },
+    {
+      "id": "database:reporting.reporting_run_create_claims.run_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_create_claims.run_id"
+    },
+    {
+      "id": "database:reporting.reporting_run_create_claims.run_id_key",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_create_claims.run_id_key"
+    },
+    {
+      "id": "database:reporting.reporting_run_create_claims.tenant_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_create_claims.tenant_id"
+    },
+    {
+      "id": "database:reporting.reporting_run_snapshots",
+      "kind": "database-table",
+      "label": "reporting.reporting_run_snapshots",
+      "schema": "reporting"
+    },
+    {
+      "id": "database:reporting.reporting_run_snapshots.audit_hash_sha256",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_snapshots.audit_hash_sha256"
+    },
+    {
+      "id": "database:reporting.reporting_run_snapshots.audit_payload",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_snapshots.audit_payload"
+    },
+    {
+      "id": "database:reporting.reporting_run_snapshots.certified_dataset_hash_sha256",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_snapshots.certified_dataset_hash_sha256"
+    },
+    {
+      "id": "database:reporting.reporting_run_snapshots.manifest_hash_sha256",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_snapshots.manifest_hash_sha256"
+    },
+    {
+      "id": "database:reporting.reporting_run_snapshots.manifest_payload",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_snapshots.manifest_payload"
+    },
+    {
+      "id": "database:reporting.reporting_run_snapshots.run_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_snapshots.run_id"
+    },
+    {
+      "id": "database:reporting.reporting_run_snapshots.run_id_key",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_snapshots.run_id_key"
+    },
+    {
+      "id": "database:reporting.reporting_run_snapshots.state_hash_sha256",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_snapshots.state_hash_sha256"
+    },
+    {
+      "id": "database:reporting.reporting_run_snapshots.tenant_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_run_snapshots.tenant_id"
+    },
+    {
+      "id": "database:reporting.reporting_schedule_snapshots",
+      "kind": "database-table",
+      "label": "reporting.reporting_schedule_snapshots",
+      "schema": "reporting"
+    },
+    {
+      "id": "database:reporting.reporting_schedule_snapshots.company_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_schedule_snapshots.company_id"
+    },
+    {
+      "id": "database:reporting.reporting_schedule_snapshots.due_at_utc",
+      "kind": "database-object",
+      "label": "reporting.reporting_schedule_snapshots.due_at_utc"
+    },
+    {
+      "id": "database:reporting.reporting_schedule_snapshots.lease_expires_at_utc",
+      "kind": "database-object",
+      "label": "reporting.reporting_schedule_snapshots.lease_expires_at_utc"
+    },
+    {
+      "id": "database:reporting.reporting_schedule_snapshots.lease_owner",
+      "kind": "database-object",
+      "label": "reporting.reporting_schedule_snapshots.lease_owner"
+    },
+    {
+      "id": "database:reporting.reporting_schedule_snapshots.lease_version",
+      "kind": "database-object",
+      "label": "reporting.reporting_schedule_snapshots.lease_version"
+    },
+    {
+      "id": "database:reporting.reporting_schedule_snapshots.payload_hash_sha256",
+      "kind": "database-object",
+      "label": "reporting.reporting_schedule_snapshots.payload_hash_sha256"
+    },
+    {
+      "id": "database:reporting.reporting_schedule_snapshots.schedule_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_schedule_snapshots.schedule_id"
+    },
+    {
+      "id": "database:reporting.reporting_schedule_snapshots.schedule_id_key",
+      "kind": "database-object",
+      "label": "reporting.reporting_schedule_snapshots.schedule_id_key"
+    },
+    {
+      "id": "database:reporting.reporting_schedule_snapshots.schedule_payload",
+      "kind": "database-object",
+      "label": "reporting.reporting_schedule_snapshots.schedule_payload"
+    },
+    {
+      "id": "database:reporting.reporting_schedule_snapshots.tenant_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_schedule_snapshots.tenant_id"
+    },
+    {
       "id": "database:reporting.reporting_schema_migrations",
       "kind": "database-table",
       "label": "reporting.reporting_schema_migrations",
       "schema": "reporting"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_document_revisions",
+      "kind": "database-table",
+      "label": "reporting.reporting_statement_reconciliation_document_revisions",
+      "schema": "reporting"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_document_revisions.byte_size",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_document_revisions.byte_size"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_document_revisions.company_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_document_revisions.company_id"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_document_revisions.content_hash_sha256",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_document_revisions.content_hash_sha256"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_document_revisions.document_key",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_document_revisions.document_key"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_document_revisions.document_version",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_document_revisions.document_version"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_document_revisions.mapping_stored_at_utc",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_document_revisions.mapping_stored_at_utc"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_document_revisions.mapping_updated_at_utc",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_document_revisions.mapping_updated_at_utc"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_document_revisions.previous_byte_size",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_document_revisions.previous_byte_size"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_document_revisions.previous_content_hash_sha256",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_document_revisions.previous_content_hash_sha256"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_document_revisions.previous_updated_at_utc",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_document_revisions.previous_updated_at_utc"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_document_revisions.recorded_at_utc",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_document_revisions.recorded_at_utc"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_document_revisions.tenant_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_document_revisions.tenant_id"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_document_revisions.workflow_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_document_revisions.workflow_id"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_documents",
+      "kind": "database-table",
+      "label": "reporting.reporting_statement_reconciliation_documents",
+      "schema": "reporting"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_documents.byte_size",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_documents.byte_size"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_documents.company_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_documents.company_id"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_documents.content_hash_sha256",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_documents.content_hash_sha256"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_documents.document_key",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_documents.document_key"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_documents.document_version",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_documents.document_version"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_documents.stored_at_utc",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_documents.stored_at_utc"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_documents.tenant_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_documents.tenant_id"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_documents.updated_at_utc",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_documents.updated_at_utc"
+    },
+    {
+      "id": "database:reporting.reporting_statement_reconciliation_documents.workflow_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_statement_reconciliation_documents.workflow_id"
     },
     {
       "id": "database:reporting.uq_reporting_delivery_job_tenant",
@@ -59668,6 +61816,12 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.security_field_provenance",
+      "kind": "database-table",
+      "label": "security_master.security_field_provenance",
+      "schema": "security_master"
+    },
+    {
       "id": "database:security_master.security_identifiers",
       "kind": "database-table",
       "label": "security_master.security_identifiers",
@@ -59974,11 +62128,11 @@
     }
   ],
   "summary": {
-    "contract_references": 2898,
-    "contract_set_memberships": 3311,
-    "edges": 6880,
-    "foreign_keys": 88,
+    "contract_references": 2932,
+    "contract_set_memberships": 3356,
+    "edges": 7081,
+    "foreign_keys": 95,
     "logical_references": 6,
-    "nodes": 3183
+    "nodes": 3362
   }
 }

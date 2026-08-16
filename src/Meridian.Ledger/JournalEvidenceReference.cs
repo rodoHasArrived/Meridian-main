@@ -1,3 +1,4 @@
+using static Meridian.Contracts.Text.TextPrimitives;
 namespace Meridian.Ledger;
 
 public sealed record JournalEvidenceReference(
@@ -46,7 +47,4 @@ public sealed record JournalEvidenceReference(
 
         return value.Trim();
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

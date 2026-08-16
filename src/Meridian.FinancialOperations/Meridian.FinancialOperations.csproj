@@ -12,7 +12,11 @@
     <PackageReference Include="Npgsql" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Meridian.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.DataIntegration\Meridian.DataIntegration.csproj" />
     <ProjectReference Include="..\Meridian.Domain\Meridian.Domain.csproj" />
     <ProjectReference Include="..\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
     <ProjectReference Include="..\Meridian.FSharp\Meridian.FSharp.fsproj" />

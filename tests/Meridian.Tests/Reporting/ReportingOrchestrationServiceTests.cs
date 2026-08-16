@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
@@ -31,6 +32,48 @@ public sealed class ReportingOrchestrationServiceTests
         second.PriorRunId.Should().Be(first.RunId);
         first.Sections.Select(s => s.Lineage.DatasetSnapshotId).Should().Equal(second.Sections.Select(s => s.Lineage.DatasetSnapshotId));
         first.Sections.Should().OnlyContain(s => s.Lineage.DatasetSnapshotId == s.DatasetSnapshotId && s.Lineage.ReconciliationCheckpointId == s.ReconciliationCheckpointId);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_CapitalAccountManifestDoesNotInvokeLegacyProjectionSource()
+    {
+        var legacyProjectionSource = new RecordingPartnersCapitalSource();
+        var sut = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => FixedNow,
+            runStore: null,
+            runNotifier: null,
+            partnersCapitalSource: legacyProjectionSource);
+        var asOf = new DateOnly(2026, 5, 31);
+        var parameters = new ReportingRunParametersDto(
+            new ReportingRunScopeDto("fund-alpha"),
+            "period-2026-05",
+            asOf,
+            new ReportingLedgerBookSelectionDto(Guid.NewGuid(), "PRIMARY"),
+            ReportingAccountingBasisDto.Gaap,
+            "USD",
+            ReportingConsolidationLevelDto.Fund,
+            ReportingOutputFormatDto.Pdf,
+            ReportingFinalityDto.Draft,
+            IncludeSupportingSchedules: false,
+            IncludeEvidenceAppendix: false);
+
+        var manifest = await sut.ExecuteAsync(
+            new ReportingJobContract(
+                "capital-canonical",
+                "capital-account-statement",
+                asOf,
+                ReportingRunTrigger.AdHoc,
+                0,
+                "alice",
+                FixedNow,
+                ResolvedParameters: parameters),
+            CancellationToken.None);
+
+        legacyProjectionSource.CaptureCount.Should().Be(0,
+            "capital-account bytes are sourced later from the exact certified ledger report pack");
+        manifest.CertifiedPartnersCapital.Should().BeNull();
     }
 
     [Fact]
@@ -350,6 +393,106 @@ public sealed class ReportingOrchestrationServiceTests
     }
 
     [Fact]
+    public async Task TransitionApprovalAsync_SerializesSameRunAndReclaimsIdleKeyedLock()
+    {
+        var store = new InspectableReportingRunStore();
+        var sut = CreateRetentionService(store, maxRetainedTerminalRuns: 1);
+        var manifest = await sut.ExecuteAsync(
+            CreateRetentionContract("lock-serialization"),
+            CancellationToken.None);
+        var blockedSave = store.BlockNextSave();
+
+        var first = sut.TransitionApprovalAsync(
+            manifest.RunId,
+            ReportingRunStatus.InReview,
+            "reviewer",
+            "Reviewer",
+            "ready",
+            CancellationToken.None);
+        await blockedSave.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        var second = sut.TransitionApprovalAsync(
+            manifest.RunId,
+            ReportingRunStatus.Approved,
+            "operations",
+            "OperationsLead",
+            "approved",
+            CancellationToken.None);
+
+        store.MaxConcurrentSaveCount.Should().Be(1,
+            "the second same-run transition must wait behind the first lifecycle lease");
+        sut.GetRetentionSnapshot().ActiveRunLockCount.Should().Be(1);
+
+        blockedSave.Release.TrySetResult();
+        (await first).Should().BeTrue();
+        (await second).Should().BeTrue();
+        sut.GetManifest(manifest.RunId)!.Status.Should().Be(ReportingRunStatus.Approved);
+        sut.GetRetentionSnapshot().ActiveRunLockCount.Should().Be(0,
+            "the keyed lock entry must be reclaimed after its final holder and waiter exit");
+    }
+
+    [Fact]
+    public async Task DurableTerminalRetention_IsBoundedAndEvictedRunReloadsFromStore()
+    {
+        var store = new InspectableReportingRunStore();
+        var sut = CreateRetentionService(store, maxRetainedTerminalRuns: 1);
+        var first = await ExecuteAndReleaseAsync(
+            sut,
+            CreateRetentionContract("retained-terminal-a"));
+        var second = await ExecuteAndReleaseAsync(
+            sut,
+            CreateRetentionContract("retained-terminal-b"));
+
+        var bounded = sut.GetRetentionSnapshot();
+        bounded.RetainedRunCount.Should().Be(1);
+        bounded.EvictionEligibleTerminalRunCount.Should().Be(1);
+        store.GetManifest(first.RunId).Should().NotBeNull();
+        store.GetManifest(second.RunId).Should().NotBeNull();
+        var readsBeforeReload = store.ManifestReadCount;
+
+        var reloaded = sut.GetManifest(first.RunId);
+
+        reloaded.Should().NotBeNull();
+        reloaded!.Status.Should().Be(ReportingRunStatus.Released);
+        store.ManifestReadCount.Should().BeGreaterThan(readsBeforeReload);
+        sut.GetAudit(first.RunId).Should().Contain(entry => entry.Action == "ApprovalTransition");
+        sut.GetRetentionSnapshot().RetainedRunCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Retention_DoesNotEvictActiveOrNullStoreUnsavedRuns()
+    {
+        var store = new InspectableReportingRunStore();
+        var durable = CreateRetentionService(store, maxRetainedTerminalRuns: 0);
+        var activeA = await durable.ExecuteAsync(
+            CreateRetentionContract("active-retention-a"),
+            CancellationToken.None);
+        var activeB = await durable.ExecuteAsync(
+            CreateRetentionContract("active-retention-b"),
+            CancellationToken.None);
+
+        durable.GetRetentionSnapshot().RetainedRunCount.Should().Be(2,
+            "persisted Draft runs remain mutable and are not terminal eviction candidates");
+        durable.GetManifest(activeA.RunId).Should().NotBeNull();
+        durable.GetManifest(activeB.RunId).Should().NotBeNull();
+
+        var memoryOnly = CreateRetentionService(runStore: null, maxRetainedTerminalRuns: 0);
+        var unsavedA = await ExecuteAndReleaseAsync(
+            memoryOnly,
+            CreateRetentionContract("unsaved-retention-a"));
+        var unsavedB = await ExecuteAndReleaseAsync(
+            memoryOnly,
+            CreateRetentionContract("unsaved-retention-b"));
+
+        var memorySnapshot = memoryOnly.GetRetentionSnapshot();
+        memorySnapshot.HasDurableStore.Should().BeFalse();
+        memorySnapshot.RetainedRunCount.Should().Be(2,
+            "null-store state is the sole authority and cannot be safely evicted");
+        memoryOnly.GetManifest(unsavedA.RunId).Should().NotBeNull();
+        memoryOnly.GetManifest(unsavedB.RunId).Should().NotBeNull();
+        memorySnapshot.ActiveRunLockCount.Should().Be(0);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_NotifiesRunChangedWithRunId()
     {
         var notifier = new RecordingRunNotifier();
@@ -419,6 +562,19 @@ public sealed class ReportingOrchestrationServiceTests
         public void NotifyRunChanged(string runId) => throw new InvalidOperationException("notifier boom");
     }
 
+    private sealed class RecordingPartnersCapitalSource : IReportingPartnersCapitalSource
+    {
+        public int CaptureCount { get; private set; }
+
+        public Task<CertifiedPartnersCapitalProjection?> CaptureAsync(
+            ReportingRunParametersDto parameters,
+            CancellationToken cancellationToken = default)
+        {
+            CaptureCount++;
+            return Task.FromResult<CertifiedPartnersCapitalProjection?>(null);
+        }
+    }
+
     private sealed class FailingOnceRenderer : IReportingSectionRenderer
     {
         private readonly DeterministicReportingSectionRenderer inner = new();
@@ -450,5 +606,117 @@ public sealed class ReportingOrchestrationServiceTests
                 : throw new KeyNotFoundException($"Unknown reporting template '{templateId}'.");
 
         public IReadOnlyList<ReportingTemplateMetadata> ListTemplates() => [template];
+    }
+
+    private static ReportingOrchestrationService CreateRetentionService(
+        IReportingRunStore? runStore,
+        int maxRetainedTerminalRuns) =>
+        new(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => FixedNow,
+            runStore,
+            runNotifier: null,
+            partnersCapitalSource: null,
+            retentionOptions: new ReportingOrchestrationRetentionOptions
+            {
+                MaxRetainedTerminalRuns = maxRetainedTerminalRuns
+            });
+
+    private static ReportingJobContract CreateRetentionContract(string jobId) =>
+        new(
+            jobId,
+            "investor-monthly-statement",
+            new DateOnly(2026, 5, 1),
+            ReportingRunTrigger.AdHoc,
+            MaxRetries: 0,
+            RequestedBy: "retention-test",
+            RequestedAtUtc: FixedNow);
+
+    private sealed class InspectableReportingRunStore : IReportingRunStore
+    {
+        private readonly ConcurrentDictionary<string, ReportingRunSnapshot> runs =
+            new(StringComparer.OrdinalIgnoreCase);
+        private SaveGate? nextSaveGate;
+        private int concurrentSaveCount;
+        private int maxConcurrentSaveCount;
+        private int manifestReadCount;
+
+        public int MaxConcurrentSaveCount => Volatile.Read(ref maxConcurrentSaveCount);
+
+        public int ManifestReadCount => Volatile.Read(ref manifestReadCount);
+
+        public SaveGate BlockNextSave()
+        {
+            var gate = new SaveGate();
+            if (Interlocked.CompareExchange(ref nextSaveGate, gate, null) is not null)
+            {
+                throw new InvalidOperationException("A reporting-run save is already blocked.");
+            }
+            return gate;
+        }
+
+        public IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25) =>
+            runs.Values.Take(limit).ToArray();
+
+        public ReportingOutputManifest? GetManifest(string runId)
+        {
+            Interlocked.Increment(ref manifestReadCount);
+            return runs.TryGetValue(runId, out var snapshot) ? snapshot.Manifest : null;
+        }
+
+        public IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId) =>
+            runs.TryGetValue(runId, out var snapshot) ? snapshot.AuditTrail : [];
+
+        public async Task SaveAsync(
+            ReportingOutputManifest manifest,
+            IReadOnlyList<ReportingRunAuditEntry> auditTrail,
+            CancellationToken ct = default)
+        {
+            var concurrent = Interlocked.Increment(ref concurrentSaveCount);
+            UpdateMaximum(ref maxConcurrentSaveCount, concurrent);
+            try
+            {
+                var gate = Interlocked.Exchange(ref nextSaveGate, null);
+                if (gate is not null)
+                {
+                    gate.Entered.TrySetResult();
+                    await gate.Release.Task.WaitAsync(ct);
+                }
+
+                ct.ThrowIfCancellationRequested();
+                runs[manifest.RunId] = new ReportingRunSnapshot(
+                    manifest,
+                    auditTrail.ToArray(),
+                    FixedNow);
+            }
+            finally
+            {
+                Interlocked.Decrement(ref concurrentSaveCount);
+            }
+        }
+
+        private static void UpdateMaximum(ref int location, int candidate)
+        {
+            var observed = Volatile.Read(ref location);
+            while (candidate > observed)
+            {
+                var prior = Interlocked.CompareExchange(ref location, candidate, observed);
+                if (prior == observed)
+                {
+                    return;
+                }
+                observed = prior;
+            }
+        }
+
+        public sealed class SaveGate
+        {
+            public TaskCompletionSource Entered { get; } =
+                new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public TaskCompletionSource Release { get; } =
+                new(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
     }
 }

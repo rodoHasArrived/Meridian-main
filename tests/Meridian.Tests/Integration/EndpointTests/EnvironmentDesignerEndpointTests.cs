@@ -3,20 +3,25 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Meridian.Contracts.EnvironmentDesign;
 using Meridian.Contracts.FundStructure;
+using Meridian.Identity.Auth;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
 
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class EnvironmentDesignerEndpointTests
+public sealed class EnvironmentDesignerEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
+    private readonly HttpClient _designerMutationClient;
 
     public EnvironmentDesignerEndpointTests(EndpointTestFixture fixture)
     {
         _client = fixture.Client;
+        _designerMutationClient = fixture.CreatePermittedClient(UserPermission.ModifyConfig);
     }
+
+    public void Dispose() => _designerMutationClient.Dispose();
 
     [Fact]
     public async Task ListDrafts_WhenUsingStatusBackedEndpointMapping_ReturnsOk()
@@ -33,13 +38,13 @@ public sealed class EnvironmentDesignerEndpointTests
     {
         var request = CreateDraftRequest();
 
-        var createResponse = await _client.PostAsJsonAsync("/api/environment-designer/drafts", request);
+        var createResponse = await _designerMutationClient.PostAsJsonAsync("/api/environment-designer/drafts", request);
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var draft = await createResponse.Content.ReadFromJsonAsync<EnvironmentDraftDto>();
         draft.Should().NotBeNull();
 
-        var validateResponse = await _client.PostAsJsonAsync(
+        var validateResponse = await _designerMutationClient.PostAsJsonAsync(
             "/api/environment-designer/validate",
             new ValidateDraftEnvelope(draft!));
         validateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -53,7 +58,7 @@ public sealed class EnvironmentDesignerEndpointTests
             PublishedBy: "endpoint-test",
             VersionLabel: "v001");
 
-        var publishResponse = await _client.PostAsJsonAsync("/api/environment-designer/publish", publishPlan);
+        var publishResponse = await _designerMutationClient.PostAsJsonAsync("/api/environment-designer/publish", publishPlan);
         publishResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var published = await publishResponse.Content.ReadFromJsonAsync<PublishedEnvironmentVersionDto>();

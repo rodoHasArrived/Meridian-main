@@ -14,6 +14,10 @@ public sealed record LedgerReportTable(
 /// </summary>
 public static class LedgerReportPresentation
 {
+    /// <summary>Title of the statement-of-changes-in-partners'-capital table, shared so a renderer can
+    /// substitute a bespoke layout for the generic table without matching a loose string.</summary>
+    public const string PartnersCapitalTableTitle = "Statement of Changes in Partners' Capital";
+
     public static IReadOnlyList<LedgerReportTable> BuildTables(LedgerFinancialReportPack reportPack)
     {
         ArgumentNullException.ThrowIfNull(reportPack);
@@ -135,7 +139,7 @@ public static class LedgerReportPresentation
         ]);
 
         return new LedgerReportTable(
-            "Statement of Changes in Partners' Capital",
+            PartnersCapitalTableTitle,
             ["Partner", "Beginning", "Contributions", "Distributions", "Income & Gains", "Expenses", "Fees", "Ending"],
             rows);
     }

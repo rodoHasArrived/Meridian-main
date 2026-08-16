@@ -1,3 +1,4 @@
+import { fixtureTradingRisk } from "./dev-fixtures.trading-risk";
 import type {
   CoveredCallChainPreview,
   CoveredCallRunResult,
@@ -641,16 +642,7 @@ const fixtureTradingWorkspace: TradingWorkspaceResponse = {
       timestamp: "09:40:10 ET"
     }
   ],
-  risk: {
-    state: "Observe",
-    summary: "Guardrails are active.",
-    netExposure: "$120,000",
-    grossExposure: "$150,000",
-    var95: "$9,000",
-    maxDrawdown: "-1.1%",
-    buyingPowerUsed: "58%",
-    activeGuardrails: ["Cap per single-name", "Throttle at 70%"]
-  },
+  risk: fixtureTradingRisk,
   brokerage: {
     provider: "Interactive Brokers",
     account: "DU1009034",
@@ -1590,6 +1582,24 @@ const fixtureAlpacaConnection: BrokerageConnectionStatus = {
   externalAccountId: "PA-DEMO",
   verifiedAt: "2026-05-07T11:50:00Z",
   maskedKeyId: "********DEMO"
+};
+
+const fixtureRobinhoodConnection: BrokerageConnectionStatus = {
+  providerId: "robinhood",
+  displayName: "Robinhood read-only",
+  state: "Connected",
+  isConfigured: true,
+  isConnected: true,
+  authorizationUrl: null,
+  connectedAt: "2026-05-07T11:45:00Z",
+  expiresAt: "2026-05-07T12:45:00Z",
+  lastError: null,
+  warnings: [],
+  scopes: ["read_accounts", "read_holdings", "read_transactions"],
+  environment: "read-only",
+  externalAccountId: "RH-DEMO",
+  verifiedAt: "2026-05-07T11:50:00Z",
+  maskedKeyId: null
 };
 
 const fixtureAlpacaPortfolio: BrokerageHouseholdPortfolio = {
@@ -6385,7 +6395,7 @@ const fixtures = {
   [REPLAY_API_ENDPOINTS.files]: fixtureReplayFiles,
   [PROMOTION_API_ENDPOINTS.history]: fixturePromotionHistory,
   [brokerageConnectionStatusEndpoint("alpaca")]: fixtureAlpacaConnection,
-  [brokerageConnectionStatusEndpoint("robinhood")]: fixtureAlpacaConnection,
+  [brokerageConnectionStatusEndpoint("robinhood")]: fixtureRobinhoodConnection,
   [PORTFOLIO_API_ENDPOINTS.household]: fixtureAlpacaPortfolio,
   [WORKSTATION_API_ENDPOINTS.data]: fixtureDataWorkspace,
   "/api/workstation/data-operations": fixtureDataWorkspace,

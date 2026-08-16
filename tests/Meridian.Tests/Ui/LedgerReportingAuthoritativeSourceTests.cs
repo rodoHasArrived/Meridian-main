@@ -187,13 +187,17 @@ public sealed class LedgerReportingAuthoritativeSourceTests
             query.ActiveOnly && query.AsOf == CutoffUtc);
     }
 
-    [Fact]
-    public async Task CaptureAsync_CapitalAccountClientPackage_ShouldBindPartnersCapitalToCompleteAsOfLedgerHistory()
+    [Theory]
+    [InlineData(ReportingOutputFormatDto.Pdf)]
+    [InlineData(ReportingOutputFormatDto.Xlsx)]
+    [InlineData(ReportingOutputFormatDto.ClientPackage)]
+    public async Task CaptureAsync_CapitalAccountPrimaryDocument_ShouldBindPartnersCapitalToCompleteAsOfLedgerHistory(
+        ReportingOutputFormatDto outputFormat)
     {
         var fixture = CreateFixture();
         fixture.Parameters = fixture.Parameters with
         {
-            OutputFormat = ReportingOutputFormatDto.ClientPackage
+            OutputFormat = outputFormat
         };
         var priorPeriodId = Guid.NewGuid();
         fixture.JournalStore.Records.Add(
@@ -237,10 +241,38 @@ public sealed class LedgerReportingAuthoritativeSourceTests
         presentation.ReportPack.IsBalanced.Should().BeTrue();
         capture.Checkpoint.EvidenceIds.Should().Contain(
             $"ledger-report-pack:{presentation.ReportPack.Request.ReportId}:{presentation.ReportPack.Signature.PayloadChecksumSha256}");
+        capture.Checkpoint.EvidenceIds.Should().ContainSingle(reference =>
+            reference.StartsWith("ledger-report-pack:", StringComparison.Ordinal));
         fixture.JournalStore.LastQuery.Should().NotBeNull();
         fixture.JournalStore.LastQuery!.PeriodId.Should().BeNull(
             "the presentation must include retained history before the reporting period");
         fixture.JournalStore.CompleteHistoryQueryCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task CaptureAsync_CapitalAccountCsv_DoesNotBuildLedgerDocumentPresentation()
+    {
+        var fixture = CreateFixture();
+        fixture.Parameters = fixture.Parameters with
+        {
+            OutputFormat = ReportingOutputFormatDto.Csv
+        };
+        fixture.JournalStore.Records.Add(Record(
+            fixture,
+            new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero),
+            11,
+            debitCostCenterId: "cost-center-a",
+            creditCostCenterId: "cost-center-a"));
+
+        var capture = await fixture.Source.CaptureAsync(
+            fixture.Parameters,
+            fixture.Access,
+            new ReportingAuthoritativeSourceCaptureIntent("capital-account-statement"));
+
+        capture.CertifiedLedgerPresentation.Should().BeNull();
+        capture.Checkpoint.EvidenceIds.Should().NotContain(reference =>
+            reference.StartsWith("ledger-report-pack:", StringComparison.Ordinal));
+        fixture.JournalStore.CompleteHistoryQueryCount.Should().Be(0);
     }
 
     [Fact]

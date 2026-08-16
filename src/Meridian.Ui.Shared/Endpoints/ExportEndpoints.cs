@@ -1,7 +1,8 @@
-using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Export;
+using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.Storage.Export;
 using Microsoft.AspNetCore.Builder;
@@ -145,9 +146,10 @@ public static class ExportEndpoints
 
             var result = await exportService.ExportAsync(exportRequest, ct);
 
-            return Results.Json(CreateExportResponse(result), jsonOptions);
+            return Results.Json(CreateExportResponse(result, profile), jsonOptions);
         })
         .WithName("ExportAnalysis")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ExportData))
         .Produces(200)
         .Produces(400)
         .Produces(503)
@@ -212,69 +214,23 @@ public static class ExportEndpoints
         .Produces<ExportFormatsResponse>(200)
         .Produces(503);
 
-        // Quality report export — wired to real backend
-        group.MapPost(UiApiRoutes.ExportQualityReport, async (
-            QualityReportExportRequest? req,
-            [FromServices] AnalysisExportService? exportService,
-            CancellationToken ct) =>
+        // Quality report compatibility route — fail closed until an existing quality-report
+        // generator is composed with canonical artifact evidence. A raw analysis extract is not
+        // promoted as a completed quality report.
+        group.MapPost(UiApiRoutes.ExportQualityReport, (
+            QualityReportExportRequest? req) =>
         {
-            CleanupOldExportDirectories();
-
-            if (exportService is null)
-            {
-                return Results.Json(new { error = "Export service not available" }, jsonOptions, statusCode: 503);
-            }
-
-            if (!TryResolveProfile(
-                    exportService,
+            return Results.Json(
+                CreateUnavailableSpecializedExportResponse(
                     req?.Format,
-                    defaultProfileId: "r-stats",
-                    out var profile,
-                    out var formatError))
-            {
-                return Results.Json(
-                    new
-                    {
-                        success = false,
-                        status = "invalid",
-                        error = formatError,
-                        timestamp = DateTimeOffset.UtcNow
-                    },
-                    jsonOptions,
-                    statusCode: StatusCodes.Status400BadRequest);
-            }
-
-            var outputDir = Path.Combine(Path.GetTempPath(), "meridian-exports", "quality-" + DateTime.UtcNow.ToString("yyyyMMdd", CultureInfo.InvariantCulture));
-
-            var exportRequest = new ExportRequest
-            {
-                ProfileId = profile!.Id,
-                Symbols = req?.Symbols,
-                OutputDirectory = outputDir,
-                ValidateBeforeExport = true,
-                EventTypes = new[] { "Trade", "BboQuote" }
-            };
-
-            var result = await exportService.ExportAsync(exportRequest, ct);
-
-            return Results.Json(new
-            {
-                jobId = result.JobId,
-                success = result.Success,
-                status = result.Success ? "completed" : "failed",
-                format = ResolveActualFormat(result, profile!),
-                filesGenerated = result.FilesGenerated,
-                totalRecords = result.TotalRecords,
-                outputDirectory = result.OutputDirectory,
-                qualitySummary = result.QualitySummary,
-                error = result.Error,
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
+                    "Quality-report generation is not connected to a canonical report artifact workflow. " +
+                    "No raw analysis extract was produced."),
+                jsonOptions,
+                statusCode: StatusCodes.Status501NotImplemented);
         })
         .WithName("ExportQualityReport")
-        .Produces(200)
-        .Produces(400)
-        .Produces(503)
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ExportData))
+        .Produces<SpecializedExportApiResponse>(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Orderflow export — wired to real backend with Trade event type
@@ -309,34 +265,34 @@ public static class ExportEndpoints
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
-            var outputDir = Path.Combine(Path.GetTempPath(), "meridian-exports", "orderflow-" + DateTime.UtcNow.ToString("yyyyMMddHHmm", CultureInfo.InvariantCulture));
+            var optionError = ValidateOrderflowRequest(req);
+            if (optionError is not null)
+            {
+                return Results.Json(
+                    CreateInvalidSpecializedExportResponse(req?.Format, optionError),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var outputDir = CreateExportOutputDirectory("orderflow");
 
             var exportRequest = new ExportRequest
             {
                 ProfileId = profile!.Id,
                 Symbols = req?.Symbols,
+                StartDate = req?.FromDate ?? DateTime.UtcNow.AddDays(-7),
+                EndDate = req?.ToDate ?? DateTime.UtcNow,
                 OutputDirectory = outputDir,
+                IncludeManifest = req?.IncludeMetadata ?? true,
                 EventTypes = new[] { "Trade" }
             };
 
             var result = await exportService.ExportAsync(exportRequest, ct);
 
-            return Results.Json(new
-            {
-                jobId = result.JobId,
-                success = result.Success,
-                status = result.Success ? "completed" : "failed",
-                symbols = result.Symbols,
-                format = ResolveActualFormat(result, profile!),
-                filesGenerated = result.FilesGenerated,
-                totalRecords = result.TotalRecords,
-                totalBytes = result.TotalBytes,
-                outputDirectory = result.OutputDirectory,
-                error = result.Error,
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
+            return Results.Json(CreateSpecializedExportResponse(result, profile!), jsonOptions);
         })
         .WithName("ExportOrderflow")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ExportData))
         .Produces(200)
         .Produces(400)
         .Produces(503)
@@ -344,6 +300,7 @@ public static class ExportEndpoints
 
         // Integrity export — wired to real backend
         group.MapPost(UiApiRoutes.ExportIntegrity, async (
+            IntegrityExportRequest? req,
             [FromServices] AnalysisExportService? exportService,
             CancellationToken ct) =>
         {
@@ -354,31 +311,53 @@ public static class ExportEndpoints
                 return Results.Json(new { error = "Export service not available" }, jsonOptions, statusCode: 503);
             }
 
-            var outputDir = Path.Combine(Path.GetTempPath(), "meridian-exports", "integrity-" + DateTime.UtcNow.ToString("yyyyMMddHHmm", CultureInfo.InvariantCulture));
+            if (!TryResolveProfile(
+                    exportService,
+                    req?.Format,
+                    defaultProfileId: "r-stats",
+                    out var profile,
+                    out var formatError))
+            {
+                return Results.Json(
+                    CreateInvalidSpecializedExportResponse(req?.Format, formatError!),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var optionError = ValidateIntegrityRequest(req);
+            if (optionError is not null)
+            {
+                return Results.Json(
+                    CreateInvalidSpecializedExportResponse(req?.Format, optionError),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var outputDir = CreateExportOutputDirectory("integrity");
 
             var exportRequest = new ExportRequest
             {
-                ProfileId = "r-stats",
-                ValidateBeforeExport = true
+                ProfileId = profile!.Id,
+                Symbols = req?.Symbols,
+                StartDate = req?.FromDate ?? DateTime.UtcNow.AddDays(-7),
+                EndDate = req?.ToDate ?? DateTime.UtcNow,
+                OutputDirectory = outputDir,
+                ValidateBeforeExport = true,
+                IncludeManifest = req?.IncludeMetadata ?? true,
+                EventTypes = req?.EventTypes is { Length: > 0 }
+                    ? req.EventTypes
+                    : new[] { "Integrity" }
             };
 
             var result = await exportService.ExportAsync(exportRequest, ct);
 
-            return Results.Json(new
-            {
-                jobId = result.JobId,
-                success = result.Success,
-                status = result.Success ? "completed" : "failed",
-                format = "csv",
-                filesGenerated = result.FilesGenerated,
-                totalRecords = result.TotalRecords,
-                outputDirectory = result.OutputDirectory,
-                error = result.Error,
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
+            return Results.Json(CreateSpecializedExportResponse(result, profile!), jsonOptions);
         })
         .WithName("ExportIntegrity")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ExportData))
         .Produces(200)
+        .Produces(400)
+        .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         async Task<IResult> ExportStrategyPackageAsync(
@@ -412,40 +391,38 @@ public static class ExportEndpoints
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
-            var outputDir = Path.Combine(Path.GetTempPath(), "meridian-exports", "strategy-" + DateTime.UtcNow.ToString("yyyyMMddHHmm", CultureInfo.InvariantCulture));
+            var optionError = ValidateStrategyPackageRequest(req);
+            if (optionError is not null)
+            {
+                return Results.Json(
+                    CreateInvalidSpecializedExportResponse(req?.Format, optionError),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var outputDir = CreateExportOutputDirectory("strategy");
 
             var exportRequest = new ExportRequest
             {
                 ProfileId = profile!.Id,
                 Symbols = req?.Symbols,
+                StartDate = req?.FromDate ?? DateTime.UtcNow.AddDays(-7),
+                EndDate = req?.ToDate ?? DateTime.UtcNow,
                 OutputDirectory = outputDir,
-                EventTypes = new[] { "Trade", "BboQuote", "LOBSnapshot" },
-                ValidateBeforeExport = req?.IncludeMetadata ?? true
+                EventTypes = ResolveStrategyEventTypes(req?.IncludeData),
+                ValidateBeforeExport = true,
+                IncludeManifest = req?.IncludeMetadata ?? true
             };
 
             var result = await exportService.ExportAsync(exportRequest, ct);
 
-            return Results.Json(new
-            {
-                jobId = result.JobId,
-                success = result.Success,
-                status = result.Success ? "completed" : "failed",
-                symbols = result.Symbols,
-                format = ResolveActualFormat(result, profile!),
-                filesGenerated = result.FilesGenerated,
-                totalRecords = result.TotalRecords,
-                totalBytes = result.TotalBytes,
-                outputDirectory = result.OutputDirectory,
-                dataDictionaryPath = result.DataDictionaryPath,
-                loaderScriptPath = result.LoaderScriptPath,
-                error = result.Error,
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
+            return Results.Json(CreateSpecializedExportResponse(result, profile!), jsonOptions);
         }
 
         // Strategy package export is canonical; the research route is retained for clients still on the old API name.
         group.MapPost(UiApiRoutes.ExportStrategyPackage, ExportStrategyPackageAsync)
         .WithName("ExportStrategyPackage")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ExportData))
         .Produces(200)
         .Produces(400)
         .Produces(503)
@@ -453,6 +430,7 @@ public static class ExportEndpoints
 
         group.MapPost(UiApiRoutes.ExportResearchPackage, ExportStrategyPackageAsync)
         .WithName("ExportResearchPackage")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ExportData))
         .Produces(200)
         .Produces(400)
         .Produces(503)
@@ -460,9 +438,48 @@ public static class ExportEndpoints
     }
 
     private sealed record ExportPreviewRequest(string? ProfileId, string[]? Symbols, string[]? EventTypes, DateTime? StartDate, DateTime? EndDate, int? SampleSize);
-    private sealed record QualityReportExportRequest(string? Format, string[]? Symbols);
-    private sealed record OrderflowExportRequest(string[]? Symbols, string? Format);
-    private sealed record StrategyPackageRequest(string[]? Symbols, bool? IncludeMetadata, string? Format);
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+    private sealed record QualityReportExportRequest(
+        string? Format,
+        string[]? Symbols,
+        DateTime? FromDate,
+        DateTime? ToDate,
+        bool? IncludeCharts,
+        bool? IncludeMetadata);
+
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+    private sealed record OrderflowExportRequest(
+        string[]? Symbols,
+        DateTime? FromDate,
+        DateTime? ToDate,
+        string[]? Metrics,
+        string? Aggregation,
+        string? Format,
+        string? OutputPath,
+        bool? IncludeMetadata);
+
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+    private sealed record IntegrityExportRequest(
+        string[]? Symbols,
+        DateTime? FromDate,
+        DateTime? ToDate,
+        string[]? EventTypes,
+        string? Format,
+        string? OutputPath,
+        bool? IncludeMetadata);
+
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+    private sealed record StrategyPackageRequest(
+        string? Name,
+        string? Description,
+        string[]? Symbols,
+        DateTime? FromDate,
+        DateTime? ToDate,
+        DataTypeInclusion? IncludeData,
+        bool? IncludeMetadata,
+        bool? IncludeQualityReport,
+        string? Format,
+        string? OutputPath);
 
     private static string[] SplitCsv(string? value)
     {
@@ -526,11 +543,17 @@ public static class ExportEndpoints
             Files: Array.Empty<ExportAnalysisApiFile>(),
             Timestamp: DateTimeOffset.UtcNow);
 
-    private static ExportAnalysisApiResponse CreateExportResponse(ExportResult result)
-        => new(
+    internal static ExportAnalysisApiResponse CreateExportResponse(
+        ExportResult result,
+        ExportProfile profile)
+    {
+        var formatEvidenceError = ValidateArtifactFormatEvidence(result, profile);
+        var success = result.Success && formatEvidenceError is null;
+
+        return new ExportAnalysisApiResponse(
             JobId: result.JobId,
-            Success: result.Success,
-            Status: result.Success ? "completed" : "failed",
+            Success: success,
+            Status: success ? "completed" : "failed",
             ProfileId: result.ProfileId,
             Symbols: result.Symbols,
             FilesGenerated: result.FilesGenerated,
@@ -538,7 +561,7 @@ public static class ExportEndpoints
             TotalBytes: result.TotalBytes,
             OutputDirectory: result.OutputDirectory,
             DurationSeconds: result.DurationSeconds,
-            Error: result.Error,
+            Error: formatEvidenceError ?? result.Error,
             Warnings: result.Warnings?.ToArray() ?? Array.Empty<string>(),
             Files: result.Files.Select(static f => new ExportAnalysisApiFile(
                 f.RelativePath,
@@ -547,6 +570,205 @@ public static class ExportEndpoints
                 f.SizeBytes,
                 f.RecordCount)).ToArray(),
             Timestamp: DateTimeOffset.UtcNow);
+    }
+
+    private static SpecializedExportApiResponse CreateSpecializedExportResponse(
+        ExportResult result,
+        ExportProfile profile)
+    {
+        var formatEvidenceError = ValidateArtifactFormatEvidence(result, profile);
+        var success = result.Success && formatEvidenceError is null;
+
+        return new SpecializedExportApiResponse(
+            JobId: result.JobId,
+            Success: success,
+            Status: success ? "completed" : "failed",
+            Format: ResolveActualFormat(result, profile),
+            Symbols: result.Symbols,
+            FilesGenerated: result.FilesGenerated,
+            TotalRecords: result.TotalRecords,
+            TotalBytes: result.TotalBytes,
+            OutputDirectory: result.OutputDirectory,
+            Error: formatEvidenceError ?? result.Error,
+            Warnings: result.Warnings?.ToArray() ?? Array.Empty<string>(),
+            Files: result.Files.Select(static file => new ExportAnalysisApiFile(
+                file.RelativePath,
+                file.Symbol,
+                file.Format,
+                file.SizeBytes,
+                file.RecordCount)).ToArray(),
+            DataDictionaryPath: result.DataDictionaryPath,
+            LoaderScriptPath: result.LoaderScriptPath,
+            LineageManifestPath: result.LineageManifestPath,
+            QualitySummary: MapQualitySummary(result),
+            Timestamp: DateTimeOffset.UtcNow);
+    }
+
+    private static SpecializedExportApiResponse CreateInvalidSpecializedExportResponse(
+        string? requestedFormat,
+        string error)
+    {
+        var format = !string.IsNullOrWhiteSpace(requestedFormat) &&
+                     TryParseExportFormat(requestedFormat, out var parsedFormat)
+            ? ToCanonicalFormat(parsedFormat)
+            : requestedFormat?.Trim().ToLowerInvariant() ?? string.Empty;
+
+        return new SpecializedExportApiResponse(
+            JobId: null,
+            Success: false,
+            Status: "invalid",
+            Format: format,
+            Symbols: null,
+            FilesGenerated: 0,
+            TotalRecords: 0,
+            TotalBytes: 0,
+            OutputDirectory: null,
+            Error: error,
+            Warnings: Array.Empty<string>(),
+            Files: Array.Empty<ExportAnalysisApiFile>(),
+            DataDictionaryPath: null,
+            LoaderScriptPath: null,
+            LineageManifestPath: null,
+            QualitySummary: null,
+            Timestamp: DateTimeOffset.UtcNow);
+    }
+
+    private static SpecializedExportApiResponse CreateUnavailableSpecializedExportResponse(
+        string? requestedFormat,
+        string error)
+    {
+        var format = !string.IsNullOrWhiteSpace(requestedFormat) &&
+                     TryParseExportFormat(requestedFormat, out var parsedFormat)
+            ? ToCanonicalFormat(parsedFormat)
+            : requestedFormat?.Trim().ToLowerInvariant() ?? string.Empty;
+
+        return new SpecializedExportApiResponse(
+            JobId: null,
+            Success: false,
+            Status: "unavailable",
+            Format: format,
+            Symbols: null,
+            FilesGenerated: 0,
+            TotalRecords: 0,
+            TotalBytes: 0,
+            OutputDirectory: null,
+            Error: error,
+            Warnings: Array.Empty<string>(),
+            Files: Array.Empty<ExportAnalysisApiFile>(),
+            DataDictionaryPath: null,
+            LoaderScriptPath: null,
+            LineageManifestPath: null,
+            QualitySummary: null,
+            Timestamp: DateTimeOffset.UtcNow);
+    }
+
+    private static QualityReportSummary? MapQualitySummary(ExportResult result)
+    {
+        if (result.QualitySummary is not { } summary)
+            return null;
+
+        return new QualityReportSummary
+        {
+            TotalSymbols = result.Symbols.Length,
+            TotalDays = result.DateRange?.TradingDays ?? 0,
+            OverallScore = (float)summary.OverallScore,
+            GapsFound = summary.GapsDetected,
+            AnomaliesFound = summary.OutliersDetected
+        };
+    }
+
+    private static string CreateExportOutputDirectory(string prefix)
+        => Path.Combine(
+            ExportBaseDir,
+            $"{prefix}-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}");
+
+    private static string? ValidateOrderflowRequest(OrderflowExportRequest? request)
+    {
+        if (request?.Metrics is { Length: > 0 })
+            return "Order-flow metric selection is not represented by the canonical export workflow.";
+
+        if (!string.IsNullOrWhiteSpace(request?.Aggregation) &&
+            !string.Equals(request.Aggregation, "raw", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Order-flow aggregation is unsupported by the canonical export workflow; request raw data instead.";
+        }
+
+        if (!string.IsNullOrWhiteSpace(request?.OutputPath))
+            return "Caller-selected outputPath is unsupported; exports are written to the managed export directory.";
+
+        if (request?.IncludeMetadata is false)
+            return "The order-flow compatibility route cannot suppress every profile metadata artifact. IncludeMetadata=false is unsupported.";
+
+        return ValidateDateRange(request?.FromDate, request?.ToDate);
+    }
+
+    private static string? ValidateIntegrityRequest(IntegrityExportRequest? request)
+    {
+        if (!string.IsNullOrWhiteSpace(request?.OutputPath))
+            return "Caller-selected outputPath is unsupported; exports are written to the managed export directory.";
+
+        if (request?.IncludeMetadata is false)
+            return "The integrity compatibility route cannot suppress every profile metadata artifact. IncludeMetadata=false is unsupported.";
+
+        return ValidateDateRange(request?.FromDate, request?.ToDate);
+    }
+
+    private static string? ValidateStrategyPackageRequest(StrategyPackageRequest? request)
+    {
+        var unsupported = new List<string>();
+        if (!string.IsNullOrWhiteSpace(request?.Name))
+            unsupported.Add("name");
+        if (!string.IsNullOrWhiteSpace(request?.Description))
+            unsupported.Add("description");
+        if (request?.IncludeQualityReport is true)
+            unsupported.Add("includeQualityReport=true");
+        if (request?.IncludeMetadata is false)
+            unsupported.Add("includeMetadata=false");
+        if (!string.IsNullOrWhiteSpace(request?.OutputPath))
+            unsupported.Add("outputPath");
+
+        if (unsupported.Count > 0)
+        {
+            return "The canonical export workflow cannot represent these strategy-package options: " +
+                   string.Join(", ", unsupported) +
+                   ". No export was requested.";
+        }
+
+        if (request?.IncludeData is { } includeData &&
+            !includeData.Trades &&
+            !includeData.Quotes &&
+            !includeData.Bars &&
+            !includeData.OrderBook &&
+            !includeData.OrderFlow)
+        {
+            return "At least one strategy-package data type must be selected.";
+        }
+
+        return ValidateDateRange(request?.FromDate, request?.ToDate);
+    }
+
+    private static string? ValidateDateRange(DateTime? start, DateTime? end)
+        => start.HasValue && end.HasValue && start.Value.Date > end.Value.Date
+            ? "The export start date must be on or before the end date."
+            : null;
+
+    private static string[] ResolveStrategyEventTypes(DataTypeInclusion? requested)
+    {
+        var includeData = requested ?? new DataTypeInclusion();
+        var eventTypes = new List<string>();
+        if (includeData.Trades)
+            eventTypes.Add("Trade");
+        if (includeData.Quotes)
+            eventTypes.Add("BboQuote");
+        if (includeData.Bars)
+            eventTypes.Add("Bar");
+        if (includeData.OrderBook)
+            eventTypes.Add("LOBSnapshot");
+        if (includeData.OrderFlow)
+            eventTypes.Add("OrderFlow");
+
+        return eventTypes.ToArray();
+    }
 
     private static ExportProfile? FindProfile(AnalysisExportService exportService, string profileId)
         => exportService.GetProfiles().FirstOrDefault(profile =>
@@ -631,6 +853,45 @@ public static class ExportEndpoints
             1 => formats[0],
             _ => "mixed"
         };
+    }
+
+    private static string? ValidateArtifactFormatEvidence(
+        ExportResult result,
+        ExportProfile profile)
+    {
+        if (!result.Success)
+            return null;
+
+        var expected = ToCanonicalFormat(profile.Format);
+        if (result.Files.Length == 0)
+            return $"Export profile '{profile.Id}' reported success without any artifact format evidence.";
+        if (result.FilesGenerated != result.Files.Length)
+        {
+            return $"Export profile '{profile.Id}' reported {result.FilesGenerated} generated files but " +
+                   $"provided {result.Files.Length} artifact records.";
+        }
+
+        var missingFormat = result.Files.FirstOrDefault(
+            static file => string.IsNullOrWhiteSpace(file.Format));
+        if (missingFormat is not null)
+            return $"Export artifact '{missingFormat.RelativePath}' did not identify its generated format.";
+
+        var formats = result.Files
+            .Select(static file => file.Format)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (formats.Length > 1)
+        {
+            return $"Export profile '{profile.Id}' expected '{expected}' but the artifact evidence " +
+                   $"reported mixed formats: {string.Join(", ", formats)}.";
+        }
+
+        var mismatch = result.Files.FirstOrDefault(
+            file => !string.Equals(file.Format, expected, StringComparison.OrdinalIgnoreCase));
+        return mismatch is null
+            ? null
+            : $"Export profile '{profile.Id}' expected '{expected}' but artifact " +
+              $"'{mismatch.RelativePath}' reported '{mismatch.Format}'.";
     }
 
     private static string ToCanonicalFormat(ExportFormat format) =>

@@ -94,6 +94,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
+        services.TryAddSingleton<DatabaseMigrationReadinessReceipt>();
         services.AddStatementReconciliationServices();
 
         // StorageOptions - configured from AppConfig or defaults
@@ -247,7 +248,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<AnalysisExportService>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
-            return new AnalysisExportService(storageOptions.RootPath);
+            return new AnalysisExportService(storageOptions);
         });
 
         services.AddSingleton<RateLimiter>(sp => new RateLimiter(5, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(0.5)));
@@ -274,6 +275,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IMoneyMarketFundReferenceProjectionStore, PostgresMoneyMarketFundReferenceProjectionStore>();
             services.AddSingleton<ICertificateOfDepositReferenceProjectionStore, PostgresCertificateOfDepositReferenceProjectionStore>();
             services.AddSingleton<IOperatorOverridesStore, PostgresOperatorOverridesStore>();
+            services.AddSingleton<ISecurityFieldProvenanceStore, PostgresSecurityFieldProvenanceStore>();
             services.AddSingleton<SecurityMasterMigrationRunner>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
             services.AddSingleton<SecurityMasterProjectionCache>();
@@ -415,6 +417,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ICorporateActionRestatementTrigger, NullCorporateActionRestatementTrigger>();
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
         services.TryAddSingleton<IOperatorOverridesStore, NullOperatorOverridesStore>();
+        services.TryAddSingleton<ISecurityFieldProvenanceStore, NullSecurityFieldProvenanceStore>();
         services.TryAddSingleton<ISecurityMasterPricingService, NullSecurityMasterPricingService>();
         services.TryAddSingleton<ISecurityMasterCashFlowService, NullSecurityMasterCashFlowService>();
         services.TryAddSingleton<IDataVendorEntitlementService, NullDataVendorEntitlementService>();

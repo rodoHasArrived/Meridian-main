@@ -3,6 +3,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Npgsql;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
@@ -161,9 +162,6 @@ public sealed record LedgerPostingIdentity(
             write.SourceEventId,
             NormalizeOptional(write.Entry.Metadata.IdempotencyKey));
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 /// <summary>
@@ -307,6 +305,11 @@ public sealed record PeriodCloseEventRecord(
     string Notes,
     DateTimeOffset RecordedAt);
 
+/// <param name="WashSalePolicy">
+/// Wash-sale deferral policy for this account, effective from the same date as the relief method.
+/// Defaults to <see cref="Meridian.Ledger.WashSalePolicy.Disabled"/> so an account that has never
+/// been configured keeps recognizing losses in full, exactly as before.
+/// </param>
 public sealed record LedgerAccountTaxLotPolicyRecord(
     Guid PolicyRecordId,
     Guid LedgerBookId,
@@ -316,7 +319,13 @@ public sealed record LedgerAccountTaxLotPolicyRecord(
     DateOnly EffectiveDate,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    string? Rationale = null);
+    string? Rationale = null,
+    WashSalePolicy? WashSalePolicy = null)
+{
+    /// <summary>The configured wash-sale policy, or the disabled default.</summary>
+    public WashSalePolicy EffectiveWashSalePolicy
+        => WashSalePolicy ?? global::Meridian.Ledger.WashSalePolicy.Disabled;
+}
 
 public sealed record LedgerTaxLotRecord(
     Guid TaxLotRecordId,

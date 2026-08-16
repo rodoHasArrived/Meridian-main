@@ -235,6 +235,24 @@
       "sha256": "e88af99934cd1679d86e82550b2ef8a5d954ae87489105d5facce856149f26b2"
     },
     {
+      "filename": "027_security_master_field_provenance.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 27,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/027_security_master_field_provenance.sql",
+      "schema": "security_master",
+      "sha256": "4849baa13c44ff8ff7df128fe929ed7ceba393b049ab0f0283f414493da57b65"
+    },
+    {
+      "filename": "028_security_master_revision_values_and_versioned_provenance.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 28,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/028_security_master_revision_values_and_versioned_provenance.sql",
+      "schema": "security_master",
+      "sha256": "f4e5b1dc957c3d9faff4a44ff7a03b96ae61fd3c1a2f95e5217aae795043e59a"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -622,6 +640,15 @@
       "sha256": "14e9c693511e29048eefb7dd4be8c07b4bd5ab6fd783edf7cc873841402d5375"
     },
     {
+      "filename": "V_ledger_028__wash_sale_activation.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_028__wash_sale_activation.sql",
+      "schema": "ledger",
+      "sha256": "e61c5802322fe591aa8892d5a3ac476a11f03f90fad42e5ed75eb5d56dd030ff"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -701,6 +728,15 @@
       "path": "src/Meridian.Storage/Banking/Migrations/002_bank_transaction_recorded_by.sql",
       "schema": "banking",
       "sha256": "e8225f2acd5bb0e47c1ecf41dfacaefe8b608928db825c442bdfda26be976af4"
+    },
+    {
+      "filename": "003_payment_intent_integrity.sql",
+      "immutable": true,
+      "migration_set_id": "banking",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Banking/Migrations/003_payment_intent_integrity.sql",
+      "schema": "banking",
+      "sha256": "b6be816522f0070d1b7da2ddb59f573d4bfa6c3ab431f33eb709d1c61ef964f0"
     },
     {
       "filename": "001_money_market.sql",
@@ -793,6 +829,42 @@
       "sha256": "d695b69e1f716ad8e30b7b5cb6f51bccedd4f987e18a353042ea709a03067922"
     },
     {
+      "filename": "010_reporting_operational_state.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/010_reporting_operational_state.sql",
+      "schema": "reporting",
+      "sha256": "0254c805dded4fd479db02418c748129497d3ce72cb9ab3ac5f662f40c196b9d"
+    },
+    {
+      "filename": "011_reporting_delivery_run_read_index.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/011_reporting_delivery_run_read_index.sql",
+      "schema": "reporting",
+      "sha256": "f23b02df27b3eeb0d2240e7ce0bb9cc073c98fbfca99b5bb5578bc617d58f32d"
+    },
+    {
+      "filename": "012_reporting_access_grant_artifact_consumption.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/012_reporting_access_grant_artifact_consumption.sql",
+      "schema": "reporting",
+      "sha256": "076a790726d9a216a400d5e47fb92cd2e41a339b91a28801805c9a08a6eeaa4c"
+    },
+    {
+      "filename": "013_reporting_statement_reconciliation_authority.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/013_reporting_statement_reconciliation_authority.sql",
+      "schema": "reporting",
+      "sha256": "d263b7c9ebb519957950ff2a8f5a1826f003fc64a020ba00ad0a4a3d09e2a02e"
+    },
+    {
       "filename": "001_user_access_assignment.sql",
       "immutable": true,
       "migration_set_id": "identity-access",
@@ -803,7 +875,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "db8ca7b6b496f9f97f45702a69bdd6151b2be49949c8808757d858a14ebcbcb1",
+  "fingerprint": "074db69b45fc567136428b4ee8eaa198d2c3ac2325c5924ad94b4801c6830cc8",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1041,7 +1113,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 89,
+    "files": 97,
     "migration_sets": 10,
     "waivers": 1,
     "warnings": 0

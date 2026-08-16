@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-19
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Ui/dashboard
@@ -14,7 +14,8 @@ last_reviewed: 2026-07-19
 First launch is browser-primary. `/setup` renders the first-run concierge while the
 shared first-run API remains the source of truth for starter kits, sample safety labels,
 recommendations, and completed activation outcomes. Sample mode stays offline-capable
-and visibly labelled `SAMPLE · PAPER` throughout the shell.
+and visibly labelled `SAMPLE · PAPER` throughout the shell. Until activation status is known, the
+normal shell stays closed and a failed status read exposes a retry instead of assuming setup is complete.
 
 ## Purpose
 
@@ -72,7 +73,8 @@ The contract standardizes:
 
 Current dense-row detail consumers covered by regression tests include Portfolio positions,
 Portfolio run evidence, Trading recent fills, Data backfill queue rows, Data export rows, and
-Security Master lots.
+Security Master lots. The Daily Control Tower finance queue uses the same table/inspector contract,
+including row selection, focus handoff, and Escape return behavior.
 
 The Data backfill workstream reads `/api/backfill/executions` as the durable remediation evidence
 source. Its remediation SLA queue keeps server-owned tier, deadline, status, provider, workflow,
@@ -118,6 +120,10 @@ delete, refresh, or run persisted schedules with an explicit broker/custodian cl
 collecting credentials in the browser. Run-now
 results render the shared Evidence Vault and reconciliation routes. File-import commit results also
 render Evidence Vault identity, the Evidence Workbench route, reconciliation route, and structured
+account-margin, activity-completeness, option-lifecycle, tax-lot, and borrow evidence retained beside
+the canonical CSV. `/accounting/margin-control` projects that retained evidence across accounts and
+prime brokers, compares provider-authoritative values with a labelled Meridian shadow estimate, and
+permits durable end-of-day certification only through the shared permission-checked endpoint.
 reconciliation case links directly from the commit response, including status, priority, reason,
 and suggested next action. The browser blocks file commit while preview errors remain, so operators
 can move from imported custodian/broker source to retained proof and exact casework without
@@ -962,9 +968,12 @@ summary labels, empty states, disabled reasons, and ownership graph/table access
 Family Office view-model seam. The screen view model now derives summary panels and ownership graph
 rows from a family-office entity structure shaped like the shared `FamilyOfficeOverviewDto`/
 `FamilyEntityDto` contracts, so React renders entity, asset, commitment, reconciliation, and stale
-valuation projections instead of carrying a separate graph fixture. The workspace navigation and
-command palette surface the route from their route-catalog/view-model seams so discovery labels
-remain centralized.
+valuation projections instead of carrying a separate graph fixture. The route is **deliberately
+withheld from discovery**: it is listed in `UNWIRED_WORKSTATION_ROUTES`, so neither the workspace
+navigation nor the command palette offers it while the screen still renders a permanent
+not-connected state. It stays mounted, so existing deep links and bookmarks resolve rather than
+404. Restore it to both seams — which still read their labels from the route-catalog/view-model
+seams, so discovery labels remain centralized — when the family-office endpoints are wired.
 Strategy workspace navigation uses canonical Strategy labels for subroutes, including the retained
 `/strategy/lab` route, so browser discovery does not expose `Research` as a visible root or
 lane name while compatibility routes continue to resolve.
@@ -973,6 +982,25 @@ Strategy wording while retained `Research*` DTO and component names remain compa
 Strategy Builder promotion-review warnings use risk/control wording in the browser view model,
 matching the shared strategy-service validation copy while retained cell kinds remain compatibility
 inputs.
+The host-composed W6 browser path is the Covered Call form in
+`covered-call-screen.view-model.ts`. Before calling the Covered Call API it requires operator
+acceptance text as a future review requirement and at least one bounded, strict
+`evidence://evidence-vault/{vaultId}` reference. The server resolves the retained manifest inside
+the authenticated tenant/company scope before queueing and records the pre-execution entry through
+the shared strategy-run repository. Covered Call results deep-link to that exact strategy run and
+Vault artifact. The browser treats `PersistenceDegraded` as a terminal run phase, stops status
+polling, and tells the operator that no Completed, Failed, or Cancelled lifecycle outcome is
+authoritative when a durable lifecycle append fails.
+
+The Strategy screen sends Paper promotion through the governed promotion endpoint. Its four
+read-only acceptance checks are ready only when the server projects a durable operator/audit
+decision, keyed evidence matching the source run, and the exact same-scope Paper child lineage;
+metric eligibility, acknowledgement, or a caller-created paper session cannot satisfy them. The
+corresponding UI contract proof lives in `covered-call-screen.view-model.test.ts`,
+`covered-call-screen.test.tsx`, `strategy-screen.view-model.test.ts`, and
+`strategy-screen.test.tsx`;
+Strategy Designer and the uncomposed Backtesting Studio orchestrator are not evidence for this
+bounded browser path.
 The browser `DataScreen` owns the canonical Data workspace module under `src/screens/data-screen*`.
 Retained `DataOperations*` DTO, endpoint, and fixture names are compatibility seams only. Data
 workspace navigation and command-palette discovery surface `/data/providers` as the canonical
@@ -1055,7 +1083,14 @@ ledger-book mutation checks, authenticated tenant/company scoping, and approval 
 server-owned. Browser route `fundProfileId` and `ledgerBookId` values now flow into the shared
 manual journal workbench query and are preserved on save, validate, submit, evidence attachment,
 and lifecycle transition requests so scoped Accounting work cannot silently fall back to fund-level
-manual JE drafts. The same workstream renders the shared
+manual JE drafts. The journal composer adds a sticky health and command bar, keyboard-oriented
+line navigation with insert and duplicate actions, debounced governed draft autosave, and a scoped
+local recovery snapshot for changes that have not reached the server. Recovery state is explicitly
+labelled as non-authoritative and can be discarded back to the loaded server draft. Validation
+issues retain their shared target identifiers and navigate operators to the affected header or line,
+while the selected-line inspector edits the existing line entity, allocation, tax-lot, Security
+Master, and shared journal dimension fields without moving accounting rules into React. The same
+workstream renders the shared
 private-capital activity projection as fund-event rows, capital-account aggregates, signed net
 activity, ordered capital-account subledger movements with running net activity, posted fund-event
 counts, ledger-impact readiness, published report-output counts, report-output readiness
@@ -1138,12 +1173,20 @@ metadata to the design-document root set: `Trading`, `Portfolio`, `Accounting`, 
 event labels also normalize retained source names before entering the visible evidence timeline.
 The browser workstation root (`/`) now opens the Daily Control Tower, a read-only shell projection
 of workflow continuity, trust posture, linked context, and timestamped evidence. Its landing model
+is a shell-level Home location rather than an eighth workspace: none of the seven root workspace
+items is marked current, and the operating-context copy identifies the Daily Control Tower instead
+of falling back to Trading. Before the combined finance queue is shown, operators choose an
+operating scope or explicitly opt into cross-scope review.
+The landing model
 now prioritizes the finance sequence Today, Exceptions, Close, Reconciliation, Ledger, Reports,
 Evidence, and Data Health before non-finance surfaces. Decision drivers emphasize the finance
 queue, trust posture, linked context, and evidence events before the queued work, so the first screen
 explains why the operator should act, who owns the issue, what output is affected, which action is
 next, and which retained evidence supports it. Scope, freshness, and provider-connectivity trust
 cards expose their remediation actions in the card that reports the warning.
+Queue evidence association is fail-closed on the stable item/evidence identifier. Similar route,
+workspace, severity, or list position never attaches an unrelated proof event; missing correlation
+is displayed as unavailable evidence and timestamp posture.
 Legacy `/overview` links redirect to that root while suffixed overview routes continue through the
 retained workspace alias path.
 The app shell exposes the active route as a named workbench landmark and marks that landmark busy
@@ -1152,6 +1195,12 @@ workspace with explicit loading posture.
 Shared workstation primitives render visual search context as read-only textboxes and shared tab
 strips move focus and the active tab stop with Arrow, Home, and End keys, so route-owned filters and
 inspector tabs do not need screen-local keyboard handling.
+The first-10-minutes coach mark offers task journeys for Financial Operations, Trading and
+Portfolio, Strategy and Research, and Administration. Journey progress is route-backed and retained
+in the existing versioned onboarding storage record; switching journeys preserves completed work.
+Supporting and metadata typography has a 12px floor in the dense setting. Global accessibility
+styles retain visible focus, selected/current state, status boundaries, and data-table structure in
+Windows forced-colors mode; reduced-motion mode suppresses non-essential animation and transitions.
 The app shell keeps cross-workspace ranking and disclosure chrome centralized, while workspace
 linked-context builders, workspace operator-focus candidate construction, workspace
 evidence-timeline projection, workflow-continuity trail definitions, trail selection, active-route
@@ -1272,6 +1321,7 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

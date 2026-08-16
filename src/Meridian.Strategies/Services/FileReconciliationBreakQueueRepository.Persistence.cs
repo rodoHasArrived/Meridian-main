@@ -1,8 +1,8 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
@@ -12,6 +12,30 @@ namespace Meridian.Strategies.Services;
 
 public sealed partial class FileReconciliationBreakQueueRepository
 {
+    public async Task VerifyAsync(CancellationToken ct = default)
+    {
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            ResetCachedState();
+            try
+            {
+                await EnsureLoadedAsync(ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                // A failed legacy migration or integrity check can populate only part of the
+                // in-memory state. Never let a later readiness check reuse that partial state.
+                ResetCachedState();
+                throw;
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     private async Task EnsureLoadedAsync(CancellationToken ct)
     {
         if (_items is not null)
@@ -136,11 +160,15 @@ public sealed partial class FileReconciliationBreakQueueRepository
         _closeScopeLocks.Clear();
         foreach (var closeScopeLock in snapshot?.CloseScopeLocks ?? [])
         {
-            ValidateCloseScopeLock(closeScopeLock);
-            if (!_closeScopeLocks.TryAdd(closeScopeLock.ScopeKey, closeScopeLock))
+            var retainedCloseScopeLock =
+                snapshot is { SchemaVersion: < 6 } && closeScopeLock.Generation <= 0
+                    ? closeScopeLock with { Generation = 1 }
+                    : closeScopeLock;
+            ValidateCloseScopeLock(retainedCloseScopeLock);
+            if (!_closeScopeLocks.TryAdd(retainedCloseScopeLock.ScopeKey, retainedCloseScopeLock))
             {
                 throw new InvalidDataException(
-                    $"Duplicate reconciliation close-scope lock '{closeScopeLock.ScopeKey}' was retained in the snapshot.");
+                    $"Duplicate reconciliation close-scope lock '{retainedCloseScopeLock.ScopeKey}' was retained in the snapshot.");
             }
         }
 
@@ -679,7 +707,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
     {
         if (string.IsNullOrWhiteSpace(result.BulkActionId) ||
             string.IsNullOrWhiteSpace(result.IdempotencyKey) ||
-            !IsSha256(result.InputHashSha256) ||
+            !Sha256Digest.IsWellFormed(result.InputHashSha256) ||
             result.RequestedCount < 0 ||
             result.SucceededCount < 0 ||
             result.FailedCount < 0 ||
@@ -761,7 +789,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
 
     private static CaseworkCommandReceipt MigrateLegacyCommandReceipt(CaseworkCommandReceipt receipt)
     {
-        var hash = IsSha256(receipt.InputHashSha256)
+        var hash = Sha256Digest.IsWellFormed(receipt.InputHashSha256)
             ? receipt.InputHashSha256
             : HashPayload($"meridian.reconciliation-legacy-command-receipt.v1\n{receipt.CommandId}|{receipt.BreakId}|{receipt.Action}|{receipt.Result.Version}")!;
         return receipt with
@@ -852,7 +880,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
         if (string.IsNullOrWhiteSpace(receipt.BulkActionId) ||
             string.IsNullOrWhiteSpace(receipt.CommandId) ||
             string.IsNullOrWhiteSpace(receipt.IdempotencyKey) ||
-            !IsSha256(receipt.InputHashSha256) ||
+            !Sha256Digest.IsWellFormed(receipt.InputHashSha256) ||
             !string.Equals(receipt.BulkActionId, receipt.CommandId, StringComparison.OrdinalIgnoreCase) ||
             !string.Equals(receipt.Result.BulkActionId, receipt.BulkActionId, StringComparison.OrdinalIgnoreCase) ||
             !string.Equals(receipt.Result.IdempotencyKey, receipt.IdempotencyKey, StringComparison.OrdinalIgnoreCase) ||
@@ -888,7 +916,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
 
         if (string.IsNullOrWhiteSpace(receipt.CommandId) ||
             string.IsNullOrWhiteSpace(receipt.BreakId) ||
-            !IsSha256(receipt.InputHashSha256) ||
+            !Sha256Digest.IsWellFormed(receipt.InputHashSha256) ||
             !string.Equals(receipt.Result.BreakId, receipt.BreakId, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidDataException(
@@ -967,6 +995,4 @@ public sealed partial class FileReconciliationBreakQueueRepository
         }
     }
 
-    private static bool IsSha256(string? value)
-        => value is { Length: 64 } && value.All(Uri.IsHexDigit);
 }

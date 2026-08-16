@@ -19,10 +19,16 @@ module private NullableHelpers =
         | None -> Unchecked.defaultof<'T>
 
 type SecurityIdentifierSnapshot(identifier: Identifier) =
+    do
+        if not (SecurityIdentifier.providerMetadataMatchesKind identifier) then
+            invalidArg
+                (nameof identifier.Provider)
+                "ProviderSymbol metadata must match the authoritative provider namespace carried by Identifier.Kind."
+
     let provider =
         match identifier.Kind with
-        | IdentifierKind.ProviderSymbol provider -> provider
-        | _ -> null
+        | IdentifierKind.ProviderSymbol authoritativeProvider -> authoritativeProvider
+        | _ -> identifier.Provider |> toNullableRef
 
     let kind =
         match identifier.Kind with
@@ -90,8 +96,14 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    conversionStartDate = convertible.ConversionStartDate
                    conversionEndDate = convertible.ConversionEndDate |}
 
-            let classification =
-                terms.Classification |> Option.map EquityClassification.asString
+            // "Other" classifications serialize as the discriminant "Other" plus the raw label in
+            // otherClassification — writing the raw label into the classification slot produced a
+            // value the deserializer did not recognize, failing every read of the row.
+            let classification, otherClassification =
+                match terms.Classification with
+                | Some (EquityClassification.Other label) -> Some "Other", Some label
+                | Some value -> Some (EquityClassification.asString value), None
+                | None -> None, None
 
             let preferredTerms, convertibleTerms =
                 match terms.Classification with
@@ -107,7 +119,9 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    shareClass = terms.ShareClass
+                   votingRightsCat = terms.VotingRightsCat |> Option.map VotingRightsCat.asString
                    classification = classification
+                   otherClassification = otherClassification
                    preferredTerms = preferredTerms
                    convertibleTerms = convertibleTerms |})
         | SecurityKind.Option terms ->
@@ -171,7 +185,12 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    paymentFrequency = terms.PaymentFrequency |> Option.map PaymentFrequency.label
                    legalFinalMaturity = terms.LegalFinalMaturity
                    preRefundDate = terms.PreRefundDate
-                   mandatoryPutDate = terms.MandatoryPutDate |})
+                   mandatoryPutDate = terms.MandatoryPutDate
+                   principalSchedule =
+                        terms.PrincipalSchedule
+                        |> List.map (fun entry ->
+                            {| paymentDate = entry.PaymentDate
+                               amount = entry.Amount |}) |})
         | SecurityKind.FxSpot terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -283,7 +302,13 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    originalFace = terms.OriginalFace
                    currentFactor = terms.CurrentFactor
                    couponOrIndex = terms.CouponOrIndex
-                   factorSchedule = terms.FactorSchedule |})
+                   factorSchedule = terms.FactorSchedule
+                   factorScheduleEntries =
+                        terms.FactorScheduleEntries
+                        |> List.map (fun entry ->
+                            {| asOfDate = entry.AsOfDate
+                               factor = entry.Factor |})
+                   maturity = terms.Maturity |})
         | SecurityKind.PrivateFundInterest terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -368,6 +393,11 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    distributionPolicy = terms.DistributionPolicy |> Option.map DistributionPolicy.label
                    isStableNav = terms.IsStableNav
                    pricingSource = terms.PricingSource |})
+        | SecurityKind.CustomAsset terms ->
+            // The custom-asset document is emitted verbatim: it already carries its own
+            // schemaVersion (the CustomAssetProfile family) and its dynamic, profile-governed
+            // keys must survive serialize → deserialize → serialize without loss.
+            terms.TermsJson
 
     let commonTermsJson =
         JsonSerializer.Serialize(
@@ -483,3 +513,9 @@ type SecurityMasterCommandFacade private () =
 
     static member Deactivate(current: SecurityMasterRecord, command: DeactivateSecurity) =
         SecurityMasterCommandFacade.ToResult(Some current, SecurityMaster.deactivate current command)
+
+    /// Standalone kind-invariant validation for the C# write path: a profile-backed record
+    /// reclassified to its resolved first-class kind must also satisfy that kind's rule set,
+    /// which can be stricter than the pinned profile's.
+    static member ValidateKindInvariants(kind: SecurityKind) =
+        SecurityMaster.validateKindInvariants kind |> List.toArray

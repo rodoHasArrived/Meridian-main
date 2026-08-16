@@ -53,7 +53,7 @@ public sealed class AnalysisExportService
             ct);
 
         if (success && data != null)
-            return MapCanonicalExportResponse(data);
+            return MapCanonicalExportResponse(data, request.Format);
 
         return new AnalysisExportResult { Success = false, Error = errorMessage ?? "Export failed" };
     }
@@ -103,7 +103,11 @@ public sealed class AnalysisExportService
 
     public async Task<QualityReportResult> GenerateQualityReportAsync(QualityReportOptions options, CancellationToken ct = default)
     {
-        var (success, errorMessage, data) = await PostApiAsync<QualityReportResponse>(
+        ArgumentNullException.ThrowIfNull(options);
+        ct.ThrowIfCancellationRequested();
+        EnsureQualityReportRequestCanRepresent(options);
+
+        var (success, errorMessage, data) = await PostApiAsync<SpecializedExportApiResponse>(
             "/api/export/quality-report",
             new
             {
@@ -116,21 +120,18 @@ public sealed class AnalysisExportService
             ct);
 
         if (success && data != null)
-        {
-            return new QualityReportResult
-            {
-                Success = true,
-                ReportPath = data.ReportPath,
-                Summary = data.Summary
-            };
-        }
+            return MapQualityReportResponse(data);
 
         return new QualityReportResult { Success = false, Error = errorMessage ?? "Failed to generate report" };
     }
 
     public async Task<AnalysisExportResult> ExportOrderFlowAsync(OrderFlowExportOptions options, CancellationToken ct = default)
     {
-        var (success, errorMessage, data) = await PostApiAsync<AnalysisExportResponse>(
+        ArgumentNullException.ThrowIfNull(options);
+        ct.ThrowIfCancellationRequested();
+        EnsureOrderFlowRequestCanRepresent(options);
+
+        var (success, errorMessage, data) = await PostApiAsync<SpecializedExportApiResponse>(
             "/api/export/orderflow",
             new
             {
@@ -145,23 +146,18 @@ public sealed class AnalysisExportService
             ct);
 
         if (success && data != null)
-        {
-            return new AnalysisExportResult
-            {
-                Success = data.Success,
-                OutputPath = data.OutputPath,
-                FilesCreated = data.FilesCreated != null ? new List<string>(data.FilesCreated) : new List<string>(),
-                RowsExported = data.RowsExported,
-                BytesWritten = data.BytesWritten
-            };
-        }
+            return MapSpecializedExportResponse(data);
 
         return new AnalysisExportResult { Success = false, Error = errorMessage ?? "Export failed" };
     }
 
     public async Task<AnalysisExportResult> ExportIntegrityEventsAsync(IntegrityExportOptions options, CancellationToken ct = default)
     {
-        var (success, errorMessage, data) = await PostApiAsync<AnalysisExportResponse>(
+        ArgumentNullException.ThrowIfNull(options);
+        ct.ThrowIfCancellationRequested();
+        EnsureIntegrityRequestCanRepresent(options);
+
+        var (success, errorMessage, data) = await PostApiAsync<SpecializedExportApiResponse>(
             "/api/export/integrity",
             new
             {
@@ -175,22 +171,18 @@ public sealed class AnalysisExportService
             ct);
 
         if (success && data != null)
-        {
-            return new AnalysisExportResult
-            {
-                Success = data.Success,
-                OutputPath = data.OutputPath,
-                FilesCreated = data.FilesCreated != null ? new List<string>(data.FilesCreated) : new List<string>(),
-                RowsExported = data.RowsExported
-            };
-        }
+            return MapSpecializedExportResponse(data);
 
         return new AnalysisExportResult { Success = false, Error = errorMessage ?? "Export failed" };
     }
 
     public async Task<ResearchPackageResult> CreateResearchPackageAsync(ResearchPackageOptions options, CancellationToken ct = default)
     {
-        var (success, errorMessage, data) = await PostApiAsync<ResearchPackageResponse>(
+        ArgumentNullException.ThrowIfNull(options);
+        ct.ThrowIfCancellationRequested();
+        EnsureResearchPackageRequestCanRepresent(options);
+
+        var (success, errorMessage, data) = await PostApiAsync<SpecializedExportApiResponse>(
             UiApiRoutes.ExportStrategyPackage,
             new
             {
@@ -208,15 +200,7 @@ public sealed class AnalysisExportService
             ct);
 
         if (success && data != null)
-        {
-            return new ResearchPackageResult
-            {
-                Success = true,
-                PackagePath = data.PackagePath,
-                ManifestPath = data.ManifestPath,
-                SizeBytes = data.SizeBytes
-            };
-        }
+            return MapResearchPackageResponse(data);
 
         return new ResearchPackageResult { Success = false, Error = errorMessage ?? "Failed to create package" };
     }
@@ -285,7 +269,9 @@ public sealed class AnalysisExportService
         }
     }
 
-    internal static AnalysisExportResult MapCanonicalExportResponse(ExportAnalysisApiResponse response)
+    internal static AnalysisExportResult MapCanonicalExportResponse(
+        ExportAnalysisApiResponse response,
+        string? expectedFormat = null)
     {
         ArgumentNullException.ThrowIfNull(response);
 
@@ -295,11 +281,13 @@ public sealed class AnalysisExportService
                     ? file.Path
                     : Path.Combine(response.OutputDirectory, file.Path))
             .ToList();
+        var payloadError = ValidateCanonicalPayload(response, expectedFormat);
 
         return new AnalysisExportResult
         {
-            Success = response.Success,
-            Error = response.Error,
+            Success = response.Success && payloadError is null,
+            Error = payloadError ?? response.Error,
+            Format = ResolveResponseFormat(response.Files),
             OutputPath = response.OutputDirectory,
             FilesCreated = files,
             RowsExported = response.TotalRecords,
@@ -308,6 +296,274 @@ public sealed class AnalysisExportService
             Warnings = response.Warnings.ToList()
         };
     }
+
+    internal static AnalysisExportResult MapSpecializedExportResponse(SpecializedExportApiResponse response)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+
+        var files = ResolveResponseFiles(response.OutputDirectory, response.Files);
+        var payloadError = ValidateSpecializedPayload(response);
+        return new AnalysisExportResult
+        {
+            Success = response.Success && payloadError is null,
+            Error = payloadError ?? response.Error,
+            Format = response.Format,
+            OutputPath = response.OutputDirectory,
+            FilesCreated = files,
+            RowsExported = response.TotalRecords,
+            BytesWritten = response.TotalBytes,
+            Warnings = response.Warnings.ToList()
+        };
+    }
+
+    internal static QualityReportResult MapQualityReportResponse(SpecializedExportApiResponse response)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+
+        var payloadError = ValidateSpecializedPayload(response);
+        return new QualityReportResult
+        {
+            Success = response.Success && payloadError is null,
+            Error = payloadError ?? response.Error,
+            Format = response.Format,
+            ReportPath = response.OutputDirectory,
+            Summary = response.QualitySummary
+        };
+    }
+
+    internal static ResearchPackageResult MapResearchPackageResponse(SpecializedExportApiResponse response)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+
+        var payloadError = ValidateSpecializedPayload(response);
+        return new ResearchPackageResult
+        {
+            Success = response.Success && payloadError is null,
+            Error = payloadError ?? response.Error,
+            Format = response.Format,
+            PackagePath = response.OutputDirectory,
+            ManifestPath = response.LineageManifestPath,
+            SizeBytes = response.TotalBytes
+        };
+    }
+
+    internal static void EnsureQualityReportRequestCanRepresent(QualityReportOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        var unsupported = new List<string>();
+        if (options.IncludeCharts)
+            unsupported.Add($"{nameof(options.IncludeCharts)}=true");
+
+        EnsureSpecializedRequestCanRepresent(
+            "quality report",
+            options.Format,
+            options.FromDate,
+            options.ToDate,
+            unsupported);
+    }
+
+    internal static void EnsureOrderFlowRequestCanRepresent(OrderFlowExportOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        var unsupported = new List<string>();
+        if (options.Metrics is { Length: > 0 })
+            unsupported.Add(nameof(options.Metrics));
+        if (!string.IsNullOrWhiteSpace(options.Aggregation) &&
+            !string.Equals(options.Aggregation, "raw", StringComparison.OrdinalIgnoreCase))
+        {
+            unsupported.Add(nameof(options.Aggregation));
+        }
+        if (!string.IsNullOrWhiteSpace(options.OutputPath))
+            unsupported.Add(nameof(options.OutputPath));
+
+        EnsureSpecializedRequestCanRepresent(
+            "order-flow export",
+            options.Format,
+            options.FromDate,
+            options.ToDate,
+            unsupported);
+    }
+
+    internal static void EnsureIntegrityRequestCanRepresent(IntegrityExportOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        var unsupported = new List<string>();
+        if (!string.IsNullOrWhiteSpace(options.OutputPath))
+            unsupported.Add(nameof(options.OutputPath));
+
+        EnsureSpecializedRequestCanRepresent(
+            "integrity export",
+            options.Format,
+            options.FromDate,
+            options.ToDate,
+            unsupported);
+    }
+
+    internal static void EnsureResearchPackageRequestCanRepresent(ResearchPackageOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        var unsupported = new List<string>();
+        if (!string.IsNullOrWhiteSpace(options.Name))
+            unsupported.Add(nameof(options.Name));
+        if (!string.IsNullOrWhiteSpace(options.Description))
+            unsupported.Add(nameof(options.Description));
+        if (options.IncludeQualityReport)
+            unsupported.Add($"{nameof(options.IncludeQualityReport)}=true");
+        if (!options.IncludeMetadata)
+            unsupported.Add($"{nameof(options.IncludeMetadata)}=false");
+        if (!string.IsNullOrWhiteSpace(options.OutputPath))
+            unsupported.Add(nameof(options.OutputPath));
+
+        var includeData = options.IncludeData;
+        if (!includeData.Trades &&
+            !includeData.Quotes &&
+            !includeData.Bars &&
+            !includeData.OrderBook &&
+            !includeData.OrderFlow)
+        {
+            unsupported.Add("IncludeData has no selected data type");
+        }
+
+        EnsureSpecializedRequestCanRepresent(
+            "strategy package",
+            options.Format,
+            options.FromDate,
+            options.ToDate,
+            unsupported);
+    }
+
+    private static void EnsureSpecializedRequestCanRepresent(
+        string operation,
+        string format,
+        DateOnly? fromDate,
+        DateOnly? toDate,
+        List<string> unsupported)
+    {
+        if (!IsCanonicalSpecializedFormat(format))
+            unsupported.Add($"Format={format}");
+        if (fromDate.HasValue && toDate.HasValue && fromDate.Value > toDate.Value)
+            unsupported.Add("FromDate is after ToDate");
+
+        if (unsupported.Count == 0)
+            return;
+
+        throw new NotSupportedException(
+            $"The canonical {operation} API cannot represent these requested options: " +
+            string.Join(", ", unsupported) +
+            ". No export was requested.");
+    }
+
+    private static bool IsCanonicalSpecializedFormat(string? format)
+        => format?.Trim().ToLowerInvariant() is
+            "csv" or "parquet" or "xlsx" or "excel" or "arrow" or "feather";
+
+    private static string? ValidateCanonicalPayload(
+        ExportAnalysisApiResponse response,
+        string? expectedFormat)
+    {
+        if (!response.Success)
+            return response.Error ?? "The export operation failed.";
+        if (!string.Equals(response.Status, "completed", StringComparison.OrdinalIgnoreCase))
+            return $"The export response claimed success with non-completed status '{response.Status}'.";
+        if (response.FilesGenerated <= 0 || response.Files.Count == 0)
+            return "The export response claimed success without any generated artifact.";
+        if (response.FilesGenerated != response.Files.Count)
+            return "The export response file count does not match its artifact evidence.";
+        if (response.TotalRecords <= 0)
+            return "The export response claimed success without any exported record.";
+
+        var missingFormat = response.Files.FirstOrDefault(
+            static file => string.IsNullOrWhiteSpace(file.Format));
+        if (missingFormat is not null)
+            return $"Export artifact '{missingFormat.Path}' did not identify its generated format.";
+
+        var formats = response.Files
+            .Select(static file => NormalizeCanonicalFormat(file.Format))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (formats.Length > 1)
+        {
+            return "The export response reported mixed artifact formats: " +
+                   string.Join(", ", formats) +
+                   ".";
+        }
+
+        if (!string.IsNullOrWhiteSpace(expectedFormat))
+        {
+            var expected = NormalizeCanonicalFormat(expectedFormat);
+            var mismatch = response.Files.FirstOrDefault(file =>
+                !string.Equals(
+                    NormalizeCanonicalFormat(file.Format),
+                    expected,
+                    StringComparison.OrdinalIgnoreCase));
+            if (mismatch is not null)
+            {
+                return $"The requested export format '{expected}' does not match artifact " +
+                       $"'{mismatch.Path}' format '{NormalizeCanonicalFormat(mismatch.Format)}'.";
+            }
+        }
+
+        return null;
+    }
+
+    private static string? ValidateSpecializedPayload(SpecializedExportApiResponse response)
+    {
+        if (!response.Success)
+            return response.Error ?? "The export operation failed.";
+        if (!string.Equals(response.Status, "completed", StringComparison.OrdinalIgnoreCase))
+            return $"The export response claimed success with non-completed status '{response.Status}'.";
+        if (response.FilesGenerated <= 0 || response.Files.Count == 0)
+            return "The export response claimed success without any generated artifact.";
+        if (response.FilesGenerated != response.Files.Count)
+            return "The export response file count does not match its artifact evidence.";
+        if (response.TotalRecords <= 0)
+            return "The export response claimed success without any exported record.";
+        if (string.IsNullOrWhiteSpace(response.Format))
+            return "The export response did not identify the generated format.";
+
+        var mismatchedFormat = response.Files.FirstOrDefault(file =>
+            !string.Equals(file.Format, response.Format, StringComparison.OrdinalIgnoreCase));
+        if (mismatchedFormat is not null)
+        {
+            return $"The export response format '{response.Format}' does not match artifact " +
+                   $"'{mismatchedFormat.Path}' format '{mismatchedFormat.Format}'.";
+        }
+
+        return null;
+    }
+
+    private static List<string> ResolveResponseFiles(
+        string? outputDirectory,
+        IReadOnlyList<ExportAnalysisApiFile> files)
+        => files.Select(file =>
+                string.IsNullOrWhiteSpace(outputDirectory) || Path.IsPathRooted(file.Path)
+                    ? file.Path
+                    : Path.Combine(outputDirectory, file.Path))
+            .ToList();
+
+    private static string? ResolveResponseFormat(IReadOnlyList<ExportAnalysisApiFile> files)
+    {
+        var formats = files
+            .Select(static file => NormalizeCanonicalFormat(file.Format))
+            .Where(static format => !string.IsNullOrWhiteSpace(format))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        return formats.Length switch
+        {
+            0 => null,
+            1 => formats[0],
+            _ => "mixed"
+        };
+    }
+
+    private static string NormalizeCanonicalFormat(string? format) =>
+        format?.Trim().ToLowerInvariant() switch
+        {
+            "excel" => "xlsx",
+            "feather" => "arrow",
+            { } value => value,
+            _ => string.Empty
+        };
 
     private static DateTime? ToUtcDateTime(DateOnly? date) =>
         date.HasValue

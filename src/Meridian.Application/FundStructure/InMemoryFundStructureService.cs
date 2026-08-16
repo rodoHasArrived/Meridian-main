@@ -3881,7 +3881,7 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
 
         var now = DateTimeOffset.UtcNow;
         foreach (var link in _ownershipLinks.Values
-            .Where(link => IsOwnershipLinkVisible(link, activeOnly: true, now))
+            .Where(link => OwnershipGraphValidation.IsOwnershipLinkVisible(link, activeOnly: true, now))
             .OrderBy(static link => link.EffectiveFrom)
             .ThenBy(static link => link.OwnershipLinkId))
         {
@@ -3891,98 +3891,11 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
 
     private List<OwnershipGraphValidationIssueDto> ValidateOwnershipGraphLocked(bool activeOnly, DateTimeOffset asOf)
     {
-        var issues = new List<OwnershipGraphValidationIssueDto>();
         var links = _ownershipLinks.Values
-            .Where(link => IsOwnershipLinkVisible(link, activeOnly, asOf))
+            .Where(link => OwnershipGraphValidation.IsOwnershipLinkVisible(link, activeOnly, asOf))
             .ToList();
-
-        foreach (var link in links)
-        {
-            if (link.ParentNodeId == link.ChildNodeId)
-            {
-                issues.Add(new OwnershipGraphValidationIssueDto(
-                    "ownership.self-link",
-                    "Ownership links cannot point a node to itself.",
-                    link.OwnershipLinkId,
-                    link.ParentNodeId));
-            }
-
-            if (!TryGetStoredNodeKindLocked(link.ParentNodeId, out _))
-            {
-                issues.Add(new OwnershipGraphValidationIssueDto(
-                    "ownership.parent-not-found",
-                    $"Parent node {link.ParentNodeId} was not found.",
-                    link.OwnershipLinkId,
-                    link.ParentNodeId));
-            }
-
-            if (!TryGetStoredNodeKindLocked(link.ChildNodeId, out _))
-            {
-                issues.Add(new OwnershipGraphValidationIssueDto(
-                    "ownership.child-not-found",
-                    $"Child node {link.ChildNodeId} was not found.",
-                    link.OwnershipLinkId,
-                    link.ChildNodeId));
-            }
-        }
-
-        var adjacency = links
-            .GroupBy(static link => link.ParentNodeId)
-            .ToDictionary(static group => group.Key, static group => group.Select(link => (link.ChildNodeId, link.OwnershipLinkId)).ToList());
-        var visiting = new HashSet<Guid>();
-        var visited = new HashSet<Guid>();
-        foreach (var nodeId in adjacency.Keys.ToList())
-        {
-            DetectOwnershipCycles(nodeId, adjacency, visiting, visited, issues);
-        }
-
-        return issues;
+        return OwnershipGraphValidation.Validate(links, nodeId => TryGetStoredNodeKindLocked(nodeId, out _));
     }
-
-    private static bool DetectOwnershipCycles(
-        Guid nodeId,
-        IReadOnlyDictionary<Guid, List<(Guid ChildNodeId, Guid OwnershipLinkId)>> adjacency,
-        HashSet<Guid> visiting,
-        HashSet<Guid> visited,
-        List<OwnershipGraphValidationIssueDto> issues)
-    {
-        if (visited.Contains(nodeId))
-        {
-            return false;
-        }
-
-        if (!visiting.Add(nodeId))
-        {
-            issues.Add(new OwnershipGraphValidationIssueDto(
-                "ownership.cycle",
-                $"Ownership graph contains a cycle at node {nodeId}.",
-                NodeId: nodeId));
-            return true;
-        }
-
-        if (adjacency.TryGetValue(nodeId, out var children))
-        {
-            foreach (var (childNodeId, ownershipLinkId) in children)
-            {
-                if (DetectOwnershipCycles(childNodeId, adjacency, visiting, visited, issues))
-                {
-                    issues.Add(new OwnershipGraphValidationIssueDto(
-                        "ownership.cycle-link",
-                        $"Ownership link {ownershipLinkId} participates in a cycle.",
-                        ownershipLinkId,
-                        childNodeId));
-                    return true;
-                }
-            }
-        }
-
-        visiting.Remove(nodeId);
-        visited.Add(nodeId);
-        return false;
-    }
-
-    private static bool IsOwnershipLinkVisible(OwnershipLinkDto link, bool activeOnly, DateTimeOffset asOf) =>
-        !activeOnly || (link.EffectiveFrom <= asOf && (link.EffectiveTo is null || link.EffectiveTo > asOf));
 
     private void ApplyOwnershipLinkLocked(OwnershipLinkDto link)
     {

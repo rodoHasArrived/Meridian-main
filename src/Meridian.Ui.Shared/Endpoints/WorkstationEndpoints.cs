@@ -369,7 +369,9 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetWorkstationTrading")
         .Produces<WorkstationTradingPayload>(200)
-        .Produces(503);
+        .Produces(403)
+        .Produces(503)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationTradingReadiness), async (Guid? fundAccountId, HttpContext context) =>
         {
@@ -377,7 +379,9 @@ public static partial class WorkstationEndpoints
             return Results.Json(readiness, jsonOptions);
         })
         .WithName("GetWorkstationTradingReadiness")
-        .Produces<TradingOperatorReadinessDto>(200);
+        .Produces<TradingOperatorReadinessDto>(200)
+        .Produces(403)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationCollateralExposure), (HttpContext context) =>
         {
@@ -401,7 +405,9 @@ public static partial class WorkstationEndpoints
             return Results.Json(inbox, jsonOptions);
         })
         .WithName("GetWorkstationOperatorInbox")
-        .Produces<OperatorInboxDto>(200);
+        .Produces<OperatorInboxDto>(200)
+        .Produces(403)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationDataOperations), async (HttpContext context) =>
         {
@@ -1542,7 +1548,8 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetLatestRunReconciliation")
         .Produces<ReconciliationRunDetail>(200)
-        .Produces(404);
+        .Produces(404)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsReconciliationHistory), async (string runId, HttpContext context) =>
         {
@@ -1559,7 +1566,8 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetRunReconciliationHistory")
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
-        .Produces(404);
+        .Produces(404)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (
             HttpContext context,
@@ -1570,11 +1578,20 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            return Results.Json(await service.ListStatementRunsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            return Results.Json(
+                await service.ListStatementRunsAsync(accessScope, context.RequestAborted).ConfigureAwait(false),
+                jsonOptions);
         })
         .WithName("ListStatementRuns")
         .Produces<IReadOnlyList<StatementRunSummaryDto>>(200)
-        .Produces(501);
+        .Produces(403)
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (
             StatementRunCreateDto request,
@@ -1585,7 +1602,8 @@ public static partial class WorkstationEndpoints
         .Produces(401)
         .Produces(403)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunById), async (
             string runId,
@@ -1597,13 +1615,22 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var detail = await service.GetStatementRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var detail = await service
+                .GetStatementRunAsync(runId, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
         })
         .WithName("GetStatementRun")
         .Produces<StatementRunDto>(200)
+        .Produces(403)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunValidation), async (
             string runId,
@@ -1615,13 +1642,22 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var validation = await service.GetStatementRunValidationAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var validation = await service
+                .GetStatementRunValidationAsync(runId, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return validation is null ? Results.NotFound() : Results.Json(validation, jsonOptions);
         })
         .WithName("GetStatementRunValidation")
         .Produces<StatementRunValidationDto>(200)
+        .Produces(403)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunBreaks), async (
             string runId,
@@ -1633,13 +1669,22 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var breaks = await service.ListStatementRunBreaksAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var breaks = await service
+                .ListStatementRunBreaksAsync(runId, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return breaks is null ? Results.NotFound() : Results.Json(breaks, jsonOptions);
         })
         .WithName("ListStatementRunBreaks")
         .Produces<IReadOnlyList<StatementRunBreakDto>>(200)
+        .Produces(403)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunReconcile), async (
             string runId,
@@ -1662,8 +1707,15 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var trustedRequest = request with { Actor = currentUser };
-            var detail = await service.ReconcileStatementRunAsync(runId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            var detail = await service
+                .ReconcileStatementRunAsync(runId, trustedRequest, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
         })
         .WithName("ReconcileStatementRun")
@@ -1671,7 +1723,8 @@ public static partial class WorkstationEndpoints
         .Produces(401)
         .Produces(403)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementExceptions), async (HttpContext context) =>
         {
@@ -1681,12 +1734,21 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var exceptions = await service.ListOpenExceptionsAsync(context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var exceptions = await service
+                .ListOpenExceptionsAsync(accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(exceptions, jsonOptions);
         })
         .WithName("ListStatementExceptions")
         .Produces<IReadOnlyList<StatementRunExceptionDto>>(200)
-        .Produces(501);
+        .Produces(403)
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementBreaks), async (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationApiService>();
@@ -1695,12 +1757,21 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var breaks = await service.ListOpenStatementBreaksAsync(context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var breaks = await service
+                .ListOpenStatementBreaksAsync(accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(breaks, jsonOptions);
         })
         .WithName("ListOpenStatementBreaks")
         .Produces<IReadOnlyList<StatementBreakDto>>(200)
-        .Produces(501);
+        .Produces(403)
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationOpenCases), async (HttpContext context) =>
         {
@@ -1710,12 +1781,21 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var cases = await service.ListOpenCasesAsync(context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var cases = await service
+                .ListOpenCasesAsync(accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(cases, jsonOptions);
         })
         .WithName("ListOpenReconciliationCases")
         .Produces<IReadOnlyList<ReconciliationCaseSummaryDto>>(200)
-        .Produces(501);
+        .Produces(403)
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationQueueStatus), async (HttpContext context) =>
         {
@@ -1725,12 +1805,21 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var queueStatus = await service.ListQueueStatusAsync(context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var queueStatus = await service
+                .ListQueueStatusAsync(accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(queueStatus, jsonOptions);
         })
         .WithName("ListReconciliationQueueStatus")
         .Produces<IReadOnlyList<ReconciliationQueueAccountStatusDto>>(200)
-        .Produces(501);
+        .Produces(403)
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueue), async (string? status, string? fundAccountId, Guid? ledgerBookId, HttpContext context) =>
@@ -2129,14 +2218,19 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await readService.GetLedgerSummaryAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var summary = await readService.GetLedgerSummaryAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return summary is null
                 ? Results.NotFound()
                 : Results.Json(summary, jsonOptions);
         })
         .WithName("GetRunLedger")
         .Produces<LedgerSummary>(200)
-        .Produces(404);
+        .Produces(404)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsContinuity), async (string runId, HttpContext context) =>
         {
@@ -2146,7 +2240,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run continuity service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var detail = await continuityService.GetRunContinuityAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var detail = await continuityService.GetRunContinuityAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(new StrategyRunContinuityDto(
@@ -2159,7 +2257,8 @@ public static partial class WorkstationEndpoints
         .WithName("GetRunContinuity")
         .Produces<StrategyRunContinuityDto>(200)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsReviewPacket), async (string runId, Guid? fundAccountId, HttpContext context) =>
         {
@@ -2169,7 +2268,12 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run review packet service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var packet = await reviewPacketService.GetAsync(runId, fundAccountId, context.RequestAborted).ConfigureAwait(false);
+            var packet = await reviewPacketService.GetAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    fundAccountId,
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return packet is null
                 ? Results.NotFound()
                 : Results.Json(packet, jsonOptions);
@@ -2177,7 +2281,10 @@ public static partial class WorkstationEndpoints
         .WithName("GetRunReviewPacket")
         .Produces<StrategyRunReviewPacketDto>(200)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsEquityCurve), async (string runId, HttpContext context) =>
         {
@@ -2187,7 +2294,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var curve = await readService.GetEquityCurveAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var curve = await readService.GetEquityCurveAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return curve is null
                 ? Results.NotFound()
                 : Results.Json(curve, jsonOptions);
@@ -2195,7 +2306,8 @@ public static partial class WorkstationEndpoints
         .WithName("GetRunEquityCurve")
         .Produces<EquityCurveSummary>(200)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsFills), async (string runId, string? symbol, HttpContext context) =>
         {
@@ -2205,7 +2317,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await readService.GetFillsAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var summary = await readService.GetFillsAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             if (summary is null)
             {
                 return Results.NotFound();
@@ -2229,7 +2345,8 @@ public static partial class WorkstationEndpoints
         .WithName("GetRunFills")
         .Produces<RunFillSummary>(200)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsAttribution), async (string runId, HttpContext context) =>
         {
@@ -2239,7 +2356,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var attribution = await readService.GetAttributionAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var attribution = await readService.GetAttributionAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return attribution is null
                 ? Results.NotFound()
                 : Results.Json(attribution, jsonOptions);
@@ -2247,7 +2368,8 @@ public static partial class WorkstationEndpoints
         .WithName("GetRunAttribution")
         .Produces<RunAttributionSummary>(200)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedgerTrialBalance), async (
             string runId,
@@ -2278,7 +2400,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await readService.GetLedgerSummaryAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var summary = await readService.GetLedgerSummaryAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             if (summary is null)
             {
                 return Results.NotFound();
@@ -2316,7 +2442,8 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetRunLedgerTrialBalance")
         .Produces<IReadOnlyList<LedgerTrialBalanceLine>>(200)
-        .Produces(404);
+        .Produces(404)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedgerJournal), async (
             string runId,
@@ -2348,7 +2475,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await readService.GetLedgerSummaryAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var summary = await readService.GetLedgerSummaryAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             if (summary is null)
             {
                 return Results.NotFound();
@@ -2391,7 +2522,8 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetRunLedgerJournal")
         .Produces<IReadOnlyList<LedgerJournalLine>>(200)
-        .Produces(404);
+        .Produces(404)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterSearch), async (
             string? query,
@@ -2576,15 +2708,13 @@ public static partial class WorkstationEndpoints
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.RunsCompare), async (RunComparisonRequest request, HttpContext context) =>
         {
-            var comparisonService = context.RequestServices.GetService<StrategyRunComparisonService>();
-            if (comparisonService is null)
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
             {
-                var readService = context.RequestServices.GetService<StrategyRunReadService>();
-                if (readService is null)
-                    return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-
-                comparisonService = new StrategyRunComparisonService(readService);
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
+            var comparisonService = context.RequestServices.GetService<StrategyRunComparisonService>()
+                ?? new StrategyRunComparisonService(readService);
 
             if (request.RunIds is not { Count: >= 2 })
             {
@@ -2596,7 +2726,22 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = $"A maximum of {MaxRunComparisonRequestIds} run IDs can be compared per request." });
             }
 
-            var comparison = await comparisonService.CompareRunsAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var scope = ResolveStrategyRunReadScope(context);
+            if (!await AreStrategyRunsAccessibleAsync(
+                    readService,
+                    request.RunIds,
+                    scope,
+                    context.RequestAborted)
+                .ConfigureAwait(false))
+            {
+                return Results.NotFound(new { error = "One or more run IDs were not found." });
+            }
+
+            var comparison = await comparisonService.CompareRunsAsync(
+                    request,
+                    scope,
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             if (request.Modes is { Count: > 0 })
             {
                 var parsedModes = ParseModes(request.Modes);
@@ -2616,17 +2761,29 @@ public static partial class WorkstationEndpoints
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.RunsDiff), async (RunDiffRequest request, HttpContext context) =>
         {
-            var comparisonService = context.RequestServices.GetService<StrategyRunComparisonService>();
-            if (comparisonService is null)
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
             {
-                var readService = context.RequestServices.GetService<StrategyRunReadService>();
-                if (readService is null)
-                    return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-
-                comparisonService = new StrategyRunComparisonService(readService);
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+            var comparisonService = context.RequestServices.GetService<StrategyRunComparisonService>()
+                ?? new StrategyRunComparisonService(readService);
+            var scope = ResolveStrategyRunReadScope(context);
+            if (!await AreStrategyRunsAccessibleAsync(
+                    readService,
+                    [request.BaseRunId, request.TargetRunId],
+                    scope,
+                    context.RequestAborted)
+                .ConfigureAwait(false))
+            {
+                return Results.NotFound(new { error = "One or both run IDs not found." });
             }
 
-            var diff = await comparisonService.BuildDiffAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var diff = await comparisonService.BuildDiffAsync(
+                    request,
+                    scope,
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             if (diff is null)
             {
                 return Results.NotFound(new { error = "One or both run IDs not found." });
@@ -2654,12 +2811,19 @@ public static partial class WorkstationEndpoints
                 runType = parsed;
             }
 
-            var runs = await readService.GetRunsAsync(strategyId, runType, context.RequestAborted).ConfigureAwait(false);
+            var runs = await readService.GetRunsAsync(
+                    strategyId,
+                    runType,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(runs, jsonOptions);
         })
         .WithName("GetStrategyRuns")
         .WithTags("Strategies")
-        .Produces<IReadOnlyList<StrategyRunSummary>>(200);
+        .Produces<IReadOnlyList<StrategyRunSummary>>(200)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunHistory), async (
             string? mode,
@@ -2681,6 +2845,7 @@ public static partial class WorkstationEndpoints
                         Status: status,
                         StrategyId: strategyId,
                         Limit: Math.Clamp(limit ?? 50, 1, 500)),
+                    ResolveStrategyRunReadScope(context),
                     context.RequestAborted)
                 .ConfigureAwait(false);
             return Results.Json(runs, jsonOptions);
@@ -2709,7 +2874,11 @@ public static partial class WorkstationEndpoints
                 StrategyId: strategyId,
                 Limit: Math.Clamp(limit ?? 100, 1, 500));
 
-            var timeline = await readService.GetMergedTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
+            var timeline = await readService.GetMergedTimelineAsync(
+                    query,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(timeline, jsonOptions);
         })
         .WithName("GetWorkstationMergedRunTimeline")
@@ -2736,7 +2905,11 @@ public static partial class WorkstationEndpoints
                 StrategyId: strategyId,
                 Limit: Math.Clamp(limit ?? 100, 1, 500));
 
-            var timeline = await readService.GetLineageTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
+            var timeline = await readService.GetLineageTimelineAsync(
+                    query,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(
                 timeline.Where(static entry => entry.EventType != StrategyRunLineageEventType.ReplayVerified).ToArray(),
                 jsonOptions);
@@ -2753,7 +2926,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var sweeps = await readService.GetSweepResultGroupsAsync(limit ?? 25, context.RequestAborted).ConfigureAwait(false);
+            var sweeps = await readService.GetSweepResultGroupsAsync(
+                    limit ?? 25,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(sweeps, jsonOptions);
         })
         .WithName("GetWorkstationSweepResults")
@@ -2787,14 +2964,32 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = $"A maximum of {MaxRunComparisonRequestIds} run IDs can be compared per request." });
             }
 
-            var comparison = await readService.GetRunComparisonDtosAsync(runIds, ct: context.RequestAborted).ConfigureAwait(false);
+            var scope = ResolveStrategyRunReadScope(context);
+            if (!await AreStrategyRunsAccessibleAsync(
+                    readService,
+                    runIds,
+                    scope,
+                    context.RequestAborted)
+                .ConfigureAwait(false))
+            {
+                return Results.NotFound(new { error = "One or more run IDs were not found." });
+            }
+
+            var comparison = await readService.GetRunComparisonDtosAsync(
+                    runIds,
+                    scope,
+                    ct: context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(comparison, jsonOptions);
         })
         .WithName("CompareStrategyRuns")
         .WithTags("Strategies")
         .Produces<IReadOnlyList<RunComparisonDto>>(200)
         .Produces(400)
-        .Produces(501);
+        .Produces(404)
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies);
 
         // --- Portfolio cash-flow projections ---
 
@@ -2829,46 +3024,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        // --- Cross-strategy aggregate portfolio ---
-
-        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioAggregate), (HttpContext context) =>
-        {
-            var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
-            if (aggregator is null)
-                return Results.Problem("Aggregate portfolio service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
-
-            var positions = aggregator.GetAggregatedPositions();
-            return Results.Json(positions, jsonOptions);
-        })
-        .WithName("GetPortfolioAggregate")
-        .Produces<IReadOnlyList<AggregatedPosition>>(200)
-        .Produces(503);
-
-        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioExposure), (HttpContext context) =>
-        {
-            var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
-            if (aggregator is null)
-                return Results.Problem("Aggregate portfolio service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
-
-            var report = aggregator.GetCrossStrategyExposure();
-            return Results.Json(report, jsonOptions);
-        })
-        .WithName("GetPortfolioExposure")
-        .Produces<CrossStrategyExposureReport>(200)
-        .Produces(503);
-
-        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioSymbolExposure), (string symbol, HttpContext context) =>
-        {
-            var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
-            if (aggregator is null)
-                return Results.Problem("Aggregate portfolio service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
-
-            var net = aggregator.GetNetPositionForSymbol(symbol);
-            return Results.Json(net, jsonOptions);
-        })
-        .WithName("GetPortfolioSymbolExposure")
-        .Produces<NetSymbolPosition>(200)
-        .Produces(503);
+        MapCrossStrategyPortfolioRoutes(portfolioGroup, jsonOptions);
         app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
             .ExcludeFromDescription();
 
@@ -2908,206 +3064,6 @@ public static partial class WorkstationEndpoints
         }).ExcludeFromDescription();
     }
 
-    // PR-03: returns typed DTO instead of anonymous object.
-    // Returns null when the strategy run read service is not registered so the route can
-    // respond 503 instead of serving fabricated fallback data.
-    private static async Task<WorkstationStrategyPayload?> BuildStrategyPayloadAsync(HttpContext context)
-    {
-        var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        if (readService is null)
-        {
-            return null;
-        }
-
-        var runs = (await readService
-                .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 6), context.RequestAborted)
-                .ConfigureAwait(false))
-            .ToArray();
-        var runDetails = await Task.WhenAll(
-                runs.Select(run => readService.GetRunDetailAsync(run.RunId, context.RequestAborted)))
-            .ConfigureAwait(false);
-
-        if (runs.Length == 0)
-        {
-            return new WorkstationStrategyPayload(
-                Metrics:
-                [
-                    new WorkstationMetricCard("active-runs", "Active Runs", "0", "0%", "success"),
-                    new WorkstationMetricCard("queued-runs", "Queued Promotions", "0", "0%", "default"),
-                    new WorkstationMetricCard("review-runs", "Needs Review", "0", "0%", "warning"),
-                    new WorkstationMetricCard("winning-runs", "Positive P&L", "0", "0%", "default")
-                ],
-                Runs: Array.Empty<WorkstationStrategyRunCard>(),
-                Comparisons: Array.Empty<WorkstationModeComparisonGroup>(),
-                Timeline: Array.Empty<WorkstationTimelineCard>(),
-                Workspace: new WorkstationStrategyWorkspaceSummary(0, null, null, false, false, 0),
-                PlotTool: BuildStrategyPlotToolPayload(Array.Empty<StrategyRunSummary>(), selectedRunIds: Array.Empty<string>()));
-        }
-
-        var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
-        var queuedPromotions = runs.Count(static run => run.Promotion is { RequiresReview: true } &&
-            run.Promotion.State is StrategyRunPromotionState.CandidateForPaper or StrategyRunPromotionState.CandidateForLive);
-        var reviewRuns = runs.Count(static run => run.Promotion?.RequiresReview == true || run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled);
-        var winningRuns = runs.Count(static run => (run.NetPnl ?? 0m) > 0m);
-        var latestRun = runs[0];
-
-        return new WorkstationStrategyPayload(
-            Metrics:
-            [
-                new WorkstationMetricCard("active-runs", "Active Runs", activeRuns.ToString(CultureInfo.InvariantCulture), activeRuns == 0 ? "0%" : $"+{activeRuns}", "success"),
-                new WorkstationMetricCard("queued-runs", "Queued Promotions", queuedPromotions.ToString(CultureInfo.InvariantCulture), queuedPromotions == 0 ? "0%" : $"+{queuedPromotions}", "default"),
-                new WorkstationMetricCard("review-runs", "Needs Review", reviewRuns.ToString(CultureInfo.InvariantCulture), reviewRuns == 0 ? "0%" : $"-{reviewRuns}", "warning"),
-                new WorkstationMetricCard("winning-runs", "Positive P&L", winningRuns.ToString(CultureInfo.InvariantCulture), winningRuns == 0 ? "0%" : $"+{winningRuns}", "default")
-            ],
-            Runs: runs
-                .Zip(runDetails, static (run, detail) => BuildStrategyRunCard(run, detail))
-                .ToArray(),
-            Comparisons: BuildModeComparisons(runs),
-            Timeline: runs.Select(BuildTimelineCard).ToArray(),
-            Workspace: new WorkstationStrategyWorkspaceSummary(
-                TotalRuns: runs.Length,
-                LatestRunId: latestRun.RunId,
-                LatestStrategyName: latestRun.StrategyName,
-                HasLedgerCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
-                HasPortfolioCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.PortfolioId)),
-                PromotionCandidates: queuedPromotions),
-            PlotTool: BuildStrategyPlotToolPayload(runs, selectedRunIds: Array.Empty<string>()));
-    }
-
-    // Returns null when the strategy run read service is not registered so the route can
-    // respond 503 instead of serving a fabricated briefing.
-    private static async Task<StrategyBriefingDto?> BuildStrategyBriefingAsync(HttpContext context)
-    {
-        var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        if (readService is null)
-        {
-            return null;
-        }
-
-        var runs = (await readService
-                .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 10), context.RequestAborted)
-                .ConfigureAwait(false))
-            .ToArray();
-        var details = await Task.WhenAll(
-                runs.Select(run => readService.GetRunDetailAsync(run.RunId, context.RequestAborted)))
-            .ConfigureAwait(false);
-
-        return BuildStrategyBriefingFromRuns(runs, details);
-    }
-
-    private static StrategyBriefingDto BuildStrategyBriefingFromRuns(
-        IReadOnlyList<StrategyRunSummary> runs,
-        IReadOnlyList<StrategyRunDetail?> details)
-    {
-        var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
-        var promotionCandidates = runs.Count(static run => run.Promotion is { RequiresReview: true } &&
-            run.Promotion.State is StrategyRunPromotionState.CandidateForPaper or StrategyRunPromotionState.CandidateForLive);
-        var positivePnlRuns = runs.Count(static run => (run.NetPnl ?? 0m) > 0m);
-        var latestRun = runs.FirstOrDefault();
-        var alertItems = BuildBriefingAlerts(runs, details);
-
-        return new StrategyBriefingDto(
-            Workspace: new StrategyBriefingWorkspaceSummary(
-                TotalRuns: runs.Count,
-                ActiveRuns: activeRuns,
-                PromotionCandidates: promotionCandidates,
-                PositivePnlRuns: positivePnlRuns,
-                LatestRunId: latestRun?.RunId,
-                LatestStrategyName: latestRun?.StrategyName,
-                HasLedgerCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
-                HasPortfolioCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.PortfolioId)),
-                Summary: latestRun is null
-                    ? "Start a backtest or restore a saved run to populate the Market Briefing."
-                    : $"{activeRuns} active Strategy session(s), {promotionCandidates} promotion candidate(s), and {alertItems.Count} alert(s) on the desk."),
-            InsightFeed: BuildBriefingInsightFeed(runs, details, alertItems.Count),
-            Watchlists: Array.Empty<WorkstationWatchlist>(),
-            RecentRuns: runs
-                .Zip(details, static (run, detail) => BuildBriefingRun(run, detail))
-                .Take(6)
-                .ToArray(),
-            SavedComparisons: BuildSavedComparisons(runs),
-            Alerts: alertItems,
-            WhatChanged: BuildWhatChangedItems(runs));
-    }
-
-    private static ResearchBriefingDto ToResearchBriefingDto(StrategyBriefingDto briefing)
-        => new(
-            Workspace: new ResearchBriefingWorkspaceSummary(
-                TotalRuns: briefing.Workspace.TotalRuns,
-                ActiveRuns: briefing.Workspace.ActiveRuns,
-                PromotionCandidates: briefing.Workspace.PromotionCandidates,
-                PositivePnlRuns: briefing.Workspace.PositivePnlRuns,
-                LatestRunId: briefing.Workspace.LatestRunId,
-                LatestStrategyName: briefing.Workspace.LatestStrategyName,
-                HasLedgerCoverage: briefing.Workspace.HasLedgerCoverage,
-                HasPortfolioCoverage: briefing.Workspace.HasPortfolioCoverage,
-                Summary: briefing.Workspace.Summary),
-            InsightFeed: briefing.InsightFeed,
-            Watchlists: briefing.Watchlists,
-            RecentRuns: briefing.RecentRuns
-                .Select(static run => new ResearchBriefingRun(
-                    RunId: run.RunId,
-                    StrategyName: run.StrategyName,
-                    Mode: run.Mode,
-                    Status: run.Status,
-                    Dataset: run.Dataset,
-                    WindowLabel: run.WindowLabel,
-                    ReturnLabel: run.ReturnLabel,
-                    SharpeLabel: run.SharpeLabel,
-                    LastUpdatedLabel: run.LastUpdatedLabel,
-                    Notes: run.Notes,
-                    PromotionState: run.PromotionState,
-                    NetPnl: run.NetPnl,
-                    TotalReturn: run.TotalReturn,
-                    FinalEquity: run.FinalEquity,
-                    DrillIn: ToResearchDrillInLinks(run.DrillIn)))
-                .ToArray(),
-            SavedComparisons: briefing.SavedComparisons
-                .Select(static comparison => new ResearchSavedComparison(
-                    ComparisonId: comparison.ComparisonId,
-                    StrategyName: comparison.StrategyName,
-                    ModeSummary: comparison.ModeSummary,
-                    Summary: comparison.Summary,
-                    AnchorRunId: comparison.AnchorRunId,
-                    Modes: comparison.Modes
-                        .Select(static mode => new ResearchSavedComparisonMode(
-                            RunId: mode.RunId,
-                            Mode: mode.Mode,
-                            Status: mode.Status,
-                            NetPnl: mode.NetPnl,
-                            TotalReturn: mode.TotalReturn,
-                            DrillIn: ToResearchDrillInLinks(mode.DrillIn)))
-                        .ToArray()))
-                .ToArray(),
-            Alerts: briefing.Alerts
-                .Select(static alert => new ResearchBriefingAlert(
-                    AlertId: alert.AlertId,
-                    Title: alert.Title,
-                    Summary: alert.Summary,
-                    Tone: alert.Tone,
-                    RunId: alert.RunId,
-                    ActionLabel: alert.ActionLabel))
-                .ToArray(),
-            WhatChanged: briefing.WhatChanged
-                .Select(static item => new ResearchWhatChangedItem(
-                    ChangeId: item.ChangeId,
-                    Title: item.Title,
-                    Summary: item.Summary,
-                    Category: item.Category,
-                    Timestamp: item.Timestamp,
-                    RelativeTime: item.RelativeTime,
-                    RunId: item.RunId))
-                .ToArray());
-
-    private static ResearchRunDrillInLinks ToResearchDrillInLinks(StrategyRunDrillInLinks links)
-        => new(
-            EquityCurve: links.EquityCurve,
-            Fills: links.Fills,
-            Attribution: links.Attribution,
-            Ledger: links.Ledger,
-            CashFlows: links.CashFlows,
-            Continuity: links.Continuity);
-
     private static Task<TradingOperatorReadinessDto> GetTradingOperatorReadinessAsync(
         Guid? fundAccountId,
         HttpContext context)
@@ -3120,7 +3076,10 @@ public static partial class WorkstationEndpoints
             readinessService = new TradingOperatorReadinessService(context.RequestServices, logger);
         }
 
-        return readinessService.GetAsync(fundAccountId, context.RequestAborted);
+        return readinessService.GetAsync(
+            fundAccountId,
+            ResolveStrategyRunReadScope(context),
+            context.RequestAborted);
     }
 
     private static string NormalizeOperatorInboxToken(string value)
@@ -3498,6 +3457,7 @@ public static partial class WorkstationEndpoints
         var riskState = "Healthy";
         var riskSummary = "Portfolio exposure is within configured paper thresholds.";
         IReadOnlyList<string> activeGuardrails = [];
+        IReadOnlyList<WorkstationRiskGuardrail> guardrails = [];
 
         if (portfolio is not null)
         {
@@ -3527,6 +3487,7 @@ public static partial class WorkstationEndpoints
             riskState = runtimeRisk.State;
             riskSummary = runtimeRisk.Summary;
             activeGuardrails = runtimeRisk.ActiveGuardrails;
+            guardrails = runtimeRisk.Guardrails;
         }
 
         var risk = new WorkstationTradingRiskState(
@@ -3541,7 +3502,8 @@ public static partial class WorkstationEndpoints
             BuyingPowerUsed: portfolio is not null && portfolio.BuyingPower > 0m
                 ? FormatPercent(grossExposure / portfolio.BuyingPower)
                 : "—",
-            ActiveGuardrails: activeGuardrails);
+            ActiveGuardrails: activeGuardrails,
+            Guardrails: guardrails);
 
         // --- Brokerage state ---
         var brokerageValidation = BrokerageValidationEvaluator.Evaluate(brokerageConfiguration);
@@ -4502,7 +4464,7 @@ public static partial class WorkstationEndpoints
             : Results.NotFound(new
             {
                 error = "Workstation bundle not found.",
-                message = "Build src/Meridian.Ui/dashboard before opening /workstation."
+                message = "Build the canonical tree (src/Meridian.Ui/wwwroot/workstation) with 'npm --prefix src/Meridian.Ui/dashboard run build' before opening /workstation."
             });
     }
 

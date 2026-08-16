@@ -143,6 +143,28 @@ public sealed class ConfigJsonSchemaGenerator
                         ["ScaffoldMarketFillPrice"] = CreateTypedSchema("number")
                     }
                 },
+                ["Costs"] = new JsonObject
+                {
+                    ["type"] = "object",
+                    ["additionalProperties"] = false,
+                    ["properties"] = new JsonObject
+                    {
+                        ["CommissionKind"] = new JsonObject
+                        {
+                            ["type"] = "string",
+                            ["enum"] = new JsonArray(
+                                "PerShare",
+                                "BasisPointsOfNotional",
+                                "FixedPerOrder")
+                        },
+                        ["CommissionRate"] = CreateTypedSchema("number"),
+                        ["CommissionMinimum"] = CreateTypedSchema("number"),
+                        ["CommissionMaximum"] = AllowNull(CreateTypedSchema("number")),
+                        ["FeePerOrder"] = CreateTypedSchema("number"),
+                        ["FeeBasisPoints"] = CreateTypedSchema("number"),
+                        ["SlippageBasisPoints"] = CreateTypedSchema("number")
+                    }
+                },
                 ["Sessions"] = new JsonObject
                 {
                     ["type"] = "object",

@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-07-19
+last_reviewed: 2026-08-03
 ---
 
 # src/Meridian.Strategies
@@ -50,6 +50,19 @@ data-root-backed durable history store.
 retained evidence links, accounting-record references, approval references, paper-validation
 lineage, and governed-report references are stored with the run so downstream review surfaces do
 not need to infer backtest acceptance from dashboard-only state.
+Scoped Covered Call runs are visible only through exact tenant/company repository reads. Their
+Backtest-to-Paper checklist is projected from the durable promotion record and exact retained Paper
+child lineage, not from eligibility or declaration presence: all four canonical Paper checklist
+ids require an operator, audit reference, decision time, keyed source-run evidence, and a same-scope
+Paper target whose parent and strategy identities match. Unscoped APIs remain limited to genuinely
+legacy, non-Covered-Call records.
+Promotion decisions are first-decision-wins per source run and target mode. Sequential retries and
+concurrent requests across independent hosts targeting the same JSONL authority reuse the original
+approved or rejected record under a cross-process authority lease; a conflicting later transition
+cannot create another target, append another decision, or repeat launcher and audit side effects.
+An approval is retained and audited before its target becomes runnable. If target persistence fails,
+a retry repairs the exact retained target id under the same authority lease, while an unconfirmed
+decision write leaves no target for the startup resume sweep to activate.
 Completed runs may receive a subsequent append-only walk-forward evidence snapshot when the
 snapshot changes only that evidence; durable replay preserves the completed lifecycle state while
 allowing paper-to-live promotion to evaluate the newly retained out-of-sample evidence.
@@ -80,6 +93,12 @@ collapsed into generic unsupported instruments.
 External-statement input is an optional reconciliation source. When no provider is configured, the
 production-safe null source contributes no statement rows; retained reconciliation run storage and
 the configured portfolio, ledger, and banking inputs remain authoritative.
+Retained reconciliation writes serialize first-observation continuity across workstation processes,
+use repository commit order when concurrent runs share one timestamp, and expose a leased latest
+snapshot callback for governance decisions. Lease callbacks are non-reentrant and fail fast if they
+try to call the same backing repository. Governance holds that lease through its audit append,
+rejects impossible break chronology and invalid policy thresholds, repairs a torn final JSONL record
+before a durable append, and keeps the established PascalCase JSON evidence-export contract.
 Factor rows retain their evidence link and source-content hash, and the Security Master accounting
 event service delegates factor math and deterministic event identity to Instruments
 `FactorPaydownProjectionService`. Reconciliation run ids no longer participate in factor event
@@ -99,6 +118,11 @@ Break records carry explicit Value, Quantity, and CostBasis comparisons. A sourc
 provide a measure retains an unavailable reason instead of substituting zero. Governed casework
 supports assign, resolve, waive, and supersede dispositions with evidence hashes, independent
 approval for material dispositions, successor lineage, idempotency, and append-only audit history.
+The file-backed queue exposes a separate startup authority probe for production Reporting
+readiness. The probe discards process cache, reloads the retained snapshot, and reruns envelope,
+snapshot, audit-chain, and close-scope integrity checks. A failed probe clears the attempted cache
+again, so repeated checks remain fail-closed until the durable snapshot is actually repaired; it
+does not silently accept the last in-memory state.
 
 ## Diagrams
 
@@ -113,6 +137,9 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W3-CONT-001` | Research to paper continuity |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `W7-LIVE-001` | Live-readiness governance |
+| `W10-RECON-001` | Durable break lineage identity and run-over-run break diff |
+| `W10-RECON-002` | Break clustering and bulk-resolution activation |
+| `W10-RECON-004` | Operator-taught match rules with promotion gate |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

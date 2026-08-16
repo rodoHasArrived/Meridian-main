@@ -329,7 +329,7 @@ public static partial class LedgerEndpoints
             var service = ResolveAssetAccountingEventSpineService(context);
             if (service is null)
             {
-                return ServiceUnavailable();
+                return ServiceUnavailable("Asset accounting event spine service is not registered.");
             }
 
             try
@@ -380,7 +380,7 @@ public static partial class LedgerEndpoints
 
             var service = ResolveAssetAccountingEventSpineService(context);
             if (service is null)
-                return ServiceUnavailable();
+                return ServiceUnavailable("Asset accounting event spine service is not registered.");
 
             try
             {
@@ -424,7 +424,7 @@ public static partial class LedgerEndpoints
             var service = ResolveAssetAccountingEventSpineService(context);
             if (service is null)
             {
-                return ServiceUnavailable();
+                return ServiceUnavailable("Asset accounting event spine service is not registered.");
             }
 
             try

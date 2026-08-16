@@ -3,9 +3,11 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Reporting;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -424,6 +426,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
     private readonly IReportingArtifactRetentionAuthorityProvider _retentionAuthorityProvider;
     private readonly IReportingRestatementChangedLineResolver _restatementChangedLineResolver;
     private readonly IReportingRestatementCertificationInputProvider _restatementCertificationProvider;
+    private readonly IReportingReleaseConsistencyGate _releaseConsistencyGate;
 
     public ReportingGovernanceCoordinatorService(
         ReportingGovernanceService governance,
@@ -434,7 +437,8 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
         IReportingCertifiedArtifactProducer artifactProducer,
         IReportingArtifactRetentionAuthorityProvider retentionAuthorityProvider,
         IReportingRestatementChangedLineResolver restatementChangedLineResolver,
-        IReportingRestatementCertificationInputProvider restatementCertificationProvider)
+        IReportingRestatementCertificationInputProvider restatementCertificationProvider,
+        IReportingReleaseConsistencyGate releaseConsistencyGate)
     {
         _governance = governance ?? throw new ArgumentNullException(nameof(governance));
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -448,6 +452,8 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
             ?? throw new ArgumentNullException(nameof(restatementChangedLineResolver));
         _restatementCertificationProvider = restatementCertificationProvider
             ?? throw new ArgumentNullException(nameof(restatementCertificationProvider));
+        _releaseConsistencyGate = releaseConsistencyGate
+            ?? throw new ArgumentNullException(nameof(releaseConsistencyGate));
     }
 
     public async Task<GovernedReportingRun> GetAsync(
@@ -529,7 +535,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
             .ConfigureAwait(false);
         var descriptor = BuildArtifactDescriptor(run, download.Artifact, declaration);
         if (download.Content.LongLength != descriptor.ByteLength
-            || !string.Equals(ComputeSha256(download.Content), descriptor.ContentHashSha256, StringComparison.Ordinal))
+            || !string.Equals(Sha256Digest.Compute(download.Content), descriptor.ContentHashSha256, StringComparison.Ordinal))
         {
             throw new ReportingArtifactCatalogIntegrityException(
                 $"Retained artifact '{run.RunId}/{declaration.ArtifactId}' failed download verification.");
@@ -881,17 +887,21 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
             retained.Artifacts,
             evidenceIds);
 
-        // This is deliberately the last awaited external read before the governance commit. Read
-        // and hash the retained package first, then recheck ledger + canonical queue state so a
-        // long artifact download cannot widen the stale-certification window.
+        // Read and hash the retained package before taking the period-scoped release/reopen fence,
+        // so a long artifact download does not block governed restatement. Once acquired, the
+        // authoritative ledger + canonical queue recheck and governance commit are one serialized
+        // decision relative to every governed reopen of this accounting period.
         var manifest = GetRequiredManifestForRun(run);
         if (ReportingCertifiedLedgerPresentationBinding.IsRequired(manifest)
             && !run.Snapshot.RequiresCertifiedLedgerPresentation)
         {
             throw new ReportingGovernanceException(
-                "Final release is blocked because this retained capital-account client package predates exact checkpoint-bound ledger-presentation certification. Regenerate and reapprove it from a fresh certified snapshot.");
+                "Final release is blocked because this retained capital-account primary document predates exact checkpoint-bound ledger-presentation certification. Regenerate and reapprove it from a fresh certified snapshot.");
         }
 
+        await using var releaseConsistencyLease = await _releaseConsistencyGate
+            .AcquireAsync(run.Snapshot.PeriodId, cancellationToken)
+            .ConfigureAwait(false);
         await _certification.RevalidateForReleaseAsync(
                 manifest.ResolvedParameters
                     ?? throw new ReportingGovernanceException(
@@ -1229,7 +1239,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
         if (manifest.Sections.IsDefaultOrEmpty
             || manifest.Sections.Any(section =>
                 string.IsNullOrWhiteSpace(section.SectionId)
-                || !IsSha256(section.Hash)
+                || !Sha256Digest.IsWellFormed(section.Hash)
                 || section.Lineage is null
                 || !string.Equals(section.DatasetSnapshotId, manifest.CertifiedSnapshot.SnapshotId, StringComparison.Ordinal)
                 || !string.Equals(section.ReconciliationCheckpointId, manifest.CertifiedSnapshot.ReconciliationCheckpointId, StringComparison.Ordinal)
@@ -1264,7 +1274,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
         RequireText(scope.PeriodId, nameof(scope.PeriodId));
         RequireText(access.PolicyId, nameof(access.PolicyId));
         RequireText(access.PolicyVersion, nameof(access.PolicyVersion));
-        if (!IsSha256(access.PolicyHash) || !IsSha256(snapshot.SnapshotHash))
+        if (!Sha256Digest.IsWellFormed(access.PolicyHash) || !Sha256Digest.IsWellFormed(snapshot.SnapshotHash))
         {
             throw new ReportingGovernanceException(
                 "Certified snapshot and immutable access policy hashes must be SHA-256 values.");
@@ -1300,7 +1310,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
             || readiness.Checks.Count == 0
             || readiness.BlockingReasons is null
             || readiness.BlockingReasons.Count != 0
-            || !IsSha256(readiness.EvidenceHash)
+            || !Sha256Digest.IsWellFormed(readiness.EvidenceHash)
             || !Equals(readiness.ResolvedTemplate, template)
             || readiness.ResolvedParameters.AsOfDate != parameters.AsOfDate
             || !string.Equals(readiness.ResolvedParameters.PeriodId, parameters.PeriodId, StringComparison.Ordinal)
@@ -1465,7 +1475,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
 
     private static string ComputeRetainedSnapshotHash(ReportingRetainedManifestDocument document) =>
         document.Snapshot.RequiresCertifiedLedgerPresentation
-            ? ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+            ? Sha256Digest.Compute(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
             {
                 template = new
                 {
@@ -1483,7 +1493,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
                 certifiedDatasetHash = document.CertifiedDatasetHashSha256,
                 requiresCertifiedLedgerPresentation = true
             })))
-            : ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+            : Sha256Digest.Compute(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
             {
                 template = new
                 {
@@ -1537,7 +1547,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
                 || retained.ByteLength != produced.Content.Length
                 || !string.Equals(
                     retained.Identity.ContentHashSha256,
-                    ComputeSha256(produced.Content.Span),
+                    Sha256Digest.Compute(produced.Content.Span),
                     StringComparison.OrdinalIgnoreCase))
             {
                 throw new ReportingArtifactCatalogIntegrityException(
@@ -1639,7 +1649,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
             var canonical = SerializeCanonicalRow(row);
             var key = row.TryGetValue("entryId", out var entryId) && !string.IsNullOrWhiteSpace(entryId)
                 ? $"ledger-line:{entryId.Trim()}"
-                : $"ledger-row:{ComputeSha256(Encoding.UTF8.GetBytes(canonical))}";
+                : $"ledger-row:{Sha256Digest.Compute(Encoding.UTF8.GetBytes(canonical))}";
             if (!indexed.TryAdd(key, canonical))
             {
                 throw new ReportingGovernanceException(

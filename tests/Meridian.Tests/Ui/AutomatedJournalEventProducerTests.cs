@@ -11,6 +11,7 @@ using Meridian.Ledger;
 using Meridian.Reporting;
 using Meridian.Storage.Ledger;
 using Meridian.Strategies.Services;
+using Meridian.Tests.TestSupport;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
 using Xunit;
@@ -837,18 +838,20 @@ public sealed class AutomatedJournalEventProducerTests
     }
 
     [Fact]
-    public async Task ClosePostingBridge_FinalizeHardClose_RechecksGateAndLeavesNonReadyPeriodSoftClosed()
+    public async Task ClosePostingBridge_FinalizeHardClose_UsesCanonicalPeriodFenceThenRechecksPostingGate()
     {
         var fixture = CreateIntakeFixture();
         var bookService = LedgerBookServiceWithClosedPeriod(
             TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m));
         var runner = new AutomatedJournalIntakeRunner(
             fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+        var releaseConsistencyGate = new ControllableReportingReleaseConsistencyGate();
         var bridge = new AccountingClosePostingWorkbenchBridge(
             runner,
             fixture.Workbench,
             (IManualJournalEntryLifecycleService)fixture.Workbench,
-            bookService);
+            bookService,
+            releaseConsistencyGate: releaseConsistencyGate);
         var context = new AccountingClosePostingContext(
             Guid.NewGuid(), FundAccountId, BookId, "2026-06", "USD");
         var command = new AccountingClosePostingCommand(
@@ -858,9 +861,20 @@ public sealed class AutomatedJournalEventProducerTests
             OperationsActionOriginDto.HumanOperator,
             Role: "Fund Controller");
 
-        var act = () => bridge.FinalizeHardCloseAsync(context, command);
+        var releaseLease = await releaseConsistencyGate.AcquireAsync(ClosedPeriodId.ToString("D"));
+        var finalizeTask = bridge.FinalizeHardCloseAsync(context, command);
+        await releaseConsistencyGate.WaitForAttemptAsync(2)
+            .WaitAsync(TimeSpan.FromSeconds(5));
+        finalizeTask.IsCompleted.Should().BeFalse(
+            "the direct hard-close caller must resolve the period label to the canonical GUID fence");
+        await bookService.DidNotReceive().ClosePeriodAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<CloseLedgerPeriodRequest>(),
+            Arg.Any<CancellationToken>());
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
+        await releaseLease.DisposeAsync();
+        var completion = () => finalizeTask;
+        await completion.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*cannot be hard-closed*closing-entry gate is Required*");
         await bookService.DidNotReceive().ClosePeriodAsync(
             Arg.Any<Guid>(),
@@ -869,6 +883,61 @@ public sealed class AutomatedJournalEventProducerTests
         var retained = await bookService.ListPeriodsAsync(
             new LedgerPeriodQuery(LedgerBookId: BookId));
         retained.Should().ContainSingle().Which.Status.Should().Be(LedgerPeriodStatusDto.SoftClosed);
+    }
+
+    [Theory]
+    [InlineData("tenant-foreign", "company-alpha")]
+    [InlineData("tenant-alpha", "company-foreign")]
+    public async Task ClosePostingBridge_FinalizeHardClose_ForeignTenantOrCompanyFailsBeforeLedgerAndQueueMutation(
+        string tenantId,
+        string companyId)
+    {
+        var fixture = CreateIntakeFixture();
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Cash", "Asset", 500m, 0m, 500m));
+        var tenancy = Substitute.For<IFundProfileTenancyRegistry>();
+        tenancy.ResolveAsync("fund-alpha", Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("fund-alpha", "tenant-alpha", "company-alpha"));
+        var breakQueue = Substitute.For<IReconciliationBreakQueueRepository>();
+        var bridge = new AccountingClosePostingWorkbenchBridge(
+            new AutomatedJournalIntakeRunner(
+                fixture.Intake,
+                new FeeScheduleAccrualEventProducer(),
+                ledgerBookService: bookService),
+            fixture.Workbench,
+            (IManualJournalEntryLifecycleService)fixture.Workbench,
+            bookService,
+            tenancyRegistry: tenancy,
+            breakQueue: breakQueue,
+            releaseConsistencyGate: new ImmediateReportingReleaseConsistencyGate());
+        var context = new AccountingClosePostingContext(
+            Guid.NewGuid(),
+            FundAccountId,
+            BookId,
+            ClosedPeriodId.ToString("D"),
+            "USD",
+            tenantId,
+            companyId);
+        var command = new AccountingClosePostingCommand(
+            "fund-controller",
+            "Attempt a governed hard close.",
+            [$"evidence://period/{ClosedPeriodId:D}/approval/close"],
+            OperationsActionOriginDto.HumanOperator,
+            Role: "Fund Controller");
+
+        var act = () => bridge.FinalizeHardCloseAsync(context, command);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*is not owned by tenant*");
+        await bookService.DidNotReceive().ClosePeriodAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<CloseLedgerPeriodRequest>(),
+            Arg.Any<CancellationToken>());
+        await breakQueue.DidNotReceive().AcquireCloseScopeLeaseAsync(
+            Arg.Any<ReconciliationCloseScope>(),
+            Arg.Any<CancellationToken>());
+        (await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId))
+            .Drafts.Should().BeEmpty("foreign scope must fail before workbench mutation");
     }
 
     [Fact]
@@ -1035,6 +1104,7 @@ public sealed class AutomatedJournalEventProducerTests
         closeScopeLease.Scope.Returns(closeScope);
         closeScopeLease.Items.Returns(Array.Empty<ReconciliationBreakQueueItem>());
         closeScopeLease.CheckpointHashSha256.Returns(closeCheckpointHash);
+        closeScopeLease.Generation.Returns(1);
         closeScopeLease.CommitHardCloseAsync(Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         closeScopeLease.DisposeAsync().Returns(ValueTask.CompletedTask);
@@ -1057,7 +1127,8 @@ public sealed class AutomatedJournalEventProducerTests
             bookService,
             reportingEvidenceRetention,
             tenancy,
-            breakQueue);
+            breakQueue,
+            new ImmediateReportingReleaseConsistencyGate());
         var context = new AccountingClosePostingContext(
             Guid.NewGuid(),
             FundAccountId,
@@ -1108,6 +1179,9 @@ public sealed class AutomatedJournalEventProducerTests
             !receipt.HasOpenBreaks &&
             receipt.EvidenceIds.Contains(
                 $"reconciliation-close-checkpoint:{closeCheckpointHash}",
+                StringComparer.Ordinal) &&
+            receipt.EvidenceIds.Contains(
+                "reconciliation-close-checkpoint-generation:1",
                 StringComparer.Ordinal));
         await breakQueue.DidNotReceive().GetAllAsync(
             Arg.Any<ReconciliationBreakQueueStatus?>(),
@@ -1231,11 +1305,41 @@ public sealed class AutomatedJournalEventProducerTests
                     request.ApprovalReference,
                     request.EvidenceLinks);
             });
+        var breakQueue = Substitute.For<IReconciliationBreakQueueRepository>();
+        var reopenedScopes = new List<ReconciliationCloseScope>();
+        var reopenCommands = new List<ReconciliationCloseScopeReopenCommand>();
+        breakQueue.ReopenCloseScopeAsync(
+                Arg.Any<ReconciliationCloseScope>(),
+                Arg.Any<ReconciliationCloseScopeReopenCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var reopenedScope = callInfo.ArgAt<ReconciliationCloseScope>(0);
+                var reopenCommand = callInfo.ArgAt<ReconciliationCloseScopeReopenCommand>(1);
+                reopenedScopes.Add(reopenedScope);
+                reopenCommands.Add(reopenCommand);
+                return Task.FromResult(new ReconciliationCloseScopeReopenReceipt(
+                    reopenedScope,
+                    1,
+                    new string('c', 64),
+                    reopenCommand.ReopenedLedgerPeriodVersion,
+                    reopenCommand.Actor,
+                    reopenCommand.Role,
+                    reopenCommand.Reason,
+                    reopenCommand.ApprovalReference,
+                    reopenCommand.CorrelationId,
+                    reopenCommand.EvidenceLinks,
+                    reopenCommand.CommandHashSha256,
+                    AsOf,
+                    WasAlreadyReopened: reopenCommands.Count > 1));
+            });
         var bridge = new AccountingClosePostingWorkbenchBridge(
             runner,
             fixture.Workbench,
             (IManualJournalEntryLifecycleService)fixture.Workbench,
-            bookService);
+            bookService,
+            breakQueue: breakQueue,
+            releaseConsistencyGate: new ImmediateReportingReleaseConsistencyGate());
         var context = new AccountingClosePostingContext(
             Guid.NewGuid(), FundAccountId, BookId, ClosedPeriodId.ToString("D"), "USD");
         var command = new AccountingClosePostingCommand(
@@ -1259,6 +1363,10 @@ public sealed class AutomatedJournalEventProducerTests
             draft.Status == ManualJournalEntryStatusDto.CloseLocked);
         afterInterruptedAttempt.Drafts.Should().NotContain(draft =>
             draft.ReversalOfJournalEntryId == postedClosingBatch.JournalEntryId);
+        await breakQueue.DidNotReceive().ReopenCloseScopeAsync(
+            Arg.Any<ReconciliationCloseScope>(),
+            Arg.Any<ReconciliationCloseScopeReopenCommand>(),
+            Arg.Any<CancellationToken>());
 
         var first = await bridge.ReopenAndQueueClosingReversalsAsync(context, command);
         var retry = await bridge.ReopenAndQueueClosingReversalsAsync(context, command);
@@ -1282,6 +1390,22 @@ public sealed class AutomatedJournalEventProducerTests
             ClosedPeriodId,
             Arg.Any<ReopenLedgerPeriodRequest>(),
             Arg.Any<CancellationToken>());
+        reopenedScopes.Should().OnlyContain(scope =>
+            scope.FundProfileId == "fund-alpha"
+            && scope.LedgerBookId == BookId
+            && scope.AccountingPeriodId == ClosedPeriodId
+            && scope.AsOfDate == PeriodEndDate);
+        reopenCommands.Should().HaveCount(2);
+        reopenCommands.Should().OnlyContain(reopen =>
+            reopen.Actor == command.Actor
+            && reopen.Role == command.Role
+            && reopen.ApprovalReference == command.ApprovalReference
+            && reopen.CorrelationId == command.CorrelationId
+            && reopen.ReopenedLedgerPeriodVersion == currentPeriod.Version
+            && reopen.CommandHashSha256.Length == 64);
+        reopenCommands.Select(static reopen => reopen.CommandHashSha256)
+            .Distinct(StringComparer.Ordinal)
+            .Should().ContainSingle("exact reopen retries must retain one canonical command hash");
         var retained = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
         retained.Drafts.Count(draft =>
                 draft.ReversalOfJournalEntryId == postedClosingBatch.JournalEntryId)
@@ -1295,7 +1419,7 @@ public sealed class AutomatedJournalEventProducerTests
     }
 
     [Fact]
-    public async Task ClosePostingBridge_ZeroBalanceReopen_RetainsExactReceiptAcrossRetry()
+    public async Task ClosePostingBridge_ReleaseFenceFirst_BlocksReopenThenRetainsExactReceiptAcrossRetry()
     {
         var fixture = CreateIntakeFixture();
         var bookService = LedgerBookServiceWithHardClosedPeriod(
@@ -1325,15 +1449,44 @@ public sealed class AutomatedJournalEventProducerTests
                     request.ApprovalReference,
                     request.EvidenceLinks);
             });
+        var breakQueue = Substitute.For<IReconciliationBreakQueueRepository>();
+        var reopenCommands = new List<ReconciliationCloseScopeReopenCommand>();
+        breakQueue.ReopenCloseScopeAsync(
+                Arg.Any<ReconciliationCloseScope>(),
+                Arg.Any<ReconciliationCloseScopeReopenCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var reopenedScope = callInfo.ArgAt<ReconciliationCloseScope>(0);
+                var reopenCommand = callInfo.ArgAt<ReconciliationCloseScopeReopenCommand>(1);
+                reopenCommands.Add(reopenCommand);
+                return Task.FromResult(new ReconciliationCloseScopeReopenReceipt(
+                    reopenedScope,
+                    1,
+                    new string('c', 64),
+                    reopenCommand.ReopenedLedgerPeriodVersion,
+                    reopenCommand.Actor,
+                    reopenCommand.Role,
+                    reopenCommand.Reason,
+                    reopenCommand.ApprovalReference,
+                    reopenCommand.CorrelationId,
+                    reopenCommand.EvidenceLinks,
+                    reopenCommand.CommandHashSha256,
+                    AsOf,
+                    WasAlreadyReopened: reopenCommands.Count > 1));
+            });
         var runner = new AutomatedJournalIntakeRunner(
             fixture.Intake,
             new FeeScheduleAccrualEventProducer(),
             ledgerBookService: bookService);
+        var releaseConsistencyGate = new ControllableReportingReleaseConsistencyGate();
         var bridge = new AccountingClosePostingWorkbenchBridge(
             runner,
             fixture.Workbench,
             (IManualJournalEntryLifecycleService)fixture.Workbench,
-            bookService);
+            bookService,
+            breakQueue: breakQueue,
+            releaseConsistencyGate: releaseConsistencyGate);
         var workflowId = Guid.NewGuid();
         var context = new AccountingClosePostingContext(
             workflowId,
@@ -1353,7 +1506,20 @@ public sealed class AutomatedJournalEventProducerTests
             ApprovalReference: approvalReference,
             CorrelationId: "zero-balance-reopen-correlation");
 
-        var first = await bridge.ReopenAndQueueClosingReversalsAsync(context, command);
+        var releaseLease = await releaseConsistencyGate.AcquireAsync(
+            ClosedPeriodId.ToString("D"));
+        var firstTask = bridge.ReopenAndQueueClosingReversalsAsync(context, command);
+        await releaseConsistencyGate.WaitForAttemptAsync(2)
+            .WaitAsync(TimeSpan.FromSeconds(5));
+        firstTask.IsCompleted.Should().BeFalse(
+            "a final release already owns the exact accounting-period fence");
+        await bookService.DidNotReceive().ReopenPeriodAsync(
+            ClosedPeriodId,
+            Arg.Any<ReopenLedgerPeriodRequest>(),
+            Arg.Any<CancellationToken>());
+
+        await releaseLease.DisposeAsync();
+        var first = await firstTask;
         var retry = await bridge.ReopenAndQueueClosingReversalsAsync(context, command);
         var changedReason = () => bridge.ReopenAndQueueClosingReversalsAsync(
             context,
@@ -1379,6 +1545,14 @@ public sealed class AutomatedJournalEventProducerTests
             ClosedPeriodId,
             Arg.Any<ReopenLedgerPeriodRequest>(),
             Arg.Any<CancellationToken>());
+        reopenCommands.Should().HaveCount(2);
+        reopenCommands.Should().OnlyContain(reopen =>
+            reopen.ReopenedLedgerPeriodVersion == currentPeriod.Version
+            && reopen.Actor == command.Actor
+            && reopen.Role == command.Role
+            && reopen.ApprovalReference == command.ApprovalReference
+            && reopen.CorrelationId == command.CorrelationId
+            && reopen.CommandHashSha256.Length == 64);
         var retained = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
         retained.AuditTrail.Should().ContainSingle(item =>
             item.Action.StartsWith($"GovernedLedgerPeriodReopen:{ClosedPeriodId:D}:", StringComparison.Ordinal) &&

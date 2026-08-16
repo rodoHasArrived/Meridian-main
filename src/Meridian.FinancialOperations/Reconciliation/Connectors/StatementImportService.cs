@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.IO;
 using Meridian.Domain.Reconciliation;
@@ -86,7 +87,8 @@ public sealed class StatementImportService(
     private static readonly string[] CanonicalArtifactHeader =
     [
         "account", "symbol", "quantity", "price", "cashAmount", "activityType", "tradeDate",
-        "settlementDate", "currency", "feesCommission", "externalTransactionId"
+        "settlementDate", "currency", "feesCommission", "externalTransactionId", "activityCategory",
+        "activitySubtype", "providerActivityCode", "relatedTransactionId", "orderId", "description"
     ];
 
     private readonly RootedPathGuard _retainedPathGuard = new(dataRoot);
@@ -157,6 +159,11 @@ public sealed class StatementImportService(
             throw new InvalidDataException("Statement produced no canonical records; nothing to import.");
         }
 
+        EnsureParsedAccountAuthority(
+            capturedDocument,
+            parse.Records,
+            request.ExternalAccountId);
+
         var artifactContent = RenderCanonicalArtifact(parse.Records);
         var artifactBytes = Encoding.UTF8.GetBytes(artifactContent);
         // Key the retained evidence on both the raw content and its canonical rendering. Keying on the
@@ -197,10 +204,30 @@ public sealed class StatementImportService(
             retainedImportsDirectory,
             uploadId,
             "canonical.csv");
+        var canonicalEvidencePath = _retainedPathGuard.ResolvePath(
+            reconciliationDirectory,
+            retainedImportsDirectory,
+            uploadId,
+            "canonical-evidence.json");
+        var canonicalEvidence = new StatementCanonicalEvidenceArtifact(
+            ConnectorId: parse.ConnectorId,
+            ProfileId: parse.ProfileId,
+            RetainedAtUtc: DateTimeOffset.UtcNow,
+            Fingerprint: parse.Fingerprint,
+            Records: parse.Records,
+            AccountSnapshots: parse.AccountSnapshots ?? [],
+            ActivityEvents: parse.ActivityEvents ?? [],
+            ActivityCursors: parse.ActivityCursors ?? [],
+            TaxLots: parse.TaxLots ?? [],
+            BorrowPositions: parse.BorrowPositions ?? []);
+        var canonicalEvidenceBytes = JsonSerializer.SerializeToUtf8Bytes(
+            canonicalEvidence,
+            StatementCanonicalEvidenceJsonContext.Default.StatementCanonicalEvidenceArtifact);
         _retainedPathGuard.EnsurePath(retainedDirectory);
         await AtomicFileWriter.WriteAsync(rawPath, capturedSourceBytes, ct).ConfigureAwait(false);
         _retainedPathGuard.EnsurePath(canonicalPath);
         await AtomicFileWriter.WriteAsync(canonicalPath, artifactBytes, ct).ConfigureAwait(false);
+        await AtomicFileWriter.WriteAsync(canonicalEvidencePath, canonicalEvidenceBytes, ct).ConfigureAwait(false);
 
         var runRequest = new StatementRunCreateRequest(
             Broker: sourceKind,
@@ -226,6 +253,34 @@ public sealed class StatementImportService(
         var kindSummaries = BuildKindSummaries(parse.Records);
         var relativeRaw = ToRelativeRetainedPath(uploadId, $"{sourceSubdirectory}/{safeSourceName}");
         var relativeCanonical = ToRelativeRetainedPath(uploadId, "canonical.csv");
+        var relativeCanonicalEvidence = ToRelativeRetainedPath(uploadId, "canonical-evidence.json");
+
+        // Statement run creation is idempotent: it resumes an import that is already retained rather
+        // than reporting one, so a re-import of the same statement would otherwise be indisting-
+        // uishable from a first import. Ask before creating, using the importer's own compatibility
+        // rule — the current raw-plus-canonical identity, then the canonical-only identity that runs
+        // imported before raw source hashes were retained separately still carry.
+        var compatibleDuplicateKeys = request.AccountingScope is null
+            ? StatementDuplicateKey.CreateCompatibleKeys(
+                runRequest.FundAccountId,
+                runRequest.StatementPeriodStart,
+                runRequest.StatementPeriodEnd,
+                rawHash,
+                canonicalHash)
+            : StatementDuplicateKey.CreateCompatibleKeys(
+                runRequest.FundAccountId,
+                runRequest.StatementPeriodStart,
+                runRequest.StatementPeriodEnd,
+                rawHash,
+                canonicalHash,
+                request.AccountingScope);
+        var retainedImportIds = (await workflow.ListImportsAsync(ct).ConfigureAwait(false))
+            .Select(static import => import.ImportId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (compatibleDuplicateKeys.FirstOrDefault(retainedImportIds.Contains) is { } retainedRunId)
+        {
+            return await DuplicateResultAsync(retainedRunId).ConfigureAwait(false);
+        }
 
         StatementRunWorkflowResult result;
         try
@@ -275,7 +330,8 @@ public sealed class StatementImportService(
             ReconciliationCaseRoutes = caseLinks
                 .Select(static item => item.Route)
                 .ToArray(),
-            ReconciliationCaseLinks = caseLinks
+            ReconciliationCaseLinks = caseLinks,
+            RetainedCanonicalEvidencePath = relativeCanonicalEvidence
         };
 
         async Task<StatementImportCommitResultDto> DuplicateResultAsync(string existingRunId)
@@ -367,6 +423,37 @@ public sealed class StatementImportService(
         return await fetching.FetchAsync(request, ct).ConfigureAwait(false);
     }
 
+    private static void EnsureParsedAccountAuthority(
+        StatementSourceDocument document,
+        IReadOnlyList<StatementCanonicalRecord> records,
+        string externalAccountId)
+    {
+        if (string.IsNullOrWhiteSpace(externalAccountId))
+        {
+            throw new InvalidDataException(
+                "Statement import requires an authorized external account before parsed records can be retained.");
+        }
+
+        var authorizedAccountId = externalAccountId.Trim();
+        if (!string.IsNullOrWhiteSpace(document.ExternalAccountId)
+            && !AccountsMatch(document.ExternalAccountId, authorizedAccountId))
+        {
+            throw new InvalidDataException(
+                "The uploaded statement account scope conflicts with the authorized external account.");
+        }
+
+        if (records.Any(record =>
+                string.IsNullOrWhiteSpace(record.Account)
+                || !AccountsMatch(record.Account, authorizedAccountId)))
+        {
+            throw new InvalidDataException(
+                "Statement contains a missing or conflicting parsed account identity; every row must match the authorized external account.");
+        }
+    }
+
+    private static bool AccountsMatch(string? left, string? right)
+        => string.Equals(left?.Trim(), right?.Trim(), StringComparison.OrdinalIgnoreCase);
+
     private (IStatementConnector? Connector, StatementParseIssue? Issue) ResolveConnector(
         StatementSourceDocument document,
         string? connectorId)
@@ -454,7 +541,52 @@ public sealed class StatementImportService(
             Status: hasErrors ? NeedsAttentionStatus : ReadyStatus,
             NextAction: hasErrors
                 ? "Resolve the blocking issues (adjust the mapping profile or repair the source file), then preview again."
-                : "Review the per-column mappings and per-kind records, then commit the import into the reconciliation queue.");
+                : "Review the per-column mappings and per-kind records, then commit the import into the reconciliation queue.")
+        {
+            AccountSnapshots = (parse?.AccountSnapshots ?? [])
+                .Select(static snapshot => new StatementAccountSnapshotPreviewDto(
+                    snapshot.ProviderId,
+                    snapshot.AccountId,
+                    snapshot.AsOf,
+                    snapshot.Currency,
+                    snapshot.Status,
+                    snapshot.MarginRegime.ToString(),
+                    snapshot.Cash,
+                    snapshot.Equity,
+                    snapshot.BuyingPower,
+                    snapshot.InitialMargin,
+                    snapshot.MaintenanceMargin,
+                    snapshot.ExcessLiquidity,
+                    snapshot.MarginLoan,
+                    snapshot.Multiplier,
+                    snapshot.TradingBlocked,
+                    snapshot.TransfersBlocked,
+                    snapshot.AccountBlocked,
+                    snapshot.ShortingEnabled,
+                    snapshot.OptionsApprovedLevel,
+                    snapshot.OptionsTradingLevel,
+                    snapshot.Restrictions ?? []))
+                .ToArray(),
+            ActivitySubtypeSummaries = (parse?.ActivityEvents ?? [])
+                .GroupBy(static activity => new { activity.Category, activity.Subtype })
+                .OrderBy(static group => group.Key.Category)
+                .ThenBy(static group => group.Key.Subtype)
+                .Select(static group => new StatementActivitySubtypeSummaryDto(
+                    group.Key.Category.ToString(),
+                    group.Key.Subtype.ToString(),
+                    group.Count()))
+                .ToArray(),
+            ActivityCompleteness = (parse?.ActivityCursors ?? [])
+                .Select(static cursor => new StatementActivityCompletenessDto(
+                    cursor.LastEventId,
+                    cursor.HighWatermark,
+                    cursor.PageCount,
+                    cursor.SourceRecordCount,
+                    cursor.IsComplete))
+                .ToArray(),
+            TaxLotCount = parse?.TaxLots?.Count ?? 0,
+            BorrowPositionCount = parse?.BorrowPositions?.Count ?? 0
+        };
     }
 
     private static IReadOnlyList<StatementKindSummaryDto> BuildKindSummaries(IReadOnlyList<StatementCanonicalRecord> records)
@@ -477,7 +609,13 @@ public sealed class StatementImportService(
                         record.SettlementDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                         record.Currency,
                         record.FeesCommission,
-                        record.ExternalTransactionId))
+                        record.ExternalTransactionId,
+                        record.ActivityCategory,
+                        record.ActivitySubtype,
+                        record.ProviderActivityCode,
+                        record.RelatedTransactionId,
+                        record.OrderId,
+                        record.Description))
                     .ToArray()))
             .ToArray();
 
@@ -505,8 +643,14 @@ public sealed class StatementImportService(
                 .Append(record.TradeDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(',')
                 .Append(record.SettlementDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(',')
                 .Append(EncodeArtifactValue(record.Currency)).Append(',')
-                .Append(record.FeesCommission?.ToString(CultureInfo.InvariantCulture)).Append(',')
-                .Append(EncodeArtifactValue(record.ExternalTransactionId)).Append('\n');
+                .Append(EncodeArtifactValue(record.FeesCommission?.ToString(CultureInfo.InvariantCulture))).Append(',')
+                .Append(EncodeArtifactValue(record.ExternalTransactionId)).Append(',')
+                .Append(EncodeArtifactValue(record.ActivityCategory)).Append(',')
+                .Append(EncodeArtifactValue(record.ActivitySubtype)).Append(',')
+                .Append(EncodeArtifactValue(record.ProviderActivityCode)).Append(',')
+                .Append(EncodeArtifactValue(record.RelatedTransactionId)).Append(',')
+                .Append(EncodeArtifactValue(record.OrderId)).Append(',')
+                .Append(EncodeArtifactValue(record.Description)).Append('\n');
         }
 
         return builder.ToString();

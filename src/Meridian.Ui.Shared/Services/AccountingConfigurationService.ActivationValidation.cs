@@ -10,6 +10,7 @@ using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -239,7 +240,6 @@ public sealed partial class AccountingConfigurationService
                 {
                     issues.Add(Issue("posting-rule.generated-unbalanced", AccountingConfigurationValidationSeverityDto.Warning, $"Posting rule '{rule.RuleId}' generated-posting static amounts are not balanced.", rule.RuleId, "Confirm formula-driven generated postings balance during dry run."));
                 }
-
             }
 
             if (rule.Allocations.Count > 0)
@@ -1010,9 +1010,6 @@ public sealed partial class AccountingConfigurationService
         => string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException($"{parameterName} is required.", parameterName)
             : value.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string? FirstText(string? preferred, string? fallback)
         => NormalizeOptional(preferred) ?? NormalizeOptional(fallback);

@@ -301,12 +301,16 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
     {
         var hasValidator = _assetClassValidators.TryGetValidator(spec.AssetClass, out _);
         var hasCatalogDescriptor = SecurityAssetClassCatalog.GetOrDefault(spec.AssetClass).AssetClass != "Unknown";
+        // GetProfiles() already applies write-time governance: Approved OR Superseded versions
+        // whose effective window covers today. A Superseded predecessor stays THE selectable
+        // version while its future-dated replacement waits to activate, so re-filtering to
+        // Approved here would raise a false profile-missing Blocker for every covered asset class
+        // during that transition gap.
         var hasProfileCoverage = !RequiresGovernedProfile(spec.AssetClass)
             || _assetProfileCatalog.GetProfiles().Any(profile =>
-                profile.Status == SecurityAssetProfileStatusDto.Approved &&
-                (string.Equals(profile.ProfileId, "structured-credit-io-po", StringComparison.OrdinalIgnoreCase)
+                string.Equals(profile.ProfileId, "structured-credit-io-po", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(profile.Category, "PrivateFunds", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(profile.Category, "PrivateEquity", StringComparison.OrdinalIgnoreCase)));
+                    || string.Equals(profile.Category, "PrivateEquity", StringComparison.OrdinalIgnoreCase));
 
         var evidence = SelectEvidence(spec, evidenceSnapshot);
         var requirements = BuildRequirements(spec, hasValidator, hasCatalogDescriptor, hasProfileCoverage, evidenceSnapshot, evidence);

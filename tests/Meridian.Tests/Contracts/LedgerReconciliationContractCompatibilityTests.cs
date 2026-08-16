@@ -28,6 +28,7 @@ public sealed class LedgerReconciliationContractCompatibilityTests
     [Fact]
     public void ReconciliationSummary_WebAndRetainedConsumers_SerializeSameMembers()
     {
+        var bankEntityId = Guid.Parse("e0a1c333-91c1-4ac0-8c2d-c39abcf4a9cf");
         var dto = new ReconciliationRunSummary(
             ReconciliationRunId: "recon-1",
             RunId: "run-1",
@@ -39,7 +40,10 @@ public sealed class LedgerReconciliationContractCompatibilityTests
             OpenBreakCount: 1,
             HasTimingDrift: false,
             AmountTolerance: 0.01m,
-            MaxAsOfDriftMinutes: 5);
+            MaxAsOfDriftMinutes: 5)
+        {
+            BankEntityId = bankEntityId
+        };
 
         LedgerReconciliationContractCompatibility.EnsureReconciliationSummaryRequiredFields(dto);
 
@@ -48,6 +52,8 @@ public sealed class LedgerReconciliationContractCompatibilityTests
         Assert.Contains("\"runId\"", json);
         Assert.Contains("\"breakCount\"", json);
         Assert.Contains("\"openBreakCount\"", json);
+        Assert.Contains($"\"bankEntityId\":\"{bankEntityId:D}\"", json);
+        Assert.DoesNotContain("\"BankEntityId\"", json);
     }
 
     [Fact]
@@ -79,7 +85,8 @@ public sealed class LedgerReconciliationContractCompatibilityTests
             "MatchCount", "BreakCount", "OpenBreakCount", "HasTimingDrift", "AmountTolerance",
             "MaxAsOfDriftMinutes", "SecurityIssueCount", "HasSecurityCoverageIssues",
             "BankTransactionCount", "BankBreakCount", "ExpectedAccountingEventCount",
-            "ExpectedJournalPreviewCount", "SecurityMasterAccountingIssueCount", "HasSecurityMasterAccountingIssues");
+            "ExpectedJournalPreviewCount", "SecurityMasterAccountingIssueCount", "HasSecurityMasterAccountingIssues",
+            "BankEntityId");
 
         AssertMembers(typeof(StrategyRunContinuityDto),
             "Run", "Lineage", "CashFlow", "Reconciliation", "ContinuityStatus");

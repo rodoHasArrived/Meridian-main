@@ -1,6 +1,11 @@
+using System.Globalization;
+using System.Text;
 using System.Text.Json.Nodes;
 using Meridian.Contracts.Configuration;
+using Meridian.PortfolioRecords.FundAccounts;
+using Meridian.Storage;
 using Meridian.Storage.Operations;
+using Meridian.Storage.Services;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Microsoft.Extensions.Logging;
@@ -60,8 +65,9 @@ public sealed class DemoWorkspaceSeeder
         Directory.CreateDirectory(_demoRoot);
         await WriteSentinelAsync(ct).ConfigureAwait(false);
 
+        var workstationDirectory = Path.Combine(_demoRoot, "workstation");
         var breaks = new FileReconciliationBreakQueueRepository(
-            Path.Combine(_demoRoot, "workstation"),
+            workstationDirectory,
             _loggerFactory.CreateLogger<FileReconciliationBreakQueueRepository>());
 
         // FileOperationalCaseHistoryStore appends "operations/case-history.jsonl" under the root it is
@@ -69,24 +75,91 @@ public sealed class DemoWorkspaceSeeder
         // seeded, hash-chained strategy run is read back by the running workstation.
         var strategyRuns = new StrategyRunStore(new FileOperationalCaseHistoryStore(_demoRoot));
 
+        // Every store below mirrors the serving host's path resolution for a config whose
+        // dataRoot is the demo root, so the running workstation reads the seeded records
+        // end-to-end: fund accounts under {root}/governance, position snapshots under
+        // {root}/portfolios, journal drafts and report packs under {root}/workstation.
+        var fundAccounts = new InMemoryFundAccountService(
+            Path.Combine(_demoRoot, "governance", "fund-accounts.json"));
+        var positionSnapshots = new JsonlPositionSnapshotStore(
+            new StorageOptions { RootPath = _demoRoot },
+            _loggerFactory.CreateLogger<JsonlPositionSnapshotStore>());
+        var journalDrafts = new FileManualJournalEntryDraftStore(
+            Path.Combine(workstationDirectory, "accounting", "manual-journal-drafts.json"));
+        var reportPacks = new FileGovernanceReportPackRepository(
+            workstationDirectory,
+            _loggerFactory.CreateLogger<FileGovernanceReportPackRepository>());
+
         var provisioner = new DemoTenantProvisioner(
             breaks,
             strategyRuns,
-            _loggerFactory.CreateLogger<DemoTenantProvisioner>());
+            _loggerFactory.CreateLogger<DemoTenantProvisioner>(),
+            fundAccounts,
+            positionSnapshots,
+            journalDrafts,
+            reportPacks);
 
         var provisioning = await provisioner.ProvisionAsync(ct).ConfigureAwait(false);
+        var marketHistoryPrints = await SeedMarketHistoryAsync(ct).ConfigureAwait(false);
 
         _logger.LogInformation(
-            "Seeded demo workspace at {DemoRoot} (breaks seeded={BreaksSeeded}, reconciliation loaded={ReconciliationLoaded}, strategy loaded={StrategyLoaded}).",
+            "Seeded demo workspace at {DemoRoot} (breaks={BreaksSeeded}, reconciliation={ReconciliationLoaded}, strategy={StrategyLoaded}, account={FundAccountLoaded}, positions={PositionsLoaded}, drafts={JournalDrafts}, reportPack={ReportPackLoaded}, marketPrints={MarketPrints}).",
             _demoRoot,
             provisioning.ReconciliationBreaksSeeded,
             provisioning.ReconciliationLoaded,
-            provisioning.StrategyRunLoaded);
+            provisioning.StrategyRunLoaded,
+            provisioning.FundAccountLoaded,
+            provisioning.PortfolioPositionsLoaded,
+            provisioning.JournalDraftsSeeded,
+            provisioning.ReportPackLoaded,
+            marketHistoryPrints);
 
         return new DemoWorkspaceSeedReport(
             _demoRoot,
             DemoTenantBlueprint.SeededProvenanceLabel,
-            provisioning);
+            provisioning,
+            marketHistoryPrints);
+    }
+
+    /// <summary>
+    /// Writes deterministic seeded market history as durable trade-event JSONL under
+    /// <c>{demoRoot}/historical/{symbol}/</c> — the exact layout
+    /// <c>HistoricalDataQueryService</c> reads — so the Data desk serves real files that
+    /// survive restart. The whole file is rewritten atomically per symbol, so re-seeding
+    /// on the same day is idempotent.
+    /// </summary>
+    private async Task<int> SeedMarketHistoryAsync(CancellationToken ct)
+    {
+        var lastSession = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var totalPrints = 0;
+
+        foreach (var symbol in DemoTenantBlueprint.MarketHistorySymbolList)
+        {
+            ct.ThrowIfCancellationRequested();
+            var prints = DemoTenantBlueprint.BuildMarketHistory(symbol, lastSession);
+            var directory = Path.Combine(_demoRoot, "historical", symbol.ToUpperInvariant());
+            Directory.CreateDirectory(directory);
+
+            var builder = new StringBuilder(prints.Count * 96);
+            foreach (var print in prints)
+            {
+                builder
+                    .Append("{\"type\":\"Trade\",\"symbol\":\"").Append(symbol.ToUpperInvariant())
+                    .Append("\",\"timestamp\":\"").Append(print.Timestamp.ToString("O", CultureInfo.InvariantCulture))
+                    .Append("\",\"payload\":{\"kind\":\"trade\",\"price\":")
+                    .Append(print.Price.ToString(CultureInfo.InvariantCulture))
+                    .Append(",\"size\":").Append(print.Size.ToString(CultureInfo.InvariantCulture))
+                    .Append("}}\n");
+            }
+
+            var path = Path.Combine(directory, "seeded-trades.jsonl");
+            var temp = path + ".tmp";
+            await File.WriteAllTextAsync(temp, builder.ToString(), ct).ConfigureAwait(false);
+            File.Move(temp, path, overwrite: true);
+            totalPrints += prints.Count;
+        }
+
+        return totalPrints;
     }
 
     /// <summary>
@@ -131,7 +204,8 @@ public sealed class DemoWorkspaceSeeder
 public sealed record DemoWorkspaceSeedReport(
     string DemoRoot,
     string Provenance,
-    DemoTenantProvisioningReport Provisioning);
+    DemoTenantProvisioningReport Provisioning,
+    int MarketHistoryTradePrintsSeeded = 0);
 
 /// <summary>Outcome of tearing down the demo workspace.</summary>
 public sealed record DemoWorkspaceResetReport(string DemoRoot, bool Deleted);

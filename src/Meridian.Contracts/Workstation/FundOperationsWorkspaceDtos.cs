@@ -570,7 +570,8 @@ public sealed record FundReportPackProvenanceDto(
     int SecurityMissingCount,
     IReadOnlyList<FundReportPackLineagePointerDto> LineagePointers,
     string SourceSnapshotHash,
-    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
+    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion,
+    string? DataProvenanceToken = null);
 
 public sealed record FundReportPackLineagePointerDto(
     string ScopeType,

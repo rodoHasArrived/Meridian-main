@@ -5,6 +5,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
+internal sealed class ReportingRunAwaitingReleaseException(string runId)
+    : InvalidOperationException(
+        $"Reporting run '{runId}' is awaiting governed release and is not yet eligible for distribution.");
+
+internal sealed class ReportingScheduledHandoffCycleException(int failedCount)
+    : InvalidOperationException(
+        $"The reporting delivery worker could not persist or queue {failedCount} scheduled handoff(s).");
+
 /// <summary>Continuously drains the durable delivery outbox; no tenant-scoped HTTP pump is exposed.</summary>
 public sealed class ReportingSecureDistributionHostedService : BackgroundService
 {
@@ -16,12 +24,16 @@ public sealed class ReportingSecureDistributionHostedService : BackgroundService
         ReportingDistributionAuthority,
         CancellationToken,
         Task<string>> _queueDeliveryAsync;
+    private readonly Func<
+        CancellationToken,
+        Task<ReportingScheduledHandoffBridgeResult>> _enqueueReleasedHandoffsAsync;
     private readonly Func<string, CancellationToken, Task> _dispatchDueAsync;
     private readonly Func<CancellationToken, Task<int>> _reconcileFailedGrantsAsync;
     private readonly SecureReportingDistributionOptions _options;
     private readonly ILogger<ReportingSecureDistributionHostedService> _logger;
     private readonly TimeProvider _timeProvider;
     private readonly int _handoffBatchSize;
+    private readonly ReportingDeliveryWorkerReadinessState? _readiness;
     private ReportingScheduledHandoffCursor? _handoffCursor;
 
     public ReportingSecureDistributionHostedService(
@@ -30,6 +42,23 @@ public sealed class ReportingSecureDistributionHostedService : BackgroundService
         ReportingSecureDistributionApplicationService applicationService,
         SecureReportingDistributionOptions options,
         ILogger<ReportingSecureDistributionHostedService> logger)
+        : this(
+            dispatcher,
+            scheduleService,
+            applicationService,
+            options,
+            logger,
+            readiness: null)
+    {
+    }
+
+    public ReportingSecureDistributionHostedService(
+        ReportingDeliveryDispatcher dispatcher,
+        ReportingScheduleService scheduleService,
+        ReportingSecureDistributionApplicationService applicationService,
+        SecureReportingDistributionOptions options,
+        ILogger<ReportingSecureDistributionHostedService> logger,
+        ReportingDeliveryWorkerReadinessState? readiness)
     {
         ArgumentNullException.ThrowIfNull(dispatcher);
         _scheduleService = scheduleService ?? throw new ArgumentNullException(nameof(scheduleService));
@@ -40,6 +69,7 @@ public sealed class ReportingSecureDistributionHostedService : BackgroundService
             (await applicationService
                 .QueueDeliveryAsync(command, authority, cancellationToken)
                 .ConfigureAwait(false)).JobId;
+        _enqueueReleasedHandoffsAsync = EnqueueReleasedScheduleHandoffsOnceAsync;
         _dispatchDueAsync = async (workerId, cancellationToken) =>
         {
             _ = await dispatcher
@@ -51,6 +81,7 @@ public sealed class ReportingSecureDistributionHostedService : BackgroundService
                 ct: cancellationToken);
         _timeProvider = TimeProvider.System;
         _handoffBatchSize = DefaultHandoffBatchSize;
+        _readiness = readiness;
     }
 
     internal ReportingSecureDistributionHostedService(
@@ -62,46 +93,136 @@ public sealed class ReportingSecureDistributionHostedService : BackgroundService
             Task<string>> queueDeliveryAsync,
         ILogger<ReportingSecureDistributionHostedService> logger,
         TimeProvider? timeProvider = null,
-        int handoffBatchSize = DefaultHandoffBatchSize)
+        int handoffBatchSize = DefaultHandoffBatchSize,
+        ReportingDeliveryWorkerReadinessState? readiness = null,
+        Func<string, CancellationToken, Task>? dispatchDueAsync = null,
+        Func<CancellationToken, Task<int>>? reconcileFailedGrantsAsync = null,
+        SecureReportingDistributionOptions? options = null,
+        Func<
+            CancellationToken,
+            Task<ReportingScheduledHandoffBridgeResult>>? enqueueReleasedHandoffsAsync = null)
     {
         _scheduleService = scheduleService ?? throw new ArgumentNullException(nameof(scheduleService));
         _queueDeliveryAsync = queueDeliveryAsync ?? throw new ArgumentNullException(nameof(queueDeliveryAsync));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _timeProvider = timeProvider ?? TimeProvider.System;
-        _options = SecureReportingDistributionOptions.Default;
-        _dispatchDueAsync = static (_, _) => Task.CompletedTask;
-        _reconcileFailedGrantsAsync = static _ => Task.FromResult(0);
+        _options = options ?? SecureReportingDistributionOptions.Default;
+        _enqueueReleasedHandoffsAsync =
+            enqueueReleasedHandoffsAsync ?? EnqueueReleasedScheduleHandoffsOnceAsync;
+        _dispatchDueAsync = dispatchDueAsync ?? (static (_, _) => Task.CompletedTask);
+        _reconcileFailedGrantsAsync =
+            reconcileFailedGrantsAsync ?? (static _ => Task.FromResult(0));
         _handoffBatchSize = handoffBatchSize is > 0 and <= 500
             ? handoffBatchSize
             : throw new ArgumentOutOfRangeException(nameof(handoffBatchSize));
+        _readiness = readiness;
+        if (_options.WorkerPollInterval <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(options),
+                "The reporting delivery worker poll interval must be positive.");
+        }
+    }
+
+    public override Task StartAsync(CancellationToken cancellationToken)
+    {
+        _readiness?.MarkStarting();
+        return base.StartAsync(cancellationToken);
+    }
+
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        // Fail closed as soon as shutdown begins. BackgroundService can complete StopAsync
+        // before the ExecuteAsync continuation reaches its finally block, especially when the
+        // first cycle is released concurrently with the stop request.
+        _readiness?.MarkNotReady();
+        await base.StopAsync(cancellationToken).ConfigureAwait(false);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var workerId = $"{_options.WorkerId}:hosted";
         using var timer = new PeriodicTimer(_options.WorkerPollInterval);
-        do
+        try
         {
-            try
+            do
             {
-                await EnqueueReleasedScheduleHandoffsOnceAsync(stoppingToken).ConfigureAwait(false);
-                _ = await _reconcileFailedGrantsAsync(stoppingToken).ConfigureAwait(false);
-                await _dispatchDueAsync(workerId, stoppingToken).ConfigureAwait(false);
+                try
+                {
+                    var failures = new List<Exception>(capacity: 3);
+                    try
+                    {
+                        var handoffs = await _enqueueReleasedHandoffsAsync(stoppingToken)
+                            .ConfigureAwait(false);
+                        EnsureHandoffCycleHealthy(handoffs);
+                    }
+                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch (Exception exception)
+                    {
+                        failures.Add(exception);
+                    }
+
+                    try
+                    {
+                        _ = await _reconcileFailedGrantsAsync(stoppingToken)
+                            .ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch (Exception exception)
+                    {
+                        failures.Add(exception);
+                    }
+
+                    try
+                    {
+                        await _dispatchDueAsync(workerId, stoppingToken).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch (Exception exception)
+                    {
+                        failures.Add(exception);
+                    }
+
+                    if (failures.Count > 0)
+                    {
+                        throw failures.Count == 1
+                            ? failures[0]
+                            : new AggregateException(
+                                "One or more reporting delivery worker stages failed.",
+                                failures);
+                    }
+
+                    _readiness?.MarkReady(_timeProvider.GetUtcNow());
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    break;
+                }
+                catch (Exception exception)
+                {
+                    _readiness?.MarkCycleFailed();
+                    // Deliberately omit the exception message: transport failures can contain provider
+                    // material and no bearer-bearing value may enter host logs.
+                    _logger.LogError(
+                        "Reporting delivery worker cycle failed closed with error type {ErrorType}.",
+                        exception.GetType().Name);
+                }
             }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                break;
-            }
-            catch (Exception exception)
-            {
-                // Deliberately omit the exception message: transport failures can contain provider
-                // material and no bearer-bearing value may enter host logs.
-                _logger.LogError(
-                    "Reporting delivery worker cycle failed closed with error type {ErrorType}.",
-                    exception.GetType().Name);
-            }
+            while (await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false));
         }
-        while (await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false));
+        finally
+        {
+            _readiness?.MarkNotReady();
+        }
     }
 
     internal async Task<ReportingScheduledHandoffBridgeResult> EnqueueReleasedScheduleHandoffsOnceAsync(
@@ -119,6 +240,7 @@ public sealed class ReportingSecureDistributionHostedService : BackgroundService
         }
 
         var enqueued = 0;
+        var awaitingRelease = 0;
         var failed = 0;
         foreach (var handoff in page.Handoffs)
         {
@@ -187,10 +309,16 @@ public sealed class ReportingSecureDistributionHostedService : BackgroundService
             {
                 throw;
             }
+            catch (ReportingRunAwaitingReleaseException)
+            {
+                // A scheduled draft is expected to wait for independent approval and release. It
+                // remains pending without making the durable delivery infrastructure unhealthy.
+                awaitingRelease++;
+            }
             catch (Exception exception)
             {
-                // A not-yet-released run, unavailable relay, or transient store failure leaves the
-                // handoff PendingRelease. The next cycle retries the same durable idempotency key.
+                // Operational relay/store failures leave the handoff pending for the same durable
+                // idempotency key, but they must keep deployment readiness red until recovery.
                 _logger.LogWarning(
                     "Scheduled reporting handoff remains pending after error type {ErrorType}.",
                     exception.GetType().Name);
@@ -202,13 +330,25 @@ public sealed class ReportingSecureDistributionHostedService : BackgroundService
         return new ReportingScheduledHandoffBridgeResult(
             page.Handoffs.Count,
             enqueued,
+            awaitingRelease,
             failed,
             _handoffCursor);
+    }
+
+    internal static void EnsureHandoffCycleHealthy(
+        ReportingScheduledHandoffBridgeResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        if (result.Failed > 0)
+        {
+            throw new ReportingScheduledHandoffCycleException(result.Failed);
+        }
     }
 }
 
 internal sealed record ReportingScheduledHandoffBridgeResult(
     int Attempted,
     int Enqueued,
+    int AwaitingRelease,
     int Failed,
     ReportingScheduledHandoffCursor? NextCursor);

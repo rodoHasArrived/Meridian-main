@@ -1,11 +1,12 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
 using FluentAssertions;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
+using Meridian.Reporting;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
@@ -23,6 +24,9 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         Guid.Parse("a05d4e98-4f6a-46a5-a42e-50d875756179"),
         Guid.Parse("f2f2b4df-8435-4b8c-a94a-51f72078dd89"),
         new DateOnly(2026, 6, 30));
+    private static readonly ReconciliationBreakQueueScope QueueScope = new(
+        "tenant-alpha",
+        "company-alpha");
     private readonly string _root = Path.Combine(
         Path.GetTempPath(),
         "meridian-statement-reconciliation-report-tests",
@@ -42,6 +46,8 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
 
         first.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Completed);
         first.Workflow.RetainedArtifacts.Should().HaveCount(2);
+        first.Workflow.ArtifactGeneration.Should().Be(1);
+        first.Workflow.ArtifactHistory.Should().BeEmpty();
         first.Workflow.EvidenceVaultIdentity.Should().NotBeNull();
         first.Workflow.AccountingScope.Should().BeEquivalentTo(
             new StatementReconciliationAccountingScopeDto(
@@ -65,7 +71,7 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             "tenant-alpha",
             "company-alpha");
         download.Should().NotBeNull();
-        Convert.ToHexString(SHA256.HashData(download!.Content))
+        Sha256Digest.Compute(download!.Content)
             .Should().Be(jsonArtifact.ContentHashSha256);
         Encoding.UTF8.GetString(download.Content).Should().Contain(first.Workflow.WorkflowId);
 
@@ -76,9 +82,126 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         repeated.Workflow.Version.Should().Be(first.Workflow.Version);
         imports.CommitCount.Should().Be(1, "completed content-addressed workflows must not re-import after restart");
         evidence.RetainCount.Should().Be(1);
-        intake.ResolveCount.Should().Be(2);
+        intake.ResolveCount.Should().Be(3,
+            "artifact access and restart both revalidate the retained accounting authority");
         intake.PublishCount.Should().Be(1,
             "an authoritative completed workflow must not publish Operations continuity twice");
+    }
+
+    [Fact]
+    public async Task StartAsync_CanonicalRunUnavailableWithoutDurableEvidence_AwaitsRecoveryAndDoesNotRender()
+    {
+        var imports = new FakeImportService(BuildImportResult());
+        var service = CreateService(
+            imports,
+            new FakeEvidenceRetainer(),
+            new FakeStatementRunWorkflowService());
+
+        var result = await service.StartAsync(BuildCommand());
+
+        result.Workflow.Status.Should().Be(
+            StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);
+        result.Workflow.RetainedArtifacts.Should().BeEmpty();
+        result.Workflow.RecoveryAction.Should().Contain("canonical statement run is unavailable");
+        result.Workflow.RecoveryAction.Should().Contain("durable raw, canonical, and run-evidence");
+        imports.CommitCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetAsync_CompletedWorkflowWithModifiedCurrentManifest_FailsClosed()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var ct = timeout.Token;
+        var imports = new FakeImportService(BuildImportResult());
+        var evidence = new FakeEvidenceRetainer();
+        var runs = new FakeStatementRunWorkflowService { ReturnReconciled = true };
+        var intake = new ResolvingIntakeAuthority(AccountingScope);
+        var service = CreateService(imports, evidence, runs, intakeAuthority: intake);
+        var completed = await service.StartAsync(BuildCommand(), ct);
+        var manifestPath = Path.Combine(
+            Path.GetDirectoryName(ResolveWorkflowSnapshotPath(completed.Workflow.WorkflowId))!,
+            "artifacts",
+            "manifest.json");
+        await File.AppendAllTextAsync(manifestPath, Environment.NewLine, ct);
+
+        Func<Task> readModifiedManifest = async () =>
+        {
+            _ = await service.GetAsync(
+                completed.Workflow.WorkflowId,
+                "tenant-alpha",
+                "company-alpha",
+                ct);
+        };
+
+        await readModifiedManifest.Should()
+            .ThrowAsync<InvalidDataException>()
+            .WithMessage("*current artifact manifest failed generation or hash verification*");
+    }
+
+    [Fact]
+    public async Task StartAsync_CompletedWorkflowWithMissingCurrentArtifact_FailsBeforeReplay()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var ct = timeout.Token;
+        var imports = new FakeImportService(BuildImportResult());
+        var evidence = new FakeEvidenceRetainer();
+        var runs = new FakeStatementRunWorkflowService { ReturnReconciled = true };
+        var intake = new ResolvingIntakeAuthority(AccountingScope);
+        var service = CreateService(imports, evidence, runs, intakeAuthority: intake);
+        var command = BuildCommand();
+        var completed = await service.StartAsync(command, ct);
+        var missingArtifact = completed.Workflow.RetainedArtifacts.Single(item =>
+            item.ArtifactId == "kind-summary-csv");
+        var artifactPath = Path.Combine(
+            Path.GetDirectoryName(ResolveWorkflowSnapshotPath(completed.Workflow.WorkflowId))!,
+            "artifacts",
+            missingArtifact.FileName);
+        File.Delete(artifactPath);
+        var restarted = CreateService(imports, evidence, runs, intakeAuthority: intake);
+
+        Func<Task> replayCompletedWorkflow = async () =>
+        {
+            _ = await restarted.StartAsync(command, ct);
+        };
+
+        await replayCompletedWorkflow.Should()
+            .ThrowAsync<InvalidDataException>()
+            .WithMessage("*current artifact 'kind-summary-csv' is missing*");
+        imports.CommitCount.Should().Be(1,
+            "a corrupt completed generation must fail closed before import or workflow replay");
+        evidence.RetainCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task StartAsync_CompletedWorkflowWithRemovedArtifactAuthority_FailsBeforeReplay()
+    {
+        var imports = new FakeImportService(BuildImportResult());
+        var evidence = new FakeEvidenceRetainer();
+        var runs = new FakeStatementRunWorkflowService { ReturnReconciled = true };
+        var intake = new ResolvingIntakeAuthority(AccountingScope);
+        var service = CreateService(imports, evidence, runs, intakeAuthority: intake);
+        var command = BuildCommand();
+        var completed = await service.StartAsync(command);
+        var snapshotPath = ResolveWorkflowSnapshotPath(completed.Workflow.WorkflowId);
+        var retainedSnapshot = JsonNode.Parse(
+            await File.ReadAllTextAsync(snapshotPath))!.AsObject();
+        var workflow = retainedSnapshot["workflow"]!.AsObject();
+        workflow["retainedArtifacts"] = new JsonArray();
+        workflow["artifactGeneration"] = 0;
+        workflow["artifactHistory"] = new JsonArray();
+        await File.WriteAllTextAsync(snapshotPath, retainedSnapshot.ToJsonString());
+        var restarted = CreateService(imports, evidence, runs, intakeAuthority: intake);
+
+        Func<Task> replayCompletedWorkflow = async () =>
+        {
+            _ = await restarted.StartAsync(command);
+        };
+
+        await replayCompletedWorkflow.Should()
+            .ThrowAsync<InvalidDataException>()
+            .WithMessage("*Completed*has no current artifact authority*");
+        imports.CommitCount.Should().Be(1);
+        evidence.RetainCount.Should().Be(1);
     }
 
     [Fact]
@@ -93,8 +216,17 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         var started = await service.StartAsync(BuildCommand());
 
         started.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);
+        started.Workflow.StatementRunId.Should().Be("statement-run-alpha",
+            "paused casework must retain the canonical statement-run correlation");
+        started.Workflow.EvidenceVaultIdentity.Should().NotBeNull(
+            "paused casework must expose its retained statement evidence");
+        started.Workflow.EvidenceVaultIdentity!.SubjectId.Should().Be("statement-run-alpha");
+        started.Workflow.EvidenceReferences.Should().Contain("statement-run:statement-run-alpha");
         started.Workflow.RetainedArtifacts.Should().BeEmpty();
-        started.Workflow.RecoveryAction.Should().Contain("Resolve or disposition");
+        started.Workflow.RecoveryAction.Should().Contain("canonical statement run is unavailable");
+        started.Workflow.RecoveryAction.Should().NotContain(
+            "Resolve or disposition",
+            "the exact queue obligation is already resolved with a completed handoff");
 
         runs.ReturnReconciled = true;
         var restarted = CreateService(imports, evidence, runs, queue);
@@ -137,7 +269,7 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         partial.Workflow.RetainedArtifacts.Should().BeEmpty();
         partial.Workflow.RecoveryAction.Should().Contain("handoff obligation");
 
-        var retained = await queue.GetByIdAsync("queue-break-alpha");
+        var retained = await queue.GetByIdAsync(QueueScope, "queue-break-alpha");
         retained.Should().NotBeNull();
         var completionCommand = new ReconciliationCaseworkCommand(
             BreakId: retained!.BreakId,
@@ -157,7 +289,7 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
                 Guid.Parse("9f9a040b-5138-4bd9-a401-6c7508f10110"),
                 new DateOnly(2026, 6, 30))
         };
-        var completion = await queue.ApplyCaseworkCommandAsync(completionCommand);
+        var completion = await queue.ApplyCaseworkCommandAsync(QueueScope, completionCommand);
         completion.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
 
         var completed = await service.ResumeAsync(
@@ -169,7 +301,356 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
     }
 
     [Fact]
-    public async Task ResumeAsync_AfterEvidenceFailure_DoesNotRepeatCommittedImport()
+    public async Task GetAndResumeAsync_CompletedCaseworkReopens_ArchivesPriorGenerationAndKeepsCurrentDownloadAuthoritative()
+    {
+        var imports = new FakeImportService(BuildImportResult(breakCount: 1, caseCount: 1));
+        var evidence = new FakeEvidenceRetainer();
+        var runs = new FakeStatementRunWorkflowService
+        {
+            ReturnReconciled = true,
+            Cases = [BuildReconciliationCase("resolved-case-v1", "Resolved")]
+        };
+        var queue = await CreateStatementQueueAsync(handoffCompleted: true);
+        var intake = new ResolvingIntakeAuthority(AccountingScope);
+        var service = CreateService(imports, evidence, runs, queue, intake);
+        var completed = await service.StartAsync(BuildCommand());
+        var workflowPath = ResolveWorkflowSnapshotPath(completed.Workflow.WorkflowId);
+        var workflowDirectory = Path.GetDirectoryName(workflowPath)!;
+        var artifactDirectory = Path.Combine(workflowDirectory, "artifacts");
+        var persistedBeforeRead = await File.ReadAllBytesAsync(workflowPath);
+        var originalDescriptors = completed.Workflow.RetainedArtifacts.ToArray();
+        var originalArtifactBytes = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+        foreach (var descriptor in originalDescriptors)
+        {
+            originalArtifactBytes.Add(
+                descriptor.ArtifactId,
+                await File.ReadAllBytesAsync(Path.Combine(artifactDirectory, descriptor.FileName)));
+        }
+
+        var originalManifestBytes = await File.ReadAllBytesAsync(
+            Path.Combine(artifactDirectory, "manifest.json"));
+        completed.Workflow.ArtifactGeneration.Should().Be(1);
+        completed.Workflow.ArtifactHistory.Should().BeEmpty();
+        var originalJsonArtifact = completed.Workflow.RetainedArtifacts.Single(item =>
+            item.ArtifactId == "reconciliation-report-json");
+        var originalJsonEvidence =
+            $"artifact:{originalJsonArtifact.ArtifactId}:sha256:{originalJsonArtifact.ContentHashSha256}";
+        var originalJsonGenerationEvidence =
+            $"artifact-generation:1:artifact:{originalJsonArtifact.ArtifactId}:sha256:{originalJsonArtifact.ContentHashSha256}";
+        var retained = await queue.GetByIdAsync(QueueScope, "queue-break-alpha");
+        retained.Should().NotBeNull();
+        await queue.SaveAsync(retained! with
+        {
+            Status = ReconciliationBreakQueueStatus.Open,
+            LifecycleState = ReconciliationCaseLifecycleState.Reopened,
+            LastUpdatedAt = DateTimeOffset.Parse("2026-07-01T12:00:00Z"),
+            EvidenceLinks =
+            [
+                StatementCaseworkHandoffObligation.CreatePendingMarker("resolve-alpha")
+            ],
+            BlockedOutputs = ["FinalReport", "PeriodClose"]
+        });
+        runs.Cases = [BuildReconciliationCase("reopened-case-v2", "Open")];
+
+        var projected = await service.GetAsync(
+            completed.Workflow.WorkflowId,
+            "tenant-alpha",
+            "company-alpha");
+
+        projected.Should().NotBeNull();
+        projected!.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);
+        projected.RetainedArtifacts.Should().BeEmpty(
+            "a read projection must not advertise artifacts invalidated by current casework");
+        projected.EvidenceReferences.Should().NotContain(originalJsonEvidence);
+        projected.ArtifactGeneration.Should().Be(1);
+        projected.ArtifactHistory.Should().BeEmpty(
+            "GET projects the reopen without mutating or claiming that the durable archive receipt exists");
+        (await File.ReadAllBytesAsync(workflowPath)).Should().Equal(
+            persistedBeforeRead,
+            "GET may project current authority but must not mutate the retained checkpoint");
+        (await service.DownloadArtifactAsync(
+                completed.Workflow.WorkflowId,
+                originalJsonArtifact.ArtifactId,
+                "tenant-alpha",
+                "company-alpha"))
+            .Should().BeNull("a reopened workflow must suppress stale artifact downloads");
+
+        var reopened = await service.ResumeAsync(
+            completed.Workflow.WorkflowId,
+            "tenant-alpha",
+            "company-alpha");
+
+        reopened.Should().NotBeNull();
+        reopened!.Workflow.Status.Should().Be(
+            StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);
+        reopened.Workflow.RetainedArtifacts.Should().BeEmpty();
+        reopened.Workflow.EvidenceReferences.Should().NotContain(originalJsonEvidence);
+        reopened.Workflow.EvidenceReferences.Should().Contain(originalJsonGenerationEvidence);
+        reopened.Workflow.ArtifactGeneration.Should().Be(1);
+        reopened.Workflow.ArtifactHistory.Should().ContainSingle();
+        var archivedGeneration = reopened.Workflow.ArtifactHistory.Single();
+        archivedGeneration.Generation.Should().Be(1);
+        archivedGeneration.Artifacts.Should().Equal(originalDescriptors,
+            "the exact formerly-current descriptors are immutable audit history");
+        archivedGeneration.ManifestFileName.Should().Be("manifest.json");
+        archivedGeneration.ManifestByteLength.Should().Be(originalManifestBytes.LongLength);
+        archivedGeneration.ManifestContentHashSha256.Should().Be(
+            Sha256Digest.Compute(originalManifestBytes));
+        archivedGeneration.GeneratedAtUtc.Should().Be(originalJsonArtifact.RetainedAtUtc);
+        archivedGeneration.EvidenceReferences.Should().Contain(originalJsonEvidence);
+        archivedGeneration.EvidenceReferences.Should().Contain(originalJsonGenerationEvidence);
+        archivedGeneration.EvidenceReferences.Should().Contain(reference =>
+            reference.StartsWith(
+                "artifact-generation:1:archive-receipt:sha256:",
+                StringComparison.Ordinal));
+        archivedGeneration.ArchiveReceiptContentHashSha256.Should().NotBeNullOrWhiteSpace();
+
+        var generationDirectory = Path.Combine(
+            artifactDirectory,
+            "history",
+            "generation-000001");
+        foreach (var descriptor in originalDescriptors)
+        {
+            (await File.ReadAllBytesAsync(Path.Combine(generationDirectory, descriptor.FileName)))
+                .Should().Equal(originalArtifactBytes[descriptor.ArtifactId]);
+        }
+
+        (await File.ReadAllBytesAsync(Path.Combine(generationDirectory, "manifest.json")))
+            .Should().Equal(originalManifestBytes);
+        var originalReceiptBytes = await File.ReadAllBytesAsync(
+            Path.Combine(generationDirectory, "archive-receipt.json"));
+        Sha256Digest.Compute(originalReceiptBytes)
+            .Should().Be(archivedGeneration.ArchiveReceiptContentHashSha256);
+        intake.PublishCount.Should().Be(1,
+            "reopening current casework must use the retained Operations intake authority");
+        imports.CommitCount.Should().Be(1,
+            "reopening current casework must use the retained statement import");
+
+        var exactRetry = await service.ResumeAsync(
+            completed.Workflow.WorkflowId,
+            "tenant-alpha",
+            "company-alpha");
+
+        exactRetry.Should().NotBeNull();
+        exactRetry!.Workflow.ArtifactHistory.Should().ContainSingle(
+            "retrying the same reopened checkpoint must not append the same generation twice");
+        exactRetry.Workflow.ArtifactHistory.Single().Should().BeEquivalentTo(archivedGeneration);
+        (await File.ReadAllBytesAsync(Path.Combine(generationDirectory, "archive-receipt.json")))
+            .Should().Equal(originalReceiptBytes,
+                "an exact retry must reuse the immutable generation receipt");
+
+        var reopenedQueueItem = await queue.GetByIdAsync(QueueScope, "queue-break-alpha");
+        await queue.SaveAsync(reopenedQueueItem! with
+        {
+            Status = ReconciliationBreakQueueStatus.Resolved,
+            LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+            LastUpdatedAt = DateTimeOffset.Parse("2026-07-01T13:00:00Z"),
+            EvidenceLinks =
+            [
+                StatementCaseworkHandoffObligation.CreatePendingMarker("resolve-alpha"),
+                StatementCaseworkHandoffObligation.CreateCompletedMarker("resolve-alpha")
+            ],
+            BlockedOutputs = []
+        });
+        runs.Cases = [BuildReconciliationCase("resolved-case-v2", "Resolved")];
+
+        var reResolved = await service.ResumeAsync(
+            completed.Workflow.WorkflowId,
+            "tenant-alpha",
+            "company-alpha");
+
+        reResolved.Should().NotBeNull();
+        reResolved!.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Completed);
+        reResolved.Workflow.RetainedArtifacts.Should().HaveCount(2);
+        reResolved.Workflow.ArtifactGeneration.Should().Be(2);
+        reResolved.Workflow.ArtifactHistory.Should().ContainSingle();
+        reResolved.Workflow.ArtifactHistory.Single().Should().BeEquivalentTo(archivedGeneration);
+        var currentJsonArtifact = reResolved.Workflow.RetainedArtifacts.Single(item =>
+            item.ArtifactId == "reconciliation-report-json");
+        currentJsonArtifact.ContentHashSha256.Should().NotBe(
+            originalJsonArtifact.ContentHashSha256,
+            "the re-resolved report carries the current reconciliation case identity");
+        reResolved.Workflow.EvidenceReferences.Should().NotContain(originalJsonEvidence);
+        reResolved.Workflow.EvidenceReferences.Should().Contain(originalJsonGenerationEvidence);
+        reResolved.Workflow.EvidenceReferences.Should().Contain(
+            $"artifact:{currentJsonArtifact.ArtifactId}:sha256:{currentJsonArtifact.ContentHashSha256}");
+        reResolved.Workflow.EvidenceReferences
+            .Count(reference => reference.StartsWith("artifact:", StringComparison.Ordinal))
+            .Should().Be(2, "only the current artifact hashes remain active");
+        var currentDownload = await service.DownloadArtifactAsync(
+            reResolved.Workflow.WorkflowId,
+            currentJsonArtifact.ArtifactId,
+            "tenant-alpha",
+            "company-alpha");
+        currentDownload.Should().NotBeNull();
+        Sha256Digest.Compute(currentDownload!.Content)
+            .Should().Be(currentJsonArtifact.ContentHashSha256);
+        currentDownload.Content
+            .SequenceEqual(originalArtifactBytes[originalJsonArtifact.ArtifactId])
+            .Should()
+            .BeFalse("the logical download id remains bound to the new current generation");
+        foreach (var descriptor in originalDescriptors)
+        {
+            (await File.ReadAllBytesAsync(Path.Combine(generationDirectory, descriptor.FileName)))
+                .Should().Equal(originalArtifactBytes[descriptor.ArtifactId],
+                    "a later current generation must not overwrite archived bytes");
+        }
+
+        (await File.ReadAllBytesAsync(Path.Combine(generationDirectory, "manifest.json")))
+            .Should().Equal(originalManifestBytes);
+        var currentManifest = JsonNode.Parse(
+            await File.ReadAllTextAsync(Path.Combine(artifactDirectory, "manifest.json")))!.AsObject();
+        currentManifest["artifactGeneration"]!.GetValue<int>().Should().Be(2);
+        var currentReport = JsonNode.Parse(Encoding.UTF8.GetString(currentDownload.Content))!.AsObject();
+        currentReport["artifactGeneration"]!.GetValue<int>().Should().Be(2);
+        intake.PublishCount.Should().Be(1);
+        imports.CommitCount.Should().Be(1);
+
+        var archivedJsonPath = Path.Combine(
+            generationDirectory,
+            originalJsonArtifact.FileName);
+        await File.WriteAllBytesAsync(
+            archivedJsonPath,
+            originalArtifactBytes[originalJsonArtifact.ArtifactId]
+                .Append((byte)0)
+                .ToArray());
+        Func<Task> readCorruptHistory = async () =>
+        {
+            _ = await service.GetAsync(
+                completed.Workflow.WorkflowId,
+                "tenant-alpha",
+                "company-alpha");
+        };
+        await readCorruptHistory.Should()
+            .ThrowAsync<InvalidDataException>()
+            .WithMessage("*failed immutable generation verification*");
+    }
+
+    [Fact]
+    public async Task GetAsync_WorkflowSnapshotOmitsArchivedGeneration_FailsClosed()
+    {
+        var imports = new FakeImportService(BuildImportResult(breakCount: 1, caseCount: 1));
+        var evidence = new FakeEvidenceRetainer();
+        var runs = new FakeStatementRunWorkflowService
+        {
+            ReturnReconciled = true,
+            Cases = [BuildReconciliationCase("resolved-case-v1", "Resolved")]
+        };
+        var queue = await CreateStatementQueueAsync(handoffCompleted: true);
+        var service = CreateService(
+            imports,
+            evidence,
+            runs,
+            queue,
+            new ResolvingIntakeAuthority(AccountingScope));
+        var completed = await service.StartAsync(BuildCommand());
+        var retained = await queue.GetByIdAsync(QueueScope, "queue-break-alpha");
+        await queue.SaveAsync(retained! with
+        {
+            Status = ReconciliationBreakQueueStatus.Open,
+            LifecycleState = ReconciliationCaseLifecycleState.Reopened,
+            LastUpdatedAt = DateTimeOffset.Parse("2026-07-01T12:00:00Z"),
+            EvidenceLinks =
+            [
+                StatementCaseworkHandoffObligation.CreatePendingMarker("resolve-alpha")
+            ],
+            BlockedOutputs = ["FinalReport", "PeriodClose"]
+        });
+        runs.Cases = [BuildReconciliationCase("reopened-case-v2", "Open")];
+        var reopened = await service.ResumeAsync(
+            completed.Workflow.WorkflowId,
+            "tenant-alpha",
+            "company-alpha");
+        reopened!.Workflow.ArtifactHistory.Should().ContainSingle();
+        var snapshotPath = ResolveWorkflowSnapshotPath(completed.Workflow.WorkflowId);
+        var retainedSnapshot = JsonNode.Parse(
+            await File.ReadAllTextAsync(snapshotPath))!.AsObject();
+        var workflow = retainedSnapshot["workflow"]!.AsObject();
+        workflow["artifactHistory"] = new JsonArray();
+        workflow["artifactGeneration"] = 0;
+        await File.WriteAllTextAsync(snapshotPath, retainedSnapshot.ToJsonString());
+
+        Func<Task> readOmittedHistory = async () =>
+        {
+            _ = await service.GetAsync(
+                completed.Workflow.WorkflowId,
+                "tenant-alpha",
+                "company-alpha");
+        };
+
+        await readOmittedHistory.Should()
+            .ThrowAsync<InvalidDataException>()
+            .WithMessage("*omits retained artifact history generation 1*");
+    }
+
+    [Fact]
+    public async Task ResumeAsync_RenderingCheckpointRetry_ReusesPersistedTimestampAndArtifactHash()
+    {
+        var imports = new FakeImportService(BuildImportResult(breakCount: 1, caseCount: 1));
+        var evidence = new FakeEvidenceRetainer();
+        var runs = new FakeStatementRunWorkflowService();
+        var queue = await CreateStatementQueueAsync(handoffCompleted: true);
+        var service = CreateService(imports, evidence, runs, queue);
+        var started = await service.StartAsync(BuildCommand());
+        var workflowPath = ResolveWorkflowSnapshotPath(started.Workflow.WorkflowId);
+        var forcedCreatedAt = DateTimeOffset.Parse("2000-01-01T00:00:00Z");
+        var retainedSnapshot = JsonNode.Parse(await File.ReadAllTextAsync(workflowPath))!.AsObject();
+        retainedSnapshot["workflow"]!.AsObject()["createdAtUtc"] = forcedCreatedAt;
+        await File.WriteAllTextAsync(workflowPath, retainedSnapshot.ToJsonString());
+        runs.ReturnReconciled = true;
+        runs.Cases = [BuildReconciliationCase("resolved-case-retry", "Resolved")];
+        var artifactDirectory = Path.Combine(
+            Path.GetDirectoryName(workflowPath)!,
+            "artifacts");
+        Directory.CreateDirectory(artifactDirectory);
+        var blockedCsvPath = Path.Combine(artifactDirectory, "statement-kind-summary.csv");
+        Directory.CreateDirectory(blockedCsvPath);
+
+        var failed = await service.ResumeAsync(
+            started.Workflow.WorkflowId,
+            "tenant-alpha",
+            "company-alpha");
+
+        failed.Should().NotBeNull();
+        failed!.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Failed);
+        var failedSnapshot = JsonNode.Parse(await File.ReadAllTextAsync(workflowPath))!.AsObject();
+        var renderingAt = failedSnapshot["renderingReconciliationReportAtUtc"]!
+            .GetValue<DateTimeOffset>();
+        renderingAt.Should().NotBe(forcedCreatedAt);
+        var jsonArtifactPath = Path.Combine(artifactDirectory, "statement-reconciliation-report.json");
+        File.Exists(jsonArtifactPath).Should().BeTrue(
+            "the JSON artifact is retained before the injected CSV checkpoint failure");
+        var firstJsonBytes = await File.ReadAllBytesAsync(jsonArtifactPath);
+        var firstJsonHash = Sha256Digest.Compute(firstJsonBytes);
+        Directory.Delete(blockedCsvPath);
+
+        var completed = await service.ResumeAsync(
+            started.Workflow.WorkflowId,
+            "tenant-alpha",
+            "company-alpha");
+
+        completed.Should().NotBeNull();
+        completed!.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Completed);
+        var jsonDescriptor = completed.Workflow.RetainedArtifacts.Single(item =>
+            item.ArtifactId == "reconciliation-report-json");
+        jsonDescriptor.RetainedAtUtc.Should().Be(renderingAt);
+        jsonDescriptor.RetainedAtUtc.Should().NotBe(forcedCreatedAt,
+            "artifact retention is bound to rendering rather than workflow creation");
+        jsonDescriptor.ContentHashSha256.Should().Be(firstJsonHash,
+            "retrying the same persisted rendering checkpoint must reproduce the same artifact");
+        (await File.ReadAllBytesAsync(jsonArtifactPath)).Should().Equal(firstJsonBytes);
+        var report = JsonNode.Parse(await File.ReadAllTextAsync(jsonArtifactPath))!.AsObject();
+        report["retainedAtUtc"]!.GetValue<DateTimeOffset>().Should().Be(renderingAt);
+        var completedSnapshot = JsonNode.Parse(await File.ReadAllTextAsync(workflowPath))!.AsObject();
+        completedSnapshot["renderingReconciliationReportAtUtc"]!
+            .GetValue<DateTimeOffset>()
+            .Should().Be(renderingAt);
+        imports.CommitCount.Should().Be(1);
+        evidence.RetainCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ResumeAsync_AfterEvidenceFailure_ReimportsBecauseNoNodeLocalResultWasCheckpointed()
     {
         var imports = new FakeImportService(BuildImportResult());
         var evidence = new FakeEvidenceRetainer { FailNext = true };
@@ -179,7 +660,9 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         var failed = await service.StartAsync(BuildCommand());
 
         failed.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Failed);
-        failed.Workflow.RecoveryAction.Should().Contain("retained import");
+        failed.ImportResult.Should().BeNull(
+            "an import result is not authoritative until raw and canonical evidence retention succeeds");
+        failed.Workflow.RecoveryAction.Should().Contain("Retry the persisted statement import");
         imports.CommitCount.Should().Be(1);
 
         var restarted = CreateService(imports, evidence, runs);
@@ -189,7 +672,34 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             "company-alpha");
 
         resumed!.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Completed);
-        imports.CommitCount.Should().Be(1);
+        imports.CommitCount.Should().Be(2,
+            "retry must rebuild node-local import outputs from the authoritative retained input");
+        evidence.RetainCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task StartAsync_OneShotEvidenceAuthorityOutage_PropagatesAndRetryReimports()
+    {
+        var imports = new FakeImportService(BuildImportResult());
+        var evidence = new FakeEvidenceRetainer { AuthorityUnavailableNext = true };
+        var service = CreateService(
+            imports,
+            evidence,
+            new FakeStatementRunWorkflowService { ReturnReconciled = true });
+        var command = BuildCommand();
+
+        var outage = () => service.StartAsync(command);
+
+        await outage.Should()
+            .ThrowAsync<StatementReconciliationReportAuthorityUnavailableException>()
+            .WithMessage("*temporarily unavailable*");
+
+        var retried = await service.StartAsync(command);
+
+        retried.Workflow.Status.Should().Be(
+            StatementReconciliationReportWorkflowStatusDto.Completed);
+        imports.CommitCount.Should().Be(2,
+            "an outage before durable evidence retention must leave the input re-importable");
         evidence.RetainCount.Should().Be(2);
     }
 
@@ -297,6 +807,58 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         second.Workflow.WorkflowId.Should().NotBe(first.Workflow.WorkflowId,
             "mapping policy is part of the authoritative import identity");
         imports.CommitCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task StartAsync_CasingOnlySemanticIdentityRetry_ReusesTheSameWorkflow()
+    {
+        var imports = new FakeImportService(BuildImportResult());
+        var service = CreateService(
+            imports,
+            new FakeEvidenceRetainer(),
+            new FakeStatementRunWorkflowService { ReturnReconciled = true });
+        var command = BuildCommand();
+        var firstCommand = command with
+        {
+            Import = command.Import with
+            {
+                ConnectorId = "Csv-Alpha",
+                SourceKind = "Broker",
+                SourceInstitution = "Broker Alpha",
+                FundAccountId = "Fund-Account-Alpha",
+                ExternalAccountId = "External-Alpha",
+                ToleranceProfileId = "Tolerance-Alpha",
+                Document = command.Import.Document with
+                {
+                    MappingProfileId = "Mapping-Alpha",
+                    ExternalAccountId = "Document-External-Alpha"
+                }
+            }
+        };
+        var retry = firstCommand with
+        {
+            Import = firstCommand.Import with
+            {
+                ConnectorId = "CSV-ALPHA",
+                SourceKind = "BROKER",
+                SourceInstitution = "BROKER ALPHA",
+                FundAccountId = "FUND-ACCOUNT-ALPHA",
+                ExternalAccountId = "EXTERNAL-ALPHA",
+                ToleranceProfileId = "TOLERANCE-ALPHA",
+                Document = firstCommand.Import.Document with
+                {
+                    MappingProfileId = "MAPPING-ALPHA",
+                    ExternalAccountId = "DOCUMENT-EXTERNAL-ALPHA"
+                }
+            }
+        };
+
+        var first = await service.StartAsync(firstCommand);
+        var repeated = await service.StartAsync(retry);
+
+        repeated.Workflow.WorkflowId.Should().Be(first.Workflow.WorkflowId);
+        imports.CommitCount.Should().Be(1,
+            "case-insensitive statement identity fields must not create a duplicate import");
     }
 
     [Fact]
@@ -532,6 +1094,31 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             CaseIds = caseCount == 0 ? [] : ["case-alpha"]
         };
 
+    private static ReconciliationCase BuildReconciliationCase(
+        string caseId,
+        string status)
+        => new(
+            caseId,
+            "statement-run-alpha",
+            status,
+            "Statement casework state changed.",
+            1m,
+            "Current authoritative statement reconciliation state.",
+            DateTimeOffset.Parse("2026-06-30T12:00:00Z"),
+            []);
+
+    private string ResolveWorkflowSnapshotPath(string workflowId)
+        => Path.Combine(
+            _root,
+            "reporting",
+            workflowId.StartsWith(
+                "statement-report-",
+                StringComparison.Ordinal)
+                ? "statement-to-report"
+                : "statement-reconciliation-report",
+            workflowId,
+            "workflow.json");
+
     private async Task<string> MoveWorkflowToLegacyLocationAsync(string workflowId)
     {
         var legacyWorkflowId = workflowId.Replace(
@@ -629,7 +1216,7 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             evidence.Add(StatementCaseworkHandoffObligation.CreateCompletedMarker("resolve-alpha"));
         }
 
-        await queue.CreateIfMissingAsync(new ReconciliationBreakQueueItem(
+        await queue.CreateIfMissingAsync(QueueScope, new ReconciliationBreakQueueItem(
             BreakId: "queue-break-alpha",
             RunId: "statement-run-alpha",
             StrategyName: "Statement reconciliation",
@@ -654,7 +1241,9 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             DispositionEvidenceHash: new string('b', 64),
             BlockedOutputs: handoffCompleted ? [] : ["FinalReport", "PeriodClose"])
         {
-            FundProfileId = "fund-alpha"
+            FundProfileId = "fund-alpha",
+            TenantId = QueueScope.TenantId,
+            CompanyId = QueueScope.CompanyId
         });
         return queue;
     }
@@ -690,6 +1279,7 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
     {
         public int RetainCount { get; private set; }
         public bool FailNext { get; set; }
+        public bool AuthorityUnavailableNext { get; set; }
 
         public Task<StatementImportCommitResultDto> RetainAsync(
             StatementImportCommitResultDto result,
@@ -697,6 +1287,12 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             CancellationToken ct = default)
         {
             RetainCount++;
+            if (AuthorityUnavailableNext)
+            {
+                AuthorityUnavailableNext = false;
+                throw new StatementReconciliationReportAuthorityUnavailableException(
+                    "Statement evidence authority is temporarily unavailable.");
+            }
             if (FailNext)
             {
                 FailNext = false;
@@ -722,12 +1318,13 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
     private sealed class FakeStatementRunWorkflowService : IStatementRunWorkflowService
     {
         public bool ReturnReconciled { get; set; }
+        public IReadOnlyList<ReconciliationCase> Cases { get; set; } = [];
 
         public Task<StatementRunWorkflowResult?> GetAsync(
             string runId,
             CancellationToken cancellationToken = default)
             => Task.FromResult<StatementRunWorkflowResult?>(
-                ReturnReconciled ? new StatementRunWorkflowResult(null!, [], []) : null);
+                ReturnReconciled ? new StatementRunWorkflowResult(null!, [], Cases) : null);
 
         public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<CanonicalStatementImport>>([]);

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-26
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Reporting
@@ -62,6 +62,9 @@ artifact, governance, restatement, and distribution contracts plus deterministic
 UI Shared adapts authenticated workstation requests and server-owned accounting sources; Storage
 implements PostgreSQL persistence. Browser and WPF remain thin consumers of shared DTOs and
 server-returned action availability.
+Canonical governance comparisons treat default and empty immutable permission/principal arrays as
+the same empty authority set, matching persisted round trips while retaining ordered value
+comparison for populated authority evidence.
 The host reporting-schedule adapter is the only due-work discovery and lease authority. It resolves
 the exact access scope, readiness, certification, and delivery handoff before calling
 `IReportingOrchestrationService.ExecuteAsync` with one certified job contract. The retained
@@ -77,27 +80,40 @@ Production reporting is also fail-closed at the workspace boundary. The independ
 immutable close/reconciliation evidence, run, schedule, access-grant, delivery, and receipt stores
 are active and their required tables, immutable-control triggers, operational lease columns,
 checksummed migration-ledger key, and immediate predicate-compatible unique/idempotency keys pass
-the schema probe. Exact-scope recipient destinations, the canonical client-document renderer, the
-configured durable ledger-presentation source, and the current process's successful managed
-migration receipt are also required. File-backed run, schedule, custom-template, starter-kit,
-workflow, and delivery stores remain local/development compatibility; production omits them and
-they do not satisfy the capability. Production composition requires a Reporting or documented
-ledger PostgreSQL connection and does not silently substitute those file stores. With a database
-configured, checksummed Reporting migrations finish before the HTTP host
-and hosted workers start; an unreachable database or migration failure stops startup. Other
-incomplete authority leaves production reporting `Required/NotReady` and its reads/mutations
-service-unavailable. Local/development may start on file compatibility stores with a degraded
-reporting lifecycle, but those stores still do not make authoritative Reporting routes ready.
+the schema probe. This includes migration 013's statement document and revision tables, its four
+document/revision guard and append triggers, and the exact
+`reporting-statement-reconciliation-authority:v1` compatibility marker; composition must also
+resolve `PostgresStatementReconciliationReportAuthorityStore`. The exact PostgreSQL
+accounting-period release-consistency gate, exact-scope
+recipient destinations, the canonical client-document renderer, the configured durable
+ledger-presentation source, atomic grant-use/download-receipt accounting, the current process's
+successful managed Reporting migration receipt, and successful ledger, fund-account, and
+fund-structure migration receipts are also required. Startup must integrity-reload the canonical
+reconciliation queue used by statement
+casework, Operations Continuity, hard close, and Final certification; both the reporting schedule
+worker and secure delivery worker must have valid options and be running. File-backed run, schedule,
+custom-template, and starter-kit stores remain local/development compatibility and do not satisfy
+the capability. Legacy file workflow and delivery-history repositories are not registered by the
+default host and remain available only to explicitly constructed compatibility callers. Production
+composition requires a
+Reporting or documented ledger PostgreSQL connection and does not silently substitute those file
+stores. With a database configured, checksummed Reporting migrations and the casework integrity
+probe finish before the HTTP host and hosted workers start; an unreachable database, migration
+failure, or corrupt casework snapshot stops startup. Other incomplete authority leaves production
+reporting `Required/NotReady` and its reads/mutations service-unavailable. Local/development may
+start on file compatibility stores with a degraded reporting lifecycle, but those stores still do
+not make authoritative Reporting routes ready.
 
-`ReportingOutputFormatDto.ClientPackage` declares exactly one `<runId>.pdf` and one
-`<runId>.xlsx` primary output. For a capital-account package, UI Shared verifies the exact
-checkpoint-bound `LedgerFinancialReportPack`, then passes that pack intact through the existing
+Capital-account `Pdf`, `Xlsx`, and `ClientPackage` outputs all use the exact checkpoint-bound
+`LedgerFinancialReportPack`. UI Shared passes that pack intact through the existing
 `LedgerClientReportExportService` to the registered
-`Meridian.Documents.FinancialReportDocumentRenderer`. The producer receives both documents from one
-in-memory package build and applies the Reporting declarations, byte lengths, and SHA-256 hashes; it
-does not rebuild partners-capital tables through a parallel renderer. Release and distribution
-treat that primary pair atomically: neither a missing, duplicated, PDF-only, nor XLSX-only subset is
-a releasable or deliverable `ClientPackage`.
+`Meridian.Documents.FinancialReportDocumentRenderer` and receives the canonical PDF/XLSX pair from
+one in-memory package build. A standalone `Pdf` or `Xlsx` declaration retains only the matching
+canonical document; `ClientPackage` declares and retains exactly one `<runId>.pdf` and one
+`<runId>.xlsx`. The producer applies the Reporting declarations, byte lengths, and SHA-256 hashes;
+it does not rebuild partners-capital tables through a parallel renderer. Release and distribution
+treat the `ClientPackage` primary pair atomically: neither a missing, duplicated, PDF-only, nor
+XLSX-only subset is releasable or deliverable.
 
 The Statement Reconciliation Report endpoint is an intake adapter owned by UI Shared. It resolves
 durable account/fund/book/open-period scope, retains statement and Evidence Vault evidence, starts
@@ -214,6 +230,13 @@ reporting behavior. Report-pack generation and NAV attribution also moved from
 Master query seam. Reporting operational-store interfaces also live here; PostgreSQL run and
 schedule implementations remain Storage-owned, while file implementations are compatibility
 adapters rather than production authority.
+`IStatementReconciliationReportAuthorityStore` is the backend-neutral authority contract for the
+existing statement-reconciliation workflow. Its full tenant/company/workflow scope is mandatory;
+immutable input/evidence/history documents and mutable checkpoint/current-artifact mappings all
+resolve to content-addressed Reporting identities. Storage owns the PostgreSQL implementation and
+UI Shared owns the non-production file adapter and existing-workflow composition. A deployment is
+not production ready from this contract or migration 013 alone: the probed tables, revision
+controls, exact compatibility marker, and concrete PostgreSQL implementation must all be present.
 
 ## Change rules
 

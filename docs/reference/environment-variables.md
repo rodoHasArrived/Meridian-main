@@ -14,6 +14,9 @@ All configuration can be set via environment variables, following the [12-factor
 
 - Variables prefixed with `MDC_` are the canonical form
 - Legacy variables (without prefix) are also supported for backwards compatibility
+- **Canonical does not mean higher precedence.** Where both spellings exist, the bare one wins:
+  `ConfigEnvironmentOverride` applies the legacy aliases after the `MDC_` entries. Set one
+  spelling per setting rather than relying on which takes effect.
 - Use double underscore (`__`) for .NET configuration binding: `ALPACA__KEYID` maps to `Alpaca:KeyId`
 
 ## High-Risk Runtime and Security Controls (`MDC_*`)
@@ -45,7 +48,8 @@ These variables control auth, mutation safety, runtime mode, and diagnostics beh
 |----------|------------|-------------|----------|---------|
 | `MDC_DATA_ROOT` | `DataRoot` | Root directory for data storage | No | `data` |
 | `MDC_COMPRESS` | `Compress` | Enable gzip compression (`true`/`false`) | No | `false` |
-| `MDC_DATASOURCE` | `DataSource` | Streaming provider: `IB`, `Alpaca`, `Polygon`, `StockSharp`, `NYSE` | No | `IB` |
+| `MDC_DATASOURCE` | `DataSource` | Real-time streaming provider: `IB`, `Alpaca`, `NYSE`, `Synthetic`. `ConfigEnvironmentOverride.ParseDataSource` accepts **any** defined `DataSourceKind`, rejecting only undefined values, so a backfill-only kind such as `Yahoo` is *not* refused here — it is accepted and then fails later, when `CollectorModeRunner` asks `ProviderRegistry` for a streaming client that `ProviderFeatureRegistration.Registry.cs` never registered. `Polygon` parses and registers a streaming factory, but that factory constructs `PolygonMarketDataClient` without passing `PolygonOptions`, so it always runs with an empty API key; no environment variable reaches it. | No | `Synthetic` |
+| `MDC_SYMBOLS` | `Symbols` | Comma-separated symbols to subscribe, replacing the configured list (`SPY,QQQ`). Values are uppercased because `SymbolConfigValidator` matches `^[A-Z0-9\-\.\/]+$`. The new entries inherit `SubscribeTrades`, `SubscribeDepth`, and `DepthLevels` from the first configured symbol, so this changes *which* symbols are collected, not *how* — a config that disabled depth is not silently re-enabled. With nothing configured, trades are on and **depth is off**, because the environment cannot know whether the selected provider advertises `Level2Book`. Contract identity is never inherited: symbols needing per-symbol fields (options, preferreds with a `LocalSymbol`) must be configured in JSON instead. Unset **or empty** leaves the configured list alone — `ApplyOverrides` treats an empty value as absent for every variable. A non-empty value that yields no symbols (`" , , "`) fails startup rather than silently subscribing to nothing. | No | config file |
 
 Installed releases do not require users to set `MDC_DATA_ROOT`: the lifecycle supervisor injects the
 resolved manifest data root, defaulting to `%LOCALAPPDATA%\Meridian\Data`.
@@ -75,8 +79,8 @@ strictly non-owning.
 | `MDC_ALPACA_FEED` | `Alpaca:Feed` | Data feed: `iex` (free), `sip` (paid) | No | `iex` |
 | `MDC_ALPACA_SANDBOX` | `Alpaca:UseSandbox` | Use paper trading endpoint | No | `false` |
 | `MDC_ALPACA_QUOTES` | `Alpaca:SubscribeQuotes` | Subscribe to quote data | No | `false` |
-| `ALPACA_KEY_ID` | `Alpaca:KeyId` | Legacy alias for `MDC_ALPACA_KEY_ID` | — | — |
-| `ALPACA_SECRET_KEY` | `Alpaca:SecretKey` | Legacy alias for `MDC_ALPACA_SECRET_KEY` | — | — |
+| `ALPACA_KEY_ID` | `Alpaca:KeyId` | Bare alias that **takes precedence over** `MDC_ALPACA_KEY_ID`: `ApplyOverrides` applies it later, and the backfill path reads it directly via `ProviderCredentialResolver` ahead of any configured value. Set this one, or unset it, if both exist. | — | — |
+| `ALPACA_SECRET_KEY` | `Alpaca:SecretKey` | Bare alias that **takes precedence over** `MDC_ALPACA_SECRET_KEY`, for the same reason. | — | — |
 | `ALPACA__KEYID` | `Alpaca:KeyId` | .NET config binding format | — | — |
 | `ALPACA__SECRETKEY` | `Alpaca:SecretKey` | .NET config binding format | — | — |
 
@@ -89,13 +93,29 @@ strictly non-owning.
 
 ## Interactive Brokers
 
-IB credentials are managed via TWS/Gateway, not environment variables. However, StockSharp IB connector settings can be set:
+IB *credentials* are managed via TWS/Gateway, not environment variables. The *connection* settings
+are environment-configurable:
 
 | Variable | Config Path | Description | Required | Default |
 |----------|------------|-------------|----------|---------|
-| `MDC_STOCKSHARP_IB_HOST` | `StockSharp:InteractiveBrokers:Host` | TWS/Gateway hostname | No | `127.0.0.1` |
-| `MDC_STOCKSHARP_IB_PORT` | `StockSharp:InteractiveBrokers:Port` | TWS/Gateway port | No | `4002` |
-| `MDC_STOCKSHARP_IB_CLIENT_ID` | `StockSharp:InteractiveBrokers:ClientId` | Client ID | No | `1` |
+| `MDC_IB_HOST` | `IB:Host` | TWS/Gateway host | No | `127.0.0.1` |
+| `MDC_IB_PORT` | `IB:Port` | TWS/Gateway socket port | No | `7497` (paper-safe) |
+| `MDC_IB_CLIENT_ID` | `IB:ClientId` | API client id; must be unique per concurrent connection | No | `1` |
+| `MDC_IB_PAPER` | `IB:UsePaperTrading` | Use the paper-trading account (`true`/`false`) | No | `true` |
+| `MDC_IB_SUBSCRIBE_DEPTH` | `IB:SubscribeDepth` | Request Level 2 market depth (`true`/`false`) | No | `true` |
+| `MDC_IB_DEPTH_LEVELS` | `IB:DepthLevels` | Depth levels to request | No | `10` |
+| `MDC_IB_TICK_BY_TICK` | `IB:TickByTick` | Use tick-by-tick streams (`true`/`false`) | No | `true` |
+
+### IB Client Portal
+
+The Client Portal HTTP surface is separate from the TWS/Gateway socket used for market data,
+historical data, and order routing.
+
+| Variable | Config Path | Description | Required | Default |
+|----------|------------|-------------|----------|---------|
+| `MDC_IB_CLIENT_PORTAL_ENABLED` | `IBClientPortal:Enabled` | Enable the Client Portal gateway path (`true`/`false`) | No | `false` |
+| `MDC_IB_CLIENT_PORTAL_BASE_URL` | `IBClientPortal:BaseUrl` | Client Portal gateway base URL | No | `https://localhost:5000` |
+| `MDC_IB_CLIENT_PORTAL_ALLOW_SELF_SIGNED` | `IBClientPortal:AllowSelfSignedCertificates` | Accept the gateway's self-signed certificate (`true`/`false`). Only ever honoured for loopback hosts — a non-loopback gateway must present a valid certificate regardless of this setting. | No | `true` |
 
 ## Historical Data Provider API Keys
 
@@ -163,52 +183,7 @@ Use this together with:
 | `DataRoot`, `Compress`, `DataSource` | `MDC_DATA_ROOT`, `MDC_COMPRESS`, `MDC_DATASOURCE` | Core runtime mode and storage root. |
 | `Backfill:*` | `MDC_BACKFILL_ENABLED`, `MDC_BACKFILL_PROVIDER`, `MDC_BACKFILL_SYMBOLS`, `MDC_BACKFILL_FROM`, `MDC_BACKFILL_TO` | Backfill execution posture and scope. |
 | `Storage:*` | `MDC_STORAGE_NAMING`, `MDC_STORAGE_PARTITION`, `MDC_STORAGE_RETENTION_DAYS`, `MDC_STORAGE_MAX_MB` | Retention and file-layout controls. |
-| `StockSharp:*` | `MDC_STOCKSHARP_*` | Connector mode and adapter credential wiring. |
 | `Alpaca:*` | `MDC_ALPACA_*` | Alpaca feed + credential override path. |
-
-## StockSharp Connector Configuration
-
-### Core Settings
-
-| Variable | Config Path | Description | Required | Default |
-|----------|------------|-------------|----------|---------|
-| `MDC_STOCKSHARP_ENABLED` | `StockSharp:Enabled` | Enable StockSharp connector | No | `false` |
-| `MDC_STOCKSHARP_CONNECTOR` | `StockSharp:ConnectorType` | Connector type: `Rithmic`, `IQFeed`, `CQG`, `InteractiveBrokers`, `Custom` | No | — |
-| `MDC_STOCKSHARP_ADAPTER_TYPE` | `StockSharp:AdapterType` | Custom adapter type name | No | — |
-| `MDC_STOCKSHARP_ADAPTER_ASSEMBLY` | `StockSharp:AdapterAssembly` | Custom adapter assembly name | No | — |
-| `MDC_STOCKSHARP_STORAGE_PATH` | `StockSharp:StoragePath` | StockSharp storage directory | No | — |
-| `MDC_STOCKSHARP_BINARY` | `StockSharp:UseBinaryStorage` | Use binary storage format | No | `false` |
-| `MDC_STOCKSHARP_REALTIME` | `StockSharp:EnableRealTime` | Enable real-time data | No | `true` |
-| `MDC_STOCKSHARP_HISTORICAL` | `StockSharp:EnableHistorical` | Enable historical data | No | `false` |
-
-### Rithmic
-
-| Variable | Config Path | Description | Required | Default |
-|----------|------------|-------------|----------|---------|
-| `MDC_STOCKSHARP_RITHMIC_SERVER` | `StockSharp:Rithmic:Server` | Rithmic server address | When using Rithmic | — |
-| `MDC_STOCKSHARP_RITHMIC_USERNAME` | `StockSharp:Rithmic:UserName` | Username | When using Rithmic | — |
-| `MDC_STOCKSHARP_RITHMIC_PASSWORD` | `StockSharp:Rithmic:Password` | Password | When using Rithmic | — |
-| `MDC_STOCKSHARP_RITHMIC_CERTFILE` | `StockSharp:Rithmic:CertFile` | Certificate file path | No | — |
-| `MDC_STOCKSHARP_RITHMIC_PAPER` | `StockSharp:Rithmic:UsePaperTrading` | Use paper trading | No | `false` |
-
-### IQFeed
-
-| Variable | Config Path | Description | Required | Default |
-|----------|------------|-------------|----------|---------|
-| `MDC_STOCKSHARP_IQFEED_HOST` | `StockSharp:IQFeed:Host` | IQFeed server host | No | `127.0.0.1` |
-| `MDC_STOCKSHARP_IQFEED_LEVEL1_PORT` | `StockSharp:IQFeed:Level1Port` | Level 1 data port | No | `5009` |
-| `MDC_STOCKSHARP_IQFEED_LEVEL2_PORT` | `StockSharp:IQFeed:Level2Port` | Level 2 data port | No | `9200` |
-| `MDC_STOCKSHARP_IQFEED_LOOKUP_PORT` | `StockSharp:IQFeed:LookupPort` | Lookup/history port | No | `9100` |
-| `MDC_STOCKSHARP_IQFEED_PRODUCT_ID` | `StockSharp:IQFeed:ProductId` | IQFeed product ID | When using IQFeed | — |
-| `MDC_STOCKSHARP_IQFEED_PRODUCT_VERSION` | `StockSharp:IQFeed:ProductVersion` | Product version | No | — |
-
-### CQG
-
-| Variable | Config Path | Description | Required | Default |
-|----------|------------|-------------|----------|---------|
-| `MDC_STOCKSHARP_CQG_USERNAME` | `StockSharp:CQG:UserName` | CQG username | When using CQG | — |
-| `MDC_STOCKSHARP_CQG_PASSWORD` | `StockSharp:CQG:Password` | CQG password | When using CQG | — |
-| `MDC_STOCKSHARP_CQG_DEMO` | `StockSharp:CQG:UseDemoServer` | Use demo server | No | `false` |
 
 ## Precedence Order
 

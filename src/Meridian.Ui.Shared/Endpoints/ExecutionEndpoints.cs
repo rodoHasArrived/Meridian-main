@@ -1,13 +1,13 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
-using Meridian.Identity;
-using Meridian.Identity.Auth;
-using Meridian.PortfolioRecords.Accounts;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Identity;
+using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -184,12 +184,20 @@ public static class ExecutionEndpoints
 
             var result = await oms.PlaceOrderAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
 
-            return result.Success
-                ? Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created)
-                : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+            // A parked order is not a rejection: nothing routed, but a live queue entry can
+            // still execute it once an operator approves. 202 keeps that distinguishable
+            // from the 400 a refusal returns, so a client cannot show "submission failed"
+            // for an order that is on its way to the desk.
+            return (result.Success, result.RequiresApproval) switch
+            {
+                (true, _) => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created),
+                (false, true) => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status202Accepted),
+                _ => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
+            };
         })
         .WithName("SubmitOrder")
         .Produces<OrderResult>(201)
+        .Produces<OrderResult>(202)
         .Produces<OrderResult>(400)
         .Produces<OrderResult>(403)
         .Produces(429)
@@ -206,6 +214,23 @@ public static class ExecutionEndpoints
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            // Cancelling a parked order durably withdraws its governed approval, which the
+            // escalation routes only allow within the caller's scoped authority over the
+            // owning fund. Reaching the same withdrawal through a client order id must not
+            // be the cheaper path: without this, an operator holding ManageOrders for one
+            // fund could retire another fund's approval just by knowing its id.
+            if (oms.GetOrder(orderId)?.FundAccountId is { } scopedFundAccountId &&
+                !EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance) &&
+                !await EndpointAuthorization.HasScopedPermissionAsync(
+                    context,
+                    UserPermission.ManageOrders,
+                    AccessScopeKindDto.Account,
+                    scopedFundAccountId,
+                    context.RequestAborted).ConfigureAwait(false))
+            {
+                return EndpointHelpers.Forbidden();
+            }
 
             var logger = GetLogger(context.RequestServices);
             var actionId = GenerateActionId();
@@ -250,15 +275,27 @@ public static class ExecutionEndpoints
             var actionId = GenerateActionId();
             var openCount = oms.GetOpenOrders().Count;
 
-            await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false);
+            var sweep = await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false)
+                ?? KillSwitchSweepResult.Unestablished(openCount);
 
-            logger.LogInformation("Trading action {ActionId}: cancel-all — cancelled {Count} open orders", actionId, openCount);
+            logger.LogInformation(
+                "Trading action {ActionId}: cancel-all — cancelled {Cancelled} of {Requested} open order(s), {StillWorking} still working",
+                actionId,
+                sweep.Cancelled,
+                sweep.Requested,
+                sweep.StillWorking.Count);
 
+            // The operator is told what the sweep achieved, not that it was requested. A ticket
+            // reading "Completed" over a book that still has working orders is the specific
+            // failure this endpoint used to produce.
             var actionResult = new TradingActionResult(
                 ActionId: actionId,
-                Status: "Completed",
-                Message: $"Cancellation requested for {openCount} open order(s).",
-                OccurredAt: DateTimeOffset.UtcNow);
+                Status: sweep.Outcome.ToString(),
+                Message: sweep.Describe(),
+                OccurredAt: DateTimeOffset.UtcNow,
+                // Every surviving order, not the bounded prose. A caller driving recovery needs the
+                // ids to cancel by hand, and the rendered message names only the first ten.
+                StillWorking: sweep.StillWorking);
 
             return Results.Json(actionResult, jsonOptions);
         })
@@ -403,7 +440,89 @@ public static class ExecutionEndpoints
             var snapshot = await controls
                 .SetCircuitBreakerAsync(request.IsOpen, request.Reason, actor, request.CorrelationId, context.RequestAborted)
                 .ConfigureAwait(false);
-            return Results.Json(snapshot, jsonOptions);
+
+            // Opening the breaker is the kill switch: beyond blocking new submissions it must
+            // sweep the open book, or resting orders keep filling while routing is "halted".
+            // The cancel sweep runs after the durable breaker flip so a crash between the two
+            // restarts into the halted state, and its outcome is audited separately from the
+            // activation so a failed sweep is visible rather than silently absorbed.
+            KillSwitchSweepResult? sweepOutcome = null;
+            if (request.IsOpen && context.RequestServices.GetService<IOrderManager>() is { } oms)
+            {
+                var auditTrail = context.RequestServices.GetService<ExecutionAuditTrailService>();
+                var openCount = oms.GetOpenOrders().Count;
+                try
+                {
+                    // A null sweep is an order manager that established nothing about the book.
+                    // Fail closed on it rather than dereferencing: the kill switch reporting
+                    // "object reference not set" tells an operator nothing about their orders.
+                    var sweep = await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false)
+                        ?? KillSwitchSweepResult.Unestablished(openCount);
+                    sweepOutcome = sweep;
+
+                    // Outcome, not invocation. The Failed branch below fires only on a thrown
+                    // exception, so a broker that merely refuses a cancellation never reaches it —
+                    // which is how a half-fired kill switch used to be audited as Completed.
+                    if (sweep.RequiresOperatorAction)
+                    {
+                        GetLogger(context.RequestServices).LogError(
+                            "Circuit breaker opened by {Actor} but the cancel-all sweep left {StillWorking} order(s) working; manual cancellation is required",
+                            actor,
+                            sweep.StillWorking.Count);
+                    }
+                    else
+                    {
+                        GetLogger(context.RequestServices).LogInformation(
+                            "Circuit breaker opened by {Actor}; cancel-all emptied the book of {Count} open order(s)",
+                            actor, sweep.Requested);
+                    }
+
+                    if (auditTrail is not null)
+                    {
+                        await auditTrail.RecordAsync(
+                                "controls",
+                                "CircuitBreakerCancelAll",
+                                sweep.Outcome.ToString(),
+                                actor: actor,
+                                correlationId: request.CorrelationId,
+                                message: sweep.Describe(),
+                                ct: CancellationToken.None)
+                            .ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    GetLogger(context.RequestServices).LogError(
+                        ex,
+                        "Circuit breaker opened by {Actor} but the cancel-all sweep failed; open orders may remain working",
+                        actor);
+                    if (auditTrail is not null)
+                    {
+                        await auditTrail.RecordAsync(
+                                "controls",
+                                "CircuitBreakerCancelAll",
+                                "Failed",
+                                actor: actor,
+                                correlationId: request.CorrelationId,
+                                message: $"Kill-switch cancel-all failed with {openCount} open order(s); manual cancellation is required.",
+                                reason: ex.Message,
+                                ct: CancellationToken.None)
+                            .ConfigureAwait(false);
+                    }
+
+                    sweepOutcome = KillSwitchSweepResult.Unestablished(openCount);
+                }
+            }
+
+            // The activation response carries what the sweep achieved. Returning the plain snapshot
+            // either way meant a caller pulling the kill switch got an identical 200 whether the
+            // book emptied or orders were still working, and could only discover the difference by
+            // separately querying the audit trail.
+            return Results.Json(
+                sweepOutcome is null
+                    ? snapshot
+                    : (object)ExecutionCircuitBreakerActivationResponse.From(snapshot, sweepOutcome),
+                jsonOptions);
         })
         .WithName("UpdateExecutionCircuitBreaker")
         .Produces<ExecutionControlSnapshot>(200)
@@ -1249,6 +1368,12 @@ public static class ExecutionEndpoints
 
         var result = await oms.PlaceOrderAsync(orderRequest, context.RequestAborted).ConfigureAwait(false);
 
+        // A parked order is not a rejection here either. Reporting one as Rejected invites
+        // the operator to retry, and every retry mints a fresh ClientOrderId — so a single
+        // close can become several parked close orders that all release on approval and
+        // take the position past flat, or reverse it.
+        var parked = !result.Success && result.RequiresApproval;
+
         if (result.Success)
         {
             logger.LogInformation(
@@ -1258,6 +1383,15 @@ public static class ExecutionEndpoints
                 position.PositionKey,
                 quantity,
                 result.OrderId);
+        }
+        else if (parked)
+        {
+            logger.LogInformation(
+                "Trading action {ActionId}: {Action} {PositionKey} qty {Quantity} — order parked for governed approval",
+                actionId,
+                actionName,
+                position.PositionKey,
+                quantity);
         }
         else
         {
@@ -1273,10 +1407,12 @@ public static class ExecutionEndpoints
             context,
             actionId,
             action: actionName,
-            outcome: result.Success ? "Accepted" : "Rejected",
+            outcome: result.Success ? "Accepted" : parked ? "PendingApproval" : "Rejected",
             message: result.Success
                 ? $"{successVerb} order for {position.ProductDescription} submitted."
-                : (result.ErrorMessage ?? $"{successVerb} order rejected for {position.ProductDescription}."),
+                : parked
+                    ? $"{successVerb} order for {position.ProductDescription} parked for governed approval."
+                    : (result.ErrorMessage ?? $"{successVerb} order rejected for {position.ProductDescription}."),
             orderId: result.OrderId,
             symbol: position.Symbol,
             metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -1290,16 +1426,25 @@ public static class ExecutionEndpoints
 
         var actionResult = new TradingActionResult(
             ActionId: actionId,
-            Status: result.Success ? "Accepted" : "Rejected",
+            Status: result.Success ? "Accepted" : parked ? "PendingApproval" : "Rejected",
             Message: result.Success
                 ? $"{successVerb} order for {position.ProductDescription} submitted (order {result.OrderId})."
-                : (result.ErrorMessage ?? $"{successVerb} order rejected."),
+                : parked
+                    ? $"{successVerb} order for {position.ProductDescription} is parked for governed approval; "
+                        + "an approver must release it. Do not resubmit."
+                    : (result.ErrorMessage ?? $"{successVerb} order rejected."),
             OccurredAt: DateTimeOffset.UtcNow,
             AuditId: auditEntry?.AuditId);
 
-        return result.Success
-            ? Results.Json(actionResult, jsonOptions)
-            : Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        // 202 for a park, matching /orders/submit: the request was accepted but not routed.
+        // 400 would read as "this failed, try again", and each retry mints a new
+        // ClientOrderId, so the retries all park and can all release.
+        return (result.Success, parked) switch
+        {
+            (true, _) => Results.Json(actionResult, jsonOptions),
+            (false, true) => Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status202Accepted),
+            _ => Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
+        };
     }
 
     private static ExecutionPositionDetailResponse MapBrokerPositionToDetail(BrokerPosition position)
@@ -1688,12 +1833,50 @@ public sealed record CreatePaperSessionRequest(
 /// Structured result returned by every Trading write action (cancel, close, pause, etc.).
 /// Carries a correlation ID so UI and backend audit logs can be cross-referenced.
 /// </summary>
+/// <summary>
+/// Circuit-breaker activation result: the control state, plus what the coupled kill-switch sweep
+/// achieved. The two travel together so opening the breaker cannot report success over a book that
+/// still has working orders.
+/// <para>
+/// The snapshot's members are repeated at the top level rather than nested under a wrapper
+/// property, so every existing consumer of this route — the browser workstation and the WPF halt
+/// client among them — keeps deserializing the shape it already expects and simply ignores the
+/// added sweep. Nesting them would have reported "Stop did not take effect" on a breaker the server
+/// had just opened.
+/// </para>
+/// </summary>
+public sealed record ExecutionCircuitBreakerActivationResponse(
+    ExecutionCircuitBreakerState CircuitBreaker,
+    decimal? DefaultMaxPositionSize,
+    IReadOnlyDictionary<string, decimal> SymbolPositionLimits,
+    IReadOnlyList<ExecutionManualOverride> ManualOverrides,
+    DateTimeOffset AsOf,
+    long Version,
+    KillSwitchSweepResult Sweep)
+{
+    public static ExecutionCircuitBreakerActivationResponse From(
+        ExecutionControlSnapshot snapshot,
+        KillSwitchSweepResult sweep) => new(
+            snapshot.CircuitBreaker,
+            snapshot.DefaultMaxPositionSize,
+            snapshot.SymbolPositionLimits,
+            snapshot.ManualOverrides,
+            snapshot.AsOf,
+            snapshot.Version,
+            sweep);
+}
+
 public sealed record TradingActionResult(
     string ActionId,
     string Status,
     string Message,
     DateTimeOffset OccurredAt,
-    string? AuditId = null);
+    string? AuditId = null,
+    /// <summary>
+    /// Orders a kill-switch sweep could not cancel, in full. The rendered <paramref name="Message"/>
+    /// names only the first few, so this is what a caller uses to finish the job by hand.
+    /// </summary>
+    IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null);
 
 /// <summary>Request to update the global execution circuit breaker.</summary>
 public sealed record UpdateExecutionCircuitBreakerRequest(

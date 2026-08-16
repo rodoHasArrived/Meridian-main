@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 196,
-    "warning": 196
+    "total": 211,
+    "warning": 211
   },
   "failed": false,
   "findings": [
@@ -609,6 +609,16 @@
     },
     {
       "details": {
+        "schema": "ledger",
+        "table": "wash_sale_deferrals"
+      },
+      "message": "Business table ledger.wash_sale_deferrals does not have a table comment.",
+      "object": "ledger.wash_sale_deferrals",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
         "schema": "money_market",
         "table": "mmf_funds"
       },
@@ -764,6 +774,56 @@
       },
       "message": "Business table reporting.reporting_restatement_requests does not have a table comment.",
       "object": "reporting.reporting_restatement_requests",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_run_create_claims"
+      },
+      "message": "Business table reporting.reporting_run_create_claims does not have a table comment.",
+      "object": "reporting.reporting_run_create_claims",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_run_snapshots"
+      },
+      "message": "Business table reporting.reporting_run_snapshots does not have a table comment.",
+      "object": "reporting.reporting_run_snapshots",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_schedule_snapshots"
+      },
+      "message": "Business table reporting.reporting_schedule_snapshots does not have a table comment.",
+      "object": "reporting.reporting_schedule_snapshots",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_statement_reconciliation_document_revisions"
+      },
+      "message": "Business table reporting.reporting_statement_reconciliation_document_revisions does not have a table comment.",
+      "object": "reporting.reporting_statement_reconciliation_document_revisions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_statement_reconciliation_documents"
+      },
+      "message": "Business table reporting.reporting_statement_reconciliation_documents does not have a table comment.",
+      "object": "reporting.reporting_statement_reconciliation_documents",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -1220,6 +1280,16 @@
     {
       "details": {
         "schema": "security_master",
+        "table": "security_field_provenance"
+      },
+      "message": "Business table security_master.security_field_provenance does not have a table comment.",
+      "object": "security_master.security_field_provenance",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
         "table": "security_identifiers"
       },
       "message": "Business table security_master.security_identifiers does not have a table comment.",
@@ -1585,6 +1655,20 @@
     {
       "details": {
         "columns": [
+          "replacement_tax_lot_record_id"
+        ],
+        "constraint": "wash_sale_deferrals_replacement_tax_lot_record_id_fkey",
+        "schema": "ledger",
+        "table": "wash_sale_deferrals"
+      },
+      "message": "Foreign key ledger.wash_sale_deferrals.wash_sale_deferrals_replacement_tax_lot_record_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.wash_sale_deferrals.wash_sale_deferrals_replacement_tax_lot_record_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "job_id",
           "tenant_id"
         ],
@@ -1609,6 +1693,36 @@
       },
       "message": "Foreign key reporting.reporting_restatement_requests.fk_reporting_restatement_predecessor is not covered by a left-prefix index.",
       "object": "reporting.reporting_restatement_requests.fk_reporting_restatement_predecessor",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "tenant_id",
+          "previous_content_hash_sha256"
+        ],
+        "constraint": "fk_reporting_statement_revision_previous_blob",
+        "schema": "reporting",
+        "table": "reporting_statement_reconciliation_document_revisions"
+      },
+      "message": "Foreign key reporting.reporting_statement_reconciliation_document_revisions.fk_reporting_statement_revision_previous_blob is not covered by a left-prefix index.",
+      "object": "reporting.reporting_statement_reconciliation_document_revisions.fk_reporting_statement_revision_previous_blob",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "tenant_id",
+          "content_hash_sha256"
+        ],
+        "constraint": "fk_reporting_statement_document_blob",
+        "schema": "reporting",
+        "table": "reporting_statement_reconciliation_documents"
+      },
+      "message": "Foreign key reporting.reporting_statement_reconciliation_documents.fk_reporting_statement_document_blob is not covered by a left-prefix index.",
+      "object": "reporting.reporting_statement_reconciliation_documents.fk_reporting_statement_document_blob",
       "rule_id": "foreign-key-must-be-indexed",
       "severity": "warning"
     },
@@ -2119,13 +2233,63 @@
     {
       "details": {
         "schema": "reporting",
+        "table": "reporting_run_create_claims"
+      },
+      "message": "Table reporting.reporting_run_create_claims is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_run_create_claims",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_run_snapshots"
+      },
+      "message": "Table reporting.reporting_run_snapshots is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_run_snapshots",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_schedule_snapshots"
+      },
+      "message": "Table reporting.reporting_schedule_snapshots is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_schedule_snapshots",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
         "table": "reporting_schema_migrations"
       },
       "message": "Table reporting.reporting_schema_migrations is in an RLS-required schema but row-level security is disabled.",
       "object": "reporting.reporting_schema_migrations",
       "rule_id": "schema-rls-required",
       "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_statement_reconciliation_document_revisions"
+      },
+      "message": "Table reporting.reporting_statement_reconciliation_document_revisions is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_statement_reconciliation_document_revisions",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_statement_reconciliation_documents"
+      },
+      "message": "Table reporting.reporting_statement_reconciliation_documents is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_statement_reconciliation_documents",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
     }
   ],
-  "fingerprint": "a7c091fa3ee636b523989fe3d510e8f02e6a363ad55afcd87aee8b312b1764fc"
+  "fingerprint": "fecc7edd8c8b92a5a146e68754848cfd360e29f1e6b020a5745f1afbe802cb34"
 }

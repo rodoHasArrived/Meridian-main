@@ -92,7 +92,8 @@ public sealed record StrategyRunEntry(
     string? ExceptionStackTrace = null,
     IReadOnlyList<string>? ArtifactReferences = null,
     IReadOnlyList<OperationArtifactReference>? RetainedArtifacts = null,
-    StrategyRunWalkForwardEvidence? WalkForwardEvidence = null)
+    StrategyRunWalkForwardEvidence? WalkForwardEvidence = null,
+    string? DataProvenanceToken = null)
 {
     public IReadOnlyList<string> OperatorAcceptanceCriteria { get; init; } =
         OperatorAcceptanceCriteria ?? [];
@@ -118,6 +119,14 @@ public sealed record StrategyRunEntry(
     public IReadOnlyList<OperationArtifactReference> RetainedArtifacts { get; init; } =
         RetainedArtifacts ?? [];
 
+    /// <summary>
+    /// Terminal output payloads and summaries produced by the run. Unlike <see cref="ParameterSet"/>,
+    /// this dictionary is not part of the immutable input hash and may first be populated only when
+    /// the run reaches <see cref="StrategyRunLifecycleEventType.Completed"/>.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> OutputMetadata { get; init; } =
+        new Dictionary<string, string>(StringComparer.Ordinal);
+
     /// <summary>Creates a new run entry with a generated run ID and current timestamp.</summary>
     public static StrategyRunEntry Start(string strategyId, string strategyName, RunType runType)
     {
@@ -142,10 +151,72 @@ public sealed record StrategyRunEntry(
         string? feedReference = null,
         string? engine = null,
         IReadOnlyDictionary<string, string>? parameterSet = null)
+        => StartWithEvidence(
+            strategyId,
+            strategyName,
+            runType,
+            runId,
+            datasetReference,
+            feedReference,
+            engine,
+            parameterSet);
+
+    /// <summary>
+    /// Creates a new evidence-bound run entry without changing the established <c>Start</c>
+    /// CLR overloads.
+    /// </summary>
+    public static StrategyRunEntry StartWithEvidence(
+        string strategyId,
+        string strategyName,
+        RunType runType,
+        string runId,
+        string? datasetReference = null,
+        string? feedReference = null,
+        string? engine = null,
+        IReadOnlyDictionary<string, string>? parameterSet = null,
+        IReadOnlyList<string>? operatorAcceptanceCriteria = null,
+        IReadOnlyList<string>? retainedEvidenceReferences = null,
+        IReadOnlyList<string>? accountingRecordReferences = null,
+        IReadOnlyList<string>? approvalReferences = null,
+        IReadOnlyList<string>? paperValidationReferences = null,
+        IReadOnlyList<string>? governedReportReferences = null)
     {
         var now = DateTimeOffset.UtcNow;
         var portfolioId = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio";
         var ledgerReference = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger";
+        var inputHashSha256 = HasNonBlankEvidenceDeclarations(
+            operatorAcceptanceCriteria,
+            retainedEvidenceReferences,
+            accountingRecordReferences,
+            approvalReferences,
+            paperValidationReferences,
+            governedReportReferences)
+            ? ComputeEvidenceBoundInputHash(
+                strategyId,
+                strategyName,
+                runType,
+                datasetReference,
+                feedReference,
+                engine,
+                parameterSet,
+                portfolioId: portfolioId,
+                ledgerReference: ledgerReference,
+                operatorAcceptanceCriteria: operatorAcceptanceCriteria,
+                retainedEvidenceReferences: retainedEvidenceReferences,
+                accountingRecordReferences: accountingRecordReferences,
+                approvalReferences: approvalReferences,
+                paperValidationReferences: paperValidationReferences,
+                governedReportReferences: governedReportReferences)
+            : ComputeInputHash(
+                strategyId,
+                strategyName,
+                runType,
+                datasetReference,
+                feedReference,
+                engine,
+                parameterSet,
+                portfolioId: portfolioId,
+                ledgerReference: ledgerReference);
         return new(
             RunId: runId,
             StrategyId: strategyId,
@@ -160,21 +231,18 @@ public sealed record StrategyRunEntry(
             LedgerReference: ledgerReference,
             Engine: engine,
             ParameterSet: parameterSet,
+            OperatorAcceptanceCriteria: operatorAcceptanceCriteria,
+            RetainedEvidenceReferences: retainedEvidenceReferences,
+            AccountingRecordReferences: accountingRecordReferences,
+            ApprovalReferences: approvalReferences,
+            PaperValidationReferences: paperValidationReferences,
+            GovernedReportReferences: governedReportReferences,
             LastLifecycleEvent: StrategyRunLifecycleEventType.Started,
             LifecycleEventAtUtc: now,
             ActorId: "system",
             CorrelationId: runId,
             Reason: "Strategy run started.",
-            InputHashSha256: ComputeInputHash(
-                strategyId,
-                strategyName,
-                runType,
-                datasetReference,
-                feedReference,
-                engine,
-                parameterSet,
-                portfolioId: portfolioId,
-                ledgerReference: ledgerReference),
+            InputHashSha256: inputHashSha256,
             AttemptId: runId,
             AttemptNumber: 1);
     }
@@ -384,7 +452,65 @@ public sealed record StrategyRunEntry(
         };
     }
 
-    /// <summary>Computes the canonical SHA-256 hash of the inputs that define a strategy run.</summary>
+    /// <summary>
+    /// Computes the v3 canonical SHA-256 hash of the inputs and evidence declarations that define
+    /// a strategy run.
+    /// </summary>
+    public static string ComputeEvidenceBoundInputHash(
+        string strategyId,
+        string strategyName,
+        RunType runType,
+        string? datasetReference,
+        string? feedReference,
+        string? engine,
+        IReadOnlyDictionary<string, string>? parameterSet,
+        string? parentRunId = null,
+        string? portfolioId = null,
+        string? ledgerReference = null,
+        string? auditReference = null,
+        string? fundProfileId = null,
+        IReadOnlyList<string>? operatorAcceptanceCriteria = null,
+        IReadOnlyList<string>? retainedEvidenceReferences = null,
+        IReadOnlyList<string>? accountingRecordReferences = null,
+        IReadOnlyList<string>? approvalReferences = null,
+        IReadOnlyList<string>? paperValidationReferences = null,
+        IReadOnlyList<string>? governedReportReferences = null)
+    {
+        var builder = new StringBuilder();
+        AppendCanonical(builder, "meridian.strategy-run-input.v3");
+        AppendCanonical(builder, strategyId);
+        AppendCanonical(builder, strategyName);
+        AppendCanonical(builder, runType.ToString());
+        AppendCanonical(builder, datasetReference);
+        AppendCanonical(builder, feedReference);
+        AppendCanonical(builder, engine);
+        AppendCanonical(builder, parentRunId);
+        AppendCanonical(builder, portfolioId);
+        AppendCanonical(builder, ledgerReference);
+        AppendCanonical(builder, auditReference);
+        AppendCanonical(builder, fundProfileId);
+
+        foreach (var parameter in parameterSet?.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                     ?? Enumerable.Empty<KeyValuePair<string, string>>())
+        {
+            AppendCanonical(builder, parameter.Key);
+            AppendCanonical(builder, parameter.Value);
+        }
+
+        AppendCanonicalCollection(builder, nameof(OperatorAcceptanceCriteria), operatorAcceptanceCriteria);
+        AppendCanonicalCollection(builder, nameof(RetainedEvidenceReferences), retainedEvidenceReferences);
+        AppendCanonicalCollection(builder, nameof(AccountingRecordReferences), accountingRecordReferences);
+        AppendCanonicalCollection(builder, nameof(ApprovalReferences), approvalReferences);
+        AppendCanonicalCollection(builder, nameof(PaperValidationReferences), paperValidationReferences);
+        AppendCanonicalCollection(builder, nameof(GovernedReportReferences), governedReportReferences);
+
+        return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString())));
+    }
+
+    /// <summary>
+    /// Computes the v2 canonical input hash. This exact public signature is retained for binary
+    /// compatibility; new evidence-bound runs use <see cref="ComputeEvidenceBoundInputHash"/>.
+    /// </summary>
     public static string ComputeInputHash(
         string strategyId,
         string strategyName,
@@ -450,9 +576,46 @@ public sealed record StrategyRunEntry(
         return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString())));
     }
 
+    internal static bool HasNonBlankEvidenceDeclarations(
+        IEnumerable<string>? operatorAcceptanceCriteria,
+        IEnumerable<string>? retainedEvidenceReferences,
+        IEnumerable<string>? accountingRecordReferences,
+        IEnumerable<string>? approvalReferences,
+        IEnumerable<string>? paperValidationReferences,
+        IEnumerable<string>? governedReportReferences) =>
+        HasNonBlankValue(operatorAcceptanceCriteria) ||
+        HasNonBlankValue(retainedEvidenceReferences) ||
+        HasNonBlankValue(accountingRecordReferences) ||
+        HasNonBlankValue(approvalReferences) ||
+        HasNonBlankValue(paperValidationReferences) ||
+        HasNonBlankValue(governedReportReferences);
+
+    private static bool HasNonBlankValue(IEnumerable<string>? values) =>
+        values?.Any(static value => !string.IsNullOrWhiteSpace(value)) == true;
+
     private static void AppendCanonical(StringBuilder builder, string? value)
     {
         value ??= string.Empty;
         builder.Append(value.Length).Append(':').Append(value).Append('|');
+    }
+
+    private static void AppendCanonicalCollection(
+        StringBuilder builder,
+        string collectionName,
+        IEnumerable<string>? values)
+    {
+        var normalized = values?
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static value => value, StringComparer.Ordinal)
+            .ToArray() ?? [];
+
+        AppendCanonical(builder, collectionName);
+        AppendCanonical(builder, normalized.Length.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        foreach (var value in normalized)
+        {
+            AppendCanonical(builder, value);
+        }
     }
 }

@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Ui.Shared.Services;
 
@@ -6,32 +7,40 @@ namespace Meridian.Ui.Shared.Evidence;
 
 /// <summary>
 /// Adapts scheduled connector fetches into the existing statement reconciliation report workflow.
-/// It re-resolves the persisted accounting scope before the remote document is treated as an
-/// authoritative intake and reports success only after Operations Continuity and canonical casework
-/// publication have been retained.
+/// The scheduler uses this authority to re-resolve persisted account ownership before provider
+/// access, and ingestion resolves it again before treating the fetched document as authoritative.
+/// Success is reported only after Operations Continuity and canonical casework publication have
+/// been retained.
 /// </summary>
 public sealed class StatementReconciliationReportFetchIngestionAuthority(
     StatementReconciliationReportWorkflowService workflow,
     IStatementReconciliationIntakeAuthority intakeAuthority) : IStatementFetchIngestionAuthority
 {
+    public Task<StatementAccountingScope> AuthorizeAsync(
+        StatementFetchAuthorizationCommand command,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        return intakeAuthority.ResolveAccountingScopeAsync(
+            new StatementReconciliationIntakeScopeRequest(
+                command.TenantId,
+                command.CompanyId,
+                command.FundAccountId,
+                command.ExternalAccountId,
+                command.SourceInstitution,
+                command.PeriodStart,
+                command.PeriodEnd,
+                command.AccountingScope),
+            ct);
+    }
+
     public async Task<StatementImportCommitResultDto> IngestAsync(
         StatementFetchIngestionCommand command,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var accountingScope = await intakeAuthority
-            .ResolveAccountingScopeAsync(
-                new StatementReconciliationIntakeScopeRequest(
-                    command.TenantId,
-                    command.CompanyId,
-                    command.FundAccountId,
-                    command.ExternalAccountId,
-                    command.SourceInstitution,
-                    command.PeriodStart,
-                    command.PeriodEnd,
-                    command.AccountingScope),
-                ct)
+        var accountingScope = await AuthorizeAsync(command.ToAuthorizationCommand(), ct)
             .ConfigureAwait(false);
         var execution = await workflow
             .StartAsync(

@@ -99,6 +99,16 @@ public sealed class BacktestProxy
         return captured;
     }
 
+    internal IReadOnlyList<FillEvent> DrainCapturedFills()
+    {
+        if (_capturedFills.Count == 0)
+            return Array.Empty<FillEvent>();
+
+        var captured = _capturedFills.ToList();
+        _capturedFills.Clear();
+        return captured;
+    }
+
     internal void UpdateCancellationTokenProvider(Func<CancellationToken> cancellationTokenProvider)
         => _cancellationTokenProvider = cancellationTokenProvider ?? throw new ArgumentNullException(nameof(cancellationTokenProvider));
 }

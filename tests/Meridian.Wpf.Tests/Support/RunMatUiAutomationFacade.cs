@@ -275,7 +275,7 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
         services.AddSingleton<INavigationService>(_ => NavigationService.Instance);
         services.AddSingleton<ConnectionService>(_ => ConnectionService.Instance);
         services.AddSingleton<StatusService>(_ => StatusService.Instance);
-        services.AddSingleton<ApiClientService>(_ => ApiClientService.Instance);
+        services.AddDesktopApiClient();
         services.AddSingleton<ApiStatusService>();
         services.AddSingleton<IStatusService>(sp => sp.GetRequiredService<ApiStatusService>());
         services.AddSingleton<Meridian.Wpf.Services.LoggingService>(_ => Meridian.Wpf.Services.LoggingService.Instance);

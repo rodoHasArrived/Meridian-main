@@ -20,6 +20,8 @@ namespace Meridian.Execution.Serialization;
     UseStringEnumConverter = true)]
 [JsonSerializable(typeof(PersistedSessionRecord))]
 [JsonSerializable(typeof(ExecutionReport))]
+[JsonSerializable(typeof(PaperSessionFillRecord))]
+[JsonSerializable(typeof(PaperSessionFillAppliedRecord))]
 [JsonSerializable(typeof(OrderState))]
 [JsonSerializable(typeof(List<string>))]
 [JsonSerializable(typeof(PersistedJournalEntryDto))]
@@ -57,6 +59,9 @@ namespace Meridian.Execution.Serialization;
 [JsonSerializable(typeof(List<ExecutionManualOverride>))]
 // Operator control and audit trail types
 [JsonSerializable(typeof(ExecutionControlSnapshot))]
+// Governed-approval queue persistence
+[JsonSerializable(typeof(RiskEscalationSnapshot))]
+[JsonSerializable(typeof(OrderRequest))]
 internal sealed partial class ExecutionJsonContext : JsonSerializerContext
 {
 }

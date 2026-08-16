@@ -1,4 +1,7 @@
 using Meridian.Domain.Reconciliation;
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
@@ -87,6 +90,7 @@ internal static class StatementRunMatcher
 
         var breaks = new List<StatementRunBreak>();
         var matchCount = 0;
+        var breakOrdinal = 0;
         foreach (var result in engineResult.Results)
         {
             if (result.MatchTier is StatementMatchTier.Exact or StatementMatchTier.Tolerance)
@@ -104,14 +108,15 @@ internal static class StatementRunMatcher
             var sourceReference = result.BrokerEvidenceReference
                 ?? result.InternalEvidenceReference
                 ?? $"{import.ImportId}:unmatched";
-            var toleranceBreached = result.MatchTier == StatementMatchTier.Unmatched;
+            var toleranceBreached = IsToleranceBreached(result);
+            var breakCode = BuildBreakCode(result);
 
             var record = new ReconciliationBreakRecord(
-                BreakId: Guid.NewGuid().ToString("N"),
+                BreakId: BuildBreakId(import.ImportId, breakOrdinal++, sourceReference, breakCode),
                 RunId: import.ImportId,
                 ImportId: import.ImportId,
                 SourceReference: sourceReference,
-                BreakCode: BuildBreakCode(result),
+                BreakCode: breakCode,
                 Category: statementRow?.ActivityType ?? result.Kind.ToString().ToLowerInvariant(),
                 Delta: result.Variance.LargestAbsoluteAmount,
                 Tolerance: ResolveToleranceAmount(result.Tolerance),
@@ -123,6 +128,31 @@ internal static class StatementRunMatcher
         }
 
         return new StatementRunMatchResult(breaks, matchCount);
+    }
+
+    /// <summary>
+    /// Derives a break identity from the break's own material instead of minting a random one. The
+    /// statement run's recovery design rebuilds the match artifact when a replay resumes an
+    /// interrupted run and refuses to adopt an artifact that differs from the retained one, so a
+    /// random id would make every replay conflict with the evidence it is trying to recover. The
+    /// enumeration ordinal is part of the material because two unmatched results can legitimately
+    /// share a source reference; the engine's result order is deterministic for a given input.
+    /// </summary>
+    private static string BuildBreakId(
+        string importId,
+        int ordinal,
+        string sourceReference,
+        string breakCode)
+    {
+        var material = string.Join(
+            '|',
+            importId,
+            ordinal.ToString(CultureInfo.InvariantCulture),
+            sourceReference,
+            breakCode);
+        var digest = SHA256.HashData(Encoding.UTF8.GetBytes(material));
+        // 32 hex characters keeps the shape callers already store and index on.
+        return Convert.ToHexString(digest)[..32].ToLowerInvariant();
     }
 
     private static void ValidateStatementAccounts(
@@ -280,6 +310,21 @@ internal static class StatementRunMatcher
 
     private static decimal ResolveToleranceAmount(StatementMatchTolerance tolerance) =>
         Math.Max(tolerance.Quantity ?? 0m, tolerance.Amount ?? 0m);
+
+    private static bool IsToleranceBreached(StatementMatchResult result)
+    {
+        if (result.Variance.Quantity is { } quantityVariance
+            && Math.Abs(quantityVariance) > (result.Tolerance.Quantity ?? 0m))
+        {
+            return true;
+        }
+
+        var amountTolerance = result.Tolerance.Amount ?? 0m;
+        return (result.Variance.MarketValue is { } marketValueVariance
+                && Math.Abs(marketValueVariance) > amountTolerance)
+            || (result.Variance.Amount is { } amountVariance
+                && Math.Abs(amountVariance) > amountTolerance);
+    }
 
     private static string BuildBreakCode(StatementMatchResult result)
     {

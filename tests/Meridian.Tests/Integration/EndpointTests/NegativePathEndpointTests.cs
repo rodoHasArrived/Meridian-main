@@ -15,9 +15,11 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class NegativePathEndpointTests : IDisposable
+public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
+    private readonly HttpClient _backfillClient;
+    private readonly HttpClient _providerClient;
     // SEC-001: configuration routes now require ViewConfig/ModifyConfig. Config-specific negative
     // paths use an authorized client so the handler (not the authorization gate) produces the
     // asserted 400/200 responses.
@@ -26,11 +28,21 @@ public sealed class NegativePathEndpointTests : IDisposable
 
     public NegativePathEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        _client = fixture.CreateNoRedirectClient();
+        _backfillClient = fixture.CreatePermittedClient(
+            UserPermission.ViewHistoricalData,
+            UserPermission.TriggerBackfill);
+        _providerClient = fixture.CreatePermittedClient(UserPermission.ManageProviders);
         _configClient = fixture.CreatePermittedClient(UserPermission.ViewConfig, UserPermission.ModifyConfig);
     }
 
-    public void Dispose() => _configClient.Dispose();
+    public void Dispose()
+    {
+        _client.Dispose();
+        _backfillClient.Dispose();
+        _providerClient.Dispose();
+        _configClient.Dispose();
+    }
 
     // ================================================================
     // Health / Status negative paths
@@ -253,7 +265,7 @@ public sealed class NegativePathEndpointTests : IDisposable
     {
         var payload = new { Provider = "stooq", Symbols = Array.Empty<string>() };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/backfill/run", content);
+        var response = await _backfillClient.PostAsync("/api/backfill/run", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -262,7 +274,7 @@ public sealed class NegativePathEndpointTests : IDisposable
     {
         var payload = new { Provider = "stooq", Symbols = new[] { "INVALID SYMBOL WITH SPACES!!!" } };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/backfill/run", content);
+        var response = await _backfillClient.PostAsync("/api/backfill/run", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -271,7 +283,7 @@ public sealed class NegativePathEndpointTests : IDisposable
     {
         var payload = new { Provider = "stooq", Symbols = new[] { "SPY" }, From = "2024-12-31", To = "2024-01-01" };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/backfill/run", content);
+        var response = await _backfillClient.PostAsync("/api/backfill/run", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -281,7 +293,7 @@ public sealed class NegativePathEndpointTests : IDisposable
         var symbols = Enumerable.Range(1, 101).Select(i => $"SYM{i}").ToArray();
         var payload = new { Provider = "stooq", Symbols = symbols };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/backfill/run", content);
+        var response = await _backfillClient.PostAsync("/api/backfill/run", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -290,7 +302,7 @@ public sealed class NegativePathEndpointTests : IDisposable
     {
         var payload = new { Provider = "stooq", Symbols = Array.Empty<string>() };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/backfill/run/preview", content);
+        var response = await _backfillClient.PostAsync("/api/backfill/run/preview", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -298,14 +310,14 @@ public sealed class NegativePathEndpointTests : IDisposable
     public async Task BackfillStatus_WhenNoBackfillRun_ReturnsNotFound()
     {
         // No backfill has been run in test fixture — expect 404
-        var response = await _client.GetAsync("/api/backfill/status");
+        var response = await _backfillClient.GetAsync("/api/backfill/status");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task BackfillProviders_ReturnsJsonArray()
     {
-        var response = await _client.GetAsync("/api/backfill/providers");
+        var response = await _backfillClient.GetAsync("/api/backfill/providers");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
     }
@@ -313,7 +325,7 @@ public sealed class NegativePathEndpointTests : IDisposable
     [Fact]
     public async Task BackfillProgress_WhenNoActiveBackfill_ReturnsTypedEmptySnapshot()
     {
-        var response = await _client.GetAsync("/api/backfill/progress");
+        var response = await _backfillClient.GetAsync("/api/backfill/progress");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
@@ -330,21 +342,21 @@ public sealed class NegativePathEndpointTests : IDisposable
     {
         var payload = new { Symbols = Array.Empty<string>() };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/backfill/gap-fill", content);
+        var response = await _backfillClient.PostAsync("/api/backfill/gap-fill", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task BackfillScheduleById_NonExistent_ReturnsNotFound()
     {
-        var response = await _client.GetAsync("/api/backfill/schedules/nonexistent-schedule-id-xyz");
+        var response = await _backfillClient.GetAsync("/api/backfill/schedules/nonexistent-schedule-id-xyz");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task DeleteBackfillSchedule_NonExistent_ReturnsNotFoundOr503()
     {
-        var response = await _client.DeleteAsync("/api/backfill/schedules/nonexistent-schedule-id-xyz");
+        var response = await _backfillClient.DeleteAsync("/api/backfill/schedules/nonexistent-schedule-id-xyz");
         // 404 if schedule manager available but ID not found; 503 if manager unavailable
         response.StatusCode.Should().BeOneOf(HttpStatusCode.NotFound, HttpStatusCode.ServiceUnavailable);
     }
@@ -376,7 +388,7 @@ public sealed class NegativePathEndpointTests : IDisposable
     {
         var payload = new { Enabled = true };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/config/data-sources/nonexistent-id/toggle", content);
+        var response = await _providerClient.PostAsync("/api/config/data-sources/nonexistent-id/toggle", content);
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -385,7 +397,7 @@ public sealed class NegativePathEndpointTests : IDisposable
     {
         var payload = new { Name = "", Provider = "Alpaca", Enabled = true, Type = "RealTime", Priority = 10 };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/config/data-sources", content);
+        var response = await _providerClient.PostAsync("/api/config/data-sources", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -394,7 +406,7 @@ public sealed class NegativePathEndpointTests : IDisposable
     {
         var payload = new { ProviderName = "", SaveAsDefault = false };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/providers/switch", content);
+        var response = await _providerClient.PostAsync("/api/providers/switch", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -403,7 +415,7 @@ public sealed class NegativePathEndpointTests : IDisposable
     {
         var payload = new { ProviderName = "NotARealProvider", SaveAsDefault = false };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/providers/switch", content);
+        var response = await _providerClient.PostAsync("/api/providers/switch", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 

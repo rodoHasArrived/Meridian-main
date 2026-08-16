@@ -1,6 +1,7 @@
 namespace Meridian.FSharp.Domain
 
 open System
+open System.Text.Json
 
 type CreateSecurity = {
     SecurityId: SecurityId
@@ -78,6 +79,27 @@ module SecurityMaster =
             []
             @ require (BondTerms.couponRate terms |> Option.forall (fun rate -> rate >= 0m))
                 (error "bond_coupon_invalid" "Bond coupon rate must be zero or greater when present.")
+            @ require (terms.PrincipalSchedule |> List.forall (fun entry -> entry.Amount > 0m))
+                (error "bond_principal_schedule_invalid" "Bond principal schedule amounts must be greater than zero.")
+            @ require
+                (terms.PrincipalSchedule
+                 |> List.forall (fun entry ->
+                     entry.PaymentDate <= terms.Maturity
+                     && (terms.IssueDate |> Option.forall (fun issueDate -> entry.PaymentDate >= issueDate))))
+                (error
+                    "bond_principal_schedule_date_invalid"
+                    "Bond principal schedule dates must fall on or after IssueDate (when present) and on or before Maturity — out-of-term instalments are silently dropped by cash-flow projections instead of paying down principal.")
+            @ require
+                (match terms.Par with
+                 | Some par -> (terms.PrincipalSchedule |> List.sumBy (fun entry -> entry.Amount)) <= par
+                 | None -> true)
+                (error
+                    "bond_principal_schedule_exceeds_par"
+                    "Bond principal schedule amounts must not sum to more than Par — projections cap instalments at the outstanding balance, so an over-committed schedule silently pays less than its persisted amounts.")
+            @ require (terms.PrincipalSchedule.IsEmpty || terms.Par.IsSome)
+                (error
+                    "bond_principal_schedule_requires_par"
+                    "Bond principal schedules require Par — without a face value, projections substitute a 100-unit basis and cap instalments against it, silently contradicting the persisted contractual amounts.")
         | SecurityKind.FxSpot terms ->
             []
             @ requireNotBlank "fx_base_currency_required" "BaseCurrency" terms.BaseCurrency
@@ -154,9 +176,34 @@ module SecurityMaster =
             @ requireNotBlank "structured_credit_collateral_required" "CollateralType" terms.CollateralType
             @ require (terms.OriginalFace > 0m)
                 (error "structured_credit_original_face_invalid" "StructuredCredit OriginalFace must be greater than zero.")
-            @ require (terms.CurrentFactor |> Option.forall (fun factor -> factor >= 0m))
-                (error "structured_credit_current_factor_invalid" "StructuredCredit CurrentFactor must be zero or greater when present.")
+            @ require (terms.CurrentFactor |> Option.forall (fun factor -> factor >= 0m && factor <= 1m))
+                (error "structured_credit_current_factor_invalid" "StructuredCredit CurrentFactor must be between zero and one when present — factors above one project cash flows exceeding the original principal.")
             @ requireNotBlank "structured_credit_coupon_index_required" "CouponOrIndex" terms.CouponOrIndex
+            @ require (terms.FactorScheduleEntries |> List.forall (fun entry -> entry.Factor >= 0m && entry.Factor <= 1m))
+                (error "structured_credit_factor_schedule_invalid" "StructuredCredit factor schedule factors must be between zero and one — factors above one project cash flows exceeding the original principal.")
+            @ require
+                (terms.FactorScheduleEntries
+                 |> List.map (fun entry -> entry.AsOfDate)
+                 |> List.distinct
+                 |> List.length = List.length terms.FactorScheduleEntries)
+                (error
+                    "structured_credit_factor_schedule_duplicate_date"
+                    "StructuredCredit factor schedule dates must be unique — two factors on the same date make the effective outstanding principal depend on input ordering, and readers keep only one of them.")
+            @ require
+                (terms.FactorScheduleEntries
+                 |> List.sortBy (fun entry -> entry.AsOfDate)
+                 |> List.pairwise
+                 |> List.forall (fun (earlier, later) -> later.Factor <= earlier.Factor))
+                (error
+                    "structured_credit_factor_schedule_not_monotonic"
+                    "StructuredCredit factor schedule must be non-increasing in date order — a rising factor would grow outstanding principal, which the factor-paydown workflow treats as invalid retained evidence.")
+            @ require
+                (match terms.Maturity with
+                 | Some maturity -> terms.FactorScheduleEntries |> List.forall (fun entry -> entry.AsOfDate <= maturity)
+                 | None -> true)
+                (error
+                    "structured_credit_factor_after_maturity"
+                    "StructuredCredit factor schedule observations must fall on or before the retained maturity — a factor decline after the legal final date would emit principal paydowns for a tranche that has already reached term.")
         | SecurityKind.PrivateFundInterest terms ->
             []
             @ requireNotBlank "private_fund_gp_required" "GpSponsor" terms.GpSponsor
@@ -227,6 +274,47 @@ module SecurityMaster =
                 (error "warrant_multiplier_invalid" "Warrant Multiplier must be greater than zero when present.")
         | SecurityKind.InvestmentFund _ ->
             []
+        | SecurityKind.CustomAsset terms ->
+            // Write-path envelope validation: the DOCUMENT must declare the governance envelope the
+            // schema requires (numeric profileVersion, object-valued profileFields), so a tolerant
+            // read-side default can never let an incomplete envelope become a canonical record.
+            // Reads stay tolerant — this validation runs only on create/amend commands.
+            let envelopeErrors =
+                if String.IsNullOrWhiteSpace terms.TermsJson then
+                    []
+                else
+                    try
+                        use document = JsonDocument.Parse terms.TermsJson
+                        let root = document.RootElement
+                        if root.ValueKind <> JsonValueKind.Object then
+                            [ error "custom_asset_terms_invalid" "CustomAsset terms must be a JSON object." ]
+                        else
+                            []
+                            @ (match root.TryGetProperty "profileVersion" with
+                               | true, value when value.ValueKind = JsonValueKind.Number ->
+                                   // A JSON number is not enough: a fractional value such as 1.5
+                                   // would pass here, persist verbatim in the canonical document,
+                                   // and then read back through the tolerant default as version 1.
+                                   // Require an actual positive integer on the write path.
+                                   (match value.TryGetInt32() with
+                                    | true, version when version > 0 -> []
+                                    | _ ->
+                                        [ error
+                                              "custom_asset_profile_version_invalid"
+                                              "CustomAsset terms profileVersion must be a positive integer." ])
+                               | _ -> [ error "custom_asset_profile_version_missing" "CustomAsset terms must declare a numeric profileVersion." ])
+                            @ (match root.TryGetProperty "profileFields" with
+                               | true, value when value.ValueKind = JsonValueKind.Object -> []
+                               | _ -> [ error "custom_asset_profile_fields_missing" "CustomAsset terms must declare an object-valued profileFields." ])
+                    with :? JsonException ->
+                        [ error "custom_asset_terms_invalid" "CustomAsset terms must be valid JSON." ]
+
+            []
+            @ requireNotBlank "custom_asset_profile_required" "CustomProfileId" terms.CustomProfileId
+            @ require (terms.ProfileVersion > 0)
+                (error "custom_asset_profile_version_invalid" "CustomAsset ProfileVersion must be greater than zero.")
+            @ requireNotBlank "custom_asset_terms_required" "TermsJson" terms.TermsJson
+            @ envelopeErrors
 
     let private validateIdentifier (identifier: Identifier) =
         []
@@ -235,6 +323,10 @@ module SecurityMaster =
            | IdentifierKind.ProviderSymbol provider ->
                requireNotBlank "identifier_provider_required" "Identifier.Provider" provider
            | _ -> [])
+        @ require (SecurityIdentifier.providerMetadataMatchesKind identifier)
+            (error
+                "identifier_provider_mismatch"
+                "ProviderSymbol metadata must match the authoritative provider namespace carried by Identifier.Kind.")
         @ require (identifier.ValidTo |> Option.forall (fun validTo -> validTo > identifier.ValidFrom))
             (error "identifier_date_range_invalid" "Identifier ValidTo must be later than ValidFrom when present.")
 
@@ -322,6 +414,12 @@ module SecurityMaster =
                 { identifier with ValidTo = Some effectiveFrom }
             else
                 identifier)
+
+    /// Standalone kind-invariant validation for the C# write path: a profile-backed record
+    /// reclassified to its resolved first-class kind must satisfy that kind's rule set too, which
+    /// can be stricter than the pinned profile's (e.g. PrivateFundInterest requires a strictly
+    /// positive commitment while the profile's field range starts at zero).
+    let validateKindInvariants (kind: SecurityKind) = validateKind kind
 
     let create (command: CreateSecurity) =
         match validateCreate command with

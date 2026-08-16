@@ -1,5 +1,6 @@
 using System.Data;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
 using Npgsql;
@@ -33,6 +34,8 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
         ReportingDistributionStoreGuard.ValidateIdentifier(_options.Schema, nameof(options.Schema));
         _scheduleTable = $"\"{_options.Schema}\".\"reporting_schedule_snapshots\"";
     }
+
+    public bool IsDurableAuthority => true;
 
     public IReadOnlyList<ReportingScheduleRecordDto> Load()
     {
@@ -123,7 +126,7 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
                 {
                     continue;
                 }
-                if (!ReportingOperationalStoreJson.FixedHashEquals(
+                if (!Sha256Digest.FixedEquals(
                         retained.PayloadHashSha256,
                         baseline.Value.PayloadHashSha256))
                 {
@@ -153,13 +156,13 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
                             entry.Schedule,
                             baseline.Schedule.UpdatedAtUtc);
                     }
-                    if (ReportingOperationalStoreJson.FixedHashEquals(
+                    if (Sha256Digest.FixedEquals(
                             retained.PayloadHashSha256,
                             entry.PayloadHashSha256))
                     {
                         continue;
                     }
-                    if (!ReportingOperationalStoreJson.FixedHashEquals(
+                    if (!Sha256Digest.FixedEquals(
                             retained.PayloadHashSha256,
                             baseline.PayloadHashSha256))
                     {
@@ -187,7 +190,7 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
                     Insert(connection, transaction, entry);
                     continue;
                 }
-                if (!ReportingOperationalStoreJson.FixedHashEquals(
+                if (!Sha256Digest.FixedEquals(
                         retained.PayloadHashSha256,
                         entry.PayloadHashSha256))
                 {
@@ -497,7 +500,7 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
         {
             throw ExecutionLeaseException(entry.Identity);
         }
-        if (ReportingOperationalStoreJson.FixedHashEquals(
+        if (Sha256Digest.FixedEquals(
                 current.PayloadHashSha256,
                 entry.PayloadHashSha256))
         {
@@ -581,7 +584,7 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
                 ReportingOperationalStoreJson.SerializeCanonical(
                     schedule,
                     nameof(schedule)));
-            if (!ReportingOperationalStoreJson.FixedHashEquals(retainedHash, computedHash))
+            if (!Sha256Digest.FixedEquals(retainedHash, computedHash))
             {
                 throw new InvalidDataException(
                     "the canonical schedule JSON integrity digest does not match");
@@ -697,7 +700,7 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
 
         if (expectedUpdatedAtUtc is null)
         {
-            if (ReportingOperationalStoreJson.FixedHashEquals(
+            if (Sha256Digest.FixedEquals(
                     current.PayloadHashSha256,
                     entry.PayloadHashSha256))
             {
@@ -714,7 +717,7 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
                 current.Schedule,
                 expectedUpdatedAtUtc.Value);
         }
-        if (ReportingOperationalStoreJson.FixedHashEquals(
+        if (Sha256Digest.FixedEquals(
                 current.PayloadHashSha256,
                 entry.PayloadHashSha256))
         {
@@ -889,7 +892,7 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
                 transaction,
                 entry.Identity);
             if (concurrent is not null
-                && ReportingOperationalStoreJson.FixedHashEquals(
+                && Sha256Digest.FixedEquals(
                     concurrent.PayloadHashSha256,
                     entry.PayloadHashSha256))
             {

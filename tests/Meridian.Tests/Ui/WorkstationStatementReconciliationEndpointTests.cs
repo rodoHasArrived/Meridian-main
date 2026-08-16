@@ -77,6 +77,8 @@ public sealed partial class WorkstationEndpointsTests
                     StatementReportLedgerBookId,
                     StatementReportPeriodId,
                     new DateOnly(2026, 6, 30)));
+            result.EvidenceWorkbenchRoute.Should().Be(
+                "/reporting/evidence?subjectKind=statement-run&subjectId=statement-run-endpoint&documentClassification=Statement");
             intake.ResolveCount.Should().Be(1);
             intake.PublishCount.Should().Be(1);
             intake.LastTenantId.Should().Be("tenant-test");
@@ -342,11 +344,154 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_StatementFetchPreview_ForeignTenantAccountFailsBeforeProviderFetch()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-statement-fetch-preview-foreign-account",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            var connector = new RecordingFetchingStatementConnector();
+            var importService = new StatementImportService(
+                new StatementConnectorRegistry([connector]),
+                new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(root)),
+                new EndpointStatementRunWorkflowService(),
+                root);
+            await using var app = await CreateAppAsync(
+                services =>
+                {
+                    services.AddSingleton(importService);
+                    RegisterStatementReportAuthority(
+                        services,
+                        new FundProfileOwnership(
+                            StatementReportFundId.ToString("D"),
+                            "tenant-other",
+                            "company-other"));
+                },
+                currentUserPermissions: UserPermission.AdminMaintenance);
+
+            var response = await app.GetTestClient().PostAsJsonAsync(
+                UiApiRoutes.ReconciliationStatementFetchPreview,
+                new
+                {
+                    connectorId = RecordingFetchingStatementConnector.ConnectorId,
+                    externalAccountId = "external-alpha",
+                    fundAccountId = StatementReportAccountId.ToString("D"),
+                    sourceInstitution = "Broker Alpha",
+                    sourceKind = "broker",
+                    datasets = "activity"
+                },
+                ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            connector.FetchCount.Should().Be(0);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementFetchPreview_MissingCompanyScopeFailsBeforeProviderFetch()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-statement-fetch-preview-missing-company",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            var connector = new RecordingFetchingStatementConnector();
+            var importService = new StatementImportService(
+                new StatementConnectorRegistry([connector]),
+                new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(root)),
+                new EndpointStatementRunWorkflowService(),
+                root);
+            await using var app = await CreateAppAsync(
+                services =>
+                {
+                    services.AddSingleton(importService);
+                    RegisterStatementReportAuthority(services);
+                },
+                currentUserPermissions: UserPermission.AdminMaintenance,
+                currentUserCompanyId: null,
+                currentUserTenantId: "tenant-test");
+
+            var response = await app.GetTestClient().PostAsJsonAsync(
+                UiApiRoutes.ReconciliationStatementFetchPreview,
+                new
+                {
+                    connectorId = RecordingFetchingStatementConnector.ConnectorId,
+                    externalAccountId = "external-alpha",
+                    fundAccountId = StatementReportAccountId.ToString("D"),
+                    sourceInstitution = "Broker Alpha",
+                    sourceKind = "broker",
+                    datasets = "activity"
+                },
+                ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            connector.FetchCount.Should().Be(0);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementImportPreview_ForeignTenantAccountFailsBeforeParsing()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-statement-import-preview-foreign-account",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            var connector = new RecordingFetchingStatementConnector();
+            var importService = new StatementImportService(
+                new StatementConnectorRegistry([connector]),
+                new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(root)),
+                new EndpointStatementRunWorkflowService(),
+                root);
+            await using var app = await CreateAppAsync(
+                services =>
+                {
+                    services.AddSingleton(importService);
+                    RegisterStatementReportAuthority(
+                        services,
+                        new FundProfileOwnership(
+                            StatementReportFundId.ToString("D"),
+                            "tenant-other",
+                            "company-other"));
+                },
+                currentUserPermissions: UserPermission.AdminMaintenance);
+            using var content = BuildStatementReconciliationReportContent();
+
+            var response = await app.GetTestClient().PostAsync(
+                UiApiRoutes.ReconciliationStatementImportPreview,
+                content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            connector.ParseCount.Should().Be(0);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_StatementRunRoutes_ShouldReturnListDetailExceptionsAndNotFound()
     {
+        var service = new StubReconciliationApiService();
         await using var app = await CreateAppAsync(services =>
         {
-            services.AddSingleton<IReconciliationApiService>(new StubReconciliationApiService());
+            services.AddSingleton<IReconciliationApiService>(service);
         });
         var client = app.GetTestClient();
 
@@ -369,6 +514,9 @@ public sealed partial class WorkstationEndpointsTests
         detail!.RunId.Should().Be("statement-run-1");
         exceptions.Should().ContainSingle(item => item.RunId == "statement-run-1" && item.ToleranceBreached);
         missing.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        service.ObservedScopes.Should().OnlyContain(scope =>
+            scope.TenantId == "tenant-test" &&
+            scope.CompanyId == "tenant-test");
     }
 
     [Fact]
@@ -422,6 +570,24 @@ public sealed partial class WorkstationEndpointsTests
         service.ReconciledRequests.Should().ContainSingle();
         service.ReconciledRequests[0].RunId.Should().Be("statement-run-1");
         service.ReconciledRequests[0].Request.Actor.Should().Be("ops-user");
+        service.ObservedScopes.Should().OnlyContain(scope =>
+            scope.TenantId == "tenant-test" &&
+            scope.CompanyId == "tenant-test");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementRunRoutes_WithoutCompanyScope_ShouldFailClosed()
+    {
+        var service = new StubReconciliationApiService();
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton<IReconciliationApiService>(service),
+            currentUserCompanyId: null,
+            currentUserTenantId: "tenant-only");
+
+        var response = await app.GetTestClient().GetAsync(UiApiRoutes.ReconciliationStatementRuns);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        service.ObservedScopes.Should().BeEmpty();
     }
 
     [Fact]
@@ -643,7 +809,11 @@ public sealed partial class WorkstationEndpointsTests
                     DateTimeOffset.Parse("2026-07-20T12:00:00Z"),
                     new string('A', 64),
                     1,
-                    "File")
+                    "File"),
+                EvidenceWorkbenchRoute =
+                    $"/reporting/evidence?subjectKind=statement-run&subjectId={Uri.EscapeDataString(result.RunId)}&documentClassification=Statement",
+                ReconciliationRoute =
+                    $"/accounting/reconciliation/match?runId={Uri.EscapeDataString(result.RunId)}"
             });
     }
 
@@ -705,5 +875,44 @@ public sealed partial class WorkstationEndpointsTests
 
         public Task<IReadOnlyList<ReconciliationCase>> ListCasesAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<ReconciliationCase>>([]);
+    }
+
+    private sealed class RecordingFetchingStatementConnector : IFetchingStatementConnector
+    {
+        public const string ConnectorId = "recording-statement-fetch";
+
+        public int FetchCount { get; private set; }
+        public int ParseCount { get; private set; }
+
+        public StatementConnectorDescriptor Descriptor { get; } = new(
+            ConnectorId,
+            "Recording statement fetch",
+            [".json"],
+            SupportsFileImport: true,
+            SupportsRemoteFetch: true,
+            RequiresMappingProfile: false,
+            DefaultProfileId: null);
+
+        public bool CanHandle(StatementSourceDocument document) => true;
+
+        public Task<StatementSourceDocument> FetchAsync(
+            StatementFetchRequest request,
+            CancellationToken ct = default)
+        {
+            FetchCount++;
+            return Task.FromResult(new StatementSourceDocument(
+                "recording-statement.json",
+                "{}"u8.ToArray(),
+                request.MappingProfileId,
+                request.ExternalAccountId));
+        }
+
+        public Task<StatementParseResult> ParseAsync(
+            StatementSourceDocument document,
+            CancellationToken ct = default)
+        {
+            ParseCount++;
+            throw new NotSupportedException("The authorization tests must fail before parsing.");
+        }
     }
 }

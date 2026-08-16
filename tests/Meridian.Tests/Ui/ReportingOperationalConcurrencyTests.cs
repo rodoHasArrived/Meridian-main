@@ -19,6 +19,8 @@ namespace Meridian.Tests.Ui;
 /// </summary>
 public sealed class ReportingOperationalConcurrencyTests
 {
+    private const string CertifiedAccountingPeriodId = "66666666-6666-6666-6666-666666666666";
+
     private static readonly DateTimeOffset FixedNow =
         new(2026, 7, 26, 12, 0, 0, TimeSpan.Zero);
 
@@ -99,7 +101,7 @@ public sealed class ReportingOperationalConcurrencyTests
             "tenant-a",
             "company-a",
             "fund-a",
-            "2026-07",
+            CertifiedAccountingPeriodId,
             new string('a', 64));
 
         try
@@ -110,7 +112,7 @@ public sealed class ReportingOperationalConcurrencyTests
                 "tenant-a",
                 "company-b",
                 "fund-b",
-                "2026-07",
+                CertifiedAccountingPeriodId,
                 new string('b', 64));
             await store.SaveAsync(foreign.Manifest, foreign.AuditTrail);
 
@@ -506,6 +508,48 @@ public sealed class ReportingOperationalConcurrencyTests
         store.LegacySaveCalls.Should().Be(0);
     }
 
+    [Theory]
+    [InlineData("not-a-cron")]
+    [InlineData("0 0 30 2 *")]
+    public void Scenario_ScheduleUpsert_InvalidOrImpossibleCronFailsBeforePersistence(
+        string cronExpression)
+    {
+        var store = new SharedAtomicScheduleStore([]);
+        var service = CreateScheduleService(store);
+
+        var upsert = () => service.Upsert(new ReportingScheduleUpsertRequestDto(
+            "invalid-cron",
+            "investor-monthly-statement",
+            cronExpression,
+            new DateOnly(2026, 8, 31),
+            FixedNow.AddDays(1),
+            2,
+            "operator-a",
+            State: ReportingScheduleStateDto.Draft));
+
+        upsert.Should().Throw<ArgumentException>()
+            .WithMessage("*cron expression*");
+        store.Load().Should().BeEmpty();
+        store.AtomicUpsertCalls.Should().Be(0);
+    }
+
+    [Fact]
+    public void Scenario_RetainedInvalidCronFailsClosedDuringServiceConstruction()
+    {
+        var store = new SharedAtomicScheduleStore(
+        [
+            BuildSchedule("retained-invalid-cron", "operator-a") with
+            {
+                CronExpression = "not-a-cron"
+            }
+        ]);
+
+        var create = () => CreateScheduleService(store);
+
+        create.Should().Throw<InvalidDataException>()
+            .WithMessage("*invalid cron expression*");
+    }
+
     [Fact]
     public void Scenario_ScheduleAtMaximumRevision_FailsClosedWithoutPoisoningRetainedState()
     {
@@ -618,6 +662,31 @@ public sealed class ReportingOperationalConcurrencyTests
             schedule.ScheduleId == due.ScheduleId
             && schedule.RunCount == 1
             && schedule.DueAtUtc > FixedNow);
+    }
+
+    [Fact]
+    public async Task Scenario_MinuteCadenceSchedule_AdvancesWithSharedCronParserInUtc()
+    {
+        var due = BuildSchedule("minute-cadence", "operator-a") with
+        {
+            CronExpression = "*/15 * * * *",
+            State = ReportingScheduleStateDto.Active,
+            DueAtUtc = FixedNow
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var renderer = new CountingRenderer();
+        var service = CreateRunnableScheduleService(store, renderer);
+
+        var result = await service.RunDueForWorkerAsync(
+            FixedNow,
+            CancellationToken.None);
+
+        result.Result.Runs.Should().ContainSingle();
+        renderer.RenderCount.Should().BeGreaterThan(0);
+        store.Load().Should().ContainSingle(schedule =>
+            schedule.ScheduleId == due.ScheduleId
+            && schedule.DueAtUtc == FixedNow.AddMinutes(15)
+            && schedule.NextAsOfDate == due.NextAsOfDate);
     }
 
     [Fact]
@@ -1055,7 +1124,7 @@ public sealed class ReportingOperationalConcurrencyTests
             tenantId: "tenant-a",
             companyId: "company-a",
             fundId: "fund-a",
-            periodId: "2026-07",
+            periodId: CertifiedAccountingPeriodId,
             policyHash: new string('a', 64)).Manifest;
         return new ReportingJobContract(
             jobId,

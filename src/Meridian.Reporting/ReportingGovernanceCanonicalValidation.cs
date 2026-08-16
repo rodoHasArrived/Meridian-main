@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
@@ -564,7 +565,7 @@ public static class ReportingGovernanceCanonicalValidation
                 throw new ReportingGovernanceException(
                     "Pending restatement state must be version 1 and cannot retain approval or draft fields.");
             }
-            if (!request.ChangedLines.SequenceEqual(request.RequestedChangedLines))
+            if (!SameChangedLines(request.ChangedLines, request.RequestedChangedLines))
             {
                 throw new ReportingGovernanceException(
                     "Pending restatement changed lines must exactly match the originally requested evidence.");
@@ -607,6 +608,31 @@ public static class ReportingGovernanceCanonicalValidation
         {
             ValidateRestatementAudit(request);
         }
+    }
+
+    private static bool SameChangedLines(
+        ImmutableArray<ReportingRestatementChangedLine> left,
+        ImmutableArray<ReportingRestatementChangedLine> right)
+    {
+        if (left.Length != right.Length)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < left.Length; index++)
+        {
+            var leftLine = left[index];
+            var rightLine = right[index];
+            if (!StringComparer.Ordinal.Equals(leftLine.LineKey, rightLine.LineKey)
+                || !StringComparer.Ordinal.Equals(leftLine.PreviousValue, rightLine.PreviousValue)
+                || !StringComparer.Ordinal.Equals(leftLine.CurrentValue, rightLine.CurrentValue)
+                || !leftLine.EvidenceIds.SequenceEqual(rightLine.EvidenceIds, StringComparer.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -770,7 +796,7 @@ public static class ReportingGovernanceCanonicalValidation
         if (artifacts.IsDefaultOrEmpty
             || artifacts.Any(static artifact =>
                 string.IsNullOrWhiteSpace(artifact.ArtifactId)
-                || !IsSha256(artifact.ArtifactHash)
+                || !Sha256Digest.IsCanonical(artifact.ArtifactHash)
                 || artifact.ByteLength <= 0)
             || artifacts.Select(static artifact => artifact.ArtifactId)
                 .Distinct(StringComparer.Ordinal).Count() != artifacts.Length)
@@ -1239,10 +1265,15 @@ public static class ReportingGovernanceCanonicalValidation
         && StringComparer.Ordinal.Equals(left.TenantId, right.TenantId)
         && StringComparer.Ordinal.Equals(left.OrganizationId, right.OrganizationId)
         && StringComparer.Ordinal.Equals(left.CompanyId, right.CompanyId)
-        && left.Permissions.SequenceEqual(right.Permissions)
+        && Normalize(left.Permissions).SequenceEqual(Normalize(right.Permissions))
         && left.Origin == right.Origin
         && StringComparer.Ordinal.Equals(left.CorrelationId, right.CorrelationId)
-        && left.PrincipalIds.SequenceEqual(right.PrincipalIds, StringComparer.Ordinal);
+        && Normalize(left.PrincipalIds).SequenceEqual(
+            Normalize(right.PrincipalIds),
+            StringComparer.Ordinal);
+
+    private static ImmutableArray<T> Normalize<T>(ImmutableArray<T> values) =>
+        values.IsDefault ? ImmutableArray<T>.Empty : values;
 
     private static CanonicalParameterBinding ParseCanonicalParameters(string canonicalJson)
     {
@@ -1486,14 +1517,9 @@ public static class ReportingGovernanceCanonicalValidation
         }
     }
 
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 }
-        && value.All(Uri.IsHexDigit)
-        && string.Equals(value, value.ToLowerInvariant(), StringComparison.Ordinal);
-
     private static void RequireSha256(string? value, string name)
     {
-        if (!IsSha256(value))
+        if (!Sha256Digest.IsCanonical(value))
         {
             throw new ReportingGovernanceException(
                 $"'{name}' must be a lowercase SHA-256 value.");

@@ -99,12 +99,14 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                 : await _activitySync
                     .GetActivitySnapshotAsync(request.ExternalAccountId, request.Since, ct)
                     .ConfigureAwait(false);
+            EnsureMatchingAccount(request.ExternalAccountId, activity.AccountId, "activity");
         }
 
         BrokeragePortfolioSnapshotDto? portfolio = null;
         if (request.Datasets.HasFlag(StatementFetchDatasets.Positions) && _portfolioSync is not null)
         {
             portfolio = await _portfolioSync.GetPortfolioSnapshotAsync(request.ExternalAccountId, ct).ConfigureAwait(false);
+            EnsureMatchingAccount(request.ExternalAccountId, portfolio.Account.AccountId, "portfolio");
         }
 
         var retrievedAt = activity?.RetrievedAt ?? portfolio?.RetrievedAt ?? DateTimeOffset.UtcNow;
@@ -145,6 +147,23 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             return Task.FromResult(EmptyResult(document.MappingProfileId, issues));
         }
 
+        var expectedAccount = document.ExternalAccountId?.Trim();
+        var snapshotAccount = snapshot.AccountId?.Trim();
+        var activityAccount = snapshot.Activity?.AccountId?.Trim();
+        var portfolioAccount = snapshot.Portfolio?.Account.AccountId?.Trim();
+        if ((!string.IsNullOrWhiteSpace(expectedAccount)
+             && !AccountsMatch(expectedAccount, snapshotAccount))
+            || (!string.IsNullOrWhiteSpace(activityAccount)
+                && !AccountsMatch(snapshotAccount, activityAccount))
+            || (!string.IsNullOrWhiteSpace(portfolioAccount)
+                && !AccountsMatch(snapshotAccount, portfolioAccount)))
+        {
+            issues.Add(StatementParseIssue.Error(
+                "ACCOUNT_SCOPE_MISMATCH",
+                "The Alpaca snapshot account does not match the requested external account."));
+            return Task.FromResult(EmptyResult(document.MappingProfileId, issues));
+        }
+
         return ParseSnapshotAsync(document, snapshot, issues, ct);
     }
 
@@ -172,62 +191,82 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
         var records = new List<StatementCanonicalRecord>();
         var rowNumber = 0;
 
-        foreach (var fill in snapshot.Activity?.Fills ?? [])
+        var richActivities = snapshot.Activity?.Activities;
+        if (richActivities is not null)
         {
-            rowNumber++;
-            var signedQuantity = fill.Side == OrderSide.Sell ? -Math.Abs(fill.Quantity) : Math.Abs(fill.Quantity);
-            records.Add(new StatementCanonicalRecord(
-                StatementRecordKind.Transaction,
-                account,
-                fill.Symbol,
-                signedQuantity,
-                fill.Price,
-                -signedQuantity * fill.Price,
-                "trade",
-                DateOnly.FromDateTime(fill.FilledAt.UtcDateTime),
-                Currency: null,
-                FeesCommission: fill.Commission,
-                ExternalTransactionId: fill.FillId));
-        }
-
-        foreach (var cash in snapshot.Activity?.CashTransactions ?? [])
-        {
-            rowNumber++;
-            var canonicalActivity = ResolveActivity(cash.TransactionType, activityCodeMap, profile, rowNumber, issues, reportedUnknownCodes);
-            records.Add(new StatementCanonicalRecord(
-                StatementRecordKindResolver.Resolve(canonicalActivity),
-                account,
-                cash.Symbol ?? string.Empty,
-                0m,
-                0m,
-                cash.Amount,
-                StatementRecordMapper.ToArtifactActivityType(StatementRecordKindResolver.Resolve(canonicalActivity)),
-                DateOnly.FromDateTime(cash.PostedAt.UtcDateTime),
-                Currency: string.IsNullOrWhiteSpace(cash.Currency) ? null : cash.Currency.ToUpperInvariant(),
-                ExternalTransactionId: cash.TransactionId));
-        }
-
-        foreach (var corporateAction in snapshot.Activity?.CorporateActions ?? [])
-        {
-            if (corporateAction.Amount is not { } amount)
+            foreach (var activity in richActivities)
             {
-                continue;
+                rowNumber++;
+                records.Add(MapRichActivity(account, activity));
+            }
+        }
+        else
+        {
+            foreach (var fill in snapshot.Activity?.Fills ?? [])
+            {
+                rowNumber++;
+                var signedQuantity = fill.Side == OrderSide.Sell ? -Math.Abs(fill.Quantity) : Math.Abs(fill.Quantity);
+                records.Add(new StatementCanonicalRecord(
+                    StatementRecordKind.Transaction,
+                    account,
+                    fill.Symbol,
+                    signedQuantity,
+                    fill.Price,
+                    -signedQuantity * fill.Price,
+                    "trade",
+                    DateOnly.FromDateTime(fill.FilledAt.UtcDateTime),
+                    Currency: null,
+                    FeesCommission: fill.Commission,
+                    ExternalTransactionId: fill.FillId,
+                    ActivityCategory: BrokerageActivityCategory.Trade.ToString(),
+                    ActivitySubtype: BrokerageActivitySubtype.TradeFill.ToString(),
+                    OrderId: fill.OrderId));
             }
 
-            rowNumber++;
-            var canonicalActivity = ResolveActivity(corporateAction.EventType, activityCodeMap, profile, rowNumber, issues, reportedUnknownCodes);
-            var kind = StatementRecordKindResolver.Resolve(canonicalActivity);
-            records.Add(new StatementCanonicalRecord(
-                kind,
-                account,
-                corporateAction.Symbol ?? string.Empty,
-                corporateAction.Quantity ?? 0m,
-                0m,
-                amount,
-                StatementRecordMapper.ToArtifactActivityType(kind),
-                corporateAction.EffectiveDate ?? corporateAction.ExDate ?? DateOnly.FromDateTime(snapshot.RetrievedAt.UtcDateTime),
-                Currency: string.IsNullOrWhiteSpace(corporateAction.Currency) ? null : corporateAction.Currency.ToUpperInvariant(),
-                ExternalTransactionId: corporateAction.EventId));
+            foreach (var cash in snapshot.Activity?.CashTransactions ?? [])
+            {
+                rowNumber++;
+                var canonicalActivity = ResolveActivity(cash.TransactionType, activityCodeMap, profile, rowNumber, issues, reportedUnknownCodes);
+                records.Add(new StatementCanonicalRecord(
+                    StatementRecordKindResolver.Resolve(canonicalActivity),
+                    account,
+                    cash.Symbol ?? string.Empty,
+                    0m,
+                    0m,
+                    cash.Amount,
+                    StatementRecordMapper.ToArtifactActivityType(StatementRecordKindResolver.Resolve(canonicalActivity)),
+                    DateOnly.FromDateTime(cash.PostedAt.UtcDateTime),
+                    Currency: string.IsNullOrWhiteSpace(cash.Currency) ? null : cash.Currency.ToUpperInvariant(),
+                    ExternalTransactionId: cash.TransactionId,
+                    ProviderActivityCode: cash.TransactionType,
+                    Description: cash.Description));
+            }
+
+            foreach (var corporateAction in snapshot.Activity?.CorporateActions ?? [])
+            {
+                if (corporateAction.Amount is not { } amount)
+                {
+                    continue;
+                }
+
+                rowNumber++;
+                var canonicalActivity = ResolveActivity(corporateAction.EventType, activityCodeMap, profile, rowNumber, issues, reportedUnknownCodes);
+                var kind = StatementRecordKindResolver.Resolve(canonicalActivity);
+                records.Add(new StatementCanonicalRecord(
+                    kind,
+                    account,
+                    corporateAction.Symbol ?? string.Empty,
+                    corporateAction.Quantity ?? 0m,
+                    0m,
+                    amount,
+                    StatementRecordMapper.ToArtifactActivityType(kind),
+                    corporateAction.EffectiveDate ?? corporateAction.ExDate ?? DateOnly.FromDateTime(snapshot.RetrievedAt.UtcDateTime),
+                    Currency: string.IsNullOrWhiteSpace(corporateAction.Currency) ? null : corporateAction.Currency.ToUpperInvariant(),
+                    ExternalTransactionId: corporateAction.EventId,
+                    ActivityCategory: BrokerageActivityCategory.CorporateAction.ToString(),
+                    ProviderActivityCode: corporateAction.EventType,
+                    Description: corporateAction.Description));
+            }
         }
 
         var snapshotDate = DateOnly.FromDateTime(snapshot.RetrievedAt.UtcDateTime);
@@ -275,7 +314,8 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
 
         var detectedColumns = new[]
         {
-            "accountId", "symbol", "quantity", "price", "amount", "activityType", "date", "currency", "commission", "externalId"
+            "accountId", "symbol", "quantity", "price", "amount", "activityType", "date", "currency", "commission", "externalId",
+            "activityCategory", "activitySubtype", "providerActivityCode", "relatedTransactionId", "orderId", "description"
         };
         return new StatementParseResult(
             ConnectorId,
@@ -287,7 +327,61 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             new StatementFormatFingerprint(
                 Convert.ToHexString(SHA256.HashData(document.Content.Span)).ToLowerInvariant(),
                 detectedColumns.Select(static column => column.ToLowerInvariant()).ToArray(),
-                "json"));
+                "json"),
+            AccountSnapshots: snapshot.Portfolio?.AccountSnapshot is { } accountSnapshot ? [accountSnapshot] : [],
+            ActivityEvents: richActivities ?? [],
+            ActivityCursors: snapshot.Activity?.Cursor is { } cursor ? [cursor] : [],
+            TaxLots: snapshot.Portfolio?.TaxLots ?? [],
+            BorrowPositions: snapshot.Portfolio?.BorrowPositions ?? []);
+    }
+
+    private static StatementCanonicalRecord MapRichActivity(
+        string account,
+        BrokerageActivityEventDto activity)
+    {
+        var kind = activity.Category switch
+        {
+            BrokerageActivityCategory.Fee => StatementRecordKind.Fee,
+            BrokerageActivityCategory.Dividend => StatementRecordKind.Dividend,
+            _ => StatementRecordKind.Transaction
+        };
+        var quantity = activity.Quantity ?? 0m;
+        var price = activity.Price ?? 0m;
+        var cashAmount = activity.NetAmount;
+        if (kind == StatementRecordKind.Transaction &&
+            activity.Category == BrokerageActivityCategory.Trade &&
+            cashAmount == 0m &&
+            activity.Quantity.HasValue &&
+            activity.Price.HasValue)
+        {
+            cashAmount = -quantity * price;
+        }
+
+        decimal? commission = null;
+        if (activity.Metadata?.TryGetValue("commission", out var commissionText) == true &&
+            decimal.TryParse(commissionText, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsedCommission))
+        {
+            commission = parsedCommission;
+        }
+
+        return new StatementCanonicalRecord(
+            Kind: kind,
+            Account: account,
+            Symbol: activity.Symbol ?? string.Empty,
+            Quantity: quantity,
+            Price: price,
+            CashAmount: cashAmount,
+            ActivityType: StatementRecordMapper.ToArtifactActivityType(kind),
+            TradeDate: DateOnly.FromDateTime(activity.EffectiveAt.UtcDateTime),
+            Currency: string.IsNullOrWhiteSpace(activity.Currency) ? null : activity.Currency.ToUpperInvariant(),
+            FeesCommission: commission,
+            ExternalTransactionId: activity.EventId,
+            ActivityCategory: activity.Category.ToString(),
+            ActivitySubtype: activity.Subtype.ToString(),
+            ProviderActivityCode: activity.ProviderCode,
+            RelatedTransactionId: activity.RelatedEventId,
+            OrderId: activity.OrderId,
+            Description: activity.Description);
     }
 
     private static string ResolveActivity(
@@ -317,6 +411,23 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
 
     private Task<StatementMappingProfileDocument?> CatalogProfileAsync(string profileId, CancellationToken ct)
         => _catalog.FindAsync(profileId, ct);
+
+    private static void EnsureMatchingAccount(string expectedAccountId, string? actualAccountId, string dataset)
+    {
+        if (!AccountsMatch(expectedAccountId, actualAccountId))
+        {
+            throw new InvalidDataException(
+                $"The Alpaca {dataset} snapshot account does not match the requested external account.");
+        }
+    }
+
+    private static bool AccountsMatch(string? expectedAccountId, string? actualAccountId)
+        => !string.IsNullOrWhiteSpace(expectedAccountId)
+           && !string.IsNullOrWhiteSpace(actualAccountId)
+           && string.Equals(
+               expectedAccountId.Trim(),
+               actualAccountId.Trim(),
+               StringComparison.OrdinalIgnoreCase);
 
     private static string SanitizeAccountForFileName(string account)
     {

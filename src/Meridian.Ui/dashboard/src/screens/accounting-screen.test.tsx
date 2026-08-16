@@ -37,6 +37,7 @@ import type {
   SecurityMasterConflict,
   SecurityMasterTrustSnapshot
 } from "@/types";
+import { requireFirst, requirePresent } from "@/test/fixtures";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -1554,6 +1555,7 @@ function findAppleSecuritySearchRow() {
 
 describe("AccountingScreen", () => {
   beforeEach(() => {
+    window.localStorage.clear();
     const searchSecurities = vi.mocked(api.searchSecurities);
     searchSecurities.mockReset();
     if (defaultSearchSecuritiesImplementation) {
@@ -1616,6 +1618,36 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Accounting task modes" })).not.toBeInTheDocument();
+  });
+
+  it("presents control-center scope as aggregate metadata instead of inert filters", async () => {
+    // The control center lives in the Posture section, which `showPosture` gates off unless the
+    // route names it — see `accountingSectionHashVisibility` in the task-mode view model. Without
+    // the hash the section never renders, so the assertions below cannot find it.
+    await renderAccountingScreen({
+      ...data,
+      controlCenter: {
+        closeReadiness: "ReviewRequired",
+        portfolioFilterOptions: ["all-portfolios", "equity"],
+        accountFilterOptions: ["fund-alpha"],
+        blockerSeverityDistribution: [],
+        agingCurves: [],
+        ownerWorkload: [],
+        slaBreachCount: 1,
+        trendSnapshots: [],
+        drillLinks: [],
+        alerts: []
+      }
+    }, "/accounting#accounting-posture");
+
+    const controlCenter = screen.getByRole("region", { name: "Operations control center" });
+    expect(within(controlCenter).getByText("Portfolio coverage")).toBeInTheDocument();
+    expect(controlCenter).toHaveTextContent("all-portfolios, equity");
+    expect(within(controlCenter).getByText("Account coverage")).toBeInTheDocument();
+    expect(controlCenter).toHaveTextContent("fund-alpha");
+    expect(screen.queryByRole("combobox", { name: /portfolio filter/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: /account filter/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/does not present a selector until the service supplies per-scope measures/i)).toBeInTheDocument();
   });
 
   it("renders Accounting Rules Studio details and shared dry-run previews", async () => {
@@ -1855,14 +1887,14 @@ describe("AccountingScreen", () => {
           description: "Credit cash settlement."
         }
       ],
-      generatedPostingLines: workspace.postingRules[0].generatedPostings,
+      generatedPostingLines: requirePresent(requireFirst(workspace.postingRules, "workspace.postingRules").generatedPostings, "postingRules[0].generatedPostings"),
       validationIssues: []
     };
     const journalCandidateResult: PostingRuleJournalCandidateResult = {
       dryRunResult,
       selectedRuleId: "rule-trade-buy",
       selectedRuleVersion: "v3",
-      generatedPostingLines: workspace.postingRules[0].generatedPostings,
+      generatedPostingLines: requirePresent(requireFirst(workspace.postingRules, "workspace.postingRules").generatedPostings, "postingRules[0].generatedPostings"),
       postingCommand: {
         commandId: "00000000-0000-4000-8000-000000000101",
         aggregateId: "00000000-0000-4000-8000-000000000102",
@@ -3497,6 +3529,12 @@ describe("AccountingScreen", () => {
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toHaveTextContent("Journal Entry");
     expect(screen.getByRole("heading", { name: "Manual journal entry workbench" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Journal health and actions" })).toHaveTextContent("Balanced");
+    expect(screen.getByRole("region", { name: "Journal health and actions" })).toHaveTextContent("Validation required");
+    expect(screen.getByText(/Keyboard: Arrow Up or Down/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Selected-line dimensions" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Line entity")).toHaveAttribute("placeholder", "entity-master");
+    expect(screen.getByLabelText("Strategy")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Manual journal entry - balanced double-entry" })).toHaveTextContent("Totals");
     expect(screen.getByRole("heading", { name: "Balance impact preview" })).toBeInTheDocument();
     expect(screen.getByText("This draft increases the debit-normal account balance by $100.")).toBeInTheDocument();
@@ -3609,6 +3647,137 @@ describe("AccountingScreen", () => {
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-alpha"
     });
+  });
+
+  it("keeps valid journal amount edits flowing into the draft", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
+
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+
+    const debitInput = screen.getByLabelText("Debit amount for line line-debit");
+    fireEvent.change(debitInput, { target: { value: "250.75" } });
+
+    expect(debitInput).toHaveValue(250.75);
+    expect(debitInput).not.toHaveAttribute("aria-invalid");
+    expect(screen.queryByText("Enter a valid amount.")).not.toBeInTheDocument();
+  });
+
+  it("supports keyboard line navigation, insertion, and duplication", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
+
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+
+    const firstDebit = screen.getByLabelText("Debit amount for line line-debit");
+    const secondDebit = screen.getByLabelText("Debit amount for line line-credit");
+    firstDebit.focus();
+    fireEvent.keyDown(firstDebit, { key: "ArrowDown" });
+    expect(secondDebit).toHaveFocus();
+
+    const accountCount = screen.getAllByLabelText(/^GL account for line/).length;
+    fireEvent.keyDown(secondDebit, { key: "Enter", ctrlKey: true });
+    expect(screen.getAllByLabelText(/^GL account for line/)).toHaveLength(accountCount + 1);
+
+    fireEvent.click(screen.getByRole("button", { name: "Duplicate journal line line-debit" }));
+    expect(screen.getAllByLabelText(/^GL account for line/)).toHaveLength(accountCount + 2);
+    expect(screen.getByRole("region", { name: "Journal health and actions" })).toHaveTextContent("Unsaved changes");
+  });
+
+  it("navigates validation issues to their affected journal line", async () => {
+    const blockedDraft: ManualJournalEntryDraft = {
+      ...manualJournalDraft,
+      validationIssues: [{
+        code: "manual-je.account-missing",
+        severity: "Critical",
+        message: "GL account was not found.",
+        targetId: "line-debit",
+        suggestedAction: "Choose an active GL account."
+      }]
+    };
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
+      ...manualJournalWorkbench,
+      drafts: [blockedDraft]
+    });
+
+    await renderAccountingScreen(data, "/accounting/journal-entries");
+
+    const health = screen.getByRole("region", { name: "Journal health and actions" });
+    expect(health).toHaveTextContent("1 blocker");
+    fireEvent.click(screen.getByRole("button", { name: "Go to affected field" }));
+    await waitFor(() => expect(document.getElementById("manual-je-line-line-debit")).toHaveFocus());
+  });
+
+  it("rejects unparseable journal amounts instead of silently posting them as zero", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
+
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+
+    const debitInput = screen.getByLabelText("Debit amount for line line-debit");
+    // A number input holding unparseable text (e.g. a pasted "1,234.00") reports an empty value
+    // with validity.badInput set; jsdom never sets badInput, so stub it for this element.
+    Object.defineProperty(debitInput, "validity", {
+      value: { badInput: true },
+      configurable: true
+    });
+    fireEvent.change(debitInput, { target: { value: "" } });
+
+    expect(screen.getByText("Enter a valid amount.")).toBeInTheDocument();
+    expect(debitInput).toHaveAttribute("aria-invalid", "true");
+    // The controlled value mirrors what the DOM reported, so React must not rewrite the node and
+    // wipe the user's in-progress text: no snap-back to the previous amount, and the unparsed
+    // text is never coerced into the draft as zero. (An empty number input has value null.)
+    expect(debitInput).toHaveValue(null);
+    // While an amount on screen diverges from the committed draft, every persistence action is
+    // blocked so a previously validated entry cannot be saved or submitted with a stale amount.
+    expect(screen.getByRole("button", { name: "Save draft" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Validate" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toHaveAttribute(
+      "title",
+      "Correct the flagged amount entries before continuing."
+    );
+
+    // A valid edit clears the error, updates the draft, and restores the normal action gating.
+    Object.defineProperty(debitInput, "validity", {
+      value: { badInput: false },
+      configurable: true
+    });
+    fireEvent.change(debitInput, { target: { value: "175" } });
+
+    expect(screen.queryByText("Enter a valid amount.")).not.toBeInTheDocument();
+    expect(debitInput).not.toHaveAttribute("aria-invalid");
+    expect(debitInput).toHaveValue(175);
+    expect(screen.getByRole("button", { name: "Save draft" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toHaveAttribute(
+      "title",
+      "Run Validate on the current draft before approval submission."
+    );
+  });
+
+  it("commits a cleared amount field on blur after invalid input", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
+
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+
+    const debitInput = screen.getByLabelText("Debit amount for line line-debit");
+    Object.defineProperty(debitInput, "validity", {
+      value: { badInput: true },
+      configurable: true
+    });
+    fireEvent.change(debitInput, { target: { value: "" } });
+    expect(screen.getByText("Enter a valid amount.")).toBeInTheDocument();
+
+    // The user then clears the bad text. The DOM reports "" in both states, so React fires no
+    // change event for the transition - the blur re-evaluation must commit the cleared field as
+    // zero and drop the error instead of leaving the field flagged with a stale amount.
+    Object.defineProperty(debitInput, "validity", {
+      value: { badInput: false },
+      configurable: true
+    });
+    fireEvent.blur(debitInput);
+
+    expect(screen.queryByText("Enter a valid amount.")).not.toBeInTheDocument();
+    expect(debitInput).not.toHaveAttribute("aria-invalid");
+    expect(debitInput).toHaveValue(0);
   });
 
   it("presents retained evidence links as approval support without claiming evidence is missing", async () => {
@@ -4131,7 +4300,7 @@ describe("AccountingScreen", () => {
         securityId: "22222222-2222-2222-2222-222222222222",
         securityDisplayName: "Apple Inc."
       } : line),
-      evidenceLinks: request.evidenceLinks,
+      evidenceLinks: request.evidenceLinks ?? [],
       evidenceAttachments: [request.attachment]
     }));
     vi.mocked(api.validateManualJournalEntryDraft).mockImplementationOnce((request) => Promise.resolve(request.draft));
@@ -5083,7 +5252,8 @@ describe("AccountingScreen", () => {
     expect(api.resolveSecurityConflict).toHaveBeenCalledWith({
       conflictId: "conflict-1",
       resolution: "AcceptA",
-      resolvedBy: "operator"
+      resolvedBy: "operator",
+      reason: "AcceptA action from the shared conflict queue."
     });
   });
 

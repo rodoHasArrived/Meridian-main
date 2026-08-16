@@ -5,6 +5,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
@@ -415,7 +416,7 @@ public static class AccountingPostingCommandValidator
             LedgerBook = FirstText(metadata.LedgerBook, command.LedgerBookId?.ToString("D")),
             IdempotencyKey = FirstText(metadata.IdempotencyKey, treasury?.IdempotencyKey, command.IdempotencyKey),
             FundEventId = FirstText(metadata.FundEventId, treasury?.FundEventId),
-            FundEventType = FirstText(metadata.FundEventType, treasury?.FundEventType, command.SourceEventType),
+            FundEventType = FirstText(metadata.FundEventType, treasury?.FundEventType),
             CapitalAccountId = FirstText(metadata.CapitalAccountId, treasury?.CapitalAccountId),
             InvestorId = FirstText(metadata.InvestorId, treasury?.InvestorId),
             PaymentIntentId = FirstText(metadata.PaymentIntentId, treasury?.PaymentIntentId),
@@ -739,7 +740,4 @@ public static class AccountingPostingCommandValidator
 
     private static string? FirstText(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

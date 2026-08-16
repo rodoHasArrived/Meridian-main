@@ -53,32 +53,24 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             }
         }
 
-        if (definitions.Count == 0)
-        {
-            return null;
-        }
-
+        // Positions whose definition lookup MISSED are deliberately retained: the request still
+        // carries them (with no matching security) so the event service records a High-severity
+        // SECURITY_ACCOUNTING_RULE_MISSING completeness issue for each. Returning null here — or
+        // filtering them out below — would silently suppress expected events AND the break for a
+        // held security whose Security Master definition is unavailable.
         var securities = definitions.Values
             .Select(ToAccountingSecurity)
             .ToArray();
-        if (securities.Length == 0)
-        {
-            return null;
-        }
 
         var factorSchedule = BuildFactorSchedule(definitions.Values, periodStart, periodEnd);
         if (factorSchedule.Count > 0)
         {
-            positions = await ResolveDurablePositionsAsync(
-                    positions,
-                    periodEnd,
-                    factorSchedule.Select(static factor => factor.SecurityId).ToHashSet(),
-                    ct)
+            positions = await ResolveDurablePositionsAsync(positions, factorSchedule, ct)
                 .ConfigureAwait(false);
         }
 
         var resolvedPositions = positions
-            .Where(position => position.SecurityId is Guid securityId && definitions.ContainsKey(securityId))
+            .Where(static position => position.SecurityId is not null)
             .GroupBy(
                 static position => $"{position.SecurityId!.Value:N}|{position.AccountId}|{position.Symbol}|{position.PositionId:N}",
                 StringComparer.OrdinalIgnoreCase)
@@ -91,7 +83,16 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                      first.AccountId,
                      group.Sum(static position => position.ParAmount),
                      PositionId: first.PositionId,
-                     PositionVersion: first.PositionVersion);
+                     PositionVersion: first.PositionVersion)
+                {
+                    // The durable position's original face is identity-scoped (every row in the
+                    // group shares the position id), so it carries through unsummed.
+                    OriginalFaceAmount = first.OriginalFaceAmount,
+                    // ParAmount sums absolute magnitudes, so a group mixing long and short rows
+                    // would otherwise read as one large long exposure — any short row fails the
+                    // whole group closed.
+                    IsShort = group.Any(static position => position.IsShort)
+                };
             })
             .Where(static position => position.ParAmount != 0m)
             .ToArray();
@@ -113,8 +114,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
 
     private async Task<List<SecurityMasterAccountingPosition>> ResolveDurablePositionsAsync(
         IReadOnlyList<SecurityMasterAccountingPosition> positions,
-        DateOnly asOfDate,
-        IReadOnlySet<Guid> factorSecurityIds,
+        IReadOnlyList<SecurityFactorScheduleEntry> factorSchedule,
         CancellationToken ct)
     {
         if (_assetOperationsQueryService is null)
@@ -122,11 +122,24 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             return positions.ToList();
         }
 
+        // Durable ownership resolves as of each security's FACTOR OBSERVATION DATES, not one
+        // period-wide date: an observation belongs to whichever position held the security on the
+        // observation date, and resolving at the period's end could attach an early-month paydown
+        // to a successor position opened after the observation. When the period's observations do
+        // not all resolve to the SAME durable position (ownership changed between observations),
+        // the run position stays unresolved rather than mislabeling any observation - the single
+        // aggregated run position cannot faithfully represent a split-ownership period.
+        var observationDates = factorSchedule
+            .GroupBy(static factor => factor.SecurityId)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Select(static factor => factor.AsOfDate).Distinct().ToArray());
+
         var details = new Dictionary<Guid, AssetOperationsDetailDto?>();
         foreach (var securityId in positions
                      .Where(static position => position.SecurityId.HasValue)
                      .Select(static position => position.SecurityId!.Value)
-                     .Where(factorSecurityIds.Contains)
+                     .Where(observationDates.ContainsKey)
                      .Distinct())
         {
             ct.ThrowIfCancellationRequested();
@@ -146,28 +159,79 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         {
             if (position.SecurityId is not Guid securityId ||
                 !details.TryGetValue(securityId, out var detail) ||
-                detail is null)
+                !observationDates.TryGetValue(securityId, out var securityObservationDates))
             {
                 return position;
             }
 
-            var candidates = detail.BookPositions
-                .Where(candidate => candidate.SecurityId == securityId)
-                .Where(candidate => position.PositionId is Guid suppliedPositionId
-                    ? candidate.PositionId == suppliedPositionId
-                    : string.Equals(candidate.PrimaryAccountId?.Trim(), position.AccountId.Trim(), StringComparison.OrdinalIgnoreCase))
-                .Where(candidate => candidate.EffectiveFrom <= asOfDate &&
-                    (candidate.EffectiveTo is null || candidate.EffectiveTo >= asOfDate))
-                .Where(candidate => string.Equals(candidate.Status?.Trim(), "Active", StringComparison.OrdinalIgnoreCase))
-                .ToArray();
+            if (detail is null)
+            {
+                // The security HAS in-period factor observations but the Asset Operations read
+                // failed (or returned nothing), so ownership could not be verified at all. A
+                // supplied identity (e.g. a ledger dimension PositionId) must not pass through as
+                // if resolved — factor generation would post against an unverified, possibly stale
+                // owner for the whole outage. Clearing the identity makes the paydown generator
+                // fail closed with FACTOR_PAYDOWN_POSITION_REQUIRED instead.
+                return position with { PositionId = null, PositionVersion = 1 };
+            }
 
-            return candidates.Length == 1
-                ? position with
+            BookPositionDto? resolved = null;
+            foreach (var asOfDate in securityObservationDates)
+            {
+                var candidates = detail.BookPositions
+                    .Where(candidate => candidate.SecurityId == securityId)
+                    .Where(candidate => position.PositionId is Guid suppliedPositionId
+                        ? candidate.PositionId == suppliedPositionId
+                        : string.Equals(candidate.PrimaryAccountId?.Trim(), position.AccountId.Trim(), StringComparison.OrdinalIgnoreCase))
+                    // Activity is judged AS OF the observation date by the effective window, not by
+                    // the position's CURRENT lifecycle status: Asset Operations returns closed
+                    // positions too, and a position that owned the security on the observation date
+                    // but was closed afterwards still carries the historical paydown — requiring
+                    // today's Active status would clear its identity and fail month-end
+                    // reconciliation closed on FACTOR_PAYDOWN_POSITION_REQUIRED. A position closed
+                    // BEFORE the observation date is already excluded by its EffectiveTo bound.
+                    .Where(candidate => candidate.EffectiveFrom <= asOfDate &&
+                        (candidate.EffectiveTo is null || candidate.EffectiveTo >= asOfDate))
+                    .ToArray();
+
+                if (candidates.Length != 1 ||
+                    (resolved is not null && resolved.PositionId != candidates[0].PositionId))
                 {
-                    PositionId = candidates[0].PositionId,
-                    PositionVersion = candidates[0].Version
+                    // Resolution RAN and could not confirm one active owner for every observation
+                    // date — the supplied identity (e.g. a ledger dimension PositionId inactive on
+                    // an observation date, or ownership split across observations) must not pass
+                    // through, or every paydown and posting candidate would carry the exact stale
+                    // position this resolver exists to prevent. The position returns explicitly
+                    // UNRESOLVED; the paydown generator then fails closed with its
+                    // FACTOR_PAYDOWN_POSITION_REQUIRED issue instead of posting against the wrong
+                    // owner, and the operator resolves the ownership question.
+                    return position with { PositionId = null, PositionVersion = 1 };
                 }
-                : position;
+
+                resolved = candidates[0];
+            }
+
+            if (resolved is null)
+            {
+                return position;
+            }
+
+            var durable = resolved;
+            // Factor paydowns are computed against ORIGINAL face (factors are relative to it):
+            // the run position's quantity may already be the factor-adjusted current face, so
+            // when the durable book position retains its original/par face, that value — not the
+            // run quantity — is the held face the paydown math must use. It rides a SEPARATE
+            // paydown basis: ParAmount keeps the CURRENT outstanding balance (the run quantity),
+            // which is what coupon accruals bill — replacing it with original face would
+            // overstate expected interest and journal previews by the already-paid-down portion.
+            // The generator falls back to ParAmount when the durable state records no face.
+            return position with
+            {
+                PositionId = durable.PositionId,
+                PositionVersion = durable.Version,
+                OriginalFaceAmount = durable.CurrentEconomicState?.OriginalFaceAmount
+                    ?? durable.CurrentEconomicState?.ParAmount
+            };
         }).ToList();
     }
 
@@ -187,7 +251,13 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                     position.Symbol.Trim().ToUpperInvariant(),
                     position.Security.SecurityId,
                     ResolveAccountId(position.AccountScopeId, detail.Portfolio.AccountScopeId),
-                    Math.Abs((decimal)position.Quantity)));
+                    Math.Abs((decimal)position.Quantity))
+                {
+                    // ParAmount is an absolute magnitude, so the direction must travel separately:
+                    // dropping it would present a short as a long holding and generate long-side
+                    // income and receivable events for a liability.
+                    IsShort = position.IsShort || position.Quantity < 0
+                });
             }
         }
 
@@ -213,7 +283,10 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                 line.Security.SecurityId,
                 ResolveAccountId(line.AccountScopeId ?? line.FinancialAccountId, detail.Ledger.AccountScopeId),
                 Math.Abs(line.Balance),
-                PositionId: line.Dimensions?.PositionId));
+                PositionId: line.Dimensions?.PositionId)
+            {
+                IsShort = line.Balance < 0m
+            });
         }
 
         return positions;
@@ -254,7 +327,14 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                 CurrentFactor: currentFactor,
                 OriginalFace: originalFace,
                 CurrentFace: currentFace,
-                RequiresFactorSchedule: currentFactor is < 1m || ReadBool(redemption, "isAmortizing") == true),
+                // A retained TYPED factor schedule marks the security as factor-driven even when
+                // no scalar factor or amortizing flag is present: a canonical StructuredCredit may
+                // carry its whole factor history in factorScheduleEntries, and a later month with
+                // no in-period observation must still gate on missing/stale factor coverage
+                // instead of silently skipping the amortizing security.
+                RequiresFactorSchedule: currentFactor is < 1m
+                    || ReadBool(redemption, "isAmortizing") == true
+                    || HasTypedFactorSchedule(definition)),
             ToAccountingRule(definition));
     }
 
@@ -279,6 +359,9 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         var entries = new List<SecurityFactorScheduleEntry>();
         foreach (var definition in definitions)
         {
+            var coveredDates = new HashSet<DateOnly>();
+            var definitionStartCount = entries.Count;
+            SecurityFactorScheduleEntry? latestPrePeriod = null;
             foreach (var schedule in EnumerateFactorScheduleArrays(definition))
             {
                 foreach (var item in schedule.EnumerateArray())
@@ -295,28 +378,157 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                         ReadDecimal(item, "previousFactor");
                     var currentFactor = ReadDecimal(item, "currentFactor") ??
                         ReadDecimal(item, "factor");
+                    // Period end is EXCLUSIVE (ResolvePeriod supplies the next month's first day),
+                    // so a month-boundary row surfaces in exactly one reconciliation.
                     if (asOfDate is null ||
-                        asOfDate < periodStart ||
-                        asOfDate > periodEnd ||
+                        asOfDate >= periodEnd ||
                         priorFactor is null ||
                         currentFactor is null)
                     {
                         continue;
                     }
 
-                    entries.Add(new SecurityFactorScheduleEntry(
+                    var entry = new SecurityFactorScheduleEntry(
                         definition.SecurityId,
                         asOfDate.Value,
                         priorFactor.Value,
                         currentFactor.Value,
-                        ReadString(item, "source") ?? ReadString(definition.Provenance, "source") ?? "security-master",
+                        ReadString(item, "source") ?? ResolveProvenanceSourceSystem(definition) ?? "security-master",
                         ReadString(item, "evidenceLink") ?? ReadString(item, "evidenceId") ?? ReadString(item, "evidenceRoute"),
                         ReadString(item, "sourceContentHash") ??
                         ReadString(item, "contentHash") ??
                         ReadString(item, "sourceHash") ??
                         ReadString(definition.Provenance, "sourceContentHash") ??
-                        HashFactorRow(item)));
+                        HashFactorRow(item));
+
+                    if (asOfDate < periodStart)
+                    {
+                        // Pre-period rows never enter the request as coverage — but the LATEST one
+                        // is retained below when the security has no in-period observation at all,
+                        // so the coverage classifier can report FACTOR_STALE instead of the
+                        // indistinguishable FACTOR_SCHEDULE_MISSING.
+                        if (latestPrePeriod is null || entry.AsOfDate > latestPrePeriod.AsOfDate)
+                        {
+                            latestPrePeriod = entry;
+                        }
+
+                        continue;
+                    }
+
+                    if (!coveredDates.Add(asOfDate.Value))
+                    {
+                        continue;
+                    }
+
+                    entries.Add(entry);
                 }
+            }
+
+            // Typed factorScheduleEntries rows ({asOfDate, factor}) written by the canonical F#
+            // StructuredCredit serializer carry no per-row priorFactor: the prior is the ORDERED
+            // preceding entry's factor, derived over the whole array so an in-period row whose
+            // predecessor falls outside the period still pairs correctly. The first observation
+            // pairs against the original-face baseline of 1.0. Dates already asserted by an
+            // explicit legacy row are skipped — the explicit prior is authoritative.
+            // The typed rows carry no per-row evidence link; the canonical StructuredCredit record
+            // retains its trustee-report pointer as the free-text factorSchedule field, which is
+            // the retained evidence the paydown projector requires. Rows with no resolvable
+            // evidence still surface — the projector fails them closed with its evidence-required
+            // issue rather than this adapter fabricating a link. The GOVERNED nested pointer wins
+            // over an outer pass-through copy, matching the nested-first precedence of the typed
+            // schedule itself and the shared term-source walk — an ungoverned outer value must not
+            // supply the trustee-report lineage the expected event records.
+            var typedRowEvidence = definition.LegacyAssetSpecificTerms is JsonElement legacyTermsForEvidence
+                ? ReadString(GetObject(legacyTermsForEvidence, "profileFields"), "factorSchedule")
+                    ?? ReadString(legacyTermsForEvidence, "factorSchedule")
+                : null;
+            foreach (var schedule in EnumerateTypedFactorScheduleArrays(definition))
+            {
+                var typedRows = new List<(DateOnly AsOfDate, decimal Factor, JsonElement Item)>();
+                foreach (var item in schedule.EnumerateArray())
+                {
+                    if (item.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
+
+                    var asOfDate = ReadDate(item, "asOfDate") ??
+                        ReadDate(item, "factorDate") ??
+                        ReadDate(item, "date");
+                    var factor = ReadDecimal(item, "factor") ??
+                        ReadDecimal(item, "currentFactor");
+                    if (asOfDate is not null && factor is not null)
+                    {
+                        typedRows.Add((asOfDate.Value, factor.Value, item));
+                    }
+                }
+
+                var ordered = typedRows.OrderBy(static row => row.AsOfDate).ToArray();
+                for (var i = 0; i < ordered.Length; i++)
+                {
+                    var row = ordered[i];
+                    // The FIRST observation's prior is the original-face baseline of 1.0: factors
+                    // are relative to original face, so a schedule opening below one records a
+                    // real first paydown (canonical validation does not require an explicit 1.00
+                    // baseline row). EVERY in-period observation emits — including unchanged ones
+                    // and an explicit 1.00 opening — because each is the period's factor COVERAGE
+                    // evidence; dropping one whose factor equals its prior would raise a false
+                    // missing-coverage issue when it is the period's only observation. The
+                    // paydown generator skips no-principal-moved rows instead of projecting a
+                    // zero-change candidate.
+                    var priorFactor = i == 0 ? 1.00m : ordered[i - 1].Factor;
+
+                    // The period end is EXCLUSIVE: ResolvePeriod supplies the first day of the
+                    // NEXT month, so an inclusive comparison would surface a month-boundary
+                    // observation in two adjacent reconciliations as duplicate paydown evidence.
+                    if (row.AsOfDate >= periodEnd)
+                    {
+                        continue;
+                    }
+
+                    // Typed rows carry no per-row source; the canonical F# provenance serializes
+                    // the asserting provider under sourceSystem, so that vendor identity — not the
+                    // generic security-master fallback — is the factor-source lineage the expected
+                    // event must record.
+                    var typedEntry = new SecurityFactorScheduleEntry(
+                        definition.SecurityId,
+                        row.AsOfDate,
+                        priorFactor,
+                        row.Factor,
+                        ReadString(row.Item, "source")
+                            ?? ResolveProvenanceSourceSystem(definition)
+                            ?? "security-master",
+                        ReadString(row.Item, "evidenceLink") ?? typedRowEvidence,
+                        ReadString(definition.Provenance, "sourceContentHash") ?? HashFactorRow(row.Item));
+
+                    if (row.AsOfDate < periodStart)
+                    {
+                        if (latestPrePeriod is null || typedEntry.AsOfDate > latestPrePeriod.AsOfDate)
+                        {
+                            latestPrePeriod = typedEntry;
+                        }
+
+                        continue;
+                    }
+
+                    if (!coveredDates.Add(row.AsOfDate))
+                    {
+                        continue;
+                    }
+
+                    entries.Add(typedEntry);
+                }
+            }
+
+            // A factor-driven security whose observations ALL predate the period still needs its
+            // latest retained row in the request: the coverage classifier can distinguish
+            // FACTOR_STALE (evidence needs refreshing) from FACTOR_SCHEDULE_MISSING (no evidence
+            // at all) only when it sees that row. The paydown generator filters to in-period rows
+            // itself, so the retained observation never projects a paydown — and securities WITH
+            // in-period coverage never carry it, keeping paydown evidence period-scoped.
+            if (entries.Count == definitionStartCount && latestPrePeriod is not null)
+            {
+                entries.Add(latestPrePeriod);
             }
         }
 
@@ -324,6 +536,43 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             .OrderBy(static entry => entry.SecurityId)
             .ThenBy(static entry => entry.AsOfDate)
             .ToArray();
+    }
+
+    /// <summary>
+    /// True when the record retains a nonempty typed factor schedule (governed profileFields or
+    /// envelope root) — the presence signal that makes the security factor-driven for coverage
+    /// gating regardless of scalar terms.
+    /// </summary>
+    private static bool HasTypedFactorSchedule(SecurityEconomicDefinitionRecord definition)
+    {
+        foreach (var schedule in EnumerateTypedFactorScheduleArrays(definition))
+        {
+            foreach (var item in schedule.EnumerateArray())
+            {
+                if (item.ValueKind == JsonValueKind.Object)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// The record-level asserting provider: the canonical <c>sourceSystem</c> when present, then
+    /// the legacy free-text <c>source</c> key; null when neither names a provider, so callers can
+    /// apply their own terminal fallback.
+    /// </summary>
+    private static string? ResolveProvenanceSourceSystem(SecurityEconomicDefinitionRecord definition)
+    {
+        var sourceSystem = SecurityMasterProvenanceReader.Read(definition.Provenance).SourceSystem;
+        if (!string.Equals(sourceSystem, SecurityMasterProvenanceReader.UnknownSource, StringComparison.OrdinalIgnoreCase))
+        {
+            return sourceSystem;
+        }
+
+        return ReadString(definition.Provenance, "source");
     }
 
     private static string HashFactorRow(JsonElement item)
@@ -340,6 +589,36 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         if (TryGetArray(structuredProduct, "factorSchedule", out var structuredSchedule))
         {
             yield return structuredSchedule;
+        }
+    }
+
+    /// <summary>
+    /// The typed {asOfDate, factor} arrays the canonical F# StructuredCredit serializer persists:
+    /// at the asset-specific-terms root for first-class records, and beneath the profile envelope's
+    /// profileFields for profile-backed ones. Unlike the legacy arrays above, their rows carry no
+    /// per-row prior factor.
+    /// </summary>
+    private static IEnumerable<JsonElement> EnumerateTypedFactorScheduleArrays(SecurityEconomicDefinitionRecord definition)
+    {
+        // Governed profileFields rows OWN the typed schedule when they exist, mirroring the term
+        // resolver's precedence: profileFields values are schema- and profile-validated on write,
+        // while an extra outer array on an envelope is ungoverned pass-through. The outer array is
+        // not merely deprioritized but EXCLUDED — each enumerated array derives its own priors
+        // (first observation against the 1.0 baseline), so an outer row on a date the governed
+        // schedule does not cover would synthesize a paydown from a prior the governed history
+        // contradicts, and coveredDates only suppresses exact date matches.
+        var profileFields = definition.LegacyAssetSpecificTerms is JsonElement legacyTerms
+            ? GetObject(legacyTerms, "profileFields")
+            : null;
+        if (TryGetArray(profileFields, "factorScheduleEntries", out var nestedEntries))
+        {
+            yield return nestedEntries;
+            yield break;
+        }
+
+        if (TryGetArray(definition.LegacyAssetSpecificTerms, "factorScheduleEntries", out var rootEntries))
+        {
+            yield return rootEntries;
         }
     }
 
@@ -387,6 +666,21 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             return "AmortizingLoan";
         }
 
+        // Canonical StructuredCredit records classify as class/subtype "StructuredCredit" and
+        // family "StructuredCash" — securitized tranches whose factor-driven paydown accounting
+        // this fixed-income slice exists to cover. Mortgage-collateral flavors already resolved
+        // above via the MortgageBacked tokens; the rest account as asset-backed securitizations.
+        // Without this mapping the raw class reaches the event service, fails its fixed-income
+        // gate as SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT, and the typed-schedule coverage never runs
+        // for the very records that carry typed schedules.
+        if (IsStructuredCredit(definition.AssetClass) ||
+            IsStructuredCredit(definition.AssetFamily) ||
+            IsStructuredCredit(definition.SubType) ||
+            IsStructuredCredit(definition.TypeName))
+        {
+            return "AssetBackedSecurity";
+        }
+
         if (IsFixedIncome(definition.AssetClass) ||
             IsFixedIncome(definition.AssetFamily) ||
             ContainsToken(definition.SubType, "Bond") ||
@@ -427,6 +721,10 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         string.Equals(value, "AmortizingLoan", StringComparison.OrdinalIgnoreCase) ||
         ContainsToken(value, "AmortizingLoan") ||
         ContainsToken(value, "Amortizing Loan");
+
+    private static bool IsStructuredCredit(string? value) =>
+        string.Equals(value, "StructuredCash", StringComparison.OrdinalIgnoreCase) ||
+        ContainsToken(value, "StructuredCredit");
 
     private static bool ContainsToken(string? value, string token) =>
         !string.IsNullOrWhiteSpace(value) &&

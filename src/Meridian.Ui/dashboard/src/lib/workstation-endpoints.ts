@@ -93,7 +93,6 @@ export const WORKSTATION_API_ENDPOINTS = {
   operationsContinuityCloseCalendarItems: UI_API_ROUTES.OperationsContinuityCloseCalendarItems,
   financialOperationsCommandCenter: UI_API_ROUTES.FinancialOperationsCommandCenter,
   operationsPrivateCapitalCloseCockpit: UI_API_ROUTES.OperationsPrivateCapitalCloseCockpit,
-  chiefOfStaff: "/api/workstation/chief-of-staff",
   runHistory: UI_API_ROUTES.RunHistory,
   runTimeline: UI_API_ROUTES.RunsTimeline,
   runSweeps: UI_API_ROUTES.RunsSweeps,
@@ -176,8 +175,19 @@ export const EXECUTION_API_ENDPOINTS = {
 } as const;
 
 export const RISK_API_ENDPOINTS = {
-  rules: "/api/risk/rules"
+  rules: "/api/risk/rules",
+  escalations: "/api/risk/escalations"
 } as const;
+
+/** Approve endpoint for a parked governed-approval escalation. */
+export function riskEscalationApproveEndpoint(escalationId: string): string {
+  return `${RISK_API_ENDPOINTS.escalations}/${pathSegment(escalationId, "escalationId")}/approve`;
+}
+
+/** Deny endpoint for a parked governed-approval escalation. */
+export function riskEscalationDenyEndpoint(escalationId: string): string {
+  return `${RISK_API_ENDPOINTS.escalations}/${pathSegment(escalationId, "escalationId")}/deny`;
+}
 
 export const REPLAY_API_ENDPOINTS = {
   files: UI_API_ROUTES.ReplayFiles,
@@ -389,7 +399,9 @@ export const STATEMENT_CONNECTOR_API_ENDPOINTS = {
   fetchPreview: UI_API_ROUTES.ReconciliationStatementFetchPreview,
   fetchSchedules: UI_API_ROUTES.ReconciliationStatementFetchSchedules,
   fetchSchedule: UI_API_ROUTES.ReconciliationStatementFetchScheduleById,
-  fetchScheduleRun: UI_API_ROUTES.ReconciliationStatementFetchScheduleRun
+  fetchScheduleRun: UI_API_ROUTES.ReconciliationStatementFetchScheduleRun,
+  marginControl: UI_API_ROUTES.ReconciliationMarginControl,
+  marginCertifications: UI_API_ROUTES.ReconciliationMarginCertifications
 } as const;
 
 export const BACKFILL_API_ENDPOINTS = {
@@ -948,32 +960,6 @@ export function workstationOperationsPrivateCapitalCloseCockpitEndpoint(options:
   entityId?: string;
 } = {}): string {
   return `${WORKSTATION_API_ENDPOINTS.operationsPrivateCapitalCloseCockpit}${queryString(options)}`;
-}
-
-export function workstationChiefOfStaffSessionsEndpoint(options: {
-  workspace?: string;
-  fundProfileId?: string;
-  fundAccountId?: string;
-  status?: string;
-  limit?: number;
-} = {}): string {
-  return `${WORKSTATION_API_ENDPOINTS.chiefOfStaff}/sessions${queryString(options)}`;
-}
-
-export function workstationChiefOfStaffSessionEndpoint(sessionId: string): string {
-  return `${WORKSTATION_API_ENDPOINTS.chiefOfStaff}/sessions/${pathSegment(sessionId, "sessionId")}`;
-}
-
-export function workstationChiefOfStaffDecisionEndpoint(sessionId: string): string {
-  return `${workstationChiefOfStaffSessionEndpoint(sessionId)}/decisions`;
-}
-
-export function workstationChiefOfStaffTraceExportEndpoint(sessionId: string): string {
-  return `${workstationChiefOfStaffSessionEndpoint(sessionId)}/export-trace`;
-}
-
-export function workstationChiefOfStaffHealthEndpoint(): string {
-  return `${WORKSTATION_API_ENDPOINTS.chiefOfStaff}/health`;
 }
 
 export interface LedgerDimensionQueryOptions {

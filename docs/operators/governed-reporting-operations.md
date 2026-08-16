@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** Accounting / Fund Operations
-**Reviewed:** 2026-07-26
+**Reviewed:** 2026-07-27
 
 This runbook is the production operator procedure for certified reporting runs, hard-close evidence,
 immutable reporting state, schedules, access grants, and secure delivery. Contract fields and wire
@@ -28,23 +28,35 @@ The route returns `503 Service Unavailable` unless the deployment capability pro
 below:
 
 - PostgreSQL reporting governance and its maker-checker coordinator
+- the exact PostgreSQL accounting-period consistency gate shared by Final release and governed reopen
 - PostgreSQL artifact bytes, catalog, access audit, and artifact vault
 - PostgreSQL close/reconciliation evidence and its immutable database controls
+- one integrity-verified reconciliation queue shared by statement casework, Operations Continuity,
+  hard close, and Final certification
 - PostgreSQL certified run manifests and run audit
 - PostgreSQL reporting schedules
+- running server-owned schedule and secure-delivery workers with valid worker options
 - PostgreSQL access grants, delivery jobs, and retained receipts
+- atomic PostgreSQL grant-use and download-receipt accounting for every released package artifact
 - an exact-scope recipient destination directory
 - the canonical client PDF/XLSX renderer, deterministic certified-artifact producer, and durable
   checkpoint-bound ledger presentation source
 - a complete reporting schema probe plus the current process's successful checksummed-migration
   receipt
+- an exact application/schema compatibility marker for migration
+  `012_reporting_access_grant_artifact_consumption.sql`; a missing or mismatched marker blocks
+  delivery
+- successful ledger, fund-account, and fund-structure migration receipts for the authoritative
+  source graph
 
 The same capability is exposed in a successful Reporting payload as `deploymentCapability`,
 including a top-level durable-reconciliation-evidence signal. The schema probe verifies required
 tables, immutable-control trigger bindings, operational columns, the checksummed migration-ledger
 key, and immediate predicate-compatible unique/idempotency keys. Local file run, schedule,
-custom-template, starter-kit, workflow, and delivery stores are development compatibility only and
-deliberately leave this gate blocked or are omitted from production composition. Do not infer
+custom-template, and starter-kit stores are development compatibility only and deliberately leave
+this gate blocked. Legacy file workflow and delivery-history repositories are never registered by
+the default host composition and are accepted only when an explicit compatibility caller supplies
+them. Do not infer
 Reporting availability from Accounting workspace health, a configured connection string alone, a
 rendered preview, or the presence of retained JSON files.
 
@@ -77,8 +89,37 @@ Before enabling governed reporting, confirm all of the following:
 Production service registration fails when neither `MERIDIAN_REPORTING_CONNECTION_STRING` nor its
 documented ledger fallback is configured. With a database configured, the host applies checksummed
 Reporting migrations under a schema-scoped advisory lock before it starts the HTTP listener or
-constructs hosted workers. An unreachable database, migration failure, or checksum mismatch fails
+constructs hosted workers. Startup also discards process cache and integrity-reloads the canonical
+reconciliation queue before accepting Reporting work. An unreachable database, migration failure,
+checksum mismatch, or corrupt queue snapshot fails
 startup; do not bypass the migration ledger or edit an applied migration.
+
+### Migration 012 application-version barrier
+
+Migration `012_reporting_access_grant_artifact_consumption.sql` changes the access-grant
+consumption write contract. It is not safe for DB-first rolling deployment while any pre-012
+process can exchange or consume reporting grants. The database's retained `NULL`-to-`NULL`
+consumption fence rejects a pre-012 use-count update instead of losing artifact identity, and the
+insert fence rejects a new grant that omits tracked artifact state. Those failures are safety
+stops—not mixed-version compatibility. Migration `012` also replaces the pre-012 access-grant
+trigger name with a versioned trigger, so the pre-012 deployment probe reports the upgraded schema
+as incomplete instead of returning a legacy green readiness result.
+
+Use this sequence:
+
+1. Stop new reporting delivery and drain active delivery work to an operator-reviewed boundary.
+2. Drain and stop every pre-012 host. Confirm no prior binary can reach the reporting database.
+3. Start one 012-aware host and let its checksummed migration runner apply `012`; do not apply the
+   SQL manually or in advance of the binary cutover.
+4. Confirm `/api/workstation/reporting` reports both `application-schema-compatibility` and
+   `delivery` ready. The compatibility component verifies the exact migration filename/checksum
+   pair and its consumed-artifact column, trigger, and constraint shape.
+5. Start the remaining 012-aware hosts, then resume delivery with a controlled released-package
+   canary.
+
+If cutover fails after `012` is applied, keep delivery stopped. Do not restart a pre-012 binary
+against the upgraded schema. Deploy a corrected 012-aware binary or execute the approved
+coordinated database restore procedure.
 
 After migrations succeed, a missing recipient binding, client-document dependency, schema-probe
 requirement, or other noncanonical authority leaves the production reporting lifecycle
@@ -134,13 +175,13 @@ existing authorities:
 5. Start a separate governed Reporting run through the canonical readiness and certification
    services. Final certification requires the committed close/reconciliation receipt; a completed
    statement workflow does not substitute for it.
-6. For a client package, use Reporting `ClientPackage` through the deterministic certified-artifact
-   producer and canonical client-document renderer. Capital-account packages pass the verified
-   checkpoint-bound `LedgerFinancialReportPack` through the existing
-   `LedgerClientReportExportService`/`FinancialReportDocumentRenderer` seam; do not reconstruct
-   partners-capital tables in a Reporting-specific renderer. The same certified package must retain
-   exactly one `<runId>.pdf` and one `<runId>.xlsx`; release fails closed if either primary artifact
-   is missing or duplicated.
+6. For a capital-account `Pdf`, `Xlsx`, or `ClientPackage`, use the deterministic
+   certified-artifact producer and canonical client-document renderer. The verified
+   checkpoint-bound `LedgerFinancialReportPack` passes through the existing
+   `LedgerClientReportExportService`/`FinancialReportDocumentRenderer` seam once; do not reconstruct
+   partners-capital tables in a Reporting-specific renderer. A standalone format retains only its
+   corresponding canonical document. `ClientPackage` must retain exactly one `<runId>.pdf` and one
+   `<runId>.xlsx`; release fails closed if either primary artifact is missing or duplicated.
 7. After independent maker-checker approval and release, use secure Reporting distribution. Retain
    the durable delivery job, scoped grant state, provider receipt, and audited download receipt as
    applicable. A `ClientPackage` distribution must select both released primary documents; it may

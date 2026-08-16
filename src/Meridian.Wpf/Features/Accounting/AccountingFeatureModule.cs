@@ -21,7 +21,9 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk.AccountingSystem;
+using Meridian.Reporting;
 using Meridian.Ui.Services.Services.Accounting;
+using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -182,7 +184,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<ReportingReconciliationEvidenceRetentionService>(),
                 sp.GetService<IFundProfileTenancyRegistry>(),
                 sp.GetService<IReconciliationBreakQueueRepository>(),
-                sp.GetService<IOperationsContinuityWorkflowService>()));
+                sp.GetService<IOperationsContinuityWorkflowService>(),
+                sp.GetService<IReportingReleaseConsistencyGate>()));
         services.TryAddSingleton<DailyValuationScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());
@@ -273,6 +276,13 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
             new FileAccountingProductionCertificationProfileStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "production-certification-profiles.json"),
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileAccountingProductionCertificationProfileStore>>()));
+        services.TryAddSingleton<IEvidenceArtifactStore>(sp =>
+            new FileEvidenceArtifactStore(
+                FileEvidenceArtifactStore.ResolveDataRoot(sp),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileEvidenceArtifactStore>>()));
+        services.TryAddSingleton<IAccountingProductionCertificationEvidenceAuthority,
+            EvidenceVaultAccountingProductionCertificationEvidenceAuthority>();
+        services.TryAddSingleton<AccountingProductionCertificationCommandService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, XeroFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, NetSuiteFixtureAccountingProvider>());
@@ -287,6 +297,10 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddTransient<FundLedgerViewModel>();
         services.AddTransient<FinancialRecordExplorerViewModel>();
         services.AddTransient<AccountPortfolioViewModel>();
+        // Null-tolerant factory: the continuity page degrades into explicit per-panel error text
+        // when the shared client is absent from the composition.
+        services.AddTransient(static sp => new OperationsContinuityViewModel(
+            sp.GetService<IOperationsControlCenterClient>()));
     }
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Capability.Pages;

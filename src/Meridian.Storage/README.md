@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-26
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Storage
@@ -84,15 +84,30 @@ lookup paths, and evidence trails those layers rely on.
   digests and indexed identity checks. The live deployment probe also verifies the reporting
   migration-ledger key and non-null checksum, immediate non-expression conflict/idempotency keys,
   and the predicate-bound access-grant delivery key. When the reporting connection is absent, UI
-  Shared can register file-backed run, schedule, custom-template, starter-kit, workflow, and
-  delivery compatibility stores for local development, but production omits them and the
-  independent Reporting deployment capability remains blocked; those files are not production
-  recovery authority.
+  Shared can register file-backed run, schedule, custom-template, and starter-kit compatibility
+  stores for local development, but the independent Reporting deployment capability remains
+  blocked. Legacy file workflow and delivery-history repositories are not part of the default host
+  composition and remain available only to explicitly constructed compatibility callers.
+  Production omits all of these file authorities; they are not production recovery authority.
+  Migration `013_reporting_statement_reconciliation_authority.sql` adds the exact
+  tenant/company/workflow/document mapping and append-only mapping revisions for statement intake,
+  evidence, snapshots, and JSON/CSV support artifacts. Those mappings reference the existing
+  immutable artifact blobs; `PostgresStatementReconciliationReportAuthorityStore` verifies bytes on
+  read and holds a session advisory lease while one host advances a workflow. The live deployment
+  probe requires both statement-authority tables, the document guard/revision and revision
+  append/guard triggers, and the exact `reporting-statement-reconciliation-authority:v1`
+  compatibility marker. Production readiness additionally requires the concrete PostgreSQL store;
+  a migration receipt or compatible-looking schema without that store does not certify the
+  statement authority.
 - `Runtime/` - atomic JSON storage for the latest host lifecycle shutdown receipt. Installed
   supervisor session receipts remain below the supervisor-managed data root and use the same
   write-through-then-rename durability posture.
 - `Packaging/`, `Export/`, and `Maintenance/` - portable data packages, analysis exports, retention,
-  tiering, and scheduled cleanup.
+  tiering, and scheduled cleanup. CSV exports route headers and values through the shared
+  spreadsheet-formula guard, including semicolon-locale segments, and quote commas, semicolons,
+  tabs, quotes, carriage returns, and line feeds before publishing an artifact. The shared XLSX
+  writer fixes ZIP entry timestamps and platform attributes so identical workbook inputs produce
+  byte-identical artifacts and stable retained hashes.
 - `Services/QualityTrendStore.cs` - crash-safe append-only quality history. New score events retain
   immutable input snapshots, input and canonical result SHA-256 identities, and a verified
   quality-evaluation outcome. Sequence/predecessor hashes, a durable chain head, deterministic
@@ -126,6 +141,17 @@ retained through the same case-history spine when a durable history store is con
 maintenance distinguishes complete success, partial `CompletedWithWarnings`, total failure, and
 no-input blocking from attempted/succeeded/failed input counts; cancelled work is not converted to
 a false terminal failure.
+
+Archive-maintenance schedule mutations persist a validated candidate snapshot before publishing it
+to readers under an in-process gate and a cross-process file lease; revision-aware replacements
+reject stale snapshots while legacy revision-zero callers retain deterministic merge compatibility.
+Retained invalid schedules are durably disabled with repair evidence, unreadable source documents
+are copied to the maintenance quarantine, and the exact legacy monthly-compression preset is
+migrated to the explicit first-Sunday expression `0 1 * * 0#1` without rewriting custom POSIX
+schedules. Due and manually triggered executions create a durable claim/outbox record in the same
+schedule snapshot that advances the occurrence. Active services renew the claim lease, restarts
+requeue an unpublished occurrence with the same execution identity, and an expired claim already
+marked running is retained as an interrupted/ambiguous failure instead of being replayed blindly.
 
 ### Market data and evidence
 
@@ -175,6 +201,10 @@ Canonical symbol resolution is Storage-owned because it wraps the durable symbol
 identifier indexes. Application composition registers the Storage implementation behind
 `Meridian.Contracts.Catalog.ICanonicalSymbolRegistry` for canonicalization and Security Master seed
 workflows.
+Security Master identifier lookup preserves provider authority: a provider-bound canonical
+identifier resolves only for the exact normalized provider. The legacy primary-identifier fallback
+is available only for providerless records that have no authoritative identifier row, so an omitted
+or incorrect provider cannot select a provider-bound security.
 The optional atomic-migration capability builds the complete candidate registry and lookup caches
 off to the side, persists that candidate through `AtomicFileWriter`, and publishes it only after
 the durable replacement succeeds. Conflict, cancellation, or write failure leaves both the live
@@ -394,8 +424,11 @@ across tenant/company boundaries.
 Governed reporting persistence stores each series revision under its immutable tenant and scope
 identity while lifecycle state advances through compare-and-swap aggregate versions. State payloads
 retain a SHA-256 checksum and are hydrated only when their indexed identity, tenant, lifecycle
-state, and checksum agree. Lifecycle audit events are appended in the same serializable transaction;
-database triggers require contiguous versions and the retained previous hash, and reject later
+state, and checksum agree. Lifecycle audit events are appended in the same serializable transaction.
+Optional immutable-array fields are canonicalized from their default value to an empty collection
+before source-generated JSON persistence and after hydration, keeping equivalent reporting state
+serializable and deterministic across callers. Database triggers require contiguous versions and
+the retained previous hash, and reject later
 updates or deletes. Restatement approval updates the request and creates the next report revision in
 one transaction, so a failed revision insert cannot leave an approved request without its draft.
 Reporting delivery persistence also keeps run and package identity separately, lists grants and

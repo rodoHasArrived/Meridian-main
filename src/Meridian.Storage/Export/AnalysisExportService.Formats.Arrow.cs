@@ -1,3 +1,4 @@
+using System.Globalization;
 using Apache.Arrow;
 using Apache.Arrow.Ipc;
 using Apache.Arrow.Types;
@@ -13,6 +14,7 @@ public sealed partial class AnalysisExportService
         List<SourceFile> sourceFiles,
         ExportRequest request,
         ExportProfile profile,
+        OutputArtifactSnapshot? outputSnapshot,
         CancellationToken ct)
     {
         var exportedFiles = new List<ExportedFile>();
@@ -23,38 +25,59 @@ public sealed partial class AnalysisExportService
             var outputPath = Path.Combine(
                 request.OutputDirectory,
                 $"{symbol}_{DateTime.UtcNow:yyyyMMdd}.arrow");
+            EnsureExportArtifactMayBeWritten(outputPath, request.OverwriteExisting);
+            var stagedPath = CreateExportArtifactStagingPath(outputPath);
 
-            // Collect all records to determine schema and build columnar data
-            var records = new List<Dictionary<string, object?>>();
-
-            foreach (var sourceFile in group)
+            try
             {
-                await foreach (var record in ReadJsonlRecordsAsync(sourceFile.Path, ct))
+                // Collect all records to determine schema and build columnar data
+                var records = new List<Dictionary<string, object?>>();
+
+                foreach (var sourceFile in group)
                 {
-                    records.Add(record);
+                    await foreach (var record in ReadJsonlRecordsAsync(sourceFile.Path, ct))
+                    {
+                        records.Add(record);
+                    }
                 }
-            }
 
-            if (records.Count > 0)
-            {
-                await WriteArrowFileAsync(outputPath, records, ct);
-            }
-            else
-            {
-                await WriteEmptyArrowFileAsync(outputPath, ct);
-            }
+                if (records.Count > 0)
+                {
+                    await WriteArrowFileAsync(
+                        stagedPath,
+                        records,
+                        profile.TimestampSettings,
+                        ct);
+                }
+                else
+                {
+                    await WriteEmptyArrowFileAsync(stagedPath, ct);
+                }
 
-            var fileInfo = new FileInfo(outputPath);
-            exportedFiles.Add(new ExportedFile
+                var sizeBytes = new FileInfo(stagedPath).Length;
+                var checksum = await ComputeChecksumAsync(stagedPath, ct);
+                ct.ThrowIfCancellationRequested();
+                CommitStagedExportArtifact(
+                    stagedPath,
+                    outputPath,
+                    request.OverwriteExisting,
+                    outputSnapshot);
+
+                exportedFiles.Add(new ExportedFile
+                {
+                    Path = outputPath,
+                    RelativePath = Path.GetFileName(outputPath),
+                    Symbol = symbol,
+                    Format = "arrow",
+                    SizeBytes = sizeBytes,
+                    RecordCount = records.Count,
+                    ChecksumSha256 = checksum
+                });
+            }
+            finally
             {
-                Path = outputPath,
-                RelativePath = Path.GetFileName(outputPath),
-                Symbol = symbol,
-                Format = "arrow",
-                SizeBytes = fileInfo.Length,
-                RecordCount = records.Count,
-                ChecksumSha256 = await ComputeChecksumAsync(outputPath, ct)
-            });
+                DeleteStagedExportArtifact(stagedPath);
+            }
         }
 
         return exportedFiles;
@@ -67,6 +90,7 @@ public sealed partial class AnalysisExportService
     private async Task WriteArrowFileAsync(
         string path,
         List<Dictionary<string, object?>> records,
+        TimestampSettings timestampSettings,
         CancellationToken ct)
     {
         if (records.Count == 0)
@@ -80,8 +104,10 @@ public sealed partial class AnalysisExportService
         var arrowFields = new List<Apache.Arrow.Field>();
         foreach (var column in columns)
         {
-            var value = firstRecord[column];
-            var field = InferArrowField(column, value);
+            var sampleValue = records
+                .Select(record => record.TryGetValue(column, out var value) ? value : null)
+                .FirstOrDefault(static value => value is not null);
+            var field = InferArrowField(column, sampleValue, timestampSettings);
             arrowFields.Add(field);
             schemaBuilder.Field(field);
         }
@@ -127,20 +153,23 @@ public sealed partial class AnalysisExportService
     /// <summary>
     /// Infers the Arrow field type from a sample value.
     /// </summary>
-    private static Apache.Arrow.Field InferArrowField(string name, object? value)
+    private static Apache.Arrow.Field InferArrowField(
+        string name,
+        object? value,
+        TimestampSettings timestampSettings)
     {
-        var dataType = value switch
-        {
-            int => Int32Type.Default as IArrowType,
-            long => Int64Type.Default,
-            float => FloatType.Default,
-            double => DoubleType.Default,
-            decimal => DoubleType.Default, // Arrow has no native decimal; use double
-            bool => BooleanType.Default,
-            DateTime => TimestampType.Default,
-            DateTimeOffset => TimestampType.Default,
-            _ => StringType.Default
-        };
+        var dataType = IsTimestampValue(name, value)
+            ? CreateTimestampType(timestampSettings)
+            : value switch
+            {
+                int => Int32Type.Default as IArrowType,
+                long => Int64Type.Default,
+                float => FloatType.Default,
+                double => DoubleType.Default,
+                decimal => DoubleType.Default, // Arrow has no native decimal; use double
+                bool => BooleanType.Default,
+                _ => StringType.Default
+            };
 
         return new Apache.Arrow.Field(name, dataType, nullable: true);
     }
@@ -212,21 +241,16 @@ public sealed partial class AnalysisExportService
                     }
                     return builder.Build();
                 }
-            case TimestampType:
+            case TimestampType timestampType:
                 {
-                    var builder = new TimestampArray.Builder();
+                    var builder = new TimestampArray.Builder(timestampType);
                     foreach (var v in values)
                     {
-                        if (v is null)
+                        var timestamp = ConvertToArrowTimestamp(v);
+                        if (timestamp is null)
                             builder.AppendNull();
-                        else if (v is DateTimeOffset dto)
-                            builder.Append(dto);
-                        else if (v is DateTime dt)
-                            builder.Append(new DateTimeOffset(dt, TimeSpan.Zero));
-                        else if (v is string s && DateTimeOffset.TryParse(s, out var parsed))
-                            builder.Append(parsed);
                         else
-                            builder.AppendNull();
+                            builder.Append(timestamp.Value);
                     }
                     return builder.Build();
                 }
@@ -244,4 +268,53 @@ public sealed partial class AnalysisExportService
                 }
         }
     }
+
+    private static TimestampType CreateTimestampType(TimestampSettings settings)
+    {
+        var unit = settings.Format switch
+        {
+            TimestampFormat.UnixSeconds => TimeUnit.Second,
+            TimestampFormat.UnixMilliseconds => TimeUnit.Millisecond,
+            TimestampFormat.UnixNanoseconds when settings.IncludeNanoseconds => TimeUnit.Nanosecond,
+            TimestampFormat.UnixNanoseconds => TimeUnit.Microsecond,
+            _ => TimeUnit.Microsecond
+        };
+
+        var timezone = string.IsNullOrWhiteSpace(settings.Timezone)
+            ? "UTC"
+            : settings.Timezone;
+        return new TimestampType(unit, timezone);
+    }
+
+    private static bool IsTimestampValue(string columnName, object? value)
+    {
+        if (!LooksLikeTimestampColumn(columnName))
+            return false;
+
+        return ConvertToArrowTimestamp(value) is not null;
+    }
+
+    private static bool LooksLikeTimestampColumn(string columnName) =>
+        columnName.Contains("timestamp", StringComparison.OrdinalIgnoreCase) ||
+        columnName.EndsWith("DateTime", StringComparison.OrdinalIgnoreCase) ||
+        columnName.EndsWith("Time", StringComparison.OrdinalIgnoreCase) ||
+        columnName.EndsWith("At", StringComparison.OrdinalIgnoreCase);
+
+    private static DateTimeOffset? ConvertToArrowTimestamp(object? value) =>
+        value switch
+        {
+            DateTimeOffset timestamp => timestamp.ToUniversalTime(),
+            DateTime timestamp when timestamp.Kind == DateTimeKind.Utc =>
+                new DateTimeOffset(timestamp),
+            DateTime timestamp when timestamp.Kind == DateTimeKind.Local =>
+                new DateTimeOffset(timestamp.ToUniversalTime()),
+            DateTime timestamp =>
+                new DateTimeOffset(DateTime.SpecifyKind(timestamp, DateTimeKind.Utc)),
+            string text when DateTimeOffset.TryParse(
+                text,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind,
+                out var timestamp) => timestamp.ToUniversalTime(),
+            _ => null
+        };
 }

@@ -14,28 +14,25 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class ConfigEndpointTests : IDisposable
+public sealed class ConfigEndpointTests : IClassFixture<EndpointTestFixture>
 {
     private const string ConfigPasswordHash = "pbkdf2-sha256$210000$MZbfWqYODb9fl/pT/2g2Wg==$hsDcSOJ5uPYBFGsUp2lD6DhaPQAeWDEc5+j0D/gk3RA=";
 
-    private readonly HttpClient _client;
+    private readonly EndpointTestFixture _fixture;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public ConfigEndpointTests(EndpointTestFixture fixture)
     {
-        // SEC-001: configuration routes now require ViewConfig/ModifyConfig. Authorize this suite's
-        // client so the existing functional assertions continue to exercise the handlers.
-        _client = fixture.CreatePermittedClient(UserPermission.ViewConfig, UserPermission.ModifyConfig);
+        _fixture = fixture;
     }
-
-    public void Dispose() => _client.Dispose();
 
     #region GET /api/config
 
     [Fact]
     public async Task GetConfig_ReturnsJsonWithExpectedFields()
     {
-        var response = await _client.GetAsync("/api/config");
+        using var client = _fixture.CreatePermittedClient(UserPermission.ViewConfig);
+        var response = await client.GetAsync("/api/config");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -50,7 +47,8 @@ public sealed class ConfigEndpointTests : IDisposable
     [Fact]
     public async Task GetConfig_ContainsConfiguredSymbols()
     {
-        var response = await _client.GetAsync("/api/config");
+        using var client = _fixture.CreatePermittedClient(UserPermission.ViewConfig);
+        var response = await client.GetAsync("/api/config");
         var json = await DeserializeAsync(response);
 
         json.Should().ContainKey("symbols");
@@ -67,36 +65,40 @@ public sealed class ConfigEndpointTests : IDisposable
     [Fact]
     public async Task AddSymbol_WithValidData_WithoutPermission_ReturnsUnauthorized()
     {
+        using var client = _fixture.CreateNoRedirectClient();
         var payload = new { Symbol = "MSFT", SubscribeTrades = true, SubscribeDepth = false, DepthLevels = 10, SecurityType = "STK", Exchange = "SMART", Currency = "USD" };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/config/symbols", content);
+        var response = await client.PostAsync("/api/config/symbols", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
-    public async Task AddSymbol_WithEmptySymbol_WithoutPermission_ReturnsUnauthorized()
+    public async Task AddSymbol_WithEmptySymbol_WithModifyPermission_ReturnsBadRequest()
     {
+        using var client = _fixture.CreatePermittedClient(UserPermission.ModifyConfig);
         var payload = new { Symbol = "", SubscribeTrades = true };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/config/symbols", content);
+        var response = await client.PostAsync("/api/config/symbols", content);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task AddSymbol_WithoutPermission_DoesNotPersistInConfig()
     {
+        using var unauthenticatedClient = _fixture.CreateNoRedirectClient();
         var payload = new { Symbol = "TSLA", SubscribeTrades = true, SubscribeDepth = false, DepthLevels = 5, SecurityType = "STK", Exchange = "SMART", Currency = "USD" };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var addResponse = await _client.PostAsync("/api/config/symbols", content);
+        var addResponse = await unauthenticatedClient.PostAsync("/api/config/symbols", content);
         addResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
-        // Verify the symbol appears in config
-        var configResponse = await _client.GetAsync("/api/config");
+        // Verify the unauthorized mutation did not change the configuration.
+        using var viewClient = _fixture.CreatePermittedClient(UserPermission.ViewConfig);
+        var configResponse = await viewClient.GetAsync("/api/config");
         var json = await DeserializeAsync(configResponse);
         var symbols = json["symbols"].EnumerateArray()
             .Select(s => s.GetProperty("symbol").GetString())
@@ -112,12 +114,15 @@ public sealed class ConfigEndpointTests : IDisposable
     [Fact]
     public async Task DeleteSymbol_WithoutPermission_ReturnsUnauthorized()
     {
+        using var modifyClient = _fixture.CreatePermittedClient(UserPermission.ModifyConfig);
         // First add a symbol to delete
         var addPayload = new { Symbol = "GOOG", SubscribeTrades = true, SubscribeDepth = false, DepthLevels = 5, SecurityType = "STK", Exchange = "SMART", Currency = "USD" };
-        await _client.PostAsync("/api/config/symbols",
+        var addResponse = await modifyClient.PostAsync("/api/config/symbols",
             new StringContent(JsonSerializer.Serialize(addPayload), Encoding.UTF8, "application/json"));
+        addResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var response = await _client.DeleteAsync("/api/config/symbols/GOOG");
+        using var unauthenticatedClient = _fixture.CreateNoRedirectClient();
+        var response = await unauthenticatedClient.DeleteAsync("/api/config/symbols/GOOG");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -125,23 +130,27 @@ public sealed class ConfigEndpointTests : IDisposable
     [Fact]
     public async Task DeleteSymbol_WithoutPermission_LeavesConfigurationUnchanged()
     {
+        using var modifyClient = _fixture.CreatePermittedClient(UserPermission.ModifyConfig);
         // Add a symbol
         var addPayload = new { Symbol = "NFLX", SubscribeTrades = true, SubscribeDepth = false, DepthLevels = 5, SecurityType = "STK", Exchange = "SMART", Currency = "USD" };
-        await _client.PostAsync("/api/config/symbols",
+        var addResponse = await modifyClient.PostAsync("/api/config/symbols",
             new StringContent(JsonSerializer.Serialize(addPayload), Encoding.UTF8, "application/json"));
+        addResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Delete it
-        var deleteResponse = await _client.DeleteAsync("/api/config/symbols/NFLX");
+        // An unauthenticated caller cannot delete it.
+        using var unauthenticatedClient = _fixture.CreateNoRedirectClient();
+        var deleteResponse = await unauthenticatedClient.DeleteAsync("/api/config/symbols/NFLX");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
-        // Verify it's gone
-        var configResponse = await _client.GetAsync("/api/config");
+        // Verify the symbol remains configured after the rejected mutation.
+        using var viewClient = _fixture.CreatePermittedClient(UserPermission.ViewConfig);
+        var configResponse = await viewClient.GetAsync("/api/config");
         var json = await DeserializeAsync(configResponse);
         var symbols = json["symbols"].EnumerateArray()
             .Select(s => s.GetProperty("symbol").GetString())
             .ToList();
 
-        symbols.Should().NotContain("NFLX");
+        symbols.Should().Contain("NFLX");
     }
 
     #endregion
@@ -151,7 +160,8 @@ public sealed class ConfigEndpointTests : IDisposable
     [Fact]
     public async Task GetDerivatives_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/config/derivatives");
+        using var client = _fixture.CreatePermittedClient(UserPermission.ViewConfig);
+        var response = await client.GetAsync("/api/config/derivatives");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -164,28 +174,31 @@ public sealed class ConfigEndpointTests : IDisposable
     [Fact]
     public async Task UpdateDataSource_WithValidValue_WithoutPermission_ReturnsUnauthorized()
     {
+        using var client = _fixture.CreateNoRedirectClient();
         var payload = new { DataSource = "Alpaca" };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/config/datasource", content);
+        var response = await client.PostAsync("/api/config/datasource", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
-    public async Task UpdateDataSource_WithInvalidValue_WithoutPermission_ReturnsUnauthorized()
+    public async Task UpdateDataSource_WithInvalidValue_WithModifyPermission_ReturnsBadRequest()
     {
+        using var client = _fixture.CreatePermittedClient(UserPermission.ModifyConfig);
         var payload = new { DataSource = "InvalidProvider" };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/config/datasource", content);
+        var response = await client.PostAsync("/api/config/datasource", content);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task UpdateDataSource_WithCookieAuth_RequiresCsrfHeader()
     {
+        using var client = _fixture.CreateNoRedirectClient();
         var originalUsername = Environment.GetEnvironmentVariable("MDC_USERNAME");
         var originalPasswordHash = Environment.GetEnvironmentVariable("MDC_PASSWORD_HASH");
         Environment.SetEnvironmentVariable("MDC_USERNAME", "config-admin");
@@ -195,7 +208,7 @@ public sealed class ConfigEndpointTests : IDisposable
         {
             var loginPayload = new { Username = "config-admin", Password = "config-password" };
             var loginContent = new StringContent(JsonSerializer.Serialize(loginPayload), Encoding.UTF8, "application/json");
-            var loginResponse = await _client.PostAsync("/api/auth/login", loginContent);
+            var loginResponse = await client.PostAsync("/api/auth/login", loginContent);
             loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var setCookies = loginResponse.Headers
@@ -216,7 +229,7 @@ public sealed class ConfigEndpointTests : IDisposable
                 Content = new StringContent(requestBody, Encoding.UTF8, "application/json")
             };
             noCsrfRequest.Headers.Add("Cookie", cookieHeader);
-            var noCsrfResponse = await _client.SendAsync(noCsrfRequest);
+            var noCsrfResponse = await client.SendAsync(noCsrfRequest);
             noCsrfResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
 
             using var withCsrfRequest = new HttpRequestMessage(HttpMethod.Post, "/api/config/datasource")
@@ -225,7 +238,7 @@ public sealed class ConfigEndpointTests : IDisposable
             };
             withCsrfRequest.Headers.Add("Cookie", cookieHeader);
             withCsrfRequest.Headers.Add("X-CSRF-Token", csrfCookie);
-            var withCsrfResponse = await _client.SendAsync(withCsrfRequest);
+            var withCsrfResponse = await client.SendAsync(withCsrfRequest);
             withCsrfResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         }
         finally

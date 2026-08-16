@@ -1,10 +1,22 @@
 using System.Security.Cryptography;
 using System.Text;
 using Meridian.Reporting;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
 public sealed record ReportingDerivedAccessGrantCredential(string GrantId, string Token);
+
+internal sealed record ReportingAccessGrantConsumptionPreparation(
+    ReportingAccessGrantValidationStatus Status,
+    ReportingAccessGrantRecord? CurrentGrant = null,
+    ReportingAccessGrantRecord? ConsumedGrant = null)
+{
+    public bool IsValid =>
+        Status == ReportingAccessGrantValidationStatus.Valid
+        && CurrentGrant is not null
+        && ConsumedGrant is not null;
+}
 
 /// <summary>
 /// Derives a stable, opaque delivery credential without persisting its plaintext bearer. The
@@ -109,7 +121,8 @@ public sealed class ReportingAccessGrantService
                 request.ExpiresAtUtc,
                 request.MaxUses,
                 UseCount: 0,
-                AudienceKind: request.AudienceKind);
+                AudienceKind: request.AudienceKind,
+                ConsumedArtifactIds: []);
 
             if (await _store.TryCreateAsync(grant, ct).ConfigureAwait(false))
             {
@@ -171,7 +184,8 @@ public sealed class ReportingAccessGrantService
             request.ExpiresAtUtc,
             request.MaxUses,
             UseCount: 0,
-            AudienceKind: request.AudienceKind);
+            AudienceKind: request.AudienceKind,
+            ConsumedArtifactIds: []);
         if (await _store.TryCreateAsync(candidate, ct).ConfigureAwait(false))
         {
             return new ReportingAccessGrantSecret(grantId, token, candidate.ExpiresAtUtc);
@@ -183,7 +197,10 @@ public sealed class ReportingAccessGrantService
         EnsureIdempotentGrantMatches(existing, candidate);
         if (existing.RevokedAtUtc is not null
             || existing.ExpiresAtUtc <= now
-            || existing.UseCount >= existing.MaxUses)
+            || existing.UseCount >= existing.MaxUses
+            || (existing.ConsumedArtifactIds is null
+                && existing.ArtifactIds.Count > 1
+                && existing.UseCount > 0))
         {
             throw new InvalidOperationException(
                 "The deterministic delivery access grant is no longer active and cannot be reused.");
@@ -197,6 +214,53 @@ public sealed class ReportingAccessGrantService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        for (var attempt = 0; attempt < MaximumConcurrencyAttempts; attempt++)
+        {
+            ct.ThrowIfCancellationRequested();
+            var preparation = await PrepareConsumptionAsync(
+                    request,
+                    consumedAtUtc: null,
+                    ct: ct)
+                .ConfigureAwait(false);
+            if (!preparation.IsValid)
+            {
+                return new ReportingAccessGrantValidationResult(preparation.Status);
+            }
+
+            if (!request.ConsumeUse)
+            {
+                return new ReportingAccessGrantValidationResult(
+                    ReportingAccessGrantValidationStatus.Valid,
+                    preparation.CurrentGrant);
+            }
+
+            var current = preparation.CurrentGrant!;
+            var consumed = preparation.ConsumedGrant!;
+            if (await _store
+                    .TryUpdateAsync(current.GrantId, current.Version, consumed, ct)
+                    .ConfigureAwait(false))
+            {
+                return new ReportingAccessGrantValidationResult(
+                    ReportingAccessGrantValidationStatus.Valid,
+                    consumed);
+            }
+        }
+
+        return new ReportingAccessGrantValidationResult(ReportingAccessGrantValidationStatus.ConcurrencyConflict);
+    }
+
+    /// <summary>
+    /// Validates a bearer and prepares, but does not persist, its exact one-use transition. This is
+    /// used by the PostgreSQL delivery composite so the grant and Downloaded receipt can commit
+    /// together without exposing the plaintext bearer to Storage.
+    /// </summary>
+    internal async Task<ReportingAccessGrantConsumptionPreparation> PrepareConsumptionAsync(
+        ReportingAccessGrantValidationRequest request,
+        DateTimeOffset? consumedAtUtc,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
         var grantId = NormalizeRequired(request.GrantId, nameof(request.GrantId));
         var tenantId = NormalizeRequired(request.TenantId, nameof(request.TenantId));
         var audience = NormalizeRequired(request.Audience, nameof(request.Audience));
@@ -205,57 +269,61 @@ public sealed class ReportingAccessGrantService
         ValidateAudienceKind(request.AudienceKind);
         var artifactId = NormalizeOptional(request.ArtifactId);
         var suppliedTokenHash = HashSuppliedToken(request.Token);
-
-        for (var attempt = 0; attempt < MaximumConcurrencyAttempts; attempt++)
+        var grant = await _store.GetAsync(grantId, ct).ConfigureAwait(false);
+        if (grant is null)
         {
-            ct.ThrowIfCancellationRequested();
-            var grant = await _store.GetAsync(grantId, ct).ConfigureAwait(false);
-            if (grant is null)
-            {
-                return new ReportingAccessGrantValidationResult(ReportingAccessGrantValidationStatus.NotFound);
-            }
-
-            if (!MatchesStoredHash(grant.TokenHashSha256, suppliedTokenHash))
-            {
-                return new ReportingAccessGrantValidationResult(ReportingAccessGrantValidationStatus.TokenMismatch);
-            }
-
-            // One authority time governs both the state decision and the committed use. Reading
-            // the clock again after validation could retain a use whose LastUsedAtUtc crossed the
-            // immutable expiry boundary.
-            var now = _timeProvider.GetUtcNow();
-            var status = ValidateScopeAndState(
-                grant,
-                tenantId,
-                audience,
-                runId,
-                packageId,
-                artifactId,
-                now,
-                request.AudienceKind);
-            if (status != ReportingAccessGrantValidationStatus.Valid)
-            {
-                return new ReportingAccessGrantValidationResult(status);
-            }
-
-            if (!request.ConsumeUse)
-            {
-                return new ReportingAccessGrantValidationResult(ReportingAccessGrantValidationStatus.Valid, grant);
-            }
-
-            var updated = grant with
-            {
-                UseCount = grant.UseCount + 1,
-                LastUsedAtUtc = now,
-                Version = grant.Version + 1
-            };
-            if (await _store.TryUpdateAsync(grant.GrantId, grant.Version, updated, ct).ConfigureAwait(false))
-            {
-                return new ReportingAccessGrantValidationResult(ReportingAccessGrantValidationStatus.Valid, updated);
-            }
+            return new ReportingAccessGrantConsumptionPreparation(
+                ReportingAccessGrantValidationStatus.NotFound);
         }
 
-        return new ReportingAccessGrantValidationResult(ReportingAccessGrantValidationStatus.ConcurrencyConflict);
+        if (!MatchesStoredHash(grant.TokenHashSha256, suppliedTokenHash))
+        {
+            return new ReportingAccessGrantConsumptionPreparation(
+                ReportingAccessGrantValidationStatus.TokenMismatch);
+        }
+
+        // One authority time governs the state decision and the exact Downloaded receipt. A caller
+        // that already completed an audited exact-byte read supplies that audit timestamp; grant
+        // state retains it unless a later concurrent read has already advanced the high-water mark.
+        var now = consumedAtUtc ?? _timeProvider.GetUtcNow();
+        if (now.Offset != TimeSpan.Zero)
+        {
+            throw new ArgumentException(
+                "Reporting access-grant consumption time must be UTC.",
+                nameof(consumedAtUtc));
+        }
+
+        var status = ValidateScopeAndState(
+            grant,
+            tenantId,
+            audience,
+            runId,
+            packageId,
+            artifactId,
+            now,
+            request.AudienceKind);
+        if (status != ReportingAccessGrantValidationStatus.Valid)
+        {
+            return new ReportingAccessGrantConsumptionPreparation(status);
+        }
+
+        var consumed = grant with
+        {
+            UseCount = checked(grant.UseCount + 1),
+            // A delivery-linked read can lose its first optimistic commit to a read that occurred
+            // later. Preserve the retained high-water mark while the Downloaded receipt keeps the
+            // exact earlier audit-event time.
+            LastUsedAtUtc = grant.LastUsedAtUtc is { } retainedLastUsedAtUtc
+                            && retainedLastUsedAtUtc > now
+                ? retainedLastUsedAtUtc
+                : now,
+            Version = checked(grant.Version + 1),
+            ConsumedArtifactIds = PrepareConsumedArtifactIds(grant, artifactId)
+        };
+        return new ReportingAccessGrantConsumptionPreparation(
+            ReportingAccessGrantValidationStatus.Valid,
+            grant,
+            consumed);
     }
 
     public async Task<bool> RevokeAsync(
@@ -389,9 +457,51 @@ public sealed class ReportingAccessGrantService
             return ReportingAccessGrantValidationStatus.Expired;
         }
 
-        return grant.UseCount >= grant.MaxUses
-            ? ReportingAccessGrantValidationStatus.UseLimitExceeded
-            : ReportingAccessGrantValidationStatus.Valid;
+        ValidateConsumedArtifactState(grant);
+        if (grant.UseCount >= grant.MaxUses)
+        {
+            return ReportingAccessGrantValidationStatus.UseLimitExceeded;
+        }
+
+        if (grant.ConsumedArtifactIds is null)
+        {
+            // A retained multi-artifact grant that has already been used predates exact artifact
+            // consumption tracking. Its prior artifact identity cannot be reconstructed safely.
+            if (grant.ArtifactIds.Count > 1 && grant.UseCount > 0)
+            {
+                return ReportingAccessGrantValidationStatus.UseLimitExceeded;
+            }
+
+            // Every post-migration use of a legacy marker must atomically initialize one exact
+            // artifact. A package-level read is unambiguous only when exactly one artifact exists.
+            // Zero-artifact legacy package grants must be reissued with explicit tracked state.
+            return artifactId is not null || grant.ArtifactIds.Count == 1
+                ? ReportingAccessGrantValidationStatus.Valid
+                : ReportingAccessGrantValidationStatus.ArtifactOutOfScope;
+        }
+
+        if (grant.UseCount == 0
+            && grant.ConsumedArtifactIds.Count == 0
+            && grant.ArtifactIds.Count > 0
+            && artifactId is null)
+        {
+            return ReportingAccessGrantValidationStatus.ArtifactOutOfScope;
+        }
+
+        var remainingDistinctArtifacts = grant.ArtifactIds.Count(artifact =>
+            !grant.ConsumedArtifactIds.Contains(artifact, StringComparer.Ordinal));
+        var identifiesUnconsumedArtifact = artifactId is not null
+            && !grant.ConsumedArtifactIds.Contains(artifactId, StringComparer.Ordinal);
+        if (grant.MaxUses >= grant.ArtifactIds.Count
+            && !identifiesUnconsumedArtifact
+            && grant.MaxUses - grant.UseCount <= remainingDistinctArtifacts)
+        {
+            // Preserve one remaining use for every authorized artifact not yet consumed. Extra
+            // configured uses may still support bounded retries after that coverage is reserved.
+            return ReportingAccessGrantValidationStatus.UseLimitExceeded;
+        }
+
+        return ReportingAccessGrantValidationStatus.Valid;
     }
 
     private static byte[] HashSuppliedToken(string token)
@@ -487,14 +597,59 @@ public sealed class ReportingAccessGrantService
             .ToArray()
         ?? [];
 
+    private static IReadOnlyList<string>? PrepareConsumedArtifactIds(
+        ReportingAccessGrantRecord grant,
+        string? artifactId)
+    {
+        if (artifactId is null)
+        {
+            return grant.ConsumedArtifactIds is null
+                   && grant.ArtifactIds.Count == 1
+                ? [grant.ArtifactIds[0]]
+                : grant.ConsumedArtifactIds;
+        }
+
+        if (grant.ConsumedArtifactIds is null)
+        {
+            // Untouched legacy grants and legacy single-artifact grants can be upgraded without
+            // guessing. ValidateScopeAndState rejects previously used multi-artifact grants.
+            return [artifactId];
+        }
+
+        return grant.ConsumedArtifactIds.Contains(artifactId, StringComparer.Ordinal)
+            ? grant.ConsumedArtifactIds
+            : grant.ConsumedArtifactIds
+                .Append(artifactId)
+                .OrderBy(static consumedArtifactId => consumedArtifactId, StringComparer.Ordinal)
+                .ToArray();
+    }
+
+    private static void ValidateConsumedArtifactState(ReportingAccessGrantRecord grant)
+    {
+        if (grant.ConsumedArtifactIds is null)
+        {
+            return;
+        }
+
+        var normalized = NormalizeArtifactIds(grant.ConsumedArtifactIds);
+        if (!grant.ConsumedArtifactIds.SequenceEqual(normalized, StringComparer.Ordinal)
+            || grant.ConsumedArtifactIds.Any(consumed =>
+                !grant.ArtifactIds.Contains(consumed, StringComparer.Ordinal))
+            || grant.ConsumedArtifactIds.Count > grant.UseCount
+            || (grant.UseCount > 0
+                && grant.ArtifactIds.Count > 0
+                && grant.ConsumedArtifactIds.Count == 0))
+        {
+            throw new InvalidDataException(
+                "The retained reporting access grant has invalid consumed-artifact authority state.");
+        }
+    }
+
     private static string NormalizeRequired(string value, string parameterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
         return value.Trim();
     }
-
-    private static string? NormalizeOptional(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void ValidateAudienceKind(ReportingAccessPrincipalKind kind)
     {

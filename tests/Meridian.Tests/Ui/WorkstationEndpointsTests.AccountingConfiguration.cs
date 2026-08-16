@@ -108,6 +108,105 @@ public sealed partial class WorkstationEndpointsTests
         forwarded.CompanyId.Should().Be("company-alpha");
     }
 
+    [Fact]
+    public async Task AssetAccountingCandidateEndpoint_ForwardsTrustedActorAndTenantScope()
+    {
+        var service = new CapturingAssetAccountingEventSpineService();
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton<IAssetAccountingEventSpineService>(service),
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserCompanyId: "company-alpha");
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationAssetAccountingCandidates,
+            BuildAssetAccountingCandidateRequest(),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        service.CandidateRequests.Should().ContainSingle();
+        var forwarded = service.CandidateRequests.Single();
+        forwarded.Actor.Should().Be("ops-user");
+        forwarded.Scope.TenantId.Should().Be("company-alpha");
+        forwarded.Scope.CompanyId.Should().Be("company-alpha");
+    }
+
+    [Fact]
+    public async Task AssetAccountingCandidateEndpoint_WithoutLedgerPermission_ReturnsForbidden()
+    {
+        var service = new CapturingAssetAccountingEventSpineService();
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton<IAssetAccountingEventSpineService>(service),
+            currentUserPermissions: UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationAssetAccountingCandidates,
+            BuildAssetAccountingCandidateRequest(),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        service.CandidateRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task AssetAccountingEndpoints_WhenSpineServiceMissing_ReturnNotImplemented()
+    {
+        await using var app = await CreateAppAsync(currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        using var candidateResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationAssetAccountingCandidates,
+            BuildAssetAccountingCandidateRequest(),
+            ServerJsonOptions);
+
+        candidateResponse.StatusCode.Should().Be(HttpStatusCode.NotImplemented);
+        var problem = await candidateResponse.Content.ReadAsStringAsync();
+        problem.Should().Contain("Asset accounting event spine service is not registered.");
+    }
+
+    private static AssetAccountingPostingCandidateRequestDto BuildAssetAccountingCandidateRequest()
+    {
+        var eventId = Guid.NewGuid();
+        var securityId = Guid.NewGuid();
+        var positionId = Guid.NewGuid();
+        var occurredAt = DateTimeOffset.Parse("2026-06-30T20:00:00Z");
+        var evidence = BuildAssetAccountingEvidence(eventId, occurredAt);
+        var economicEvent = new EconomicEventReferenceDto(
+            eventId,
+            AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.Valuation),
+            1,
+            new DateOnly(2026, 6, 30),
+            occurredAt,
+            "AssetOperations",
+            "valuation-1",
+            SourceContentHash: evidence.ContentHashSha256)
+        {
+            SecurityId = securityId,
+            BookPositionId = positionId
+        };
+        var lineage = new ProjectionLineageDto(
+            Guid.NewGuid(), null, "valuation", "v1", "engine-v1", "base",
+            new DateOnly(2026, 6, 30), occurredAt.AddMinutes(1), "AssetOperations", "valuation-1", economicEvent)
+        {
+            BookPositionId = positionId
+        };
+        return new AssetAccountingPostingCandidateRequestDto(
+            AssetAccountingEventKindDto.Valuation,
+            new AssetAccountingEventScopeDto(securityId, 2, positionId, 3, Guid.NewGuid(), Guid.NewGuid(),
+                AccountingBasisKindDto.Gaap, "fund-alpha", "client-tenant", "client-company"),
+            economicEvent,
+            lineage,
+            100m,
+            "USD",
+            "client-actor",
+            occurredAt.AddMinutes(5),
+            "valuation draft",
+            ExpectedSpineVersion: 2,
+            ExpectedPeriodVersion: 4,
+            RetainedEvidence: [evidence]);
+    }
+
     private static RetainedEvidenceIdentityDto BuildAssetAccountingEvidence(Guid eventId, DateTimeOffset retainedAt)
         => new(
             $"evidence-{eventId:N}",
@@ -2404,6 +2503,7 @@ public sealed partial class WorkstationEndpointsTests
     {
         public List<ProjectAssetAccountingEventRequestDto> ProjectRequests { get; } = [];
         public List<AppendAssetAccountingLifecycleStageRequestDto> LifecycleRequests { get; } = [];
+        public List<AssetAccountingPostingCandidateRequestDto> CandidateRequests { get; } = [];
 
         public Task<AssetAccountingEventSpineDto?> GetLatestAsync(Guid eventId, long eventVersion, CancellationToken ct = default)
             => Task.FromResult<AssetAccountingEventSpineDto?>(null);
@@ -2411,7 +2511,11 @@ public sealed partial class WorkstationEndpointsTests
         public Task<AssetAccountingPostingCandidateDto> BuildPostingCandidateAsync(
             AssetAccountingPostingCandidateRequestDto request,
             CancellationToken ct = default)
-            => throw new NotSupportedException();
+        {
+            ct.ThrowIfCancellationRequested();
+            CandidateRequests.Add(request);
+            return Task.FromResult(new AssetAccountingPostingCandidateDto(null!, null!));
+        }
 
         public Task<AssetAccountingEventSpineAppendResultDto> ProjectAsync(
             ProjectAssetAccountingEventRequestDto request,

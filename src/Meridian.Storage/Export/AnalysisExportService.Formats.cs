@@ -1,7 +1,7 @@
 using System.Globalization;
-using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
+using Meridian.Storage.Replay;
 
 namespace Meridian.Storage.Export;
 
@@ -49,7 +49,7 @@ public sealed partial class AnalysisExportService
                 {
                     if (transformedRecords.Count > 0)
                     {
-                        await writer.WriteLineAsync(string.Join(",", columns));
+                        await writer.WriteLineAsync(string.Join(",", columns.Select(EscapeCsvValue)));
                         foreach (var record in transformedRecords)
                         {
                             var values = columns.Select(column => EscapeCsvValue(GetCsvValue(record, column)));
@@ -89,7 +89,7 @@ public sealed partial class AnalysisExportService
                             if (columns is null)
                             {
                                 columns = GetCsvColumns(new[] { transformedRecord }, profile);
-                                await writer.WriteLineAsync(string.Join(",", columns));
+                                await writer.WriteLineAsync(string.Join(",", columns.Select(EscapeCsvValue)));
                             }
 
                             var values = columns.Select(column => EscapeCsvValue(GetCsvValue(transformedRecord, column)));
@@ -236,20 +236,20 @@ public sealed partial class AnalysisExportService
         foreach (var sourceFile in sourceFiles)
         {
             var outputFileName = Path.GetFileName(sourceFile.Path);
-            if (sourceFile.IsCompressed)
-            {
-                outputFileName = outputFileName[..^3]; // Remove .gz
-            }
+            var decompress = sourceFile.IsCompressed &&
+                             profile.Compression.Type == CompressionType.None;
+            if (decompress)
+                outputFileName = RemoveCompressionSuffix(outputFileName);
 
             var outputPath = Path.Combine(request.OutputDirectory, outputFileName);
 
             // Copy and optionally decompress
-            if (sourceFile.IsCompressed && profile.Compression.Type == CompressionType.None)
+            if (decompress)
             {
-                await using var input = new GZipStream(
-                    File.OpenRead(sourceFile.Path), CompressionMode.Decompress);
+                await using var source = File.OpenRead(sourceFile.Path);
+                using var content = CompressedJsonlStream.Decompress(source, sourceFile.Path);
                 await using var output = File.Create(outputPath);
-                await input.CopyToAsync(output, ct);
+                await content.CopyToAsync(output, ct);
             }
             else
             {
@@ -273,6 +273,17 @@ public sealed partial class AnalysisExportService
         }
 
         return exportedFiles;
+    }
+
+    private static string RemoveCompressionSuffix(string fileName)
+    {
+        foreach (var suffix in new[] { ".gzip", ".zst", ".lz4", ".gz", ".br" })
+        {
+            if (fileName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                return fileName[..^suffix.Length];
+        }
+
+        return fileName;
     }
 
     private async Task<List<ExportedFile>> ExportToLeanAsync(

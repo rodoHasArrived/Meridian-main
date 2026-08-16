@@ -38,6 +38,7 @@ EXCLUDE_DIRS: Set[str] = {
     "bin",
     "obj",
     "__pycache__",
+    ".pytest_cache",
     ".vs",
 }
 STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
@@ -45,8 +46,33 @@ STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
 CS_FILE_EXTENSIONS: Tuple[str, ...] = (".cs",)
 
 DOC_FILE_EXTENSIONS: Tuple[str, ...] = (".md",)
+# The corpus is an allowlist of roots that exist to describe contracts, not a denylist of prose.
+#
+# Subtracting prose was tried first and does not converge: four review rounds on #2703 each found a
+# document where root-, file-, or heading-level filtering guessed wrong, because these roots
+# interleave description and argument inside single documents. A delivery plan can state a DTO's
+# complete field set in order to argue that the DTO is missing something.
+#
+# docs/generated/database/** is included because it is the PostgreSQL data-object catalog
+# (docs/generated/README.md), and pages such as
+# docs/generated/database/contracts/ledger-contracts-page-01.md carry real field-level reference
+# documentation. An earlier revision excluded that subtree: 41 files left the corpus and 763
+# genuinely documented types were marked as gaps. It is reference material and belongs here.
+#
+# The two self-referential reports below stay excluded regardless. Neither is reachable under the
+# current allowlist, but the guard is kept so widening the allowlist cannot silently reintroduce
+# them: repository-structure.md lists every path in the repository, so a type would count as
+# documented purely because its own source file exists, and documentation-coverage.md is this
+# generator's own output, so a type would count by being reported as undocumented.
+DOC_CONTENT_INCLUDE_PREFIXES: Tuple[str, ...] = (
+    "docs/reference/",
+    "docs/generated/database/",
+)
+
 DOC_CONTENT_EXCLUDE_PREFIXES: Tuple[str, ...] = (
     "docs/status/",
+    "docs/generated/documentation-coverage.md",
+    "docs/generated/repository-structure.md",
 )
 
 # Regex: public (static )?(sealed )?(partial )?(class|interface|record|enum) Name
@@ -66,9 +92,28 @@ PUBLIC_TYPE_RE = re.compile(
 ROUTE_ATTRIBUTE_RE = re.compile(
     r'\[\s*(?:Http(?:Get|Post|Put|Delete|Patch)|Route)\s*\(\s*"([^"]+)"\s*\)',
 )
+# The receiver is captured because minimal-API routes are written relative to a `MapGroup`, and
+# the group has to be composed back on before the route can be compared with a document. Empty
+# route strings are allowed — `group.MapGet("", …)` maps the group's own path.
+# Anchored on a literal `.` so the engine can skip between candidates. Capturing the receiver in
+# the pattern instead — `(\w*)\s*\.\s*…` — removes that anchor, because `\w*` matches empty at
+# every position; that alone took this generator from 1.2s to 7s. The receiver is recovered by
+# walking backwards from the match, which is bounded by the identifier's own length.
 MAP_ENDPOINT_RE = re.compile(
-    r'\.(?:MapGet|MapPost|MapPut|MapDelete|MapPatch)\s*\(\s*"([^"]+)"',
+    r'\.(?:MapGet|MapPost|MapPut|MapDelete|MapPatch)\s*\(\s*"([^"]*)"',
 )
+# `var group = app.MapGroup("/api/banking")`, or `.MapGroup(UiApiRoutes.HistoricalData)`. Groups
+# nest, so the receiver is captured too and prefixes are composed transitively.
+MAP_GROUP_RE = re.compile(
+    r'var\s+(\w+)\s*=\s*(\w+)\s*\.\s*MapGroup\s*\(\s*(?:"([^"]*)"|([\w.]+))\s*\)',
+)
+ROUTE_CONST_RE = re.compile(
+    r'(?:public|private|internal|protected)?\s*(?:static\s+)?const\s+string\s+(\w+)\s*=\s*"([^"]*)"',
+)
+# `{versionId:guid}` in source is `{versionId}` in the API reference. The sibling api-contract
+# dashboard already normalises this; without it a boundary-checked route can never match its own
+# documented spelling.
+ROUTE_CONSTRAINT_RE = re.compile(r"\{([^}:]+):[^}]+\}")
 
 # ADR reference in source: [ImplementsAdr("ADR-001", ...)]
 ADR_REF_RE = re.compile(r'ImplementsAdr\s*\(\s*"(ADR-\d+)"')
@@ -209,16 +254,101 @@ def _scan_public_types(root: Path) -> List[SourceItem]:
     return items
 
 
+_IDENTIFIER_TOKEN_RE = re.compile(r"[0-9A-Za-z_]+")
+
+# Characters that continue a name or a route, so a hit touching one of them is a hit on something
+# longer. `/` counts only on the trailing side: `docs/api-reference` refers to the thing after the
+# slash, while `/api/backfill/run` inside `/api/backfill/run/{id}` is a different route.
+_NAME_BEFORE = frozenset("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-")
+_NAME_AFTER = frozenset("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-/")
+_SEGMENT_CHARS = frozenset("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_")
+
+
+def _joins_another_segment(text: str, at: int, step: int, separator: Optional[str]) -> bool:
+    """True when `text[at]` is a separator binding the term to a further segment.
+
+    Only meaningful for keys built from segments — `IB.Port` is one key and `IB.Port.Timeout` is a
+    different one, so the dot between them continues a name rather than ending it. The same dot at
+    the end of a sentence does not, which is why this asks what lies on the *far* side of the
+    separator instead of adding `.` to the boundary sets: `set IB.Port.` names the key, while
+    `IB.Port.Timeout` and `Parent.IB.Port` name something else.
+    """
+    if separator is None or not 0 <= at < len(text) or text[at] != separator:
+        return False
+    neighbour = at + step
+    return 0 <= neighbour < len(text) and text[neighbour] in _SEGMENT_CHARS
+
+
+def _names_term(text: str, term: str, segment_separator: Optional[str] = None) -> bool:
+    """True when `text` names `term` itself, rather than containing it inside something longer.
+
+    The single statement of the boundary rule for the checks that scan a small, fixed set of
+    documents. `_check_type_documentation` cannot use it — ~8,000 types against the whole corpus
+    has to be decided by the index below, or the generator times out — but endpoints, config keys,
+    and providers are a few hundred items against two or three files, where a walk is cheaper than
+    building an index that models routes and dotted keys as well as identifiers.
+
+    `segment_separator` extends the rule for names built from segments; see
+    `_joins_another_segment`. Routes pass none, because `/` is already handled asymmetrically by
+    the boundary sets — a leading slash is a boundary, a trailing one continues the path.
+
+    Walks occurrences with `find` rather than compiling a regex per term: `re.search` with
+    lookarounds costs a full corpus rescan for every item, which is the shape of the regression
+    that made the earlier per-item scan untenable.
+    """
+    if not term:
+        return False
+    start = text.find(term)
+    while start != -1:
+        end = start + len(term)
+        before_ok = start == 0 or (
+            text[start - 1] not in _NAME_BEFORE
+            and not _joins_another_segment(text, start - 1, -1, segment_separator)
+        )
+        after_ok = end == len(text) or (
+            text[end] not in _NAME_AFTER
+            and not _joins_another_segment(text, end, 1, segment_separator)
+        )
+        if before_ok and after_ok:
+            return True
+        start = text.find(term, start + 1)
+    return False
+
+
+def _documented_name_index(doc_contents: Dict[str, str]) -> frozenset:
+    """Every identifier the documentation corpus names, tokenized in one pass.
+
+    Splitting on non-identifier characters is the boundary rule expressed as membership:
+    `DailyPortfolioPriceMark` is one token, so `PriceMark` is absent, while `` `PriceMark` `` and
+    `PriceMark.` both yield it. Doing this per type instead — one regex scan of the corpus for each
+    of ~8,000 public types — pushed this generator past its docs-automation timeout.
+    """
+    names: set = set()
+    for content in doc_contents.values():
+        names.update(_IDENTIFIER_TOKEN_RE.findall(content))
+    return frozenset(names)
+
+
 def _check_type_documentation(
     items: List[SourceItem],
     doc_contents: Dict[str, str],
 ) -> CategoryResult:
-    """Mark items as documented if any doc file mentions their name."""
+    """Mark items as documented if any doc file names them.
+
+    The test used to be `item.name in content`, so a name counted whenever its characters
+    appeared anywhere. Adding a design blueprint that merely *mentions* `MarkPriceQuote`,
+    `MarkPriceQualityPolicy`, or `DailyMarkToMarketRequest` dropped all three off the
+    undocumented list without a line of reference documentation being written — making
+    documentation debt look paid by incidental mentions, and moving the metric in the
+    reassuring direction while nothing improved.
+
+    A boundary check does not distinguish a reference doc from a design doc — a blueprint
+    naming a type on its own still counts. What it removes is the accidental hit: a name
+    inside a longer name, inside a file path, or inside a member it does not own.
+    """
+    documented_names = _documented_name_index(doc_contents)
     for item in items:
-        for _doc_path, content in doc_contents.items():
-            if item.name in content:
-                item.documented = True
-                break
+        item.documented = item.name in documented_names
 
     documented = sum(1 for i in items if i.documented)
     return CategoryResult(
@@ -233,22 +363,161 @@ def _check_type_documentation(
 # Analysis: API endpoints
 # ---------------------------------------------------------------------------
 
+def _load_route_constants(root: Path) -> Dict[str, str]:
+    """`UiApiRoutes` constants, so `MapGroup(UiApiRoutes.HistoricalData)` resolves to its path."""
+    text = _read_text_safe(root / "src" / "Meridian.Contracts" / "Api" / "UiApiRoutes.cs")
+    return {name: value for name, value in ROUTE_CONST_RE.findall(text)}
+
+
+def _join_route(prefix: str, route: str) -> str:
+    """Compose a group prefix with a route relative to it."""
+    combined = f"{prefix.rstrip('/')}/{route.strip().lstrip('/')}" if prefix else route.strip()
+    combined = re.sub(r"/{2,}", "/", combined)
+    if len(combined) > 1:
+        combined = combined.rstrip("/")
+    if combined and not combined.startswith("/"):
+        combined = "/" + combined
+    return ROUTE_CONSTRAINT_RE.sub(r"{\1}", combined)
+
+
+def _receiver_before(text: str, dot: int) -> str:
+    """The identifier immediately left of the `.` at `dot`, or "" when there is none.
+
+    `group.MapGet(…)` yields `group`; `app.MapGroup("/x").MapGet(…)` yields "" because the
+    receiver is an expression rather than a name, and an unnamed receiver correctly resolves to no
+    prefix. Reads backwards over the identifier only, so it costs the identifier's length.
+    """
+    end = dot
+    while end > 0 and text[end - 1] in " \t":
+        end -= 1
+    start = end
+    while start > 0 and (text[start - 1].isalnum() or text[start - 1] == "_"):
+        start -= 1
+    return text[start:end]
+
+
+def _route_spellings(route: str) -> Tuple[str, ...]:
+    """The spellings of `route` a document may legitimately use.
+
+    The reference writes most routes with a leading slash but not all — `api/backfill/run` appears
+    bare — so both forms count for a full path. The slashless form is **not** offered for anything
+    else, because for an unresolved relative fragment it degrades to a bare word: `/rules` becomes
+    `rules`, which matches the last segment of `/api/risk/rules` and credits a route this scan
+    could not resolve. That is worse than a wrong number, because it hides exactly the
+    unresolved-prefix gap the group composition above exists to expose.
+    """
+    stripped = route.strip().lstrip("/")
+    if not stripped:
+        return ()
+    if stripped.startswith("api/"):
+        return (f"/{stripped}", stripped)
+    return (f"/{stripped}",)
+
+
+def _lookup_prefix(declarations: List[Tuple[int, str, str]], variable: str, before: int) -> str:
+    """The prefix bound to `variable` by the nearest declaration above `before`.
+
+    Position matters because one file routinely declares `var group` once per mapping method:
+    `HistoricalEndpoints.cs` binds it to `/api/historical` at line 20 and to `""` at line 173.
+    Keying by name alone lets the last declaration in the file claim every endpoint above it.
+    """
+    best = ""
+    best_at = -1
+    for at, name, prefix in declarations:
+        if name == variable and best_at < at < before:
+            best, best_at = prefix, at
+    return best
+
+
+def _group_prefixes(text: str, route_constants: Dict[str, str]) -> List[Tuple[int, str, str]]:
+    """Every `MapGroup` declaration in a file, as (offset, variable, full path).
+
+    Groups nest — `var sub = group.MapGroup("/runtime")` — so a prefix is resolved against the
+    receiver's own prefix at that point in the file.
+    """
+    declarations: List[Tuple[int, str, str]] = []
+    for match in MAP_GROUP_RE.finditer(text):
+        variable, receiver, literal, constant = match.groups()
+        if literal is not None:
+            own: Optional[str] = literal
+        elif constant in ("string.Empty", "String.Empty"):
+            # A group that adds nothing but still nests: `group.MapGroup(string.Empty)` in
+            # `FundStructureEndpoints.cs:25` inherits `/api/fund-structure`. Treating it as
+            # unresolved would drop the parent prefix with it.
+            own = ""
+        else:
+            # `UiApiRoutes.HistoricalData` is stored under its bare name, and several files declare
+            # their own `const string RoutePrefix`, so the last segment is what resolves.
+            own = route_constants.get(constant.rsplit(".", 1)[-1])
+
+        if own is None:
+            # An unresolved constant would silently compose a wrong path, so the group is skipped
+            # and its endpoints keep their relative routes rather than being mis-composed.
+            continue
+        parent = _lookup_prefix(declarations, receiver, match.start())
+        declarations.append((match.start(), variable, _join_route(parent, own)))
+    return declarations
+
+
 def _scan_endpoints(root: Path) -> List[SourceItem]:
-    """Scan source for HTTP API route definitions."""
+    """Scan source for HTTP API route definitions, composing `MapGroup` prefixes.
+
+    Minimal-API routes are written relative to their group: `EnvironmentDesignerEndpoints` maps
+    `/api/environment-designer` and then `/runtime/versions/{versionId:guid}` beneath it, while
+    `docs/reference/api-reference.md` documents the full `/api/environment-designer/runtime/...`.
+    Recording only the child made 263 of 319 endpoints unmatchable against the documents they are
+    checked against — a substring test papered over that by matching the fragment anywhere inside
+    the full path, which credits `/complete` to any documented route containing it and, once the
+    match is boundary-checked, credits nothing at all. Composing the prefix is what makes the two
+    sides comparable; the matching rule is then free to be strict.
+
+    Known limitation: a group passed as a *method argument* is not resolved. `RiskEndpoints.cs:78`
+    calls `MapRiskRoutes(app.MapGroup("/api/risk"), …)`, so the routes inside that method keep
+    their relative form. Following it needs the callee's signature, and the same file maps the
+    same routes again under `/api/v1/risk`, so there is no single prefix to choose. Measured cost
+    at the time of writing: 6 endpoints of 325 — the `/rules` and `/escalations` families — read as
+    undocumented although `api-reference.md` documents them under `/api/risk/…`. Of the 26 routes
+    that stay relative, the rest are mapped on `app` directly and are correct as they stand.
+
+    That undercount is the honest failure mode and is deliberately preferred to the alternative.
+    Until `_route_spellings` stopped offering the slashless form for relative routes, those same 6
+    were reported as *documented*: `/rules` degraded to the bare word `rules`, which matches the
+    last segment of `/api/risk/rules`. A limitation that inflates coverage hides itself; one that
+    deflates it shows up as a gap somebody can act on.
+    """
     src_dir = root / "src"
     if not src_dir.is_dir():
         return []
 
+    route_constants = _load_route_constants(root)
     items: List[SourceItem] = []
     seen: Set[str] = set()
 
     for cs_file in _collect_files(src_dir, CS_FILE_EXTENSIONS):
         text = _read_text_safe(cs_file)
 
+        # Only files that declare a group need the constant sweep. Scanning every `.cs` file for
+        # `const string` — and copying the 855-entry shared table for each — took this generator
+        # from 1.2s to 12.2s; barely 60 files in the repository call `MapGroup` at all.
+        if "MapGroup" in text:
+            # File-local `const string RoutePrefix = "…"` shadows the shared table, which is how
+            # `MoneyMarketFundEndpoints` and `WorkstationEndpoints.SecurityMasterWorkbench`
+            # declare their group paths.
+            local_constants = dict(route_constants)
+            local_constants.update(dict(ROUTE_CONST_RE.findall(text)))
+            prefixes = _group_prefixes(text, local_constants)
+        else:
+            prefixes = []
+
         for pattern in (ROUTE_ATTRIBUTE_RE, MAP_ENDPOINT_RE):
             for match in pattern.finditer(text):
-                route = match.group(1)
-                if route in seen:
+                if pattern is MAP_ENDPOINT_RE:
+                    receiver = _receiver_before(text, match.start())
+                    prefix = _lookup_prefix(prefixes, receiver, match.start()) if receiver else ""
+                    route = _join_route(prefix, match.group(1))
+                else:
+                    route = match.group(1)
+                if not route or route in seen:
                     continue
                 seen.add(route)
                 line_num = text[:match.start()].count("\n") + 1
@@ -266,7 +535,17 @@ def _check_endpoint_documentation(
     items: List[SourceItem],
     root: Path,
 ) -> CategoryResult:
-    """Check endpoints against docs/reference/api-reference.md and CLAUDE.md."""
+    """Check endpoints against docs/reference/api-reference.md and CLAUDE.md.
+
+    The match must land on a route boundary. A plain substring test credited a route for appearing
+    inside a longer one, which matters most for the fragments this scan collects from route groups:
+    `/complete`, `/reject`, `/{loanId}/activate` and similar are substrings of almost any documented
+    path, so eight endpoints counted as documented without the doc naming them at all.
+
+    The parameterised fallback is kept — a doc describing `/api/backfill/schedules` is taken to
+    document `/api/backfill/schedules/{id}` — but it is boundary-checked too, so the base path has
+    to be named rather than merely appear.
+    """
     api_ref = root / "docs" / "reference" / "api-reference.md"
     claude_md = root / "CLAUDE.md"
 
@@ -274,17 +553,33 @@ def _check_endpoint_documentation(
     for doc_path in (api_ref, claude_md):
         combined_text += _read_text_safe(doc_path) + "\n"
 
+    # Both sides, or neither. `_scan_endpoints` normalises `{projectionRunId:guid}` to
+    # `{projectionRunId}`, and seven routes in `api-reference.md` are written with the constraint
+    # kept — `/api/projections/{projectionRunId:guid}/flows` at line 270 among them. Normalising
+    # only the scan makes those unmatchable, and the parameter-stripped fallback then reduces the
+    # route to `/api/projections/flows`, so a documented endpoint reads as a gap. The sibling
+    # api-contract dashboard already normalises its corpus for this reason.
+    combined_text = ROUTE_CONSTRAINT_RE.sub(r"{\1}", combined_text)
+
     for item in items:
-        # Normalise route for matching (strip leading /)
-        route = item.name.lstrip("/")
-        # Check if the route (or its non-parameterised prefix) appears in docs
-        if route in combined_text or f"/{route}" in combined_text:
+        route = item.name.strip().lstrip("/")
+
+        # A relative route of `/` carries no path of its own — its real path is the enclosing
+        # `MapGroup` prefix, which this scan does not resolve. Matching what is left credits it for
+        # any standalone slash in prose (the corpus has `` `Spread`/`Imbalance` ``), so it stays
+        # undocumented: the scan cannot show that a doc names it. One endpoint is affected today,
+        # `DirectLendingEndpoints.cs:37`.
+        if not route:
+            continue
+
+        if any(_names_term(combined_text, spelling) for spelling in _route_spellings(item.name)):
             item.documented = True
         else:
-            # Try matching parameterised routes: /api/backfill/schedules/{id}
-            # Strip parameter segments and try the base path
+            # Parameterised routes: /api/backfill/schedules/{id} -> /api/backfill/schedules
             base = re.sub(r"/\{[^}]+\}", "", item.name)
-            if base and (base in combined_text or base.lstrip("/") in combined_text):
+            if base and any(
+                _names_term(combined_text, spelling) for spelling in _route_spellings(base)
+            ):
                 item.documented = True
 
     documented = sum(1 for i in items if i.documented)
@@ -374,7 +669,14 @@ def _check_config_documentation(
     items: List[SourceItem],
     root: Path,
 ) -> CategoryResult:
-    """Check config keys against configuration-schema.md and CLAUDE.md."""
+    """Check config keys against configuration-schema.md and CLAUDE.md.
+
+    The key has to be named in full. Matching the last dotted segment instead — as this did — asks
+    whether a doc mentions a word, not whether it documents a setting: `IB.Port` counted because
+    something, somewhere, said "Port", and the same held for any key ending in `Enabled`, `Timeout`,
+    or `Path`. That is the same defect as crediting `ApprovalDecision` to a doc that says
+    `Decision`, and a leaf is a weaker claim still, because config leaves are ordinary English.
+    """
     schema_doc = root / "docs" / "generated" / "configuration-schema.md"
     claude_md = root / "CLAUDE.md"
 
@@ -383,10 +685,7 @@ def _check_config_documentation(
         combined += _read_text_safe(doc_path) + "\n"
 
     for item in items:
-        # Match the key name or the dotted path
-        key_leaf = item.name.split(".")[-1]
-        if key_leaf in combined or item.name in combined:
-            item.documented = True
+        item.documented = _names_term(combined, item.name, segment_separator=".")
 
     documented = sum(1 for i in items if i.documented)
     return CategoryResult(
@@ -436,7 +735,12 @@ def _check_provider_documentation(
     items: List[SourceItem],
     root: Path,
 ) -> CategoryResult:
-    """Check if providers are mentioned in docs/providers/ or CLAUDE.md."""
+    """Check if providers are named in docs/providers/ or CLAUDE.md.
+
+    Boundary-checked for the same reason as the checks above, though nothing moves today: the scan
+    currently finds no providers, so this carried the substring defect latently rather than
+    visibly. Fixed together with its siblings so the file states the rule once.
+    """
     provider_docs_dir = root / "docs" / "providers"
     claude_md = root / "CLAUDE.md"
 
@@ -445,11 +749,12 @@ def _check_provider_documentation(
         for md_file in provider_docs_dir.glob("*.md"):
             combined += "\n" + _read_text_safe(md_file)
 
+    lowered = combined.lower()
     for item in items:
-        # Extract short provider name (e.g. "Alpaca" from "Streaming/Alpaca")
-        provider_name = item.name.split("/")[-1]
-        if provider_name.lower() in combined.lower():
-            item.documented = True
+        # Short provider name, e.g. "Alpaca" from "Streaming/Alpaca". Case-insensitive because
+        # provider docs use prose capitalisation, unlike the C# type names above.
+        provider_name = item.name.split("/")[-1].lower()
+        item.documented = _names_term(lowered, provider_name)
 
     documented = sum(1 for i in items if i.documented)
     return CategoryResult(
@@ -533,17 +838,13 @@ def _load_doc_contents(root: Path) -> Dict[str, str]:
     if docs_dir.is_dir():
         for md_file in _collect_files(docs_dir, DOC_FILE_EXTENSIONS):
             rel_path = _rel(md_file, root)
+            if not rel_path.startswith(DOC_CONTENT_INCLUDE_PREFIXES):
+                continue
             if rel_path.startswith(DOC_CONTENT_EXCLUDE_PREFIXES):
                 continue
             contents[rel_path] = _read_text_safe(md_file)
-    # Also include CLAUDE.md at repo root
-    claude_md = root / "CLAUDE.md"
-    if claude_md.is_file():
-        contents[_rel(claude_md, root)] = _read_text_safe(claude_md)
-    # And README.md
-    readme = root / "README.md"
-    if readme.is_file():
-        contents[_rel(readme, root)] = _read_text_safe(readme)
+    # CLAUDE.md and README.md are deliberately absent: both are project orientation prose, and a
+    # type named in either was being counted as documented on the same footing as a reference page.
     return contents
 
 
@@ -585,14 +886,16 @@ def _recommendations(report: CoverageReport) -> List[str]:  # noqa: C901
             if count > 50:
                 recs.append(
                     f"**{cat.category}**: {count} undocumented types. "
-                    "Consider generating API docs with DocFX (`docfx docfx.json`) "
-                    "to cover the long tail of public types automatically."
+                    "Add reference entries under `docs/reference/` for the types that "
+                    "carry contracts. Running DocFX does not move this metric: it emits "
+                    "browsable output from XML doc comments into `docs/docfx/api/*.yml`, "
+                    "which is gitignored and so is not part of the scanned corpus."
                 )
             elif count > 0:
                 recs.append(
                     f"**{cat.category}**: {count} undocumented type(s). "
-                    "Add entries to `docs/reference/api-reference.md` or relevant "
-                    "architecture docs for the most important ones."
+                    "Add entries to `docs/reference/api-reference.md` for the most "
+                    "important ones."
                 )
 
         elif cat.category == "API Endpoints":

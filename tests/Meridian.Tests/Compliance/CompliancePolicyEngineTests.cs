@@ -1,62 +1,192 @@
 using FluentAssertions;
 using Meridian.Audit.Compliance;
 using Meridian.Identity.Auth;
+using Meridian.Tests.Infrastructure;
 
 namespace Meridian.Tests.Compliance;
 
-public sealed class CompliancePolicyEngineTests
+/// <summary>
+/// Guards the governed-payment failure mode where caller-authored identity claims are mistaken for
+/// authenticated, object-bound approval evidence.
+/// </summary>
+public sealed class CompliancePolicyEngineTests : TempDirectoryTestBase
 {
-    [Fact]
-    public void PaymentRelease_RequiresRoleDualApprovalAndMfa()
-    {
-        var policy = new CompliancePolicyEngine();
-        var actor = new ActorContext("approver-1", [nameof(UserRole.Controller)], "Treasury", "127.0.0.1", "dev1", MfaSatisfied: true);
-        var request = new ComplianceActionRequest(
-            SensitiveAction.PaymentRelease,
-            "Payment",
-            "payment-1",
-            "{}",
-            "{\"status\":\"released\"}",
-            "corr-1",
-            "fund-1",
-            RequestedByActorId: "requester-1",
-            AdditionalApproverIds: ["approver-2", "approver-3"]);
+    private static readonly DateTimeOffset Now = new(2026, 8, 5, 12, 0, 0, TimeSpan.Zero);
 
-        var result = policy.Evaluate(actor, request);
-        Assert.True(result.Allowed);
+    [Fact]
+    public void Evaluate_PaymentReleaseWithAuthoritativeObjectBoundApprovals_Allows()
+    {
+        var (policy, store) = CreatePolicy();
+        var approval = CreateApprovedRequest(store);
+
+        var result = policy.Evaluate(
+            Actor("release-operator", UserRole.Controller, mfa: true),
+            CreateActionRequest(approvalRequestId: approval.ApprovalRequestId));
+
+        result.Allowed.Should().BeTrue();
+        result.Reason.Should().Be("Allowed");
     }
 
     [Fact]
-    public void SegregationOfDuties_BlocksSelfApproval()
+    public void Evaluate_CallerSuppliedRequesterAndApproverClaimsWithoutAuthority_Rejects()
     {
-        var policy = new CompliancePolicyEngine();
-        var actor = new ActorContext("approver-1", [nameof(UserRole.Admin)], "Risk", "127.0.0.1", "dev1", MfaSatisfied: true);
-        var request = new ComplianceActionRequest(
-            SensitiveAction.OverrideApproval,
-            "Override",
-            "ovr-1",
-            null,
-            "{}",
-            "corr-2",
-            "fund-1",
-            RequestedByActorId: "approver-1",
-            AdditionalApproverIds: ["approver-2", "approver-3"]);
+        var (policy, _) = CreatePolicy();
+        var spoofed = CreateActionRequest(
+            requestedBy: "requester-1",
+            approvers: ["approver-2", "approver-3"]);
 
-        var result = policy.Evaluate(actor, request);
-        Assert.False(result.Allowed);
+        var result = policy.Evaluate(
+            Actor("release-operator", UserRole.Controller, mfa: true),
+            spoofed);
+
+        result.Allowed.Should().BeFalse(
+            "caller-authored actor IDs are identity claims, not approval evidence");
+        result.Reason.Should().Be(
+            "Step-up requirement failed: authoritative approval request required.");
     }
 
     [Fact]
-    public void AuditLog_HashChain_VerifiesIntegrity()
+    public void Evaluate_UnknownApprovalRequest_RejectsFailClosed()
     {
-        var audit = new ImmutableAuditLogService();
-        var actor = new ActorContext("ops-1", [nameof(UserRole.Admin)], "Ops", "10.0.0.1", "laptop", true);
+        var (policy, _) = CreatePolicy();
 
-        audit.Append(actor, new ComplianceActionRequest(SensitiveAction.RuleEdit, "Rule", "rule-1", "{\"limit\":10}", "{\"limit\":15}", "corr-a", "entity-a"));
-        audit.Append(actor, new ComplianceActionRequest(SensitiveAction.RuleEdit, "Rule", "rule-2", "{\"limit\":20}", "{\"limit\":25}", "corr-b", "entity-a"));
+        var result = policy.Evaluate(
+            Actor("release-operator", UserRole.Controller, mfa: true),
+            CreateActionRequest(approvalRequestId: "missing-approval-request"));
 
-        Assert.True(audit.VerifyIntegrity());
-        Assert.Equal(2, audit.GetAll().Count);
+        result.Allowed.Should().BeFalse();
+        result.Reason.Should().Be("Step-up requirement failed: approval request not found.");
+    }
+
+    [Theory]
+    [InlineData("Payment", "payment-2", "fund-1")]
+    [InlineData("Override", "payment-1", "fund-1")]
+    [InlineData("Payment", "payment-1", "fund-2")]
+    public void Evaluate_ApprovalBoundToDifferentObject_Rejects(
+        string objectType,
+        string objectId,
+        string entityId)
+    {
+        var (policy, store) = CreatePolicy();
+        var approval = CreateApprovedRequest(store);
+
+        var result = policy.Evaluate(
+            Actor("release-operator", UserRole.Controller, mfa: true),
+            CreateActionRequest(
+                objectType: objectType,
+                objectId: objectId,
+                entityId: entityId,
+                approvalRequestId: approval.ApprovalRequestId));
+
+        result.Allowed.Should().BeFalse(
+            "approval evidence must be bound to the exact governed object and entity");
+        result.Reason.Should().Be(
+            "Step-up requirement failed: approval evidence does not match the requested object.");
+    }
+
+    [Fact]
+    public void Evaluate_AuthoritativeRequesterAttemptsExecution_RejectsSegregationOfDuties()
+    {
+        var (policy, store) = CreatePolicy();
+        var approval = CreateApprovedRequest(store);
+
+        var result = policy.Evaluate(
+            Actor("requester-1", UserRole.Controller, mfa: true),
+            CreateActionRequest(approvalRequestId: approval.ApprovalRequestId));
+
+        result.Allowed.Should().BeFalse();
+        result.Reason.Should().Contain("Segregation of duties violation");
+    }
+
+    [Fact]
+    public void Evaluate_OnlyOneAuthoritativeApproval_RejectsDualApproval()
+    {
+        var (policy, store) = CreatePolicy();
+        var approval = CreateApprovalRequest(store);
+        store.RecordDecision(
+            approval.ApprovalRequestId,
+            Actor("approver-2", UserRole.Admin, mfa: true),
+            approved: true);
+
+        var result = policy.Evaluate(
+            Actor("release-operator", UserRole.Controller, mfa: true),
+            CreateActionRequest(approvalRequestId: approval.ApprovalRequestId));
+
+        result.Allowed.Should().BeFalse();
+        result.Reason.Should().Be("Step-up requirement failed: dual approval required.");
+    }
+
+    [Fact]
+    public void Evaluate_AuthoritativeRejection_RejectsAction()
+    {
+        var (policy, store) = CreatePolicy();
+        var approval = CreateApprovalRequest(store);
+        store.RecordDecision(
+            approval.ApprovalRequestId,
+            Actor("approver-2", UserRole.Admin, mfa: true),
+            approved: false);
+
+        var result = policy.Evaluate(
+            Actor("release-operator", UserRole.Controller, mfa: true),
+            CreateActionRequest(approvalRequestId: approval.ApprovalRequestId));
+
+        result.Allowed.Should().BeFalse();
+        result.Reason.Should().Be("Step-up requirement failed: approval request was rejected.");
+    }
+
+    [Fact]
+    public void Evaluate_ExpiredAuthoritativeApproval_RejectsAction()
+    {
+        var clock = new MutableTimeProvider(Now);
+        var store = new FileComplianceApprovalStore(
+            Path.Combine(TestDataRoot, "expired-approvals.json"),
+            clock,
+            approvalLifetime: TimeSpan.FromMinutes(5));
+        var approval = CreateApprovedRequest(store);
+        var policy = new CompliancePolicyEngine(store, clock);
+        clock.Advance(TimeSpan.FromMinutes(6));
+
+        var result = policy.Evaluate(
+            Actor("release-operator", UserRole.Controller, mfa: true),
+            CreateActionRequest(approvalRequestId: approval.ApprovalRequestId));
+
+        result.Allowed.Should().BeFalse();
+        result.Reason.Should().Be("Step-up requirement failed: approval request expired.");
+    }
+
+    [Fact]
+    public void RecordDecision_RequesterIdentityFromAuthenticatedContext_RejectsSelfApproval()
+    {
+        var (_, store) = CreatePolicy();
+        var approval = CreateApprovalRequest(store);
+
+        var act = () => store.RecordDecision(
+            approval.ApprovalRequestId,
+            Actor("REQUESTER-1", UserRole.Admin, mfa: true),
+            approved: true);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*cannot approve their own*");
+    }
+
+    [Fact]
+    public void ApprovalStore_Restart_RetainsAuthenticatedActorsAndObjectBinding()
+    {
+        var clock = new MutableTimeProvider(Now);
+        var path = Path.Combine(TestDataRoot, "restart-approvals.json");
+        var store = new FileComplianceApprovalStore(path, clock);
+        var approval = CreateApprovedRequest(store);
+
+        var restarted = new FileComplianceApprovalStore(path, clock);
+        var retained = restarted.Resolve(approval.ApprovalRequestId);
+
+        retained.Should().NotBeNull();
+        retained!.RequestedByActorId.Should().Be("requester-1");
+        retained.ObjectType.Should().Be("Payment");
+        retained.ObjectId.Should().Be("payment-1");
+        retained.EntityId.Should().Be("fund-1");
+        retained.Decisions.Select(decision => decision.ApprovedByActorId)
+            .Should().Equal("approver-2", "approver-3");
     }
 
     [Theory]
@@ -66,146 +196,149 @@ public sealed class CompliancePolicyEngineTests
     [InlineData(SensitiveAction.OverrideApproval)]
     public void Evaluate_ActorLacksRequiredRole_Rejects(SensitiveAction action)
     {
-        var policy = new CompliancePolicyEngine();
-        var actor = new ActorContext(
-            "analyst-1", [nameof(UserRole.ReadOnly)], "Research", "10.0.0.5", "desk-3", MfaSatisfied: true);
-        var request = CreateRequest(
-            action,
-            requestedBy: "requester-1",
-            approvers: ["approver-2", "approver-3"]);
+        var (policy, _) = CreatePolicy();
+        var request = CreateActionRequest(action: action);
 
-        var result = policy.Evaluate(actor, request);
+        var result = policy.Evaluate(
+            Actor("analyst-1", UserRole.ReadOnly, mfa: true),
+            request);
 
-        result.Allowed.Should().BeFalse(
-            "every sensitive action requires a role granting its gating permission");
+        result.Allowed.Should().BeFalse();
         result.Reason.Should().Be("Missing required privileged role.");
+    }
+
+    [Theory]
+    [InlineData(SensitiveAction.RuleEdit, UserRole.Developer)]
+    [InlineData(SensitiveAction.BreakClosure, UserRole.FundAccountant)]
+    public void Evaluate_NonStepUpActionWithoutMfaOrApproval_Allows(
+        SensitiveAction action,
+        UserRole role)
+    {
+        var (policy, _) = CreatePolicy();
+
+        var result = policy.Evaluate(
+            Actor("ops-1", role, mfa: false),
+            CreateActionRequest(action: action));
+
+        result.Allowed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Evaluate_StepUpActionWithoutMfa_RejectsBeforeApprovalResolution()
+    {
+        var (policy, _) = CreatePolicy();
+
+        var result = policy.Evaluate(
+            Actor("release-operator", UserRole.Controller, mfa: false),
+            CreateActionRequest(approvalRequestId: "any"));
+
+        result.Allowed.Should().BeFalse();
+        result.Reason.Should().Be("Step-up requirement failed: MFA required.");
     }
 
     [Fact]
     public void Evaluate_UnknownAction_Rejects()
     {
-        var policy = new CompliancePolicyEngine();
-        var actor = new ActorContext(
-            "ops-1", [nameof(UserRole.Admin), nameof(UserRole.Controller)], "Ops", "10.0.0.1", "laptop", MfaSatisfied: true);
-        var request = CreateRequest((SensitiveAction)999, requestedBy: "requester-1");
+        var (policy, _) = CreatePolicy();
 
-        var result = policy.Evaluate(actor, request);
+        var result = policy.Evaluate(
+            Actor("ops-1", UserRole.Admin, mfa: true),
+            CreateActionRequest(action: (SensitiveAction)999));
 
-        result.Allowed.Should().BeFalse("actions outside the policy catalog must default to deny");
+        result.Allowed.Should().BeFalse();
         result.Reason.Should().Be("Unknown action.");
     }
 
-    [Theory]
-    [InlineData(SensitiveAction.RuleEdit, nameof(UserRole.Developer))]
-    [InlineData(SensitiveAction.BreakClosure, nameof(UserRole.FundAccountant))]
-    public void Evaluate_NonStepUpActionWithoutMfa_Allows(SensitiveAction action, string role)
-    {
-        // Rule edits and break closures require the privileged role but no MFA step-up
-        // or dual approval; this pins the boundary so step-up rules do not silently
-        // expand or contract.
-        var policy = new CompliancePolicyEngine();
-        var actor = new ActorContext(
-            "ops-1", [role], "Ops", "10.0.0.1", "laptop", MfaSatisfied: false);
-        var request = CreateRequest(action, requestedBy: "requester-1", approvers: null);
-
-        var result = policy.Evaluate(actor, request);
-
-        result.Allowed.Should().BeTrue();
-        result.Reason.Should().Be("Allowed");
-    }
-
-    [Theory]
-    [InlineData(SensitiveAction.PaymentRelease, nameof(UserRole.Controller))]
-    [InlineData(SensitiveAction.OverrideApproval, nameof(UserRole.Admin))]
-    public void Evaluate_StepUpActionWithoutMfa_Rejects(SensitiveAction action, string role)
-    {
-        var policy = new CompliancePolicyEngine();
-        var actor = new ActorContext(
-            "approver-1", [role], "Treasury", "10.0.0.1", "laptop", MfaSatisfied: false);
-        var request = CreateRequest(
-            action,
-            requestedBy: "requester-1",
-            approvers: ["approver-2", "approver-3"]);
-
-        var result = policy.Evaluate(actor, request);
-
-        result.Allowed.Should().BeFalse("payment release and override approval require MFA step-up");
-        result.Reason.Should().Be("Step-up requirement failed: MFA required.");
-    }
-
-    public static TheoryData<string[]?> InsufficientApprovers => new()
-    {
-        null,
-        Array.Empty<string>(),
-        new[] { "approver-2" }
-    };
-
-    [Theory]
-    [MemberData(nameof(InsufficientApprovers))]
-    public void Evaluate_StepUpActionWithoutTwoApprovers_Rejects(string[]? approvers)
-    {
-        var policy = new CompliancePolicyEngine();
-        var actor = new ActorContext(
-            "approver-1", [nameof(UserRole.Controller)], "Treasury", "10.0.0.1", "laptop", MfaSatisfied: true);
-        var request = CreateRequest(
-            SensitiveAction.PaymentRelease,
-            requestedBy: "requester-1",
-            approvers: approvers);
-
-        var result = policy.Evaluate(actor, request);
-
-        result.Allowed.Should().BeFalse();
-        result.Reason.Should().Be("Step-up requirement failed: dual approval required.");
-    }
-
     [Fact]
-    public void Evaluate_DuplicateApproversDifferingOnlyByCase_RejectsDualApproval()
+    public void AuditLog_HashChain_VerifiesIntegrity()
     {
-        // One person approving twice under case variants of the same id must not
-        // satisfy dual approval.
-        var policy = new CompliancePolicyEngine();
-        var actor = new ActorContext(
-            "approver-1", [nameof(UserRole.Controller)], "Treasury", "10.0.0.1", "laptop", MfaSatisfied: true);
-        var request = CreateRequest(
-            SensitiveAction.PaymentRelease,
-            requestedBy: "requester-1",
-            approvers: ["approver-2", "APPROVER-2"]);
+        var audit = new ImmutableAuditLogService();
+        var actor = Actor("ops-1", UserRole.Admin, mfa: true);
 
-        var result = policy.Evaluate(actor, request);
+        audit.Append(actor, new ComplianceActionRequest(
+            SensitiveAction.RuleEdit,
+            "Rule",
+            "rule-1",
+            "{\"limit\":10}",
+            "{\"limit\":15}",
+            "corr-a",
+            "entity-a"));
+        audit.Append(actor, new ComplianceActionRequest(
+            SensitiveAction.RuleEdit,
+            "Rule",
+            "rule-2",
+            "{\"limit\":20}",
+            "{\"limit\":25}",
+            "corr-b",
+            "entity-a"));
 
-        result.Allowed.Should().BeFalse();
-        result.Reason.Should().Be("Step-up requirement failed: dual approval required.");
+        audit.VerifyIntegrity().Should().BeTrue();
+        audit.GetAll().Should().HaveCount(2);
     }
 
-    [Fact]
-    public void Evaluate_SelfApprovalWithCaseInsensitiveActorIdMatch_Rejects()
+    private (CompliancePolicyEngine Policy, FileComplianceApprovalStore Store) CreatePolicy()
     {
-        var policy = new CompliancePolicyEngine();
-        var actor = new ActorContext(
-            "Approver-1", [nameof(UserRole.Admin)], "Risk", "10.0.0.1", "laptop", MfaSatisfied: true);
-        var request = CreateRequest(
-            SensitiveAction.OverrideApproval,
-            requestedBy: "approver-1",
-            approvers: ["approver-2", "approver-3"]);
-
-        var result = policy.Evaluate(actor, request);
-
-        result.Allowed.Should().BeFalse(
-            "segregation of duties must not be bypassable via actor-id casing");
-        result.Reason.Should().Contain("Segregation of duties violation");
+        var clock = new MutableTimeProvider(Now);
+        var store = new FileComplianceApprovalStore(
+            Path.Combine(TestDataRoot, $"approvals-{Guid.NewGuid():N}.json"),
+            clock);
+        return (new CompliancePolicyEngine(store, clock), store);
     }
 
-    private static ComplianceActionRequest CreateRequest(
-        SensitiveAction action,
+    private static ComplianceApprovalRequestRecord CreateApprovalRequest(
+        IComplianceApprovalStore store)
+        => store.CreateRequest(
+            Actor("requester-1", UserRole.Admin, mfa: true),
+            new ComplianceApprovalRequestCommand(
+                SensitiveAction.PaymentRelease,
+                ObjectType: "Payment",
+                ObjectId: "payment-1",
+                CorrelationId: "corr-1",
+                EntityId: "fund-1"));
+
+    private static ComplianceApprovalRequestRecord CreateApprovedRequest(
+        IComplianceApprovalStore store)
+    {
+        var approval = CreateApprovalRequest(store);
+        store.RecordDecision(
+            approval.ApprovalRequestId,
+            Actor("approver-2", UserRole.Admin, mfa: true),
+            approved: true);
+        return store.RecordDecision(
+            approval.ApprovalRequestId,
+            Actor("approver-3", UserRole.Admin, mfa: true),
+            approved: true);
+    }
+
+    private static ActorContext Actor(string actorId, UserRole role, bool mfa)
+        => new(actorId, [role.ToString()], "Compliance", "127.0.0.1", "test-device", mfa);
+
+    private static ComplianceActionRequest CreateActionRequest(
+        SensitiveAction action = SensitiveAction.PaymentRelease,
+        string objectType = "Payment",
+        string objectId = "payment-1",
+        string? entityId = "fund-1",
+        string? approvalRequestId = null,
         string? requestedBy = null,
-        string[]? approvers = null) => new(
-        action,
-        ObjectType: "Payment",
-        ObjectId: "payment-1",
-        BeforeStateJson: "{\"status\":\"pending\"}",
-        AfterStateJson: "{\"status\":\"released\"}",
-        CorrelationId: "corr-1",
-        EntityId: "fund-1",
-        RequestedByActorId: requestedBy,
-        AdditionalApproverIds: approvers);
+        string[]? approvers = null)
+        => new(
+            action,
+            ObjectType: objectType,
+            ObjectId: objectId,
+            BeforeStateJson: "{\"status\":\"pending\"}",
+            AfterStateJson: "{\"status\":\"released\"}",
+            CorrelationId: "corr-1",
+            EntityId: entityId,
+            ApprovalRequestId: approvalRequestId,
+            RequestedByActorId: requestedBy,
+            AdditionalApproverIds: approvers);
+
+    private sealed class MutableTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        private DateTimeOffset _now = now;
+
+        public override DateTimeOffset GetUtcNow() => _now;
+
+        public void Advance(TimeSpan duration) => _now = _now.Add(duration);
+    }
 }

@@ -2,7 +2,7 @@
 
 **Owner:** Accounting and Ledger
 **Scope:** Event-backed accounting postings, durable journal writes, and audit evidence
-**Last updated:** 2026-07-21
+**Last updated:** 2026-07-28
 
 ## Purpose
 
@@ -201,9 +201,19 @@ Focused coverage lives in:
 - `LedgerIntegrationTests.AutomatedJournalDraftProjector_PreservesEventAccountingMetadataAndTypedEvidence`
 - `FactorPaydownProjectionServiceTests.Project_ShouldCalculateGoldenMbsPrincipalAndTypedLineage`
 - `AccountingPostingCandidateServiceTests.BuildCandidateAsync_MbsFactorPaydown_RecalculatesPersistedProjectionBeforeDrafting`
-- `AssetAccountingEventSpineServiceTests`
+- `AssetAccountingEventSpineServiceTests` (projection across all eight kinds, drafting authority
+  resolution, evidence-only lifecycle-stage restrictions, positive-event-amount gates)
+- `AssetAccountingEventSpineContractTests` (lifecycle contract plus acquisition, disposal, and
+  correction lot-instruction branches)
+- `AssetAccountingLifecycleSeparationTests`
+- `AssetAccountingEvidenceSubjectContractTests`
+- `InMemoryAssetAccountingEventProjectionStoreTests` (append-only store CAS, replay, fingerprint
+  conflict, continuity, and posted-impact journal-authority fail-closed behavior)
 - `AssetAccountingPostingEvidenceValidatorTests`
 - `AtomicTaxLotJournalStoreTests`
+- `WorkstationEndpointsTests` asset-accounting endpoint suite (projection, lifecycle, and posting
+  candidate routes: trusted actor/tenant stamping, permission denial, and 501 when the spine
+  service is absent)
 - `WorkstationEndpointsTests.MapWorkstationEndpoints_SecurityInstrumentExplorer_ShouldExposePassportOperationsAndReportUsage`
 
 Use the narrow test filter for this slice before broader ledger or Financial Operations validation.

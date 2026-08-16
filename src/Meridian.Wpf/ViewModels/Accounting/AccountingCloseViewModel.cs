@@ -6,6 +6,7 @@ using Meridian.Identity.Auth;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Wpf.Services;
 using System.Globalization;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 
@@ -1107,9 +1108,10 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
            _closeWorkflowId != Guid.Empty &&
            _closePlan is { IsPeriodLocked: false } &&
            HasLedgerMutationPermission() &&
+           TryGetCloseMutationScope(out _, out _) &&
            ClosingEntriesGate?.State == ClosePostingGateStateDto.Required;
 
-    private static string ResolveClosePeriodLockStatus(ClosePeriodPlanDto closePlan)
+    private string ResolveClosePeriodLockStatus(ClosePeriodPlanDto closePlan)
         => closePlan.ClosingEntriesGate switch
         {
             null => "The shared close plan did not return a closing-entry gate; period lock is disabled.",
@@ -1117,6 +1119,12 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
                 $"Close plan {closePlan.PeriodId} requires closing entries to be queued before period lock.",
             { State: ClosePostingGateStateDto.DraftQueued or ClosePostingGateStateDto.Submitted or ClosePostingGateStateDto.Approved } gate =>
                 $"Close plan {closePlan.PeriodId} cannot lock until closing entries advance from {FormatClosePostingGateState(gate.State)} to Posted.",
+            { IsReadyForLock: true, State: ClosePostingGateStateDto.Posted or ClosePostingGateStateDto.NotRequired }
+                when !TryGetCloseControllerAuthority(out _, out _) =>
+                "Locking the close period requires an authenticated Controller or Fund Controller session.",
+            { IsReadyForLock: true, State: ClosePostingGateStateDto.Posted or ClosePostingGateStateDto.NotRequired }
+                when !TryGetCloseMutationScope(out _, out _) =>
+                "Locking the close period requires authenticated tenant and company scope.",
             { IsReadyForLock: true, State: ClosePostingGateStateDto.Posted or ClosePostingGateStateDto.NotRequired } =>
                 $"Close plan {closePlan.PeriodId} is ready for governed period-lock review.",
             { } gate =>
@@ -1127,7 +1135,8 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
         => _closeManagementService is not null &&
            _closeWorkflowId != Guid.Empty &&
            _closePlan is { IsPeriodLocked: false } &&
-           HasLedgerMutationPermission() &&
+           TryGetCloseControllerAuthority(out _, out _) &&
+           TryGetCloseMutationScope(out _, out _) &&
            ClosingEntriesGate is
            {
                IsReadyForLock: true,
@@ -1501,6 +1510,13 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             return;
         }
 
+        if (!TryGetCloseMutationScope(out var tenantId, out var companyId))
+        {
+            ClosePeriodLockStatusText =
+                "Queuing closing entries requires authenticated tenant and company scope.";
+            return;
+        }
+
         if (!CanQueueClosingEntries())
         {
             ClosePeriodLockStatusText = ClosingEntriesGate is null
@@ -1518,7 +1534,7 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
                 actor,
                 prepareClosingEntriesOnly: true);
             var result = await _closeManagementService
-                .LockClosePeriodAsync(request, actor)
+                .LockClosePeriodScopedAsync(request, actor, tenantId, companyId)
                 .ConfigureAwait(true);
 
             if (result is null)
@@ -1575,9 +1591,17 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             return;
         }
 
-        if (!TryGetLedgerMutationActor(out var actor))
+        if (!TryGetCloseControllerAuthority(out var actor, out var controllerRole))
         {
-            ClosePeriodLockStatusText = "Your desktop session does not have permission to lock the close period.";
+            ClosePeriodLockStatusText =
+                "Locking the close period requires an authenticated Controller or Fund Controller session.";
+            return;
+        }
+
+        if (!TryGetCloseMutationScope(out var tenantId, out var companyId))
+        {
+            ClosePeriodLockStatusText =
+                "Locking the close period requires authenticated tenant and company scope.";
             return;
         }
 
@@ -1596,9 +1620,10 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
                 _closeWorkflowVersion,
                 _closePlan,
                 actor,
-                prepareClosingEntriesOnly: false);
+                prepareClosingEntriesOnly: false,
+                controllerRole: controllerRole);
             var result = await _closeManagementService
-                .LockClosePeriodAsync(request, actor)
+                .LockClosePeriodScopedAsync(request, actor, tenantId, companyId)
                 .ConfigureAwait(true);
 
             if (result is null)
@@ -1955,8 +1980,4 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
 
     private static string NormalizeRequired(string? value, string fallback)
         => string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
 }

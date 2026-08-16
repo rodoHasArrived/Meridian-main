@@ -4,12 +4,15 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Application.Composition;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
+using Meridian.Core.Scheduling;
 using Meridian.Identity.Auth;
 using Meridian.Reporting;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -28,6 +31,8 @@ internal sealed class ReportingScheduleStoreCompatibilityAdapter(
 {
     private readonly Meridian.Reporting.IReportingScheduleStore _inner =
         inner ?? throw new ArgumentNullException(nameof(inner));
+
+    public bool IsDurableAuthority => _inner.IsDurableAuthority;
 
     public IReadOnlyList<ReportingScheduleRecordDto> Load() => _inner.Load();
 
@@ -253,7 +258,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
                 var candidateHash = ComputeCanonicalHash(schedule);
                 if (expectedUpdatedAtUtc is null)
                 {
-                    if (FixedHashEquals(currentHash, candidateHash))
+                    if (Sha256Digest.FixedEquals(currentHash, candidateHash))
                     {
                         return;
                     }
@@ -268,7 +273,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
                         current,
                         expectedUpdatedAtUtc.Value);
                 }
-                if (FixedHashEquals(currentHash, candidateHash))
+                if (Sha256Digest.FixedEquals(currentHash, candidateHash))
                 {
                     return;
                 }
@@ -398,7 +403,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             var archivedAtUtc = DateTimeOffset.UtcNow;
             var archivedPayloadHash = ComputeCanonicalHash(state.Snapshot.LegacySchedules);
             var receipt = new ReportingLegacyArchiveReceipt(
-                ComputeSha256(JsonSerializer.Serialize(new
+                Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
                 {
                     kind = "schedule",
                     actor = recoveryAuthority.ActorPrincipalId!.Trim(),
@@ -452,7 +457,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             if (!string.Equals(snapshot.SchemaVersion, SchemaVersion, StringComparison.Ordinal)
                 || snapshot.Schedules is null
                 || snapshot.LegacySchedules is null
-                || !FixedHashEquals(
+                || !Sha256Digest.FixedEquals(
                     snapshot.PayloadHashSha256,
                     ComputeSnapshotHash(
                         snapshot.Schedules,
@@ -526,8 +531,8 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             NormalizeOptional(schedule.TenantId),
             NormalizeOptional(schedule.CompanyId),
             rawPayload,
-            ComputeSha256(rawPayload),
-            ComputeSha256(CanonicalizeJson(rawPayload)),
+            Sha256Digest.ComputeUtf8(rawPayload),
+            Sha256Digest.ComputeUtf8(CanonicalizeJson(rawPayload)),
             LegacyScheduleRemediation);
     }
 
@@ -538,7 +543,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             if (entry is null
                 || !string.Equals(entry.SchemaVersion, EntrySchemaVersion, StringComparison.Ordinal)
                 || entry.Schedule is null
-                || !FixedHashEquals(entry.PayloadHashSha256, ComputeCanonicalHash(entry.Schedule)))
+                || !Sha256Digest.FixedEquals(entry.PayloadHashSha256, ComputeCanonicalHash(entry.Schedule)))
             {
                 throw new InvalidDataException(
                     "Reporting schedule entry schema or canonical payload checksum is invalid.");
@@ -596,7 +601,6 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
                     throw new InvalidDataException(
                         $"The reporting schedule snapshot contains duplicate release handoff '{handoff.HandoffId}'.");
                 }
-
             }
         }
     }
@@ -613,10 +617,10 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
                 || (string.IsNullOrWhiteSpace(entry.TenantId) != string.IsNullOrWhiteSpace(entry.CompanyId))
                 || string.IsNullOrWhiteSpace(entry.RawPayloadJson)
                 || !string.Equals(entry.Remediation, LegacyScheduleRemediation, StringComparison.Ordinal)
-                || !FixedHashEquals(entry.RawPayloadHashSha256, ComputeSha256(entry.RawPayloadJson))
-                || !FixedHashEquals(
+                || !Sha256Digest.FixedEquals(entry.RawPayloadHashSha256, Sha256Digest.ComputeUtf8(entry.RawPayloadJson))
+                || !Sha256Digest.FixedEquals(
                     entry.CanonicalPayloadHashSha256,
-                    ComputeSha256(CanonicalizeJson(entry.RawPayloadJson))))
+                    Sha256Digest.ComputeUtf8(CanonicalizeJson(entry.RawPayloadJson))))
             {
                 throw new InvalidDataException(
                     "Archived legacy reporting schedule inventory checksum or schema is invalid.");
@@ -689,6 +693,13 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
         {
             throw new InvalidDataException("Reporting schedule is structurally invalid.");
         }
+
+        if (!CronExpressionParser.TryParse(schedule.CronExpression, out var cronSchedule)
+            || cronSchedule.GetNextOccurrenceOrNull(schedule.DueAtUtc, TimeZoneInfo.Utc) is null)
+        {
+            throw new InvalidDataException(
+                $"Reporting schedule '{schedule.ScheduleId}' has an invalid cron expression or no future UTC occurrence.");
+        }
     }
 
     private static bool HasValidRunParameters(ReportingRunParametersDto? parameters) =>
@@ -753,10 +764,10 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
                     ignoreCase: false,
                     out _))
             || requireTypedRecipient
-            && (!IsSha256(handoff.DeliveryTargetsSnapshotHash)
+            && (!Sha256Digest.IsCanonical(handoff.DeliveryTargetsSnapshotHash)
                 || handoff.State == ReportingScheduledReleaseHandoffStateDto.PendingRelease
-                && (!IsSha256(schedule.DeliveryTargetsSnapshotHash)
-                    || !FixedHashEquals(
+                && (!Sha256Digest.IsCanonical(schedule.DeliveryTargetsSnapshotHash)
+                    || !Sha256Digest.FixedEquals(
                         handoff.DeliveryTargetsSnapshotHash,
                         schedule.DeliveryTargetsSnapshotHash!)))
             || handoff.Destination is null
@@ -885,12 +896,12 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             || string.IsNullOrWhiteSpace(receipt.Reason)
             || receipt.ArchivedAtUtc == default
             || receipt.ArchivedAtUtc.Offset != TimeSpan.Zero
-            || !FixedHashEquals(receipt.ArchivedPayloadHashSha256, payloadHash))
+            || !Sha256Digest.FixedEquals(receipt.ArchivedPayloadHashSha256, payloadHash))
         {
             throw new InvalidDataException("Legacy reporting schedule archive receipt is invalid.");
         }
 
-        var expectedId = ComputeSha256(JsonSerializer.Serialize(new
+        var expectedId = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
             kind = "schedule",
             actor = receipt.ActorPrincipalId,
@@ -898,7 +909,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             archivedAtUtc = receipt.ArchivedAtUtc,
             archivedPayloadHash = receipt.ArchivedPayloadHashSha256
         }));
-        if (!FixedHashEquals(receipt.ArchiveId, expectedId))
+        if (!Sha256Digest.FixedEquals(receipt.ArchiveId, expectedId))
         {
             throw new InvalidDataException("Legacy reporting schedule archive receipt identity is invalid.");
         }
@@ -908,7 +919,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
         IReadOnlyList<ReportingScheduleEntry> schedules,
         IReadOnlyList<LegacyReportingScheduleEntry> legacySchedules,
         ReportingLegacyArchiveReceipt? archiveReceipt) =>
-        ComputeSha256(JsonSerializer.Serialize(new
+        Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
             schedules,
             legacySchedules,
@@ -916,30 +927,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
         }, _jsonOptions));
 
     private string ComputeCanonicalHash<T>(T value) =>
-        ComputeSha256(JsonSerializer.Serialize(value, _jsonOptions));
-
-    private static string ComputeSha256(string value) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
-
-    private static bool FixedHashEquals(string? left, string right)
-    {
-        if (!IsSha256(left) || !IsSha256(right))
-        {
-            return false;
-        }
-
-        return CryptographicOperations.FixedTimeEquals(
-            Convert.FromHexString(left!),
-            Convert.FromHexString(right));
-    }
-
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 }
-        && value.All(Uri.IsHexDigit)
-        && string.Equals(value, value.ToLowerInvariant(), StringComparison.Ordinal);
-
-    private static string? NormalizeOptional(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(value, _jsonOptions));
 
     private static string CanonicalizeJson(string rawJson)
     {
@@ -1170,13 +1158,7 @@ public sealed partial class ReportingScheduleService
         foreach (var schedule in _store?.Load() ?? [])
         {
             var identity = ReportingScheduleIdentity.From(schedule);
-            if (identity.TenantId.Length > 0
-                && (!HasValidAccessPolicySnapshot(schedule)
-                    || !HasValidScheduledExecutionPrincipal(schedule)))
-            {
-                throw new InvalidDataException(
-                    $"Reporting schedule '{schedule.ScheduleId}' has no valid immutable access-policy or execution-principal snapshot.");
-            }
+            ValidateRetainedSchedule(schedule, identity);
             if (!_schedules.TryAdd(identity, schedule))
             {
                 throw new InvalidDataException(
@@ -1270,6 +1252,8 @@ public sealed partial class ReportingScheduleService
         {
             throw new ArgumentOutOfRangeException(nameof(request), "maxRetries must be zero or greater.");
         }
+
+        ValidateCronExpressionForUpsert(request.CronExpression, request.DueAtUtc);
 
         EnsureTemplateAccess(request.TemplateId, accessContext);
         EnsureBoundContext(accessContext);
@@ -1555,8 +1539,17 @@ public sealed partial class ReportingScheduleService
         }
     }
 
-    public async Task<ReportingDueScheduleRunResultDto> RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default)
-        => (await RunDueForWorkerAsync(nowUtc, ct).ConfigureAwait(false)).Result;
+    public async Task<ReportingDueScheduleRunResultDto> RunDueAsync(
+        DateTimeOffset nowUtc,
+        CancellationToken ct = default)
+        => (await RunDueCoreAsync(
+                nowUtc,
+            accessContext: null,
+            processAllTenants: true,
+            continueAfterScheduleFailure: true,
+            allowSchedulingWorkerBootstrap: false,
+            ct)
+            .ConfigureAwait(false)).Result;
 
     internal Task<ReportingScheduleWorkerBatchResult> RunDueForWorkerAsync(
         DateTimeOffset nowUtc,
@@ -1566,6 +1559,7 @@ public sealed partial class ReportingScheduleService
             accessContext: null,
             processAllTenants: true,
             continueAfterScheduleFailure: true,
+            allowSchedulingWorkerBootstrap: true,
             ct);
 
     public async Task<ReportingDueScheduleRunResultDto> RunDueAsync(
@@ -1577,6 +1571,7 @@ public sealed partial class ReportingScheduleService
                 accessContext,
                 processAllTenants: false,
                 continueAfterScheduleFailure: false,
+                allowSchedulingWorkerBootstrap: false,
                 ct)
             .ConfigureAwait(false)).Result;
 
@@ -1585,9 +1580,12 @@ public sealed partial class ReportingScheduleService
         ReportAccessQueryContext? accessContext,
         bool processAllTenants,
         bool continueAfterScheduleFailure,
+        bool allowSchedulingWorkerBootstrap,
         CancellationToken ct)
     {
-        EnsureReportingDeploymentReady("execute due reporting schedules");
+        EnsureReportingDeploymentReady(
+            "execute due reporting schedules",
+            allowSchedulingWorkerBootstrap);
         RefreshSchedulesFromStore();
         KeyValuePair<ReportingScheduleIdentity, ReportingScheduleRecordDto>[] dueSchedules;
         lock (_gate)
@@ -2172,7 +2170,9 @@ public sealed partial class ReportingScheduleService
                 artifactSelection.Formats,
                 artifactSelection.ArtifactIds,
                 GrantLifetimeSeconds: transportId == "http-relay" ? 1_800 : null,
-                GrantMaxUses: transportId == "http-relay" ? 1 : null,
+                GrantMaxUses: transportId == "http-relay"
+                    ? artifactSelection.ArtifactIds.Count
+                    : null,
                 MaxAttempts: Math.Max(1, schedule.MaxRetries + 1),
                 CreatedAtUtc: createdAtUtc,
                 RecipientPrincipalKind: recipient.Kind.ToString(),
@@ -2206,7 +2206,6 @@ public sealed partial class ReportingScheduleService
             .ThenBy(static handoff => handoff.HandoffId, StringComparer.Ordinal)
             .ToArray();
     }
-
 
     private IReadOnlyList<IReadOnlyDictionary<string, string>>? ResolveDatasetRows(
         ReportingScheduleRecordDto schedule,
@@ -3316,87 +3315,5 @@ public sealed partial class ReportingScheduleService
         {
             _schedules[identity] = fallback;
         }
-    }
-}
-
-public sealed record ReportingScheduleWorkerOptions(TimeSpan PollInterval)
-{
-    public static ReportingScheduleWorkerOptions Default { get; } = new(TimeSpan.FromMinutes(1));
-}
-
-internal sealed record ReportingScheduleWorkerFailure(
-    string TenantId,
-    string CompanyId,
-    string ScheduleId,
-    string ErrorType,
-    string? FailureRecordingErrorType);
-
-internal sealed record ReportingScheduleWorkerBatchResult(
-    ReportingDueScheduleRunResultDto Result,
-    IReadOnlyList<ReportingScheduleWorkerFailure> Failures);
-
-/// <summary>
-/// Server-owned schedule clock. Public due-run mutation routes are retired; this worker discovers
-/// due records internally and lets <see cref="ReportingScheduleService"/> reconstruct a separate,
-/// exact tenant/company authority for every scheduled run.
-/// </summary>
-public sealed class ReportingScheduleHostedService : BackgroundService
-{
-    private readonly ReportingScheduleService _scheduleService;
-    private readonly TimeProvider _timeProvider;
-    private readonly ILogger<ReportingScheduleHostedService> _logger;
-    private readonly ReportingScheduleWorkerOptions _options;
-
-    public ReportingScheduleHostedService(
-        ReportingScheduleService scheduleService,
-        TimeProvider timeProvider,
-        ILogger<ReportingScheduleHostedService> logger,
-        ReportingScheduleWorkerOptions? options = null)
-    {
-        _scheduleService = scheduleService ?? throw new ArgumentNullException(nameof(scheduleService));
-        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _options = options ?? ReportingScheduleWorkerOptions.Default;
-        if (_options.PollInterval <= TimeSpan.Zero)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(options),
-                "The reporting schedule worker poll interval must be positive.");
-        }
-    }
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        using var timer = new PeriodicTimer(_options.PollInterval);
-        do
-        {
-            try
-            {
-                var batch = await _scheduleService
-                    .RunDueForWorkerAsync(_timeProvider.GetUtcNow(), stoppingToken)
-                    .ConfigureAwait(false);
-                foreach (var failure in batch.Failures)
-                {
-                    _logger.LogError(
-                        "Scheduled report {ScheduleId} failed closed for tenant {TenantId} and company {CompanyId} with error type {ErrorType}; failure recording error type was {FailureRecordingErrorType}; other due schedules continued.",
-                        failure.ScheduleId,
-                        failure.TenantId,
-                        failure.CompanyId,
-                        failure.ErrorType,
-                        failure.FailureRecordingErrorType ?? "none");
-                }
-            }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                break;
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(
-                    "Scheduled reporting cycle failed closed with error type {ErrorType}.",
-                    exception.GetType().Name);
-            }
-        }
-        while (await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false));
     }
 }

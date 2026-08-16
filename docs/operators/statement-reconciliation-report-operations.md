@@ -2,11 +2,15 @@
 title: Statement Reconciliation Report Operations
 status: active
 owner: financial-operations
-reviewed: 2026-07-26
+reviewed: 2026-07-27
 audience: operators
 ---
 
 # Statement Reconciliation Report Operations
+
+**Status:** active
+**Owner:** Financial Operations
+**Reviewed:** 2026-07-27
 
 Use this authoritative intake adapter for retained broker or custodian statement ingestion,
 server-resolved accounting scope, Evidence Vault linkage, publication into the canonical
@@ -57,7 +61,8 @@ workflow evidence.
 The start response is `201` when the reconciliation report completes immediately, `202` when
 reconciliation or another durable stage remains, or `500` with the retained workflow projection
 when a durable stage fails. Pre-retention account, ledger-book, or period mismatch or ambiguity
-returns `409`; a missing intake-authority dependency returns `503`. A closed or ambiguous exact
+returns `409`; a missing intake-authority dependency, missing production statement authority, or
+unavailable production authority returns `503` without falling back to local files. A closed or ambiguous exact
 Operations workflow or incomplete queue publication fails after retention and returns the retained
 `Failed` projection with `500`. Record `workflowId`, `statusRoute`, and `resumeRoute` from the
 response when a workflow was retained.
@@ -92,21 +97,55 @@ last-run timestamp.
 | Status | Operator action |
 | --- | --- |
 | `InputRetained`, `Importing`, `RenderingReconciliationReport` | Poll the status route; do not upload a modified file under the same business event. |
-| `AwaitingReconciliation` | Work the canonical queue entries. Resolve or govern disposition and complete their source/Operations evidence handoff, then call the resume route. |
+| `AwaitingReconciliation` | Work the canonical queue entries. Resolve or govern disposition and complete their source/Operations evidence handoff, then call the resume route. If a completed case was governed-reopened, current `retainedArtifacts` are empty and the superseded generation is retained in `artifactHistory`. |
 | `Failed` | Preserve `failureReason`; correct the named dependency and use the existing resume route. Do not begin an unrelated replacement import. |
 | `Completed` | Retrieve every retained artifact and retain the workflow response, exact accounting scope, Operations workflow link, and queue evidence. Do not treat it as posting, close, reporting certification, or delivery proof. |
 
-The coordinator persists the input before import and checkpoints a committed import before Evidence
-Vault linkage or rendering. After Evidence Vault retention, the intake authority starts or reuses
+The coordinator persists the input before import. In production, it checkpoints a committed import
+only after the raw statement, canonical statement records, and statement-run evidence have all
+been retained in the same durable reporting authority. The intake authority then starts or reuses
 the exact Operations Continuity workflow, attaches stable statement evidence, and projects every
 source break/case into the canonical queue with fund, book, period, and as-of scope. A retry after
 those checkpoints resumes from retained state rather than repeating the import. Concurrent
-processes serialize work on the same content-and-scope identity.
+processes serialize work on the same content-and-scope identity. Local file-backed compatibility
+composition retains source evidence through its existing Evidence Vault bridge and does not satisfy
+the production durable-composition readiness gate.
 
 Queue replay validates an already retained destination-scoped break directly. It does not seed an
 unscoped compatibility case when a process stops after the queue commit but before the statement
 workflow records `operationsWorkflowId`; immutable source or scope conflicts still fail through the
 queue's create-replay validation.
+
+### Production persistence and restart authority
+
+Production requires the PostgreSQL statement-reconciliation authority installed by reporting
+migration `013_reporting_statement_reconciliation_authority.sql`. Every lookup and write uses the
+complete `(tenant_id, company_id, workflow_id, document_key)` key. Document mappings refer to the
+existing tenant-scoped, content-addressed `reporting_artifact_blobs`; reads verify retained size and
+SHA-256 before workflow code receives bytes.
+
+Reporting deployment readiness remains blocked until the live schema probe verifies
+`reporting_statement_reconciliation_documents`,
+`reporting_statement_reconciliation_document_revisions`, all six migration-owned document,
+revision, and truncate-guard triggers, both UTF-8 composite-identity constraints, and the exact
+`reporting-statement-reconciliation-authority:v1` compatibility marker. Composition must also
+resolve the concrete `PostgresStatementReconciliationReportAuthorityStore` together with the
+statement evidence retainer and workflow bound to that same PostgreSQL artifact authority. The
+presence of migration 013 or a durable store registration alone is not production-readiness
+evidence.
+
+Uploaded input, statement evidence, and historical artifact generations are immutable mappings.
+`workflow.json` and the current artifact mappings may advance, but each version points to immutable
+blob bytes and the append-only document revision history preserves superseded hashes. A PostgreSQL
+advisory lease serializes a workflow across hosts. The workflow snapshot mapping is written only
+after its input, evidence, manifest, and artifact mappings, so a restart cannot observe a checkpoint
+that refers to unretained bytes.
+
+Rendering still uses the existing statement workflow and renderer. For production it operates on a
+service-owned runtime cache hydrated from verified authority bytes under the exact workflow lease.
+Hydration reconstructs that cache exactly and removes unlisted local remnants before continuation;
+a file created by an interrupted attempt is not imported into authority on resume. Do not back up,
+restore, inspect, or repair this runtime cache as workflow truth.
 
 ## Resume and retrieve artifacts
 
@@ -115,8 +154,23 @@ queue's create-replay validation.
 - Download an artifact from the `downloadRoute` in each `retainedArtifacts` entry.
 
 Artifact downloads are served only inside the authenticated tenant/company scope. The server hashes
-the retained bytes again and refuses delivery if they differ from `contentHashSha256`. The workflow
-retains:
+the retained bytes again and refuses delivery if their length or hash differs from the current
+descriptor. Only a `Completed` workflow's `retainedArtifacts` authorize download. A governed reopen
+removes that current authority before any replacement render.
+
+`artifactGeneration` is the monotonic number of the latest generated set. After a governed reopen,
+the service copies every formerly current byte and the exact `manifest.json` into
+`artifacts/history/generation-<number>/` with atomic file writes, writes an immutable hash-addressed
+archive receipt, and then atomically checkpoints one `artifactHistory` entry in the existing
+workflow/status response. That entry preserves the generation's exact descriptors, manifest length
+and hash, generation and archive timestamps, and audit evidence. The descriptors' original
+`downloadRoute` values are historical audit metadata; do not use them to request superseded bytes.
+Current download authority remains exclusively in `retainedArtifacts`.
+
+Resuming the same reopened checkpoint is idempotent: it reuses the existing archive receipt and
+does not append another history entry. Once casework is resolved again, rendering creates the next
+generation at the normal current paths while all prior generation bytes, manifests, descriptors,
+hashes, and receipt evidence remain unchanged. The workflow retains:
 
 - `statement-reconciliation-report.json` with scope, period, run, reconciliation, case lineage, and
   Evidence Vault references;
@@ -144,10 +198,12 @@ Continue through the existing governed seams; do not create a parallel renderer 
 5. Start a separate governed Reporting run through canonical readiness, certification, governance,
    and release. Statement JSON/CSV is support evidence only and is not a certified run input by
    itself.
-6. For `ClientPackage`, the canonical renderer and certified-artifact producer retain both PDF and
-   XLSX primary outputs from the same certified manifest. Secure Reporting distribution remains
-   authoritative for grants, delivery jobs, provider receipts, and audited downloads after release,
-   and it rejects a PDF-only or XLSX-only primary subset.
+6. Capital-account `Pdf`, `Xlsx`, and `ClientPackage` outputs use the same canonical renderer and
+   certified-artifact producer. Standalone formats select their exact document from the canonical
+   PDF/XLSX pair; `ClientPackage` retains both primary outputs from the same certified manifest.
+   Secure Reporting distribution remains authoritative for grants, delivery jobs, provider
+   receipts, and audited downloads after release, and it rejects a PDF-only or XLSX-only primary
+   subset of a `ClientPackage`.
 
 The automatic transition ends at scoped Operations Continuity and canonical queue handoff. Verify
 posting, close, Reporting, release, and distribution independently in
@@ -157,22 +213,30 @@ posting, close, Reporting, release, and distribution independently in
 
 1. Reuse the recorded workflow ID and status route after process restart.
 2. If reconciliation is pending, resolve or disposition every linked break/case before resume.
-3. If Evidence Vault or storage was unavailable, restore that dependency and call resume; verify the
-   statement-run ID did not change.
+3. If statement authority, Evidence Vault linkage, or storage was unavailable, restore PostgreSQL
+   reporting authority and call resume; verify the statement-run ID did not change. A `503` is an
+   availability stop, not permission to switch production to a file store.
 4. If scope resolution reports no match, ambiguity, or a closed ledger period, repair the
    fund-account ownership, primary ledger-book, or exact ledger-period configuration. Reopen a
    period only through governed accounting close controls; do not choose an approximate period or
    copy an Operations workflow ID from another scope.
 5. If intake reports a closed exact Operations workflow, reopen it only through governed close
    controls before retrying the statement handoff.
-6. If an artifact hash fails, stop downstream delivery, retain the workflow snapshot and affected
-   bytes, and escalate as a durability incident. Do not replace the bytes or edit the manifest.
+6. If a current artifact, historical generation, manifest, or archive-receipt hash fails, stop
+   downstream delivery, retain the workflow snapshot and affected bytes, and escalate as a
+   durability incident. Do not replace the bytes, descriptor, manifest, or archive receipt.
 7. If access is denied, confirm the authenticated company and tenant rather than copying artifacts
    across scopes.
 
-The server data root retains new workflow state under `reporting/statement-reconciliation-report/<workflowId>/`.
-Treat `workflow.json`, `input/`, `artifacts/`, and the lock file as service-owned data. Include that
-directory in the supported data-root backup and restore drill; operators must not edit it directly.
+Local/development compatibility composition retains workflow state under
+`reporting/statement-reconciliation-report/<workflowId>/`. Treat `workflow.json`, `input/`,
+`artifacts/`, `artifacts/history/`, authority metadata, and the lock file as service-owned data.
+Include that directory in a local-development backup only when that environment intentionally uses
+file authority; operators must not edit it directly or restore a historical generation
+independently of its workflow snapshot. Production recovery instead restores the PostgreSQL
+statement document mappings, append-only revisions, and referenced `reporting_artifact_blobs` as
+one coordinated authority. The production data-root runtime workspace is disposable cache and must
+not be used as backup or recovery evidence.
 The canonical casework handoff is retained separately under
 `<DataRoot>/workstation/reconciliation-break-queue.json`. That integrity-validated snapshot also
 retains command receipts, audit evidence, and any exact close-scope checkpoint frozen before hard

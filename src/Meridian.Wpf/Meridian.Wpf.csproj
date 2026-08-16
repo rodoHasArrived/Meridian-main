@@ -119,6 +119,8 @@
     <ProjectReference Include="..\Meridian.Workflow\Meridian.Workflow.csproj" />
     <ProjectReference Include="..\Meridian.Strategies\Meridian.Strategies.csproj" />
     <ProjectReference Include="..\Meridian.QuantScript\Meridian.QuantScript.csproj" />
+    <ProjectReference Include="..\Meridian.QuantScript.Worker\Meridian.QuantScript.Worker.csproj"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsWindows)' == 'true' AND Exists('Assets')">
@@ -151,5 +153,7 @@
   <ItemGroup Condition="'$(IsWindows)' == 'true'">
     <TrimmerRootAssembly Include="System.Text.Json" />
   </ItemGroup>
+
+  <Import Project="..\Meridian.QuantScript.Worker\QuantScriptWorker.Sidecar.targets" />
 
 </Project>

@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+
 namespace Meridian.Reporting;
 
 /// <summary>Shared durable boundaries for secure reporting distribution identifiers.</summary>
@@ -25,6 +28,11 @@ public enum ReportingAccessGrantValidationStatus
     ConcurrencyConflict = 10
 }
 
+/// <summary>
+/// Durable recipient-access authority. <see cref="ConsumedArtifactIds"/> is null only for retained
+/// grants created before distinct-artifact tracking existed; newly issued grants start with an
+/// empty tracked set and append exact artifact ids as their first successful reads are committed.
+/// </summary>
 public sealed record ReportingAccessGrantRecord(
     string GrantId,
     string TokenHashSha256,
@@ -43,7 +51,8 @@ public sealed record ReportingAccessGrantRecord(
     string? RevokedBy = null,
     string? RevocationReason = null,
     long Version = 0,
-    ReportingAccessPrincipalKind AudienceKind = ReportingAccessPrincipalKind.User);
+    ReportingAccessPrincipalKind AudienceKind = ReportingAccessPrincipalKind.User,
+    IReadOnlyList<string>? ConsumedArtifactIds = null);
 
 public sealed record ReportingAccessGrantIssueRequest(
     string TenantId,
@@ -188,6 +197,27 @@ public sealed record ReportingDeliveryReceipt(
     string? ProviderReference = null,
     string? EvidenceReference = null,
     string? Detail = null);
+
+/// <summary>
+/// Canonical identity for a delivery-linked exact-byte download receipt. The retained artifact
+/// audit event is part of the identity so a replay can prove which audited read consumed the grant.
+/// </summary>
+public static class ReportingDeliveryDownloadReceiptIdentity
+{
+    public static string Create(string jobId, string artifactId, string artifactAuditEventId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(jobId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(artifactId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(artifactAuditEventId);
+        var canonical = string.Join(
+            "\u001f",
+            jobId.Trim(),
+            artifactId.Trim(),
+            artifactAuditEventId.Trim());
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)))
+            .ToLowerInvariant();
+    }
+}
 
 public sealed record ReportingDeliveryAccessPolicy(
     string Audience,
@@ -369,6 +399,35 @@ public sealed record ReportingDeliveryGrantRevocationCandidate(
     string JobId,
     string TenantId,
     string AccessGrantId);
+
+public enum ReportingDeliveryGrantDownloadCommitStatus
+{
+    Committed = 0,
+    ConcurrencyConflict = 1
+}
+
+/// <summary>
+/// Prepared, non-secret state transition for one delivery-linked exact-byte download. The
+/// implementation must commit the one-use grant advance and the appended Downloaded receipt in one
+/// transaction. Plaintext bearers never cross this persistence boundary.
+/// </summary>
+public sealed record ReportingDeliveryGrantDownloadCommit(
+    string ArtifactId,
+    long ExpectedGrantVersion,
+    ReportingAccessGrantRecord ConsumedGrant,
+    long ExpectedDeliveryVersion,
+    ReportingDeliveryJobRecord DeliveryWithDownloadReceipt);
+
+/// <summary>
+/// Narrow composite boundary for the two reporting-distribution aggregates that must move
+/// atomically when a recipient exchanges a delivery-linked grant.
+/// </summary>
+public interface IReportingDeliveryGrantDownloadCommitter
+{
+    Task<ReportingDeliveryGrantDownloadCommitStatus> TryCommitAsync(
+        ReportingDeliveryGrantDownloadCommit commit,
+        CancellationToken ct = default);
+}
 
 public sealed record ReportingDeliveryDispatcherOptions(
     TimeSpan LeaseDuration,

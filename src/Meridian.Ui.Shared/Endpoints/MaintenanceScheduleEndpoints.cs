@@ -112,6 +112,13 @@ public static class MaintenanceScheduleEndpoints
             {
                 return Results.NotFound(new { error = $"Schedule '{id}' not found" });
             }
+            catch (InvalidOperationException)
+            {
+                return Results.Conflict(new
+                {
+                    error = $"Schedule '{id}' already has an execution queued or running"
+                });
+            }
         })
         .WithName("RunMaintenanceScheduleNow")
         .Produces(200)

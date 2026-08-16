@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 using Meridian.Core.Logging;
+using Meridian.Storage.Policies;
+using Meridian.Storage.Replay;
 using Serilog;
 
 namespace Meridian.Storage.Export;
@@ -12,15 +14,36 @@ namespace Meridian.Storage.Export;
 /// </summary>
 public sealed class ExportValidator
 {
+    private static readonly string[] JsonlSourcePatterns =
+    [
+        "*.jsonl",
+        "*.jsonl.gz",
+        "*.jsonl.gzip",
+        "*.jsonl.zst",
+        "*.jsonl.lz4",
+        "*.jsonl.br"
+    ];
+
     private readonly ILogger _log = LoggingSetup.ForContext<ExportValidator>();
     private readonly string _dataRoot;
+    private readonly JsonlStoragePolicy _storagePolicy;
     private readonly PreflightEngine<ExportPreflightContext> _engine;
 
     public ExportValidator(
         string dataRoot,
         IEnumerable<IPreflightRule<ExportPreflightContext>>? rules = null)
+        : this(new StorageOptions { RootPath = dataRoot }, rules)
     {
-        _dataRoot = dataRoot;
+    }
+
+    public ExportValidator(
+        StorageOptions storageOptions,
+        IEnumerable<IPreflightRule<ExportPreflightContext>>? rules = null)
+    {
+        ArgumentNullException.ThrowIfNull(storageOptions);
+
+        _dataRoot = storageOptions.RootPath;
+        _storagePolicy = new JsonlStoragePolicy(storageOptions);
         _engine = new PreflightEngine<ExportPreflightContext>(rules ?? ExportPreflightRules.DefaultRules);
     }
 
@@ -98,8 +121,7 @@ public sealed class ExportValidator
             _ => 1.0
         };
 
-        var sourceBytes = new[] { "*.jsonl", "*.jsonl.gz" }
-            .SelectMany(p => Directory.GetFiles(_dataRoot, p, SearchOption.AllDirectories))
+        var sourceBytes = FindMatchingSourceFiles(request)
             .Sum(f => new FileInfo(f).Length);
 
         return (long)(sourceBytes * ratio);
@@ -145,28 +167,7 @@ public sealed class ExportValidator
             return 0;
 
         long count = 0;
-        var files = new[] { "*.jsonl", "*.jsonl.gz" }
-            .SelectMany(p => Directory.GetFiles(_dataRoot, p, SearchOption.AllDirectories))
-            .Where(f =>
-            {
-                var name = Path.GetFileName(f);
-                var parts = name.Split('.');
-
-                var symbol = parts.Length >= 1 ? parts[0] : null;
-                var eventType = parts.Length >= 2 ? parts[1] : null;
-
-                if (request.Symbols is { Length: > 0 } &&
-                    !request.Symbols.Contains(symbol, StringComparer.OrdinalIgnoreCase))
-                    return false;
-
-                if (request.EventTypes is { Length: > 0 } &&
-                    !request.EventTypes.Contains(eventType, StringComparer.OrdinalIgnoreCase))
-                    return false;
-
-                return true;
-            });
-
-        foreach (var file in files)
+        foreach (var file in FindMatchingSourceFiles(request))
         {
             ct.ThrowIfCancellationRequested();
             count += await CountLinesAsync(file, ct);
@@ -179,17 +180,81 @@ public sealed class ExportValidator
     {
         try
         {
-            using var reader = new StreamReader(path);
+            await using var source = File.OpenRead(path);
+            using var reader = new StreamReader(CompressedJsonlStream.Decompress(source, path));
             long lines = 0;
             while (await reader.ReadLineAsync(ct) is not null)
                 lines++;
             return lines;
         }
-        catch
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             return 0;
         }
     }
+
+    private IEnumerable<string> FindMatchingSourceFiles(ExportRequest request)
+    {
+        if (!Directory.Exists(_dataRoot))
+            return Array.Empty<string>();
+
+        return JsonlSourcePatterns
+            .SelectMany(pattern => Directory.GetFiles(_dataRoot, pattern, SearchOption.AllDirectories))
+            .Distinct(GetPathComparer())
+            .Select(path => (Path: path, Metadata: ParseSourceMetadata(path)))
+            .Where(candidate => candidate.Metadata is not null)
+            .Where(candidate => request.Symbols is not { Length: > 0 } ||
+                                request.Symbols.Contains(
+                                    candidate.Metadata!.Symbol,
+                                    StringComparer.OrdinalIgnoreCase))
+            .Where(candidate => request.EventTypes is not { Length: > 0 } ||
+                                request.EventTypes.Contains(
+                                    candidate.Metadata!.EventType,
+                                    StringComparer.OrdinalIgnoreCase))
+            .Where(candidate => !candidate.Metadata!.Date.HasValue ||
+                                (candidate.Metadata.Date.Value >= request.StartDate.Date &&
+                                 candidate.Metadata.Date.Value <= request.EndDate.Date))
+            .Select(static candidate => candidate.Path);
+    }
+
+    private SourceMetadata? ParseSourceMetadata(string path)
+    {
+        var metadata = _storagePolicy.TryParsePath(path);
+        if (metadata is not null)
+        {
+            return new SourceMetadata(
+                metadata.Symbol,
+                metadata.EventType,
+                metadata.Date?.UtcDateTime);
+        }
+
+        var parts = Path.GetFileName(path).Split('.');
+        if (parts.Length < 2)
+            return null;
+
+        DateTime? date = null;
+        if (parts.Length >= 4 && DateTime.TryParse(parts[2], out var parsedDate))
+            date = parsedDate;
+
+        return new SourceMetadata(
+            parts[0],
+            parts.Length >= 3 ? parts[1] : string.Empty,
+            date);
+    }
+
+    private static StringComparer GetPathComparer() =>
+        OperatingSystem.IsWindows()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
+
+    private sealed record SourceMetadata(
+        string Symbol,
+        string EventType,
+        DateTime? Date);
 }
 
 /// <summary>

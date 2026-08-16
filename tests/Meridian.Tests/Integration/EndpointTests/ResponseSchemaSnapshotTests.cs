@@ -1,7 +1,11 @@
 using System.Net;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Core.Config;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Identity.Auth;
+using Meridian.Infrastructure.Adapters.Failover;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -17,21 +21,32 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class ResponseSchemaSnapshotTests : IDisposable
+public sealed class ResponseSchemaSnapshotTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
+    private readonly EndpointTestFixture _fixture;
     private readonly HttpClient _client;
     // SEC-001: /api/config reads now require a configuration permission. Route config schema reads
     // through an authorized client so the snapshot assertions keep exercising the real payload.
     private readonly HttpClient _configClient;
+    private readonly HttpClient _backfillReadClient;
+    private readonly HttpClient _failoverReadClient;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public ResponseSchemaSnapshotTests(EndpointTestFixture fixture)
     {
+        _fixture = fixture;
         _client = fixture.Client;
         _configClient = fixture.CreatePermittedClient(UserPermission.ViewConfig, UserPermission.ModifyConfig);
+        _backfillReadClient = fixture.CreatePermittedClient(UserPermission.ViewHistoricalData);
+        _failoverReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
     }
 
-    public void Dispose() => _configClient.Dispose();
+    public void Dispose()
+    {
+        _configClient.Dispose();
+        _backfillReadClient.Dispose();
+        _failoverReadClient.Dispose();
+    }
 
     #region /api/status
 
@@ -266,7 +281,7 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable
     [Fact]
     public async Task BackfillProviders_Schema_IsJsonArray()
     {
-        var response = await _client.GetAsync("/api/backfill/providers");
+        var response = await _backfillReadClient.GetAsync("/api/backfill/providers");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var content = await response.Content.ReadAsStringAsync();
@@ -281,7 +296,7 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable
     [Fact]
     public async Task BackfillStatus_Schema_Returns404WhenNoBackfillRan()
     {
-        var response = await _client.GetAsync("/api/backfill/status");
+        var response = await _backfillReadClient.GetAsync("/api/backfill/status");
 
         // 404 is the expected schema when no backfill has run
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -401,11 +416,68 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable
 
     private async Task<Dictionary<string, JsonElement>> GetJsonObjectAsync(string url)
     {
-        // SEC-001: configuration reads require ViewConfig/ModifyConfig — use the authorized client.
-        var client = url.StartsWith("/api/config", StringComparison.OrdinalIgnoreCase) ? _configClient : _client;
-        var response = await client.GetAsync(url);
-        response.StatusCode.Should().Be(HttpStatusCode.OK, $"GET {url} should return 200 OK");
-        return await DeserializeObjectAsync(response);
+        HttpResponseMessage response;
+        if (url.StartsWith("/api/failover/", StringComparison.OrdinalIgnoreCase))
+        {
+            response = await GetWithLiveFailoverRuntimeAsync(url);
+        }
+        else
+        {
+            var client = url switch
+            {
+                _ when url.StartsWith("/api/config", StringComparison.OrdinalIgnoreCase) => _configClient,
+                _ when url.StartsWith("/api/backfill/", StringComparison.OrdinalIgnoreCase) => _backfillReadClient,
+                _ => _client
+            };
+            response = await client.GetAsync(url);
+        }
+
+        using (response)
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.OK, $"GET {url} should return 200 OK");
+            return await DeserializeObjectAsync(response);
+        }
+    }
+
+    private async Task<HttpResponseMessage> GetWithLiveFailoverRuntimeAsync(string url)
+    {
+        var registry = _fixture.Services.GetRequiredService<StreamingFailoverRegistry>();
+        using var healthMonitor = new ConnectionHealthMonitor();
+        using var service = CreateFailoverService(healthMonitor);
+        registry.Service = service;
+
+        try
+        {
+            return await _failoverReadClient.GetAsync(url);
+        }
+        finally
+        {
+            registry.Service = null;
+        }
+    }
+
+    private StreamingFailoverService CreateFailoverService(ConnectionHealthMonitor healthMonitor)
+    {
+        var configured = _fixture.Services
+            .GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>()
+            .Load()
+            .DataSources ?? new DataSourcesConfig();
+        var rules = configured.FailoverRules ?? Array.Empty<FailoverRuleConfig>();
+        var service = new StreamingFailoverService(healthMonitor);
+        foreach (var providerId in rules
+                     .SelectMany(rule => new[] { rule.PrimaryProviderId }.Concat(rule.BackupProviderIds))
+                     .Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            service.RegisterProvider(providerId);
+        }
+
+        service.Start(configured with
+        {
+            EnableFailover = true,
+            HealthCheckIntervalSeconds = 3600,
+            FailoverRules = rules
+        });
+        return service;
     }
 
     private static async Task<Dictionary<string, JsonElement>> DeserializeObjectAsync(HttpResponseMessage response)

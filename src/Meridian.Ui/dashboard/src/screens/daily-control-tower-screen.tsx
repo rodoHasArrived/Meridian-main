@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { AppShellTrustStripState, AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
@@ -7,6 +7,8 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { PanelSurface } from "@/components/ui/panel-surface";
 import { ScreenLayout } from "@/components/ui/screen-layout";
 import { KeyValueGrid } from "@/components/data/concrete";
+import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { ReadinessPanel, SeverityBadge, WorkspaceSection } from "@/components/operations";
 import { buildDailyControlTowerModel } from "@/lib/daily-control-tower";
@@ -36,6 +38,7 @@ export function DailyControlTowerScreen({
   // leaving the tower. Falls back to the top-ranked row until one is chosen
   // (or when the chosen row leaves the queue on refresh).
   const [selectedQueueItemId, setSelectedQueueItemId] = useState<string | null>(null);
+  const [reviewAllScopes, setReviewAllScopes] = useState(false);
   const selectedQueueRow =
     model.queueRows.find((row) => row.item.id === selectedQueueItemId) ?? model.queueRows[0] ?? null;
   const freshnessEvidence = selectedQueueRow?.proofPassportItems.find((item) => item.id === "freshness");
@@ -44,13 +47,59 @@ export function DailyControlTowerScreen({
     freshnessEvidence?.detail
   );
   const providerTrust = trustStrip.items.find((item) => item.id === "providers") ?? null;
+  const evidencePanelId = "daily-control-tower-evidence-detail";
+  const queueVisible = viewModel.operatingScope.hasScope || reviewAllScopes;
   const trustTone: OperationalTrustTone = model.statusTone === "ready"
     ? "ready"
     : model.statusTone === "blocked"
       ? "blocked"
       : model.statusTone === "review"
         ? "review"
-        : "unknown";
+      : "unknown";
+
+  useEffect(() => {
+    if (selectedQueueItemId && !model.queueRows.some((row) => row.item.id === selectedQueueItemId)) {
+      setSelectedQueueItemId(null);
+    }
+  }, [model.queueRows, selectedQueueItemId]);
+
+  const queueColumns: DenseDataTableColumn<(typeof model.queueRows)[number]>[] = [
+    {
+      id: "item",
+      label: "Blocked item",
+      className: "min-w-[18rem]",
+      render: (row) => (
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-medium text-foreground">{row.item.label}</span>
+            <SeverityBadge status={badgeVariantToSeverityStatus(row.badgeVariant)} label={row.statusLabel} />
+          </div>
+          <p className="text-xs leading-5 text-muted-foreground">{row.item.detail}</p>
+        </div>
+      )
+    },
+    { id: "owner", label: "Owner", render: (row) => row.item.workspaceLabel },
+    { id: "output", label: "Affected output", render: (row) => row.outputLabel },
+    {
+      id: "action",
+      label: "Next action",
+      render: (row) => (
+        <Link
+          to={row.item.route}
+          className="inline-flex items-center gap-1 font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          aria-label={row.item.ariaLabel}
+        >
+          <span>{row.item.actionLabel}</span>
+          <ArrowRight className="h-3 w-3" aria-hidden="true" />
+        </Link>
+      )
+    },
+    {
+      id: "evidence",
+      label: "Evidence",
+      render: (row) => row.proof?.label ?? "Evidence not linked"
+    }
+  ];
 
   return (
     <ScreenLayout
@@ -143,85 +192,59 @@ export function DailyControlTowerScreen({
         title="Finance queue"
         summary="Each row carries the evidence needed to move from source issue to downstream output."
       >
-        {model.queueRows.length > 0 ? (
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-border text-sm" aria-label="Daily control tower finance queue">
-                <thead className="bg-muted/35 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                  <tr>
-                    <th scope="col" className="px-4 py-3 font-semibold">Blocked item</th>
-                    <th scope="col" className="px-4 py-3 font-semibold">Owner</th>
-                    <th scope="col" className="px-4 py-3 font-semibold">Affected output</th>
-                    <th scope="col" className="px-4 py-3 font-semibold">Next action</th>
-                    <th scope="col" className="px-4 py-3 font-semibold">Evidence</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {model.queueRows.map((row) => {
-                    const isSelected = row.item.id === selectedQueueRow?.item.id;
-                    return (
-                    <tr
-                      key={row.item.id}
-                      className={isSelected ? "align-top bg-primary/5" : "align-top"}
-                      aria-current={isSelected ? "true" : undefined}
-                    >
-                      <td className="max-w-sm px-4 py-4">
-                        <div className="space-y-2">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setSelectedQueueItemId(row.item.id)}
-                              aria-pressed={isSelected}
-                              aria-label={`Show evidence for ${row.item.label}`}
-                              className="text-left font-medium text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                            >
-                              {row.item.label}
-                            </button>
-                            <SeverityBadge
-                              status={badgeVariantToSeverityStatus(row.badgeVariant)}
-                              label={row.statusLabel}
-                            />
-                          </div>
-                          <p className="text-xs leading-5 text-muted-foreground">{row.item.detail}</p>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-foreground">{row.item.workspaceLabel}</td>
-                      <td className="px-4 py-4 text-sm text-foreground">{row.outputLabel}</td>
-                      <td className="px-4 py-4">
-                        <Link
-                          to={row.item.route}
-                          className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                          aria-label={row.item.ariaLabel}
-                        >
-                          <span>{row.item.actionLabel}</span>
-                          <ArrowRight className="h-3 w-3" aria-hidden="true" />
-                        </Link>
-                      </td>
-                      <td className="px-4 py-4 text-xs leading-5 text-muted-foreground">
-                        {row.proof?.label ?? row.proofPassportItems.find((item) => item.id === "freshness")?.value ?? "No evidence linked"}
-                      </td>
-                    </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+        {!queueVisible ? (
+          <PanelSurface flat role="region" aria-label="Choose Control Tower scope" className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Choose the scope for today’s queue</h3>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                Select a fund, account, provider, symbol, run, or date window to rank the most relevant decisions. You can still review the combined queue when cross-scope triage is required.
+              </p>
             </div>
+            <div className="flex flex-wrap gap-2">
+              {onEditOperatingScope ? (
+                <Button type="button" size="sm" onClick={onEditOperatingScope}>Set operating scope</Button>
+              ) : null}
+              <Button type="button" size="sm" variant="outline" onClick={() => setReviewAllScopes(true)}>
+                Review all scopes
+              </Button>
+            </div>
+          </PanelSurface>
+        ) : model.queueRows.length > 0 ? (
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+            <DenseDataTable
+              tableId="daily-control-tower-queue"
+              columns={queueColumns}
+              rows={model.queueRows}
+              getRowId={(row) => row.item.id}
+              getRowAriaLabel={(row) => `${row.item.label}. ${row.statusLabel}. ${row.item.detail}`}
+              getRowSelectAriaLabel={(row) => row.item.label}
+              getRowAriaControls={() => evidencePanelId}
+              getRowAriaExpanded={(row) => row.item.id === selectedQueueRow?.item.id}
+              getRowClassName={() => "align-top"}
+              onRowSelect={(row) => setSelectedQueueItemId(row.item.id)}
+              selectedRowId={selectedQueueRow?.item.id ?? null}
+              emptyText={model.emptyQueueText}
+              ariaLabel="Daily control tower finance queue"
+              maxVisibleRows={null}
+            />
             {selectedQueueRow ? (
-              <section
-                aria-label={`${selectedQueueRow.item.label} Evidence summary`}
+              <DenseRowDetailPanel
+                id={evidencePanelId}
+                ariaLabel={`${selectedQueueRow.item.label} evidence summary`}
+                selectedSourceLabel={selectedQueueRow.item.label}
                 className="space-y-3 border-l border-border bg-background/50 p-4"
               >
                 <div>
                   <p className="eyebrow-label">Selected queue evidence</p>
                   <h3 className="text-sm font-semibold text-foreground">{selectedQueueRow.item.label}</h3>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{selectedQueueRow.proofPassportSummary}</p>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">{selectedQueueRow.proofPassportSummary}</p>
                 </div>
                 <dl className="grid gap-2">
                   {selectedQueueRow.proofPassportItems.slice(0, 4).map((passportItem) => (
                     <div key={passportItem.id} className="rounded border border-border bg-card p-2">
                       <dt className="eyebrow-label">{passportItem.label}</dt>
                       <dd className="mt-1 text-xs font-medium leading-5 text-foreground">{passportItem.value}</dd>
-                      <dd className="mt-1 text-[11px] leading-4 text-muted-foreground">{passportItem.detail}</dd>
+                      <dd className="mt-1 text-xs leading-5 text-muted-foreground">{passportItem.detail}</dd>
                     </div>
                   ))}
                 </dl>
@@ -235,13 +258,13 @@ export function DailyControlTowerScreen({
                         <div key={passportItem.id} className="rounded border border-border bg-card p-2">
                           <dt className="eyebrow-label">{passportItem.label}</dt>
                           <dd className="mt-1 text-xs font-medium leading-5 text-foreground">{passportItem.value}</dd>
-                          <dd className="mt-1 text-[11px] leading-4 text-muted-foreground">{passportItem.detail}</dd>
+                          <dd className="mt-1 text-xs leading-5 text-muted-foreground">{passportItem.detail}</dd>
                         </div>
                       ))}
                     </dl>
                   </TechnicalDetails>
                 ) : null}
-              </section>
+              </DenseRowDetailPanel>
             ) : null}
           </div>
         ) : (

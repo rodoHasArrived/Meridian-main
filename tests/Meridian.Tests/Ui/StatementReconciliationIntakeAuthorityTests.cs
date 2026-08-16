@@ -313,6 +313,9 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         var reconciliation = new Mock<IReconciliationApiService>(MockBehavior.Strict);
         reconciliation
             .Setup(service => service.ListOpenStatementBreaksAsync(
+                It.Is<ReconciliationBreakQueueScope>(scope =>
+                    scope.TenantId == TenantId
+                    && scope.CompanyId == CompanyId),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync([StatementBreak()]);
 

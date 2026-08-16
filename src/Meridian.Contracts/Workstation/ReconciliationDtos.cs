@@ -102,7 +102,14 @@ public sealed record ReconciliationRunSummary(
     int ExpectedAccountingEventCount = 0,
     int ExpectedJournalPreviewCount = 0,
     int SecurityMasterAccountingIssueCount = 0,
-    bool HasSecurityMasterAccountingIssues = false);
+    bool HasSecurityMasterAccountingIssues = false)
+{
+    /// <summary>
+    /// Optional banking entity scope used when this reconciliation run included bank inputs.
+    /// Kept outside the positional constructor so persisted legacy payloads remain readable.
+    /// </summary>
+    public Guid? BankEntityId { get; init; }
+}
 
 /// <summary>
 /// Successful comparison row emitted by the reconciliation engine.
@@ -116,7 +123,17 @@ public sealed record ReconciliationMatchDto(
     decimal? ActualAmount,
     decimal Variance,
     DateTimeOffset? ExpectedAsOf,
-    DateTimeOffset? ActualAsOf);
+    DateTimeOffset? ActualAsOf)
+{
+    /// <summary>Canonical identity of the logical check resolved by this match.</summary>
+    public string? LogicalBreakIdentity { get; init; }
+
+    public Guid? BankEntityId { get; init; }
+
+    public string? SourceScope { get; init; }
+
+    public OperationsContinuityCorrelationKeysDto? CorrelationKeys { get; init; }
+}
 
 /// <summary>
 /// Break row emitted by the reconciliation engine.
@@ -135,7 +152,63 @@ public sealed record ReconciliationBreakDto(
     DateTimeOffset? ExpectedAsOf,
     DateTimeOffset? ActualAsOf,
     OperationsContinuityCorrelationKeysDto? CorrelationKeys = null,
-    IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null);
+    IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null)
+{
+    /// <summary>
+    /// When this logical break was first observed. Reconciliation retries retain this value even
+    /// when the current variance, category, or reason changes. Legacy records may omit it.
+    /// </summary>
+    public DateTimeOffset? FirstObservedAt { get; init; }
+
+    /// <summary>
+    /// Canonical identity used to carry first-observation continuity across retries. The identity
+    /// excludes variance, category, reason, and status so those attributes may evolve without
+    /// creating a new logical break.
+    /// </summary>
+    public string? LogicalBreakIdentity { get; init; }
+
+    public Guid? BankEntityId { get; init; }
+
+    public string? SourceScope { get; init; }
+}
+
+/// <summary>
+/// Builds a stable, case-normalized identity for one logical reconciliation check and its source
+/// scope. The hash keeps caller-provided identifiers from becoming ambiguous delimiter-separated
+/// keys while retaining a versioned contract prefix.
+/// </summary>
+public static class ReconciliationLogicalBreakIdentity
+{
+    public static string Create(
+        string checkId,
+        Guid? bankEntityId = null,
+        string? sourceScope = null,
+        OperationsContinuityCorrelationKeysDto? correlationKeys = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(checkId);
+
+        var canonical = new StringBuilder();
+        Append(canonical, "version", "1");
+        Append(canonical, "check", Normalize(checkId));
+        Append(canonical, "bankEntity", bankEntityId?.ToString("N") ?? string.Empty);
+        Append(canonical, "sourceScope", Normalize(sourceScope));
+        Append(canonical, "run", Normalize(correlationKeys?.RunId));
+        Append(canonical, "fundAccount", correlationKeys?.FundAccountId?.ToString("N") ?? string.Empty);
+        Append(canonical, "portfolioSnapshot", Normalize(correlationKeys?.PortfolioSnapshotId));
+        Append(canonical, "ledgerBatch", Normalize(correlationKeys?.LedgerBatchId));
+        Append(canonical, "ledgerPostingGroup", Normalize(correlationKeys?.LedgerPostingGroupId));
+        Append(canonical, "reconciliationCase", Normalize(correlationKeys?.ReconciliationCaseId));
+
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString()));
+        return $"reconciliation-break:v1:{Convert.ToHexString(hash).ToLowerInvariant()}";
+    }
+
+    internal static string Normalize(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToLowerInvariant();
+
+    private static void Append(StringBuilder builder, string name, string value) =>
+        builder.Append(name).Append(':').Append(value.Length).Append(':').Append(value).Append('\n');
+}
 
 /// <summary>
 /// Security Master coverage issue attached to a reconciliation run.
@@ -485,7 +558,8 @@ public sealed record ReconciliationBreakQueueItem(
     DateTimeOffset? DisposedAt = null,
     IReadOnlyList<string>? BlockedOutputs = null,
     string? AccountingPeriodId = null,
-    DateOnly? AsOfDate = null)
+    DateOnly? AsOfDate = null,
+    string? DataProvenanceToken = null)
 {
     /// <summary>
     /// Immutable tenant identity retained by the queue persistence boundary. Legacy records may

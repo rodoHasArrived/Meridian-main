@@ -1,6 +1,6 @@
 # Provider Management Architecture
 
-**Version:** 3.7 | **Last Updated:** 2026-06-30
+**Version:** 3.8 | **Last Updated:** 2026-08-05
 
 This document describes the provider management architecture used by Meridian. It covers provider contracts, discovery, lifecycle management, failover, health monitoring, degradation scoring, and data quality operations.
 
@@ -44,15 +44,15 @@ UI / API Layer
                         ├── [DataSource] attribute (ADR-005)
                         └── IProviderModule (DI registration)
                             └── Concrete Providers
-                                ├── Streaming: Alpaca, Polygon, IB, NYSE, StockSharp
+                                ├── Streaming: Alpaca, Polygon, IB, NYSE, Synthetic
                                 │   (base: WebSocketProviderBase)
                                 ├── Historical: Alpaca, Polygon, Tiingo, Yahoo, Stooq,
                                 │              Finnhub, AlphaVantage, NasdaqDataLink,
-                                │              IB, StockSharp
+                                │              IB
                                 │   (base: BaseHistoricalDataProvider)
                                 └── Symbol Search: Alpaca, AlphaVantage,
                                                    Finnhub, Polygon, Tiingo,
-                                                   TwelveData, OpenFIGI, StockSharp
+                                                   TwelveData, OpenFIGI
                                     (base: BaseSymbolSearchProvider)
 ```
 
@@ -206,7 +206,7 @@ public interface IProviderModule
 | Polygon | `PolygonMarketDataClient` | `Streaming/Polygon/` | Yes | Yes | Yes | WebSocket |
 | Interactive Brokers | `IBMarketDataClient` | `Streaming/InteractiveBrokers/` | Yes | Yes | Yes | TWS/Gateway |
 | NYSE | `NYSEDataSource` | `Streaming/NYSE/` | Yes | Yes | L1/L2 | Hybrid (streaming + historical) |
-| StockSharp | `StockSharpMarketDataClient` | `Streaming/StockSharp/` | Yes | Yes | Yes | 90+ connectors |
+| StockSharp | _not implemented_ | _no such directory_ | — | — | — | Deferred/unwired; see `docs/reference/provider-integration-status.md` |
 | IB Simulation | `IBSimulationClient` | `Streaming/InteractiveBrokers/` | N/A | N/A | N/A | Testing only |
 | Failover | `FailoverAwareMarketDataClient` | `Streaming/Failover/` | Delegated | Delegated | Delegated | Composite wrapper |
 | NoOp | `NoOpMarketDataClient` | `Infrastructure/` | N/A | N/A | N/A | Placeholder |
@@ -230,7 +230,7 @@ All locations relative to `src/Meridian.Infrastructure/Adapters/`.
 | Twelve Data | `TwelveDataHistoricalDataProvider`, `TwelveDataSymbolSearchProvider`, `TwelveDataCorporateActionProvider` | Yes | 8/min | Daily bars, credential-gated `/symbol_search` discovery, paid-plan `/dividends` and `/splits` corporate actions |
 | Nasdaq Data Link | `NasdaqDataLinkHistoricalDataProvider`, `NasdaqDataLinkSymbolSearchProvider`, `NasdaqDataLinkCorporateActionProvider` | Limited | Varies | Time-series datasets, credential-gated dataset-code search, adjusted dataset dividend/split extraction |
 | Interactive Brokers | `IBHistoricalDataProvider` | With account | IB pacing | All types |
-| StockSharp | `StockSharpHistoricalDataProvider` | With account | Varies | Multi-exchange |
+| StockSharp | _not implemented_ | — | — | Deferred/unwired; see `docs/reference/provider-integration-status.md` |
 
 All located under `src/Meridian.Infrastructure/Adapters/`.
 
@@ -247,7 +247,7 @@ All located under `src/Meridian.Infrastructure/Adapters/`.
 | Finnhub | `FinnhubSymbolSearchProvider` | Yes | US, International | 60/min |
 | Polygon | `PolygonSymbolSearchProvider` | Yes | US | 5/min (free) |
 | OpenFIGI | `OpenFigiClient` | No | Global (ID mapping) | Varies |
-| StockSharp | `StockSharpSymbolSearchProvider` | No | Multi-exchange | Varies |
+| StockSharp | _not implemented_ | — | — | Deferred/unwired; see `docs/reference/provider-integration-status.md` |
 
 Located under `src/Meridian.Infrastructure/Adapters/` provider folders.
 
@@ -494,6 +494,21 @@ Monitors connection health for streaming providers:
 - **Reconnection tracking** — Counts reconnects and computes uptime duration
 - **Latency measurement** — Tracks round-trip latency per connection
 - **Auto-reconnect support** — Optional `PingSender` delegate for active health probing
+- **Serialized scans** — Time-provider-backed `PeriodicTimer` loops prevent overlapping heartbeat
+  scans while allowing each scan to probe eligible providers concurrently
+- **Bounded probes** — At most one ping is in flight for a connection generation, and
+  `MaxConcurrentPingSenderInvocations` limits how many provider callbacks can execute at once
+- **Generation isolation** — Unregister, stale cleanup, and disposal retire the current connection
+  generation; disconnect also cancels its active ping and advances state so a late result cannot
+  recover or credit a replacement with the same ID
+
+`PingTimeoutSeconds` bounds how long a heartbeat scan awaits a provider callback and requests
+cancellation when that limit expires. A callback that ignores cancellation may outlive the scan;
+the monitor continues observing its eventual fault without holding shutdown open indefinitely.
+`ConnectionHealthMonitor` implements both `IDisposable` and `IAsyncDisposable`: disposal stops the
+periodic loops, cancels active probes, drains cooperative work, and avoids self-deadlock when a ping
+or heartbeat event callback initiates disposal. These are lifecycle safeguards, not evidence that a
+specific provider has completed production certification.
 
 **Events:** `OnConnectionLost`, `OnConnectionRecovered`, `OnHeartbeatMissed`, `OnHighLatency`
 
@@ -698,6 +713,22 @@ UI-side health monitoring service:
 
 ## Configuration
 
+### Connection health
+
+`ConnectionHealthConfig` is supplied when constructing `ConnectionHealthMonitor`. Its defaults are:
+
+| Property | Default | Purpose |
+|----------|---------|---------|
+| `HeartbeatIntervalSeconds` | `30` | Interval between serialized heartbeat scans |
+| `HeartbeatTimeoutSeconds` | `60` | Inactivity threshold before a heartbeat is missed |
+| `MaxMissedHeartbeats` | `3` | Miss count that transitions a connection to lost |
+| `PingTimeoutSeconds` | `10` | Maximum time a scan awaits an active ping before requesting cancellation |
+| `MaxConcurrentPingSenderInvocations` | `32` | Per-monitor bound on concurrently executing `PingSender` callbacks |
+| `HighLatencyThresholdMs` | `500` | Threshold for `OnHighLatency` warnings |
+
+Heartbeat interval, heartbeat timeout, ping timeout, and ping-callback concurrency values must be
+positive; invalid values fail during monitor construction.
+
 ### Failover rules
 
 ```json
@@ -864,3 +895,12 @@ export TIINGO__TOKEN=your-token
 - Clarified that current auto-remediation is guardrail automation with retained SLA classification
   metadata and status projection, while cross-provider SLA closure still requires retained execution,
   validation-signal, and follow-up quality evidence plus later governance timer enforcement.
+
+## Migration Notes (v3.7 -> v3.8)
+
+- Replaced callback-based connection-health timers with time-provider-backed `PeriodicTimer` loops
+  and serialized heartbeat scans.
+- Added generation-safe active probes, a per-connection in-flight guard, configurable bounded
+  `PingSender` callback concurrency, and timeout/cancellation handling that observes late faults.
+- Added coordinated synchronous/asynchronous disposal so cooperative probes are drained while
+  non-cooperative provider callbacks cannot hold monitor shutdown open indefinitely.

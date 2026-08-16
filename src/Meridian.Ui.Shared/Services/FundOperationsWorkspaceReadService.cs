@@ -26,7 +26,7 @@ namespace Meridian.Ui.Shared.Services;
 /// Builds the shared Accounting and fund-operations workspace projection used by
 /// the local API and future cross-workspace surfaces.
 /// </summary>
-public sealed class FundOperationsWorkspaceReadService
+public sealed partial class FundOperationsWorkspaceReadService
 {
     private static readonly JsonSerializerOptions ReportArtifactJsonOptions = new()
     {
@@ -599,6 +599,7 @@ public sealed class FundOperationsWorkspaceReadService
             report,
             auditActor,
             ct).ConfigureAwait(false);
+        var derivedProvenanceToken = ReportPackProvenanceResolver.ResolveDerivedToken(runs);
         var validationIssues = _reportPackValidationService.Validate(new ReportPackValidationContext(
             ReportId: report.ReportId,
             AsOf: asOf,
@@ -611,7 +612,8 @@ public sealed class FundOperationsWorkspaceReadService
             StaleReplayCount: 0,
             UnresolvedSecurityMasterConflictCount: securityValidationResults.Count(result =>
                 result.Report.Issues.Any(issue => issue.Severity is SecurityValidationSeverityDto.Critical or SecurityValidationSeverityDto.Error)),
-            SecurityValidationResults: securityValidationResults));
+            SecurityValidationResults: securityValidationResults,
+            DataProvenanceToken: derivedProvenanceToken));
         var status = _reportPackValidationService.ResolveStatus(validationIssues);
         var lifecycleEvents = _reportPackValidationService.BuildGenerationLifecycle(
             auditActor,
@@ -637,7 +639,8 @@ public sealed class FundOperationsWorkspaceReadService
                 reconciliation,
                 nav,
                 runs),
-            SchemaVersion: schemaVersion);
+            SchemaVersion: schemaVersion,
+            DataProvenanceToken: derivedProvenanceToken);
         var artifactContents = BuildReportPackArtifacts(report, formats, brandingTheme, ct);
         generationStopwatch.Stop();
         var warnings = BuildReportPackWarnings(report, reconciliation, runs.Count, securityMissingCount);
@@ -4639,8 +4642,4 @@ public sealed class FundOperationsWorkspaceReadService
             _ => ReportKind.TrialBalance
         };
 
-    private sealed record AccountWorkspaceProjection(
-        FundAccountSummary Summary,
-        AccountBalanceSnapshotDto? LatestSnapshot,
-        Guid? FundId);
 }

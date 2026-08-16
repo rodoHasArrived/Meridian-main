@@ -5,16 +5,20 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Execution.Services;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Identity;
 using Meridian.Reporting;
+using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.Reporting;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Endpoints;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using NSubstitute;
 using CoreConfigStore = Meridian.Application.UI.ConfigStore;
@@ -28,6 +32,44 @@ namespace Meridian.Tests.Ui;
 [Collection("Sequential")]
 public sealed class WorkstationServiceCollectionExtensionsTests
 {
+    [Fact]
+    public void AddUiSharedServices_DefaultProviderCatalog_ResolvesEveryProviderAndAliasExactlyOnce()
+    {
+        using var quietProductionEnvironment =
+            new Meridian.Tests.Application.Composition.ProductionEnvironmentQuietScope();
+        using var environment = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "ASPNETCORE_ENVIRONMENT",
+            "Test");
+        using var inMemoryGovernance = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_USE_INMEMORY_GOVERNANCE",
+            "true");
+        var expectedHandlers = DefaultProviderSetupHandlers.Create();
+        var services = CreateMinimalWorkstationServices();
+
+        services.AddUiSharedServices();
+
+        using var provider = services.BuildServiceProvider();
+        var registry = provider.GetRequiredService<IProviderSetupRegistry>();
+        registry.Handlers
+            .Select(static handler => handler.Descriptor.ProviderId)
+            .Should()
+            .Equal(expectedHandlers.Select(static handler => handler.Descriptor.ProviderId));
+
+        foreach (var expectedHandler in expectedHandlers)
+        {
+            var expectedProviderId = expectedHandler.Descriptor.ProviderId;
+            var supportedLookups = expectedHandler.Descriptor.Aliases
+                .Prepend(expectedProviderId);
+
+            foreach (var lookup in supportedLookups)
+            {
+                registry.Find(lookup)?.Descriptor.ProviderId
+                    .Should()
+                    .Be(expectedProviderId, $"'{lookup}' must resolve to its advertised provider setup handler");
+            }
+        }
+    }
+
     [Fact]
     public void ReportingAuthoritativeSource_NonPostgresDependencies_ShouldNotClaimDurableConfiguration()
     {
@@ -316,6 +358,13 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         services.Should().Contain(descriptor =>
             descriptor.ServiceType == typeof(IHostedService) &&
             descriptor.ImplementationType == typeof(WorkstationReportingMigrationHostedService));
+        services.Should().Contain(descriptor =>
+            descriptor.ServiceType == typeof(IHostedService) &&
+            descriptor.ImplementationType == typeof(ReportingScheduleHostedService));
+        services.Count(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService) &&
+                descriptor.ImplementationType == typeof(ReportingSecureDistributionHostedService))
+            .Should().Be(1, "one server-owned delivery worker owns each process readiness receipt");
         using var provider = services.BuildServiceProvider();
         provider.GetRequiredService<IReportingMigrationStartup>()
             .Should().NotBeNull(
@@ -325,6 +374,9 @@ public sealed class WorkstationServiceCollectionExtensionsTests
                 "resolving a store must not synchronously open a database connection");
         provider.GetRequiredService<IReportingRunStore>()
             .Should().BeOfType<PostgresReportingRunStore>();
+        provider.GetRequiredService<IReportingReleaseConsistencyGate>()
+            .Should().BeOfType<PostgresReportingReleaseConsistencyGate>(
+                "final release must share the PostgreSQL accounting-period fence");
         var canonicalScheduleStore = provider.GetRequiredService<IReportingScheduleStore>();
         canonicalScheduleStore
             .Should().BeOfType<PostgresReportingScheduleStore>();
@@ -335,12 +387,35 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         legacyScheduleStore.Should().BeAssignableTo<IReportingScheduleStore>();
         provider.GetService<IReportPackWorkflowRecordStore>().Should().BeNull();
         provider.GetService<IReportPackDeliveryRecordStore>().Should().BeNull();
-        provider.GetRequiredService<IReportingDeploymentReadinessService>()
-            .Evaluate()
-            .IsReady
+        var capability = provider.GetRequiredService<IReportingDeploymentReadinessService>()
+            .Evaluate();
+        capability.IsReady
             .Should()
             .BeFalse(
                 "registered PostgreSQL adapters are not deployment proof until migrations complete and the authority is reachable");
+        capability.Components
+            .Single(static component => component.ComponentId == "reconciliation-casework")
+            .IsReady.Should().BeFalse(
+                "registration alone is not proof that the canonical queue passed its startup integrity check");
+        provider.GetRequiredService<IReconciliationBreakQueueRepository>()
+            .Should().BeAssignableTo<IReconciliationBreakQueueAuthorityProbe>();
+        capability.Components
+            .Single(static component => component.ComponentId == "scheduling-worker")
+            .IsReady.Should().BeFalse(
+                "durable schedules are not operational until the configured server-owned worker starts");
+        provider.GetRequiredService<ReportingScheduleWorkerOptions>()
+            .PollInterval.Should().BeGreaterThan(TimeSpan.Zero);
+        capability.Components
+            .Single(static component => component.ComponentId == "delivery-worker")
+            .IsReady.Should().BeFalse(
+                "durable delivery is not operational until the configured server-owned worker starts");
+        var distributionOptions =
+            provider.GetRequiredService<SecureReportingDistributionOptions>();
+        distributionOptions.WorkerId.Should().NotBeNullOrWhiteSpace();
+        distributionOptions.WorkerPollInterval
+            .Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(250));
+        distributionOptions.WorkerPollInterval
+            .Should().BeLessThanOrEqualTo(TimeSpan.FromMinutes(5));
         var migration = ActivatorUtilities.CreateInstance<WorkstationReportingMigrationHostedService>(
             provider);
         using var canceled = new CancellationTokenSource();
@@ -350,6 +425,34 @@ public sealed class WorkstationServiceCollectionExtensionsTests
 
         await start.Should().ThrowAsync<OperationCanceledException>(
             "the host startup token must reach reporting migrations");
+    }
+
+    [Fact]
+    public void ReportingDeploymentReadiness_MissingCaseworkAuthority_FailsClosed()
+    {
+        using var environment = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "ASPNETCORE_ENVIRONMENT",
+            "Production");
+        using var unified = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable,
+            null);
+        using var reporting = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_REPORTING_CONNECTION_STRING",
+            "Host=127.0.0.1;Port=1;Database=meridian;Username=test;Password=test;Timeout=1");
+        var services = CreateMinimalWorkstationServices();
+        services.AddWorkstationSharedServices();
+        services.RemoveAll<IReconciliationBreakQueueRepository>();
+        using var provider = services.BuildServiceProvider();
+
+        var capability = provider.GetRequiredService<IReportingDeploymentReadinessService>()
+            .Evaluate();
+
+        capability.IsReady.Should().BeFalse();
+        capability.Components
+            .Single(static component => component.ComponentId == "reconciliation-casework")
+            .IsReady.Should().BeFalse();
+        capability.BlockingReasons.Should().Contain(reason =>
+            reason.Contains("casework authority", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -394,6 +497,71 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         UiServer.ResolvePersistentDataRoot(configPath)
             .Should()
             .Be(Path.GetFullPath(Path.Combine(root, "..", "portable-data")));
+    }
+
+    /// <summary>
+    /// The price collar has to reach the validator the OMS actually invokes, reading the threshold
+    /// the operator set. A rule that is configurable but uncomposed, or composed but reading a
+    /// threshold nothing writes, approves every order while the risk panel reports a control in
+    /// place — worse than no collar at all, because the desk believes it has one.
+    /// <para>
+    /// Proven through an outcome only a wired collar can produce. The graph has no market data, so
+    /// a configured collar must refuse a priced order it cannot measure; an uncomposed rule, or one
+    /// whose threshold never received the update, would approve it. The fat-finger band is left
+    /// unconfigured so it approves and cannot be the source of the refusal.
+    /// </para>
+    /// </summary>
+    [Fact]
+    public async Task AddWorkstationSharedServices_ComposesThePriceCollarAgainstTheOperatorThreshold()
+    {
+        using var environment = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "ASPNETCORE_ENVIRONMENT",
+            "Test");
+        var services = CreateMinimalWorkstationServices();
+        // Registered before composition so the TryAdd inside leaves it alone: without this the
+        // service writes its snapshot to the operator's real LocalApplicationData profile.
+        var snapshotRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        services.AddSingleton(new RiskRuleRuntimeOptions(Path.Combine(snapshotRoot, "risk-rules.json")));
+
+        services.AddWorkstationSharedServices();
+
+        try
+        {
+            // Async disposal: the graph holds services that implement only IAsyncDisposable, and
+            // a synchronous Dispose throws rather than tearing the container down.
+            await using var provider = services.BuildServiceProvider();
+            await provider.GetRequiredService<RiskRuleRuntimeService>().UpdateConfigAsync(
+                "PriceCollar",
+                new RiskRuleConfigUpdateRequest(PriceCollarPercent: 3m, Reason: "composition check"),
+                actor: "test");
+
+            var result = await provider.GetRequiredService<Meridian.Execution.IRiskValidator>()
+                .ValidateOrderAsync(new Meridian.Execution.Sdk.OrderRequest
+                {
+                    Symbol = "AAPL",
+                    Side = Meridian.Execution.Sdk.OrderSide.Buy,
+                    Type = Meridian.Execution.Sdk.OrderType.Limit,
+                    Quantity = 10m,
+                    LimitPrice = 500m
+                });
+
+            result.IsApproved.Should().BeFalse("a configured collar must reach the enforced validator");
+            result.Violations.Should().ContainSingle()
+                .Which.RuleName.Should().Be(
+                    "PriceCollar",
+                    "the refusal must come from the collar rather than from another rule");
+        }
+        finally
+        {
+            try
+            {
+                Directory.Delete(snapshotRoot, recursive: true);
+            }
+            catch (IOException)
+            {
+                // A leftover temp directory must not fail the test run.
+            }
+        }
     }
 
     private static ServiceCollection CreateMinimalWorkstationServices()

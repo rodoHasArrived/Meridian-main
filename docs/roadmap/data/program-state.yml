@@ -7,9 +7,9 @@ program:
   id: meridian-program
   title: Meridian Evidence-Backed Investment Operations
   owner: Core Team
-  snapshot_date: 2026-07-21
+  snapshot_date: 2026-08-10
   status: active
-  active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, connector-library, Financial Operations control-center, and bounded W7 live-readiness governance milestones; active Evidence Vault productization, statement reconciliation onboarding, and WPF parity remain in progress; the ranked W9 first-order improvement slate (W9-TRUTH-001 through W9-INGEST-009) is the accepted planned priority order for the next delivery decisions
+  active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, connector-library, Financial Operations control-center, Evidence Vault, statement-onboarding, bounded W6 backtest-evidence, and bounded W7 live-readiness governance milestones; WPF parity and browser workstation screen consolidation remain in progress; the ranked W9 first-order improvement slate (W9-TRUTH-001 through W9-INGEST-009) is the accepted planned priority order for the next delivery decisions, followed by the W10 depth slate (W10-MARK-001 through W10-CONSOL-001) which deepens existing functionality and mostly wires already-built capability rather than adding surface
   scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, close support, retained evidence, workflow controls, or governed reporting before expanding research, live trading, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes. WPF desktop product/UI work is reactivated as an active co-equal lane whose immediate focus is web-UI parity over shared contracts.
   near_term_release_baseline:
     - W1-DATA-001
@@ -25,12 +25,13 @@ program:
     - W5X-CONNECT-001
     - W5X-EVIDENCE-001
     - W5X-STMT-ONBOARD-001
+    - W6-BTSTUDIO-001
     - W7-LIVE-001
     - W8-WPF-PARITY-001
+    - W8-UX-CONSOL-001
   active_productization_targets:
-    - W5X-EVIDENCE-001
-    - W5X-STMT-ONBOARD-001
     - W8-WPF-PARITY-001
+    - W8-UX-CONSOL-001
   current_focus:
     - Data confidence and retained source evidence
     - Portfolio and accounting reconciliation
@@ -39,26 +40,33 @@ program:
     - Governed report packs
     - Operational record workflow backed by shared services and contracts, delivered across both the browser workstation and the reactivated WPF desktop workstation
     - WPF desktop workstation reactivation and web-UI parity over shared contracts and read models
+    - Browser workstation screen consolidation behind the seven charter roots
     - Financial Operations control center for reconciliation, exceptions, close support, workflow control, and audit evidence
     - Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records
-    - Evidence Vault productization and statement reconciliation onboarding over governed connector evidence
+    - Completed Evidence Vault and statement reconciliation onboarding over governed connector and production authority evidence
+    - Bounded Covered Call evidence loop with scoped Evidence Vault authority, durable strategy lineage, governed Paper promotion, and fail-closed acceptance checklist projection
     - Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention
     - Ranked W9 first-order improvement slate - truthful simulation posture, seeded demo evaluation, paper-trading realism, live fill streaming, client-grade reporting, fund economics, execution safety, governance hardening, and institutional statement ingestion
+    - W10 depth slate - fail-closed valuation freshness, durable break lineage, amount-level provenance behind one shared proof drawer, one close-readiness projection consumed by both workstation lanes, reconciliation break economics, durable recurring journals, tax-character surfacing, return measurement, and consolidated-view elimination
   production_readiness:
     status: blocked
-    reviewed: 2026-07-18
-    baseline_commit: aa3d7edde
+    reviewed: 2026-08-03
+    baseline_commit: 6d9a663c4
     canonical_tracker: docs/product/implementation-todo-list.md
     release_gate: Every P0 row in the canonical production-readiness tracker must be complete on the same release commit; unsupported paths must be explicitly scoped out and fail closed.
   deferred_lanes:
-    - Backtesting Studio
+    - Broad Backtesting Studio UX and alternate entrypoint composition beyond the bounded W6 Covered Call evidence and Paper-promotion loop
     - Live execution productization and live portfolio operations beyond bounded W7 governance
     - Full treasury payment execution
     - Full alternative asset operations
     - Forecasting and scenario engines
     - Enterprise risk platform
+    - Complex capital structure modeling
+    - Broad administration dashboards beyond durable shared tenant-scoped controls
+    - Broader self-service reporting and analytics expansion beyond the bounded reporting baseline; W9-REPORT-005 remains planned separately
     - Client portal
     - No-code workflow designer
+    - Broad collaboration and document-portal expansion beyond Evidence Vault
     - Mobile applications
   active_ui_lane: browser_workstation_and_wpf_desktop
   shared_ui_seam: meridian_ui_services_shared_and_contracts

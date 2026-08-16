@@ -1,13 +1,24 @@
 using FluentAssertions;
-using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Services;
+using Moq;
 
 namespace Meridian.Tests.Ui;
 
 public sealed class OperationsContinuityReconciliationBridgeTests
 {
+    private static readonly Guid FundAccountId =
+        Guid.Parse("d6f39f86-652c-4a09-a0fc-f56f026a4c3e");
+    private static readonly string FundProfileId =
+        Guid.Parse("51086ec9-304f-4643-bc17-e2533e4e5c48").ToString("D");
+    private static readonly Guid LedgerBookId =
+        Guid.Parse("97f69c70-2f6e-4567-b54f-94e7fed2528a");
+    private static readonly Guid AccountingPeriodId =
+        Guid.Parse("9218037e-4c89-4641-a7aa-c39fc420c55b");
+    private static readonly DateOnly AccountingAsOf = new(2026, 5, 31);
     private static readonly ReconciliationBreakQueueScope AlphaScope =
         new("tenant-alpha", "company-alpha");
     private static readonly ReconciliationBreakQueueScope BetaScope =
@@ -29,10 +40,19 @@ public sealed class OperationsContinuityReconciliationBridgeTests
         var reconciliationService = new StaticReconciliationRunService(reconciliationDetail);
         var breakQueueRepository = new StaticReconciliationBreakQueueRepository(
             [foreignBreakQueueItem, breakQueueItem]);
+        await RetainStatementBindingAsync(
+            auditStore,
+            workflow,
+            reconciliationDetail.Summary.RunId);
+        var statementAuthority = StatementAuthority(
+            workflow,
+            reconciliationDetail.Summary.RunId,
+            AlphaScope);
         var bridge = new OperationsContinuityReconciliationBridge(
             workflowService,
             reconciliationService,
-            breakQueueRepository);
+            breakQueueRepository,
+            statementAuthority.Object);
 
         var result = await bridge.RunReconciliationAsync(
             workflow.WorkflowId,
@@ -99,7 +119,7 @@ public sealed class OperationsContinuityReconciliationBridgeTests
     }
 
     [Fact]
-    public async Task RunReconciliationAsync_WithForeignScope_ShouldNotSurfaceForeignCasework()
+    public async Task RunReconciliationAsync_WithForeignScope_ShouldRejectBeforeReadingForeignDetail()
     {
         var derivation = new OperationsStatusDerivationService();
         var repository = new InMemoryOperationsContinuityRepository(derivation);
@@ -112,10 +132,13 @@ public sealed class OperationsContinuityReconciliationBridgeTests
         var detail = CreateReconciliationDetail();
         var breakQueueRepository = new StaticReconciliationBreakQueueRepository(
             [CreateBreakQueueItem(detail, AlphaScope, "alpha-controller")]);
+        var reconciliationService = new StaticReconciliationRunService(detail);
+        var statementAuthority = StatementAuthority(workflow, detail.Summary.RunId, AlphaScope);
         var bridge = new OperationsContinuityReconciliationBridge(
             workflowService,
-            new StaticReconciliationRunService(detail),
-            breakQueueRepository);
+            reconciliationService,
+            breakQueueRepository,
+            statementAuthority.Object);
 
         var result = await bridge.RunReconciliationAsync(
             workflow.WorkflowId,
@@ -125,11 +148,11 @@ public sealed class OperationsContinuityReconciliationBridgeTests
                 SourceRunId: detail.Summary.RunId),
             BetaScope);
 
-        result.Success.Should().BeTrue();
-        result.Workflow!.BreakCases.Should().ContainSingle(breakCase =>
-                breakCase.CheckId == "FACTOR_PAYDOWN_AMOUNT_MISMATCH")
-            .Which.Owner.Should().BeNull();
-        breakQueueRepository.ScopedReadCount.Should().Be(1);
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("RECONCILIATION_WORKFLOW_NOT_AUTHORIZED");
+        result.Workflow.Should().BeNull();
+        reconciliationService.TotalReadCount.Should().Be(0);
+        breakQueueRepository.ScopedReadCount.Should().Be(0);
         breakQueueRepository.UnscopedReadCount.Should().Be(0);
         breakQueueRepository.MutationCount.Should().Be(0);
     }
@@ -171,16 +194,268 @@ public sealed class OperationsContinuityReconciliationBridgeTests
         breakQueueRepository.MutationCount.Should().Be(0);
     }
 
+    [Fact]
+    public async Task RunReconciliationAsync_WithOnlyReconciliationRunId_ShouldFailClosedWithoutDetailRead()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var workflowService = new OperationsContinuityWorkflowService(
+            repository,
+            new InMemoryOperationsWorkflowAuditStore(),
+            derivation);
+        var workflow = CreateLedgerPostedWorkflow();
+        await repository.SaveAsync(workflow);
+        var detail = CreateReconciliationDetail();
+        var reconciliationService = new StaticReconciliationRunService(detail);
+        var breakQueueRepository = new StaticReconciliationBreakQueueRepository([]);
+        var bridge = new OperationsContinuityReconciliationBridge(
+            workflowService,
+            reconciliationService,
+            breakQueueRepository,
+            StatementAuthority(workflow, detail.Summary.RunId, AlphaScope).Object);
+
+        var result = await bridge.RunReconciliationAsync(
+            workflow.WorkflowId,
+            new OperationsReconciliationRunRequestDto(
+                workflow.Version,
+                "ops-user",
+                ReconciliationRunId: detail.Summary.ReconciliationRunId),
+            AlphaScope);
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("RECONCILIATION_SOURCE_NOT_AUTHORIZED");
+        reconciliationService.TotalReadCount.Should().Be(0);
+        breakQueueRepository.ScopedReadCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task RunReconciliationAsync_DirectRequestWithoutExactFundAuthority_ShouldRejectBeforeMutation()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var workflowService = new OperationsContinuityWorkflowService(
+            repository,
+            new InMemoryOperationsWorkflowAuditStore(),
+            derivation);
+        var workflow = CreateLedgerPostedWorkflow();
+        await repository.SaveAsync(workflow);
+        var statementAuthority = new Mock<IReconciliationApiService>(MockBehavior.Strict);
+        statementAuthority
+            .Setup(candidate => candidate.GetAuthorizedFundAccountAsync(
+                workflow.FundAccountId,
+                AlphaScope,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ReconciliationFundAccountAuthorization?)null);
+        var bridge = new OperationsContinuityReconciliationBridge(
+            workflowService,
+            statementReconciliation: statementAuthority.Object);
+
+        var result = await bridge.RunReconciliationAsync(
+            workflow.WorkflowId,
+            new OperationsReconciliationRunRequestDto(
+                workflow.Version,
+                "ops-user",
+                BreakCases: []),
+            AlphaScope);
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("RECONCILIATION_WORKFLOW_NOT_AUTHORIZED");
+        var retained = await repository.GetAsync(workflow.WorkflowId);
+        retained.Should().NotBeNull();
+        retained!.ReconciliationState.Should().Be(OperationsReconciliationStateDto.Pending);
+        retained.Version.Should().Be(workflow.Version);
+    }
+
+    [Fact]
+    public async Task RunReconciliationAsync_DirectRequestWithoutCallerScope_ShouldFailClosedBeforeWorkflowRead()
+    {
+        var workflowService = new Mock<IOperationsContinuityWorkflowService>(MockBehavior.Strict);
+        var bridge = new OperationsContinuityReconciliationBridge(workflowService.Object);
+
+        var result = await bridge.RunReconciliationAsync(
+            Guid.NewGuid(),
+            new OperationsReconciliationRunRequestDto(
+                ExpectedVersion: 7,
+                Actor: "ops-user",
+                BreakCases: []));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("RECONCILIATION_SCOPE_REQUIRED");
+        workflowService.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RunReconciliationAsync_SourceOwnedButNotBoundToTargetWorkflow_ShouldRejectBeforeDetailRead()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var workflowService = new OperationsContinuityWorkflowService(
+            repository,
+            new InMemoryOperationsWorkflowAuditStore(),
+            derivation);
+        var workflow = CreateLedgerPostedWorkflow();
+        await repository.SaveAsync(workflow);
+        var detail = CreateReconciliationDetail();
+        var reconciliationService = new StaticReconciliationRunService(detail);
+        var bridge = new OperationsContinuityReconciliationBridge(
+            workflowService,
+            reconciliationService,
+            statementReconciliation: StatementAuthority(
+                workflow,
+                detail.Summary.RunId,
+                AlphaScope).Object);
+
+        var result = await bridge.RunReconciliationAsync(
+            workflow.WorkflowId,
+            new OperationsReconciliationRunRequestDto(
+                workflow.Version,
+                "ops-user",
+                SourceRunId: detail.Summary.RunId),
+            AlphaScope);
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("RECONCILIATION_SOURCE_NOT_AUTHORIZED");
+        result.ErrorMessage.Should().Contain("not retained as intake evidence");
+        reconciliationService.TotalReadCount.Should().Be(0);
+        var retained = await repository.GetAsync(workflow.WorkflowId);
+        retained!.ReconciliationState.Should().Be(OperationsReconciliationStateDto.Pending);
+    }
+
+    [Fact]
+    public async Task RunReconciliationAsync_SourceWithDifferentLedgerScope_ShouldRejectBeforeTimelineOrDetailRead()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var auditStore = new InMemoryOperationsWorkflowAuditStore();
+        var workflowService = new OperationsContinuityWorkflowService(repository, auditStore, derivation);
+        var workflow = CreateLedgerPostedWorkflow();
+        await repository.SaveAsync(workflow);
+        var detail = CreateReconciliationDetail();
+        await RetainStatementBindingAsync(auditStore, workflow, detail.Summary.RunId);
+        var reconciliationService = new StaticReconciliationRunService(detail);
+        var statementAuthority = StatementAuthority(
+            workflow,
+            detail.Summary.RunId,
+            AlphaScope,
+            ledgerBookId: Guid.NewGuid());
+        var bridge = new OperationsContinuityReconciliationBridge(
+            workflowService,
+            reconciliationService,
+            statementReconciliation: statementAuthority.Object);
+
+        var result = await bridge.RunReconciliationAsync(
+            workflow.WorkflowId,
+            new OperationsReconciliationRunRequestDto(
+                workflow.Version,
+                "ops-user",
+                SourceRunId: detail.Summary.RunId),
+            AlphaScope);
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("RECONCILIATION_SOURCE_NOT_AUTHORIZED");
+        reconciliationService.TotalReadCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task RunReconciliationAsync_AuthorityCancellation_ShouldPropagateWithoutMutation()
+    {
+        using var cts = new CancellationTokenSource();
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var workflowService = new OperationsContinuityWorkflowService(
+            repository,
+            new InMemoryOperationsWorkflowAuditStore(),
+            derivation);
+        var workflow = CreateLedgerPostedWorkflow();
+        await repository.SaveAsync(workflow);
+        var statementAuthority = new Mock<IReconciliationApiService>(MockBehavior.Strict);
+        statementAuthority
+            .Setup(candidate => candidate.GetAuthorizedFundAccountAsync(
+                workflow.FundAccountId,
+                AlphaScope,
+                cts.Token))
+            .Returns(() =>
+            {
+                cts.Cancel();
+                return Task.FromCanceled<ReconciliationFundAccountAuthorization?>(cts.Token);
+            });
+        var bridge = new OperationsContinuityReconciliationBridge(
+            workflowService,
+            statementReconciliation: statementAuthority.Object);
+
+        var act = () => bridge.RunReconciliationAsync(
+            workflow.WorkflowId,
+            new OperationsReconciliationRunRequestDto(
+                workflow.Version,
+                "ops-user",
+                BreakCases: []),
+            AlphaScope,
+            cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        var retained = await repository.GetAsync(workflow.WorkflowId);
+        retained!.ReconciliationState.Should().Be(OperationsReconciliationStateDto.Pending);
+    }
+
+    [Fact]
+    public async Task RunReconciliationAsync_SourceAuthorityFailure_ShouldPropagateWithoutDetailReadOrMutation()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var workflowService = new OperationsContinuityWorkflowService(
+            repository,
+            new InMemoryOperationsWorkflowAuditStore(),
+            derivation);
+        var workflow = CreateLedgerPostedWorkflow();
+        await repository.SaveAsync(workflow);
+        var detail = CreateReconciliationDetail();
+        var reconciliationService = new StaticReconciliationRunService(detail);
+        var statementAuthority = new Mock<IReconciliationApiService>(MockBehavior.Strict);
+        statementAuthority
+            .Setup(candidate => candidate.GetAuthorizedFundAccountAsync(
+                workflow.FundAccountId,
+                AlphaScope,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ReconciliationFundAccountAuthorization(
+                workflow.FundAccountId,
+                FundProfileId));
+        statementAuthority
+            .Setup(candidate => candidate.GetStatementRunAuthorizationAsync(
+                detail.Summary.RunId,
+                AlphaScope,
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Statement authority read failed."));
+        var bridge = new OperationsContinuityReconciliationBridge(
+            workflowService,
+            reconciliationService,
+            statementReconciliation: statementAuthority.Object);
+
+        var act = () => bridge.RunReconciliationAsync(
+            workflow.WorkflowId,
+            new OperationsReconciliationRunRequestDto(
+                workflow.Version,
+                "ops-user",
+                SourceRunId: detail.Summary.RunId),
+            AlphaScope);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Statement authority read failed.");
+        reconciliationService.TotalReadCount.Should().Be(0);
+        var retained = await repository.GetAsync(workflow.WorkflowId);
+        retained!.ReconciliationState.Should().Be(OperationsReconciliationStateDto.Pending);
+    }
+
     private static OperationsContinuityWorkflow CreateLedgerPostedWorkflow()
     {
         var now = DateTimeOffset.UtcNow;
         var workflow = OperationsContinuityWorkflow.Start(
             Guid.NewGuid(),
-            Guid.NewGuid(),
-            "2026-05",
+            FundAccountId,
+            AccountingPeriodId.ToString("D"),
             securityMasterSnapshotId: null,
             brokerSource: "custodian",
-            now);
+            now,
+            LedgerBookId);
 
         workflow.BrokerIntakeState = OperationsBrokerIntakeStateDto.Complete;
         workflow.SecurityMasterState = OperationsSecurityMasterStateDto.Complete;
@@ -244,6 +519,79 @@ public sealed class OperationsContinuityReconciliationBridgeTests
                     ExpectedAmount: 3_000m,
                     ActualAmount: 2_900m)
             ]);
+    }
+
+    private static Mock<IReconciliationApiService> StatementAuthority(
+        OperationsContinuityWorkflow workflow,
+        string runId,
+        ReconciliationBreakQueueScope ownerScope,
+        Guid? ledgerBookId = null)
+    {
+        var service = new Mock<IReconciliationApiService>(MockBehavior.Strict);
+        service
+            .Setup(candidate => candidate.GetAuthorizedFundAccountAsync(
+                workflow.FundAccountId,
+                It.Is<ReconciliationBreakQueueScope>(scope =>
+                    scope.TenantId == ownerScope.TenantId
+                    && scope.CompanyId == ownerScope.CompanyId),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ReconciliationFundAccountAuthorization(
+                workflow.FundAccountId,
+                FundProfileId));
+        service
+            .Setup(candidate => candidate.GetAuthorizedFundAccountAsync(
+                workflow.FundAccountId,
+                It.Is<ReconciliationBreakQueueScope>(scope =>
+                    scope.TenantId != ownerScope.TenantId
+                    || scope.CompanyId != ownerScope.CompanyId),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ReconciliationFundAccountAuthorization?)null);
+        service
+            .Setup(candidate => candidate.GetStatementRunAuthorizationAsync(
+                runId,
+                It.Is<ReconciliationBreakQueueScope>(scope =>
+                    scope.TenantId == ownerScope.TenantId
+                    && scope.CompanyId == ownerScope.CompanyId),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new StatementReconciliationRunAuthorization(
+                runId,
+                workflow.FundAccountId,
+                FundProfileId,
+                ledgerBookId ?? LedgerBookId,
+                AccountingPeriodId,
+                AccountingAsOf,
+                new DateOnly(2026, 5, 1),
+                AccountingAsOf));
+        return service;
+    }
+
+    private static Task RetainStatementBindingAsync(
+        IOperationsWorkflowAuditStore auditStore,
+        OperationsContinuityWorkflow workflow,
+        string runId)
+    {
+        var workflowStatus = new OperationsStatusDerivationService().Derive(workflow);
+        return auditStore.AppendAsync(new OperationsWorkflowAuditDraft(
+            workflow.WorkflowId,
+            workflow.FundAccountId,
+            workflow.PeriodId,
+            "StatementIntakeRetained",
+            workflowStatus,
+            workflowStatus,
+            OperationsGateKeyDto.BrokerIngest,
+            OperationsGateStatusDto.Passed,
+            OperationsGateStatusDto.Passed,
+            "statement-intake",
+            "Retained the authoritative statement intake.",
+            runId,
+            [
+                new OperationsEvidenceLinkDto(
+                    $"statement-intake:{runId}",
+                    "Retained statement",
+                    $"/api/workstation/reconciliation/statement-reconciliation-report/{runId}",
+                    "statement-reconciliation-report",
+                    DateTimeOffset.UtcNow)
+            ]));
     }
 
     private static ReconciliationBreakQueueItem CreateBreakQueueItem(

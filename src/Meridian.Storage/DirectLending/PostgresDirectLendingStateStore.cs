@@ -346,10 +346,10 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
 
         var existingEventType = reader.GetString(0);
         var existingPayloadJson = reader.GetString(1);
-        var incomingPayloadJson = payload.RootElement.GetRawText();
+        using var existingPayload = JsonDocument.Parse(existingPayloadJson);
 
         return string.Equals(existingEventType, eventType, StringComparison.Ordinal) &&
-               string.Equals(existingPayloadJson, incomingPayloadJson, StringComparison.Ordinal)
+               JsonElement.DeepEquals(existingPayload.RootElement, payload.RootElement)
             ? DuplicateCommandStatus.Matching
             : DuplicateCommandStatus.Mismatched;
     }

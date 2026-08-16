@@ -20,6 +20,34 @@ public sealed class StatementReconciliationReportFetchIngestionAuthorityTests : 
         Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public async Task AuthorizeAsync_ResolvesExactScheduleAccountOwnership()
+    {
+        var exactScope = BuildExactScope();
+        var intake = new RecordingIntakeAuthority(
+            exactScope,
+            Guid.Parse("244391ad-366c-4906-8c3d-8fde547ac41b"));
+        var adapter = new StatementReconciliationReportFetchIngestionAuthority(
+            BuildWorkflow(new RecordingImportService(BuildImportResult()), intake),
+            intake);
+        var command = BuildCommand(exactScope).ToAuthorizationCommand();
+
+        var authorized = await adapter.AuthorizeAsync(command);
+
+        authorized.Should().Be(exactScope);
+        intake.ScopeRequests.Should().ContainSingle();
+        intake.ScopeRequests.Single().Should().BeEquivalentTo(
+            new StatementReconciliationIntakeScopeRequest(
+                command.TenantId,
+                command.CompanyId,
+                command.FundAccountId,
+                command.ExternalAccountId,
+                command.SourceInstitution,
+                command.PeriodStart,
+                command.PeriodEnd,
+                command.AccountingScope));
+    }
+
+    [Fact]
     public async Task IngestAsync_ScheduledStatementWithExactPersistedScope_ReturnsRetainedWorkflowAuthority()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));

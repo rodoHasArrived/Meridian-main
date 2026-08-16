@@ -4650,8 +4650,13 @@ describe("ReportingScreen", () => {
             reportId: "11111111-1111-1111-1111-111111111111",
             distributionId: "board-reporting-committee",
             deliveryMode: "SecurePortal",
-            secureLink: null,
-            portalRoute: null,
+            // Deliberately malformed: ReportPackDeliveryPackageDto declares both as non-nullable
+            // strings, so a conforming server cannot send this. The delivery-history view still has
+            // a suppression branch for a package with no usable link, and this exercises it. Cast
+            // locally rather than widening the shared type, which would stop the strict gate from
+            // catching real drift against the shared read model.
+            secureLink: null as unknown as string,
+            portalRoute: null as unknown as string,
             formats: ["Pdf", "Csv"],
             deliveryAccessSummary: "Access is retained through the governed distribution record.",
             deliveryChannelSummary: "SecurePortal delivery to Board reporting committee via Board portal.",

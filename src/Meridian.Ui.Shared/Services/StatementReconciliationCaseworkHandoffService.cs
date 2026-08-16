@@ -44,6 +44,8 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
     private readonly IStatementRunWorkflowService? _statementRuns;
     private readonly IOperationsContinuityWorkflowService? _operationsContinuity;
     private readonly ILedgerJournalStore? _ledgerJournalStore;
+    private readonly IStatementCaseworkCommitStore? _sourceCommitStore;
+    private readonly IStatementCaseworkCommitFaultInjector _sourceCommitFaultInjector;
     private readonly SemaphoreSlim _synchronizationGate = new(1, 1);
 
     public StatementReconciliationCaseworkHandoffService(
@@ -52,7 +54,9 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
         IReconciliationCaseStore? statementCaseStore = null,
         IStatementRunWorkflowService? statementRuns = null,
         IOperationsContinuityWorkflowService? operationsContinuity = null,
-        ILedgerJournalStore? ledgerJournalStore = null)
+        ILedgerJournalStore? ledgerJournalStore = null,
+        IStatementCaseworkCommitStore? sourceCommitStore = null,
+        IStatementCaseworkCommitFaultInjector? sourceCommitFaultInjector = null)
     {
         _queueRepository = queueRepository ?? throw new ArgumentNullException(nameof(queueRepository));
         _statementBreakStore = statementBreakStore;
@@ -60,7 +64,11 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
         _statementRuns = statementRuns;
         _operationsContinuity = operationsContinuity;
         _ledgerJournalStore = ledgerJournalStore;
+        _sourceCommitStore = sourceCommitStore;
+        _sourceCommitFaultInjector = sourceCommitFaultInjector ?? NoOpStatementCaseworkCommitFaultInjector.Instance;
     }
+
+    internal IReconciliationBreakQueueRepository BreakQueueAuthority => _queueRepository;
 
     public async Task<ReconciliationBreakQueueTransitionResult> ApplyAsync(
         ReconciliationBreakQueueScope scope,
@@ -209,26 +217,31 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
         var disposition = ResolveDisposition(retainedItem, command);
         var sourceStatus = ResolveSourceStatus(retainedItem, command, disposition);
         var evidence = BuildEvidence(command, retainedItem);
+        var update = new StatementBreakCaseworkUpdate(
+            BreakId: sourceBreakId,
+            ImportId: sourceImportId,
+            Status: sourceStatus,
+            Actor: command.Actor,
+            Action: command.Action.ToString(),
+            CommandId: command.CommandId,
+            CorrelationId: command.CorrelationId,
+            Reason: FirstNonBlank(command.Reason, command.Note, retainedItem.DispositionReason, retainedItem.ResolutionNote),
+            Disposition: disposition,
+            ApprovalActor: FirstNonBlank(retainedItem.DispositionApprovedBy, command.ApprovalActor),
+            ApprovalReference: FirstNonBlank(retainedItem.DispositionApprovalReference, command.ApprovalReference),
+            SupersedingBreakId: FirstNonBlank(retainedItem.SupersedingBreakId, command.SupersedingBreakId),
+            EvidenceLinks: evidence,
+            OccurredAtUtc: retainedItem.LastUpdatedAt);
         ReconciliationBreakRecord sourceBreak;
         try
         {
-            sourceBreak = await _statementBreakStore!
-                .ApplyCaseworkAsync(
-                    new StatementBreakCaseworkUpdate(
-                        BreakId: sourceBreakId,
-                        ImportId: sourceImportId,
-                        Status: sourceStatus,
-                        Actor: command.Actor,
-                        Action: command.Action.ToString(),
-                        CommandId: command.CommandId,
-                        CorrelationId: command.CorrelationId,
-                        Reason: FirstNonBlank(command.Reason, command.Note, retainedItem.DispositionReason, retainedItem.ResolutionNote),
-                        Disposition: disposition,
-                        ApprovalActor: FirstNonBlank(retainedItem.DispositionApprovedBy, command.ApprovalActor),
-                        ApprovalReference: FirstNonBlank(retainedItem.DispositionApprovalReference, command.ApprovalReference),
-                        SupersedingBreakId: FirstNonBlank(retainedItem.SupersedingBreakId, command.SupersedingBreakId),
-                        EvidenceLinks: evidence,
-                        OccurredAtUtc: retainedItem.LastUpdatedAt),
+            sourceBreak = await SynchronizeSourceCommitAsync(
+                    command,
+                    retainedItem,
+                    update,
+                    sourceStatus,
+                    disposition,
+                    evidence,
                     ct)
                 .ConfigureAwait(false);
         }
@@ -240,15 +253,6 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
                 exception);
         }
 
-        await SynchronizeSourceCaseAsync(
-                command,
-                retainedItem,
-                sourceBreak,
-                sourceStatus,
-                disposition,
-                evidence,
-                ct)
-            .ConfigureAwait(false);
         var closeScope = await AttachOperationsContinuityEvidenceAsync(
                 command,
                 retainedItem,
@@ -337,51 +341,256 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
             $"Statement case '{breakId}' completed source and Operations Continuity synchronization, but concurrent casework prevented its durable pending obligation from being cleared after {maximumAttempts} attempts.");
     }
 
-    private static bool HasVerifiedCompletion(
-        ReconciliationBreakQueueItem item,
-        string commandId)
-        => StatementCaseworkHandoffObligation.HasCompleted(item, commandId)
-           && !(item.EvidenceLinks ?? [])
-               .Contains(
-                   StatementCaseworkHandoffObligation.CreatePendingMarker(commandId),
-                   StringComparer.Ordinal);
-
-    private async Task SynchronizeSourceCaseAsync(
+    private async Task<ReconciliationBreakRecord> SynchronizeSourceCommitAsync(
         ReconciliationCaseworkCommand command,
         ReconciliationBreakQueueItem item,
-        ReconciliationBreakRecord sourceBreak,
+        StatementBreakCaseworkUpdate update,
         string sourceStatus,
         string disposition,
         IReadOnlyList<string> evidence,
         CancellationToken ct)
     {
-        var caseId = $"case:{sourceBreak.BreakId}";
-        ReconciliationCase? current;
-        try
+        var inputHash = StatementBreakCaseworkFingerprint.Compute(update);
+        var envelope = await _sourceCommitStore!.GetAsync(command.CommandId, ct).ConfigureAwait(false);
+        if (envelope is not null)
         {
-            current = await _statementCaseStore!.GetAsync(caseId, ct).ConfigureAwait(false);
+            EnsureSourceCommitInput(envelope, update, inputHash);
         }
-        catch (Exception exception) when (exception is not OperationCanceledException)
+        else
         {
-            throw Failure(
-                "STATEMENT_CASE_READ_FAILED",
-                $"The source statement break was synchronized, but reconciliation case '{caseId}' could not be read.",
-                exception);
+            var legacy = await _sourceCommitStore
+                .GetLegacyReceiptAsync(command.CommandId, inputHash, ct)
+                .ConfigureAwait(false);
+            ReconciliationBreakRecord originalBreak;
+            ReconciliationBreakRecord nextBreak;
+            StatementBreakCaseworkAuditEvent breakAudit;
+            if (legacy is not null)
+            {
+                if (!string.Equals(legacy.BreakId, update.BreakId, StringComparison.OrdinalIgnoreCase) ||
+                    !string.Equals(legacy.Record.ImportId, update.ImportId, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(legacy.Record.RunId, update.ImportId, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw Failure(
+                        "STATEMENT_LEGACY_RECEIPT_CONFLICT",
+                        $"Legacy statement casework receipt '{command.CommandId}' belongs to a different break or import.");
+                }
+
+                originalBreak = legacy.Record with { Status = legacy.Audit.PreviousStatus };
+                nextBreak = legacy.Record;
+                breakAudit = legacy.Audit;
+                var currentBreak = await _statementBreakStore!.GetAsync(update.BreakId, ct).ConfigureAwait(false);
+                if (currentBreak is not null &&
+                    !SameArtifact(currentBreak, originalBreak) &&
+                    !SameArtifact(currentBreak, nextBreak))
+                {
+                    throw Failure(
+                        "STATEMENT_LEGACY_RECEIPT_CONFLICT",
+                        $"Source statement break '{update.BreakId}' does not match the legacy receipt being adopted.");
+                }
+            }
+            else
+            {
+                originalBreak = await _statementBreakStore!.GetAsync(update.BreakId, ct).ConfigureAwait(false)
+                    ?? throw Failure(
+                        "STATEMENT_BREAK_NOT_FOUND",
+                        $"Source statement break '{update.BreakId}' was not found before source commit preparation.");
+                EnsureSourceBreakOwnership(originalBreak, update);
+                nextBreak = originalBreak with { Status = update.Status.Trim() };
+                breakAudit = BuildBreakAudit(originalBreak, nextBreak, update, inputHash);
+            }
+
+            var caseId = $"case:{nextBreak.BreakId}";
+            var currentCase = await _statementCaseStore!.GetAsync(caseId, ct).ConfigureAwait(false);
+            var caseProjection = BuildSourceCaseProjection(
+                currentCase,
+                command,
+                item,
+                nextBreak,
+                sourceStatus,
+                disposition,
+                evidence);
+            var candidate = new StatementCaseworkCommitEnvelope(
+                StatementCaseworkCommitEnvelope.CurrentSchemaVersion,
+                command.CommandId.Trim(),
+                inputHash,
+                update.ImportId.Trim(),
+                originalBreak,
+                nextBreak,
+                caseProjection.OriginalCase,
+                caseProjection.NextCase,
+                breakAudit,
+                caseProjection.Audit,
+                item.LastUpdatedAt.ToUniversalTime(),
+                AdoptedLegacyReceipt: legacy is not null);
+            envelope = await _sourceCommitStore.PrepareAsync(candidate, ct).ConfigureAwait(false);
+            EnsureSourceCommitInput(envelope, update, inputHash);
         }
 
-        // Older retained statement imports can predate the corresponding rich case record. The
-        // break-owned audit remains authoritative in that compatibility posture.
+        await _sourceCommitFaultInjector
+            .OnPointAsync(StatementCaseworkCommitFaultPoint.EnvelopeRetained, command.CommandId, ct)
+            .ConfigureAwait(false);
+
+        await _statementBreakStore!
+            .MaterializeCaseworkBreakAsync(
+                _sourceCommitStore!,
+                envelope.CommandId,
+                inputHash,
+                ct)
+            .ConfigureAwait(false);
+        var retainedBreak = await _statementBreakStore.GetAsync(envelope.NextBreak.BreakId, ct)
+            .ConfigureAwait(false)
+            ?? throw Failure(
+                "STATEMENT_BREAK_PROJECTION_MISSING",
+                $"Source statement break '{envelope.NextBreak.BreakId}' is missing after source-commit projection.");
+        if (!SameArtifact(retainedBreak, envelope.NextBreak))
+        {
+            throw Failure(
+                "STATEMENT_BREAK_PROJECTION_CONFLICT",
+                $"Source statement break '{envelope.NextBreak.BreakId}' does not match its retained source-commit image.");
+        }
+
+        await _sourceCommitFaultInjector
+            .OnPointAsync(StatementCaseworkCommitFaultPoint.BreakProjected, command.CommandId, ct)
+            .ConfigureAwait(false);
+
+        await _statementBreakStore
+            .MaterializeCaseworkAuditAsync(
+                _sourceCommitStore!,
+                envelope.CommandId,
+                inputHash,
+                ct)
+            .ConfigureAwait(false);
+        var retainedBreakAudit = await _statementBreakStore
+            .GetCaseworkAuditAsync(envelope.BreakAudit.BreakId, envelope.CommandId, ct)
+            .ConfigureAwait(false);
+        if (retainedBreakAudit is null || !SameArtifact(retainedBreakAudit, envelope.BreakAudit))
+        {
+            throw Failure(
+                "STATEMENT_BREAK_AUDIT_PROJECTION_MISSING",
+                $"Statement break audit for command '{envelope.CommandId}' was not retained exactly.");
+        }
+
+        await _sourceCommitFaultInjector
+            .OnPointAsync(StatementCaseworkCommitFaultPoint.BreakAuditProjected, command.CommandId, ct)
+            .ConfigureAwait(false);
+
+        if (envelope.NextCase is not null && envelope.CaseAudit is not null)
+        {
+            await _statementCaseStore!
+                .MaterializeCaseworkAsync(
+                    _sourceCommitStore!,
+                    envelope.CommandId,
+                    inputHash,
+                    ct)
+                .ConfigureAwait(false);
+            var retainedCase = await _statementCaseStore.GetAsync(envelope.NextCase.CaseId, ct)
+                .ConfigureAwait(false);
+            var retainedCaseAudit = await _statementCaseStore
+                .GetCaseworkAuditAsync(envelope.NextCase.CaseId, envelope.CommandId, ct)
+                .ConfigureAwait(false);
+            var retainedCaseEvent = retainedCase?.AuditEvents.FirstOrDefault(audit =>
+                string.Equals(audit.EventId, envelope.CaseAudit.EventId, StringComparison.Ordinal));
+            if (retainedCase is null ||
+                retainedCaseEvent is null ||
+                !SameArtifact(retainedCaseEvent, envelope.CaseAudit) ||
+                retainedCaseAudit is null ||
+                !SameArtifact(retainedCaseAudit, envelope.CaseAudit))
+            {
+                throw Failure(
+                    "STATEMENT_CASE_PROJECTION_MISSING",
+                    $"Reconciliation case '{envelope.NextCase.CaseId}' did not retain its casework event and audit sidecar exactly.");
+            }
+        }
+
+        await _sourceCommitFaultInjector
+            .OnPointAsync(StatementCaseworkCommitFaultPoint.CaseProjected, command.CommandId, ct)
+            .ConfigureAwait(false);
+
+        await _sourceCommitStore.CompleteAsync(envelope.CommandId, inputHash, ct).ConfigureAwait(false);
+        if (!await _sourceCommitStore.IsCompletedAsync(envelope.CommandId, inputHash, ct).ConfigureAwait(false))
+        {
+            throw Failure(
+                "STATEMENT_SOURCE_COMMIT_NOT_COMPLETED",
+                $"Statement source commit '{envelope.CommandId}' did not retain its completion marker.");
+        }
+
+        await _sourceCommitFaultInjector
+            .OnPointAsync(StatementCaseworkCommitFaultPoint.CompletionRetained, command.CommandId, ct)
+            .ConfigureAwait(false);
+        return envelope.NextBreak;
+    }
+
+    private static StatementBreakCaseworkAuditEvent BuildBreakAudit(
+        ReconciliationBreakRecord original,
+        ReconciliationBreakRecord next,
+        StatementBreakCaseworkUpdate update,
+        string inputHash)
+        => new(
+            EventId: $"statement-casework:{inputHash[..24]}",
+            BreakId: original.BreakId,
+            ImportId: original.ImportId,
+            PreviousStatus: original.Status,
+            NewStatus: next.Status,
+            Actor: update.Actor.Trim(),
+            Action: update.Action.Trim(),
+            CommandId: update.CommandId.Trim(),
+            CorrelationId: update.CorrelationId.Trim(),
+            Reason: FirstNonBlank(update.Reason),
+            Disposition: FirstNonBlank(update.Disposition),
+            ApprovalActor: FirstNonBlank(update.ApprovalActor),
+            ApprovalReference: FirstNonBlank(update.ApprovalReference),
+            SupersedingBreakId: FirstNonBlank(update.SupersedingBreakId),
+            EvidenceLinks: update.EvidenceLinks,
+            OccurredAtUtc: update.OccurredAtUtc.ToUniversalTime(),
+            InputHashSha256: inputHash);
+
+    private static void EnsureSourceBreakOwnership(
+        ReconciliationBreakRecord sourceBreak,
+        StatementBreakCaseworkUpdate update)
+    {
+        if (!string.Equals(sourceBreak.BreakId, update.BreakId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(sourceBreak.ImportId, update.ImportId, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(sourceBreak.RunId, update.ImportId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw Failure(
+                "STATEMENT_BREAK_OWNERSHIP_MISMATCH",
+                $"Source statement break '{update.BreakId}' is not owned by import '{update.ImportId}'.");
+        }
+    }
+
+    private static void EnsureSourceCommitInput(
+        StatementCaseworkCommitEnvelope envelope,
+        StatementBreakCaseworkUpdate update,
+        string inputHash)
+    {
+        if (!string.Equals(envelope.CommandId, update.CommandId.Trim(), StringComparison.Ordinal) ||
+            !string.Equals(envelope.ImportId, update.ImportId.Trim(), StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(envelope.NextBreak.BreakId, update.BreakId.Trim(), StringComparison.OrdinalIgnoreCase) ||
+            !StatementDurabilityHashing.FixedTimeEquals(envelope.InputHashSha256, inputHash))
+        {
+            throw Failure(
+                "STATEMENT_SOURCE_COMMIT_CONFLICT",
+                $"Statement casework command '{update.CommandId}' is already bound to different source input.");
+        }
+    }
+
+    private static SourceCaseProjection BuildSourceCaseProjection(
+        ReconciliationCase? current,
+        ReconciliationCaseworkCommand command,
+        ReconciliationBreakQueueItem item,
+        ReconciliationBreakRecord sourceBreak,
+        string sourceStatus,
+        string disposition,
+        IReadOnlyList<string> evidence)
+    {
         if (current is null)
         {
-            return;
+            return new SourceCaseProjection(null, null, null);
         }
 
         var eventId = BuildStableId("statement-casework", command.CommandId, sourceBreak.BreakId);
-        if (current.AuditEvents.Any(audit => string.Equals(audit.EventId, eventId, StringComparison.Ordinal)))
-        {
-            return;
-        }
-
+        var existingAudit = current.AuditEvents.FirstOrDefault(
+            audit => string.Equals(audit.EventId, eventId, StringComparison.Ordinal));
         var occurredAt = item.LastUpdatedAt.ToUniversalTime();
         var actor = command.Actor.Trim();
         var isReopen = IsReopen(command, item);
@@ -406,76 +615,74 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(static link => link, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var history = current.History.Concat(
-        [
-            new ReconciliationCaseHistoryEntry(
-                occurredAt,
-                current.Status,
-                nextCaseStatus,
-                reason)
-            {
-                Actor = actor,
-                EvidenceId = retainedEvidence.FirstOrDefault()
-            }
-        ]).ToArray();
-        var auditDetail =
+        var caseAudit = new ReconciliationCaseAuditEvent(
+            eventId,
+            isReopen ? "StatementBreakReopened" : "StatementBreakDisposed",
+            occurredAt,
+            actor,
             $"action={command.Action}; commandId={command.CommandId}; correlationId={command.CorrelationId}; " +
-            $"sourceBreakId={sourceBreak.BreakId}; disposition={disposition}; reason={reason}";
-        var auditEvents = current.AuditEvents.Concat(
-        [
-            new ReconciliationCaseAuditEvent(
-                eventId,
-                isReopen ? "StatementBreakReopened" : "StatementBreakDisposed",
-                occurredAt,
-                actor,
-                auditDetail)
-        ]).ToArray();
-        var decisionNotes = isReopen
-            ? current.DecisionNotes
-            : current.DecisionNotes.Concat(
-            [
-                new ReconciliationCaseDecisionNote(
-                    BuildStableId("statement-decision", command.CommandId, sourceBreak.BreakId),
-                    actor,
-                    occurredAt,
-                    reason,
-                    retainedEvidence)
-            ]).ToArray();
-        var resolution = isReopen
-            ? null
-            : new ReconciliationResolutionMetadata(
-                disposition,
-                reason,
-                actor,
-                occurredAt,
-                nextCaseStatus == "SignedOff" ? FirstNonBlank(item.SignedOffBy, actor) : null,
-                nextCaseStatus == "SignedOff" ? item.SignedOffAt ?? occurredAt : null);
-        var updated = current with
+            $"sourceBreakId={sourceBreak.BreakId}; disposition={disposition}; reason={reason}");
+        if (existingAudit is not null)
+        {
+            if (!SameArtifact(existingAudit, caseAudit))
+            {
+                throw Failure(
+                    "STATEMENT_CASE_AUDIT_CONFLICT",
+                    $"Reconciliation case '{current.CaseId}' retains conflicting evidence for command '{command.CommandId}'.");
+            }
+
+            return new SourceCaseProjection(current, current, existingAudit);
+        }
+
+        var next = current with
         {
             Status = nextCaseStatus,
             Owner = FirstNonBlank(item.AssigneeId, item.AssignedTo, item.ResolvedBy, actor) ?? actor,
             LastUpdatedAtUtc = occurredAt,
             LastUpdatedBy = actor,
             Disposition = isReopen ? "NeedsInvestigation" : disposition,
-            History = history,
-            AuditEvents = auditEvents,
-            DecisionNotes = decisionNotes,
+            History = current.History.Concat(
+            [
+                new ReconciliationCaseHistoryEntry(occurredAt, current.Status, nextCaseStatus, reason)
+                {
+                    Actor = actor,
+                    EvidenceId = retainedEvidence.FirstOrDefault()
+                }
+            ]).ToArray(),
+            AuditEvents = current.AuditEvents.Concat([caseAudit]).ToArray(),
+            DecisionNotes = isReopen
+                ? current.DecisionNotes
+                : current.DecisionNotes.Concat(
+                [
+                    new ReconciliationCaseDecisionNote(
+                        BuildStableId("statement-decision", command.CommandId, sourceBreak.BreakId),
+                        actor,
+                        occurredAt,
+                        reason,
+                        retainedEvidence)
+                ]).ToArray(),
             EvidenceReferences = retainedEvidence,
-            Resolution = resolution
+            Resolution = isReopen
+                ? null
+                : new ReconciliationResolutionMetadata(
+                    disposition,
+                    reason,
+                    actor,
+                    occurredAt,
+                    nextCaseStatus == "SignedOff" ? FirstNonBlank(item.SignedOffBy, actor) : null,
+                    nextCaseStatus == "SignedOff" ? item.SignedOffAt ?? occurredAt : null)
         };
-
-        try
-        {
-            await _statementCaseStore.SaveAsync(updated, ct).ConfigureAwait(false);
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            throw Failure(
-                "STATEMENT_CASE_SYNCHRONIZATION_FAILED",
-                $"Source statement break '{sourceBreak.BreakId}' was synchronized, but reconciliation case '{caseId}' could not be retained.",
-                exception);
-        }
+        return new SourceCaseProjection(current, next, caseAudit);
     }
+
+    private static bool HasVerifiedCompletion(
+        ReconciliationBreakQueueItem item,
+        string commandId)
+        => StatementCaseworkHandoffObligation.HasCompleted(item, commandId)
+           && !(item.EvidenceLinks ?? [])
+               .Contains(
+                   StatementCaseworkHandoffObligation.CreatePendingMarker(commandId),
+                   StringComparer.Ordinal);
 
     private async Task<ReconciliationCaseworkCloseScopeDto> AttachOperationsContinuityEvidenceAsync(
         ReconciliationCaseworkCommand command,
@@ -659,6 +866,13 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
             throw Failure(
                 "OPERATIONS_CONTINUITY_REQUIRED",
                 "The Operations Continuity workflow service is not registered.");
+        }
+
+        if (_sourceCommitStore is null)
+        {
+            throw Failure(
+                "STATEMENT_SOURCE_COMMIT_STORE_REQUIRED",
+                "The durable immutable statement casework commit store is not registered.");
         }
 
     }
@@ -1006,6 +1220,21 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
         return $"{prefix}:{hash[..24]}";
     }
 
+    private static bool SameArtifact(ReconciliationBreakRecord left, ReconciliationBreakRecord right)
+        => StatementDurabilityHashing.FixedTimeEquals(
+            StatementDurabilityHashing.Hash(left),
+            StatementDurabilityHashing.Hash(right));
+
+    private static bool SameArtifact(StatementBreakCaseworkAuditEvent left, StatementBreakCaseworkAuditEvent right)
+        => StatementDurabilityHashing.FixedTimeEquals(
+            StatementDurabilityHashing.Hash(left),
+            StatementDurabilityHashing.Hash(right));
+
+    private static bool SameArtifact(ReconciliationCaseAuditEvent left, ReconciliationCaseAuditEvent right)
+        => StatementDurabilityHashing.FixedTimeEquals(
+            StatementDurabilityHashing.Hash(left),
+            StatementDurabilityHashing.Hash(right));
+
     private static string Require(string? value, string code, string message)
         => !string.IsNullOrWhiteSpace(value)
             ? value.Trim()
@@ -1029,4 +1258,41 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
         string message,
         Exception? exception = null)
         => new(code, message, exception);
+
+    private sealed record SourceCaseProjection(
+        ReconciliationCase? OriginalCase,
+        ReconciliationCase? NextCase,
+        ReconciliationCaseAuditEvent? Audit);
+}
+
+public enum StatementCaseworkCommitFaultPoint
+{
+    EnvelopeRetained,
+    BreakProjected,
+    BreakAuditProjected,
+    CaseProjected,
+    CompletionRetained
+}
+
+public interface IStatementCaseworkCommitFaultInjector
+{
+    Task OnPointAsync(
+        StatementCaseworkCommitFaultPoint point,
+        string commandId,
+        CancellationToken ct = default);
+}
+
+internal sealed class NoOpStatementCaseworkCommitFaultInjector : IStatementCaseworkCommitFaultInjector
+{
+    public static NoOpStatementCaseworkCommitFaultInjector Instance { get; } = new();
+
+    private NoOpStatementCaseworkCommitFaultInjector()
+    {
+    }
+
+    public Task OnPointAsync(
+        StatementCaseworkCommitFaultPoint point,
+        string commandId,
+        CancellationToken ct = default)
+        => Task.CompletedTask;
 }

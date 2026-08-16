@@ -757,11 +757,18 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             limit 1;
             """,
             $"""
-            select security_id
-            from {Qualified("securities")}
-            where primary_identifier_kind = @identifier_kind
-              and normalized_primary_identifier_value = @normalized_identifier_value
-              and (@include_inactive = true or status = 'Active')
+            select s.security_id
+            from {Qualified("securities")} s
+            where s.primary_identifier_kind = @identifier_kind
+              and s.normalized_primary_identifier_value = @normalized_identifier_value
+              and @normalized_provider is null
+              and not exists (
+                  select 1
+                  from {Qualified("security_identifiers")} i
+                  where i.security_id = s.security_id
+                    and i.identifier_kind = @identifier_kind
+                    and i.normalized_identifier_value = @normalized_identifier_value)
+              and (@include_inactive = true or s.status = 'Active')
             limit 1;
             """
         })
@@ -1293,7 +1300,9 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Parameters.AddWithValue("currency", record.Currency ?? string.Empty);
         command.Parameters.AddWithValue("share_class", (object?)GetOptionalString(record.AssetSpecificTerms, "shareClass") ?? DBNull.Value);
         command.Parameters.AddWithValue("voting_rights_cat", (object?)GetOptionalString(record.AssetSpecificTerms, "votingRightsCat") ?? DBNull.Value);
-        command.Parameters.AddWithValue("classification", (object?)GetOptionalString(record.AssetSpecificTerms, "classification") ?? DBNull.Value);
+        command.Parameters.AddWithValue(
+            "classification",
+            (object?)SecurityTermReader.ReadEquityClassification(record.AssetSpecificTerms) ?? DBNull.Value);
         command.Parameters.AddWithValue("exchange_code", (object?)GetOptionalString(record.CommonTerms, "exchange") ?? DBNull.Value);
         command.Parameters.AddWithValue("country_of_risk", (object?)GetOptionalString(record.CommonTerms, "countryOfRisk") ?? DBNull.Value);
         command.Parameters.AddWithValue("issuer_name", (object?)GetOptionalString(record.CommonTerms, "issuerName") ?? DBNull.Value);

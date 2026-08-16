@@ -19,6 +19,10 @@ public static class ReconciliationServiceRegistration
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.TryAddSingleton<IAccountingCalendar>(sp =>
+            FileAccountingCalendar.Load(
+                sp.GetRequiredService<StorageOptions>().RootPath,
+                sp.GetService<ILogger<BusinessDayAccountingCalendar>>()));
         AddSharedServices(services);
         services.TryAddSingleton<IStatementReconciliationCheckpointStore>(sp =>
             new FileStatementReconciliationCheckpointStore(
@@ -27,6 +31,12 @@ public static class ReconciliationServiceRegistration
         services.TryAddSingleton<ICanonicalStatementStore>(sp => new JsonCanonicalStatementStore(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<IReconciliationCaseStore>(sp => new JsonReconciliationCaseStore(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<IReconciliationBreakStore>(sp => new JsonReconciliationBreakStore(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<IStatementRunRecoveryRepository>(sp =>
+            new FileStatementRunRecoveryRepository(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<IStatementRunMatchArtifactStore>(sp =>
+            new FileStatementRunMatchArtifactStore(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<IStatementCaseworkCommitStore>(sp =>
+            new FileStatementCaseworkCommitStore(sp.GetRequiredService<StorageOptions>().RootPath));
         AddBrokerStatementServices(services);
         AddConnectorServices(services, static sp => sp.GetRequiredService<StorageOptions>().RootPath);
         return services;
@@ -37,6 +47,8 @@ public static class ReconciliationServiceRegistration
         ArgumentNullException.ThrowIfNull(services);
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
 
+        services.TryAddSingleton<IAccountingCalendar>(sp =>
+            FileAccountingCalendar.Load(dataRoot, sp.GetService<ILogger<BusinessDayAccountingCalendar>>()));
         AddSharedServices(services);
         services.TryAddSingleton<IStatementReconciliationCheckpointStore>(sp =>
             new FileStatementReconciliationCheckpointStore(
@@ -45,6 +57,9 @@ public static class ReconciliationServiceRegistration
         services.TryAddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(dataRoot));
         services.TryAddSingleton<IReconciliationCaseStore>(_ => new JsonReconciliationCaseStore(dataRoot));
         services.TryAddSingleton<IReconciliationBreakStore>(_ => new JsonReconciliationBreakStore(dataRoot));
+        services.TryAddSingleton<IStatementRunRecoveryRepository>(_ => new FileStatementRunRecoveryRepository(dataRoot));
+        services.TryAddSingleton<IStatementRunMatchArtifactStore>(_ => new FileStatementRunMatchArtifactStore(dataRoot));
+        services.TryAddSingleton<IStatementCaseworkCommitStore>(_ => new FileStatementCaseworkCommitStore(dataRoot));
         AddBrokerStatementServices(services);
         AddConnectorServices(services, _ => dataRoot);
         return services;
@@ -68,6 +83,9 @@ public static class ReconciliationServiceRegistration
         // its own implementations before calling AddStatementReconciliationServices, or via Replace.
         services.TryAddSingleton<IInternalReconciliationPopulationProvider>(EmptyInternalReconciliationPopulationProvider.Instance);
         services.TryAddSingleton<IReconciliationFxRateProvider>(IdentityReconciliationFxRateProvider.Instance);
+        // Safety net for hosts that bypass the dataRoot-aware overloads: a weekends-only calendar.
+        // The overloads above register the operator-maintained file calendar first, so it wins here.
+        services.TryAddSingleton<IAccountingCalendar>(BusinessDayAccountingCalendar.Default);
         // Knows only the built-in default profile; a deployment registers a provider carrying its
         // operator profiles (first-wins/Replace) so non-default runs are matched with the selected
         // profile's thresholds instead of silently falling back to the defaults.
@@ -99,6 +117,8 @@ public static class ReconciliationServiceRegistration
                 sp.GetService<ILogger<FileStatementMappingProfileStore>>()));
         services.TryAddSingleton<StatementMappingProfileCatalog>();
         services.TryAddSingleton(sp => sp.GetRequiredService<StatementMappingProfileCatalog>().BuildRegistry());
+        services.TryAddSingleton<IIbFlexWebServiceClient>(_ => new IbFlexWebServiceClient(
+            new HttpClient { Timeout = TimeSpan.FromMinutes(2) }));
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, CsvStatementConnector>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, OfxStatementConnector>());
@@ -107,6 +127,7 @@ public static class ReconciliationServiceRegistration
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, Camt053StatementConnector>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, Bai2StatementConnector>());
         services.TryAddSingleton<StatementConnectorRegistry>();
+        services.TryAddSingleton(sp => new StatementCanonicalEvidenceReader(resolveDataRoot(sp)));
 
         services.TryAddSingleton(sp => new StatementImportService(
             sp.GetRequiredService<StatementConnectorRegistry>(),

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  DATA_WORKSTATION_SCREEN_ROUTES,
+  SETTINGS_PROVIDER_SCREEN_ROUTE_PATTERNS,
+  SETTINGS_WORKSTATION_SCREEN_ROUTES,
   appendRouteQuery,
   evidenceWorkbenchPath,
   legacyWorkspaceRedirect,
@@ -17,7 +20,8 @@ import {
   workstationRouteWithHash,
   workstationRouteWithQuery,
   workspaceForKey,
-  workspacePath
+  workspacePath,
+  UNWIRED_WORKSTATION_ROUTES
 } from "@/lib/workspace";
 
 describe("workspace metadata", () => {
@@ -42,6 +46,16 @@ describe("workspace metadata", () => {
       "/strategy",
       "/data",
       "/settings"
+    ]);
+  });
+
+  it("keeps Data and Settings screen ownership explicit", () => {
+    expect(DATA_WORKSTATION_SCREEN_ROUTES).toContain("/data/providers");
+    expect(DATA_WORKSTATION_SCREEN_ROUTES).not.toContain("/data/quotes");
+    expect(SETTINGS_WORKSTATION_SCREEN_ROUTES).toContain("/settings/diagnostics/advanced");
+    expect(SETTINGS_PROVIDER_SCREEN_ROUTE_PATTERNS).toEqual([
+      "/settings/providers/:providerId/setup",
+      "/settings/providers/:providerId/advanced"
     ]);
   });
 
@@ -286,5 +300,22 @@ describe("workspace metadata", () => {
     expect(normalizeLocalWorkstationRoute("//example.test/data")).toBeNull();
     expect(normalizeLocalWorkstationRoute("https://example.test/data")).toBeNull();
     expect(normalizeLocalWorkstationRoute("/unknown/path")).toBeNull();
+  });
+
+  it("keeps every unwired route out of navigation but still routable", () => {
+    // These screens render a permanent "not connected" state. They stay in the route catalog so
+    // deep links and old bookmarks resolve, but the nav and command palette filter them out.
+    expect(UNWIRED_WORKSTATION_ROUTES.has("/portfolio/family-office")).toBe(true);
+    expect(UNWIRED_WORKSTATION_ROUTES.has("/strategy/quant-lab?view=formulas")).toBe(true);
+
+    // The wired parent route must stay navigable — only the formulas deep link is unwired.
+    expect(UNWIRED_WORKSTATION_ROUTES.has("/strategy/quant-lab")).toBe(false);
+
+    // Every entry must correspond to a real catalog route (or a query-string view of one), so the
+    // set cannot silently accumulate typos that filter nothing.
+    const catalogRoutes = new Set(Object.values(WORKSTATION_ROUTE_CATALOG) as string[]);
+    for (const route of UNWIRED_WORKSTATION_ROUTES) {
+      expect(catalogRoutes.has(route.split("?")[0])).toBe(true);
+    }
   });
 });

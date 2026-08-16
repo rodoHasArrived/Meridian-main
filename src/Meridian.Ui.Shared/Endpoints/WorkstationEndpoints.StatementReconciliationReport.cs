@@ -8,6 +8,7 @@ using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.PortfolioRecords.Accounts;
+using Meridian.Reporting;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -192,7 +193,9 @@ public static partial class WorkstationEndpoints
             return validationProblem!;
 
         var ownershipProblem = await RequireStatementReconciliationReportAccountOwnershipAsync(
-                scope,
+                scope.FundAccountId,
+                scope.SourceInstitution,
+                scope.ExternalAccountId,
                 tenant,
                 context)
             .ConfigureAwait(false);
@@ -242,6 +245,10 @@ public static partial class WorkstationEndpoints
                     ? StatusCodes.Status503ServiceUnavailable
                     : StatusCodes.Status409Conflict);
         }
+        catch (StatementReconciliationReportAuthorityUnavailableException exception)
+        {
+            return StatementReconciliationReportAuthorityUnavailable(exception);
+        }
 
         return StatementReconciliationReportWorkflowResult(
             execution.Workflow,
@@ -262,7 +269,8 @@ public static partial class WorkstationEndpoints
         if (workflowService is null)
             return StatementReconciliationReportNotRegistered();
         var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        if (string.IsNullOrWhiteSpace(tenant.TenantId))
+        if (string.IsNullOrWhiteSpace(tenant.TenantId)
+            || string.IsNullOrWhiteSpace(tenant.CompanyId))
             return EndpointHelpers.Forbidden();
 
         try
@@ -272,17 +280,32 @@ public static partial class WorkstationEndpoints
                 tenant.TenantId,
                 tenant.CompanyId,
                 context.RequestAborted).ConfigureAwait(false);
-            return workflow is null
-                ? Results.NotFound()
-                : Results.Json(
-                    legacyStatementToReportContract
-                        ? ToLegacyStatementToReportWorkflow(workflow)
-                        : workflow,
-                    jsonOptions);
+            if (workflow is null)
+                return Results.NotFound();
+
+            var ownershipProblem = await RequireStatementReconciliationReportAccountOwnershipAsync(
+                    workflow.FundAccountId,
+                    workflow.SourceInstitution,
+                    workflow.ExternalAccountId,
+                    tenant,
+                    context)
+                .ConfigureAwait(false);
+            if (ownershipProblem is not null)
+                return ownershipProblem;
+
+            return Results.Json(
+                legacyStatementToReportContract
+                    ? ToLegacyStatementToReportWorkflow(workflow)
+                    : workflow,
+                jsonOptions);
         }
         catch (UnauthorizedAccessException)
         {
             return EndpointHelpers.Forbidden();
+        }
+        catch (StatementReconciliationReportAuthorityUnavailableException exception)
+        {
+            return StatementReconciliationReportAuthorityUnavailable(exception);
         }
     }
 
@@ -298,11 +321,30 @@ public static partial class WorkstationEndpoints
         if (workflowService is null)
             return StatementReconciliationReportNotRegistered();
         var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        if (string.IsNullOrWhiteSpace(tenant.TenantId))
+        if (string.IsNullOrWhiteSpace(tenant.TenantId)
+            || string.IsNullOrWhiteSpace(tenant.CompanyId))
             return EndpointHelpers.Forbidden();
 
         try
         {
+            var workflow = await workflowService.GetAsync(
+                workflowId,
+                tenant.TenantId,
+                tenant.CompanyId,
+                context.RequestAborted).ConfigureAwait(false);
+            if (workflow is null)
+                return Results.NotFound();
+
+            var ownershipProblem = await RequireStatementReconciliationReportAccountOwnershipAsync(
+                    workflow.FundAccountId,
+                    workflow.SourceInstitution,
+                    workflow.ExternalAccountId,
+                    tenant,
+                    context)
+                .ConfigureAwait(false);
+            if (ownershipProblem is not null)
+                return ownershipProblem;
+
             var execution = await workflowService.ResumeAsync(
                 workflowId,
                 tenant.TenantId,
@@ -320,6 +362,10 @@ public static partial class WorkstationEndpoints
         {
             return EndpointHelpers.Forbidden();
         }
+        catch (StatementReconciliationReportAuthorityUnavailableException exception)
+        {
+            return StatementReconciliationReportAuthorityUnavailable(exception);
+        }
     }
 
     private static async Task<IResult> DownloadStatementReconciliationReportArtifactAsync(
@@ -333,11 +379,30 @@ public static partial class WorkstationEndpoints
         if (workflowService is null)
             return StatementReconciliationReportNotRegistered();
         var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        if (string.IsNullOrWhiteSpace(tenant.TenantId))
+        if (string.IsNullOrWhiteSpace(tenant.TenantId)
+            || string.IsNullOrWhiteSpace(tenant.CompanyId))
             return EndpointHelpers.Forbidden();
 
         try
         {
+            var workflow = await workflowService.GetAsync(
+                workflowId,
+                tenant.TenantId,
+                tenant.CompanyId,
+                context.RequestAborted).ConfigureAwait(false);
+            if (workflow is null)
+                return Results.NotFound();
+
+            var ownershipProblem = await RequireStatementReconciliationReportAccountOwnershipAsync(
+                    workflow.FundAccountId,
+                    workflow.SourceInstitution,
+                    workflow.ExternalAccountId,
+                    tenant,
+                    context)
+                .ConfigureAwait(false);
+            if (ownershipProblem is not null)
+                return ownershipProblem;
+
             var artifact = await workflowService.DownloadArtifactAsync(
                 workflowId,
                 artifactId,
@@ -355,6 +420,10 @@ public static partial class WorkstationEndpoints
         catch (UnauthorizedAccessException)
         {
             return EndpointHelpers.Forbidden();
+        }
+        catch (StatementReconciliationReportAuthorityUnavailableException exception)
+        {
+            return StatementReconciliationReportAuthorityUnavailable(exception);
         }
     }
 
@@ -389,6 +458,13 @@ public static partial class WorkstationEndpoints
         => Results.Problem(
             title: "Statement reconciliation report workflow is unavailable",
             detail: "The retained statement import, evidence, reconciliation casework, and JSON/CSV reconciliation report services are not registered.",
+            statusCode: StatusCodes.Status503ServiceUnavailable);
+
+    private static IResult StatementReconciliationReportAuthorityUnavailable(
+        StatementReconciliationReportAuthorityUnavailableException exception)
+        => Results.Problem(
+            title: "Statement reconciliation report authority is unavailable",
+            detail: exception.Message,
             statusCode: StatusCodes.Status503ServiceUnavailable);
 
     private static bool TryReadStatementReconciliationReportScope(
@@ -479,8 +555,21 @@ public static partial class WorkstationEndpoints
         return true;
     }
 
-    private static async Task<IResult?> RequireStatementReconciliationReportAccountOwnershipAsync(
+    private static Task<IResult?> RequireStatementReconciliationReportAccountOwnershipAsync(
         StatementReconciliationReportScope scope,
+        WorkstationTenantContext tenant,
+        HttpContext context)
+        => RequireStatementReconciliationReportAccountOwnershipAsync(
+            scope.FundAccountId,
+            scope.SourceInstitution,
+            scope.ExternalAccountId,
+            tenant,
+            context);
+
+    private static async Task<IResult?> RequireStatementReconciliationReportAccountOwnershipAsync(
+        string fundAccountId,
+        string sourceInstitution,
+        string externalAccountId,
         WorkstationTenantContext tenant,
         HttpContext context)
     {
@@ -488,7 +577,7 @@ public static partial class WorkstationEndpoints
         var tenancy = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
         if (accounts is null
             || tenancy is null
-            || !Guid.TryParse(scope.FundAccountId, out var accountId)
+            || !Guid.TryParse(fundAccountId, out var accountId)
             || accountId == Guid.Empty)
         {
             return EndpointHelpers.Forbidden();
@@ -502,8 +591,8 @@ public static partial class WorkstationEndpoints
             || !account.FundId.HasValue
             || account.FundId.Value == Guid.Empty
             || !IsStatementSourceBoundToAccount(
-                scope.SourceInstitution,
-                scope.ExternalAccountId,
+                sourceInstitution,
+                externalAccountId,
                 account))
         {
             return EndpointHelpers.Forbidden();

@@ -1,5 +1,6 @@
 import type {
   EvidenceStatus,
+  OrderResult,
   MeridianAssuranceScore,
   OperationsCloseChecklistTask,
   OperationsClosePackagePublication,
@@ -964,6 +965,10 @@ export interface RiskRuleStatus {
   currentValue: string;
   asOf: string;
   recentViolations: string[];
+  /** Current/threshold percent; null when the rule has no measurable utilization. */
+  utilizationPercent?: number | null;
+  /** Enforced outcome tier: Warning flags, Error rejects, Escalate parks, Critical trips the breaker. */
+  severity?: string | null;
 }
 
 export interface RiskRuleConfig {
@@ -972,6 +977,20 @@ export interface RiskRuleConfig {
   symbolPositionLimits: Record<string, number> | null;
   maxDrawdownPercent: number | null;
   maxOrdersPerMinute: number | null;
+  maxGrossExposure?: number | null;
+  maxSymbolConcentrationPercent?: number | null;
+  maxOrderNotional?: number | null;
+  escalateOrderNotional?: number | null;
+  /** Absolute per-order quantity ceiling for the fat-finger gate. */
+  maxOrderQuantity?: number | null;
+  /** Maximum aggressive price deviation from the market touch, in percent. */
+  maxPriceDeviationPercent?: number | null;
+  /**
+   * Aggressive price deviation, in percent, beyond which an order is parked for approval rather
+   * than rejected. Set below `maxPriceDeviationPercent` or the fat-finger band refuses first and
+   * the collar never fires.
+   */
+  priceCollarPercent?: number | null;
 }
 
 export interface RiskRuleConfigUpdateRequest {
@@ -980,6 +999,43 @@ export interface RiskRuleConfigUpdateRequest {
   maxDrawdownPercent?: number | null;
   maxOrdersPerMinute?: number | null;
   reason?: string | null;
+  maxGrossExposure?: number | null;
+  maxSymbolConcentrationPercent?: number | null;
+  maxOrderNotional?: number | null;
+  escalateOrderNotional?: number | null;
+  /** Absolute per-order quantity ceiling for the fat-finger gate. */
+  maxOrderQuantity?: number | null;
+  /** Maximum aggressive price deviation from the market touch, in percent. */
+  maxPriceDeviationPercent?: number | null;
+  /**
+   * Aggressive price deviation, in percent, beyond which an order is parked for approval rather
+   * than rejected. Set below `maxPriceDeviationPercent` or the fat-finger band refuses first and
+   * the collar never fires.
+   */
+  priceCollarPercent?: number | null;
+}
+
+/** A parked risk escalation awaiting (or resolved by) governed operator approval. */
+export interface RiskEscalation {
+  escalationId: string;
+  symbol: string;
+  side: string;
+  type: string;
+  quantity: number;
+  limitPrice: number | null;
+  reason: string;
+  ruleName: string | null;
+  status: "PendingApproval" | "Approved" | "Denied" | "Released";
+  parkedAt: string;
+  resolvedBy: string | null;
+  resolutionReason: string | null;
+  resolvedAt: string | null;
+}
+
+/** Result of approving a parked escalation, with the release attempt when one was made. */
+export interface RiskEscalationApprovalResponse {
+  escalation: RiskEscalation;
+  releaseResult: OrderResult | null;
 }
 
 export type OperatorWorkItemKind =

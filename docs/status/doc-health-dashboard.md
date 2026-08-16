@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [########################------] 79/100
+  [########################------] 80/100
   Rating: Good
 ```
 
@@ -19,14 +19,14 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 634 |
-| Total lines | 116,032 |
-| Average file size (lines) | 183.0 |
-| Orphaned files | 258 |
+| Total documentation files | 649 |
+| Total lines | 129,189 |
+| Average file size (lines) | 199.1 |
+| Orphaned files | 254 |
 | Files without headings | 148 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 211 |
-| **Health score** | **79/100** |
+| TODO/FIXME markers | 233 |
+| **Health score** | **80/100** |
 
 ### Score Breakdown
 
@@ -85,7 +85,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md`
 - `.agents/skills/meridian-simulated-user-panel/references/artifact-bundles.md`
 - `.agents/skills/meridian-simulated-user-panel/references/personas.md`
-- ... and 238 more
+- ... and 234 more
 
 ## Trend
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 79 | 634 | 258 | 0 |
+| 1970-01-01 | 80 | 649 | 254 | 0 |
 
 ---
 

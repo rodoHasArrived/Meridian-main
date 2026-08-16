@@ -1,5 +1,6 @@
 using Meridian.Ledger;
 using Npgsql;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
@@ -364,7 +365,4 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
 
         return value.Trim();
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

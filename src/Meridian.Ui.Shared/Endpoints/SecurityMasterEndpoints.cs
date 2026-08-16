@@ -73,11 +73,16 @@ public static class SecurityMasterEndpoints
 
         /// <summary>
         /// Lists approved custom asset profile definitions available to profile-backed Security Master create/amend workflows.
+        /// An optional <c>asOf</c> date scopes selectability to a write EFFECTIVE AT that date, so
+        /// backdated amendments can discover the historical version governing their effective date.
         /// </summary>
         group.MapGet(UiApiRoutes.SecurityMasterAssetProfiles, (
+            [FromQuery] DateOnly? asOf,
             [FromServices] ISecurityAssetProfileCatalog profileCatalog) =>
         {
-            var profiles = profileCatalog.GetProfiles()
+            var profiles = (asOf is DateOnly effectiveAt
+                    ? profileCatalog.GetProfiles(effectiveAt)
+                    : profileCatalog.GetProfiles())
                 .OrderBy(static profile => profile.Name, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static profile => profile.Version)
                 .ToArray();
@@ -772,6 +777,7 @@ public static class SecurityMasterEndpoints
             ResolveConflictRequest request,
             HttpContext context,
             [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
+            [FromServices] AppSecurityMaster.ISecurityMasterWorkbenchCommandService? workbenchService,
             CancellationToken ct) =>
         {
             if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
@@ -788,7 +794,76 @@ public static class SecurityMasterEndpoints
                 return Results.BadRequest(ErrorResponse.Validation(
                     "ConflictId in body must match the route parameter."));
 
+            var existing = await conflictService.GetConflictAsync(conflictId, ct).ConfigureAwait(false);
+            if (existing is null)
+            {
+                return Results.NotFound();
+            }
+
             var resolvedBy = context.Items[LoginSessionMiddleware.CurrentUserKey] as string ?? "unknown";
+
+            // Field-level conflicts (economic/common term mismatches) are GOVERNED: the authority
+            // policy, rationale requirement, candidate guard, and transactional persisted-value
+            // revalidation must run before any close — including dismissals. The shared conflict
+            // queue's browser and WPF actions still post here (they carry no record version), so
+            // instead of rejecting them the legacy route DELEGATES to the governed workbench
+            // service at the record's current version — closing a field conflict through this
+            // route runs exactly the same policy path as the workbench route.
+            var isFieldConflict =
+                string.Equals(existing.ConflictKind, SecurityMasterConflictKinds.EconomicTermMismatch, StringComparison.Ordinal)
+                || string.Equals(existing.ConflictKind, SecurityMasterConflictKinds.CommonTermMismatch, StringComparison.Ordinal);
+            if (isFieldConflict)
+            {
+                if (workbenchService is null)
+                {
+                    return Results.Problem(
+                        title: "Governed field conflict",
+                        detail:
+                            $"Conflict '{conflictId:D}' is a {existing.ConflictKind} field conflict and the governed " +
+                            "workbench command service is not wired in this host; use the workbench resolve-conflict " +
+                            $"route (POST {UiApiRoutes.SecurityMasterWorkbenchResolveConflict}).",
+                        statusCode: StatusCodes.Status400BadRequest);
+                }
+
+                var (chosenWinnerSource, reason) = TranslateLegacyConflictAction(request, existing, resolvedBy);
+
+                try
+                {
+                    await workbenchService.ResolveSourceConflictAtCurrentVersionAsync(
+                        new ResolveSourceConflictRequest(
+                            existing.SecurityId,
+                            conflictId,
+                            ExpectedVersion: 0,
+                            ChosenWinnerSource: chosenWinnerSource,
+                            Actor: resolvedBy,
+                            Reason: reason),
+                        ct).ConfigureAwait(false);
+                }
+                catch (ArgumentException ex)
+                {
+                    // Policy deviation without acknowledgment, blank rationale, or a non-candidate
+                    // winner — the governed preconditions the queue actions must satisfy.
+                    return Results.Problem(
+                        title: "Governed field conflict", detail: ex.Message,
+                        statusCode: StatusCodes.Status400BadRequest);
+                }
+                catch (AppSecurityMaster.SecurityMasterConcurrencyException)
+                {
+                    return Results.Conflict(ErrorResponse.Validation(
+                        "The conflict was resolved concurrently by another operator."));
+                }
+                catch (InvalidOperationException ex)
+                {
+                    // The transactional persisted-value guard superseded or refreshed the row.
+                    return Results.Problem(
+                        title: "Conflict assessment changed", detail: ex.Message,
+                        statusCode: StatusCodes.Status409Conflict);
+                }
+
+                var closed = await conflictService.GetConflictAsync(conflictId, ct).ConfigureAwait(false);
+                return closed is null ? Results.NotFound() : Results.Json(closed, jsonOptions);
+            }
+
             var serverRequest = request with { ResolvedBy = resolvedBy };
 
             var updated = await conflictService.ResolveAsync(serverRequest, ct).ConfigureAwait(false);
@@ -877,6 +952,23 @@ public static class SecurityMasterEndpoints
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK);
 
         /// <summary>
+        /// Returns the durable field-level provenance rows for a security: which source asserted
+        /// each field's value, under which origin (canonical conflict resolution vs. operator
+        /// overlay), referenced back to the conflict or revision that asserted it. This is the read
+        /// surface for the lineage that conflict resolutions and workbench edits persist.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterFieldProvenance, async (
+            Guid securityId,
+            [FromServices] ISecurityFieldProvenanceStore store,
+            CancellationToken ct) =>
+        {
+            var lineage = await store.GetAsync(securityId, ct).ConfigureAwait(false);
+            return Results.Json(lineage, jsonOptions);
+        })
+        .WithName("GetSecurityMasterFieldProvenance")
+        .Produces<IReadOnlyList<SecurityFieldProvenanceRecord>>(StatusCodes.Status200OK);
+
+        /// <summary>
         /// Applies a partial update to operator overrides for a security. Values listed in
         /// <c>SetValues</c> are upserted; keys in <c>RemoveKeys</c> are deleted. Requires the
         /// <c>ModifySecurityMaster</c> permission.
@@ -889,16 +981,58 @@ public static class SecurityMasterEndpoints
             OperatorOverridesPatchRequest request,
             HttpContext context,
             [FromServices] IOperatorOverridesStore store,
+            [FromServices] AppSecurityMaster.ISecurityMasterWorkbenchCommandService? workbenchService,
             CancellationToken ct) =>
         {
+            // The assetSpecificTerms.* namespace is reserved for the governed workbench edit route,
+            // which schema-validates the key and type-coerces the value. Accepting those keys here
+            // would let a raw patch bypass that validation entirely — and a raw REMOVAL would strip
+            // the overlay without the draft revision and provenance clean-up the workbench clear
+            // performs, leaving stale OperatorFieldEdit lineage behind.
+            var reservedKey = request.SetValues?.Keys.FirstOrDefault(
+                    static key => SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(key))
+                ?? request.RemoveKeys?.FirstOrDefault(
+                    static key => SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(key));
+            if (reservedKey is not null)
+            {
+                return Results.Problem(
+                    title: "Reserved override namespace",
+                    detail:
+                        $"Override key '{reservedKey}' targets the assetSpecificTerms namespace, which is " +
+                        "reserved for the schema-validated workbench field-edit route " +
+                        "(PUT security-master field edits). Use that route so sets are validated against " +
+                        "the asset class's declared term schema and clears retire the draft-revision and " +
+                        "provenance lineage with the overlay.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
             var actor = ResolveActor(context);
-            var updated = await store.PatchAsync(securityId, request, actor, ct).ConfigureAwait(false);
-            return Results.Json(updated, jsonOptions);
+            // The workbench decision seam scans overlay keys for revision evidence under a
+            // per-security gate before recording the security-level Approved; a bare store patch
+            // can land between that scan and the decision and be silently co-approved. When the
+            // host wires the workbench service, the patch goes through its gate-held seam so the
+            // write serializes with that scan — and is refused while staged revisions are pending,
+            // since a free-form patch would change the overlay their reviewers decide over.
+            try
+            {
+                var updated = workbenchService is null
+                    ? await store.PatchAsync(securityId, request, actor, ct).ConfigureAwait(false)
+                    : await workbenchService.PatchOperatorOverridesAsync(securityId, request, actor, ct).ConfigureAwait(false);
+                return Results.Json(updated, jsonOptions);
+            }
+            catch (InvalidOperationException exception) when (exception.Message.Contains("governed revision workflow", StringComparison.Ordinal))
+            {
+                // Staged revisions are mid-review — a conflicting-state condition, not a client
+                // formatting error.
+                return Results.Conflict(new { error = exception.Message });
+            }
         })
         .WithName("PatchSecurityMasterOperatorOverrides")
         .Accepts<OperatorOverridesPatchRequest>("application/json")
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
@@ -919,6 +1053,7 @@ public static class SecurityMasterEndpoints
             OperatorOverrideDecisionRequest request,
             HttpContext context,
             [FromServices] IOperatorOverridesStore store,
+            [FromServices] AppSecurityMaster.ISecurityMasterWorkbenchCommandService? workbenchService,
             CancellationToken ct) =>
         {
             // The reviewer identity is server-derived from the authenticated principal, never taken
@@ -926,14 +1061,26 @@ public static class SecurityMasterEndpoints
             var decision = new OperatorOverrideDecision(request.Decision, ResolveActor(context), request.Comment);
             try
             {
-                var updated = await store
-                    .RecordApprovalDecisionAsync(securityId, decision, ct)
-                    .ConfigureAwait(false);
+                // A direct decision bypasses the revision lifecycle's controls (bound workflow,
+                // independent reviewer, staged-value deferral). When the host wires the workbench
+                // service, the decision goes through its governed seam, which refuses while staged
+                // revisions or revision-backed overlay values exist — otherwise the editor could
+                // approve a Draft revision's staged value directly.
+                var updated = workbenchService is null
+                    ? await store.RecordApprovalDecisionAsync(securityId, decision, ct).ConfigureAwait(false)
+                    : await workbenchService.RecordOperatorOverrideDecisionAsync(securityId, decision, ct).ConfigureAwait(false);
                 return Results.Json(updated, jsonOptions);
             }
             catch (ArgumentException exception)
             {
                 return Results.BadRequest(new { error = exception.Message });
+            }
+            catch (InvalidOperationException exception) when (exception.Message.Contains("governed revision workflow", StringComparison.Ordinal))
+            {
+                // The decision belongs to the revision lifecycle (staged revisions pending, or
+                // revision-backed values present) — a conflicting-state condition, not a client
+                // formatting error.
+                return Results.Conflict(new { error = exception.Message });
             }
             catch (InvalidOperationException exception) when (exception.Message.Contains("No operator overrides exist", StringComparison.Ordinal))
             {
@@ -1048,6 +1195,39 @@ public static class SecurityMasterEndpoints
            || request.ProfileVersion.HasValue
            || !string.IsNullOrWhiteSpace(request.ProfileFieldKey)
            || !string.IsNullOrWhiteSpace(request.ProfileFieldValue);
+
+    /// <summary>
+    /// Translates a LEGACY conflict-queue action into the governed resolve contract. The queue
+    /// clients (browser + WPF) send Resolution AcceptA/AcceptB/Dismiss with no
+    /// ChosenWinnerSource and an optional reason, while the governed path demands a concrete
+    /// candidate and a nonblank rationale — without translation every field-conflict action from
+    /// those queues dies on the candidate or rationale guard with a 400. AcceptA/AcceptB name the
+    /// conflict's recorded providers; a Dismiss acknowledges provider A's value as the equivalent
+    /// candidate (the DismissAsEquivalent flow needs a candidate, and the authority policy still
+    /// challenges a dismissal it scores as a real disagreement). An absent reason records the
+    /// operator's queue action itself — honest, attributable audit text for a queue surface that
+    /// collects no free-form rationale.
+    /// </summary>
+    internal static (string ChosenWinnerSource, string Reason) TranslateLegacyConflictAction(
+        ResolveConflictRequest request, SecurityMasterConflict existing, string resolvedBy)
+    {
+        var chosenWinnerSource = !string.IsNullOrWhiteSpace(request.ChosenWinnerSource)
+            ? request.ChosenWinnerSource.Trim()
+            : request.Resolution switch
+            {
+                not null when request.Resolution.Equals("AcceptA", StringComparison.OrdinalIgnoreCase)
+                    => existing.ProviderA,
+                not null when request.Resolution.Equals("AcceptB", StringComparison.OrdinalIgnoreCase)
+                    => existing.ProviderB,
+                not null when request.Resolution.Equals("Dismiss", StringComparison.OrdinalIgnoreCase)
+                    => existing.ProviderA,
+                _ => string.Empty,
+            };
+        var reason = !string.IsNullOrWhiteSpace(request.Reason)
+            ? request.Reason
+            : $"'{request.Resolution}' action from the shared conflict queue by {resolvedBy}.";
+        return (chosenWinnerSource, reason);
+    }
 
     private static string ResolveActor(HttpContext context)
     {

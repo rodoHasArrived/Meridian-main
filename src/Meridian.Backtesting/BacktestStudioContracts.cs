@@ -5,6 +5,8 @@ namespace Meridian.Backtesting;
 
 /// <summary>
 /// Backtesting-owned request for launching a Backtest Studio run through a concrete engine.
+/// The bounded W6 evidence loop requires a nonblank strategy identity, at least one operator
+/// acceptance criterion, and at least one retained cross-workflow reference.
 /// </summary>
 public sealed record BacktestStudioRunRequest(
     string StrategyId,
@@ -44,6 +46,23 @@ public sealed record BacktestStudioRunRequest(
 
     public IReadOnlyList<string> GovernedReportReferences { get; init; } =
         GovernedReportReferences ?? [];
+
+    /// <summary>
+    /// Validates and normalizes the required evidence loop before engine invocation.
+    /// </summary>
+    public bool TryCreateRequiredEvidenceLoop(
+        out StrategyRunEvidenceLoop evidenceLoop,
+        out string validationError)
+        => StrategyRunEvidenceLoop.TryCreateRequired(
+            StrategyId,
+            OperatorAcceptanceCriteria,
+            RetainedEvidenceReferences,
+            AccountingRecordReferences,
+            ApprovalReferences,
+            PaperValidationReferences,
+            GovernedReportReferences,
+            out evidenceLoop,
+            out validationError);
 }
 
 /// <summary>

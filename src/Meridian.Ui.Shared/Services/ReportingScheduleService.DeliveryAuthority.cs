@@ -49,6 +49,9 @@ public sealed partial class ReportingScheduleService
             var expectedTransportId = deliveryMode == ReportPackDeliveryModeDto.EmailLink
                 ? "http-relay"
                 : "secure-portal";
+            var selectedArtifactCount = (handoff.ArtifactIds ?? [])
+                .Distinct(StringComparer.Ordinal)
+                .Count();
             if (!string.Equals(handoff.DistributionId, $"scheduled:{handoff.HandoffId}", StringComparison.Ordinal)
                 || !string.Equals(handoff.TransportId, expectedTransportId, StringComparison.Ordinal)
                 || !string.Equals(
@@ -60,7 +63,9 @@ public sealed partial class ReportingScheduleService
                     reportingRecipientKind.ToString(),
                     StringComparison.Ordinal)
                 || expectedTransportId == "http-relay"
-                    && (handoff.GrantLifetimeSeconds != 1_800 || handoff.GrantMaxUses != 1)
+                    && (handoff.GrantLifetimeSeconds != 1_800
+                        || selectedArtifactCount == 0
+                        || handoff.GrantMaxUses != selectedArtifactCount)
                 || expectedTransportId != "http-relay"
                     && (handoff.GrantLifetimeSeconds is not null || handoff.GrantMaxUses is not null))
             {

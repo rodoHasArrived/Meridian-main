@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Strategies.Services;
@@ -26,6 +27,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
             var token = Guid.NewGuid().ToString("N");
             IReadOnlyList<ReconciliationBreakQueueItem> checkpointItems;
             string checkpointHash;
+            long checkpointGeneration;
             if (_closeScopeLocks.TryGetValue(scopeKey, out var retained))
             {
                 if (retained.State == CloseScopeLockState.HardClosed)
@@ -34,22 +36,48 @@ public sealed partial class FileReconciliationBreakQueueRepository
                         $"Reconciliation close scope '{scopeKey}' is already sealed as hard-closed.");
                 }
 
-                // Holding the repository mutation file exclusively proves that the process which
-                // retained this Closing token no longer owns the lease. Rotate the token to fence
-                // any stale owner, but retain the exact hash-verified checkpoint. The caller must
-                // re-read the authoritative ledger state before either resuming or abandoning it.
-                checkpointItems = CloneCloseScopeCheckpointItems(retained.CheckpointItems!);
-                checkpointHash = retained.CheckpointHashSha256;
-                _closeScopeLocks[scopeKey] = retained with
+                if (retained.State == CloseScopeLockState.Reopened)
                 {
-                    Token = token,
-                    UpdatedAtUtc = DateTimeOffset.UtcNow
-                };
+                    checkpointGeneration = checked(retained.Generation + 1);
+                    checkpointItems = FreezeCloseScopeCheckpointItems(scope, _items!.Values);
+                    checkpointHash = ComputeCloseScopeCheckpointHash(
+                        scope,
+                        checkpointItems,
+                        checkpointGeneration);
+                    _closeScopeLocks[scopeKey] = retained with
+                    {
+                        State = CloseScopeLockState.Closing,
+                        Token = token,
+                        CheckpointHashSha256 = checkpointHash,
+                        UpdatedAtUtc = DateTimeOffset.UtcNow,
+                        CheckpointItems = checkpointItems,
+                        Generation = checkpointGeneration
+                    };
+                }
+                else
+                {
+                    // Holding the repository mutation file exclusively proves that the process which
+                    // retained this Closing token no longer owns the lease. Rotate the token to fence
+                    // any stale owner, but retain the exact hash-verified checkpoint. The caller must
+                    // re-read the authoritative ledger state before either resuming or abandoning it.
+                    checkpointGeneration = retained.Generation;
+                    checkpointItems = CloneCloseScopeCheckpointItems(retained.CheckpointItems!);
+                    checkpointHash = retained.CheckpointHashSha256;
+                    _closeScopeLocks[scopeKey] = retained with
+                    {
+                        Token = token,
+                        UpdatedAtUtc = DateTimeOffset.UtcNow
+                    };
+                }
             }
             else
             {
+                checkpointGeneration = 1;
                 checkpointItems = FreezeCloseScopeCheckpointItems(scope, _items!.Values);
-                checkpointHash = ComputeCloseScopeCheckpointHash(scope, checkpointItems);
+                checkpointHash = ComputeCloseScopeCheckpointHash(
+                    scope,
+                    checkpointItems,
+                    checkpointGeneration);
                 _closeScopeLocks[scopeKey] = new CloseScopeLockRecord(
                     scopeKey,
                     scope,
@@ -57,7 +85,8 @@ public sealed partial class FileReconciliationBreakQueueRepository
                     token,
                     checkpointHash,
                     DateTimeOffset.UtcNow,
-                    checkpointItems);
+                    checkpointItems,
+                    checkpointGeneration);
             }
 
             try
@@ -77,6 +106,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
                 scope,
                 CloneCloseScopeCheckpointItems(checkpointItems),
                 checkpointHash,
+                checkpointGeneration,
                 mutationLease);
             mutationLease = null;
             return lease;
@@ -133,8 +163,144 @@ public sealed partial class FileReconciliationBreakQueueRepository
 
                 retained = sealedCheckpoint;
             }
+            else if (retained.State == CloseScopeLockState.Reopened)
+            {
+                throw new InvalidOperationException(
+                    $"Reconciliation close scope '{scopeKey}' was governed-reopened and has no active hard-close checkpoint.");
+            }
 
             return CreateCloseScopeCheckpoint(retained);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<ReconciliationCloseScopeReopenReceipt> ReopenCloseScopeAsync(
+        ReconciliationCloseScope scope,
+        ReconciliationCloseScopeReopenCommand command,
+        CancellationToken ct = default)
+    {
+        ValidateCloseScope(scope);
+        ValidateCloseScopeReopenCommand(command);
+        var evidence = NormalizeCloseScopeReopenEvidence(command.EvidenceLinks);
+
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await using var mutationLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
+            ResetCachedState();
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
+
+            var scopeKey = BuildCloseScopeKey(scope);
+            if (!_closeScopeLocks.TryGetValue(scopeKey, out var retained))
+            {
+                throw new InvalidOperationException(
+                    $"Reconciliation close scope '{scopeKey}' has no sealed checkpoint to governed-reopen.");
+            }
+
+            ValidateCloseScopeLock(retained);
+            if (retained.State == CloseScopeLockState.Closing)
+            {
+                throw new InvalidOperationException(
+                    $"Reconciliation close scope '{scopeKey}' is still being hard-closed and cannot enter governed reopen.");
+            }
+
+            if (retained.State == CloseScopeLockState.Reopened)
+            {
+                var prior = retained.History?.LastOrDefault()?.ReopenReceipt
+                    ?? throw new InvalidDataException(
+                        $"Reconciliation close scope '{scopeKey}' is reopened without retained reopen evidence.");
+                if (!SameReopenCommand(prior, command, evidence))
+                {
+                    throw new InvalidOperationException(
+                        $"Reconciliation close scope '{scopeKey}' was already reopened by a different governed command.");
+                }
+
+                return prior with { WasAlreadyReopened = true };
+            }
+
+            var previousReopen = retained.History?.LastOrDefault()?.ReopenReceipt;
+            if (previousReopen is not null
+                && command.ReopenedLedgerPeriodVersion <= previousReopen.ReopenedLedgerPeriodVersion)
+            {
+                throw new InvalidOperationException(
+                    $"Reconciliation close scope '{scopeKey}' cannot reopen at ledger version {command.ReopenedLedgerPeriodVersion}; the prior governed reopen retained version {previousReopen.ReopenedLedgerPeriodVersion}.");
+            }
+
+            var reopenedAtUtc = DateTimeOffset.UtcNow;
+            var receipt = new ReconciliationCloseScopeReopenReceipt(
+                retained.Scope,
+                retained.Generation,
+                retained.CheckpointHashSha256,
+                command.ReopenedLedgerPeriodVersion,
+                command.Actor.Trim(),
+                command.Role.Trim(),
+                command.Reason.Trim(),
+                command.ApprovalReference.Trim(),
+                command.CorrelationId.Trim(),
+                evidence,
+                command.CommandHashSha256.Trim().ToLowerInvariant(),
+                reopenedAtUtc);
+            var history = (retained.History ?? [])
+                .Append(new ReconciliationCloseScopeHistoryEntry(
+                    retained.Scope,
+                    retained.Generation,
+                    retained.CheckpointHashSha256,
+                    CloneCloseScopeCheckpointItems(retained.CheckpointItems!),
+                    retained.UpdatedAtUtc,
+                    receipt))
+                .ToArray();
+            var reopened = retained with
+            {
+                State = CloseScopeLockState.Reopened,
+                UpdatedAtUtc = reopenedAtUtc,
+                History = history
+            };
+            ValidateCloseScopeLock(reopened);
+            _closeScopeLocks[scopeKey] = reopened;
+            try
+            {
+                await PersistSnapshotAsync(ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                _closeScopeLocks[scopeKey] = retained;
+                throw;
+            }
+
+            return receipt;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<IReadOnlyList<ReconciliationCloseScopeHistoryEntry>> ListCloseScopeHistoryAsync(
+        ReconciliationCloseScope scope,
+        CancellationToken ct = default)
+    {
+        ValidateCloseScope(scope);
+
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await using var mutationLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
+            ResetCachedState();
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
+
+            var scopeKey = BuildCloseScopeKey(scope);
+            if (!_closeScopeLocks.TryGetValue(scopeKey, out var retained))
+            {
+                return [];
+            }
+
+            ValidateCloseScopeLock(retained);
+            return (retained.History ?? [])
+                .Select(CloneCloseScopeHistoryEntry)
+                .ToArray();
         }
         finally
         {
@@ -154,7 +320,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
                     command.CloseScope.LedgerBookId,
                     command.CloseScope.AccountingPeriodId,
                     command.CloseScope.AsOfDate)));
-        if (proposedScopeLock is not null)
+        if (proposedScopeLock is { State: not CloseScopeLockState.Reopened })
         {
             return Invalid(
                 item,
@@ -165,7 +331,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
         }
 
         var retained = FindCloseScopeLock(item);
-        if (retained is null)
+        if (retained is null || retained.State == CloseScopeLockState.Reopened)
         {
             return null;
         }
@@ -184,7 +350,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
         string operation)
     {
         var retained = FindCloseScopeLock(item);
-        if (retained is null)
+        if (retained is null || retained.State == CloseScopeLockState.Reopened)
         {
             return;
         }
@@ -260,7 +426,24 @@ public sealed partial class FileReconciliationBreakQueueRepository
         }
 
         ValidateCloseScopeLock(retained);
-        _closeScopeLocks.Remove(scopeKey);
+        var priorGeneration = retained.History?.LastOrDefault();
+        if (priorGeneration is null)
+        {
+            _closeScopeLocks.Remove(scopeKey);
+        }
+        else
+        {
+            _closeScopeLocks[scopeKey] = new CloseScopeLockRecord(
+                scopeKey,
+                priorGeneration.Scope,
+                CloseScopeLockState.Reopened,
+                Guid.NewGuid().ToString("N"),
+                priorGeneration.CheckpointHashSha256,
+                priorGeneration.ReopenReceipt.ReopenedAtUtc,
+                CloneCloseScopeCheckpointItems(priorGeneration.Items),
+                priorGeneration.CheckpointGeneration,
+                retained.History);
+        }
         try
         {
             await PersistSnapshotAsync(ct).ConfigureAwait(false);
@@ -293,9 +476,10 @@ public sealed partial class FileReconciliationBreakQueueRepository
         if (string.IsNullOrWhiteSpace(retained.ScopeKey)
             || string.IsNullOrWhiteSpace(retained.Token)
             || !Guid.TryParseExact(retained.Token, "N", out _)
-            || !IsSha256(retained.CheckpointHashSha256)
+            || !Sha256Digest.IsWellFormed(retained.CheckpointHashSha256)
             || retained.UpdatedAtUtc == default
             || retained.CheckpointItems is null
+            || retained.Generation <= 0
             || !Enum.IsDefined(retained.State))
         {
             throw new InvalidDataException(
@@ -309,21 +493,14 @@ public sealed partial class FileReconciliationBreakQueueRepository
                 $"Reconciliation close-scope lock '{retained.ScopeKey}' does not match its retained scope.");
         }
 
-        if (retained.CheckpointItems.Any(static item => string.IsNullOrWhiteSpace(item.BreakId))
-            || retained.CheckpointItems
-                .GroupBy(static item => item.BreakId, StringComparer.OrdinalIgnoreCase)
-                .Any(static group => group.Count() > 1)
-            || retained.CheckpointItems.Any(item =>
-                !IsExactCloseScope(item, retained.Scope)
-                && !IsUnscopedStatementCloseBlocker(item)))
-        {
-            throw new InvalidDataException(
-                $"Reconciliation close-scope lock '{retained.ScopeKey}' contains invalid, duplicate, or out-of-scope checkpoint items.");
-        }
-
-        var expectedHash = ComputeCloseScopeCheckpointHash(
+        ValidateCloseScopeCheckpointItems(
+            retained.ScopeKey,
             retained.Scope,
             retained.CheckpointItems);
+        var expectedHash = ComputeCloseScopeCheckpointHash(
+            retained.Scope,
+            retained.CheckpointItems,
+            retained.Generation);
         if (!string.Equals(
                 retained.CheckpointHashSha256,
                 expectedHash,
@@ -331,6 +508,49 @@ public sealed partial class FileReconciliationBreakQueueRepository
         {
             throw new InvalidDataException(
                 $"Reconciliation close-scope lock '{retained.ScopeKey}' failed checkpoint hash verification.");
+        }
+
+        var history = retained.History ?? [];
+        for (var index = 0; index < history.Count; index++)
+        {
+            var entry = history[index];
+            ValidateCloseScopeHistoryEntry(retained.ScopeKey, retained.Scope, entry);
+            var expectedGeneration = index + 1L;
+            if (entry.CheckpointGeneration != expectedGeneration)
+            {
+                throw new InvalidDataException(
+                    $"Reconciliation close-scope lock '{retained.ScopeKey}' contains non-contiguous or out-of-order checkpoint history.");
+            }
+
+            if (index > 0
+                && entry.ReopenReceipt.ReopenedLedgerPeriodVersion
+                    <= history[index - 1].ReopenReceipt.ReopenedLedgerPeriodVersion)
+            {
+                throw new InvalidDataException(
+                    $"Reconciliation close-scope lock '{retained.ScopeKey}' contains non-monotonic reopened ledger versions.");
+            }
+        }
+
+        var latestHistory = history.LastOrDefault();
+        if (retained.State == CloseScopeLockState.Reopened)
+        {
+            if (latestHistory is null
+                || latestHistory.CheckpointGeneration != retained.Generation
+                || history.Count != retained.Generation
+                || !string.Equals(
+                    latestHistory.CheckpointHashSha256,
+                    retained.CheckpointHashSha256,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException(
+                    $"Reconciliation close-scope lock '{retained.ScopeKey}' is reopened without matching immutable checkpoint history.");
+            }
+        }
+        else if (history.Count != retained.Generation - 1
+                 || latestHistory is not null && latestHistory.CheckpointGeneration >= retained.Generation)
+        {
+            throw new InvalidDataException(
+                $"Reconciliation close-scope lock '{retained.ScopeKey}' has history that is not older than its active generation.");
         }
     }
 
@@ -343,22 +563,170 @@ public sealed partial class FileReconciliationBreakQueueRepository
             scope.AsOfDate.ToString("yyyy-MM-dd"));
 
     private static string DescribeState(CloseScopeLockState state)
-        => state == CloseScopeLockState.HardClosed ? "hard-closed" : "being hard-closed";
+        => state switch
+        {
+            CloseScopeLockState.HardClosed => "hard-closed",
+            CloseScopeLockState.Reopened => "governed-reopened",
+            _ => "being hard-closed"
+        };
 
     private string ComputeCloseScopeCheckpointHash(
         ReconciliationCloseScope scope,
-        IReadOnlyList<ReconciliationBreakQueueItem> items)
+        IReadOnlyList<ReconciliationBreakQueueItem> items,
+        long generation)
     {
-        var checkpoint = new
-        {
-            scope = BuildCloseScopeKey(scope),
-            items = items
-                .OrderBy(static item => item.BreakId, StringComparer.Ordinal)
-                .ToArray()
-        };
+        var ordered = items
+            .OrderBy(static item => item.BreakId, StringComparer.Ordinal)
+            .ToArray();
+        object checkpoint = generation == 1
+            ? new
+            {
+                scope = BuildCloseScopeKey(scope),
+                items = ordered
+            }
+            : new
+            {
+                scope = BuildCloseScopeKey(scope),
+                generation,
+                items = ordered
+            };
         return Convert.ToHexString(SHA256.HashData(
                 Encoding.UTF8.GetBytes(JsonSerializer.Serialize(checkpoint, _jsonOptions))))
             .ToLowerInvariant();
+    }
+
+    private static void ValidateCloseScopeReopenCommand(
+        ReconciliationCloseScopeReopenCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentException.ThrowIfNullOrWhiteSpace(command.Actor);
+        ArgumentException.ThrowIfNullOrWhiteSpace(command.Role);
+        ArgumentException.ThrowIfNullOrWhiteSpace(command.Reason);
+        ArgumentException.ThrowIfNullOrWhiteSpace(command.ApprovalReference);
+        ArgumentException.ThrowIfNullOrWhiteSpace(command.CorrelationId);
+        if (!string.Equals(command.Role, "Controller", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(command.Role, "Fund Controller", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "Governed reconciliation checkpoint reopen requires Controller or Fund Controller authority.");
+        }
+        var evidence = NormalizeCloseScopeReopenEvidence(command.EvidenceLinks);
+        if (command.ReopenedLedgerPeriodVersion <= 0
+            || !Sha256Digest.IsWellFormed(command.CommandHashSha256)
+            || evidence.Count == 0
+            || !evidence.Any(link =>
+                link.Contains(command.ApprovalReference.Trim(), StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException(
+                "Governed reconciliation checkpoint reopen requires a positive ledger version, exact command hash, and retained evidence linked to the approval reference.",
+                nameof(command));
+        }
+    }
+
+    private static IReadOnlyList<string> NormalizeCloseScopeReopenEvidence(
+        IReadOnlyList<string> evidenceLinks)
+        => (evidenceLinks ?? [])
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
+            .Select(static link => link.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static bool SameReopenCommand(
+        ReconciliationCloseScopeReopenReceipt retained,
+        ReconciliationCloseScopeReopenCommand command,
+        IReadOnlyList<string> evidence)
+        => retained.ReopenedLedgerPeriodVersion == command.ReopenedLedgerPeriodVersion
+            && string.Equals(retained.Actor, command.Actor.Trim(), StringComparison.OrdinalIgnoreCase)
+            && string.Equals(retained.Role, command.Role.Trim(), StringComparison.OrdinalIgnoreCase)
+            && string.Equals(retained.Reason, command.Reason.Trim(), StringComparison.Ordinal)
+            && string.Equals(
+                retained.ApprovalReference,
+                command.ApprovalReference.Trim(),
+                StringComparison.OrdinalIgnoreCase)
+            && string.Equals(
+                retained.CorrelationId,
+                command.CorrelationId.Trim(),
+                StringComparison.OrdinalIgnoreCase)
+            && string.Equals(
+                retained.CommandHashSha256,
+                command.CommandHashSha256.Trim(),
+                StringComparison.OrdinalIgnoreCase)
+            && retained.EvidenceLinks.SequenceEqual(evidence, StringComparer.OrdinalIgnoreCase);
+
+    private void ValidateCloseScopeHistoryEntry(
+        string scopeKey,
+        ReconciliationCloseScope scope,
+        ReconciliationCloseScopeHistoryEntry entry)
+    {
+        if (entry is null
+            || entry.Scope is null
+            || entry.Items is null
+            || entry.ReopenReceipt is null
+            || entry.ReopenReceipt.Scope is null
+            || entry.ReopenReceipt.EvidenceLinks is null
+            || entry.CheckpointGeneration <= 0
+            || entry.SealedAtUtc == default
+            || !string.Equals(BuildCloseScopeKey(entry.Scope), scopeKey, StringComparison.Ordinal)
+            || !string.Equals(BuildCloseScopeKey(entry.ReopenReceipt.Scope), scopeKey, StringComparison.Ordinal)
+            || entry.ReopenReceipt.CheckpointGeneration != entry.CheckpointGeneration
+            || !string.Equals(
+                entry.ReopenReceipt.CheckpointHashSha256,
+                entry.CheckpointHashSha256,
+                StringComparison.OrdinalIgnoreCase)
+            || entry.ReopenReceipt.WasAlreadyReopened
+            || entry.ReopenReceipt.ReopenedAtUtc < entry.SealedAtUtc)
+        {
+            throw new InvalidDataException(
+                $"Reconciliation close-scope lock '{scopeKey}' contains invalid checkpoint history.");
+        }
+
+        ValidateCloseScopeCheckpointItems(scopeKey, scope, entry.Items);
+        var expectedHash = ComputeCloseScopeCheckpointHash(
+            scope,
+            entry.Items,
+            entry.CheckpointGeneration);
+        if (!string.Equals(entry.CheckpointHashSha256, expectedHash, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException(
+                $"Reconciliation close-scope lock '{scopeKey}' contains history that failed checkpoint hash verification.");
+        }
+
+        var receipt = entry.ReopenReceipt;
+        ValidateCloseScopeReopenCommand(new ReconciliationCloseScopeReopenCommand(
+            receipt.Actor,
+            receipt.Role,
+            receipt.Reason,
+            receipt.ApprovalReference,
+            receipt.CorrelationId,
+            receipt.EvidenceLinks,
+            receipt.ReopenedLedgerPeriodVersion,
+            receipt.CommandHashSha256));
+        if (!receipt.EvidenceLinks.SequenceEqual(
+                NormalizeCloseScopeReopenEvidence(receipt.EvidenceLinks),
+                StringComparer.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException(
+                $"Reconciliation close-scope lock '{scopeKey}' contains non-canonical reopen evidence.");
+        }
+    }
+
+    private static void ValidateCloseScopeCheckpointItems(
+        string scopeKey,
+        ReconciliationCloseScope scope,
+        IReadOnlyList<ReconciliationBreakQueueItem> items)
+    {
+        if (items.Any(static item => string.IsNullOrWhiteSpace(item.BreakId))
+            || items
+                .GroupBy(static item => item.BreakId, StringComparer.OrdinalIgnoreCase)
+                .Any(static group => group.Count() > 1)
+            || items.Any(item =>
+                !IsExactCloseScope(item, scope)
+                && !IsUnscopedStatementCloseBlocker(item)))
+        {
+            throw new InvalidDataException(
+                $"Reconciliation close-scope lock '{scopeKey}' contains invalid, duplicate, or out-of-scope checkpoint items.");
+        }
     }
 
     private ReconciliationBreakQueueItem[] FreezeCloseScopeCheckpointItems(
@@ -384,6 +752,15 @@ public sealed partial class FileReconciliationBreakQueueRepository
         return JsonSerializer.Deserialize<ReconciliationBreakQueueItem[]>(payload, _jsonOptions)
             ?? throw new InvalidDataException(
                 "The retained reconciliation close-scope checkpoint could not be cloned.");
+    }
+
+    private ReconciliationCloseScopeHistoryEntry CloneCloseScopeHistoryEntry(
+        ReconciliationCloseScopeHistoryEntry entry)
+    {
+        var payload = JsonSerializer.Serialize(entry, _jsonOptions);
+        return JsonSerializer.Deserialize<ReconciliationCloseScopeHistoryEntry>(payload, _jsonOptions)
+            ?? throw new InvalidDataException(
+                "The retained reconciliation close-scope history could not be cloned.");
     }
 
     private static bool IsExactCloseScope(
@@ -415,12 +792,14 @@ public sealed partial class FileReconciliationBreakQueueRepository
         => new(
             retained.Scope,
             CloneCloseScopeCheckpointItems(retained.CheckpointItems!),
-            retained.CheckpointHashSha256);
+            retained.CheckpointHashSha256,
+            retained.Generation);
 
     private enum CloseScopeLockState : byte
     {
         Closing = 0,
-        HardClosed = 1
+        HardClosed = 1,
+        Reopened = 2
     }
 
     private sealed record CloseScopeLockRecord(
@@ -430,7 +809,9 @@ public sealed partial class FileReconciliationBreakQueueRepository
         string Token,
         string CheckpointHashSha256,
         DateTimeOffset UpdatedAtUtc,
-        IReadOnlyList<ReconciliationBreakQueueItem>? CheckpointItems = null);
+        IReadOnlyList<ReconciliationBreakQueueItem>? CheckpointItems = null,
+        long Generation = 1,
+        IReadOnlyList<ReconciliationCloseScopeHistoryEntry>? History = null);
 
     private sealed class CloseScopeLease(
         FileReconciliationBreakQueueRepository owner,
@@ -439,6 +820,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
         ReconciliationCloseScope scope,
         IReadOnlyList<ReconciliationBreakQueueItem> items,
         string checkpointHashSha256,
+        long generation,
         FileStream mutationLease) : IReconciliationCloseScopeLease
     {
         private bool _hardCloseCommitAttempted;
@@ -451,6 +833,8 @@ public sealed partial class FileReconciliationBreakQueueRepository
         public IReadOnlyList<ReconciliationBreakQueueItem> Items { get; } = items;
 
         public string CheckpointHashSha256 { get; } = checkpointHashSha256;
+
+        public long Generation { get; } = generation;
 
         public async Task CommitHardCloseAsync(CancellationToken ct = default)
         {

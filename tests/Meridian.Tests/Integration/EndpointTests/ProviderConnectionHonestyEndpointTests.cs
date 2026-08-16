@@ -1,19 +1,26 @@
 using System.Net;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Identity.Auth;
 
 namespace Meridian.Tests.Integration.EndpointTests;
 
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class ProviderConnectionHonestyEndpointTests
+public sealed class ProviderConnectionHonestyEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
+    private readonly HttpClient _diagnosticsClient;
 
     public ProviderConnectionHonestyEndpointTests(EndpointTestFixture fixture)
     {
         _client = fixture.Client;
+        _diagnosticsClient = fixture.CreatePermittedClient(
+            UserPermission.ViewDiagnostics,
+            UserPermission.ManageProviders);
     }
+
+    public void Dispose() => _diagnosticsClient.Dispose();
 
     [Fact]
     public async Task ProvidersWithoutRuntimeDiagnostics_AreUnknownRatherThanFabricatedConnected()
@@ -46,7 +53,7 @@ public sealed class ProviderConnectionHonestyEndpointTests
         dashboardProvider.GetProperty("isConnected").ValueKind.Should().Be(JsonValueKind.Null);
         dashboardProvider.GetProperty("trafficLight").GetString().Should().Be("unknown");
 
-        var testResponse = await _client.PostAsync(
+        var testResponse = await _diagnosticsClient.PostAsync(
             $"/api/providers/{Uri.EscapeDataString(providerName!)}/test",
             content: null);
         testResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -89,14 +96,14 @@ public sealed class ProviderConnectionHonestyEndpointTests
         using var healthTest = JsonDocument.Parse(await healthTestResponse.Content.ReadAsStringAsync());
         AssertUnknownReachability(healthTest.RootElement);
 
-        var diagnosticsTestResponse = await _client.PostAsync(
+        var diagnosticsTestResponse = await _diagnosticsClient.PostAsync(
             $"/api/diagnostics/providers/{Uri.EscapeDataString(providerName!)}/test",
             content: null);
         diagnosticsTestResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         using var diagnosticsTest = JsonDocument.Parse(await diagnosticsTestResponse.Content.ReadAsStringAsync());
         AssertUnknownReachability(diagnosticsTest.RootElement);
 
-        var connectivityResponse = await _client.PostAsync("/api/diagnostics/test-connectivity", content: null);
+        var connectivityResponse = await _diagnosticsClient.PostAsync("/api/diagnostics/test-connectivity", content: null);
         connectivityResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         using var connectivity = JsonDocument.Parse(await connectivityResponse.Content.ReadAsStringAsync());
         var connectivityProvider = connectivity.RootElement.GetProperty("results")

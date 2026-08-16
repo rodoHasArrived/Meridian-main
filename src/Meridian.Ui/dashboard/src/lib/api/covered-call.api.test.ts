@@ -97,6 +97,12 @@ function buildRequest() {
     depthBonusWeight: 0.05,
     riskFreeRate: 0.04,
     initialUnderlyingShares: 100,
-    label: null
+    label: null,
+    operatorAcceptanceCriteria: ["Operator reviewed the retained covered-call backtest evidence."],
+    retainedEvidenceReferences: ["evidence://strategy-runs/covered-call-overwrite"],
+    accountingRecordReferences: [],
+    approvalReferences: [],
+    paperValidationReferences: [],
+    governedReportReferences: []
   };
 }
