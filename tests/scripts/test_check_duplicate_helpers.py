@@ -368,6 +368,14 @@ class BodyCloneDetectionTests(unittest.TestCase):
                         "    \"\"\"\";\n"})
         self.assertEqual(found, {})
 
+    def test_a_different_return_type_is_not_a_clone(self):
+        # Same body returning object? is not interchangeable: replacing it with the
+        # string-returning owner can change downstream overload resolution.
+        found = clones({"src/A/Thing.cs":
+                        "    private static object? Clean(string? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {})
+
     def test_a_tracked_name_is_the_name_ratchets_jurisdiction(self):
         # One copy must never be counted by both detectors.
         found = clones({"src/A/Thing.cs":

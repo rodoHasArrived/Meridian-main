@@ -97,13 +97,16 @@ _TYPE_ALIAS_PATTERN = re.compile(
     r"\b(?:System\.)?(" + "|".join(_TYPE_ALIASES) + r")\b"
 )
 # The declaration header of a method: at least one declaration keyword (accessibility
-# or modifier -- `static string? Clean(...)` is implicitly private, and local functions
-# carry no accessibility at all), a return type, then the name directly before the
-# parameter list. Requiring one keyword keeps expression text from matching; a spurious
-# match is further gated by the parameter-type and body lookups.
+# or modifier -- `static string? Clean(...)` is implicitly private, and static local
+# functions match too), a return type, then the name directly before the parameter
+# list. The keyword requirement is what keeps statement text from matching: an
+# experiment that made it optional (to also catch bare instance helpers) had the header
+# matching control flow -- owners named `foreach` and `if` -- and quadrupled the scan
+# time, so bare no-modifier declarations are accepted as out of scope. A helper worth
+# sharing is static by nature; an instance copy is already a different function.
 _METHOD_HEADER = re.compile(
     r"\b(?:(?:private|internal|protected|public|static|readonly|async|sealed|new|virtual|override)\s+)+"
-    r"[\w?<>\[\], .]+?\s+([A-Za-z_]\w*)\s*\("
+    r"([\w?<>\[\], .]+?)\s+([A-Za-z_]\w*)\s*\("
 )
 _PARAMETER_MODIFIERS = ("params", "ref", "out", "in", "this", "scoped", "readonly")
 
@@ -265,7 +268,8 @@ def _iter_methods(text: str):
     """
     stripped = _mask_strings_and_comments(text)
     for header in _METHOD_HEADER.finditer(stripped):
-        name = header.group(1)
+        return_type = header.group(1)
+        name = header.group(2)
         params_open = header.end() - 1
         params_close = _matched_span(stripped, params_open, "(", ")")
         if params_close is None:
@@ -282,7 +286,7 @@ def _iter_methods(text: str):
                 elif char in ")]}":
                     depth -= 1
                 elif char == ";" and depth == 0:
-                    yield name, parameter_text, rest[arrow.end() : offset]
+                    yield name, return_type, parameter_text, rest[arrow.end() : offset]
                     break
             continue
         brace = re.match(r"\s*(?:where\s[^{]*)?\{", rest)
@@ -290,7 +294,7 @@ def _iter_methods(text: str):
             block_open = brace.end() - 1
             block_close = _matched_span(rest, block_open, "{", "}")
             if block_close is not None:
-                yield name, parameter_text, rest[block_open + 1 : block_close - 1]
+                yield name, return_type, parameter_text, rest[block_open + 1 : block_close - 1]
 
 
 def _split_parameters(parameter_text: str) -> list[str]:
@@ -347,6 +351,18 @@ def _parameter_names(parameter_text: str) -> list[str]:
     return names
 
 
+def _canonical_type(type_text: str) -> str:
+    """One type, canonically spelled: no whitespace, no nullability, aliases folded.
+
+    Applied to the return type and each parameter type alike: a same-body helper over
+    `dynamic` or returning `object?` is not interchangeable with the string owner --
+    overload resolution can pick differently -- while `String` for `string` and `?`
+    are spelling, not semantics.
+    """
+    type_text = re.sub(r"\s+", "", type_text.replace("?", ""))
+    return _TYPE_ALIAS_PATTERN.sub(lambda match: _TYPE_ALIASES[match.group(1)], type_text)
+
+
 def _parameter_types(parameter_text: str) -> str:
     """Canonical comma-joined parameter types, for the clone key.
 
@@ -365,11 +381,7 @@ def _parameter_types(parameter_text: str) -> str:
                 if declaration == modifier or declaration.startswith(modifier + " "):
                     declaration = declaration[len(modifier):].strip()
                     changed = True
-        declaration = declaration.replace("?", "")
-        declaration = re.sub(r"\s+", "", declaration)
-        declaration = _TYPE_ALIAS_PATTERN.sub(
-            lambda match: _TYPE_ALIASES[match.group(1)], declaration
-        )
+        declaration = _canonical_type(declaration)
         if declaration:
             types.append(declaration)
     return ",".join(types)
@@ -421,8 +433,10 @@ def owned_bodies(repo_root: Path) -> dict[tuple[str, str], str]:
         return {}
     text = path.read_text(encoding="utf-8", errors="replace")
     owners: dict[tuple[str, str], str] = {}
-    for name, parameter_text, body in _iter_methods(text):
-        owners[(_parameter_types(parameter_text), canonicalize_body(body, parameter_text))] = name
+    for name, return_type, parameter_text, body in _iter_methods(text):
+        key = (_canonical_type(return_type), _parameter_types(parameter_text),
+               canonicalize_body(body, parameter_text))
+        owners[key] = name
     return owners
 
 
@@ -437,7 +451,7 @@ def scan_body_clones(repo_root: Path) -> dict[str, list[tuple[str, str]]]:
         return {}
     # The cheap signature gate: only a handful of parameter-type shapes can match an
     # owner, so almost every method skips the body canonicalisation entirely.
-    owner_types = {types for types, _ in owners}
+    owner_types = {(returns, types) for returns, types, _ in owners}
 
     clones: dict[str, list[tuple[str, str]]] = {}
     source_root = repo_root / "src"
@@ -453,13 +467,13 @@ def scan_body_clones(repo_root: Path) -> dict[str, list[tuple[str, str]]]:
             if rel in EXCLUDED_FILES:
                 continue
             text = path.read_text(encoding="utf-8", errors="replace")
-            for name, parameter_text, body in _iter_methods(text):
+            for name, return_type, parameter_text, body in _iter_methods(text):
                 if name in TRACKED_HELPERS:
                     continue
-                types = _parameter_types(parameter_text)
-                if types not in owner_types:
+                shape = (_canonical_type(return_type), _parameter_types(parameter_text))
+                if shape not in owner_types:
                     continue
-                owner = owners.get((types, canonicalize_body(body, parameter_text)))
+                owner = owners.get(shape + (canonicalize_body(body, parameter_text),))
                 if owner is not None:
                     clones.setdefault(rel, []).append((name, owner))
     return {rel: sorted(entries) for rel, entries in sorted(clones.items())}
