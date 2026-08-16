@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
+using Meridian.Contracts.Integrity;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
@@ -191,7 +192,7 @@ public sealed class StatementImportAndMatchingTests
             });
 
         imported.Import.SourceFileHash.Should().Be(
-            Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(path))));
+            Sha256Digest.Compute(await File.ReadAllBytesAsync(path)));
         imported.Rows.Should().ContainSingle();
         imported.Rows[0].Symbol.Should().Be("BRK,B");
         imported.Rows[0].ActivityType.Should().Be("OTHER \"SPECIAL\"");

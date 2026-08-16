@@ -55,9 +55,7 @@
     "src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs": 1,
     "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs": 1,
     "src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs": 1,
-    "src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs": 1,
     "src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs": 1,
-    "src/Meridian.FinancialOperations/Reconciliation/StatementRunCreateRequest.cs": 1,
     "src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs": 1,
     "src/Meridian.FinancialOperations/Reconciliation/StatementRunWorkflowService.cs": 1,
     "src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs": 1,
@@ -172,6 +170,6 @@
     "src/Meridian.Workflow/Runbooks/RunbookExecutor.cs": 4,
     "src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs": 1
   },
-  "total": 260,
+  "total": 258,
   "tracked_call": "SHA256.HashData"
 }
