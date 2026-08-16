@@ -13,12 +13,20 @@ posting commands, reconciliation, operations continuity) and the one new contrac
 not introduce `Version`, `RowVersion`, `IfMatch`, or HTTP `ETag`/`If-Match` headers for this
 purpose; Meridian versions in the body.
 
-One existing family spells it differently: the ledger journal-automation schedule endpoints bind
-the full work item (`AutomatedJournalScheduleWorkItem`), whose **`Version`** member is both the
-record's current version on read and the expected version on write — there is no separate
-`ExpectedVersion` field to send. That is a family-specific exception retained until the request
-DTO is next reshaped, not a precedent; its 409 *response* already follows the canonical body
-below.
+Two existing families do not follow this rule yet. Both are recorded as exceptions retained until
+their request DTOs are next reshaped, not as precedent; their 409 *responses* already follow the
+canonical body below.
+
+- **Ledger journal automation** binds the full work item (`AutomatedJournalScheduleWorkItem`),
+  whose **`Version`** member is both the record's current version on read and the expected
+  version on write — there is no separate `ExpectedVersion` field to send.
+- **Reporting schedules** carry *no* caller version at all: `ReportingScheduleUpsertRequestDto`
+  has neither `ExpectedVersion` nor an expected revision timestamp, and the store's
+  retained-revision check runs against its own latest read during commit. Its 409 therefore
+  detects only two writers racing the same commit window — a client that read, paused, and wrote
+  later silently overwrites rather than receiving the advertised conflict. Closing that
+  lost-update window means adding a caller-supplied expected revision to the DTO and its
+  clients, deferred to a change that reshapes the contract.
 
 ## Response side: the canonical 409 body
 

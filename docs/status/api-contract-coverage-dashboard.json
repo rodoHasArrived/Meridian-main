@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 20.7,
+  "score_percent": 20.8,
   "endpoint_coverage_percent": 32.0,
-  "contract_coverage_percent": 3.8,
+  "contract_coverage_percent": 3.9,
   "summary": {
     "endpoint_count": 621,
     "documented_endpoint_count": 199,
     "undocumented_endpoint_count": 422,
     "workstation_contract_count": 917,
-    "documented_workstation_contract_count": 35,
-    "undocumented_workstation_contract_count": 882
+    "documented_workstation_contract_count": 36,
+    "undocumented_workstation_contract_count": 881
   },
   "endpoints": [
     {
@@ -5335,7 +5335,7 @@
     {
       "name": "ReportingScheduleUpsertRequestDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1170",
-      "documented": false
+      "documented": true
     },
     {
       "name": "ReportingScheduleRunResultDto",

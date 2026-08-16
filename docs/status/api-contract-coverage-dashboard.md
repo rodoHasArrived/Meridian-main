@@ -11,11 +11,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 20.7% |
+| Weighted score | 20.8% |
 | Endpoint coverage | 32.0% |
-| Workstation contract coverage | 3.8% |
+| Workstation contract coverage | 3.9% |
 | Endpoints documented | 199 / 621 |
-| Workstation contracts documented | 35 / 917 |
+| Workstation contracts documented | 36 / 917 |
 
 ## Endpoint Coverage
 
@@ -1213,7 +1213,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ReportingScheduleRecordDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1140` |
 | `ReportingScheduleRunResultDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1188` |
 | `ReportingScheduleStateDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1097` |
-| `ReportingScheduleUpsertRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1170` |
+| `ReportingScheduleUpsertRequestDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1170` |
 | `ReportingScheduledReleaseHandoffDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1029` |
 | `ReportingScheduledReleaseHandoffStateDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1018` |
 | `ReportingStarterKitDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1114` |
@@ -1568,7 +1568,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 ## Follow-up Queue
 
 - Document or intentionally suppress 422 mapped endpoint gap(s).
-- Document or intentionally suppress 882 workstation contract gap(s).
+- Document or intentionally suppress 881 workstation contract gap(s).
 
 ---
 
