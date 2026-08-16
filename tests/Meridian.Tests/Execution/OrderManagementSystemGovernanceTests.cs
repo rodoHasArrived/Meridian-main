@@ -127,7 +127,7 @@ public sealed class OrderManagementSystemGovernanceTests
     }
 
     [Fact]
-    public async Task PlaceOrderAsync_WithBypassOverride_AllowsOrderWhileCircuitBreakerIsOpen()
+    public async Task PlaceOrderAsync_WithBypassOverride_AllowsAClosingOrderWhileCircuitBreakerIsOpen()
     {
         var tempRoot = CreateTempRoot();
 
@@ -160,12 +160,14 @@ public sealed class OrderManagementSystemGovernanceTests
             NullLogger<OrderManagementSystem>.Instance,
             operatorControls: controls,
             auditTrail: auditTrail,
-            portfolioState: new StaticPortfolioState());
+            portfolioState: new StaticPortfolioState(new TestPosition("AAPL", 10)));
 
+        // Sells into a 10-share long: the emergency close the override exists for. A buy here
+        // would open fresh risk behind the halt, which the close-only exception refuses.
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
             Symbol = "AAPL",
-            Side = OrderSide.Buy,
+            Side = OrderSide.Sell,
             Type = OrderType.Market,
             Quantity = 1m,
             StrategyId = "strategy-1",

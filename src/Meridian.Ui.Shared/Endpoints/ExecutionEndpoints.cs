@@ -275,15 +275,27 @@ public static class ExecutionEndpoints
             var actionId = GenerateActionId();
             var openCount = oms.GetOpenOrders().Count;
 
-            await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false);
+            var sweep = await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false)
+                ?? KillSwitchSweepResult.Unestablished(openCount);
 
-            logger.LogInformation("Trading action {ActionId}: cancel-all — cancelled {Count} open orders", actionId, openCount);
+            logger.LogInformation(
+                "Trading action {ActionId}: cancel-all — cancelled {Cancelled} of {Requested} open order(s), {StillWorking} still working",
+                actionId,
+                sweep.Cancelled,
+                sweep.Requested,
+                sweep.StillWorking.Count);
 
+            // The operator is told what the sweep achieved, not that it was requested. A ticket
+            // reading "Completed" over a book that still has working orders is the specific
+            // failure this endpoint used to produce.
             var actionResult = new TradingActionResult(
                 ActionId: actionId,
-                Status: "Completed",
-                Message: $"Cancellation requested for {openCount} open order(s).",
-                OccurredAt: DateTimeOffset.UtcNow);
+                Status: sweep.Outcome.ToString(),
+                Message: sweep.Describe(),
+                OccurredAt: DateTimeOffset.UtcNow,
+                // Every surviving order, not the bounded prose. A caller driving recovery needs the
+                // ids to cancel by hand, and the rendered message names only the first ten.
+                StillWorking: sweep.StillWorking);
 
             return Results.Json(actionResult, jsonOptions);
         })
@@ -434,25 +446,46 @@ public static class ExecutionEndpoints
             // The cancel sweep runs after the durable breaker flip so a crash between the two
             // restarts into the halted state, and its outcome is audited separately from the
             // activation so a failed sweep is visible rather than silently absorbed.
+            KillSwitchSweepResult? sweepOutcome = null;
             if (request.IsOpen && context.RequestServices.GetService<IOrderManager>() is { } oms)
             {
                 var auditTrail = context.RequestServices.GetService<ExecutionAuditTrailService>();
                 var openCount = oms.GetOpenOrders().Count;
                 try
                 {
-                    await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false);
-                    GetLogger(context.RequestServices).LogInformation(
-                        "Circuit breaker opened by {Actor}; cancel-all issued for {Count} open order(s)",
-                        actor, openCount);
+                    // A null sweep is an order manager that established nothing about the book.
+                    // Fail closed on it rather than dereferencing: the kill switch reporting
+                    // "object reference not set" tells an operator nothing about their orders.
+                    var sweep = await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false)
+                        ?? KillSwitchSweepResult.Unestablished(openCount);
+                    sweepOutcome = sweep;
+
+                    // Outcome, not invocation. The Failed branch below fires only on a thrown
+                    // exception, so a broker that merely refuses a cancellation never reaches it —
+                    // which is how a half-fired kill switch used to be audited as Completed.
+                    if (sweep.RequiresOperatorAction)
+                    {
+                        GetLogger(context.RequestServices).LogError(
+                            "Circuit breaker opened by {Actor} but the cancel-all sweep left {StillWorking} order(s) working; manual cancellation is required",
+                            actor,
+                            sweep.StillWorking.Count);
+                    }
+                    else
+                    {
+                        GetLogger(context.RequestServices).LogInformation(
+                            "Circuit breaker opened by {Actor}; cancel-all emptied the book of {Count} open order(s)",
+                            actor, sweep.Requested);
+                    }
+
                     if (auditTrail is not null)
                     {
                         await auditTrail.RecordAsync(
                                 "controls",
                                 "CircuitBreakerCancelAll",
-                                "Completed",
+                                sweep.Outcome.ToString(),
                                 actor: actor,
                                 correlationId: request.CorrelationId,
-                                message: $"Kill-switch cancel-all issued for {openCount} open order(s).",
+                                message: sweep.Describe(),
                                 ct: CancellationToken.None)
                             .ConfigureAwait(false);
                     }
@@ -476,10 +509,18 @@ public static class ExecutionEndpoints
                                 ct: CancellationToken.None)
                             .ConfigureAwait(false);
                     }
+
+                    sweepOutcome = KillSwitchSweepResult.Unestablished(openCount);
                 }
             }
 
-            return Results.Json(snapshot, jsonOptions);
+            // The activation response carries what the sweep achieved. Returning the plain snapshot
+            // either way meant a caller pulling the kill switch got an identical 200 whether the
+            // book emptied or orders were still working, and could only discover the difference by
+            // separately querying the audit trail.
+            return Results.Json(
+                sweepOutcome is null ? snapshot : new ExecutionCircuitBreakerActivationResponse(snapshot, sweepOutcome),
+                jsonOptions);
         })
         .WithName("UpdateExecutionCircuitBreaker")
         .Produces<ExecutionControlSnapshot>(200)
@@ -1790,12 +1831,26 @@ public sealed record CreatePaperSessionRequest(
 /// Structured result returned by every Trading write action (cancel, close, pause, etc.).
 /// Carries a correlation ID so UI and backend audit logs can be cross-referenced.
 /// </summary>
+/// <summary>
+/// Circuit-breaker activation result: the control state, plus what the coupled kill-switch sweep
+/// achieved. The two travel together so opening the breaker cannot report success over a book that
+/// still has working orders.
+/// </summary>
+public sealed record ExecutionCircuitBreakerActivationResponse(
+    ExecutionControlSnapshot Controls,
+    KillSwitchSweepResult Sweep);
+
 public sealed record TradingActionResult(
     string ActionId,
     string Status,
     string Message,
     DateTimeOffset OccurredAt,
-    string? AuditId = null);
+    string? AuditId = null,
+    /// <summary>
+    /// Orders a kill-switch sweep could not cancel, in full. The rendered <paramref name="Message"/>
+    /// names only the first few, so this is what a caller uses to finish the job by hand.
+    /// </summary>
+    IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null);
 
 /// <summary>Request to update the global execution circuit breaker.</summary>
 public sealed record UpdateExecutionCircuitBreakerRequest(

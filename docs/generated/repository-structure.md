@@ -4395,6 +4395,7 @@ Meridian-main
 │   │   ├── OrderManagementSystem.cs
 │   │   ├── OrderManagementSystem.ExecutionReportSubscriptions.cs
 │   │   ├── OrderManagementSystem.FillIdentity.cs
+│   │   ├── OrderManagementSystem.KillSwitch.cs
 │   │   ├── OrderManagementSystem.RiskOutcomes.cs
 │   │   ├── OrderManagementSystemOptions.cs
 │   │   ├── PaperExecutionContext.cs
@@ -4421,6 +4422,7 @@ Meridian-main
 │   │   ├── IOrderManager.cs
 │   │   ├── IPosition.cs
 │   │   ├── IPositionTracker.cs
+│   │   ├── KillSwitchSweepResult.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
 │   │   ├── OrderSizingMetadata.cs
@@ -9088,6 +9090,7 @@ Meridian-main
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
 │   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
+│   │   │   ├── KillSwitchCloseOnlyTests.cs
 │   │   │   ├── LogSanitizerTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OmsGovernedBrokerageOrderGatewayTests.cs
