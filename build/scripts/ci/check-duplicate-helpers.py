@@ -73,12 +73,10 @@ EXCLUDED_DIRECTORY_NAMES = {"bin", "node_modules", "obj"}
 
 TEXT_PRIMITIVES_RELATIVE = "src/Meridian.Contracts/Text/TextPrimitives.cs"
 
-_LINE_COMMENT = re.compile(r"//[^\n]*")
-_BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
-_STRING_LITERAL = re.compile(r'\$?@?"(?:[^"\\]|\\.)*"')
-_CHAR_LITERAL = re.compile(r"'(?:[^'\\]|\\.)'")
 _NUMBER_LITERAL = re.compile(r"\b\d[\w.]*")
 _IDENTIFIER = re.compile(r"[A-Za-z_@][\w]*")
+_STRING_PREFIX = re.compile(r'[$@]{0,2}"')
+_EXPLICIT_FOREACH = re.compile(r"\bforeach\s*\(\s*[\w?<>\[\], .]+?\s+([A-Za-z_]\w*)\s+in\b")
 # The declaration header of any private/internal method: accessibility, optional
 # modifiers, a return type, then the name directly before the parameter list.
 _METHOD_HEADER = re.compile(
@@ -87,8 +85,90 @@ _METHOD_HEADER = re.compile(
 )
 
 
-def _strip_comments(text: str) -> str:
-    return _LINE_COMMENT.sub(" ", _BLOCK_COMMENT.sub(" ", text))
+def _mask_strings_and_comments(text: str) -> str:
+    """One pass over C# source: comments become spaces, string literals become §str, char
+    literals become §chr.
+
+    Both jobs have to happen together, in source order, because each hides the other's
+    markers: `//` inside a string is text, not a comment, and quotes inside a comment are
+    text, not a string. Masking first also keeps every later stage honest at once — a
+    method-shaped snippet inside a template string is not a declaration, and a `;` or
+    brace inside a message cannot terminate an expression body early.
+
+    Interpolated strings keep their `{...}` expressions (recursively masked): the text
+    around them is message formatting, but the expressions are executed code, and a copy
+    that runs different code is not a clone however similar its message.
+    """
+    out: list[str] = []
+    index = 0
+    length = len(text)
+    while index < length:
+        two = text[index : index + 2]
+        if two == "//":
+            newline = text.find("\n", index)
+            index = length if newline == -1 else newline
+            out.append(" ")
+            continue
+        if two == "/*":
+            closer = text.find("*/", index + 2)
+            index = length if closer == -1 else closer + 2
+            out.append(" ")
+            continue
+        if text[index] == "'":
+            cursor = index + 1
+            while cursor < length and text[cursor] != "'":
+                cursor += 2 if text[cursor] == "\\" else 1
+            out.append("§chr")
+            index = cursor + 1
+            continue
+        prefix = _STRING_PREFIX.match(text, index)
+        if prefix:
+            interpolated = "$" in prefix.group(0)
+            verbatim = "@" in prefix.group(0)
+            out.append("§str")
+            if text.startswith('"""', prefix.end() - 1):
+                closer = text.find('"""', prefix.end() + 2)
+                index = length if closer == -1 else closer + 3
+                continue
+            cursor = prefix.end()
+            while cursor < length:
+                char = text[cursor]
+                if verbatim and char == '"':
+                    if text[cursor : cursor + 2] == '""':
+                        cursor += 2
+                        continue
+                    cursor += 1
+                    break
+                if not verbatim and char == "\\":
+                    cursor += 2
+                    continue
+                if not verbatim and char == '"':
+                    cursor += 1
+                    break
+                if interpolated and char == "{":
+                    if text[cursor : cursor + 2] == "{{":
+                        cursor += 2
+                        continue
+                    depth = 0
+                    closer = cursor
+                    while closer < length:
+                        if text[closer] == "{":
+                            depth += 1
+                        elif text[closer] == "}":
+                            depth -= 1
+                            if depth == 0:
+                                break
+                        closer += 1
+                    out.append("{" + _mask_strings_and_comments(text[cursor + 1 : closer]) + "}")
+                    out.append("§str")
+                    cursor = closer + 1
+                    continue
+                cursor += 1
+            index = cursor
+            continue
+        out.append(text[index])
+        index += 1
+    return "".join(out)
 
 
 def _matched_span(text: str, start: int, open_char: str, close_char: str) -> int | None:
@@ -113,7 +193,7 @@ def _iter_methods(text: str):
     bracket cleanly is skipped: this is a ratchet, and a miss is a quieter failure than
     a false fire on mangled input.
     """
-    stripped = _strip_comments(text)
+    stripped = _mask_strings_and_comments(text)
     for header in _METHOD_HEADER.finditer(stripped):
         name = header.group(1)
         params_open = header.end() - 1
@@ -172,18 +252,22 @@ def _parameter_names(parameter_text: str) -> list[str]:
 def canonicalize_body(body: str, parameter_text: str) -> str:
     """Alpha-equivalent canonical form: same body, whatever the names and spacing.
 
-    Parameters and `var`/`foreach var` locals are renamed positionally, string, char,
-    and numeric literals are folded, whitespace is normalised away except between
-    word tokens, and a block consisting of a single `return` unwraps to its expression
-    so an expression-bodied copy and its braced twin compare equal. Member and type
-    names are deliberately left intact -- `IsNullOrEmpty` is a different function from
+    Parameters and loop/`var` locals are renamed positionally, string, char, and
+    numeric literals are folded (with interpolation expressions preserved -- they are
+    executed code, not message text), an explicitly typed `foreach` is normalised to
+    its `var` spelling, whitespace is normalised away except between word tokens, and
+    a block consisting of a single `return` unwraps to its expression so an
+    expression-bodied copy and its braced twin compare equal. Member and type names
+    are deliberately left intact -- `IsNullOrEmpty` is a different function from
     `IsNullOrWhiteSpace`, and folding them would manufacture equivalences.
     """
-    text = _strip_comments(body).strip()
+    text = _mask_strings_and_comments(body).strip()
 
     unwrapped = re.match(r"^return\b(.*);$", text, re.DOTALL)
     if unwrapped and ";" not in unwrapped.group(1):
         text = unwrapped.group(1).strip()
+
+    text = _EXPLICIT_FOREACH.sub(r"foreach (var \1 in", text)
 
     renames: dict[str, str] = {}
     for index, parameter in enumerate(_parameter_names(parameter_text)):
@@ -191,8 +275,6 @@ def canonicalize_body(body: str, parameter_text: str) -> str:
     for index, local in enumerate(re.findall(r"\bvar\s+([A-Za-z_]\w*)", text)):
         renames.setdefault(local, f"§l{index}")
 
-    text = _STRING_LITERAL.sub("§str", text)
-    text = _CHAR_LITERAL.sub("§chr", text)
     text = _NUMBER_LITERAL.sub("§num", text)
     text = _IDENTIFIER.sub(lambda match: renames.get(match.group(0), match.group(0)), text)
 

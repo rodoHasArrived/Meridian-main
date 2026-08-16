@@ -192,6 +192,81 @@ class BodyCloneDetectionTests(unittest.TestCase):
                         "    }\n"})
         self.assertEqual(found, {"src/A/Thing.cs": [("PickFirst", "FirstNonBlank")]})
 
+    def test_an_interpolated_message_running_code_is_not_a_clone(self):
+        # The interpolation expression is executed code, not message text: a guard whose
+        # message calls something can mutate state or throw, so folding it away would
+        # report a behaviour-changing copy as exact.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string value, string name)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(value))\n"
+                        "        {\n"
+                        "            throw new ArgumentException($\"{RecordAndFormat(value)}\", name);\n"
+                        "        }\n"
+                        "\n"
+                        "        return value.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {})
+
+    def test_an_interpolated_message_of_plain_text_still_matches(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string value, string name)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(value))\n"
+                        "        {\n"
+                        "            throw new ArgumentException($\"plain text only\", name);\n"
+                        "        }\n"
+                        "\n"
+                        "        return value.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("RequireTrimmed", "RequireText")]})
+
+    def test_an_explicitly_typed_foreach_clone_is_detected(self):
+        # `foreach (string? candidate in ...)` is the same loop as `foreach (var value in ...)`.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? PickFirst(params string?[] candidates)\n"
+                        "    {\n"
+                        "        if (candidates is null)\n"
+                        "        {\n"
+                        "            return null;\n"
+                        "        }\n"
+                        "\n"
+                        "        foreach (string? candidate in candidates)\n"
+                        "        {\n"
+                        "            if (!string.IsNullOrWhiteSpace(candidate))\n"
+                        "            {\n"
+                        "                return candidate.Trim();\n"
+                        "            }\n"
+                        "        }\n"
+                        "\n"
+                        "        return null;\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("PickFirst", "FirstNonBlank")]})
+
+    def test_a_method_shaped_snippet_inside_a_string_is_not_a_declaration(self):
+        # A generator template carrying helper-shaped text is data, not a declaration.
+        found = clones({"src/A/Template.cs":
+                        "    private const string Template = @\"\n"
+                        "    private static string? Clean(string? text)\n"
+                        "        => string.IsNullOrWhiteSpace(text) ? null : text.Trim();\n"
+                        "    \";\n"})
+        self.assertEqual(found, {})
+
+    def test_comment_markers_inside_a_string_do_not_corrupt_the_body(self):
+        # `//` in a URL is text. Stripping it as a comment would truncate the real body
+        # and let this clone (whose only difference is the folded literal) evade.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string value, string name)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(value))\n"
+                        "        {\n"
+                        "            throw new ArgumentException(\"see https://docs.example/rule\", name);\n"
+                        "        }\n"
+                        "\n"
+                        "        return value.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("RequireTrimmed", "RequireText")]})
+
     def test_a_tracked_name_is_the_name_ratchets_jurisdiction(self):
         # One copy must never be counted by both detectors.
         found = clones({"src/A/Thing.cs":
