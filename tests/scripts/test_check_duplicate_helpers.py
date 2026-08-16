@@ -306,6 +306,34 @@ class BodyCloneDetectionTests(unittest.TestCase):
                         "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
         self.assertEqual(found, {})
 
+    def test_a_multi_dollar_raw_message_running_code_is_not_a_clone(self):
+        # In $$-strings the interpolation delimiter is two braces; treating {{ as an
+        # escape would mask the executed call away.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string value, string name)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(value))\n"
+                        "        {\n"
+                        "            throw new ArgumentException($$\"\"\"{{RecordAndFormat(value)}}\"\"\", name);\n"
+                        "        }\n"
+                        "\n"
+                        "        return value.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {})
+
+    def test_a_bcl_spelled_parameter_type_still_matches(self):
+        # System.String and string are the same CLR type; respelling is not a new function.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(System.String? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_redundant_outer_parentheses_still_match(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? value)\n"
+                        "        => (string.IsNullOrWhiteSpace(value) ? null : value.Trim());\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
     def test_a_tracked_name_is_the_name_ratchets_jurisdiction(self):
         # One copy must never be counted by both detectors.
         found = clones({"src/A/Thing.cs":

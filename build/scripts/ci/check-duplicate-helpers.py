@@ -25,11 +25,18 @@ Names are only half the check. A copy that is *renamed* walks straight past a na
 and renaming is the natural move when pasting a helper into a class that wants a shorter
 word -- nine `Normalize` declarations were exact NormalizeOptional bodies while this check
 reported the baseline satisfied (#2702). So declarations are also compared by *body*:
-each private/internal helper is canonicalised (comments stripped, parameters and locals
-renamed positionally, literals folded, single-return blocks unwrapped) and flagged when it
-is alpha-equivalent to a body TextPrimitives owns, whatever the copy is called. Adding the
+each helper is canonicalised (comments stripped, parameters and locals renamed
+positionally, literals folded, single-return blocks unwrapped) and flagged when it is
+alpha-equivalent to a body TextPrimitives owns, whatever the copy is called. Adding the
 generic names to the tracked list instead would not work: `Normalize` alone has 41 distinct
 bodies across 55 declarations, so a name rule would drown 9 real clones in 41 false fires.
+
+The canonicaliser targets *accidental* copies -- paste, rename, reformat, respell a type,
+wrap in parentheses. It is a text scanner, so a deliberately evasive copy (an inserted
+no-op statement, a reordered condition) can always slip it; chasing that tail buys
+nothing, because every added canonicalisation is another rule a determined copier steps
+around. The escalation path for semantic equivalence is a Roslyn-based checker, the same
+boundary drawn for the endpoint-cancellation guard (#2705).
 """
 
 from __future__ import annotations
@@ -75,8 +82,20 @@ TEXT_PRIMITIVES_RELATIVE = "src/Meridian.Contracts/Text/TextPrimitives.cs"
 
 _NUMBER_LITERAL = re.compile(r"\b\d[\w.]*")
 _IDENTIFIER = re.compile(r"[A-Za-z_@][\w]*")
-_STRING_PREFIX = re.compile(r'[$@]{0,2}"')
+_STRING_PREFIX = re.compile(r'[$@]*"')
+_INTERESTING = re.compile(r'//|/\*|\'|[$@]+"|"')
 _EXPLICIT_FOREACH = re.compile(r"\bforeach\s*\(\s*[\w?<>\[\], .]+?\s+([A-Za-z_]\w*)\s+in\b")
+# The CLR type behind each C# keyword alias: respelling `string` as `String` or
+# `System.String` is a style choice, not a different function.
+_TYPE_ALIASES = {
+    "String": "string", "Int32": "int", "Int64": "long", "Boolean": "bool",
+    "Object": "object", "Decimal": "decimal", "Double": "double", "Single": "float",
+    "Char": "char", "Byte": "byte", "SByte": "sbyte", "Int16": "short",
+    "UInt16": "ushort", "UInt32": "uint", "UInt64": "ulong",
+}
+_TYPE_ALIAS_PATTERN = re.compile(
+    r"\b(?:System\.)?(" + "|".join(_TYPE_ALIASES) + r")\b"
+)
 # The declaration header of a method at any accessibility (matching the name-based
 # scan's scope): accessibility keyword(s), optional modifiers, a return type, then the
 # name directly before the parameter list.
@@ -106,6 +125,15 @@ def _mask_strings_and_comments(text: str) -> str:
     index = 0
     length = len(text)
     while index < length:
+        # Jump to the next construct start; everything in between is plain code and is
+        # copied wholesale. The per-character walk this replaced dominated the check's
+        # runtime once every method body in the tree went through it.
+        interesting = _INTERESTING.search(text, index)
+        if interesting is None:
+            out.append(text[index:])
+            break
+        out.append(text[index : interesting.start()])
+        index = interesting.start()
         two = text[index : index + 2]
         if two == "//":
             newline = text.find("\n", index)
@@ -126,7 +154,8 @@ def _mask_strings_and_comments(text: str) -> str:
             continue
         prefix = _STRING_PREFIX.match(text, index)
         if prefix:
-            interpolated = "$" in prefix.group(0)
+            dollars = prefix.group(0).count("$")
+            interpolated = dollars > 0
             verbatim = "@" in prefix.group(0)
             out.append("§str")
             if text.startswith('"""', prefix.end() - 1):
@@ -135,28 +164,31 @@ def _mask_strings_and_comments(text: str) -> str:
                 index = length if closer == -1 else closer + 3
                 if interpolated and closer != -1:
                     # Raw interpolated strings carry executed code too; preserve their
-                    # expressions exactly as the ordinary $"..." branch below does.
+                    # expressions exactly as the ordinary $"..." branch below does. The
+                    # interpolation delimiter is as many braces as the prefix has
+                    # dollars; shorter brace runs are literal text.
+                    delimiter = "{" * dollars
                     segment = text[content_start:closer]
                     cursor = 0
                     while cursor < len(segment):
-                        if segment[cursor] == "{" and segment[cursor : cursor + 2] != "{{":
-                            depth = 0
-                            expr_end = cursor
-                            while expr_end < len(segment):
-                                if segment[expr_end] == "{":
-                                    depth += 1
-                                elif segment[expr_end] == "}":
-                                    depth -= 1
-                                    if depth == 0:
-                                        break
-                                expr_end += 1
+                        if segment[cursor] != "{":
+                            cursor += 1
+                            continue
+                        run = cursor
+                        while run < len(segment) and segment[run] == "{":
+                            run += 1
+                        if run - cursor == dollars:
+                            expr_end = segment.find("}" * dollars, run)
+                            if expr_end == -1:
+                                break
                             out.append(
-                                "{" + _mask_strings_and_comments(segment[cursor + 1 : expr_end]) + "}"
+                                "{" + _mask_strings_and_comments(segment[run:expr_end]) + "}"
                             )
                             out.append("§str")
-                            cursor = expr_end + 1
-                            continue
-                        cursor += 2 if segment[cursor : cursor + 2] == "{{" else 1
+                            cursor = expr_end + dollars
+                        else:
+                            cursor = run
+                    continue
                 continue
             cursor = prefix.end()
             while cursor < length:
@@ -325,6 +357,9 @@ def _parameter_types(parameter_text: str) -> str:
                     changed = True
         declaration = declaration.replace("?", "")
         declaration = re.sub(r"\s+", "", declaration)
+        declaration = _TYPE_ALIAS_PATTERN.sub(
+            lambda match: _TYPE_ALIASES[match.group(1)], declaration
+        )
         if declaration:
             types.append(declaration)
     return ",".join(types)
@@ -333,20 +368,26 @@ def _parameter_types(parameter_text: str) -> str:
 def canonicalize_body(body: str, parameter_text: str) -> str:
     """Alpha-equivalent canonical form: same body, whatever the names and spacing.
 
-    Parameters and loop/`var` locals are renamed positionally, string, char, and
-    numeric literals are folded (with interpolation expressions preserved -- they are
-    executed code, not message text), an explicitly typed `foreach` is normalised to
-    its `var` spelling, whitespace is normalised away except between word tokens, and
-    a block consisting of a single `return` unwraps to its expression so an
-    expression-bodied copy and its braced twin compare equal. Member and type names
-    are deliberately left intact -- `IsNullOrEmpty` is a different function from
-    `IsNullOrWhiteSpace`, and folding them would manufacture equivalences.
+    The body must already be masked by _mask_strings_and_comments -- _iter_methods
+    yields masked text, and re-masking every body was the scan's dominant cost.
+    Parameters and loop/`var` locals are renamed positionally, numeric literals are
+    folded, an explicitly typed `foreach` is normalised to its `var` spelling,
+    redundant outer parentheses are dropped, whitespace is normalised away except
+    between word tokens, and a block consisting of a single `return` unwraps to its
+    expression so an expression-bodied copy and its braced twin compare equal. Member
+    and type names are deliberately left intact -- `IsNullOrEmpty` is a different
+    function from `IsNullOrWhiteSpace`, and folding them would manufacture
+    equivalences.
     """
-    text = _mask_strings_and_comments(body).strip()
+    text = body.strip()
 
     unwrapped = re.match(r"^return\b(.*);$", text, re.DOTALL)
     if unwrapped and ";" not in unwrapped.group(1):
         text = unwrapped.group(1).strip()
+
+    # Redundant grouping is formatting: `=> (expr);` is `=> expr;`.
+    while text.startswith("(") and _matched_span(text, 0, "(", ")") == len(text):
+        text = text[1:-1].strip()
 
     text = _EXPLICIT_FOREACH.sub(r"foreach (var \1 in", text)
 
@@ -384,6 +425,9 @@ def scan_body_clones(repo_root: Path) -> dict[str, list[tuple[str, str]]]:
     owners = owned_bodies(repo_root)
     if not owners:
         return {}
+    # The cheap signature gate: only a handful of parameter-type shapes can match an
+    # owner, so almost every method skips the body canonicalisation entirely.
+    owner_types = {types for types, _ in owners}
 
     clones: dict[str, list[tuple[str, str]]] = {}
     source_root = repo_root / "src"
@@ -402,8 +446,10 @@ def scan_body_clones(repo_root: Path) -> dict[str, list[tuple[str, str]]]:
             for name, parameter_text, body in _iter_methods(text):
                 if name in TRACKED_HELPERS:
                     continue
-                key = (_parameter_types(parameter_text), canonicalize_body(body, parameter_text))
-                owner = owners.get(key)
+                types = _parameter_types(parameter_text)
+                if types not in owner_types:
+                    continue
+                owner = owners.get((types, canonicalize_body(body, parameter_text)))
                 if owner is not None:
                     clones.setdefault(rel, []).append((name, owner))
     return {rel: sorted(entries) for rel, entries in sorted(clones.items())}
