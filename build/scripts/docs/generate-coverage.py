@@ -46,21 +46,29 @@ STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
 CS_FILE_EXTENSIONS: Tuple[str, ...] = (".cs",)
 
 DOC_FILE_EXTENSIONS: Tuple[str, ...] = (".md",)
-# Two *self-referential* reports are excluded, not the whole generated tree.
+# The corpus is an allowlist of roots that exist to describe contracts, not a denylist of prose.
 #
-# `docs/generated/repository-structure.md` lists every path in the repository, and a C# file is
-# conventionally named for the single public type it holds — so a type counted as documented
-# purely because its own source file exists. `docs/generated/documentation-coverage.md` is this
-# generator's own output, which names every undocumented item it finds: counting it would let a
-# type become documented by being reported as undocumented.
+# Subtracting prose was tried first and does not converge: four review rounds on #2703 each found a
+# document where root-, file-, or heading-level filtering guessed wrong, because these roots
+# interleave description and argument inside single documents. A delivery plan can state a DTO's
+# complete field set in order to argue that the DTO is missing something.
 #
-# The rest of `docs/generated/` stays in the corpus, and that distinction matters:
-# `docs/generated/database/**` is the PostgreSQL data-object catalog
-# (`docs/generated/README.md`), and pages like
-# `docs/generated/database/contracts/ledger-contracts-page-01.md` carry real field-level reference
-# documentation for types such as `AccountingApprovalQueueConfigurationDto`. An earlier revision
-# excluded the whole subtree: 41 files left the corpus and 763 genuinely documented types were
-# marked as gaps.
+# docs/generated/database/** is included because it is the PostgreSQL data-object catalog
+# (docs/generated/README.md), and pages such as
+# docs/generated/database/contracts/ledger-contracts-page-01.md carry real field-level reference
+# documentation. An earlier revision excluded that subtree: 41 files left the corpus and 763
+# genuinely documented types were marked as gaps. It is reference material and belongs here.
+#
+# The two self-referential reports below stay excluded regardless. Neither is reachable under the
+# current allowlist, but the guard is kept so widening the allowlist cannot silently reintroduce
+# them: repository-structure.md lists every path in the repository, so a type would count as
+# documented purely because its own source file exists, and documentation-coverage.md is this
+# generator's own output, so a type would count by being reported as undocumented.
+DOC_CONTENT_INCLUDE_PREFIXES: Tuple[str, ...] = (
+    "docs/reference/",
+    "docs/generated/database/",
+)
+
 DOC_CONTENT_EXCLUDE_PREFIXES: Tuple[str, ...] = (
     "docs/status/",
     "docs/generated/documentation-coverage.md",
@@ -830,17 +838,13 @@ def _load_doc_contents(root: Path) -> Dict[str, str]:
     if docs_dir.is_dir():
         for md_file in _collect_files(docs_dir, DOC_FILE_EXTENSIONS):
             rel_path = _rel(md_file, root)
+            if not rel_path.startswith(DOC_CONTENT_INCLUDE_PREFIXES):
+                continue
             if rel_path.startswith(DOC_CONTENT_EXCLUDE_PREFIXES):
                 continue
             contents[rel_path] = _read_text_safe(md_file)
-    # Also include CLAUDE.md at repo root
-    claude_md = root / "CLAUDE.md"
-    if claude_md.is_file():
-        contents[_rel(claude_md, root)] = _read_text_safe(claude_md)
-    # And README.md
-    readme = root / "README.md"
-    if readme.is_file():
-        contents[_rel(readme, root)] = _read_text_safe(readme)
+    # CLAUDE.md and README.md are deliberately absent: both are project orientation prose, and a
+    # type named in either was being counted as documented on the same footing as a reference page.
     return contents
 
 
@@ -882,14 +886,16 @@ def _recommendations(report: CoverageReport) -> List[str]:  # noqa: C901
             if count > 50:
                 recs.append(
                     f"**{cat.category}**: {count} undocumented types. "
-                    "Consider generating API docs with DocFX (`docfx docfx.json`) "
-                    "to cover the long tail of public types automatically."
+                    "Add reference entries under `docs/reference/` for the types that "
+                    "carry contracts. Running DocFX does not move this metric: it emits "
+                    "browsable output from XML doc comments into `docs/docfx/api/*.yml`, "
+                    "which is gitignored and so is not part of the scanned corpus."
                 )
             elif count > 0:
                 recs.append(
                     f"**{cat.category}**: {count} undocumented type(s). "
-                    "Add entries to `docs/reference/api-reference.md` or relevant "
-                    "architecture docs for the most important ones."
+                    "Add entries to `docs/reference/api-reference.md` for the most "
+                    "important ones."
                 )
 
         elif cat.category == "API Endpoints":
