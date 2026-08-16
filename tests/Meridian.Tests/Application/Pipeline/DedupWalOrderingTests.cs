@@ -849,6 +849,70 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         await ledger.DisposeAsync();
     }
 
+    [Fact]
+    public async Task Consumer_WalAppendFailure_RetainsBatchUntilWalRecovers()
+    {
+        var walDir = Path.Combine(_rootDir, "wal_admission_fail");
+        Directory.CreateDirectory(walDir);
+        // Uninitialized with age-based rotation disabled: the first append throws instead of
+        // lazily creating a segment, simulating a transiently unavailable WAL.
+        var wal = new WriteAheadLog(walDir, new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            MaxWalFileAge = null
+        });
+
+        var ledger = await CreateLedgerAsync("ledger_admission_fail");
+        var sink = new FaultSink();
+        await using (var pipeline = new EventPipeline(
+            sink, capacity: 100, enablePeriodicFlush: false, wal: wal, dedupLedger: ledger))
+        {
+            var evt = CreateTradeEvent("WALDOWN", 600);
+            pipeline.TryPublish(evt);
+
+            // Even with no WAL sequence assigned anywhere in the batch, the failure must be
+            // retained and retried — never abandoned into silent loss.
+            await WaitUntilAsync(() => pipeline.GetStatistics().ConsumerIterationFailures >= 1);
+            sink.AppendedEvents.Should().BeEmpty(
+                "an unavailable WAL is an unavailable durability store; the batch must wait for it");
+
+            // The WAL recovers: the retained batch completes its durable boundary.
+            await wal.InitializeAsync();
+            await WaitUntilAsync(() => sink.AppendedEvents.Count == 1);
+            await pipeline.FlushAsync(CancellationToken.None);
+
+            sink.AppendedEvents.Should().ContainSingle().Which.Symbol.Should().Be("WALDOWN");
+        }
+
+        await ledger.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task Consumer_ForcedCancellation_ReleasesPendingClaimsForSuccessorPipelines()
+    {
+        var ledger = await CreateLedgerAsync("ledger_cancel_release");
+        var sink = new FaultSink { GateFirstAppend = true };
+        var evt = CreateTradeEvent("CXL", 700);
+
+        var pipeline = new EventPipeline(
+            sink, capacity: 100, enablePeriodicFlush: false, dedupLedger: ledger,
+            finalFlushTimeout: TimeSpan.FromMilliseconds(250));
+        pipeline.TryPublish(evt);
+        await sink.FirstAppendEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Disposal force-cancels the consumer while it is blocked inside the sink append with
+        // the identity claim held. The claim must not outlive the pipeline: the dedup store is
+        // an injected singleton that later pipelines keep using.
+        await pipeline.DisposeAsync();
+
+        var successorClaim = await ledger.TryReserveAsync(evt, DedupLookupScope.LiveIngress, CancellationToken.None);
+        successorClaim.IsReserved.Should().BeTrue(
+            "a cancelled consumer must release its pending claims so a successor can process the identity");
+        ledger.Release(successorClaim.Reservation).Should().BeTrue();
+
+        await ledger.DisposeAsync();
+    }
+
     #endregion
 
     #region Helpers and fakes

@@ -877,9 +877,10 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         // Set thread priority for consistent throughput
         ThreadingUtilities.SetAboveNormalPriority();
 
+        var batchBuffer = new List<TracedMarketEvent>(_maxAdaptiveBatchSize);
+
         try
         {
-            var batchBuffer = new List<TracedMarketEvent>(_maxAdaptiveBatchSize);
             var reservationScratch = new List<DedupReservation>(_maxAdaptiveBatchSize);
             var retryPendingBatch = false;
             var admittedThroughIndex = 0;
@@ -1005,10 +1006,22 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                                 var walRecord = await _wal.AppendAsync(evt, GetEventTypeName(evt.Type), _cts.Token).ConfigureAwait(false);
                                 batchBuffer[i] = tracedEvent with { WalSequence = walRecord.Sequence };
                             }
-                            catch
+                            catch (Exception walEx) when (walEx is not OperationCanceledException)
                             {
                                 // The identity claim must not outlive a failed admission: release
-                                // it so the in-process retry can claim it again.
+                                // it so the in-process retry can claim it again. The failure is
+                                // wrapped as retryable — even when no record in the batch has a
+                                // sequence yet — because an unavailable WAL is an unavailable
+                                // durability store: the batch must wait for it rather than be
+                                // abandoned, which without a dead-letter sink would silently
+                                // drop events the producer can no longer retry.
+                                ReleaseReservationAt(batchBuffer, i);
+                                throw new WalAdmissionException(
+                                    "WAL append failed during batch admission; the batch is retained and retried.",
+                                    walEx);
+                            }
+                            catch
+                            {
                                 ReleaseReservationAt(batchBuffer, i);
                                 throw;
                             }
@@ -1147,7 +1160,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         (_wal != null && batchBuffer.Any(static traced => traced.WalSequence > 0)) ||
                         (sinkBatchFlushed && _dedupLedger != null && !dedupBatchCommitted &&
                          batchBuffer.Any(static traced => traced.Reservation.IsHeld)) ||
-                        ex is PendingExternalDedupClaimException;
+                        ex is PendingExternalDedupClaimException ||
+                        ex is WalAdmissionException;
                     _logger.LogError(ex,
                         "Pipeline consumer iteration failed while persisting a batch of {BatchCount} events; {RecoveryAction}",
                         batchBuffer.Count,
@@ -1252,6 +1266,13 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         catch (OperationCanceledException) { }
         finally
         {
+            // Cancellation (e.g. forced disposal) can exit mid-batch without reaching the
+            // in-loop cleanup, and the dedup store is an injected singleton that outlives this
+            // pipeline: any claims still pending here would stay PendingElsewhere for every
+            // later consumer of the same store. Token-checked release preserves claims that
+            // were already durably committed.
+            ReleaseAllReservations(batchBuffer);
+
             if (Interlocked.Exchange(ref _finalFlushStarted, 1) == 0)
             {
                 // Final flush on shutdown with timeout to prevent indefinite hang
@@ -1536,6 +1557,19 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
     {
         public PendingExternalDedupClaimException(string message)
             : base(message)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Raised when a WAL append fails during batch admission. Retryable by design, even when no
+    /// record in the batch was assigned a sequence: an unavailable WAL is an unavailable
+    /// durability store, so the batch waits for it instead of being abandoned into silent loss.
+    /// </summary>
+    private sealed class WalAdmissionException : InvalidOperationException
+    {
+        public WalAdmissionException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
     }
