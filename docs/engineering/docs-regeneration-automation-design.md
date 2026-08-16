@@ -103,8 +103,15 @@ wants to write that is not in it goes to manual review rather than being committ
 hand-authored; only the marker-bounded block is generated. A writer that accepts the whole file
 because its path is listed lets a modified generator rewrite prose outside the markers — the same
 escalation as writing an unlisted path, one level finer. The writer must apply only
-marker-bounded replacements and verify the regions outside the markers are byte-identical to the
-base revision, rejecting the write otherwise.
+marker-bounded replacements and verify the regions outside the markers are unchanged, rejecting the
+write otherwise.
+
+The comparison target is the **CAS-bound pull-request head from constraint 7, not the base
+revision.** A contributor may legitimately edit hand-authored prose in `docs/HELP.md` in the same
+pull request that needs its generated block refreshed; that prose is already on the reviewed head,
+so comparing against base would reject an ordinary supported case and hand the toll back to the
+author. Preserve the head's non-generated regions, replace only between the markers, and let
+constraint 7's compare-and-swap establish which head is authoritative.
 
 ### 2. The repair must retrigger checks on its own result
 
@@ -123,6 +130,14 @@ covering `docs/**` and some script paths. That is narrower than the generators' 
 
 Nothing else catches the gap: `scripts/ci.sh`'s `verify-docs` lane runs `run-docs-automation.py`
 with an explicit `--scripts` list that omits both generators, so stale output lands silently.
+
+**This applies to the `push` event as well, not only `pull_request`.** The same curated filter sits
+on the push-to-`main` trigger (`:27-41`), and constraint 8 leans on that push run as the detector
+of last resort for merge-queue staleness. If two queued pull requests modify non-filtered tracked
+files, their combined tree is stale *and* the resulting push to `main` also misses the filter — so
+the failure that was supposed to raise the follow-up repair never fires, and the fallback silently
+does not exist. Generator-derived coverage has to be applied to both events or constraint 8's
+fallback is illusory.
 
 Compute the trigger set from the generators rather than maintaining a parallel path list — but note
 that this cannot be done *inside* the workflow. GitHub evaluates `pull_request.paths` before it
