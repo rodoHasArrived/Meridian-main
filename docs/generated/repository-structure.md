@@ -9093,6 +9093,7 @@ Meridian-main
 │   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
 │   │   │   ├── KillSwitchCloseOnlyTests.cs
+│   │   │   ├── LiveMarketDataCacheSnapshotTests.cs
 │   │   │   ├── LogSanitizerTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OmsGovernedBrokerageOrderGatewayTests.cs
