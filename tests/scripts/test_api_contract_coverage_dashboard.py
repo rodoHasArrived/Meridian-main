@@ -580,18 +580,18 @@ class CoverageReportBoundaryTests(_CoverageModuleTestCase):
     def test_only_the_self_referential_reports_are_hard_excluded(self) -> None:
         # Two separate reasons, both narrow on purpose.
         #
-        # Self-referential: `repository-structure.md` lists every path in the repository and
-        # `documentation-coverage.md` is this generator's own output, so both would let a type
-        # count as documented for existing or for being reported undocumented. Excluding the
-        # whole `docs/generated/` subtree instead — which an earlier revision of this branch did —
-        # dropped 41 files and marked 763 genuinely documented types as gaps.
+        # Self-referential: `repository-structure.md` lists every path in the repository, and
+        # `docs/status/` holds this generator's own report (coverage-report.md), so both would let
+        # a type count as documented for existing or for being reported undocumented. Excluding
+        # the whole `docs/generated/` subtree instead — which an earlier revision of this branch
+        # did — dropped 41 files and marked 763 genuinely documented types as gaps. The old
+        # second copy at docs/generated/documentation-coverage.md was deleted with #2713.
         #
         # Prose roots are handled separately by PROSE_DOC_PREFIXES, which filters per document
         # rather than per root so contract-bearing blueprints keep their credits (#2703).
         self.assertEqual(
             (
                 "docs/status/",
-                "docs/generated/documentation-coverage.md",
                 "docs/generated/repository-structure.md",
             ),
             self.cov.DOC_CONTENT_EXCLUDE_PREFIXES,
@@ -608,8 +608,7 @@ class CoverageReportBoundaryTests(_CoverageModuleTestCase):
 
         excluded = [
             k for k in loaded
-            if k in ("docs/generated/documentation-coverage.md",
-                     "docs/generated/repository-structure.md")
+            if k == "docs/generated/repository-structure.md"
             or k.startswith("docs/status/")
         ]
         self.assertEqual([], excluded)

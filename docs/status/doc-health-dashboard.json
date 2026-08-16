@@ -1,7 +1,7 @@
 {
-  "total_files": 648,
-  "total_lines": 128505,
-  "orphaned_count": 254,
+  "total_files": 647,
+  "total_lines": 128305,
+  "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 233,
@@ -217,7 +217,6 @@
     "docs/docfx/api/index.md",
     "docs/engineering/wpf-perf-uiux-audit-2026-06-14.md",
     "docs/generated/configuration-schema.md",
-    "docs/generated/documentation-coverage.md",
     "docs/generated/interfaces.md",
     "docs/generated/project-dependencies.md",
     "docs/generated/provider-registry.md",
@@ -2560,14 +2559,6 @@
       "stale": false
     },
     {
-      "path": "docs/generated/documentation-coverage.md",
-      "line_count": 202,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/generated/interfaces.md",
       "line_count": 4,
       "has_heading": true,
@@ -2609,7 +2600,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10452,
+      "line_count": 10454,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

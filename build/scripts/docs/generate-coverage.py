@@ -59,11 +59,11 @@ DOC_FILE_EXTENSIONS: Tuple[str, ...] = (".md",)
 # documentation. An earlier revision excluded that subtree: 41 files left the corpus and 763
 # genuinely documented types were marked as gaps. It is reference material and belongs here.
 #
-# The two self-referential reports below stay excluded regardless. Neither is reachable under the
-# current allowlist, but the guard is kept so widening the allowlist cannot silently reintroduce
-# them: repository-structure.md lists every path in the repository, so a type would count as
-# documented purely because its own source file exists, and documentation-coverage.md is this
-# generator's own output, so a type would count by being reported as undocumented.
+# The self-referential exclusions below stay regardless. Neither is reachable under the current
+# allowlist, but the guard is kept so widening the allowlist cannot silently reintroduce them:
+# repository-structure.md lists every path in the repository, so a type would count as documented
+# purely because its own source file exists, and docs/status/ holds this generator's own report
+# (docs/status/coverage-report.md), so a type would count by being reported as undocumented.
 DOC_CONTENT_INCLUDE_PREFIXES: Tuple[str, ...] = (
     "docs/reference/",
     "docs/generated/database/",
@@ -71,7 +71,6 @@ DOC_CONTENT_INCLUDE_PREFIXES: Tuple[str, ...] = (
 
 DOC_CONTENT_EXCLUDE_PREFIXES: Tuple[str, ...] = (
     "docs/status/",
-    "docs/generated/documentation-coverage.md",
     "docs/generated/repository-structure.md",
 )
 
@@ -1108,7 +1107,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         type=Path,
         default=None,
         help="Path to write the Markdown coverage report. "
-        "Defaults to docs/generated/documentation-coverage.md.",
+        "Defaults to docs/status/coverage-report.md, the copy the docs automation maintains.",
     )
     parser.add_argument(
         "--summary",
@@ -1124,10 +1123,13 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"Error: root directory does not exist: {root}", file=sys.stderr)
         return 1
 
+    # The default matches the path run-docs-automation.py passes explicitly, so a bare CLI run and
+    # the pipeline maintain the same report. The old default, docs/generated/documentation-coverage.md,
+    # was a second tracked copy nothing regenerated, which let it drift into contradiction (#2713).
     output: Path = (
         args.output
         if args.output is not None
-        else root / "docs" / "generated" / "documentation-coverage.md"
+        else root / "docs" / "status" / "coverage-report.md"
     )
 
     try:
