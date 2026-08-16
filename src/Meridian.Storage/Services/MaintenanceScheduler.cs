@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Core.Logging;
 using Serilog;
@@ -1206,7 +1206,7 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
             writer.WriteEndObject();
         }
 
-        return Convert.ToHexStringLower(SHA256.HashData(stream.ToArray()));
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     private static void WriteCanonicalParameter(Utf8JsonWriter writer, object? value)

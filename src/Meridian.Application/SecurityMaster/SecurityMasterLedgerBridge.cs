@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Ledger;
@@ -508,7 +509,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
             action.DistributionRatio?.ToString("G29", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
             action.Currency ?? string.Empty,
             action.LifecycleState ?? string.Empty);
-        return $"sha256:{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source))).ToLowerInvariant()}";
+        return $"sha256:{Sha256Digest.ComputeUtf8(source)}";
     }
 
     private static void PostRedemptionMemo(

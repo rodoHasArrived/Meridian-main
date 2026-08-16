@@ -1,8 +1,8 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 
@@ -461,8 +461,7 @@ public sealed record ClosePeriodLockResultDto(
             string.Join('|', retainedIssues
                 .OrderBy(static issue => issue.Code, StringComparer.Ordinal)
                 .Select(static issue => $"{issue.Code}:{issue.Severity}:{issue.TargetId}")));
-        var inputHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonicalInput)))
-            .ToLowerInvariant();
+        var inputHash = Sha256Digest.ComputeUtf8(canonicalInput);
         const string evidenceId = "accounting-close-period-lock-result";
         var postconditionSatisfied = state is
             OperationTerminalState.Succeeded or OperationTerminalState.CompletedWithWarnings;

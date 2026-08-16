@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
@@ -1405,7 +1405,7 @@ public sealed partial class OperationsContinuityWorkflow
                 .Append(approval.ApprovedAtUtc.UtcDateTime.ToString("O"));
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static IReadOnlyList<EvidenceDocumentDto> NormalizeDocumentSnapshots(
@@ -1965,7 +1965,7 @@ public sealed partial class OperationsContinuityWorkflow
             request.SupersedingBreakId?.Trim() ?? string.Empty
         }.Concat(evidenceLinks.Select(static link => link.EvidenceId)
             .OrderBy(static evidenceId => evidenceId, StringComparer.OrdinalIgnoreCase)));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(payload);
     }
 
     private static bool RequiresRetainedResolutionEvidence(OperationsBreakCaseDto breakCase) =>

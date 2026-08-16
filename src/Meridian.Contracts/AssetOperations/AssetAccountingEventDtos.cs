@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Integrity;
@@ -786,7 +785,7 @@ public static class AssetAccountingEventSpineValidator
     {
         ArgumentNullException.ThrowIfNull(value);
         var payload = JsonSerializer.SerializeToUtf8Bytes(value);
-        return Convert.ToHexString(SHA256.HashData(payload)).ToLowerInvariant();
+        return Sha256Digest.Compute(payload);
     }
 }
 
@@ -887,6 +886,6 @@ public static class AssetLotMutationInstructionValidator
     {
         ArgumentNullException.ThrowIfNull(instruction);
         var payload = JsonSerializer.SerializeToUtf8Bytes(instruction, JsonOptions);
-        return Convert.ToHexString(SHA256.HashData(payload)).ToLowerInvariant();
+        return Sha256Digest.Compute(payload);
     }
 }

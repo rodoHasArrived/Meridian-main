@@ -3226,9 +3226,7 @@ public sealed partial class ReportingScheduleService
     }
 
     internal static string ComputeAccessPolicySnapshotHash(ReportAccessPolicyDto policy) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-                JsonSerializer.Serialize(ReportAccessPolicyEvaluator.Normalize(policy)))))
-            .ToLowerInvariant();
+        Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(ReportAccessPolicyEvaluator.Normalize(policy)));
 
     internal static string? ComputeDeliveryTargetsSnapshotHash(
         IReadOnlyList<ReportingScheduleDeliveryTargetDto>? targets)
@@ -3253,9 +3251,7 @@ public sealed partial class ReportingScheduleService
             })
             .OrderBy(static target => target.DistributionId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-                JsonSerializer.Serialize(canonical))))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(canonical));
     }
 
     internal static bool HasValidDeliveryTargetsSnapshot(ReportingScheduleRecordDto schedule)

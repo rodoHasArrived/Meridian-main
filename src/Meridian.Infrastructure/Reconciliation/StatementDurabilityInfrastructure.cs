@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Text;
 using Meridian.Domain.Reconciliation;
 using Meridian.Storage.Archival;
@@ -667,8 +668,7 @@ public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitS
     private static string CommandFileName(string commandId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(commandId);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(commandId.Trim())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(commandId.Trim());
     }
 
     private static bool PathsEqual(string left, string right)
@@ -703,8 +703,7 @@ public static class StatementBreakCaseworkFingerprint
             EvidenceLinks = NormalizeEvidence(update.EvidenceLinks),
             OccurredAtUtc = update.OccurredAtUtc.ToUniversalTime()
         }, StatementLegacyCaseworkJsonContext.Default.StatementBreakCaseworkUpdate);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-            $"meridian.statement-break-casework.v1\n{canonical}"))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8($"meridian.statement-break-casework.v1\n{canonical}");
     }
 
     private static IReadOnlyList<string> NormalizeEvidence(IReadOnlyList<string>? evidence)
@@ -724,7 +723,7 @@ public static class StatementDurabilityHashing
         ArgumentNullException.ThrowIfNull(value);
         ArgumentNullException.ThrowIfNull(typeInfo);
         var json = JsonSerializer.Serialize(value, typeInfo);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(json);
     }
 
     public static string Hash(ReconciliationBreakRecord value)

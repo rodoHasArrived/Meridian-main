@@ -1,8 +1,8 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors.Camt;
 
@@ -207,7 +207,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
         var detectedColumns = new[] { "Bal/CLBD/Amt", "Ntry/Amt", "Ntry/CdtDbtInd", "Ntry/Refs" };
         var fingerprint = new StatementFormatFingerprint(
-            Convert.ToHexString(SHA256.HashData(document.Content.Span)).ToLowerInvariant(),
+            Sha256Digest.Compute(document.Content.Span),
             detectedColumns.Select(static column => column.ToLowerInvariant()).ToArray(),
             "camt053");
 

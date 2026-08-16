@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -1181,7 +1181,7 @@ public sealed class AccountingSystemIntegrationService
                     package.EvidenceReferenceCount,
                     string.Join("\u001d", package.EvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
                     string.Join("\u001d", package.RequiredActions.Order(StringComparer.OrdinalIgnoreCase))))));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(payload);
     }
 
     private static string ComputeExportPackageHash(
@@ -1221,7 +1221,7 @@ public sealed class AccountingSystemIntegrationService
                 .ThenBy(static issue => issue.TargetId, StringComparer.OrdinalIgnoreCase)
                 .Select(static issue => $"{issue.Code}:{issue.Severity}:{issue.TargetId}:{issue.Message}:{issue.SuggestedAction}")),
             string.Join(",", evidenceLinks.Order(StringComparer.OrdinalIgnoreCase)));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(payload);
     }
 
     private static string FormatReconciliationRowForHash(AccountingSystemReconciliationRowDto row)
@@ -1455,7 +1455,7 @@ public sealed class AccountingSystemIntegrationService
                 .OrderBy(static line => line.ExternalAccountId, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static line => line.AccountCode, StringComparer.OrdinalIgnoreCase)
                 .Select(FormatTrialBalanceLineForHash)));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(payload);
     }
 
     private static string FormatChartAccountForHash(AccountingSystemChartAccountDto account)

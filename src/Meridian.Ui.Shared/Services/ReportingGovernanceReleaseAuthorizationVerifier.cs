@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
 
 namespace Meridian.Ui.Shared.Services;
@@ -109,8 +110,7 @@ public static class ReportingDeliveryReleaseAuthorizationFactory
 
         Append(canonical, authorization.ReleasedAtUtc.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
         Append(canonical, authorization.ReleasedBy);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical.ToString());
     }
 
     private static void Append(StringBuilder target, object? value)
@@ -316,7 +316,7 @@ public sealed class ReportingReleasedArtifactIntegrityGate
                 }
 
                 var read = await _artifactStore.ReadAsync(retained.Identity, ct).ConfigureAwait(false);
-                var actualHash = Convert.ToHexString(SHA256.HashData(read.Content)).ToLowerInvariant();
+                var actualHash = Sha256Digest.Compute(read.Content);
                 if (!Same(read.Identity.TenantId, retained.Identity.TenantId)
                     || !string.Equals(
                         read.Identity.ContentHashSha256,

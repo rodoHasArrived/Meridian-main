@@ -1,7 +1,7 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrity;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Plaid;
 using Microsoft.AspNetCore.Builder;
@@ -166,7 +166,7 @@ public static class PlaidEndpoints
                 webhookType,
                 webhookCode,
                 DateTimeOffset.UtcNow,
-                PayloadHash: Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(raw))).ToLowerInvariant());
+                PayloadHash: Sha256Digest.ComputeUtf8(raw));
             var result = await service.RecordWebhookAsync(webhook, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
@@ -240,7 +240,7 @@ public static class PlaidEndpoints
 
     private static string BuildWebhookEventId(string itemId, string webhookType, string webhookCode, string payload)
     {
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+        var hash = Sha256Digest.ComputeUtf8(payload);
         return $"{itemId}:{webhookType}:{webhookCode}:{hash[..16]}";
     }
 }
