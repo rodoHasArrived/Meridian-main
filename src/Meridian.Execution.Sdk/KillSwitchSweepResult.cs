@@ -106,8 +106,10 @@ public sealed record KillSwitchSweepResult(
             return $"Kill-switch cancel-all cancelled {Cancelled} of {Requested} open order(s).";
         }
 
-        // Bounded: an operator reading an audit entry needs the first few names and the count, not
-        // a thousand-line message that the audit surface would truncate anyway.
+        // Bounded, and bounded only here: this is the audit/log rendering, while the structured
+        // StillWorking list travels intact on the result and on the endpoint response. An operator
+        // told "and 40 more" with no ids cannot carry out the manual cancellation this very
+        // sentence instructs, so the ids have to survive somewhere that is not prose.
         const int named = 10;
         var names = string.Join(
             ", ",

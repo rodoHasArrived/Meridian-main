@@ -132,9 +132,123 @@ public sealed class KillSwitchCloseOnlyTests : IDisposable
         decision.RejectCode.Should().Be("CIRCUIT_BREAKER_OPEN", "no override means the plain halt applies");
     }
 
-    private async Task<(ExecutionOperatorControlService Controls, string OverrideId)> HaltedDeskWithOverrideAsync()
+
+    /// <summary>
+    /// Two closes against one position. Each is a valid reduction on its own and together they
+    /// cross through flat into a short, reopening risk behind the kill switch — so admission
+    /// compares the settled position against committed reduction, not against this order alone.
+    /// </summary>
+    [Fact]
+    public async Task SecondClose_ThatWouldOvershootWithTheFirst_IsRefused()
+    {
+        var (controls, overrideId) = await HaltedDeskWithOverrideAsync(alreadyWorking: 6m);
+
+        controls.EvaluateOrder(Order(OrderSide.Sell, 4m, overrideId), Portfolio(("AAPL", 10m)))
+            .IsApproved.Should().BeTrue("6 working plus 4 exactly flattens the 10-share long");
+        controls.EvaluateOrder(Order(OrderSide.Sell, 5m, overrideId), Portfolio(("AAPL", 10m)))
+            .IsApproved.Should().BeFalse("6 working plus 5 would leave the account short 1");
+    }
+
+    /// <summary>
+    /// A gate with no way to see working reductions cannot establish that an order is one, and
+    /// under an open breaker that is not a reason to route it.
+    /// </summary>
+    [Fact]
+    public async Task WithoutAWorkingReductionProbe_NothingIsAdmitted()
     {
         var controls = NewControls();
+        controls.WorkingReductionQuantityProbe = null;
+        var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.BypassOrderControls,
+            Reason: "Operator approved emergency close",
+            CreatedBy: "ops",
+            Symbol: "AAPL"));
+        await controls.SetCircuitBreakerAsync(isOpen: true, reason: "Operator halt", changedBy: "ops");
+
+        controls.EvaluateOrder(Order(OrderSide.Sell, 1m, manualOverride.OverrideId), Portfolio(("AAPL", 10m)))
+            .IsApproved.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// An explicit opening intent settles the question whatever the arithmetic says: SellToOpen
+    /// against a long is a new short, not a reduction.
+    /// </summary>
+    [Theory]
+    [InlineData(PositionIntent.SellToOpen)]
+    [InlineData(PositionIntent.BuyToOpen)]
+    public async Task ExplicitOpeningIntent_IsRefused(PositionIntent intent)
+    {
+        var (controls, overrideId) = await HaltedDeskWithOverrideAsync();
+
+        var order = Order(OrderSide.Sell, 1m, overrideId) with { PositionIntent = intent };
+
+        controls.EvaluateOrder(order, Portfolio(("AAPL", 10m))).IsApproved.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// A package's parent fields are not what routes: the gateway replaces the parent symbol with
+    /// the legs, so a close-looking parent can carry legs that open fresh exposure.
+    /// </summary>
+    [Fact]
+    public async Task MultiLegOrder_IsRefused_BecauseItsLegsAreWhatRoute()
+    {
+        var (controls, overrideId) = await HaltedDeskWithOverrideAsync();
+
+        var order = Order(OrderSide.Sell, 1m, overrideId) with
+        {
+            Legs = [new OrderLeg { Symbol = "AAPL_C1", Side = OrderSide.Buy, RatioQuantity = 1m }]
+        };
+
+        controls.EvaluateOrder(order, Portfolio(("AAPL", 10m))).IsApproved.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// A broker-native notional order routes dollars and the gateway discards Quantity, so a small
+    /// placeholder quantity would pass while the routed amount crossed through flat.
+    /// </summary>
+    [Fact]
+    public async Task BrokerNotionalOrder_IsRefused_BecauseQuantityIsNotAShareCount()
+    {
+        var (controls, overrideId) = await HaltedDeskWithOverrideAsync();
+
+        var order = Order(OrderSide.Sell, 1m, overrideId) with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["manualOverrideId"] = overrideId,
+                ["notional"] = "100000"
+            }
+        };
+
+        controls.EvaluateOrder(order, Portfolio(("AAPL", 10m))).IsApproved.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// A shared book nets several funds onto one symbol. Measuring a fund-scoped close against that
+    /// aggregate lets one fund sell against another's long and acquire a new short.
+    /// </summary>
+    [Fact]
+    public async Task FundScopedClose_MeasuresTheRequestingFundsShare_NotTheNettedAggregate()
+    {
+        var (controls, overrideId) = await HaltedDeskWithOverrideAsync();
+        var fundA = Guid.NewGuid();
+        var fundB = Guid.NewGuid();
+
+        // Aggregate 10 long, all of it fund A's.
+        var portfolio = new StubPortfolioState(
+            [("AAPL", 10m)],
+            owners: new Dictionary<string, decimal> { [fundA.ToString("D")] = 10m });
+
+        controls.EvaluateOrder(Order(OrderSide.Sell, 10m, overrideId) with { FundAccountId = fundA }, portfolio)
+            .IsApproved.Should().BeTrue("fund A is closing its own long");
+        controls.EvaluateOrder(Order(OrderSide.Sell, 10m, overrideId) with { FundAccountId = fundB }, portfolio)
+            .IsApproved.Should().BeFalse("fund B holds nothing here, so this sell opens a short");
+    }
+
+    private async Task<(ExecutionOperatorControlService Controls, string OverrideId)> HaltedDeskWithOverrideAsync(
+        decimal alreadyWorking = 0m)
+    {
+        var controls = NewControls(alreadyWorking);
         var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
             Kind: ExecutionManualOverrideKinds.BypassOrderControls,
             Reason: "Operator approved emergency close",
@@ -145,9 +259,18 @@ public sealed class KillSwitchCloseOnlyTests : IDisposable
         return (controls, manualOverride.OverrideId);
     }
 
-    private ExecutionOperatorControlService NewControls() => new(
-        new ExecutionOperatorControlOptions(Path.Combine(_root, Guid.NewGuid().ToString("N"))),
-        NullLogger<ExecutionOperatorControlService>.Instance);
+    /// <summary>
+    /// Every close-only case needs a working-reduction probe, because an unset one fails closed:
+    /// a gate that cannot see committed reductions cannot establish that this order is one.
+    /// </summary>
+    private ExecutionOperatorControlService NewControls(decimal alreadyWorking = 0m)
+    {
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(_root, Guid.NewGuid().ToString("N"))),
+            NullLogger<ExecutionOperatorControlService>.Instance);
+        controls.WorkingReductionQuantityProbe = (_, _) => alreadyWorking;
+        return controls;
+    }
 
     private static OrderRequest Order(OrderSide side, decimal quantity, string? manualOverrideId) => new()
     {
@@ -168,10 +291,12 @@ public sealed class KillSwitchCloseOnlyTests : IDisposable
 
     private sealed class StubPortfolioState : IPortfolioState
     {
-        public StubPortfolioState((string Symbol, decimal Quantity)[] positions)
+        public StubPortfolioState(
+            (string Symbol, decimal Quantity)[] positions,
+            IReadOnlyDictionary<string, decimal>? owners = null)
             => Positions = positions.ToDictionary(
                 static entry => entry.Symbol,
-                static entry => (IPosition)new StubPosition(entry.Symbol, entry.Quantity),
+                entry => (IPosition)new StubPosition(entry.Symbol, entry.Quantity, owners ?? new Dictionary<string, decimal>()),
                 StringComparer.OrdinalIgnoreCase);
 
         public decimal Cash => 100_000m;
@@ -191,8 +316,13 @@ public sealed class KillSwitchCloseOnlyTests : IDisposable
     /// reads the exact one — so a double that only set the rounded value could not express the
     /// fractional holdings the close-only rule has to get right.
     /// </summary>
-    private sealed record StubPosition(string Symbol, decimal Held) : IPosition
+    private sealed record StubPosition(
+        string Symbol,
+        decimal Held,
+        IReadOnlyDictionary<string, decimal> Owners) : IPosition
     {
+        public IReadOnlyDictionary<string, decimal> OwnerQuantities => Owners;
+
         public long Quantity => (long)Held;
 
         public decimal ExactQuantity => Held;

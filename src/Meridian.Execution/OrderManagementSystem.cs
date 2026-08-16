@@ -95,6 +95,14 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         _riskValidator = riskValidator;
         _securityMasterGate = securityMasterGate;
         _operatorControls = operatorControls;
+
+        // The close-only exception needs to see committed reductions, and only the OMS holds the
+        // open book. Without this the gate cannot establish that a close is within the position and
+        // refuses every one, so a halted desk could not flatten at all.
+        if (_operatorControls is not null)
+        {
+            _operatorControls.WorkingReductionQuantityProbe = ResolveWorkingReductionQuantity;
+        }
         _liveOrderReadinessGate = liveOrderReadinessGate;
         _auditTrail = auditTrail;
         _escalationQueue = escalationQueue;

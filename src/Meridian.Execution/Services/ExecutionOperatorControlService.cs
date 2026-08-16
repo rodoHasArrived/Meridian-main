@@ -133,6 +133,24 @@ public sealed class ExecutionOperatorControlService
     private Dictionary<string, ExecutionManualOverride> _manualOverrides = new(StringComparer.OrdinalIgnoreCase);
     private long _version;
 
+    /// <summary>
+    /// Absolute quantity already working in orders that would reduce the given symbol's position
+    /// for the given fund account, excluding the order being evaluated.
+    /// <para>
+    /// Set by the composition that owns the open book — the gate itself cannot see working orders.
+    /// Close-only admission compares settled position against <em>committed</em> reduction, not
+    /// against this one order alone: two 10-share sells against a 10-share long each pass in
+    /// isolation and together leave the account short 10, reopening risk behind the kill switch.
+    /// </para>
+    /// <para>
+    /// An unset probe means working reductions cannot be established, so close-only refuses. That
+    /// is the same fail-closed posture the rest of this exception takes, and it is why production
+    /// compositions wire it: a host that does not is telling the gate it cannot answer the
+    /// question, and under an open breaker that is not a reason to route.
+    /// </para>
+    /// </summary>
+    public Func<string, Guid?, decimal>? WorkingReductionQuantityProbe { get; set; }
+
     public ExecutionOperatorControlService(
         ExecutionOperatorControlOptions? options,
         ILogger<ExecutionOperatorControlService> logger,
@@ -509,18 +527,39 @@ public sealed class ExecutionOperatorControlService
     /// <summary>
     /// Whether an order moves an existing position toward flat without crossing through it.
     /// <para>
-    /// Deliberately strict on three counts, because this is the one door left open in a halted
-    /// desk. An order larger than the position is refused rather than partly admitted: selling 150
-    /// against a 100 long closes the long and opens a 50 short, which is new risk wearing a
-    /// reduction's clothes, and the operator can send 100 instead. A flat position admits nothing,
-    /// because there is no exposure to reduce. And an absent portfolio state refuses rather than
-    /// assuming — under an open breaker, being unable to establish that an order reduces risk is
-    /// not a reason to route it.
+    /// This is the one door left open in a halted desk, so it refuses anything it cannot establish
+    /// is a reduction. It measures the position that actually backs the order, not merely a
+    /// position in the same symbol.
     /// </para>
     /// </summary>
-    private static bool ReducesExistingPosition(OrderRequest request, IPortfolioState? portfolioState)
+    private bool ReducesExistingPosition(OrderRequest request, IPortfolioState? portfolioState)
     {
         if (portfolioState is null)
+        {
+            return false;
+        }
+
+        // A multi-leg package's parent fields are not what routes. The gateway replaces the parent
+        // symbol with the legs, so a parent that reads as a close can carry legs that open fresh
+        // option exposure. Verifying each leg against its own position is real work this gate does
+        // not do, so packages are refused rather than approximated.
+        if (request.Legs is { Count: > 0 })
+        {
+            return false;
+        }
+
+        // An explicit opening intent settles the question regardless of what the arithmetic below
+        // would say: SellToOpen against a long is a new short, not a reduction.
+        if (request.PositionIntent is Sdk.PositionIntent.BuyToOpen or Sdk.PositionIntent.SellToOpen)
+        {
+            return false;
+        }
+
+        // Broker-native notional orders route a dollar amount and the gateway discards Quantity, so
+        // comparing Quantity with a share count compares two different things: a placeholder
+        // quantity would pass while the routed dollars crossed through flat into a short. Converting
+        // requires an authoritative price this gate does not have, so they are refused.
+        if (BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is not null)
         {
             return false;
         }
@@ -531,9 +570,7 @@ public sealed class ExecutionOperatorControlService
             return false;
         }
 
-        // Unrounded, for the reason the position-limit gate gives: a fractional holding rounded to
-        // zero would read as flat and refuse a legitimate close.
-        var held = position.ExactQuantity;
+        var held = ResolveHeldQuantity(position, request.FundAccountId);
         if (held == 0m)
         {
             return false;
@@ -543,7 +580,67 @@ public sealed class ExecutionOperatorControlService
             ? request.Side == OrderSide.Sell
             : request.Side == OrderSide.Buy;
 
-        return opposesPosition && Math.Abs(request.Quantity) <= Math.Abs(held);
+        if (!opposesPosition)
+        {
+            return false;
+        }
+
+        var probe = WorkingReductionQuantityProbe;
+        if (probe is null)
+        {
+            return false;
+        }
+
+        decimal alreadyWorking;
+        try
+        {
+            alreadyWorking = Math.Abs(probe(normalizedSymbol, request.FundAccountId));
+        }
+        catch (Exception exception)
+        {
+            // A probe that throws has established nothing. Refusing is the same answer as an
+            // absent probe, and it keeps a faulting book from admitting an unbounded close.
+            _logger.LogWarning(
+                exception,
+                "Close-only admission refused: the working-reduction probe failed for {Symbol}",
+                normalizedSymbol);
+            return false;
+        }
+
+        return Math.Abs(request.Quantity) + alreadyWorking <= Math.Abs(held);
+    }
+
+    /// <summary>
+    /// The signed quantity backing this order: the requesting fund's share when the order names a
+    /// fund account, and the aggregate otherwise.
+    /// <para>
+    /// A shared execution book nets several funds' positions onto one symbol. Measuring a
+    /// fund-scoped close against that aggregate lets fund B sell against fund A's long and acquire
+    /// a new short, and conversely stops two funds with offsetting holdings from closing at all
+    /// because the net reads flat. A named fund with no attributed quantity holds nothing here, so
+    /// it reduces nothing — deliberately not falling back to the aggregate, which is the very
+    /// number that would be wrong.
+    /// </para>
+    /// </summary>
+    private static decimal ResolveHeldQuantity(IPosition position, Guid? fundAccountId)
+    {
+        // Unrounded, for the reason the position-limit gate gives: a fractional holding rounded to
+        // zero would read as flat and refuse a legitimate close.
+        if (fundAccountId is not { } fundAccount)
+        {
+            return position.ExactQuantity;
+        }
+
+        var owner = fundAccount.ToString("D");
+        foreach (var pair in position.OwnerQuantities)
+        {
+            if (string.Equals(pair.Key, owner, StringComparison.OrdinalIgnoreCase))
+            {
+                return pair.Value;
+            }
+        }
+
+        return 0m;
     }
 
     /// <summary>
