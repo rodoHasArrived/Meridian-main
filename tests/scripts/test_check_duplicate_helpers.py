@@ -416,6 +416,34 @@ class BodyCloneDetectionTests(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 ratchet.scan_body_clones(root)
 
+    def test_a_global_qualified_alias_still_matches(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(global::System.String? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_verbatim_string_of_quotes_is_not_a_raw_string(self):
+        # @"""" is a one-character verbatim string containing a quote; reading it as a
+        # raw delimiter consumed the rest of the file and hid every later clone.
+        found = clones({"src/A/Thing.cs":
+                        "    private const string Q = @\"\"\"\";\n"
+                        "    private static string? Clean(string? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_parameter_sharing_a_member_name_does_not_rewrite_the_member(self):
+        # A parameter named Trim must rename its references but not the .Trim() member.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? Trim)\n"
+                        "        => string.IsNullOrWhiteSpace(Trim) ? null : Trim.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_unicode_parameter_name_is_normalized(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? τιμή)\n"
+                        "        => string.IsNullOrWhiteSpace(τιμή) ? null : τιμή.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
     def test_a_tracked_name_is_the_name_ratchets_jurisdiction(self):
         # One copy must never be counted by both detectors.
         found = clones({"src/A/Thing.cs":

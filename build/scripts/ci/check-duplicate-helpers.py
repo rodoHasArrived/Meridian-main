@@ -81,10 +81,10 @@ EXCLUDED_DIRECTORY_NAMES = {"bin", "node_modules", "obj"}
 TEXT_PRIMITIVES_RELATIVE = "src/Meridian.Contracts/Text/TextPrimitives.cs"
 
 _NUMBER_LITERAL = re.compile(r"\b\d[\w.]*")
-_IDENTIFIER = re.compile(r"[A-Za-z_@][\w]*")
+_IDENTIFIER = re.compile(r"@?[^\W\d]\w*")
 _STRING_PREFIX = re.compile(r'[$@]*"')
 _INTERESTING = re.compile(r'//|/\*|\'|[$@]+"|"')
-_EXPLICIT_FOREACH = re.compile(r"\bforeach\s*\(\s*[\w?<>\[\], .]+?\s+([A-Za-z_]\w*)\s+in\b")
+_EXPLICIT_FOREACH = re.compile(r"\bforeach\s*\(\s*[\w?<>\[\], .]+?\s+([^\W\d]\w*)\s+in\b")
 # The CLR type behind each C# keyword alias: respelling `string` as `String` or
 # `System.String` is a style choice, not a different function.
 _TYPE_ALIASES = {
@@ -94,7 +94,7 @@ _TYPE_ALIASES = {
     "UInt16": "ushort", "UInt32": "uint", "UInt64": "ulong",
 }
 _TYPE_ALIAS_PATTERN = re.compile(
-    r"\b(?:System\.)?(" + "|".join(_TYPE_ALIASES) + r")\b"
+    r"\b(?:global::)?(?:System\.)?(" + "|".join(_TYPE_ALIASES) + r")\b"
 )
 # The declaration header of a method: at least one declaration keyword (accessibility
 # or modifier -- `static string? Clean(...)` is implicitly private, and static local
@@ -106,7 +106,7 @@ _TYPE_ALIAS_PATTERN = re.compile(
 # sharing is static by nature; an instance copy is already a different function.
 _METHOD_HEADER = re.compile(
     r"\b(?:(?:private|internal|protected|public|static|readonly|async|sealed|new|virtual|override|unsafe|extern|partial)\s+)+"
-    r"([\w?<>\[\], .]+?)\s+([A-Za-z_]\w*)\s*\("
+    r"([\w?<>\[\], .]+?)\s+([^\W\d]\w*)\s*\("
 )
 # Only modifiers that do not change the call: params is call-site sugar, this marks
 # an extension receiver, scoped is lifetime analysis. ref/out/in/readonly stay in
@@ -168,7 +168,7 @@ def _mask_strings_and_comments(text: str) -> str:
             interpolated = dollars > 0
             verbatim = "@" in prefix.group(0)
             out.append("⟦⟧")
-            if text.startswith('"""', prefix.end() - 1):
+            if not verbatim and text.startswith('"""', prefix.end() - 1):
                 # A raw string opens with three or more quotes, and only a run of the
                 # same width closes it -- four-quote delimiters exist so the contents
                 # can hold a literal triple quote.
@@ -380,7 +380,7 @@ def _parameter_types(parameter_text: str) -> str:
     """
     types: list[str] = []
     for piece in _split_parameters(parameter_text):
-        declaration = re.sub(r"[A-Za-z_@]\w*\s*$", "", piece).strip()
+        declaration = re.sub(r"@?[^\W\d]\w*\s*$", "", piece).strip()
         changed = True
         while changed:
             changed = False
@@ -423,11 +423,18 @@ def canonicalize_body(body: str, parameter_text: str) -> str:
     renames: dict[str, str] = {}
     for index, parameter in enumerate(_parameter_names(parameter_text)):
         renames[parameter] = f"§p{index}"
-    for index, local in enumerate(re.findall(r"\bvar\s+([A-Za-z_]\w*)", text)):
+    for index, local in enumerate(re.findall(r"\bvar\s+([^\W\d]\w*)", text)):
         renames.setdefault(local, f"§l{index}")
 
     text = _NUMBER_LITERAL.sub("⟪⟫", text)
-    text = _IDENTIFIER.sub(lambda match: renames.get(match.group(0), match.group(0)), text)
+    def rename(match: re.Match[str]) -> str:
+        # An identifier after `.` is a member, never a parameter reference, so a
+        # parameter that happens to share a member's name must not rewrite it.
+        if match.start() > 0 and text[match.start() - 1] == ".":
+            return match.group(0)
+        return renames.get(match.group(0), match.group(0))
+
+    text = _IDENTIFIER.sub(rename, text)
 
     text = re.sub(r"\s+", " ", text)
     return re.sub(r" ?([^\w§ ]) ?", r"\1", text).strip()
