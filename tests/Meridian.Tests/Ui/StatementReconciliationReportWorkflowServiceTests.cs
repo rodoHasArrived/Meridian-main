@@ -1,7 +1,7 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
 using FluentAssertions;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
@@ -71,7 +71,7 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             "tenant-alpha",
             "company-alpha");
         download.Should().NotBeNull();
-        Convert.ToHexString(SHA256.HashData(download!.Content))
+        Sha256Digest.Compute(download!.Content)
             .Should().Be(jsonArtifact.ContentHashSha256);
         Encoding.UTF8.GetString(download.Content).Should().Contain(first.Workflow.WorkflowId);
 
@@ -395,7 +395,7 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         archivedGeneration.ManifestFileName.Should().Be("manifest.json");
         archivedGeneration.ManifestByteLength.Should().Be(originalManifestBytes.LongLength);
         archivedGeneration.ManifestContentHashSha256.Should().Be(
-            Convert.ToHexString(SHA256.HashData(originalManifestBytes)));
+            Sha256Digest.Compute(originalManifestBytes));
         archivedGeneration.GeneratedAtUtc.Should().Be(originalJsonArtifact.RetainedAtUtc);
         archivedGeneration.EvidenceReferences.Should().Contain(originalJsonEvidence);
         archivedGeneration.EvidenceReferences.Should().Contain(originalJsonGenerationEvidence);
@@ -419,7 +419,7 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             .Should().Equal(originalManifestBytes);
         var originalReceiptBytes = await File.ReadAllBytesAsync(
             Path.Combine(generationDirectory, "archive-receipt.json"));
-        Convert.ToHexString(SHA256.HashData(originalReceiptBytes))
+        Sha256Digest.Compute(originalReceiptBytes)
             .Should().Be(archivedGeneration.ArchiveReceiptContentHashSha256);
         intake.PublishCount.Should().Be(1,
             "reopening current casework must use the retained Operations intake authority");
@@ -483,7 +483,7 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             "tenant-alpha",
             "company-alpha");
         currentDownload.Should().NotBeNull();
-        Convert.ToHexString(SHA256.HashData(currentDownload!.Content))
+        Sha256Digest.Compute(currentDownload!.Content)
             .Should().Be(currentJsonArtifact.ContentHashSha256);
         currentDownload.Content
             .SequenceEqual(originalArtifactBytes[originalJsonArtifact.ArtifactId])
@@ -621,7 +621,7 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         File.Exists(jsonArtifactPath).Should().BeTrue(
             "the JSON artifact is retained before the injected CSV checkpoint failure");
         var firstJsonBytes = await File.ReadAllBytesAsync(jsonArtifactPath);
-        var firstJsonHash = Convert.ToHexString(SHA256.HashData(firstJsonBytes));
+        var firstJsonHash = Sha256Digest.Compute(firstJsonBytes);
         Directory.Delete(blockedCsvPath);
 
         var completed = await service.ResumeAsync(
