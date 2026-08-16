@@ -214,6 +214,8 @@ public sealed class LoginSessionService
         }
     }
 
+    // Deliberately NOT routed through Sha256Digest (which lowercases): kept consistent with
+    // HashToken below, whose casing is load-bearing for persisted session keys (#2691).
     private static string BuildAttemptKey(string username, string clientKey)
         => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
             $"{username.Trim().ToUpperInvariant()}|{clientKey.Trim().ToUpperInvariant()}")));
@@ -282,6 +284,9 @@ public sealed class LoginSessionService
         }
     }
 
+    // Deliberately NOT routed through Sha256Digest (which lowercases): token hashes key the
+    // session dictionary AND the durable session store, so changing the casing would orphan
+    // every session persisted before the change on rehydrate (#2691).
     private static string HashToken(string token)
         => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token.Trim())));
 

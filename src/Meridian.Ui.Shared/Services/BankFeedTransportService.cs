@@ -306,6 +306,9 @@ internal static class BankStatementCsvImportMapper
 
     public static Guid BuildBatchId(byte[] fileBytes, Guid accountId, string bankName)
     {
+        // Deliberately NOT routed through Sha256Digest (which lowercases): the hash feeds the
+        // deterministic batch GUID, so changing its casing would change every derived batch ID
+        // and break duplicate detection against previously imported batches (#2691).
         var fileHash = Convert.ToHexString(SHA256.HashData(fileBytes));
         return BuildGuid($"bank-statement-batch|{accountId:N}|{bankName}|{fileHash}");
     }

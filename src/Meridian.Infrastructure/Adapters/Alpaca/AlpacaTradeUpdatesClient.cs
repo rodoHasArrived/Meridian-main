@@ -1056,6 +1056,10 @@ internal static class AlpacaTradeUpdateStateCodec
     private const int MaxEventIdCharacters = 512;
     private const int Sha256HexCharacters = 64;
 
+    // Deliberately NOT routed through Sha256Digest (which lowercases): this hash — and the
+    // providerIdHash below — is embedded in stable event IDs persisted in the trade-update
+    // cursor state; changing the casing would change every event ID and re-deliver
+    // previously-seen fills as new events (#2691).
     internal static string ComputeContentHash(ExecutionReport report, DateTimeOffset timestamp)
     {
         ArgumentNullException.ThrowIfNull(report);

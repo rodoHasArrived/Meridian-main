@@ -8,6 +8,9 @@ using Xunit;
 
 namespace Meridian.Tests.Application.Config;
 
+// Mutates process-global provider-credential environment variables that concurrent provider
+// composition reads ambiently, so this class must not run in parallel with other collections (#2682).
+[Collection("Sequential")]
 public sealed class ProviderCredentialStoreTests : IDisposable
 {
     private readonly string _root;
