@@ -10,6 +10,7 @@ using Meridian.Reporting;
 using Meridian.Storage.Export;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -815,7 +816,7 @@ public sealed partial class ReportPackDeliveryService
                 target.DistributionId,
                 Actor: fallbackActor,
                 DeliveryReference: $"schedule:{normalizedTemplateId}:{record.ReportId:N}:{target.DistributionId}",
-                Note: NormalizeNullable(target.Note) ?? $"Scheduled delivery for {normalizedTemplateId}.",
+                Note: NormalizeOptional(target.Note) ?? $"Scheduled delivery for {normalizedTemplateId}.",
                 Formats: target.Formats,
                 DeliveryMode: target.DeliveryMode),
             fallbackActor);
@@ -863,7 +864,7 @@ public sealed partial class ReportPackDeliveryService
                 actor,
                 attemptNumber,
                 reference,
-                NormalizeNullable(target.Note) ?? $"Scheduled reporting-run delivery for {manifest.TemplateId}.",
+                NormalizeOptional(target.Note) ?? $"Scheduled reporting-run delivery for {manifest.TemplateId}.",
                 FailureReason: null,
                 EvidenceLinks: packageEvidenceLinks,
                 Package: package);
@@ -962,8 +963,8 @@ public sealed partial class ReportPackDeliveryService
                 actor,
                 attemptNumber,
                 reference,
-                NormalizeNullable(note),
-                NormalizeNullable(failureReason),
+                NormalizeOptional(note),
+                NormalizeOptional(failureReason),
                 NormalizeEvidenceLinks(requestEvidenceLinks.Concat(packageEvidenceLinks).ToArray()),
                 package);
             PersistCandidateAttempts(
@@ -980,9 +981,6 @@ public sealed partial class ReportPackDeliveryService
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
         return actor;
     }
-
-    private static string? NormalizeNullable(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private void PersistCandidateAttempts(
         IReadOnlyList<ReportPackDeliveryAttemptDto> candidateAttempts,

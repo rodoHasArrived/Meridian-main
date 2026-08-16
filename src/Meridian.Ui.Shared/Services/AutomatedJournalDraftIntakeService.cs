@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -317,7 +318,7 @@ public sealed class AutomatedJournalDraftIntakeService
         string? periodId,
         string? entityId)
     {
-        var pendingBatchCorrelationId = NormalizeText(
+        var pendingBatchCorrelationId = NormalizeOptional(
             pendingOverlap.TreasuryContext?.BatchCorrelationId);
         return existingDrafts
             .Where(IsPendingDailyValuationDraft)
@@ -332,7 +333,7 @@ public sealed class AutomatedJournalDraftIntakeService
                 StringComparison.OrdinalIgnoreCase))
             .Where(existingDraft => pendingBatchCorrelationId is not null
                 ? string.Equals(
-                    NormalizeText(existingDraft.TreasuryContext?.BatchCorrelationId),
+                    NormalizeOptional(existingDraft.TreasuryContext?.BatchCorrelationId),
                     pendingBatchCorrelationId,
                     StringComparison.OrdinalIgnoreCase)
                 : HasOverlappingValuationScope(existingDraft, candidate))
@@ -392,9 +393,6 @@ public sealed class AutomatedJournalDraftIntakeService
     private static string? NormalizeOptionalUpperInvariant(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim().ToUpperInvariant();
 
-    private static string? NormalizeText(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private sealed record ValuationScopeKey(Guid? SecurityId, string? Symbol, string? FinancialAccountId);
 
     private static ManualJournalEntryDraftDto BuildDraftDto(
@@ -453,7 +451,7 @@ public sealed class AutomatedJournalDraftIntakeService
             TreasuryContext: new TreasuryLedgerContextDto(
                 EffectiveDate: effectiveDate,
                 IdempotencyKey: idempotencyKey,
-                BatchCorrelationId: NormalizeText(request.BatchCorrelationId)),
+                BatchCorrelationId: NormalizeOptional(request.BatchCorrelationId)),
             AutomationEvidenceAssessment: evidenceAssessment);
     }
 

@@ -234,9 +234,6 @@ public sealed partial class TradingOperatorReadinessService
         return segments.Any(segment => string.Equals(segment, token, StringComparison.OrdinalIgnoreCase));
     }
 
-    private static string? NormalizeEvidenceReferenceToken(string? token) =>
-        string.IsNullOrWhiteSpace(token) ? null : token.Trim();
-
     private static bool IsLiveOverrideChecklistItem(string checklistItem) =>
         string.Equals(checklistItem, PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.OrdinalIgnoreCase);
 }
