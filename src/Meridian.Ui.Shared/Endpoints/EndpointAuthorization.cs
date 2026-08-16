@@ -220,6 +220,29 @@ public static class EndpointAuthorization
     }
 
     /// <summary>
+    /// Requires an authenticated workstation session without demanding a specific permission, and
+    /// declares that requirement as metadata (an empty permission list with
+    /// <see cref="EndpointAuthorizationMetadata.RequireAll"/> false).
+    /// <para>
+    /// For mutations whose whole scope is the caller's own session state — workflow presets,
+    /// saved views, first-run acknowledgements, the local desktop launcher. Demanding a business
+    /// permission for a user's own UI state would be false precision: the real requirement is
+    /// "who are you", and this declaration says exactly that instead of leaving the route
+    /// undeclared. Routes that mutate shared or governed state must declare a real permission.
+    /// </para>
+    /// </summary>
+    public static TBuilder RequireAuthenticatedSession<TBuilder>(this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.AddEndpointFilter((context, next) =>
+            TryGetPermissions(context.HttpContext, out _)
+                ? next(context)
+                : ValueTask.FromResult<object?>(ApiProblemDetails.Unauthorized(context.HttpContext)));
+        builder.WithMetadata(new EndpointAuthorizationMetadata(Array.Empty<UserPermission>(), requireAll: false));
+        return builder;
+    }
+
+    /// <summary>
     /// Marks a read route as deliberately open to any authenticated session. See
     /// <see cref="EndpointOpenReadMetadata"/> for when this is the right declaration and when a
     /// permission is required instead.

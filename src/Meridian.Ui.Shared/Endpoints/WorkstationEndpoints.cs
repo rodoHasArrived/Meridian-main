@@ -209,7 +209,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Accepted(value: new { ingested, buffered = true });
         })
-        .WithName("IngestCollateralRows")
+        .WithName("IngestCollateralRows").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces(202)
         .Produces(400)
         .Produces(403)
@@ -253,7 +253,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(result.Preset, jsonOptions)
                 : Results.BadRequest(new { error = result.Error });
         })
-        .WithName("SaveWorkstationWorkflowPreset")
+        .WithName("SaveWorkstationWorkflowPreset").RequireAuthenticatedSession()
         .Produces<WorkflowPresetDto>(200)
         .Produces(400)
         .Produces(501);
@@ -285,7 +285,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(result.Preset, jsonOptions)
                 : Results.BadRequest(new { error = result.Error });
         })
-        .WithName("UpdateWorkstationWorkflowPreset")
+        .WithName("UpdateWorkstationWorkflowPreset").RequireAuthenticatedSession()
         .Produces<WorkflowPresetDto>(200)
         .Produces(400)
         .Produces(501);
@@ -311,7 +311,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(result.Preset, jsonOptions)
                 : Results.BadRequest(new { error = result.Error });
         })
-        .WithName("PinWorkstationWorkflowPreset")
+        .WithName("PinWorkstationWorkflowPreset").RequireAuthenticatedSession()
         .Produces<WorkflowPresetDto>(200)
         .Produces(400)
         .Produces(404)
@@ -335,7 +335,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(result.Preset, jsonOptions)
                 : Results.BadRequest(new { error = result.Error });
         })
-        .WithName("MarkWorkstationWorkflowPresetUsed")
+        .WithName("MarkWorkstationWorkflowPresetUsed").RequireAuthenticatedSession()
         .Produces<WorkflowPresetDto>(200)
         .Produces(400)
         .Produces(404)
@@ -354,7 +354,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NoContent()
                 : Results.NotFound(new { error = $"Workflow preset '{presetId}' was not found." });
         })
-        .WithName("DeleteWorkstationWorkflowPreset")
+        .WithName("DeleteWorkstationWorkflowPreset").RequireAuthenticatedSession()
         .Produces(204)
         .Produces(404)
         .Produces(501);
@@ -457,7 +457,7 @@ public static partial class WorkstationEndpoints
                 .ConfigureAwait(false);
             return Results.Ok(result);
         })
-        .WithName("PostWorkstationDataQuery")
+        .WithName("PostWorkstationDataQuery").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces<DataQueryResult>(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -2106,7 +2106,7 @@ public static partial class WorkstationEndpoints
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComment), async (string breakId, string commentId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.EditComment, CommentId = commentId }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("EditReconciliationBreakComment")
+        .WithName("EditReconciliationBreakComment").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapDelete(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComment), async (
@@ -2132,7 +2132,7 @@ public static partial class WorkstationEndpoints
                     CommentId: commentId),
                 context,
                 jsonOptions).ConfigureAwait(false))
-        .WithName("DeleteReconciliationBreakComment")
+        .WithName("DeleteReconciliationBreakComment").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakRootCause), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
@@ -2754,7 +2754,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(comparison, jsonOptions);
         })
-        .WithName("CompareRuns")
+        .WithName("CompareRuns").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyRunComparison>>(200)
         .Produces(400)
         .Produces(501);
@@ -2791,7 +2791,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(diff, jsonOptions);
         })
-        .WithName("DiffRuns")
+        .WithName("DiffRuns").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyRunDiff>(200)
         .Produces(404)
         .Produces(501);

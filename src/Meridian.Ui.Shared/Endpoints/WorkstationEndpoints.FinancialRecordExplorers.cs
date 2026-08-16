@@ -81,7 +81,7 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("SaveWorkstationFinancialRecordExplorerView")
+        .WithName("SaveWorkstationFinancialRecordExplorerView").RequireAuthenticatedSession()
         .Produces<FinancialRecordExplorerSavedViewDto>(200)
         .Produces(400)
         .Produces(404);
