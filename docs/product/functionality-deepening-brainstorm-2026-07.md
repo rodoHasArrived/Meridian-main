@@ -659,7 +659,11 @@ depth these ideas add.
 stale `.agents/` fork reconciled via PR #2757 (merged 2026-08-16): both tracked copies —
 `.claude/skills/meridian-brainstorm/brainstorm-history.jsonl` and
 `.agents/skills/meridian-brainstorm/brainstorm-history.jsonl` — now hold the same full
-seventeen-session history, and future sessions should dedup against either. The entry could
+seventeen-session history. Future sessions should dedup against the **union of both** copies:
+each skill tree's completion workflow appends only to its own ledger, so the mirrors can
+diverge again after any single-tree session; treat neither alone as complete until the two
+skill workflows are unified or one copy is designated canonical (a skill-maintenance change
+outside this document's scope). The entry could
 not ride the original pull request because both ledger paths sit outside the `PR1` docs phase
 scope enforced by the roadmap-source-docs gate; it landed as the separate unconstrained change
 this appendix originally called for. The JSON below is retained for historical reference only
