@@ -76,6 +76,146 @@ class DuplicateHelperDetectionTests(unittest.TestCase):
         self.assertEqual(found, {})
 
 
+FAKE_TEXT_PRIMITIVES = """
+public static class TextPrimitives
+{
+    public static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    public static string RequireText(string? value, string? paramName = null)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException("Value must be non-empty text.", paramName);
+        }
+
+        return value.Trim();
+    }
+
+    public static string? FirstNonBlank(params string?[] values)
+    {
+        if (values is null)
+        {
+            return null;
+        }
+
+        foreach (var value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value.Trim();
+            }
+        }
+
+        return null;
+    }
+}
+"""
+
+
+def clones(sources: dict[str, str]) -> dict[str, list[tuple[str, str]]]:
+    """Run the body scan over a throwaway repo that owns the canonical helpers."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        root = Path(temp_dir)
+        staged = {"src/Meridian.Contracts/Text/TextPrimitives.cs": FAKE_TEXT_PRIMITIVES}
+        staged.update(sources)
+        for rel, text in staged.items():
+            path = root / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+        return ratchet.scan_body_clones(root)
+
+
+class BodyCloneDetectionTests(unittest.TestCase):
+    """A renamed copy must be recognised by what it does, not what it is called (#2702)."""
+
+    def test_a_renamed_clone_is_detected(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? text)\n"
+                        "        => string.IsNullOrWhiteSpace(text) ? null : text.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_braced_single_return_matches_the_expression_form(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? NullIfBlank(string? s)\n"
+                        "    {\n"
+                        "        return string.IsNullOrWhiteSpace(s) ? null : s.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("NullIfBlank", "NormalizeOptional")]})
+
+    def test_a_different_predicate_is_not_a_clone(self):
+        # IsNullOrEmpty is a different function; member names are deliberately not folded.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? s)\n"
+                        "        => string.IsNullOrEmpty(s) ? null : s.Trim();\n"})
+        self.assertEqual(found, {})
+
+    def test_a_behaviour_changing_copy_is_not_a_clone(self):
+        # The historical failure mode: same shape plus case folding is a different function.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? s)\n"
+                        "        => string.IsNullOrWhiteSpace(s) ? null : s.Trim().ToLowerInvariant();\n"})
+        self.assertEqual(found, {})
+
+    def test_a_guard_clone_matches_despite_a_different_message(self):
+        # Exception message literals are folded: the helper is RequireText whatever it says.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string value, string parameterName)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(value))\n"
+                        "        {\n"
+                        "            throw new ArgumentException(\"Different message entirely.\", parameterName);\n"
+                        "        }\n"
+                        "\n"
+                        "        return value.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("RequireTrimmed", "RequireText")]})
+
+    def test_a_loop_clone_matches_with_renamed_locals(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? PickFirst(params string?[] candidates)\n"
+                        "    {\n"
+                        "        if (candidates is null)\n"
+                        "        {\n"
+                        "            return null;\n"
+                        "        }\n"
+                        "\n"
+                        "        foreach (var candidate in candidates)\n"
+                        "        {\n"
+                        "            if (!string.IsNullOrWhiteSpace(candidate))\n"
+                        "            {\n"
+                        "                return candidate.Trim();\n"
+                        "            }\n"
+                        "        }\n"
+                        "\n"
+                        "        return null;\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("PickFirst", "FirstNonBlank")]})
+
+    def test_a_tracked_name_is_the_name_ratchets_jurisdiction(self):
+        # One copy must never be counted by both detectors.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? NormalizeOptional(string? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {})
+
+    def test_the_canonical_home_is_not_a_clone_of_itself(self):
+        self.assertEqual(clones({}), {})
+
+    def test_committed_clone_baseline_matches_the_current_tree(self):
+        """The checked-in body-clone baseline must describe reality too."""
+        import json
+        baseline = json.loads(ratchet.DEFAULT_BASELINE.read_text(encoding="utf-8"))
+        allowed = baseline.get("body_clones", {})
+        current = ratchet.scan_body_clones(ratchet.REPO_ROOT)
+        for rel, entries in sorted(current.items()):
+            self.assertLessEqual(
+                len(entries),
+                allowed.get(rel, 0),
+                f"{rel} has renamed clone(s) not covered by the baseline: {entries}",
+            )
+
+
 class TrackedHelperTests(unittest.TestCase):
     def test_tracks_the_shared_surface_and_its_aliases(self):
         self.assertEqual(
