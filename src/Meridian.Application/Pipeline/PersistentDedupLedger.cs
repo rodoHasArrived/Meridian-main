@@ -257,16 +257,14 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
                 return true;
             }
 
-            // Not a duplicate — record it as a legacy (durability-unconfirmed) identity. The
-            // atomic update never lowers an existing entry's version: a durability confirmation
-            // published by an earlier, now TTL-expired commit stays trusted, since sink
-            // durability, once proven, is not retracted by a later legacy sighting.
-            _cache.AddOrUpdate(
-                key,
-                static (_, ticks) => new DedupCacheEntry(ticks, EntryVersionLegacy),
-                static (_, existing, ticks) =>
-                    new DedupCacheEntry(ticks, Math.Max(existing.Version, EntryVersionLegacy)),
-                nowTicks);
+            // Not a duplicate — record it as a legacy (durability-unconfirmed) identity. Any
+            // entry already cached here is necessarily expired: a fresh entry of either
+            // version returned above, and no commit can publish while this caller holds the
+            // pending slot. An expired durability confirmation must not survive the refresh —
+            // past the TTL the key may describe a different logical occurrence, and the old
+            // sink write proves nothing about this newly admitted one, so trust resets to
+            // version 1 and WAL recovery replays it until a sink flush re-confirms it.
+            _cache[key] = new DedupCacheEntry(nowTicks, EntryVersionLegacy);
             var ledgerLine = CreateLedgerLine(key, nowTicks, EntryVersionLegacy);
 
             // Persist to disk (fire-and-forget the write, but serialize access)

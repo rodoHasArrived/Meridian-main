@@ -654,29 +654,37 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task IsDuplicateAsync_LegacySighting_NeverDowngradesDurabilityConfirmation()
+    public async Task IsDuplicateAsync_ExpiredDurableEntry_ResetsTrustToLegacy()
     {
-        var ledgerDir = Path.Combine(_rootDir, "ledger_no_downgrade");
+        var ledgerDir = Path.Combine(_rootDir, "ledger_ttl_reset");
         Directory.CreateDirectory(ledgerDir);
-        var evt = CreateTradeEvent("NODOWN", 800);
+        var evt = CreateTradeEvent("TTLRESET", 800);
 
-        await using var ledger = new PersistentDedupLedger(ledgerDir, entryTtl: TimeSpan.FromMilliseconds(50));
+        await using var ledger = new PersistentDedupLedger(ledgerDir, entryTtl: TimeSpan.FromMilliseconds(500));
         await ledger.InitializeAsync();
 
         var reserved = await ledger.TryReserveAsync(evt, DedupLookupScope.LiveIngress, CancellationToken.None);
         await ledger.CommitDurableAsync(new[] { reserved.Reservation }, CancellationToken.None);
 
-        // Let the durability-confirmed entry expire, then record a legacy sighting of the same
-        // identity — the exact path that could overwrite version 2 with version 1.
-        await Task.Delay(150);
+        // While the confirmation is live, a legacy sighting is suppressed outright and never
+        // touches the entry — recovery keeps trusting it.
+        (await ledger.IsDuplicateAsync(evt, CancellationToken.None)).Should().BeTrue(
+            "a live durability-confirmed entry suppresses the legacy check");
+        (await ledger.TryReserveAsync(evt, DedupLookupScope.WalRecovery, CancellationToken.None))
+            .Status.Should().Be(DedupReservationStatus.Duplicate,
+                "a live durability confirmation is never downgraded by a legacy sighting");
+
+        // Past the TTL the same key may describe a different logical occurrence. A legacy
+        // re-admission must reset trust to version 1: the old sink write proves nothing about
+        // the new occurrence, so a refreshed timestamp must not revive the confirmation.
+        await Task.Delay(700);
         (await ledger.IsDuplicateAsync(evt, CancellationToken.None)).Should().BeFalse(
             "the expired entry no longer suppresses live ingress");
 
-        // The refreshed entry must keep the durability confirmation: sink durability, once
-        // proven, is not retracted by a later legacy sighting.
-        (await ledger.TryReserveAsync(evt, DedupLookupScope.WalRecovery, CancellationToken.None))
-            .Status.Should().Be(DedupReservationStatus.Duplicate,
-                "a legacy sighting must never downgrade a durability-confirmed identity");
+        var recoveryLookup = await ledger.TryReserveAsync(evt, DedupLookupScope.WalRecovery, CancellationToken.None);
+        recoveryLookup.IsReserved.Should().BeTrue(
+            "a post-TTL legacy re-admission is durability-unconfirmed and its WAL records must replay");
+        ledger.Release(recoveryLookup.Reservation).Should().BeTrue();
     }
 
     [Fact]
