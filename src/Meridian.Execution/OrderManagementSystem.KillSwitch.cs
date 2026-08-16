@@ -188,19 +188,22 @@ public sealed partial class OrderManagementSystem
     /// </summary>
     private decimal ResolveWorkingReductionQuantity(string symbol, Guid? fundAccountId)
     {
-        var held = 0m;
-        if (_portfolioState?.Positions.TryGetValue(symbol, out var position) == true)
+        if (_portfolioState?.Positions.TryGetValue(symbol, out var position) != true)
         {
-            held = position.ExactQuantity;
+            return 0m;
         }
 
+        // The same fund-owned quantity the admission check measures, not the netted aggregate. A
+        // fund can hold the opposite sign to the book: with fund A long 100 and fund B short 10 the
+        // aggregate is long 90, so taking the side from it would look for B's reductions among
+        // sells while B reduces by buying — leaving its working buy-to-close uncounted and letting
+        // a second buy cross B through flat into a long.
+        var held = Services.ExecutionOperatorControlService.ResolveOwnedQuantity(position!, fundAccountId);
         if (held == 0m)
         {
             return 0m;
         }
 
-        // The side that moves this position toward flat. Orders on the other side increase it and
-        // are not reductions to be counted against the closable quantity.
         var reducingSide = held > 0m ? OrderSide.Sell : OrderSide.Buy;
 
         return _orders.Values

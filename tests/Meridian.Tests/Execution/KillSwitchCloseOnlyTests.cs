@@ -245,6 +245,32 @@ public sealed class KillSwitchCloseOnlyTests : IDisposable
             .IsApproved.Should().BeFalse("fund B holds nothing here, so this sell opens a short");
     }
 
+
+    /// <summary>
+    /// A fund can hold the opposite sign to the netted book. With fund A long 100 and fund B short
+    /// 10 the aggregate is long 90, so deriving the reducing side from it looks for B's reductions
+    /// among sells while B reduces by buying — leaving B's working buy-to-close uncounted and
+    /// admitting a second buy that crosses B through flat into a long.
+    /// </summary>
+    [Fact]
+    public async Task FundHoldingTheOppositeSignToTheBook_HasItsOwnReductionsCounted()
+    {
+        var fundShort = Guid.NewGuid();
+        var (controls, overrideId) = await HaltedDeskWithOverrideAsync();
+
+        // Aggregate long 90; this fund is short 10 and already has 6 working buys against it.
+        controls.WorkingReductionQuantityProbe = (_, fund) => fund == fundShort ? 6m : 0m;
+
+        var portfolio = new StubPortfolioState(
+            [("AAPL", 90m)],
+            owners: new Dictionary<string, decimal> { [fundShort.ToString("D")] = -10m });
+
+        controls.EvaluateOrder(Order(OrderSide.Buy, 4m, overrideId) with { FundAccountId = fundShort }, portfolio)
+            .IsApproved.Should().BeTrue("6 working plus 4 exactly closes the 10-share short");
+        controls.EvaluateOrder(Order(OrderSide.Buy, 5m, overrideId) with { FundAccountId = fundShort }, portfolio)
+            .IsApproved.Should().BeFalse("6 working plus 5 would leave this fund long 1");
+    }
+
     private async Task<(ExecutionOperatorControlService Controls, string OverrideId)> HaltedDeskWithOverrideAsync(
         decimal alreadyWorking = 0m)
     {

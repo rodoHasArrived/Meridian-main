@@ -1099,6 +1099,7 @@ Meridian-main
 │       │   ├── check-duplicate-helpers.py
 │       │   ├── check-endpoint-cancellation.py
 │       │   ├── check-file-size.py
+│       │   ├── check-inline-sha256.py
 │       │   ├── check-lane-manifest.py
 │       │   ├── check-sample-config-datasources.py
 │       │   ├── check-test-skip-register.py
@@ -1107,6 +1108,7 @@ Meridian-main
 │       │   ├── dispatch-targeted-test.py
 │       │   ├── duplicate-helper-baseline.json
 │       │   ├── generate-release-evidence-manifest.py
+│       │   ├── inline-sha256-baseline.json
 │       │   ├── run-dotnet-ci-tests.py
 │       │   ├── run-script-tests.py
 │       │   ├── script-test-quarantine.json
@@ -10272,6 +10274,7 @@ Meridian-main
 │   │   ├── test_check_duplicate_helpers.py
 │   │   ├── test_check_endpoint_cancellation.py
 │   │   ├── test_check_file_size_ratchet.py
+│   │   ├── test_check_inline_sha256.py
 │   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_check_status_delivery_claims.py
 │   │   ├── test_check_test_skip_register.py
