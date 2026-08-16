@@ -233,6 +233,14 @@ internal static class OrderNotionalResolver
         // $1 in a $100 symbol routes ~$100k. Neither may be valued at its own price alone.
         var pricePaidIsCapped = request.Side == OrderSide.Buy && request.LimitPrice is > 0m;
 
+        // A trigger or floor is not a safe fallback when the current market is unknown.
+        // Returning null makes every configured notional-based rail reject the order as
+        // unmeasurable instead of approving risk that can execute at an unbounded price.
+        if (!pricePaidIsCapped && marketPrice is null or <= 0m)
+        {
+            return null;
+        }
+
         if (referencePrice is null or <= 0m)
         {
             // No caller price: measure at the market. The portfolio may be flat in this
