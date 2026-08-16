@@ -105,10 +105,14 @@ _TYPE_ALIAS_PATTERN = re.compile(
 # time, so bare no-modifier declarations are accepted as out of scope. A helper worth
 # sharing is static by nature; an instance copy is already a different function.
 _METHOD_HEADER = re.compile(
-    r"\b(?:(?:private|internal|protected|public|static|readonly|async|sealed|new|virtual|override)\s+)+"
+    r"\b(?:(?:private|internal|protected|public|static|readonly|async|sealed|new|virtual|override|unsafe|extern|partial)\s+)+"
     r"([\w?<>\[\], .]+?)\s+([A-Za-z_]\w*)\s*\("
 )
-_PARAMETER_MODIFIERS = ("params", "ref", "out", "in", "this", "scoped", "readonly")
+# Only modifiers that do not change the call: params is call-site sugar, this marks
+# an extension receiver, scoped is lifetime analysis. ref/out/in/readonly stay in
+# the key -- a ref-qualified helper has different call syntax, overload resolution,
+# and delegate shape, so it is not interchangeable with the by-value owner.
+_PARAMETER_MODIFIERS = ("params", "this", "scoped")
 
 
 def _mask_strings_and_comments(text: str) -> str:
@@ -190,7 +194,10 @@ def _mask_strings_and_comments(text: str) -> str:
                         run = cursor
                         while run < len(segment) and segment[run] == "{":
                             run += 1
-                        if run - cursor == dollars:
+                        run_length = run - cursor
+                        if dollars <= run_length < 2 * dollars:
+                            # Braces beyond the dollar count are literal text; the run
+                            # still opens one interpolation (C# rejects runs of 2N+).
                             expr_end = segment.find("}" * dollars, run)
                             if expr_end == -1:
                                 break
@@ -448,7 +455,13 @@ def scan_body_clones(repo_root: Path) -> dict[str, list[tuple[str, str]]]:
     """
     owners = owned_bodies(repo_root)
     if not owners:
-        return {}
+        # Fail closed: an empty owner set means the canonical file moved or its
+        # declarations stopped parsing, and returning no clones would silently disable
+        # this protection -- the baseline would even read as an improvement.
+        raise RuntimeError(
+            f"no canonical helper bodies parsed from {TEXT_PRIMITIVES_RELATIVE}; "
+            "the file may have moved or changed declaration shape"
+        )
     # The cheap signature gate: only a handful of parameter-type shapes can match an
     # owner, so almost every method skips the body canonicalisation entirely.
     owner_types = {(returns, types) for returns, types, _ in owners}
@@ -515,7 +528,11 @@ def main() -> int:
 
     baseline_path = Path(args.baseline)
     current = count_declarations(REPO_ROOT)
-    clones = scan_body_clones(REPO_ROOT)
+    try:
+        clones = scan_body_clones(REPO_ROOT)
+    except RuntimeError as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 2
     clone_counts = {rel: len(entries) for rel, entries in clones.items()}
 
     if args.update_baseline:

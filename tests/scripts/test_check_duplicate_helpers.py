@@ -376,6 +376,46 @@ class BodyCloneDetectionTests(unittest.TestCase):
                         "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
         self.assertEqual(found, {})
 
+    def test_an_unsafe_modified_clone_is_detected(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static unsafe string? Clean(string? x)"
+                        " => string.IsNullOrWhiteSpace(x) ? null : x.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_ref_qualified_lookalike_is_not_a_clone(self):
+        # ref changes call syntax, overload resolution, and delegate shape; a
+        # ref-qualified helper is not interchangeable with the by-value owner.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(ref string? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {})
+
+    def test_a_literal_brace_before_a_raw_interpolation_still_shields_the_code(self):
+        # In $$-strings a run of three braces is one literal brace plus a two-brace
+        # interpolation open; masking the whole run would hide the executed call.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string value, string name)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(value))\n"
+                        "        {\n"
+                        "            throw new ArgumentException($$\"\"\"{{{RecordAndFormat(value)}}}\"\"\", name);\n"
+                        "        }\n"
+                        "\n"
+                        "        return value.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {})
+
+    def test_a_missing_canonical_home_fails_closed(self):
+        # A moved TextPrimitives must not silently disable the scan and let the
+        # baseline read as an improvement.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "src" / "A").mkdir(parents=True)
+            (root / "src" / "A" / "Thing.cs").write_text(
+                "    private static string? Clean(string? x) => x;\n", encoding="utf-8")
+            with self.assertRaises(RuntimeError):
+                ratchet.scan_body_clones(root)
+
     def test_a_tracked_name_is_the_name_ratchets_jurisdiction(self):
         # One copy must never be counted by both detectors.
         found = clones({"src/A/Thing.cs":
