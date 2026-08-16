@@ -60,6 +60,16 @@ public static class Sha256Digest
     /// Computes the canonical (lowercase hex) SHA-256 digest of <paramref name="stream"/> from its
     /// current position, without buffering the whole stream into memory.
     /// </summary>
+    public static string Compute(Stream stream)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        return Convert.ToHexStringLower(SHA256.HashData(stream));
+    }
+
+    /// <summary>
+    /// Computes the canonical (lowercase hex) SHA-256 digest of <paramref name="stream"/> from its
+    /// current position, without buffering the whole stream into memory.
+    /// </summary>
     public static async ValueTask<string> ComputeAsync(Stream stream, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(stream);

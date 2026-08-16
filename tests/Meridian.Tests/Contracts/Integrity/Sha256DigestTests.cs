@@ -22,6 +22,18 @@ public sealed class Sha256DigestTests
     }
 
     [Fact]
+    public void Compute_Stream_EmitsCanonicalLowercaseHexFromCurrentPosition()
+    {
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes("skiptest"));
+        stream.Position = 4;
+
+        var digest = Sha256Digest.Compute(stream);
+
+        digest.Should().Be(LowercaseDigest, "only the bytes after the current position are hashed");
+        Sha256Digest.IsCanonical(digest).Should().BeTrue();
+    }
+
+    [Fact]
     public async Task ComputeAsync_EmitsCanonicalLowercaseHexMatchingCompute()
     {
         var payload = Encoding.UTF8.GetBytes("test");
