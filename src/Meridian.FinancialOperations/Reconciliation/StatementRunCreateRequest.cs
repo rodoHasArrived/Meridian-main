@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+using Meridian.Contracts.Integrity;
 using Meridian.Domain.Reconciliation;
 
 namespace Meridian.FinancialOperations.Reconciliation;
@@ -65,8 +65,11 @@ public sealed record StatementRunCreateRequest(
             throw new ArgumentException("Statement period end must be on or after statement period start.", nameof(statementPeriodEnd));
 
         await using var stream = File.OpenRead(sourcePath);
-        var hashBytes = await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false);
-        var sourceFileHash = Convert.ToHexString(hashBytes);
+        // Canonical lowercase is safe here: duplicate keys normalize their hash inputs before
+        // deriving the key, and import-side assertions verify decoded hex bytes — so requests
+        // built by this factory agree with the canonicalized import producers while previously
+        // persisted uppercase evidence still verifies (#2691).
+        var sourceFileHash = await Sha256Digest.ComputeAsync(stream, ct).ConfigureAwait(false);
 
         return new StatementRunCreateRequest(
             broker.Trim(),
