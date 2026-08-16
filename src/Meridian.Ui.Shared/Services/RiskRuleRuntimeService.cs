@@ -49,7 +49,8 @@ public sealed record RiskRuleConfigDto(
     decimal? MaxOrderNotional = null,
     decimal? EscalateOrderNotional = null,
     decimal? MaxOrderQuantity = null,
-    decimal? MaxPriceDeviationPercent = null);
+    decimal? MaxPriceDeviationPercent = null,
+    decimal? PriceCollarPercent = null);
 
 public sealed record RiskRuleConfigUpdateRequest(
     decimal? DefaultMaxPositionSize = null,
@@ -62,7 +63,8 @@ public sealed record RiskRuleConfigUpdateRequest(
     decimal? MaxOrderNotional = null,
     decimal? EscalateOrderNotional = null,
     decimal? MaxOrderQuantity = null,
-    decimal? MaxPriceDeviationPercent = null);
+    decimal? MaxPriceDeviationPercent = null,
+    decimal? PriceCollarPercent = null);
 
 /// <summary>
 /// Single source of truth for operator-managed risk guardrail thresholds: it powers the read-only
@@ -97,6 +99,12 @@ public sealed class RiskRuleRuntimeService
     // Fat-finger bands. Null = unconfigured: the corresponding limb approves without measuring.
     private decimal? _maxOrderQuantity;
     private decimal? _maxPriceDeviationPercent;
+
+    // Price collar. Null = unconfigured: the collar approves without measuring. Held beside
+    // the fat-finger band rather than inside FatFingerThresholds because the two feed different
+    // rules at different severities, and a single record would invite one rule reading the
+    // other's band.
+    private decimal? _priceCollarPercent;
 
     public RiskRuleRuntimeService(
         IServiceProvider services,
@@ -177,6 +185,17 @@ public sealed class RiskRuleRuntimeService
     }
 
     /// <summary>
+    /// The collar band the escalating price rule consumes, read under the same lock. A single
+    /// value needs no atomic pairing of its own, but it is exposed as a record so the rule takes
+    /// a threshold type rather than a bare decimal and cannot be handed the fat-finger band by
+    /// mistake.
+    /// </summary>
+    public PriceCollarThresholds PriceCollarThresholds
+    {
+        get { lock (_gate) { return new PriceCollarThresholds(_priceCollarPercent); } }
+    }
+
+    /// <summary>
     /// Evaluates the drawdown circuit breaker against the same live portfolio state and
     /// operator-tuned threshold this service reports on the dashboard, so the guardrail can
     /// never show "Healthy" while it silently fails to gate an order. Invoked by the enforced
@@ -235,7 +254,8 @@ public sealed class RiskRuleRuntimeService
             BuildGrossExposureStatus(auditEntries, asOf),
             BuildSymbolConcentrationStatus(auditEntries, asOf),
             BuildOrderNotionalStatus(auditEntries, asOf),
-            BuildFatFingerStatus(auditEntries, asOf)
+            BuildFatFingerStatus(auditEntries, asOf),
+            BuildPriceCollarStatus(auditEntries, asOf)
         };
 
         return WithAuditCoverageApplied(statuses);
@@ -374,6 +394,13 @@ public sealed class RiskRuleRuntimeService
                     MaxOrdersPerMinute: null,
                     MaxOrderQuantity: _maxOrderQuantity,
                     MaxPriceDeviationPercent: _maxPriceDeviationPercent),
+                "PriceCollar" => new RiskRuleConfigDto(
+                    RuleName: "PriceCollar",
+                    DefaultMaxPositionSize: null,
+                    SymbolPositionLimits: null,
+                    MaxDrawdownPercent: null,
+                    MaxOrdersPerMinute: null,
+                    PriceCollarPercent: _priceCollarPercent),
                 _ => null
             };
         }
@@ -522,6 +549,7 @@ public sealed class RiskRuleRuntimeService
                 // setting one band never silently clears the other.
                 decimal? maxOrderQuantity = null;
                 decimal? maxPriceDeviationPercent = null;
+                decimal? collarUnderFatFingerBand = null;
                 await CommitThresholdsAsync(
                     current =>
                     {
@@ -544,6 +572,8 @@ public sealed class RiskRuleRuntimeService
                                 "MaxPriceDeviationPercent must be below 100; a band at or above 100 can never reject a sell, silently disabling the sell side.");
                         }
 
+                        collarUnderFatFingerBand = current.PriceCollarPercent;
+
                         return current with
                         {
                             MaxOrderQuantity = maxOrderQuantity,
@@ -559,6 +589,46 @@ public sealed class RiskRuleRuntimeService
                     LogSanitizer.Sanitize(actor),
                     maxOrderQuantity?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured",
                     maxPriceDeviationPercent?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured");
+                WarnIfCollarUnreachable(maxPriceDeviationPercent, collarUnderFatFingerBand);
+                break;
+            case "PriceCollar":
+                if (!request.PriceCollarPercent.HasValue)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(request.PriceCollarPercent), "Provide PriceCollarPercent.");
+                }
+
+                decimal? priceCollarPercent = null;
+                decimal? fatFingerBandOverCollar = null;
+                await CommitThresholdsAsync(
+                    current =>
+                    {
+                        priceCollarPercent = NormalizeThreshold(
+                            request.PriceCollarPercent, nameof(request.PriceCollarPercent), required: false);
+
+                        // Same bound as the fat-finger band, and for the same reason: a sell's
+                        // aggressive deviation is strictly under 100%, so a collar at or above
+                        // that can never park a sell while the dashboard still reports the collar
+                        // configured. Refuse it rather than accept a half-dead control.
+                        if (priceCollarPercent is >= 100m)
+                        {
+                            throw new ArgumentOutOfRangeException(
+                                nameof(request.PriceCollarPercent),
+                                "PriceCollarPercent must be below 100; a collar at or above 100 can never park a sell, silently disabling the sell side.");
+                        }
+
+                        fatFingerBandOverCollar = current.MaxPriceDeviationPercent;
+
+                        return current with { PriceCollarPercent = priceCollarPercent };
+                    },
+                    actor,
+                    request.Reason,
+                    ct).ConfigureAwait(false);
+                _logger.LogInformation(
+                    "Risk rule config updated for {RuleName} by {Actor}: price collar {PriceCollarPercent}%",
+                    normalizedRule,
+                    LogSanitizer.Sanitize(actor),
+                    priceCollarPercent?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured");
+                WarnIfCollarUnreachable(fatFingerBandOverCollar, priceCollarPercent);
                 break;
             default:
                 return null;
@@ -1109,6 +1179,79 @@ public sealed class RiskRuleRuntimeService
     }
 
     /// <summary>
+    /// Status for the escalating price collar.
+    /// <para>
+    /// Its evidence lives in two places rather than one, because the rule has two outcomes that
+    /// are audited differently. A collar breach parks the order, which the composite validator
+    /// records as <c>OrderParkedForApproval</c> and tracks in the escalation queue — so a query
+    /// over rejections alone would report the collar Healthy while orders sat waiting on it. A
+    /// priced order the collar cannot measure is a hard refusal instead: the validator excludes
+    /// unmeasurable from release precisely so an approval cannot stand in for a measurement that
+    /// never happened, and that refusal lands in the audit trail as a rejection.
+    /// </para>
+    /// </summary>
+    private RiskRuleStatusDto BuildPriceCollarStatus(
+        IReadOnlyList<ExecutionAuditEntry> auditEntries,
+        DateTimeOffset asOf)
+    {
+        var collarPercent = PriceCollarThresholds.CollarPercent;
+
+        // The queue is shared by every escalate-capable rule, so this filters to its own parked
+        // orders. Unresolved rather than merely pending, for the reason the notional guardrail
+        // gives: an entry approved but not yet routed is armed and still owed a decision trail.
+        var pendingEscalations = (Resolve<RiskEscalationQueueService>()?.GetUnresolved() ?? [])
+            .Where(static entry => string.Equals(entry.RuleName, "PriceCollar", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        // Matched on the structured code, not on wording. The collar's refusal message shares the
+        // phrase "has no reference price" with the fat-finger band's, so a text query would let
+        // each rule claim the other's pricing gaps.
+        var unmeasurableEntries = FindViolationEntries(
+            auditEntries,
+            actionHint: "OrderRejected",
+            textHint: PriceCollarRule.UnmeasurableCode,
+            asOf);
+
+        var configured = collarPercent.HasValue;
+        var pricingGap = HasLiveViolation(unmeasurableEntries, asOf);
+        var parked = pendingEscalations.Count > 0;
+        var state = !configured || pricingGap || parked ? "Observe" : "Healthy";
+        var summary = !configured
+            ? "No price collar is configured; the rule approves all orders."
+            : pricingGap
+                ? "Recent priced orders were refused because no reference price was available to measure them against the collar."
+                : parked
+                    ? $"{pendingEscalations.Count} order(s) are parked awaiting approval to price through the collar."
+                    : "A price collar is configured and no orders are parked against it.";
+
+        // Only the count, never the parked orders' details: this status is served by the rules
+        // endpoint, which has no order-management permission or fund-scope check.
+        var recentViolations = parked
+            ? [$"{pendingEscalations.Count} order(s) parked awaiting approval to price through the collar."]
+            : DescribeViolations(unmeasurableEntries, "price collar");
+
+        return new RiskRuleStatusDto(
+            RuleName: "PriceCollar",
+            State: state,
+            Summary: summary,
+            // Never breached, by construction. A parked order has not broken a rail — it is the
+            // rail working, and awaiting the judgement the collar exists to demand. Reporting it
+            // as a breach would drive the readiness gate that reads this field to treat every
+            // deliberate aggressive order as a fault. A pricing gap is not a breach either, for
+            // the reason the fat-finger band gives: the rule refused an order it could not price
+            // rather than measuring one past a band.
+            IsBreached: false,
+            Threshold: configured
+                ? $"escalate > {collarPercent!.Value.ToString("G29", CultureInfo.InvariantCulture)}% through market"
+                : "unconfigured",
+            CurrentValue: configured ? $"{pendingEscalations.Count} pending approval(s)" : "not enforced",
+            AsOf: asOf,
+            RecentViolations: recentViolations,
+            UtilizationPercent: null,
+            Severity: "Escalate");
+    }
+
+    /// <summary>
     /// Percentage of the threshold consumed by the current value, clamped to [0, 999.99].
     /// Null when no threshold is configured.
     /// </summary>
@@ -1352,8 +1495,34 @@ public sealed class RiskRuleRuntimeService
             "symbolconcentration" => "SymbolConcentration",
             "ordernotional" => "OrderNotional",
             "fatfinger" => "FatFinger",
+            "pricecollar" => "PriceCollar",
             _ => null
         };
+    }
+
+    /// <summary>
+    /// Records that a configured collar can never fire, because the fat-finger band refuses first
+    /// at a tighter or equal distance.
+    /// <para>
+    /// This warns rather than refuses, because the two bands are set independently and either
+    /// ordering can produce the state: refusing a wide collar would still let a later narrowing of
+    /// the fat-finger band strand it. A rule that could only reject half the paths into a condition
+    /// would read as a guarantee it does not provide, so both call sites emit the same evidence
+    /// instead. The collar is not wrong here — it is redundant — and an operator deliberately
+    /// running one control is entitled to do so knowingly.
+    /// </para>
+    /// </summary>
+    private void WarnIfCollarUnreachable(decimal? fatFingerBand, decimal? collar)
+    {
+        if (fatFingerBand is not > 0m || collar is not > 0m || collar.Value < fatFingerBand.Value)
+        {
+            return;
+        }
+
+        _logger.LogWarning(
+            "Price collar of {PriceCollarPercent}% can never park an order: the fat-finger band rejects at {MaxPriceDeviationPercent}% first. Set the collar below the band for it to take effect.",
+            collar.Value.ToString("G29", CultureInfo.InvariantCulture),
+            fatFingerBand.Value.ToString("G29", CultureInfo.InvariantCulture));
     }
 
     /// <summary>
@@ -1393,7 +1562,8 @@ public sealed class RiskRuleRuntimeService
         decimal? MaxOrderNotional,
         decimal? EscalateOrderNotional,
         decimal? MaxOrderQuantity,
-        decimal? MaxPriceDeviationPercent);
+        decimal? MaxPriceDeviationPercent,
+        decimal? PriceCollarPercent);
 
     /// <summary>
     /// Applies a threshold change with persist-then-publish ordering: the proposed state is
@@ -1423,7 +1593,8 @@ public sealed class RiskRuleRuntimeService
                     _maxOrderNotional,
                     _escalateOrderNotional,
                     _maxOrderQuantity,
-                    _maxPriceDeviationPercent));
+                    _maxPriceDeviationPercent,
+                    _priceCollarPercent));
             }
 
             var snapshot = new RiskRuleRuntimeSnapshot(
@@ -1437,7 +1608,8 @@ public sealed class RiskRuleRuntimeService
                 MaxOrderNotional: proposed.MaxOrderNotional,
                 EscalateOrderNotional: proposed.EscalateOrderNotional,
                 MaxOrderQuantity: proposed.MaxOrderQuantity,
-                MaxPriceDeviationPercent: proposed.MaxPriceDeviationPercent);
+                MaxPriceDeviationPercent: proposed.MaxPriceDeviationPercent,
+                PriceCollarPercent: proposed.PriceCollarPercent);
             var payload = JsonSerializer.Serialize(snapshot, RiskRuleRuntimeSnapshotJsonContext.Default.RiskRuleRuntimeSnapshot);
             await AtomicFileWriter.WriteAsync(_options.SnapshotPath, payload, ct).ConfigureAwait(false);
 
@@ -1451,6 +1623,7 @@ public sealed class RiskRuleRuntimeService
                 _escalateOrderNotional = proposed.EscalateOrderNotional;
                 _maxOrderQuantity = proposed.MaxOrderQuantity;
                 _maxPriceDeviationPercent = proposed.MaxPriceDeviationPercent;
+                _priceCollarPercent = proposed.PriceCollarPercent;
             }
         }
         finally
@@ -1520,8 +1693,22 @@ public sealed class RiskRuleRuntimeService
                         + "reject any sell. Refusing to start with a silently one-sided or disabled price control.");
                 }
 
+                // Same bound as the fat-finger band, and for the same reason: a sell's aggressive
+                // deviation is strictly under 100%, so a collar at or above it can never park a
+                // sell while the dashboard still reports it configured. Thrown rather than skipped
+                // — abandoning the load here would leave the rails above already assigned and the
+                // ones below at their defaults, which is the silent half-configuration this whole
+                // block exists to refuse.
+                if (snapshot.PriceCollarPercent is < 0m or >= 100m)
+                {
+                    throw new InvalidOperationException(
+                        "The risk rule snapshot carries a price collar that is negative, or 100 or more and so unable to park any sell. "
+                        + "Refusing to start with a silently one-sided or disabled price collar.");
+                }
+
                 _maxOrderQuantity = snapshot.MaxOrderQuantity is > 0m ? snapshot.MaxOrderQuantity : null;
                 _maxPriceDeviationPercent = snapshot.MaxPriceDeviationPercent is > 0m ? snapshot.MaxPriceDeviationPercent : null;
+                _priceCollarPercent = snapshot.PriceCollarPercent is > 0m ? snapshot.PriceCollarPercent : null;
             }
         }
         catch (Exception exception)
@@ -1553,7 +1740,8 @@ public sealed record RiskRuleRuntimeSnapshot(
     decimal? MaxOrderNotional = null,
     decimal? EscalateOrderNotional = null,
     decimal? MaxOrderQuantity = null,
-    decimal? MaxPriceDeviationPercent = null);
+    decimal? MaxPriceDeviationPercent = null,
+    decimal? PriceCollarPercent = null);
 
 [JsonSerializable(typeof(RiskRuleRuntimeSnapshot))]
 internal sealed partial class RiskRuleRuntimeSnapshotJsonContext : JsonSerializerContext

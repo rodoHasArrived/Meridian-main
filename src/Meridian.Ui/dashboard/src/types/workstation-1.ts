@@ -985,6 +985,12 @@ export interface RiskRuleConfig {
   maxOrderQuantity?: number | null;
   /** Maximum aggressive price deviation from the market touch, in percent. */
   maxPriceDeviationPercent?: number | null;
+  /**
+   * Aggressive price deviation, in percent, beyond which an order is parked for approval rather
+   * than rejected. Set below `maxPriceDeviationPercent` or the fat-finger band refuses first and
+   * the collar never fires.
+   */
+  priceCollarPercent?: number | null;
 }
 
 export interface RiskRuleConfigUpdateRequest {
@@ -1001,6 +1007,12 @@ export interface RiskRuleConfigUpdateRequest {
   maxOrderQuantity?: number | null;
   /** Maximum aggressive price deviation from the market touch, in percent. */
   maxPriceDeviationPercent?: number | null;
+  /**
+   * Aggressive price deviation, in percent, beyond which an order is parked for approval rather
+   * than rejected. Set below `maxPriceDeviationPercent` or the fat-finger band refuses first and
+   * the collar never fires.
+   */
+  priceCollarPercent?: number | null;
 }
 
 /** A parked risk escalation awaiting (or resolved by) governed operator approval. */
