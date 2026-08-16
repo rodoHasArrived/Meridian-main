@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using Meridian.Contracts.Etl;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.DataIntegration.Etl;
 
@@ -146,6 +146,6 @@ public sealed class EtlPreviewService
     private static async Task<string> ComputeSha256Async(string path, CancellationToken ct)
     {
         await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
-        return Convert.ToHexString(await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false));
+        return await Sha256Digest.ComputeAsync(stream, ct).ConfigureAwait(false);
     }
 }

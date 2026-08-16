@@ -1721,6 +1721,7 @@ Meridian-main
 │   │   ├── production-certification-evidence-chain.md
 │   │   ├── production-readiness-audit-2026-07-27.md
 │   │   ├── README.md
+│   │   ├── security-master-architecture-audit-2026-08-13.md
 │   │   └── wpf-perf-uiux-audit-2026-06-14.md
 │   ├── examples
 │   │   ├── agent-improvement-loop
@@ -1863,6 +1864,7 @@ Meridian-main
 │   │   ├── data-provider-accounting-brainstorm-2026-07.md
 │   │   ├── deferred-expansion-boundaries.md
 │   │   ├── excel-onboarding-workbook-brainstorm-2026-07.md
+│   │   ├── functionality-deepening-brainstorm-2026-07.md
 │   │   ├── high-value-code-brainstorm-2026-07.md
 │   │   ├── implementation-todo-list.md
 │   │   ├── meridian-design-document.md
@@ -4396,6 +4398,7 @@ Meridian-main
 │   │   ├── OrderManagementSystem.cs
 │   │   ├── OrderManagementSystem.ExecutionReportSubscriptions.cs
 │   │   ├── OrderManagementSystem.FillIdentity.cs
+│   │   ├── OrderManagementSystem.KillSwitch.cs
 │   │   ├── OrderManagementSystem.RiskOutcomes.cs
 │   │   ├── OrderManagementSystemOptions.cs
 │   │   ├── PaperExecutionContext.cs
@@ -4422,6 +4425,7 @@ Meridian-main
 │   │   ├── IOrderManager.cs
 │   │   ├── IPosition.cs
 │   │   ├── IPositionTracker.cs
+│   │   ├── KillSwitchSweepResult.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
 │   │   ├── OrderSizingMetadata.cs
@@ -9089,6 +9093,8 @@ Meridian-main
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
 │   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
+│   │   │   ├── KillSwitchCloseOnlyTests.cs
+│   │   │   ├── LiveMarketDataCacheSnapshotTests.cs
 │   │   │   ├── LogSanitizerTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OmsGovernedBrokerageOrderGatewayTests.cs
@@ -9303,9 +9309,11 @@ Meridian-main
 │   │   │   │   ├── CoveredCallEndpointAuthorizationTests.cs
 │   │   │   │   ├── DirectLendingEndpointMutationTests.cs
 │   │   │   │   ├── EndpointAuthorizationCoverageTests.cs
+│   │   │   │   ├── EndpointAuthorizationDeclarationTests.cs
 │   │   │   │   ├── EndpointGuardTests.cs
 │   │   │   │   ├── EndpointIntegrationTestBase.cs
 │   │   │   │   ├── EndpointMetadataTests.cs
+│   │   │   │   ├── EndpointReadDeclarationTests.cs
 │   │   │   │   ├── EndpointTestCollection.cs
 │   │   │   │   ├── EndpointTestFixture.cs
 │   │   │   │   ├── EndpointTestFixtureProviderCatalogLifetimeTests.cs

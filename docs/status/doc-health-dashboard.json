@@ -1,11 +1,11 @@
 {
-  "total_files": 647,
-  "total_lines": 128304,
-  "orphaned_count": 253,
+  "total_files": 649,
+  "total_lines": 129217,
+  "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 233,
-  "average_lines": 198.3,
+  "average_lines": 199.1,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -215,6 +215,7 @@
     "docs/development/score-reason-taxonomy.md",
     "docs/development/synthetic-provider-test-harness.md",
     "docs/docfx/api/index.md",
+    "docs/engineering/security-master-architecture-audit-2026-08-13.md",
     "docs/engineering/wpf-perf-uiux-audit-2026-06-14.md",
     "docs/generated/configuration-schema.md",
     "docs/generated/interfaces.md",
@@ -2255,6 +2256,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/security-master-architecture-audit-2026-08-13.md",
+      "line_count": 230,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/wpf-perf-uiux-audit-2026-06-14.md",
       "line_count": 79,
       "has_heading": true,
@@ -2600,7 +2609,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10454,
+      "line_count": 10462,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2951,6 +2960,14 @@
       "stale": false
     },
     {
+      "path": "docs/product/functionality-deepening-brainstorm-2026-07.md",
+      "line_count": 669,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/high-value-code-brainstorm-2026-07.md",
       "line_count": 380,
       "has_heading": true,
@@ -2992,7 +3009,7 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 290,
+      "line_count": 295,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5304,7 +5321,7 @@
     },
     {
       "path": "src/Meridian.Risk/README.md",
-      "line_count": 183,
+      "line_count": 184,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
