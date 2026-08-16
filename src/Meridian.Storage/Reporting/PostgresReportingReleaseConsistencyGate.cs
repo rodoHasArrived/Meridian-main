@@ -1,9 +1,9 @@
 using System.Buffers.Binary;
-using System.Security.Cryptography;
 using System.Text;
 using Meridian.Reporting;
 using Npgsql;
 using NpgsqlTypes;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Reporting;
 
@@ -60,7 +60,7 @@ public sealed class PostgresReportingReleaseConsistencyGate : IReportingReleaseC
     {
         var normalizedPeriodId = NormalizePeriodId(accountingPeriodId);
         var payload = Encoding.UTF8.GetBytes(LockNamespace + normalizedPeriodId);
-        var digest = SHA256.HashData(payload);
+        var digest = Sha256Digest.ComputeBytes(payload);
         return BinaryPrimitives.ReadInt64BigEndian(digest);
     }
 

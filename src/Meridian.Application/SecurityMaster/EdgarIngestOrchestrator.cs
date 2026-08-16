@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
@@ -7,6 +6,7 @@ using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.SecurityMaster;
 
@@ -575,7 +575,7 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
             association.SeriesId ?? string.Empty,
             association.ClassId ?? string.Empty);
 
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        var hash = Sha256Digest.ComputeBytesUtf8(input);
         Span<byte> bytes = stackalloc byte[16];
         hash.AsSpan(0, 16).CopyTo(bytes);
         return new Guid(bytes);

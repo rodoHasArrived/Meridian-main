@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.Composition;
 
@@ -179,7 +180,7 @@ internal static class LegacySnapshotArchiver
                 $"Legacy snapshot '{path}' exceeded the {maximumBytes}-byte limit while being read.");
         }
 
-        return SHA256.HashData(bytes);
+        return Sha256Digest.ComputeBytes(bytes);
     }
 
     private static byte[] NormalizeSourceHash(string sourceHash)

@@ -1,9 +1,9 @@
 using System.Buffers.Binary;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
 using Npgsql;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.AssetOperations;
 
@@ -86,14 +86,13 @@ public sealed partial class PostgresAssetOperationsProjectionStore
             position.BookContext.FundProfileId.Trim().ToUpperInvariant(),
             position.BookContext.FundStructureNodeKind,
             position.PositionSide.Trim().ToUpperInvariant());
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes($"position-scope|{scope}"));
+        var hash = Sha256Digest.ComputeBytesUtf8($"position-scope|{scope}");
         return BinaryPrimitives.ReadInt64LittleEndian(hash);
     }
 
     private static long ComputeProjectionRunLockKey(Guid projectionRunId)
     {
-        var hash = SHA256.HashData(
-            Encoding.UTF8.GetBytes($"projection-run|{projectionRunId:D}"));
+        var hash = Sha256Digest.ComputeBytesUtf8($"projection-run|{projectionRunId:D}");
         return BinaryPrimitives.ReadInt64LittleEndian(hash);
     }
 }

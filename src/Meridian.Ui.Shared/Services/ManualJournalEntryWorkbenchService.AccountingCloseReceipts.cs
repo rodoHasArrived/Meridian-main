@@ -1,6 +1,5 @@
-using System.Security.Cryptography;
-using System.Text;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -62,7 +61,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 return CloseReopenReceiptRetention.Missing;
             }
 
-            var receiptIdBytes = SHA256.HashData(Encoding.UTF8.GetBytes($"{action}|{commandHash}"));
+            var receiptIdBytes = Sha256Digest.ComputeBytesUtf8($"{action}|{commandHash}");
             await _auditStore.AppendAsync(
                     new AccountingActionAuditEventDto(
                         new Guid(receiptIdBytes.AsSpan(0, 16)),

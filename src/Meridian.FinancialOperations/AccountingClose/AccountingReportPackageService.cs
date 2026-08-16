@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -2179,7 +2178,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             payload += $"|positionId={dimensions.PositionId.Value:D}";
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)))[..12].ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(payload)[..12];
     }
 
     private static bool MatchesTenantScope(

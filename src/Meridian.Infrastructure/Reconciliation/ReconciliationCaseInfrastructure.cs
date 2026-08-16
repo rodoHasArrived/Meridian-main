@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Domain.Reconciliation;
 using Meridian.Storage.Archival;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Infrastructure.Reconciliation;
 
@@ -336,8 +337,7 @@ public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
             "_casework",
             "audit",
             ReconciliationRecordFileName.For(caseId),
-            $"{Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
-                System.Text.Encoding.UTF8.GetBytes(commandId.Trim()))).ToLowerInvariant()}.json");
+            $"{Sha256Digest.ComputeUtf8(commandId.Trim())}.json");
 
     private string RunProjectionAuditPath(string runId, string caseId)
         => Path.Combine(

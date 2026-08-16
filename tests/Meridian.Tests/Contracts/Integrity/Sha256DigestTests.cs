@@ -67,6 +67,51 @@ public sealed class Sha256DigestTests
             .Be(Convert.ToHexString(SHA256.HashData(payload)).ToLowerInvariant());
     }
 
+    // The byte-form members exist so non-hex consumers (deterministic IDs, binary receipts) can
+    // migrate onto the primitive without changing a single output byte — so byte-for-byte equality
+    // with the framework call is the whole contract.
+    [Fact]
+    public void ComputeBytes_MatchesFrameworkHashExactly()
+    {
+        var payload = Encoding.UTF8.GetBytes("meridian");
+
+        Sha256Digest.ComputeBytes(payload).Should().Equal(SHA256.HashData(payload));
+        Sha256Digest.ComputeBytesUtf8("meridian").Should().Equal(SHA256.HashData(payload));
+    }
+
+    [Fact]
+    public void ComputeBytes_IsTheDecodedFormOfCompute()
+    {
+        var payload = Encoding.UTF8.GetBytes("meridian");
+
+        Convert.ToHexString(Sha256Digest.ComputeBytes(payload))
+            .ToLowerInvariant()
+            .Should()
+            .Be(Sha256Digest.Compute(payload));
+    }
+
+    [Fact]
+    public async Task ComputeBytesAsync_HashesFromCurrentPosition()
+    {
+        var payload = Encoding.UTF8.GetBytes("skiptest");
+        using var stream = new MemoryStream(payload);
+        stream.Position = 4;
+
+        var digest = await Sha256Digest.ComputeBytesAsync(stream);
+
+        digest.Should().Equal(
+            Sha256Digest.ComputeBytesUtf8("test"),
+            "only the bytes after the current position are hashed");
+    }
+
+    [Fact]
+    public void ComputeBytesUtf8_RejectsNull()
+    {
+        var act = () => Sha256Digest.ComputeBytesUtf8(null!);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]

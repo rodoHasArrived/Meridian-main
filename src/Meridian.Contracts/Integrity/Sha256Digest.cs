@@ -77,6 +77,36 @@ public static class Sha256Digest
     }
 
     /// <summary>
+    /// Computes the raw 32-byte SHA-256 digest of <paramref name="value"/>. Prefer
+    /// <see cref="Compute(ReadOnlySpan{byte})"/> wherever the digest is stored or displayed; the
+    /// byte form exists for consumers that derive further values from the digest bytes —
+    /// deterministic identifiers, binary receipts, fixed-time comparisons — so that even non-hex
+    /// hashing stays routed through, and auditable at, this primitive.
+    /// </summary>
+    public static byte[] ComputeBytes(ReadOnlySpan<byte> value) => SHA256.HashData(value);
+
+    /// <summary>
+    /// Computes the raw 32-byte SHA-256 digest of the UTF-8 encoding of <paramref name="value"/>.
+    /// See <see cref="ComputeBytes(ReadOnlySpan{byte})"/> for when the byte form is appropriate.
+    /// </summary>
+    public static byte[] ComputeBytesUtf8(string value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        return ComputeBytes(Encoding.UTF8.GetBytes(value));
+    }
+
+    /// <summary>
+    /// Computes the raw 32-byte SHA-256 digest of <paramref name="stream"/> from its current
+    /// position, without buffering the whole stream into memory. See
+    /// <see cref="ComputeBytes(ReadOnlySpan{byte})"/> for when the byte form is appropriate.
+    /// </summary>
+    public static async ValueTask<byte[]> ComputeBytesAsync(Stream stream, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        return await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Returns <see langword="true"/> when <paramref name="value"/> is in Meridian's canonical
     /// digest form: exactly <see cref="HexLength"/> lowercase hex characters. Use this on write and
     /// certification paths; use <see cref="Compare"/> or <see cref="FixedEquals"/> to compare two

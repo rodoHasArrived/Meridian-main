@@ -509,19 +509,19 @@ public sealed class ReportingAccessGrantService
     {
         if (string.IsNullOrWhiteSpace(token) || token.Length != TokenByteCount * 2)
         {
-            return SHA256.HashData(Array.Empty<byte>());
+            return Sha256Digest.ComputeBytes(Array.Empty<byte>());
         }
 
         try
         {
             var rawToken = Convert.FromHexString(token);
             return rawToken.Length == TokenByteCount
-                ? SHA256.HashData(rawToken)
-                : SHA256.HashData(Array.Empty<byte>());
+                ? Sha256Digest.ComputeBytes(rawToken)
+                : Sha256Digest.ComputeBytes(Array.Empty<byte>());
         }
         catch (FormatException)
         {
-            return SHA256.HashData(Array.Empty<byte>());
+            return Sha256Digest.ComputeBytes(Array.Empty<byte>());
         }
     }
 

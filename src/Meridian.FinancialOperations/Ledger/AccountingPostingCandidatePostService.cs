@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
@@ -1256,8 +1255,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         Guid sourceEventId,
         AssetLotMutationIntentDto intent)
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(
-            $"asset-lot|{ledgerBookId:D}|{sourceEventId:D}|{intent}"));
+        var bytes = Sha256Digest.ComputeBytesUtf8($"asset-lot|{ledgerBookId:D}|{sourceEventId:D}|{intent}");
         return new Guid(bytes.AsSpan(0, 16));
     }
 

@@ -1,5 +1,4 @@
 using System.Buffers.Binary;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -274,7 +273,7 @@ public sealed partial class PostgresDirectLendingStateStore
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(workflowId);
 
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(workflowId.Trim()));
+        var hash = Sha256Digest.ComputeBytesUtf8(workflowId.Trim());
         return (
             BinaryPrimitives.ReadInt32BigEndian(hash.AsSpan(0, sizeof(int))),
             BinaryPrimitives.ReadInt32BigEndian(hash.AsSpan(sizeof(int), sizeof(int))));

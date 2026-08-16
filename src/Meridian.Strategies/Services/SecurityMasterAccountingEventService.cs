@@ -1,9 +1,8 @@
-using System.Security.Cryptography;
-using System.Text;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Instruments.AssetOperations;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Strategies.Services;
 
@@ -876,7 +875,6 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
 
     private static string Hash(string value)
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(value));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(value);
     }
 }

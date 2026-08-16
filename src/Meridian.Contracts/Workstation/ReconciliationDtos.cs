@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
@@ -200,8 +199,7 @@ public static class ReconciliationLogicalBreakIdentity
         Append(canonical, "ledgerPostingGroup", Normalize(correlationKeys?.LedgerPostingGroupId));
         Append(canonical, "reconciliationCase", Normalize(correlationKeys?.ReconciliationCaseId));
 
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString()));
-        return $"reconciliation-break:v1:{Convert.ToHexString(hash).ToLowerInvariant()}";
+        return $"reconciliation-break:v1:{Sha256Digest.ComputeUtf8(canonical.ToString())}";
     }
 
     internal static string Normalize(string? value) =>
