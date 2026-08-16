@@ -432,6 +432,18 @@ class TightenBaselineTests(unittest.TestCase):
             self.assertIn("src/gone.cs", output)
             self.assertNotIn("src/gone.cs", read_payload(root).get("headroom", {}))
 
+    # Zero lines alone does not prove deletion: an existing file can be empty. Retiring it under
+    # an oversized buffer would hand a later rebuild the brand-new-god-file failure instead of
+    # the cap the operator asked to keep.
+    def test_an_emptied_file_is_not_retired_as_deleted_when_the_buffer_exceeds_the_threshold(self):
+        with fake_repo({"src/kept.cs": 20}, {"src/kept.cs": 30, "src/emptied.cs": 40}) as root:
+            (root / "src" / "emptied.cs").write_text("", encoding="utf-8")
+            code, output = run(["--tighten-baseline", "--buffer", "25"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root), {"src/kept.cs": 30, "src/emptied.cs": 25})
+            self.assertIn("0 retired", output)
+
     # os.walk ignores scandir errors unless given an onerror callback, so an unenumerable
     # subtree used to vanish from the scan entirely — and tightening would rewrite the baseline
     # having never seen whatever that subtree holds.
@@ -446,6 +458,17 @@ class TightenBaselineTests(unittest.TestCase):
             self.assertIn("src/vault", output)
             self.assertEqual(read_baseline(root),
                              {"src/ok.cs": 30, "src/vault/secret.cs": 40})
+
+    # An excluded subtree holds only files the ratchet never governs, so failing to enumerate it
+    # hides nothing and must not veto a rewrite the way a governed subtree does.
+    def test_an_unenumerable_excluded_directory_does_not_block_tightening(self):
+        with fake_repo({"src/ok.cs": 20, "src/generated/big.cs": 40},
+                       {"src/ok.cs": 30}) as root:
+            with unenumerable("generated"):
+                code, output = run(["--tighten-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root), {"src/ok.cs": 25})
 
     # Contract slip 1: --buffer accepted and ignored outside tightening, so
     # `--update-baseline --buffer 25` exited 0 while pinning every cap.

@@ -36,9 +36,10 @@ Usage:
 
 --tighten-baseline is the downward-only counterpart to --update-baseline (#2675). It lowers each
 cap to the file's current size plus a working buffer, never raises one, retires an entry only once
-the threshold itself provides at least that buffer of headroom, and records the retained headroom
-in the baseline so the trend does not report deliberate slack as an unlocked reduction. It refuses
-to run at all while the ratchet is failing or while any governed source is unreadable.
+the threshold itself provides at least that buffer of headroom (a deleted file always retires —
+there is nothing left to protect), and records the retained headroom in the baseline so the trend
+does not report deliberate slack as an unlocked reduction. It refuses to run at all while the
+ratchet is failing or while any governed source is unreadable.
 """
 
 from __future__ import annotations
@@ -111,6 +112,21 @@ def _try_count_lines(path: Path) -> int | None:
         return None
 
 
+def _is_gone(path: Path) -> bool | None:
+    """True if the file is genuinely absent, False if present, None if unknowable.
+
+    Probed with open() rather than Path.exists(), which re-raises OSErrors outside ENOENT —
+    EACCES on an untraversable parent among them — instead of returning False.
+    """
+    try:
+        with path.open("rb"):
+            return False
+    except FileNotFoundError:
+        return True
+    except OSError:
+        return None
+
+
 def _iter_source_files(src_root: Path) -> tuple[list[Path], list[Path]]:
     """Every governed source file, plus any directory the walk could not enumerate.
 
@@ -150,7 +166,13 @@ def _scan(root: Path, threshold: int) -> tuple[dict[str, int], list[str]]:
     unreadable: list[str] = []
     files, failed_dirs = _iter_source_files(src_root)
     for directory in failed_dirs:
-        unreadable.append(_relativize(directory, root))
+        rel = _relativize(directory, root)
+        # A directory that is itself an excluded prefix holds only excluded files, so failing to
+        # enumerate it hides nothing this check governs. The trailing slash makes the directory
+        # match the same prefix patterns its files would.
+        if _is_excluded(rel + "/"):
+            continue
+        unreadable.append(rel)
     for path in files:
         rel = path.relative_to(root).as_posix()
         if _is_excluded(rel):
@@ -381,10 +403,13 @@ def _tighten_baseline(
     - An entry retires only when the threshold itself supplies the requested headroom
       (lines + buffer <= threshold). A file one line under the threshold keeps a cap rather than
       being handed the harder brand-new-god-file failure (defect 2).
-    - A deleted file (line count genuinely zero because it is gone) retires unconditionally —
-      before the buffer rule, which a buffer larger than the threshold would otherwise fail it
-      against. An unreadable one aborts the whole command, because a file that cannot be read is
-      not a file with zero lines (defects 3 and 4).
+    - A deleted file retires unconditionally — before the buffer rule, which a buffer larger
+      than the threshold would otherwise fail it against. Deletion is confirmed by probing the
+      path, because a zero line count alone also describes a file that exists but is empty; an
+      empty file follows the ordinary rules, so an oversized buffer keeps its cap rather than
+      handing a later rebuild the brand-new-god-file failure. An unreadable file aborts the
+      whole command, because a file that cannot be read is not a file with zero lines
+      (defects 3 and 4).
     """
     new_files: dict[str, int] = {}
     new_headroom: dict[str, int] = {}
@@ -400,10 +425,21 @@ def _tighten_baseline(
             unreadable_tracked.append(rel)
             continue
 
-        # Deleted (or emptied) first: zero lines means there is nothing left to protect, and the
-        # buffer rule below would keep the entry whenever the buffer exceeds the threshold -
-        # recording the whole cap of a nonexistent file as deliberate headroom.
-        if lines == 0 or lines + buffer <= threshold:
+        # Deleted first: nothing is left to protect, and the buffer rule below would keep the
+        # entry whenever the buffer exceeds the threshold - recording the whole cap of a
+        # nonexistent file as deliberate headroom. Zero lines alone does not prove deletion
+        # (an existing file can be empty), so absence is confirmed by a probe; a probe that
+        # cannot tell is an unreadable source, not a retirement.
+        if lines == 0:
+            gone = _is_gone(root / rel)
+            if gone is None:
+                unreadable_tracked.append(rel)
+                continue
+            if gone:
+                retired.append((rel, cap))
+                continue
+
+        if lines + buffer <= threshold:
             retired.append((rel, cap))
             continue
 
@@ -431,7 +467,8 @@ def main(argv: list[str] | None = None) -> int:
         "--tighten-baseline",
         action="store_true",
         help="Lower caps to current size plus --buffer; never raises a cap. "
-             "Retires an entry only once the threshold itself supplies that headroom.",
+             "Retires an entry only once the threshold itself supplies that headroom; "
+             "a deleted file always retires.",
     )
     parser.add_argument(
         "--buffer",
