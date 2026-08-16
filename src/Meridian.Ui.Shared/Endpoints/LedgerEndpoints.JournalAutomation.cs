@@ -81,18 +81,19 @@ public static partial class LedgerEndpoints
 
                 if (existing?.State == AutomatedJournalScheduleStateDto.Running)
                 {
-                    return Results.Conflict(new
-                    {
-                        error = $"Automated journal schedule '{existing.ScheduleId}' is Running and cannot be reconfigured until its durable claim completes or resumes."
-                    });
+                    return ApiProblemDetails.Conflict(
+                        context,
+                        $"Automated journal schedule '{existing.ScheduleId}' is Running and cannot be reconfigured until its durable claim completes or resumes.");
                 }
 
                 if (existing is not null && request.Version != existing.Version)
                 {
-                    return Results.Conflict(new
-                    {
-                        error = $"Automated journal schedule '{existing.ScheduleId}' version is stale. Expected {request.Version}, current {existing.Version}."
-                    });
+                    return ApiProblemDetails.VersionConflict(
+                        context,
+                        $"Automated journal schedule '{existing.ScheduleId}' version is stale. Expected {request.Version}, current {existing.Version}.",
+                        resourceId: existing.ScheduleId,
+                        expectedVersion: request.Version.ToString(CultureInfo.InvariantCulture),
+                        currentVersion: existing.Version.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (existing is not null && existing.JournalEntryIds.Count > 0)
@@ -116,10 +117,9 @@ public static partial class LedgerEndpoints
                             ManualJournalEntryStatusDto.Submitted or
                             ManualJournalEntryStatusDto.Approved)
                         {
-                            return Results.Conflict(new
-                            {
-                                error = $"Automated journal schedule '{existing.ScheduleId}' cannot be re-armed while retained draft '{journalEntryId:D}' is pending. Post or reject the current draft before rearming."
-                            });
+                            return ApiProblemDetails.Conflict(
+                                context,
+                                $"Automated journal schedule '{existing.ScheduleId}' cannot be re-armed while retained draft '{journalEntryId:D}' is pending. Post or reject the current draft before rearming.");
                         }
                     }
                 }
@@ -307,10 +307,9 @@ public static partial class LedgerEndpoints
                             ManualJournalEntryStatusDto.Submitted or
                             ManualJournalEntryStatusDto.Approved)
                         {
-                            return Results.Conflict(new
-                            {
-                                error = $"Daily valuation schedule '{existing.ScheduleId}' cannot be reconfigured while retained batch draft '{journalEntryId:D}' is pending. Post or reject the current batch first."
-                            });
+                            return ApiProblemDetails.Conflict(
+                                context,
+                                $"Daily valuation schedule '{existing.ScheduleId}' cannot be reconfigured while retained batch draft '{journalEntryId:D}' is pending. Post or reject the current batch first.");
                         }
                     }
                 }
@@ -419,7 +418,7 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
         .WithName("ApproveAndPostLedgerJournalAutomationDailyMarkToMarketBatch")
@@ -462,7 +461,7 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
         .WithName("RunLedgerJournalAutomationDailyMarkToMarketIntake")
@@ -505,7 +504,7 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
         .WithName("RunLedgerJournalAutomationDividendIntake")
@@ -550,7 +549,7 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
         .WithName("RunLedgerJournalAutomationFeeAccrualIntake")
@@ -593,7 +592,7 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
         .WithName("RunLedgerJournalAutomationPeriodCloseIntake")

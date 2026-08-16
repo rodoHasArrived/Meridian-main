@@ -2255,37 +2255,37 @@
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/daily-mark-to-market-run-due",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:356",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:355",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/daily-mark-to-market-batch-lifecycle",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:386",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:385",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/daily-mark-to-market-intake",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:435",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:434",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/dividend-intake",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:478",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:477",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/fee-accrual-intake",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:521",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:520",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/period-close-intake",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:566",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:565",
       "documented": false
     },
     {
