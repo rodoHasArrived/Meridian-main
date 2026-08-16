@@ -1,6 +1,6 @@
 {
   "total_files": 648,
-  "total_lines": 128502,
+  "total_lines": 128505,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1849,7 +1849,7 @@
     },
     {
       "path": "docs/development/god-file-burn-down-plan.md",
-      "line_count": 231,
+      "line_count": 234,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
