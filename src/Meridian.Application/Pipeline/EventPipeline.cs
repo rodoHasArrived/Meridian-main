@@ -372,9 +372,11 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
     /// rules: only durability-confirmed (version 2) entries suppress a record; legacy version-1
     /// identities are untrusted here, so their records are replayed to the sink and upgraded to
     /// version 2 only after the sink flush succeeds. Sink failures propagate — recovery fails
-    /// closed rather than acknowledging records it could not replay. A replay interrupted before
-    /// its durable boundary releases all pending identity claims so it can be retried.
-    /// If no WAL is configured, this method is a no-op.
+    /// closed rather than acknowledging records it could not replay, and it likewise fails
+    /// closed when a record's identity is claimed by an in-flight reservation this recovery
+    /// pass does not hold (recovery must complete before live ingestion starts). A replay
+    /// interrupted before its durable boundary releases all pending identity claims so it can
+    /// be retried. If no WAL is configured, this method is a no-op.
     /// </remarks>
     public async Task RecoverAsync(CancellationToken ct = default)
     {
@@ -396,6 +398,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         var chunkAppended = 0;
         var chunkProcessed = 0;
         var heldReservations = new List<DedupReservation>();
+        var chunkClaimKeys = new HashSet<string>(StringComparer.Ordinal);
 
         // Drives the current chunk through its durable boundary: sink flush, then dedup commit,
         // then a best-effort cumulative WAL commit through the horizon processed so far.
@@ -414,6 +417,10 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                 await _dedupLedger.CommitDurableAsync(heldReservations, ct).ConfigureAwait(false);
                 heldReservations.Clear();
             }
+
+            // Committed identities suppress later duplicates as version-2 entries, so the
+            // per-chunk claim-key set resets with the reservations it described.
+            chunkClaimKeys.Clear();
 
             // [1.2] WAL-sink transaction: update local sequence tracking BEFORE committing the
             // WAL.  If CommitAsync fails (e.g. transient disk error), _lastCommittedWalSequence
@@ -510,12 +517,29 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         .TryReserveAsync(evt, DedupLookupScope.WalRecovery, ct).ConfigureAwait(false);
                     if (reservationResult.IsSuppressed)
                     {
+                        // A pending claim only suppresses a record when this recovery pass holds
+                        // it (an earlier record in the current chunk). An external, memory-only
+                        // claim proves nothing durable: its holder may abandon without persisting,
+                        // and committing the horizon past this record would lose its only WAL
+                        // copy — fail closed instead; recovery must run before live ingestion.
+                        if (reservationResult.Status == DedupReservationStatus.PendingElsewhere &&
+                            (reservationResult.Reservation.Key is null ||
+                             !chunkClaimKeys.Contains(reservationResult.Reservation.Key)))
+                        {
+                            throw new InvalidOperationException(
+                                $"WAL recovery found an in-flight dedup claim for record {walRecord.Sequence} " +
+                                "that this recovery pass does not hold. Recovery must complete before live " +
+                                "ingestion starts; acknowledging the record past an external memory-only " +
+                                "claim could lose it.");
+                        }
+
                         skipped++;
                         maxRecoveredSequence = Math.Max(maxRecoveredSequence, walRecord.Sequence);
                         continue;
                     }
 
                     heldReservations.Add(reservationResult.Reservation);
+                    chunkClaimKeys.Add(reservationResult.Reservation.Key);
                 }
 
                 // Sink failures propagate: recovery must fail closed instead of acknowledging
@@ -1111,15 +1135,58 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
 
                     if (!retryPendingBatch)
                     {
-                        // The batch is being abandoned: pending identity claims must not outlive
-                        // it, otherwise a legitimate upstream re-send of the same event would be
-                        // suppressed as an in-flight duplicate forever.
+                        // Without a WAL, events appended before the failure sit in the sink's
+                        // buffer and can still become durable at the next periodic or final
+                        // flush. Flush them now and durably commit their identity claims so an
+                        // upstream re-send of the persisted prefix is suppressed rather than
+                        // appended twice. If this best-effort promotion fails, fall through to
+                        // releasing every claim — duplicates stay possible, loss does not.
+                        var prefixCommitted = false;
+                        if (_dedupLedger != null && nextPendingEventIndex > 0 && !dedupBatchCommitted)
+                        {
+                            try
+                            {
+                                reservationScratch.Clear();
+                                for (var i = 0; i < nextPendingEventIndex; i++)
+                                {
+                                    if (batchBuffer[i].Reservation.IsHeld)
+                                        reservationScratch.Add(batchBuffer[i].Reservation);
+                                }
+
+                                if (reservationScratch.Count > 0)
+                                {
+                                    await _sink.FlushAsync(_cts.Token).ConfigureAwait(false);
+                                    await _dedupLedger.CommitDurableAsync(reservationScratch, _cts.Token).ConfigureAwait(false);
+                                }
+
+                                reservationScratch.Clear();
+                                prefixCommitted = true;
+                            }
+                            catch (Exception promoteEx)
+                            {
+                                _logger.LogWarning(promoteEx,
+                                    "Failed to flush and commit the appended prefix of an abandoned batch; " +
+                                    "its identity claims will be released and a re-send may append duplicates");
+                            }
+                        }
+
+                        // The remaining pending identity claims must not outlive the abandoned
+                        // batch, otherwise a legitimate upstream re-send of the same event would
+                        // be suppressed as an in-flight duplicate forever. Committed prefix
+                        // claims are already resolved; token-checked release skips them.
                         ReleaseAllReservations(batchBuffer);
 
                         if (_deadLetterSink != null)
                         {
-                            foreach (var traced in batchBuffer)
+                            // When the appended prefix was flushed and committed, those events
+                            // are durably persisted and do not belong in the dead-letter record;
+                            // if the promotion failed their durability is unknown, so record the
+                            // whole batch conservatively.
+                            var deadLetterFromIndex = prefixCommitted ? nextPendingEventIndex : 0;
+                            for (var i = deadLetterFromIndex; i < batchBuffer.Count; i++)
                             {
+                                var traced = batchBuffer[i];
+
                                 // Suppressed events were already dead-lettered by validation or
                                 // are duplicates of retained data — do not record them twice.
                                 if (traced.Suppressed)

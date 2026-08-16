@@ -648,6 +648,103 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         await ledger.DisposeAsync();
     }
 
+    [Fact]
+    public async Task Recovery_ExternalPendingClaim_FailsClosed_IntraPassDuplicateStillSuppressed()
+    {
+        var walDir = Path.Combine(_rootDir, "wal_external_claim");
+        Directory.CreateDirectory(walDir);
+
+        // Two WAL copies of one identity plus a distinct second identity, all uncommitted.
+        var timestamp = DateTimeOffset.UtcNow;
+        var duplicated = CreateTradeEvent("EXT", 300, timestamp);
+        var duplicatedCopy = CreateTradeEvent("EXT", 301, timestamp);
+        var other = CreateTradeEvent("OTH", 302);
+        var wal1 = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await wal1.InitializeAsync();
+        await wal1.AppendAsync(duplicated, duplicated.Type.ToString());
+        await wal1.AppendAsync(duplicatedCopy, duplicatedCopy.Type.ToString());
+        await wal1.AppendAsync(other, other.Type.ToString());
+        await wal1.FlushAsync();
+        await wal1.DisposeAsync();
+
+        var ledger = await CreateLedgerAsync("ledger_external_claim");
+
+        // An external (live-ingress) holder claims the "OTH" identity before recovery runs.
+        var externalClaim = await ledger.TryReserveAsync(other, DedupLookupScope.LiveIngress, CancellationToken.None);
+        externalClaim.IsReserved.Should().BeTrue();
+
+        var failingSinkRun = new FaultSink();
+        var wal2 = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        var pipeline1 = new EventPipeline(
+            failingSinkRun, capacity: 100, enablePeriodicFlush: false, wal: wal2, dedupLedger: ledger);
+
+        // The intra-pass duplicate ("EXT" twice) must be suppressed, but the external claim on
+        // "OTH" must fail recovery closed instead of being acknowledged away.
+        await Assert.ThrowsAsync<InvalidOperationException>(() => pipeline1.RecoverAsync());
+        await pipeline1.DisposeAsync();
+
+        // Once the external holder resolves (releases here), a retried recovery replays all
+        // records that were never durably acknowledged.
+        ledger.Release(externalClaim.Reservation).Should().BeTrue();
+        var sink = new FaultSink();
+        var wal3 = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await using var pipeline2 = new EventPipeline(
+            sink, capacity: 100, enablePeriodicFlush: false, wal: wal3, dedupLedger: ledger);
+
+        await pipeline2.RecoverAsync();
+
+        sink.AppendedEvents.Select(evt => evt.Symbol).Should().BeEquivalentTo(new[] { "EXT", "OTH" },
+            "one copy of the duplicated identity and the externally-claimed record must both replay");
+        pipeline2.RecoveredCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Consumer_NoWal_PartialBatchAppendFailure_CommitsPersistedPrefixAndReleasesRest()
+    {
+        // No WAL: gate the consumer inside a first single-event batch, queue three more events
+        // so they form one batch, then fail the middle append of that batch. The appended
+        // prefix must stay durably deduplicated; only the unpersisted remainder is released.
+        var ledger = await CreateLedgerAsync("ledger_prefix");
+        var sink = new FaultSink { GateFirstAppend = true };
+
+        await using (var pipeline = new EventPipeline(
+            sink, capacity: 100, batchSize: 3, enablePeriodicFlush: false, dedupLedger: ledger))
+        {
+            var gateEvent = CreateTradeEvent("GATE0", 400);
+            var eventA = CreateTradeEvent("PFA", 401);
+            var eventB = CreateTradeEvent("PFB", 402);
+            var eventC = CreateTradeEvent("PFC", 403);
+
+            pipeline.TryPublish(gateEvent);
+            await sink.FirstAppendEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            pipeline.TryPublish(eventA);
+            pipeline.TryPublish(eventB);
+            pipeline.TryPublish(eventC);
+
+            // Appends so far: #1 = GATE0 (held). Fail #3 = the batch's middle event (PFB).
+            sink.FailOnAppendNumber = 3;
+            sink.ReleaseGate();
+
+            await WaitUntilAsync(() => pipeline.GetStatistics().ConsumerIterationFailures >= 1);
+
+            // The persisted prefix (PFA) must be suppressed on re-send; the failed event (PFB)
+            // must be claimable and persist.
+            pipeline.TryPublish(eventA);
+            pipeline.TryPublish(eventB);
+            await WaitUntilAsync(() => sink.AppendedEvents.Count >= 3);
+            await pipeline.FlushAsync(CancellationToken.None);
+
+            sink.AppendedEvents.Select(evt => evt.Symbol).Should().BeEquivalentTo(
+                new[] { "GATE0", "PFA", "PFB" },
+                "the flushed prefix must not be re-appended and the unpersisted remainder must be re-acceptable");
+            pipeline.DeduplicatedCount.Should().BeGreaterThanOrEqualTo(1,
+                "the re-sent persisted prefix must be suppressed by its durably committed identity");
+        }
+
+        await ledger.DisposeAsync();
+    }
+
     #endregion
 
     #region Helpers and fakes
@@ -708,6 +805,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
     {
         private readonly List<MarketEvent> _appendedEvents = new();
         private readonly object _lock = new();
+        private readonly SemaphoreSlim _gate = new(0);
         private int _appendFailuresRemaining;
         private int _flushFailuresRemaining;
         private int _successfulFlushCount;
@@ -715,6 +813,14 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
 
         /// <summary>Fails exactly the Nth (1-based) append attempt; 0 disables.</summary>
         public int FailOnAppendNumber { get; set; }
+
+        /// <summary>Blocks the first append attempt on a gate until <see cref="ReleaseGate"/>.</summary>
+        public bool GateFirstAppend { get; init; }
+
+        public TaskCompletionSource FirstAppendEntered { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public void ReleaseGate() => _gate.Release(10_000);
 
         public int AppendFailuresRemaining
         {
@@ -735,9 +841,15 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             get { lock (_lock) { return _appendedEvents.ToList(); } }
         }
 
-        public ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
+        public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
         {
             var attempt = Interlocked.Increment(ref _appendAttempts);
+            if (GateFirstAppend && attempt == 1)
+            {
+                FirstAppendEntered.TrySetResult();
+                await _gate.WaitAsync(ct).ConfigureAwait(false);
+            }
+
             if (FailOnAppendNumber > 0 && attempt == FailOnAppendNumber)
             {
                 throw new InvalidOperationException("Injected sink append failure (positional)");
@@ -751,7 +863,6 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
 
             lock (_lock)
             { _appendedEvents.Add(evt); }
-            return ValueTask.CompletedTask;
         }
 
         public Task FlushAsync(CancellationToken ct = default)

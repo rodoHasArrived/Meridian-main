@@ -77,7 +77,10 @@ public readonly record struct DedupReservation(string Key, long Token)
 /// <param name="Status">How the reservation attempt resolved.</param>
 /// <param name="Reservation">
 /// The held reservation when <paramref name="Status"/> is
-/// <see cref="DedupReservationStatus.Reserved"/>; <c>default</c> otherwise.
+/// <see cref="DedupReservationStatus.Reserved"/>. For
+/// <see cref="DedupReservationStatus.PendingElsewhere"/> implementations should carry the
+/// identity key with a zero token (never a held claim) so callers can recognise claims they
+/// hold themselves; <c>default</c> otherwise.
 /// </param>
 public readonly record struct DedupReservationResult(DedupReservationStatus Status, DedupReservation Reservation)
 {

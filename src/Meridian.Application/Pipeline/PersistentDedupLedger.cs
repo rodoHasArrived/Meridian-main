@@ -279,8 +279,11 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         if (!_pendingReservations.TryAdd(key, token))
         {
             Interlocked.Increment(ref _totalDuplicates);
-            return ValueTask.FromResult(
-                new DedupReservationResult(DedupReservationStatus.PendingElsewhere, default));
+            // Carry the identity key (with no token) so callers such as WAL recovery can tell
+            // whether the in-flight claim is one they hold themselves or an external one.
+            return ValueTask.FromResult(new DedupReservationResult(
+                DedupReservationStatus.PendingElsewhere,
+                new DedupReservation(key, 0)));
         }
 
         // Double-check after acquiring the pending slot: a concurrent commit may have published
