@@ -1,8 +1,8 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Banking;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
@@ -862,7 +862,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
     private static string Hash(ManualJournalEntryDraftDto draft)
     {
         var json = JsonSerializer.Serialize(draft);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(json);
     }
 
     private static IReadOnlyList<string> MergeEvidenceLinks(

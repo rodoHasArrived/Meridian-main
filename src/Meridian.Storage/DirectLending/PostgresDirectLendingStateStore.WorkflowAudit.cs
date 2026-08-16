@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.DirectLending;
 
@@ -266,7 +267,7 @@ public sealed partial class PostgresDirectLendingStateStore
         var bytes = JsonSerializer.SerializeToUtf8Bytes(
             canonicalPayload,
             OperationsWorkflowAuditJsonContext.Default.OperationsWorkflowAuditHashPayload);
-        return Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        return Sha256Digest.Compute(bytes);
     }
 
     private static (int LockKey1, int LockKey2) ComputeWorkflowAuditLockKeys(string workflowId)

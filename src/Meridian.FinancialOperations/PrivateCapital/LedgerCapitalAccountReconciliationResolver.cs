@@ -1,6 +1,6 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
@@ -640,8 +640,7 @@ public sealed class LedgerCapitalAccountReconciliationResolver
             }
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical.ToString());
     }
 
     private static void Append(StringBuilder builder, string? value)

@@ -1,7 +1,7 @@
-using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Text;
 using Meridian.Ledger;
 
@@ -47,7 +47,7 @@ public static class AtomicTaxLotJournalFingerprint
             WriteCanonicalJson(writer, element);
         }
 
-        return $"sha256:{Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant()}";
+        return $"sha256:{Sha256Digest.Compute(stream.ToArray())}";
     }
 
     internal static bool IsCanonicalSha256(string? fingerprint)

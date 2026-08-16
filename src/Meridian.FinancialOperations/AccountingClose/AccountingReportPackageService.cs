@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage;
@@ -1709,7 +1710,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             payload += $"|positionId={dimensions.PositionId.Value:D}";
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(payload);
     }
 
     private static ReportExportArtifactManifestDto BuildExportArtifactManifest(

@@ -1389,8 +1389,16 @@ public sealed partial class ReportingScheduleService
             var current = _schedules.GetValueOrDefault(prepared.Identity);
             if (!ReferenceEquals(current, prepared.ExpectedExisting))
             {
-                throw new InvalidOperationException(
-                    "The reporting schedule changed while its recipient directory bindings were being validated; retry the upsert.");
+                // A racing writer landed while delivery targets were being validated. Typed so
+                // endpoints map it to the canonical 409 version-conflict body instead of the 400
+                // a plain InvalidOperationException falls through to.
+                throw current is not null
+                    ? ReportingScheduleConcurrencyException.ForConflict(
+                        current,
+                        prepared.ExpectedExisting?.UpdatedAtUtc)
+                    : ReportingScheduleConcurrencyException.ForMissing(
+                        prepared.Candidate,
+                        prepared.ExpectedExisting!.UpdatedAtUtc);
             }
 
             _schedules[prepared.Identity] = prepared.Candidate;
@@ -3218,9 +3226,7 @@ public sealed partial class ReportingScheduleService
     }
 
     internal static string ComputeAccessPolicySnapshotHash(ReportAccessPolicyDto policy) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-                JsonSerializer.Serialize(ReportAccessPolicyEvaluator.Normalize(policy)))))
-            .ToLowerInvariant();
+        Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(ReportAccessPolicyEvaluator.Normalize(policy)));
 
     internal static string? ComputeDeliveryTargetsSnapshotHash(
         IReadOnlyList<ReportingScheduleDeliveryTargetDto>? targets)
@@ -3245,9 +3251,7 @@ public sealed partial class ReportingScheduleService
             })
             .OrderBy(static target => target.DistributionId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-                JsonSerializer.Serialize(canonical))))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(canonical));
     }
 
     internal static bool HasValidDeliveryTargetsSnapshot(ReportingScheduleRecordDto schedule)

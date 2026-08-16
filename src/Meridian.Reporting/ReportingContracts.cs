@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
@@ -533,7 +533,7 @@ public static class ReportingRunStoreRevision
             WriteCanonical(writer, document.RootElement);
         }
 
-        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     public static bool Matches(string left, string right) =>

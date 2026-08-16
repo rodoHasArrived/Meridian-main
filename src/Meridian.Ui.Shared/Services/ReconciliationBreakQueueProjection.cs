@@ -1,6 +1,6 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 
@@ -160,7 +160,7 @@ internal static class ReconciliationBreakQueueProjection
         var payload = string.Join(
             "|",
             parts.Select(static part => part?.Trim().ToUpperInvariant() ?? string.Empty));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(payload);
     }
 
     public static ReconciliationExceptionRouting ResolveRouting(

@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Reporting;
 
@@ -954,8 +954,7 @@ public static class ReportingGovernanceAuditChain
         Append(canonical, entry.Note);
         Append(canonical, entry.PreviousHash);
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical.ToString());
     }
 
     private static void Append(StringBuilder target, object? value)

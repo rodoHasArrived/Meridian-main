@@ -244,7 +244,9 @@ public sealed class ReportingGovernanceEndpointTests
             JsonOptions);
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
-        (await response.Content.ReadAsStringAsync()).Should().Contain("stale reporting version");
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("stale reporting version");
+        body.Should().Contain(ApiProblemTypes.VersionConflict);
     }
 
     [Fact]

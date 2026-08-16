@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 
@@ -96,7 +96,7 @@ public sealed class CsvStatementConnector(StatementMappingProfileCatalog catalog
 
         var columnMappings = StatementColumnConfidenceScorer.MapColumns(detectedColumns, profile);
         var fingerprint = new StatementFormatFingerprint(
-            Convert.ToHexString(SHA256.HashData(document.Content.Span)).ToLowerInvariant(),
+            Sha256Digest.Compute(document.Content.Span),
             detectedColumns.Select(static column => column.Trim().ToLowerInvariant()).ToArray(),
             delimiter.ToString());
 

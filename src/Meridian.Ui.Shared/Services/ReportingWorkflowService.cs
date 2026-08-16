@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
@@ -1408,8 +1408,7 @@ public sealed class ReportPackWorkflowService
             throw new UnauthorizedAccessException("The reporting pack access policy belongs to another company.");
         }
 
-        var accessPolicyHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-            JsonSerializer.Serialize(normalizedAccessPolicy)))).ToLowerInvariant();
+        var accessPolicyHash = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(normalizedAccessPolicy));
         var record = new ReportPackWorkflowRecordDto(id, fundProfileId, fundAccountId, period, templateId, ReportPackWorkflowStateDto.Draft, 1, now, actor, now,
             [new ReportPackAuditEventDto(now, actor, "create", ReportPackWorkflowStateDto.Draft, ReportPackWorkflowStateDto.Draft)]
             , null,

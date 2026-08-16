@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
@@ -323,7 +323,7 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
             Format: format,
             RelativePath: $"{fundKey}/{reportKey}/{fileName}",
             SizeBytes: content.LongLength,
-            ChecksumSha256: Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant(),
+            ChecksumSha256: Sha256Digest.Compute(content),
             SchemaVersion: GovernanceReportPackContract.CurrentSchemaVersion);
 
     private static void EnsureWritableSnapshot(FundReportPackSnapshotDto snapshot)

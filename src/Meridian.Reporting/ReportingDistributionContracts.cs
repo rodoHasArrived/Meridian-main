@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Reporting;
 
@@ -214,8 +214,7 @@ public static class ReportingDeliveryDownloadReceiptIdentity
             jobId.Trim(),
             artifactId.Trim(),
             artifactAuditEventId.Trim());
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical);
     }
 }
 
