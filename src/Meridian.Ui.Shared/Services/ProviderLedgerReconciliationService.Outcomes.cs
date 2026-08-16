@@ -20,6 +20,7 @@ using Meridian.Storage.SecurityMaster;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
 using Meridian.Contracts.Integrity;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -619,10 +620,10 @@ public sealed partial class ProviderLedgerReconciliationService
         AppendCanonical(builder, "companyId", accessScope?.CompanyId);
         AppendCanonical(builder, "amountTolerance", Math.Abs(request.AmountTolerance));
         AppendCanonical(builder, "providerStaleAfterMinutes", Math.Max(1, request.ProviderStaleAfterMinutes));
-        AppendCanonical(builder, "requestedBy", NormalizeOwner(request.RequestedBy) ?? DefaultActor);
-        AppendCanonical(builder, "defaultBreakOwner", NormalizeOwner(request.DefaultBreakOwner) ?? "fund-accounting");
+        AppendCanonical(builder, "requestedBy", NormalizeOptional(request.RequestedBy) ?? DefaultActor);
+        AppendCanonical(builder, "defaultBreakOwner", NormalizeOptional(request.DefaultBreakOwner) ?? "fund-accounting");
         AppendCanonical(builder, "signedOffBreakCount", request.SignedOffBreakKeys?.Count ?? 0);
-        AppendCanonical(builder, "signedOffBy", NormalizeOwner(request.SignedOffBy));
+        AppendCanonical(builder, "signedOffBy", NormalizeOptional(request.SignedOffBy));
         return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 

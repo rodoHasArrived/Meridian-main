@@ -15,6 +15,7 @@ using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Http;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -877,7 +878,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
 
     private static InstrumentPassportClassificationProfileDto? BuildClassificationProfile(SecurityMasterTrustSnapshotDto snapshot)
     {
-        var assetClass = NormalizeSecurityMasterText(snapshot.EconomicDefinition.AssetClass);
+        var assetClass = NormalizeOptional(snapshot.EconomicDefinition.AssetClass);
         if (assetClass is null)
         {
             return null;
@@ -934,8 +935,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             InstrumentType: instrumentType,
             DisplayName: displayName,
             SecurityMasterAssetClass: assetClass,
-            AssetFamily: NormalizeSecurityMasterText(snapshot.EconomicDefinition.AssetFamily) ?? primaryDescriptor?.SecurityMasterAssetFamily,
-            SubType: NormalizeSecurityMasterText(snapshot.EconomicDefinition.SubType) ?? primaryDescriptor?.SecurityMasterSubType,
+            AssetFamily: NormalizeOptional(snapshot.EconomicDefinition.AssetFamily) ?? primaryDescriptor?.SecurityMasterAssetFamily,
+            SubType: NormalizeOptional(snapshot.EconomicDefinition.SubType) ?? primaryDescriptor?.SecurityMasterSubType,
             DefaultProviderSecurityType: SecurityMasterText(string.Join(", ", providerSecurityTypes), "n/a"),
             IsTradeable: primaryDescriptor?.IsTradeable ?? descriptors.Any(static descriptor => descriptor.IsTradeable),
             IsReferenceOnly: primaryDescriptor?.IsReferenceOnly ?? (descriptors.Count > 0 && descriptors.All(static descriptor => descriptor.IsReferenceOnly)),
@@ -1010,7 +1011,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var context = new SecurityMasterOperatingScope(
             ClientId: null,
             AccountId: ResolveDominantAccountId(snapshot),
-            FundProfileId: NormalizeSecurityMasterText(fundProfileId),
+            FundProfileId: NormalizeOptional(fundProfileId),
             SecurityId: snapshot.SecurityId);
         var controls = BuildClearwaterControlSections(clearwaterEvidence, lifecycleEvents);
         var entitlementApplicability = BuildEntitlementApplicability(clearwaterEvidence.VendorEntitlements, context);
@@ -1259,11 +1260,11 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
 
     private static bool ScopeMatches(string? configuredScope, string? selectedScope)
     {
-        var configured = NormalizeSecurityMasterText(configuredScope);
+        var configured = NormalizeOptional(configuredScope);
         if (configured is null)
             return true;
 
-        var selected = NormalizeSecurityMasterText(selectedScope);
+        var selected = NormalizeOptional(selectedScope);
         return selected is not null && configured.Equals(selected, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -1284,7 +1285,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     private static string? ResolveDominantAccountId(SecurityMasterTrustSnapshotDto snapshot)
     {
         var accountIds = snapshot.OpenLotReadModel?.Lots
-            .Select(static lot => NormalizeSecurityMasterText(lot.AccountScopeId))
+            .Select(static lot => NormalizeOptional(lot.AccountScopeId))
             .Where(static value => value is not null)
             .Select(static value => value!)
             .GroupBy(static value => value, StringComparer.OrdinalIgnoreCase)
@@ -1295,9 +1296,6 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
 
         return accountIds is { Length: > 0 } ? accountIds[0] : null;
     }
-
-    private static string? NormalizeSecurityMasterText(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static IReadOnlyList<string> DistinctProfileValues(params IEnumerable<string>[] values) =>
         values
@@ -1573,7 +1571,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
 
     private static string ResolveHandoffOwner(string? target)
     {
-        return NormalizeSecurityMasterText(target)?.ToLowerInvariant() switch
+        return NormalizeOptional(target)?.ToLowerInvariant() switch
         {
             "portfolio" => "Portfolio operations",
             "ledger" => "Accounting operations",
@@ -1615,7 +1613,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         };
 
     private static IReadOnlyList<string> ResolveImpactedOutputs(string? target) =>
-        NormalizeSecurityMasterText(target)?.ToLowerInvariant() switch
+        NormalizeOptional(target)?.ToLowerInvariant() switch
         {
             "portfolio" => ["Portfolio"],
             "ledger" => ["Ledger", "Accounting"],
@@ -1676,7 +1674,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     }
 
     private static string ResolveHandoffRoute(string? target) =>
-        NormalizeSecurityMasterText(target)?.ToLowerInvariant() switch
+        NormalizeOptional(target)?.ToLowerInvariant() switch
         {
             "portfolio" => "/workstation/portfolio",
             "ledger" => "/workstation/accounting/ledger",

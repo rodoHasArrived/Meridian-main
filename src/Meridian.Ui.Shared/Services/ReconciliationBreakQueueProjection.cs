@@ -3,6 +3,7 @@ using System.Text;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -30,7 +31,7 @@ internal static class ReconciliationBreakQueueProjection
         var fingerprint = ComputeStatementBreakFingerprint(statementBreak);
         var sourceImportId =
             ExtractStatementImportId(statementBreak.StatementReference)
-            ?? NormalizeMetadata(statementBreak.InternalReference);
+            ?? NormalizeOptional(statementBreak.InternalReference);
         var authorityFingerprint = ComputeSourceFingerprint(
             "statement-case",
             fingerprint,
@@ -42,20 +43,20 @@ internal static class ReconciliationBreakQueueProjection
             accountingScope?.AccountingPeriodId.ToString("D"),
             accountingScope?.AsOfDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         var sourceReference =
-            NormalizeMetadata(statementBreak.StatementReference)
-            ?? NormalizeMetadata(statementBreak.InternalReference)
+            NormalizeOptional(statementBreak.StatementReference)
+            ?? NormalizeOptional(statementBreak.InternalReference)
             ?? statementBreak.BreakId;
 
         return new ReconciliationBreakQueueItem(
             BreakId: $"statement:{authorityFingerprint}",
-            RunId: NormalizeMetadata(statementBreak.InternalReference) ?? "statement-reconciliation",
+            RunId: NormalizeOptional(statementBreak.InternalReference) ?? "statement-reconciliation",
             StrategyName: "Statement reconciliation",
             Category: category,
             Status: ReconciliationBreakQueueStatus.Open,
             Variance: variance,
-            Reason: NormalizeMetadata(statementBreak.Description)
+            Reason: NormalizeOptional(statementBreak.Description)
                 ?? $"Statement {statementBreak.BreakType?.ToString() ?? "break"} requires review.",
-            AssignedTo: NormalizeMetadata(statementBreak.Owner),
+            AssignedTo: NormalizeOptional(statementBreak.Owner),
             DetectedAt: statementBreak.CreatedAtUtc ?? observedAt,
             LastUpdatedAt: observedAt,
             Severity: severity,
@@ -71,7 +72,7 @@ internal static class ReconciliationBreakQueueProjection
             RoutingTarget: "/accounting/reconciliation/statements",
             RoutingDetail:
                 $"Review statement reconciliation break {sourceReference ?? statementBreak.BreakId ?? fingerprint} in accounting queue.",
-            RecommendedAction: NormalizeMetadata(statementBreak.RecommendedAction) ?? "ReviewAndResolve",
+            RecommendedAction: NormalizeOptional(statementBreak.RecommendedAction) ?? "ReviewAndResolve",
             SourceType: "statement",
             SourceSystem: "statement-reconciliation",
             SourceReference: sourceReference,
@@ -111,7 +112,7 @@ internal static class ReconciliationBreakQueueProjection
             statementBreak.Currency,
             (statementBreak.Delta ?? 0m).ToString(CultureInfo.InvariantCulture),
             (statementBreak.Tolerance ?? 0m).ToString(CultureInfo.InvariantCulture),
-            NormalizeMetadata(statementBreak.Description));
+            NormalizeOptional(statementBreak.Description));
 
     public static IReadOnlyList<ReconciliationBreakMeasureDto> BuildDefaultMeasures(
         decimal? expected,
@@ -224,7 +225,7 @@ internal static class ReconciliationBreakQueueProjection
         StatementBreakDto statementBreak,
         decimal variance)
     {
-        var unit = NormalizeMetadata(statementBreak.Currency) ?? "currency";
+        var unit = NormalizeOptional(statementBreak.Currency) ?? "currency";
         var valueAvailable = statementBreak.StatementAmount.HasValue && statementBreak.BookAmount.HasValue;
         var quantityBreak = statementBreak.BreakType == StatementBreakType.PositionQuantityMismatch;
         var signedVariance = statementBreak.BookAmount.HasValue && statementBreak.StatementAmount.HasValue
@@ -310,19 +311,19 @@ internal static class ReconciliationBreakQueueProjection
             statementBreak.Currency,
             delta.ToString(CultureInfo.InvariantCulture),
             (statementBreak.Tolerance ?? 0m).ToString(CultureInfo.InvariantCulture),
-            NormalizeMetadata(statementBreak.Description));
+            NormalizeOptional(statementBreak.Description));
     }
 
     private static string? ExtractStatementImportId(string? value)
     {
-        var normalized = NormalizeMetadata(value);
+        var normalized = NormalizeOptional(value);
         var separator = normalized?.IndexOf(':');
         return separator is > 0 ? normalized![..separator.Value] : null;
     }
 
     private static string NormalizeStatementReference(string? value)
     {
-        var normalized = NormalizeMetadata(value);
+        var normalized = NormalizeOptional(value);
         if (normalized is null)
         {
             return string.Empty;
@@ -333,9 +334,6 @@ internal static class ReconciliationBreakQueueProjection
             ? normalized[(separator + 1)..]
             : normalized;
     }
-
-    private static string? NormalizeMetadata(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     internal sealed record ReconciliationExceptionRouting(
         string ExceptionRoute,
