@@ -9308,9 +9308,11 @@ Meridian-main
 │   │   │   │   ├── CoveredCallEndpointAuthorizationTests.cs
 │   │   │   │   ├── DirectLendingEndpointMutationTests.cs
 │   │   │   │   ├── EndpointAuthorizationCoverageTests.cs
+│   │   │   │   ├── EndpointAuthorizationDeclarationTests.cs
 │   │   │   │   ├── EndpointGuardTests.cs
 │   │   │   │   ├── EndpointIntegrationTestBase.cs
 │   │   │   │   ├── EndpointMetadataTests.cs
+│   │   │   │   ├── EndpointReadDeclarationTests.cs
 │   │   │   │   ├── EndpointTestCollection.cs
 │   │   │   │   ├── EndpointTestFixture.cs
 │   │   │   │   ├── EndpointTestFixtureProviderCatalogLifetimeTests.cs
