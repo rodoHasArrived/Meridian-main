@@ -1,5 +1,6 @@
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -24,8 +25,8 @@ public static class ReportAccessPolicyEvaluator
                 : CompanyWidePolicy with { OwnerPrincipalId = defaultOwnerPrincipalId.Trim() };
         }
 
-        var owner = NormalizeId(policy.OwnerPrincipalId) ?? NormalizeId(defaultOwnerPrincipalId);
-        var companyId = NormalizeId(policy.CompanyId);
+        var owner = NormalizeOptional(policy.OwnerPrincipalId) ?? NormalizeOptional(defaultOwnerPrincipalId);
+        var companyId = NormalizeOptional(policy.CompanyId);
         var principals = (policy.Principals ?? [])
             .Where(static principal => principal is not null && !string.IsNullOrWhiteSpace(principal.PrincipalId))
             .Select(static principal => new ReportAccessPrincipalDto(
@@ -80,9 +81,9 @@ public static class ReportAccessPolicyEvaluator
     public static ReportAccessEvaluationDto Evaluate(ReportAccessPolicyDto? policy, ReportAccessQueryContext? context)
     {
         var normalized = Normalize(policy);
-        var actor = NormalizeId(context?.ActorPrincipalId);
-        var company = NormalizeId(context?.CompanyId);
-        var tenant = NormalizeId(context?.TenantId);
+        var actor = NormalizeOptional(context?.ActorPrincipalId);
+        var company = NormalizeOptional(context?.CompanyId);
+        var tenant = NormalizeOptional(context?.TenantId);
         if (context?.RequireBoundScope == true
             && (actor is null || company is null || tenant is null))
         {
@@ -153,9 +154,9 @@ public static class ReportAccessPolicyEvaluator
         ReportAccessQueryContext? context)
     {
         ArgumentNullException.ThrowIfNull(manifest);
-        var actor = NormalizeId(context?.ActorPrincipalId);
-        var company = NormalizeId(context?.CompanyId);
-        var tenant = NormalizeId(context?.TenantId);
+        var actor = NormalizeOptional(context?.ActorPrincipalId);
+        var company = NormalizeOptional(context?.CompanyId);
+        var tenant = NormalizeOptional(context?.TenantId);
         if (context?.RequireBoundScope == true && (actor is null || company is null || tenant is null))
         {
             return Deny("Report access requires authenticated actor, tenant, and company scope.");
@@ -251,7 +252,4 @@ public static class ReportAccessPolicyEvaluator
 
     private static ReportAccessPrincipalDto BuildUserPrincipal(string actor) =>
         new(ReportAccessPrincipalKindDto.User, actor);
-
-    private static string? NormalizeId(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

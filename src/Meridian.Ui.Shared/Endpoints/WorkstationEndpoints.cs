@@ -41,6 +41,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -2424,7 +2425,7 @@ public static partial class WorkstationEndpoints
                     sleeveId,
                     strategyId,
                     portfolioId,
-                    NormalizeOptionalDimensionValue(ledgerBookId) ?? NormalizeOptionalDimensionValue(bookId),
+                    NormalizeOptional(ledgerBookId) ?? NormalizeOptional(bookId),
                     accountId,
                     investorId,
                     capitalAccountId,
@@ -2504,7 +2505,7 @@ public static partial class WorkstationEndpoints
                 sleeveId,
                 strategyId,
                 portfolioId,
-                NormalizeOptionalDimensionValue(ledgerBookId) ?? NormalizeOptionalDimensionValue(bookId),
+                NormalizeOptional(ledgerBookId) ?? NormalizeOptional(bookId),
                 accountId,
                 investorId,
                 capitalAccountId,
@@ -3322,9 +3323,6 @@ public static partial class WorkstationEndpoints
         => string.IsNullOrWhiteSpace(requested) ||
            string.Equals(actual, requested.Trim(), StringComparison.OrdinalIgnoreCase);
 
-    private static string? NormalizeOptionalDimensionValue(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private static IReadOnlyDictionary<string, string> BuildExternalGlDimensionFilter(IQueryCollection query)
     {
         var dimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -3342,8 +3340,8 @@ public static partial class WorkstationEndpoints
             }
         }
 
-        var externalGlDimensionKey = NormalizeOptionalDimensionValue(query["externalGlDimensionKey"].FirstOrDefault());
-        var externalGlDimensionValue = NormalizeOptionalDimensionValue(query["externalGlDimensionValue"].FirstOrDefault());
+        var externalGlDimensionKey = NormalizeOptional(query["externalGlDimensionKey"].FirstOrDefault());
+        var externalGlDimensionValue = NormalizeOptional(query["externalGlDimensionValue"].FirstOrDefault());
         if (externalGlDimensionKey is not null && externalGlDimensionValue is not null)
         {
             dimensions[externalGlDimensionKey] = externalGlDimensionValue;
