@@ -110,10 +110,13 @@ Its contract, shaped by the six defects review found in a withdrawn first attemp
   so the trend report does not count it as reclaimable and nothing recommends re-pinning it away.
 - **An entry retires only when the threshold itself supplies the requested headroom**
   (`lines + buffer <= threshold`). A file one line under the threshold keeps a lowered cap rather
-  than being handed the harder brand-new-god-file failure.
+  than being handed the harder brand-new-god-file failure. The one exception is a genuinely
+  deleted file, which always retires — there is nothing left to protect, whatever the buffer —
+  while a file that merely became empty follows the ordinary rules.
 - **It refuses to run while the ratchet is failing**, and **fails closed on any unreadable governed
-  source**, tracked or not — a file that cannot be read is not a file with zero lines. A genuinely
-  deleted file retires and its reduction is counted.
+  source**, tracked or not — a file that cannot be read is not a file with zero lines, and a
+  directory that cannot be enumerated hides every governed file under it. Deleted-file
+  reductions are counted when the entry retires.
 - `--buffer` outside tightening, or `--tighten-baseline` with an explicit `--threshold`, are hard
   errors rather than accepted-and-ignored options.
 

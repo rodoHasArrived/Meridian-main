@@ -3518,7 +3518,7 @@
       ]
     }
   ],
-  "fingerprint": "931f2fddccbe2a61d2483653211f1397998354e9414c2fd126a7fb06981f6419",
+  "fingerprint": "43d2d72ab0fac56a053270456ed37734790057cde5e26435f4c4a2a19545ca42",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4849,7 +4849,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "ddb590f358df25d7eaeed7913319908a7937d62530df301d5e9993e13a3a2920",
+      "fingerprint": "3d23612f36c97c0f3052b09f08a99b1df17ed8c9bab205fd8b151f4cab7c0455",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Integrity",
       "object_ids": [
@@ -6599,7 +6599,7 @@
       "contract_sets": [
         "identity-access-contracts"
       ],
-      "fingerprint": "2ce530acafd22e68580fb15211611cd95ad055bd00dcadcd0808236e2ce49b10",
+      "fingerprint": "ef8cdcbabd8c96b72c0eca8a561e66f0270ef27471d58eb7c212575c6f99024e",
       "mapped_schemas": [
         "identity_access"
       ],
@@ -140820,35 +140820,35 @@
         {
           "explicit_value": true,
           "name": "Match",
-          "source_line": 152,
+          "source_line": 162,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Mismatch",
-          "source_line": 155,
+          "source_line": 165,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "MalformedLeft",
-          "source_line": 158,
+          "source_line": 168,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "MalformedRight",
-          "source_line": 161,
+          "source_line": 171,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "MalformedBoth",
-          "source_line": 164,
+          "source_line": 174,
           "value": "4"
         }
       ],
-      "fingerprint": "c7d9f04f21f8a05bbd98fabf2f6c86227f15b5d19b893915cfaee6a787b2141d",
+      "fingerprint": "d1ef0d957622bf1d4706ce9d43475b6128440c11402583549709314ab5705d31",
       "full_name": "Meridian.Contracts.Integrity.Sha256DigestComparison",
       "id": "Meridian.Contracts.Integrity.Sha256DigestComparison",
       "kind": "enum",
@@ -140860,12 +140860,12 @@
       "qualified_name": "Meridian.Contracts.Integrity.Sha256DigestComparison",
       "references": [],
       "source": {
-        "line": 149,
+        "line": 159,
         "path": "src/Meridian.Contracts/Integrity/Sha256Digest.cs"
       },
       "sources": [
         {
-          "line": 149,
+          "line": 159,
           "path": "src/Meridian.Contracts/Integrity/Sha256Digest.cs"
         }
       ],
@@ -367708,7 +367708,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "07c1c46c33ee45dca428151d169508b384545149360d402627c602b7a18fe073",
+      "fingerprint": "d34cf3f07681c17eeb67d5a5a6c7ab3d26505dbcdc1bd09bce0340afdf49143a",
       "full_name": "Meridian.Identity.LoginAttemptResult",
       "id": "Meridian.Identity.LoginAttemptResult",
       "kind": "record",
@@ -367727,7 +367727,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 390,
+          "source_line": 395,
           "type": "int"
         },
         {
@@ -367741,7 +367741,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "TimeSpan?",
-          "source_line": 391,
+          "source_line": 396,
           "type": "TimeSpan?"
         },
         {
@@ -367755,7 +367755,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "LoginAttemptStatus",
-          "source_line": 388,
+          "source_line": 393,
           "type": "LoginAttemptStatus"
         },
         {
@@ -367769,7 +367769,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 389,
+          "source_line": 394,
           "type": "string?"
         }
       ],
@@ -367781,12 +367781,12 @@
         "Meridian.Identity.LoginAttemptStatus"
       ],
       "source": {
-        "line": 387,
+        "line": 392,
         "path": "src/Meridian.Identity/Application/LoginSessionService.cs"
       },
       "sources": [
         {
-          "line": 387,
+          "line": 392,
           "path": "src/Meridian.Identity/Application/LoginSessionService.cs"
         }
       ],
@@ -367807,23 +367807,23 @@
         {
           "explicit_value": false,
           "name": "Succeeded",
-          "source_line": 382,
+          "source_line": 387,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "InvalidCredentials",
-          "source_line": 383,
+          "source_line": 388,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "LockedOut",
-          "source_line": 384,
+          "source_line": 389,
           "value": null
         }
       ],
-      "fingerprint": "676265884d85887a907865ebdea3c9376021d043c59abf792af7ec58c977b29b",
+      "fingerprint": "143be847cb5c75a50f7b1dec3c9bd222c22f9a164649eb73747b772f28d17447",
       "full_name": "Meridian.Identity.LoginAttemptStatus",
       "id": "Meridian.Identity.LoginAttemptStatus",
       "kind": "enum",
@@ -367837,12 +367837,12 @@
       "qualified_name": "Meridian.Identity.LoginAttemptStatus",
       "references": [],
       "source": {
-        "line": 380,
+        "line": 385,
         "path": "src/Meridian.Identity/Application/LoginSessionService.cs"
       },
       "sources": [
         {
-          "line": 380,
+          "line": 385,
           "path": "src/Meridian.Identity/Application/LoginSessionService.cs"
         }
       ],
@@ -367897,7 +367897,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "b8f60bf11e1c3caa29c1a52132f180ee1fc1aa30e3d1ae9bf959613af4527b43",
+      "fingerprint": "d9a7c237cef5118d28808bfc1ea627b74ddcb13ea7711157a39e1b14aa339488",
       "full_name": "Meridian.Identity.LoginSessionStoreOptions",
       "id": "Meridian.Identity.LoginSessionStoreOptions",
       "kind": "record",
@@ -367917,7 +367917,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 375,
+          "source_line": 380,
           "type": "string?"
         }
       ],
@@ -367927,12 +367927,12 @@
       "qualified_name": "Meridian.Identity.LoginSessionStoreOptions",
       "references": [],
       "source": {
-        "line": 375,
+        "line": 380,
         "path": "src/Meridian.Identity/Application/LoginSessionService.cs"
       },
       "sources": [
         {
-          "line": 375,
+          "line": 380,
           "path": "src/Meridian.Identity/Application/LoginSessionService.cs"
         }
       ],

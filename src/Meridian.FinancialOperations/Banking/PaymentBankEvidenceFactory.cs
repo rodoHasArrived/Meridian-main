@@ -183,6 +183,9 @@ internal static class PaymentBankEvidenceFactory
         Append(canonical, recordedBy);
         Append(canonical, isVoided ? "1" : "0");
 
+        // Deliberately NOT routed through Sha256Digest (which lowercases): this hash is the
+        // idempotency identity persisted on bank_transactions for payment evidence, so changing
+        // its casing would let previously recorded evidence re-record as new (#2691).
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())));
     }
 

@@ -57,6 +57,16 @@ public static class Sha256Digest
     }
 
     /// <summary>
+    /// Computes the canonical (lowercase hex) SHA-256 digest of <paramref name="stream"/> from its
+    /// current position, without buffering the whole stream into memory.
+    /// </summary>
+    public static async ValueTask<string> ComputeAsync(Stream stream, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        return Convert.ToHexStringLower(await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false));
+    }
+
+    /// <summary>
     /// Returns <see langword="true"/> when <paramref name="value"/> is in Meridian's canonical
     /// digest form: exactly <see cref="HexLength"/> lowercase hex characters. Use this on write and
     /// certification paths; use <see cref="Compare"/> or <see cref="FixedEquals"/> to compare two

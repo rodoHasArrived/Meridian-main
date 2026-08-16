@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Text;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
@@ -835,7 +836,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
         return new RetainedArtifactSet(
             generation,
             descriptors,
-            Convert.ToHexString(SHA256.HashData(manifestBytes)));
+            Sha256Digest.Compute(manifestBytes));
     }
 
     private async Task<StatementReconciliationReportArtifactGenerationDto> ArchiveCurrentArtifactGenerationAsync(
@@ -900,7 +901,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
         }
 
         var manifestBytes = await File.ReadAllBytesAsync(manifestPath, ct).ConfigureAwait(false);
-        var manifestHash = Convert.ToHexString(SHA256.HashData(manifestBytes));
+        var manifestHash = Sha256Digest.Compute(manifestBytes);
         ValidateCurrentArtifactManifest(manifestBytes, manifestHash, workflow);
         var archiveDirectory = GetArtifactGenerationArchiveDirectory(directory, generation);
         Directory.CreateDirectory(archiveDirectory);
@@ -955,7 +956,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
             generatedAtValues[0],
             workflow.EvidenceReferences ?? []);
         var receiptBytes = await File.ReadAllBytesAsync(receiptPath, ct).ConfigureAwait(false);
-        var receiptHash = Convert.ToHexString(SHA256.HashData(receiptBytes));
+        var receiptHash = Sha256Digest.Compute(receiptBytes);
         var auditEvidence = receipt.EvidenceReferences
             .Concat(BuildArtifactGenerationEvidenceReferences(
                 generation,
@@ -1162,7 +1163,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
         StatementReconciliationReportArtifactDto descriptor,
         byte[] content)
     {
-        var actualHash = Convert.ToHexString(SHA256.HashData(content));
+        var actualHash = Sha256Digest.Compute(content);
         if (content.LongLength != descriptor.ByteLength
             || !string.Equals(
                 actualHash,
@@ -1192,7 +1193,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
             fileName,
             contentType,
             content.LongLength,
-            Convert.ToHexString(SHA256.HashData(content)),
+            Sha256Digest.Compute(content),
             UiApiRoutes.WithParam(
                 UiApiRoutes.WithParam(
                     UiApiRoutes.ReconciliationStatementReconciliationReportArtifact,
@@ -1463,6 +1464,9 @@ public sealed partial class StatementReconciliationReportWorkflowService
 
     private static string BuildWorkflowId(StatementReconciliationReportStartCommand command, string prefix)
     {
+        // Deliberately NOT routed through Sha256Digest (which lowercases): this uppercase hex string
+        // is an input to the workflow-identity digest below, so changing its casing would change
+        // every derived workflowId and orphan previously persisted workflows (#2691).
         var contentHash = Convert.ToHexString(SHA256.HashData(command.Import.Document.Content.Span));
         var identity = string.Join('|',
             command.TenantId.Trim(),

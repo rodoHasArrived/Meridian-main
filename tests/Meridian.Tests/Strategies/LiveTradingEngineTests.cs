@@ -939,7 +939,8 @@ public sealed class LiveTradingEngineTests
 
         public ExecutionSdk.OrderState? GetOrder(string orderId) => null;
 
-        public Task CancelAllAsync(CancellationToken ct = default) => Task.CompletedTask;
+        public Task<ExecutionSdk.KillSwitchSweepResult> CancelAllAsync(CancellationToken ct = default) =>
+            Task.FromResult(ExecutionSdk.KillSwitchSweepResult.Empty);
 
         public IReadOnlyList<ExecutionSdk.OrderState> GetCompletedOrders(int take = 20) => [];
     }

@@ -1,6 +1,6 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 
@@ -52,7 +52,7 @@ internal static class CertifiedReportingSnapshotBuilder
             ? ReportingSnapshotCertificationStatus.Certifiable
             : ReportingSnapshotCertificationStatus.NonCertifiable;
         var receipt = new ReportingSnapshotReceipt(
-            SnapshotId: $"reporting-snapshot-{hash[..24].ToLowerInvariant()}",
+            SnapshotId: $"reporting-snapshot-{hash[..24]}",
             ContentHash: hash,
             HashAlgorithm,
             SchemaVersion,
@@ -217,7 +217,11 @@ internal static class CertifiedReportingSnapshotBuilder
             writer.WriteEndObject();
         }
 
-        return Convert.ToHexString(SHA256.HashData(stream.ToArray()));
+        // Canonical lowercase (was bare uppercase ToHexString — the #2610 flagship inconsistency:
+        // the same value fed SnapshotId lowercased and ContentHash uppercase). The receipt is
+        // retained evidence in generated packs; nothing recomputes and string-compares it, so
+        // previously retained uppercase receipts are unaffected (#2691).
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     private static void WriteRow(Utf8JsonWriter writer, ReportingSnapshotRowInput row)

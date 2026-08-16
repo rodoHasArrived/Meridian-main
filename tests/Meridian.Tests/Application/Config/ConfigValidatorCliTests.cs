@@ -5,6 +5,9 @@ using Xunit;
 
 namespace Meridian.Tests.Application.Config;
 
+// Mutates process-global environment variables that concurrent compositions read ambiently, so
+// this class must not run in parallel with other collections (#2682).
+[Collection("Sequential")]
 public sealed class ConfigValidatorCliTests
 {
     [Fact]

@@ -22,6 +22,30 @@ public sealed class Sha256DigestTests
     }
 
     [Fact]
+    public async Task ComputeAsync_EmitsCanonicalLowercaseHexMatchingCompute()
+    {
+        var payload = Encoding.UTF8.GetBytes("test");
+        using var stream = new MemoryStream(payload);
+
+        var digest = await Sha256Digest.ComputeAsync(stream);
+
+        digest.Should().Be(LowercaseDigest);
+        Sha256Digest.IsCanonical(digest).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ComputeAsync_HashesFromCurrentPosition()
+    {
+        var payload = Encoding.UTF8.GetBytes("skiptest");
+        using var stream = new MemoryStream(payload);
+        stream.Position = 4;
+
+        var digest = await Sha256Digest.ComputeAsync(stream);
+
+        digest.Should().Be(LowercaseDigest, "only the bytes after the current position are hashed");
+    }
+
+    [Fact]
     public void Compute_MatchesFrameworkHash()
     {
         var payload = Encoding.UTF8.GetBytes("meridian");
