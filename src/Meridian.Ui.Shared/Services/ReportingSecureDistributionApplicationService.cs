@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Meridian.Reporting;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -636,7 +637,7 @@ public sealed class ReportingSecureDistributionApplicationService :
         }
 
         var eventId = NormalizeRequired(command.ProviderEventId, nameof(command.ProviderEventId), 512);
-        var receiptId = ComputeSha256(string.Join(
+        var receiptId = Sha256Digest.ComputeUtf8(string.Join(
             "\u001f",
             job.JobId,
             job.TransportId.ToLowerInvariant(),
@@ -1894,6 +1895,4 @@ public sealed class ReportingSecureDistributionApplicationService :
     private static bool SameOptional(string? left, string? right) =>
         string.IsNullOrWhiteSpace(left) && string.IsNullOrWhiteSpace(right) || Same(left, right);
 
-    private static string ComputeSha256(string value) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 }

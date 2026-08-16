@@ -2208,6 +2208,70 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ManualJournalEntry_CarriesEveryDimensionFieldThroughNormalization()
+    {
+        // NormalizeDimensionSet rebuilds the DTO from named arguments. Seven of the nineteen
+        // constructor parameters were omitted, and because they default to null the caller's
+        // organization, portfolio, book, account, customer, vendor, and project dimensions were
+        // silently discarded -- even here, where FundId keeps the set alive so the loss is not
+        // visible as "no dimensions". AccountingReportPackageService's same-named normalizer
+        // already carried all nineteen, so the two disagreed on what survives (#2672).
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+        var draft = BalancedManualJournalEntry() with
+        {
+            Dimensions = new LedgerDimensionSetDto(
+                FundId: "fund-alpha",
+                OrganizationId: "org-1",
+                PortfolioId: "portfolio-1",
+                BookId: "book-1",
+                AccountId: "account-1",
+                CustomerId: "customer-1",
+                VendorId: "vendor-1",
+                ProjectId: "project-1")
+        };
+
+        var validated = await service.ValidateDraftAsync(new ValidateManualJournalEntryDraftRequest(
+            draft,
+            "controller"));
+
+        validated.Dimensions.Should().NotBeNull();
+        validated.Dimensions!.OrganizationId.Should().Be("org-1");
+        validated.Dimensions.PortfolioId.Should().Be("portfolio-1");
+        validated.Dimensions.BookId.Should().Be("book-1");
+        validated.Dimensions.AccountId.Should().Be("account-1");
+        validated.Dimensions.CustomerId.Should().Be("customer-1");
+        validated.Dimensions.VendorId.Should().Be("vendor-1");
+        validated.Dimensions.ProjectId.Should().Be("project-1");
+    }
+
+    [Fact]
+    public async Task Scenario_ManualJournalEntry_KeepsADimensionSetCarriedOnlyByBook()
+    {
+        // A caller supplying only a book dimension. Note the set is never dropped wholesale on
+        // this path -- NormalizeDimensionSet is called with `fundId: draft.FundNodeId ??
+        // fundProfileId`, so FundId is always populated and the predicate always says
+        // "dimensioned". That is why the local predicate's 11-of-19 gap was unreachable, and why
+        // the real defect is the discarded fields rather than the misclassification.
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+        var draft = BalancedManualJournalEntry() with
+        {
+            FundNodeId = null,
+            Dimensions = new LedgerDimensionSetDto(BookId: "book-only")
+        };
+
+        var validated = await service.ValidateDraftAsync(new ValidateManualJournalEntryDraftRequest(
+            draft,
+            "controller"));
+
+        validated.Dimensions.Should().NotBeNull();
+        validated.Dimensions!.BookId.Should().Be("book-only");
+    }
+
+    [Fact]
     public async Task Scenario_ManualJournalEntry_PeriodLockBlocksMutationsAndValidatesAsCritical()
     {
         var configuration = CreateService();

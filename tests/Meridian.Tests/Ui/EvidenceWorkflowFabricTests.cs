@@ -5725,6 +5725,12 @@ public sealed class EvidenceWorkflowFabricTests
             ct.ThrowIfCancellationRequested();
             return Task.CompletedTask;
         }
+
+        public Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class StubOperationsContinuityWorkflowService(IReadOnlyList<OperationsContinuityWorkflowDto> workflows)

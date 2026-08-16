@@ -357,15 +357,15 @@ public sealed class AutomatedJournalDraftIntakeService
         var existingScopes = existing.Lines
             .Select(static line => new ValuationScopeKey(
                 line.SecurityId ?? line.Dimensions?.InstrumentId,
-                NormalizeOptional(line.LedgerAccountSymbol ?? line.SecurityDisplayName),
-                NormalizeOptional(line.LedgerAccountFinancialAccountId)))
+                NormalizeOptionalUpperInvariant(line.LedgerAccountSymbol ?? line.SecurityDisplayName),
+                NormalizeOptionalUpperInvariant(line.LedgerAccountFinancialAccountId)))
             .Where(static key => key.SecurityId.HasValue || key.Symbol is not null)
             .ToHashSet();
         var candidateScopes = candidate.Lines
             .Select(line => new ValuationScopeKey(
                 candidate.Event.SecurityId ?? line.dimensions?.InstrumentId,
-                NormalizeOptional(line.account.Symbol ?? candidate.Event.Symbol),
-                NormalizeOptional(line.account.FinancialAccountId)))
+                NormalizeOptionalUpperInvariant(line.account.Symbol ?? candidate.Event.Symbol),
+                NormalizeOptionalUpperInvariant(line.account.FinancialAccountId)))
             .Where(static key => key.SecurityId.HasValue || key.Symbol is not null)
             .ToHashSet();
 
@@ -378,12 +378,18 @@ public sealed class AutomatedJournalDraftIntakeService
     private static string DescribeValuationScope(AutomatedJournalDraft draft)
     {
         var line = draft.Lines.FirstOrDefault();
-        var symbol = NormalizeOptional(line.account?.Symbol) ?? NormalizeOptional(draft.Event.Symbol) ?? "unknown security";
-        var account = NormalizeOptional(line.account?.FinancialAccountId) ?? "unscoped account";
+        var symbol = NormalizeOptionalUpperInvariant(line.account?.Symbol) ?? NormalizeOptionalUpperInvariant(draft.Event.Symbol) ?? "unknown security";
+        var account = NormalizeOptionalUpperInvariant(line.account?.FinancialAccountId) ?? "unscoped account";
         return $"{symbol}/{account}";
     }
 
-    private static string? NormalizeOptional(string? value)
+    /// <summary>Trims to null and upper-cases.</summary>
+    /// <remarks>
+    /// Named for the case folding. It previously shared the name and signature of the plain
+    /// trim-to-null helper used in dozens of other files, so the difference was invisible at
+    /// the call site even though this one changes the value it returns.
+    /// </remarks>
+    private static string? NormalizeOptionalUpperInvariant(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim().ToUpperInvariant();
 
     private static string? NormalizeText(string? value)

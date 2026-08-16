@@ -219,7 +219,10 @@ export interface BuildOperatorReadinessConsoleStateOptions {
 
 export interface OperatorReadinessConsoleServices {
   getOperatorInbox: (fundAccountId?: string, options?: ApiRequestOptions) => Promise<OperatorInbox>;
-  getTradingReadiness?: (options?: ApiRequestOptions & { fundAccountId?: string }) => Promise<TradingOperatorReadiness>;
+  // Nullable to match both the API layer and the state this feeds: `tradingReadiness` is already
+  // declared and stored as `TradingOperatorReadiness | null | undefined`, and the selector below
+  // already folds null. Only this seam claimed the readiness is always present.
+  getTradingReadiness?: (options?: ApiRequestOptions & { fundAccountId?: string }) => Promise<TradingOperatorReadiness | null>;
 }
 
 const defaultServices: OperatorReadinessConsoleServices = {

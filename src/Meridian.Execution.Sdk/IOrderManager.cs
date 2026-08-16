@@ -40,8 +40,17 @@ public interface IOrderManager
     /// </summary>
     bool WasRiskApprovalDeclined(string orderId) => false;
 
-    /// <summary>Cancels all open orders.</summary>
-    Task CancelAllAsync(CancellationToken ct = default);
+    /// <summary>
+    /// Cancels all open orders and reports what the sweep achieved.
+    /// <para>
+    /// The result is the point: a kill-switch sweep that returns without throwing establishes only
+    /// that it ran, and a broker refusing a single cancellation leaves that order working. Callers
+    /// that surface or audit the kill switch must read
+    /// <see cref="KillSwitchSweepResult.RequiresOperatorAction"/> rather than treating a completed
+    /// call as an emptied book.
+    /// </para>
+    /// </summary>
+    Task<KillSwitchSweepResult> CancelAllAsync(CancellationToken ct = default);
 
     /// <summary>
     /// Gets the most recently completed orders (filled, cancelled, rejected, expired) for display

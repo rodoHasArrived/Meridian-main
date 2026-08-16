@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 
 namespace Meridian.Contracts.AssetOperations;
@@ -711,11 +712,11 @@ public static class AssetAccountingEventSpineValidator
             JsonSerializer.SerializeToElement(left),
             JsonSerializer.SerializeToElement(right));
 
+    // An all-zero digest is a placeholder sentinel rather than a real fingerprint, so it is
+    // rejected on top of the shared digest contract.
     private static bool IsSha256(string? value)
-        => !string.IsNullOrWhiteSpace(value) &&
-           value.Length == 64 &&
-           value.All(static character => Uri.IsHexDigit(character)) &&
-           value.Any(static character => character != '0');
+        => Sha256Digest.IsWellFormed(value)
+           && value!.Any(static character => character != '0');
 
     private static string? BuildExpectedPostingApprovalSubjectId(
         AssetAccountingEventSpineDto spine,

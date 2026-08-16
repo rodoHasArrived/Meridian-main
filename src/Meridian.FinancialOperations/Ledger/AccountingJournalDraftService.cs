@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -755,9 +756,6 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void AddLineIssue(
         List<AccountingConfigurationValidationIssueDto> issues,

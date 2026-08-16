@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-08-11T10:32:01Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-08-15T12:47:37Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -41,7 +41,7 @@ Provider contracts, adapter implementations, storage catalog, WAL, and archival 
 WPF desktop shell, shared UI services, and browser-facing UI surfaces.
 
 - Projects: `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian.Wpf`, `Meridian.Ui.Dashboard`
-- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
+- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/app.tsx`
 - Key contracts: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
 - Common tasks: wpf issue, viewmodel routing, workspace flow, ui polish
 - Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/development/wpf-web-ui-alignment-plan.md`
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Mcp/Tools/ConventionTools.cs` | MCP Integration | `01652ac36` (2026-08-11T09:42:23Z) | 1 |
-| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `80440650a` (2026-08-11T09:39:23Z) | 4 |
-| `src/Meridian.Wpf/Services/StrategyWorkspaceShellPresentationService.cs` | Desktop and UI Workflows | `80440650a` (2026-08-11T09:39:23Z) | 1 |
-| `src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs` | Desktop and UI Workflows | `80440650a` (2026-08-11T09:39:23Z) | 1 |
-| `src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
-| `src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
-| `src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
-| `src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml.cs` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
-| `src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
-| `src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 2 |
-| `src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
-| `src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
-| `src/Meridian.Ui.Shared/Endpoints/EnvironmentDesignerEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
-| `src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
-| `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
+| `src/Meridian.Storage/Archival/AtomicFileWriter.cs` | Providers and Storage | `e8823fbcc` (2026-08-12T14:47:39+00:00) | 4 |
+| `src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs` | Host and Composition | `e8823fbcc` (2026-08-12T14:47:39+00:00) | 3 |
+| `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Unmapped | `d6bb9d45f` (2026-08-12T04:17:31+00:00) | 3 |
+| `src/Meridian.Application/README.md` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 6 |
+| `src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 3 |
+| `src/Meridian.Application/Integrations/ProviderIntegrationQuarantineReplayService.cs` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 3 |
+| `src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 3 |
+| `src/Meridian.Application/Integrations/ProviderIntegrationFieldTransforms.cs` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Dimensions.cs` | Desktop and UI Workflows | `1ec2e63f3` (2026-08-11T17:59:58+00:00) | 4 |
+| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs` | Desktop and UI Workflows | `1ec2e63f3` (2026-08-11T17:59:58+00:00) | 4 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `69881b684` (2026-08-11T17:54:42+00:00) | 6 |
+| `src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs` | Unmapped | `69881b684` (2026-08-11T17:54:42+00:00) | 3 |
+| `src/Meridian.Reporting/ReportGenerationService.cs` | Unmapped | `69881b684` (2026-08-11T17:54:42+00:00) | 3 |
+| `src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs` | Providers and Storage | `69881b684` (2026-08-11T17:54:42+00:00) | 3 |
+| `src/Meridian.Contracts/Ledger/LedgerDimensionTags.cs` | Host and Composition | `69881b684` (2026-08-11T17:54:42+00:00) | 1 |
 

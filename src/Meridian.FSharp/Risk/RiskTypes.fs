@@ -33,4 +33,14 @@ type RiskContext = {
     MaxOrderNotional: decimal option
     /// Per-order notional band above which the order escalates for governed approval.
     EscalateOrderNotional: decimal option
+    /// Market reference price for the order's symbol on the side the order would cross.
+    ReferencePrice: decimal option
+    /// The order's own operator-entered price. Only a limit price is carried here; a stop
+    /// price is deliberately excluded, since a stop sits away from the market by design.
+    OrderPrice: decimal option
+    /// Absolute per-order quantity ceiling for the fat-finger gate.
+    MaxOrderQuantity: decimal option
+    /// Maximum permitted *aggressive* deviation of the order's price from the reference,
+    /// in percent. Aggressive means paying above the market on a buy or selling below it.
+    MaxPriceDeviationPercent: decimal option
 }

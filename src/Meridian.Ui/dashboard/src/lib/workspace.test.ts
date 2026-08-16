@@ -20,7 +20,8 @@ import {
   workstationRouteWithHash,
   workstationRouteWithQuery,
   workspaceForKey,
-  workspacePath
+  workspacePath,
+  UNWIRED_WORKSTATION_ROUTES
 } from "@/lib/workspace";
 
 describe("workspace metadata", () => {
@@ -299,5 +300,22 @@ describe("workspace metadata", () => {
     expect(normalizeLocalWorkstationRoute("//example.test/data")).toBeNull();
     expect(normalizeLocalWorkstationRoute("https://example.test/data")).toBeNull();
     expect(normalizeLocalWorkstationRoute("/unknown/path")).toBeNull();
+  });
+
+  it("keeps every unwired route out of navigation but still routable", () => {
+    // These screens render a permanent "not connected" state. They stay in the route catalog so
+    // deep links and old bookmarks resolve, but the nav and command palette filter them out.
+    expect(UNWIRED_WORKSTATION_ROUTES.has("/portfolio/family-office")).toBe(true);
+    expect(UNWIRED_WORKSTATION_ROUTES.has("/strategy/quant-lab?view=formulas")).toBe(true);
+
+    // The wired parent route must stay navigable — only the formulas deep link is unwired.
+    expect(UNWIRED_WORKSTATION_ROUTES.has("/strategy/quant-lab")).toBe(false);
+
+    // Every entry must correspond to a real catalog route (or a query-string view of one), so the
+    // set cannot silently accumulate typos that filter nothing.
+    const catalogRoutes = new Set(Object.values(WORKSTATION_ROUTE_CATALOG) as string[]);
+    for (const route of UNWIRED_WORKSTATION_ROUTES) {
+      expect(catalogRoutes.has(route.split("?")[0])).toBe(true);
+    }
   });
 });

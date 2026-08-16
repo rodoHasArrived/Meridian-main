@@ -3,10 +3,12 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Evidence;
 
@@ -236,7 +238,7 @@ public sealed partial class FileEvidenceArtifactStore
         EvidenceVaultIdentityDto manifestIdentity)
     {
         var retainedHash = NormalizeHash(manifestIdentity.ContentHashSha256);
-        if (!IsSha256Hash(retainedHash))
+        if (!Sha256Digest.IsWellFormed(retainedHash))
         {
             return false;
         }
@@ -256,12 +258,6 @@ public sealed partial class FileEvidenceArtifactStore
         var legacyHash = ComputeManifestContentHash(manifest with { VaultIdentity = null });
         return string.Equals(legacyHash, retainedHash, StringComparison.OrdinalIgnoreCase);
     }
-
-    private static bool IsSha256Hash(string value)
-        => value.Length == 64 && value.All(static character =>
-            character is >= '0' and <= '9'
-            or >= 'a' and <= 'f'
-            or >= 'A' and <= 'F');
 
     public static string ResolveDataRoot(IServiceProvider services)
     {

@@ -365,6 +365,7 @@ public static class UiApiRoutes
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";
     public const string SecurityMasterCoverageDraft = "/api/security-master/coverage/draft/{symbol}";
     public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
+    public const string SecurityMasterFieldProvenance = "/api/security-master/{securityId:guid}/field-provenance";
     public const string SecurityMasterOperatorOverrideDecision = "/api/security-master/{securityId:guid}/operator-overrides/decision";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
@@ -374,6 +375,7 @@ public static class UiApiRoutes
     public const string SecurityMasterWorkbenchResolveConflict = "/api/security-master/{securityId:guid}/workbench/resolve-conflict";
     public const string SecurityMasterWorkbenchSubmit = "/api/security-master/{securityId:guid}/workbench/submit";
     public const string SecurityMasterWorkbenchApprove = "/api/security-master/{securityId:guid}/workbench/approve";
+    public const string SecurityMasterWorkbenchDiscard = "/api/security-master/{securityId:guid}/workbench/discard";
     public const string SecurityMasterWorkbenchPublish = "/api/security-master/{securityId:guid}/workbench/publish";
     public const string SecurityMasterImport = "/api/security-master/import";
     public const string SecurityMasterIngestStatus = "/api/security-master/ingest/status";
@@ -577,6 +579,10 @@ public static class UiApiRoutes
     public const string ExecutionOrderById = "/api/execution/orders/{orderId}";
     public const string ExecutionOrderSubmit = "/api/execution/orders/submit";
     public const string ExecutionOrderCancel = "/api/execution/orders/{orderId}/cancel";
+    // Mapped on the execution group but absent from this catalogue until now, so a
+    // route-constant search for the kill switch's cancel-all found nothing and every
+    // client following the house pattern had nothing to reference.
+    public const string ExecutionOrdersCancelAll = "/api/execution/orders/cancel-all";
     public const string ExecutionPositionActionClose = "/api/execution/positions/actions/close";
     public const string ExecutionPositionActionUpsize = "/api/execution/positions/actions/upsize";
     public const string ExecutionPortfolio = "/api/execution/portfolio";

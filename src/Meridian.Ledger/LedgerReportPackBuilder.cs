@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 
 using static Meridian.Contracts.Ledger.LedgerCurrencyRounding;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ledger;
 
@@ -53,7 +54,7 @@ public static class LedgerReportPackBuilder
 
         var signature = new LedgerReportPackSignature(
             "SHA256",
-            ComputeSha256(payload),
+            Sha256Digest.ComputeUtf8(payload),
             request.GeneratedBy,
             request.GeneratedAtUtc);
 
@@ -170,13 +171,13 @@ public static class LedgerReportPackBuilder
         }
 
         var content = builder.ToString();
-        return new LedgerReportPackArtifact("tax-lot-realized-gains.csv", "text/csv", content, ComputeSha256(content));
+        return new LedgerReportPackArtifact("tax-lot-realized-gains.csv", "text/csv", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static LedgerReportPackArtifact CreateCsvArtifact(string name, IReadOnlyList<LedgerChartBalance> rows)
     {
         var content = BuildCsv(rows);
-        return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
+        return new LedgerReportPackArtifact(name, "text/csv", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static LedgerReportPackArtifact CreateCashFlowArtifact(string name, LedgerCashFlowStatement? cashFlow)
@@ -207,7 +208,7 @@ public static class LedgerReportPackBuilder
         }
 
         var content = builder.ToString();
-        return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
+        return new LedgerReportPackArtifact(name, "text/csv", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static void AppendCashFlowTotal(StringBuilder builder, string label, decimal amount)
@@ -273,7 +274,7 @@ public static class LedgerReportPackBuilder
         }
 
         var content = builder.ToString();
-        return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
+        return new LedgerReportPackArtifact(name, "text/csv", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static LedgerReportPackArtifact CreateFinancialStatementsJsonArtifact(
@@ -308,7 +309,7 @@ public static class LedgerReportPackBuilder
         builder.AppendLine("}");
 
         var content = builder.ToString();
-        return new LedgerReportPackArtifact("financial-statements.json", "application/json", content, ComputeSha256(content));
+        return new LedgerReportPackArtifact("financial-statements.json", "application/json", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static void AppendRows(
@@ -384,7 +385,7 @@ public static class LedgerReportPackBuilder
         }
 
         var content = builder.ToString();
-        return new LedgerReportPackArtifact("manifest.csv", "text/csv", content, ComputeSha256(content));
+        return new LedgerReportPackArtifact("manifest.csv", "text/csv", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static IReadOnlyList<LedgerReportLineProvenance> BuildLineProvenance(
@@ -477,7 +478,7 @@ public static class LedgerReportPackBuilder
         }
 
         var content = builder.ToString();
-        return new LedgerReportPackArtifact("line-provenance.csv", "text/csv", content, ComputeSha256(content));
+        return new LedgerReportPackArtifact("line-provenance.csv", "text/csv", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static string BuildCsv(IReadOnlyList<LedgerChartBalance> rows)
@@ -545,12 +546,6 @@ public static class LedgerReportPackBuilder
 
     private static bool MatchesLineDimensions(LedgerLineDimensionSet? actual, LedgerLineDimensionSet? expected)
         => LedgerLineDimensionSetNormalizer.Matches(actual, expected);
-
-    private static string ComputeSha256(string value)
-    {
-        var bytes = Encoding.UTF8.GetBytes(value);
-        return Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
-    }
 
     private static string FormatDecimal(decimal value)
         => value.ToString("0.############################", CultureInfo.InvariantCulture);

@@ -371,19 +371,22 @@ public sealed class AlpacaBrokerageGatewayTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         await sut.ConnectAsync(cts.Token);
 
-        var report = await sut.SubmitOrderAsync(new OrderRequest
+        var request = new OrderRequest
         {
             Symbol = "912828YY0",
             Side = OrderSide.Buy,
             Type = OrderType.Market,
-            Quantity = 5000m,           // dollar notional
+            Quantity = 5000m,           // fixed-income face value
             Metadata = new Dictionary<string, string>
             {
                 ["notional"] = "true",
                 ["asset_class"] = "treasury",
                 ["broker_account_id"] = "broker-account-1",
             },
-        }, cts.Token);
+        };
+
+        sut.UsesFaceValuePercentageOfPar(request).Should().BeTrue();
+        var report = await sut.SubmitOrderAsync(request, cts.Token);
 
         report.ReportType.Should().Be(ExecutionReportType.New);
         capturedBody.Should().Contain("\"qty\"");

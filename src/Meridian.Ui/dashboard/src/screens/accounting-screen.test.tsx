@@ -37,6 +37,7 @@ import type {
   SecurityMasterConflict,
   SecurityMasterTrustSnapshot
 } from "@/types";
+import { requireFirst, requirePresent } from "@/test/fixtures";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -1886,14 +1887,14 @@ describe("AccountingScreen", () => {
           description: "Credit cash settlement."
         }
       ],
-      generatedPostingLines: workspace.postingRules[0].generatedPostings,
+      generatedPostingLines: requirePresent(requireFirst(workspace.postingRules, "workspace.postingRules").generatedPostings, "postingRules[0].generatedPostings"),
       validationIssues: []
     };
     const journalCandidateResult: PostingRuleJournalCandidateResult = {
       dryRunResult,
       selectedRuleId: "rule-trade-buy",
       selectedRuleVersion: "v3",
-      generatedPostingLines: workspace.postingRules[0].generatedPostings,
+      generatedPostingLines: requirePresent(requireFirst(workspace.postingRules, "workspace.postingRules").generatedPostings, "postingRules[0].generatedPostings"),
       postingCommand: {
         commandId: "00000000-0000-4000-8000-000000000101",
         aggregateId: "00000000-0000-4000-8000-000000000102",
@@ -4299,7 +4300,7 @@ describe("AccountingScreen", () => {
         securityId: "22222222-2222-2222-2222-222222222222",
         securityDisplayName: "Apple Inc."
       } : line),
-      evidenceLinks: request.evidenceLinks,
+      evidenceLinks: request.evidenceLinks ?? [],
       evidenceAttachments: [request.attachment]
     }));
     vi.mocked(api.validateManualJournalEntryDraft).mockImplementationOnce((request) => Promise.resolve(request.draft));
@@ -5251,7 +5252,8 @@ describe("AccountingScreen", () => {
     expect(api.resolveSecurityConflict).toHaveBeenCalledWith({
       conflictId: "conflict-1",
       resolution: "AcceptA",
-      resolvedBy: "operator"
+      resolvedBy: "operator",
+      reason: "AcceptA action from the shared conflict queue."
     });
   });
 

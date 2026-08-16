@@ -64,27 +64,48 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
     /// </summary>
     public async Task InitialiseAsync(CancellationToken ct = default)
     {
-        ThrowIfDisposed();
-        if (Volatile.Read(ref _initialised) != 0)
-            return;
-
-        Task initialisationTask;
-        lock (_initialisationSync)
+        while (true)
         {
-            if (_initialised != 0)
+            ThrowIfDisposed();
+            if (Volatile.Read(ref _initialised) != 0)
                 return;
 
-            if (_initialisationTask is null
-                || _initialisationTask.IsFaulted
-                || _initialisationTask.IsCanceled)
+            Task initialisationTask;
+            lock (_initialisationSync)
             {
-                _initialisationTask = InitialiseCoreAsync(ct);
+                if (_initialised != 0)
+                    return;
+
+                if (_initialisationTask is null
+                    || _initialisationTask.IsFaulted
+                    || _initialisationTask.IsCanceled)
+                {
+                    _initialisationTask = InitialiseCoreAsync(ct);
+                }
+
+                initialisationTask = _initialisationTask;
             }
 
-            initialisationTask = _initialisationTask;
+            try
+            {
+                await initialisationTask.WaitAsync(ct).ConfigureAwait(false);
+                return;
+            }
+            catch (OperationCanceledException)
+                when (!ct.IsCancellationRequested && !_lifetimeCts.IsCancellationRequested)
+            {
+                // The shared attempt was cancelled by an EARLIER caller's token, not ours and
+                // not disposal. The IsCanceled check above races the task's transition — a
+                // cancelled-but-still-completing attempt passes it and gets joined — so the
+                // cancellation must also be absorbed here: clear the doomed attempt (if still
+                // current) and retry with our own token (#2676).
+                lock (_initialisationSync)
+                {
+                    if (ReferenceEquals(_initialisationTask, initialisationTask))
+                        _initialisationTask = null;
+                }
+            }
         }
-
-        await initialisationTask.WaitAsync(ct).ConfigureAwait(false);
     }
 
     private async Task InitialiseCoreAsync(CancellationToken callerToken)

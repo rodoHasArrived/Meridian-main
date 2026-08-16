@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Meridian.Reporting;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -649,9 +650,6 @@ public sealed class ReportingAccessGrantService
         ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
         return value.Trim();
     }
-
-    private static string? NormalizeOptional(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void ValidateAudienceKind(ReportingAccessPrincipalKind kind)
     {

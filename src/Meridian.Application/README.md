@@ -318,7 +318,9 @@ and UI presentation concerns in their owning layers.
   `SecurityMasterCashFlowService` now generates deterministic calculated bullet and sinker
   schedules from retained Security Master economic terms when provider-backed schedules are not
   selected, so downstream Asset Operations views can present expected coupon/principal dates with
-  source-governed scenario posture instead of an empty calculated schedule.
+  source-governed scenario posture instead of an empty calculated schedule. Retained contractual
+  `principalSchedule` rows are authoritative for their exact dates and amounts; bullet and equal-
+  sinker principal remain the fallback only when no contractual schedule is present.
   `SecurityMasterOperationalReadinessService` layers operational readiness on top of the shared
   asset-class catalog, validator registry, and governed profile catalog for equities, options,
   futures, FX, fixed income, direct loans, structured credit, private fund interests, private

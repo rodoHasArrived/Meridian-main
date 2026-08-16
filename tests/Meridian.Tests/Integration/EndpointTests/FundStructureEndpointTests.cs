@@ -48,7 +48,10 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
             AccountHandoff = new FundStructureSetupAccountHandoffDraftDto(string.Empty, string.Empty, AccountTypeDto.Brokerage, "US")
         };
 
-        var response = await _client.PostAsJsonAsync("/api/fund-structure/setup-drafts/validate", draft);
+        // Draft validation now declares the same permission set as draft creation, so the
+        // validation behaviour under test sits behind an authorized client.
+        using var client = _fixture.CreatePermittedClient(UserPermission.ManageDirectLending);
+        var response = await client.PostAsJsonAsync("/api/fund-structure/setup-drafts/validate", draft);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var payload = await response.Content.ReadFromJsonAsync<FundStructureSetupPreviewDto>();
@@ -730,7 +733,10 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
     [Fact]
     public async Task AssignLedgerMapping_WithoutRationale_ReturnsBadRequest()
     {
-        var response = await _client.PostAsJsonAsync(
+        // The declarative guard now rejects before the handler, so the rationale validation under
+        // test needs an authorized caller; the 401/403 contracts are pinned by the two tests above.
+        using var client = _fixture.CreatePermittedClient(UserPermission.ManageFundStructure);
+        var response = await client.PostAsJsonAsync(
             "/api/fund-structure/ledger-mapping-assignments",
             new LedgerMappingAssignmentRequestDto(
                 AccountId: Guid.NewGuid(),

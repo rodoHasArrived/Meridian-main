@@ -245,6 +245,12 @@ public static class SymbolEndpoints
                     var catalog = await searchService.DiscoverAsync(new DiscoveryQuery(), ct);
                     archivedCount = catalog.Symbols?.Count ?? 0;
                 }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    // A disconnect is not a non-critical discovery failure; swallowing it would
+                    // answer 200 with archivedCount silently left at its default.
+                    throw;
+                }
                 catch { /* non-critical */ }
             }
 

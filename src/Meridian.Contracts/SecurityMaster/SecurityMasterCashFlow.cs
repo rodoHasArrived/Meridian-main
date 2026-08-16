@@ -68,6 +68,11 @@ public sealed record StructuredFactorScheduleEntry(
     DateOnly AsOfDate,
     decimal Factor);
 
+/// <summary>A contractual principal payment retained from the security's economic terms.</summary>
+public sealed record StructuredPrincipalScheduleEntry(
+    DateOnly PaymentDate,
+    decimal Amount);
+
 /// <summary>
 /// Per-security assignment of the authoritative cash flow source.
 /// </summary>

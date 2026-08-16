@@ -5,6 +5,7 @@ import {
   useCommandPaletteEntitySearch,
   type CommandPaletteEntitySearchServices
 } from "@/components/meridian/command-palette.entity-search";
+import { requirePresent } from "@/test/fixtures";
 import type { SecurityMasterEntry, SymbolRecord } from "@/types";
 
 const symbol: SymbolRecord = {
@@ -108,7 +109,12 @@ describe("command palette entity search", () => {
     });
     rerender({ query: "ms" });
 
-    expect(firstSignal?.aborted).toBe(true);
+    // The only assignment to `firstSignal` happens inside the fetch mock, which control-flow
+    // analysis cannot see, so here it is still narrowed to the `null` it was initialised with -
+    // `firstSignal?.aborted` would read `.aborted` off `never`. The explicit type argument restores
+    // the intended type, and asserting presence turns "the mock never captured a signal" into a
+    // named failure instead of a silently-passing optional chain.
+    expect(requirePresent<AbortSignal>(firstSignal, "captured abort signal").aborted).toBe(true);
   });
 
   it("keeps fulfilled results and reports degraded state when one source fails", async () => {
