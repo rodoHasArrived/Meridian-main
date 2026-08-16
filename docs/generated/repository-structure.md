@@ -1721,6 +1721,7 @@ Meridian-main
 │   │   ├── production-certification-evidence-chain.md
 │   │   ├── production-readiness-audit-2026-07-27.md
 │   │   ├── README.md
+│   │   ├── security-master-architecture-audit-2026-08-13.md
 │   │   └── wpf-perf-uiux-audit-2026-06-14.md
 │   ├── examples
 │   │   ├── agent-improvement-loop
@@ -1809,7 +1810,6 @@ Meridian-main
 │   │   │   ├── source-readme-coverage.json
 │   │   │   └── source-readme-coverage.normalized.yml
 │   │   ├── configuration-schema.md
-│   │   ├── documentation-coverage.md
 │   │   ├── interfaces.md
 │   │   ├── project-context.md
 │   │   ├── project-dependencies.md
@@ -1864,6 +1864,7 @@ Meridian-main
 │   │   ├── data-provider-accounting-brainstorm-2026-07.md
 │   │   ├── deferred-expansion-boundaries.md
 │   │   ├── excel-onboarding-workbook-brainstorm-2026-07.md
+│   │   ├── functionality-deepening-brainstorm-2026-07.md
 │   │   ├── high-value-code-brainstorm-2026-07.md
 │   │   ├── implementation-todo-list.md
 │   │   ├── meridian-design-document.md

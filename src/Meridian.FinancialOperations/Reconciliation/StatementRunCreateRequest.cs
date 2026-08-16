@@ -65,10 +65,9 @@ public sealed record StatementRunCreateRequest(
             throw new ArgumentException("Statement period end must be on or after statement period start.", nameof(statementPeriodEnd));
 
         await using var stream = File.OpenRead(sourcePath);
-        // Canonical lowercase is safe here: duplicate keys normalize their hash inputs before
-        // deriving the key, and import-side assertions verify decoded hex bytes — so requests
-        // built by this factory agree with the canonicalized import producers while previously
-        // persisted uppercase evidence still verifies (#2691).
+        // Same SourceFileHash family as BrokerStatementInfrastructure.CaptureFileAsync and
+        // StatementRunWorkflowService.ComputeFileHashAsync — all three producers must emit the
+        // canonical encoding so the value is consistent wherever it is recorded (#2691).
         var sourceFileHash = await Sha256Digest.ComputeAsync(stream, ct).ConfigureAwait(false);
 
         return new StatementRunCreateRequest(

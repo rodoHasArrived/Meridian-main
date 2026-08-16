@@ -71,6 +71,11 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     five grounded ideas for populating security-master, entity, ledger, and account data via a
     prepared Excel workbook (download → fill → upload → review → governed commit) and tying
     provider connection setup to the imported instrument universe
+  - [Functionality Deepening Brainstorm (2026-07)](functionality-deepening-brainstorm-2026-07.md) —
+    eleven code-grounded ideas for deepening existing subsystems (risk, alerting, promotion
+    governance, reconciliation matching, approvals, close evidence, backfill, marks, order
+    lifecycle), anchored to a depth survey of declared-but-dead seams and sequenced around the
+    W9 slate
 - If you need evidence-backed examples of current operations, check:
   - [generated roadmap outputs](../roadmap/generated/)
   - Current project source-of-truth references listed below.
