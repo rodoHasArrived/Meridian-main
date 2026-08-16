@@ -89,7 +89,7 @@ _NUMBER_LITERAL = re.compile(r"\b\d[\w.]*")
 _IDENTIFIER = re.compile(r"@?[^\W\d]\w*")
 _STRING_PREFIX = re.compile(r'[$@]*"')
 _INTERESTING = re.compile(r'//|/\*|\'|[$@]+"|"')
-_EXPLICIT_FOREACH = re.compile(r"\bforeach\s*\(\s*[\w?<>\[\], .]+?\s+([^\W\d]\w*)\s+in\b")
+_EXPLICIT_FOREACH = re.compile(r"\bforeach\s*\(\s*[\w?<>\[\],:. ]+?\s+([^\W\d]\w*)\s+in\b")
 # The CLR type behind each C# keyword alias: respelling `string` as `String` or
 # `System.String` is a style choice, not a different function.
 _TYPE_ALIASES = {

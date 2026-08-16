@@ -466,6 +466,28 @@ class BodyCloneDetectionTests(unittest.TestCase):
         })
         self.assertEqual(found, {"src/A/Suppressed.cs": [("Clean", "NormalizeOptional")]})
 
+    def test_a_qualified_foreach_type_still_normalizes(self):
+        # All three type grammars (return, parameter, foreach) accept qualification.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? PickFirst(params string?[] candidates)\n"
+                        "    {\n"
+                        "        if (candidates is null)\n"
+                        "        {\n"
+                        "            return null;\n"
+                        "        }\n"
+                        "\n"
+                        "        foreach (global::System.String? candidate in candidates)\n"
+                        "        {\n"
+                        "            if (!string.IsNullOrWhiteSpace(candidate))\n"
+                        "            {\n"
+                        "                return candidate.Trim();\n"
+                        "            }\n"
+                        "        }\n"
+                        "\n"
+                        "        return null;\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("PickFirst", "FirstNonBlank")]})
+
     def test_a_missing_canonical_home_fails_closed(self):
         # A moved TextPrimitives must not silently disable the scan and let the
         # baseline read as an improvement.
