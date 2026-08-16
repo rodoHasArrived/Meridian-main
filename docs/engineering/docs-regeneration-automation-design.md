@@ -264,7 +264,15 @@ binaries the authoritative check ignores. Cover:
    leaves the final head green, since a refusal that stops there leaves the contributor to restart
    the repair by hand, which is the toll this item exists to remove;
 8. a fork pull request, asserting the documented fallback path is what runs rather than a silent
-   failure or a red check with no route forward.
+   failure or a red check with no route forward;
+9. **an adversarial case for constraint 1's write boundary.** Have the unprivileged job supply a
+   valid generated artifact *together with* an extra tracked path outside the base manifest — a
+   source file, or a governance file such as `.github/workflows/documentation.yml` — and assert the
+   privileged writer **rejects the whole write and pushes nothing**. Without this case an
+   implementation passes every scenario above while accepting whatever the unprivileged job hands
+   it, which is precisely the escalation constraint 1 exists to prevent: a same-repository pull
+   request modifies a generator to emit that extra path and the token-backed writer commits it. A
+   suite that never attempts the attack does not verify the defence.
 
 ## Also document
 
