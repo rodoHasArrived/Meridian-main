@@ -117,8 +117,9 @@ exposes one. Rule severity maps to a real outcome in `CompositeRiskValidator`:
 Portfolio-aware rules read a `PortfolioExposureSnapshot` per evaluation, so thresholds tuned
 through the UI runtime service apply immediately and enforcement always sees the same
 aggregated cross-run exposure the Portfolio workspace reports. Thresholds are operator-tuned
-(null means unconfigured and the rule approves); order notional resolves from the limit/stop
-price or the symbol's reference price and never guesses a price for unknown symbols.
+(null means unconfigured and the rule approves); capped buy limits resolve from their limit,
+while uncapped orders require a current symbol reference price. A configured rule rejects an
+order it cannot price rather than guessing or approving it unmeasured.
 
 Every rule is evaluated before any decision is taken, so an order breaching several limits reports
 all of them rather than the first one encountered. The outcome is still chosen by the first blocking
