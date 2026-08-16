@@ -171,6 +171,9 @@ public sealed class CanonicalSymbolRegistryMigrationService : IHostedService
         foreach (var input in externalInputs.OrderBy(static input => input.Path, StringComparer.OrdinalIgnoreCase))
             builder.Append('\n').Append(input.Path).Append('\n').Append(input.Json);
 
+        // Deliberately NOT routed through Sha256Digest (which lowercases): this fingerprint is
+        // compared against previously recorded migration fingerprints, so changing its casing
+        // would spuriously re-trigger completed migrations (#2691).
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString())));
     }
 
