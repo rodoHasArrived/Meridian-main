@@ -1,5 +1,6 @@
 import importlib.util
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -269,6 +270,49 @@ class CoverageCorpusExclusionTests(_CoverageModuleTestCase):
                 kept.startswith(self.cov.DOC_CONTENT_INCLUDE_PREFIXES),
                 f"{kept} must remain in the documentation corpus",
             )
+
+
+class AutoSyncSectionPreservationTests(_CoverageModuleTestCase):
+    """Two producers share docs/status/coverage-report.md.
+
+    scripts/update_coverage_report.py appends a `<!-- auto-sync:coverage -->` section with the
+    nightly test-coverage line; this generator rewrites the whole file. Since the default output
+    became the shared file (#2713), regeneration must carry the nightly section over instead of
+    silently deleting the latest reading.
+    """
+
+    def test_the_nightly_section_is_carried_over(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = Path(temp_dir) / "coverage-report.md"
+            output.write_text(
+                "# Old report\n\n<!-- auto-sync:coverage -->\n"
+                "**Last run:** 2026-08-15 — line coverage: **41.2%** (12 project(s))\n",
+                encoding="utf-8",
+            )
+            section = self.cov._preserved_auto_sync_section(output)
+
+            self.assertIn("<!-- auto-sync:coverage -->", section)
+            self.assertIn("41.2%", section)
+            self.assertNotIn("# Old report", section)
+
+    def test_no_section_means_nothing_is_appended(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = Path(temp_dir) / "coverage-report.md"
+            output.write_text("# Old report, no marker\n", encoding="utf-8")
+            self.assertEqual("", self.cov._preserved_auto_sync_section(output))
+
+    def test_a_missing_output_file_means_nothing_is_appended(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            self.assertEqual(
+                "",
+                self.cov._preserved_auto_sync_section(Path(temp_dir) / "absent.md"),
+            )
+
+    def test_the_write_path_carries_the_section(self) -> None:
+        # The helper only protects the report if the write site actually calls it.
+        source = (SCRIPTS / "generate-coverage.py").read_text(encoding="utf-8")
+        write_site = source[source.index("# Write Markdown report"):]
+        self.assertIn("_preserved_auto_sync_section(output)", write_site)
 
 
 class NamesTermTests(_CoverageModuleTestCase):

@@ -1090,6 +1090,26 @@ def build_report(root: Path) -> CoverageReport:
     return report
 
 
+AUTO_SYNC_COVERAGE_MARKER = "<!-- auto-sync:coverage -->"
+
+
+def _preserved_auto_sync_section(output: Path) -> str:
+    """The nightly test-coverage summary section, carried over from the existing report.
+
+    scripts/update_coverage_report.py appends a marker section with the latest nightly line
+    coverage to the same file this generator writes. Regenerating the documentation-coverage
+    report must not silently delete that reading — the two metrics share one status doc.
+    """
+    try:
+        existing = output.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    index = existing.find(AUTO_SYNC_COVERAGE_MARKER)
+    if index == -1:
+        return ""
+    return "\n" + existing[index:].rstrip() + "\n"
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     """Entry point for the documentation coverage generator."""
     parser = argparse.ArgumentParser(
@@ -1142,6 +1162,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     md = generate_markdown(report)
     try:
         output.parent.mkdir(parents=True, exist_ok=True)
+        md += _preserved_auto_sync_section(output)
         output.write_text(md, encoding="utf-8")
         print(f"Coverage report written to {output}")
     except OSError as exc:

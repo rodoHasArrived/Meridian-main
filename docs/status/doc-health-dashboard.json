@@ -1,6 +1,6 @@
 {
   "total_files": 647,
-  "total_lines": 128305,
+  "total_lines": 128304,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1160,7 +1160,7 @@
     },
     {
       "path": "docs/ai/claude/CLAUDE.structure.md",
-      "line_count": 1595,
+      "line_count": 1594,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
