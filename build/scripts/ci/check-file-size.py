@@ -111,14 +111,30 @@ def _try_count_lines(path: Path) -> int | None:
         return None
 
 
-def _iter_source_files(src_root: Path) -> list[Path]:
+def _iter_source_files(src_root: Path) -> tuple[list[Path], list[Path]]:
+    """Every governed source file, plus any directory the walk could not enumerate.
+
+    os.walk ignores scandir errors by default, which silently prunes the whole subtree from the
+    scan. A pruned subtree hides its files exactly the way one unreadable file hides itself, so
+    the failed directory is surfaced for the caller's unreadable set instead of dropped. A
+    directory deleted mid-walk is the one exception: gone is not unreadable, matching how
+    _try_count_lines treats a deleted file.
+    """
     files: list[Path] = []
-    for dirpath, dirnames, filenames in os.walk(src_root, topdown=True, followlinks=False):
+    failed_dirs: list[Path] = []
+
+    def record(error: OSError) -> None:
+        if isinstance(error, FileNotFoundError):
+            return
+        failed_dirs.append(Path(error.filename) if error.filename else src_root)
+
+    for dirpath, dirnames, filenames in os.walk(
+            src_root, topdown=True, onerror=record, followlinks=False):
         dirnames[:] = [d for d in dirnames if d.lower() not in _SKIP_DIR_NAMES]
         for filename in filenames:
             if filename.endswith(SOURCE_SUFFIXES):
                 files.append(Path(dirpath) / filename)
-    return files
+    return files, failed_dirs
 
 
 def _scan(root: Path, threshold: int) -> tuple[dict[str, int], list[str]]:
@@ -132,7 +148,10 @@ def _scan(root: Path, threshold: int) -> tuple[dict[str, int], list[str]]:
     src_root = root / "src"
     oversized: dict[str, int] = {}
     unreadable: list[str] = []
-    for path in _iter_source_files(src_root):
+    files, failed_dirs = _iter_source_files(src_root)
+    for directory in failed_dirs:
+        unreadable.append(_relativize(directory, root))
+    for path in files:
         rel = path.relative_to(root).as_posix()
         if _is_excluded(rel):
             continue
@@ -143,6 +162,13 @@ def _scan(root: Path, threshold: int) -> tuple[dict[str, int], list[str]]:
         if lines > threshold:
             oversized[rel] = lines
     return dict(sorted(oversized.items())), sorted(unreadable)
+
+
+def _relativize(path: Path, root: Path) -> str:
+    try:
+        return path.relative_to(root).as_posix()
+    except ValueError:
+        return path.as_posix()
 
 
 def _load_baseline(root: Path) -> dict[str, int]:
@@ -355,9 +381,10 @@ def _tighten_baseline(
     - An entry retires only when the threshold itself supplies the requested headroom
       (lines + buffer <= threshold). A file one line under the threshold keeps a cap rather than
       being handed the harder brand-new-god-file failure (defect 2).
-    - A deleted file (line count genuinely zero because it is gone) retires; an unreadable one
-      aborts the whole command, because a file that cannot be read is not a file with zero lines
-      (defects 3 and 4).
+    - A deleted file (line count genuinely zero because it is gone) retires unconditionally —
+      before the buffer rule, which a buffer larger than the threshold would otherwise fail it
+      against. An unreadable one aborts the whole command, because a file that cannot be read is
+      not a file with zero lines (defects 3 and 4).
     """
     new_files: dict[str, int] = {}
     new_headroom: dict[str, int] = {}
@@ -373,7 +400,10 @@ def _tighten_baseline(
             unreadable_tracked.append(rel)
             continue
 
-        if lines + buffer <= threshold:
+        # Deleted (or emptied) first: zero lines means there is nothing left to protect, and the
+        # buffer rule below would keep the entry whenever the buffer exceeds the threshold -
+        # recording the whole cap of a nonexistent file as deliberate headroom.
+        if lines == 0 or lines + buffer <= threshold:
             retired.append((rel, cap))
             continue
 
@@ -460,7 +490,7 @@ def main(argv: list[str] | None = None) -> int:
         # rewrites the protections (#2675 defect 4).
         if unreadable_sources:
             print(
-                f"ERROR: refusing to tighten. {len(unreadable_sources)} governed source file(s) "
+                f"ERROR: refusing to tighten. {len(unreadable_sources)} governed source path(s) "
                 f"could not be read:",
                 file=sys.stderr,
             )
@@ -533,7 +563,7 @@ def main(argv: list[str] | None = None) -> int:
         if unreadable_sources:
             print(
                 f"ERROR: refusing to rewrite the baseline. {len(unreadable_sources)} governed "
-                f"source file(s) could not be read, and writing now would drop their caps:",
+                f"source path(s) could not be read, and writing now would drop their caps:",
                 file=sys.stderr,
             )
             for rel in unreadable_sources:

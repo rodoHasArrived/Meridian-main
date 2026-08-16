@@ -65,6 +65,34 @@ def unreadable(*file_names: str):
         ratchet._try_count_lines = original
 
 
+@contextlib.contextmanager
+def unenumerable(dir_name: str):
+    """Make the named directory fail enumeration, as an EACCES during os.walk would.
+
+    Simulated by wrapping os.walk rather than by chmod, for the same reason `unreadable` patches a
+    helper: these tests may run as root, where a permission fixture silently passes. The wrapper
+    reproduces what the real walk does on a scandir failure — it reports the directory to the
+    onerror callback it was given (None if the caller wired none, which is the defect this fixture
+    exists to catch) and yields nothing from that subtree.
+    """
+    original = ratchet.os.walk
+
+    def failing(top, topdown=True, onerror=None, followlinks=False):
+        for entry in original(top, topdown=topdown, onerror=onerror, followlinks=followlinks):
+            dirpath = Path(entry[0])
+            if dir_name in dirpath.parts:
+                if dirpath.name == dir_name and onerror is not None:
+                    onerror(PermissionError(13, "Permission denied", str(dirpath)))
+                continue
+            yield entry
+
+    ratchet.os.walk = failing
+    try:
+        yield
+    finally:
+        ratchet.os.walk = original
+
+
 def run(argv: list[str]) -> tuple[int, str]:
     out, err = io.StringIO(), io.StringIO()
     with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
@@ -233,6 +261,19 @@ class TrendReportingTests(unittest.TestCase):
             # The cap it could not verify must survive the refusal.
             self.assertEqual(read_baseline(root), {"src/ok.cs": 40, "src/flaky.cs": 30})
 
+    # The same fail-closed rule covers a directory the walk could not enumerate: every file under
+    # it is invisible, which is worse than one unreadable file, not better.
+    def test_refuses_to_update_the_baseline_when_a_directory_cannot_be_enumerated(self):
+        with fake_repo({"src/ok.cs": 40, "src/vault/hidden.cs": 30},
+                       {"src/ok.cs": 40, "src/vault/hidden.cs": 30}) as root:
+            with unenumerable("vault"):
+                code, output = run(["--threshold", "10", "--update-baseline"])
+
+            self.assertEqual(code, 2)
+            self.assertIn("refusing to rewrite the baseline", output)
+            self.assertIn("src/vault", output)
+            self.assertEqual(read_baseline(root), {"src/ok.cs": 40, "src/vault/hidden.cs": 30})
+
     # The read-only path keeps reporting rather than failing: a check that cannot see a file should
     # not invent a verdict about it, and a transient error must not redden an unrelated PR.
     def test_an_unreadable_source_does_not_fail_the_ordinary_check(self):
@@ -377,6 +418,34 @@ class TightenBaselineTests(unittest.TestCase):
             self.assertEqual(read_baseline(root), {"src/kept.cs": 25})
             self.assertIn("1 retired", output)
             self.assertIn("src/gone.cs", output)
+
+    # A deleted file used to retire only via the buffer rule, which a buffer larger than the
+    # threshold fails: 0 + buffer > threshold kept the entry and recorded the whole cap of a
+    # nonexistent file as deliberate working headroom.
+    def test_a_deleted_file_retires_even_when_the_buffer_exceeds_the_threshold(self):
+        with fake_repo({"src/kept.cs": 20}, {"src/kept.cs": 30, "src/gone.cs": 40}) as root:
+            code, output = run(["--tighten-baseline", "--buffer", "25"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root), {"src/kept.cs": 30})
+            self.assertIn("1 retired", output)
+            self.assertIn("src/gone.cs", output)
+            self.assertNotIn("src/gone.cs", read_payload(root).get("headroom", {}))
+
+    # os.walk ignores scandir errors unless given an onerror callback, so an unenumerable
+    # subtree used to vanish from the scan entirely — and tightening would rewrite the baseline
+    # having never seen whatever that subtree holds.
+    def test_refuses_to_tighten_when_a_directory_cannot_be_enumerated(self):
+        with fake_repo({"src/ok.cs": 20, "src/vault/secret.cs": 40},
+                       {"src/ok.cs": 30, "src/vault/secret.cs": 40}) as root:
+            with unenumerable("vault"):
+                code, output = run(["--tighten-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 2)
+            self.assertIn("refusing to tighten", output)
+            self.assertIn("src/vault", output)
+            self.assertEqual(read_baseline(root),
+                             {"src/ok.cs": 30, "src/vault/secret.cs": 40})
 
     # Contract slip 1: --buffer accepted and ignored outside tightening, so
     # `--update-baseline --buffer 25` exited 0 while pinning every cap.
