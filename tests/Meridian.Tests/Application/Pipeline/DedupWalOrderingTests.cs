@@ -497,6 +497,20 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             "Alert mode must raise the corruption signal for an undeserializable payload");
         wal2.CorruptedRecordCount.Should().BeGreaterThanOrEqualTo(1,
             "the semantic payload failure must be counted as corruption, never dropped silently");
+
+        // The trailing poison record is committed past after its one signal: a fresh
+        // recovery finds nothing to replay or re-alert on.
+        var wal3 = new WriteAheadLog(walDir, new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            CorruptionMode = WalCorruptionMode.Alert
+        });
+        var sink3 = new FaultSink();
+        await using var pipeline3 = new EventPipeline(
+            sink3, capacity: 100, enablePeriodicFlush: false, wal: wal3);
+        await pipeline3.RecoverAsync();
+        sink3.AppendedEvents.Should().BeEmpty();
+        pipeline3.RecoveredCount.Should().Be(0);
     }
 
     [Fact]
@@ -740,6 +754,96 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
                 "the flushed prefix must not be re-appended and the unpersisted remainder must be re-acceptable");
             pipeline.DeduplicatedCount.Should().BeGreaterThanOrEqualTo(1,
                 "the re-sent persisted prefix must be suppressed by its durably committed identity");
+        }
+
+        await ledger.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task Recovery_TrailingUnreadablePayload_CommittedPastAfterSingleAlert()
+    {
+        var walDir = Path.Combine(_rootDir, "wal_poison_tail");
+        Directory.CreateDirectory(walDir);
+
+        // A WAL whose only uncommitted record is semantic poison (checksum-valid, unreadable).
+        var wal1 = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
+        await wal1.InitializeAsync();
+        await wal1.AppendAsync("not-a-market-event", "Trade");
+        await wal1.FlushAsync();
+        await wal1.DisposeAsync();
+
+        var wal2 = new WriteAheadLog(walDir, new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            CorruptionMode = WalCorruptionMode.Alert
+        });
+        long firstPassSignals = 0;
+        wal2.CorruptionDetected += count => Interlocked.Add(ref firstPassSignals, count);
+        await using (var pipeline1 = new EventPipeline(
+            new FaultSink(), capacity: 100, enablePeriodicFlush: false, wal: wal2))
+        {
+            await pipeline1.RecoverAsync();
+        }
+
+        Interlocked.Read(ref firstPassSignals).Should().BeGreaterThanOrEqualTo(1,
+            "the poison record must raise the Alert-mode signal on first discovery");
+
+        // The horizon must have been committed past the poison record: a fresh recovery
+        // neither replays nor re-alerts, matching the drop-once-with-signal contract.
+        var wal3 = new WriteAheadLog(walDir, new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            CorruptionMode = WalCorruptionMode.Alert
+        });
+        long secondPassSignals = 0;
+        wal3.CorruptionDetected += count => Interlocked.Add(ref secondPassSignals, count);
+        var sink2 = new FaultSink();
+        await using (var pipeline2 = new EventPipeline(
+            sink2, capacity: 100, enablePeriodicFlush: false, wal: wal3))
+        {
+            await pipeline2.RecoverAsync();
+        }
+
+        Interlocked.Read(ref secondPassSignals).Should().Be(0,
+            "a committed-past poison record must not re-alert on every startup");
+        sink2.AppendedEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Consumer_ExternalPendingClaim_RetainsDeliveryUntilClaimResolves()
+    {
+        var walDir = Path.Combine(_rootDir, "wal_live_external");
+        Directory.CreateDirectory(walDir);
+        var wal = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
+        await wal.InitializeAsync();
+
+        var ledger = await CreateLedgerAsync("ledger_live_external");
+        var evt = CreateTradeEvent("EXTLIVE", 500);
+
+        // A concurrent caller sharing the store holds an in-flight claim on the identity.
+        var externalClaim = await ledger.TryReserveAsync(evt, DedupLookupScope.LiveIngress, CancellationToken.None);
+        externalClaim.IsReserved.Should().BeTrue();
+
+        var sink = new FaultSink();
+        await using (var pipeline = new EventPipeline(
+            sink, capacity: 100, enablePeriodicFlush: false, wal: wal, dedupLedger: ledger))
+        {
+            pipeline.TryPublish(evt);
+
+            // The delivery must be retained (batch retrying), not discarded as a duplicate.
+            await WaitUntilAsync(() => pipeline.GetStatistics().ConsumerIterationFailures >= 1);
+            sink.AppendedEvents.Should().BeEmpty(
+                "an event blocked by an external memory-only claim must not be persisted or dropped yet");
+            pipeline.DeduplicatedCount.Should().Be(0,
+                "an external pending claim is not a durability-confirmed duplicate");
+
+            // Once the external holder releases without persisting, the retained delivery
+            // claims the identity and persists — nothing was lost.
+            ledger.Release(externalClaim.Reservation).Should().BeTrue();
+            await WaitUntilAsync(() => sink.AppendedEvents.Count == 1);
+            await pipeline.FlushAsync(CancellationToken.None);
+
+            sink.AppendedEvents.Should().ContainSingle().Which.Symbol.Should().Be("EXTLIVE");
         }
 
         await ledger.DisposeAsync();

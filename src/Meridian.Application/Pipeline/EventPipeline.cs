@@ -482,12 +482,16 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     }
 
                     // Route the semantic payload failure through the WAL corruption policy so
-                    // Alert mode raises its monitoring signal before the horizon can drop it.
+                    // Alert mode raises its monitoring signal, then advance the processed
+                    // horizon: like checksum corruption, a non-Halt unreadable record is
+                    // dropped once (with its signal) rather than re-alerting on every startup
+                    // and pinning the WAL segment forever.
                     _wal.ReportUnreadablePayload();
                     _logger.LogError(ex,
                         "WAL record {Sequence} has an undeserializable payload and cannot be replayed; " +
                         "it will be dropped once the recovery horizon is committed",
                         walRecord.Sequence);
+                    maxRecoveredSequence = Math.Max(maxRecoveredSequence, walRecord.Sequence);
                     continue;
                 }
 
@@ -505,6 +509,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     _logger.LogError(
                         "WAL record {Sequence} deserialized to a null event and cannot be replayed",
                         walRecord.Sequence);
+                    maxRecoveredSequence = Math.Max(maxRecoveredSequence, walRecord.Sequence);
                     continue;
                 }
 
@@ -562,7 +567,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             recoveryActivity?.SetTag("pipeline.skipped_dedup_count", skipped);
             recoveryActivity?.SetTag("pipeline.unrecoverable_count", unrecoverable);
 
-            if (recovered > 0 || skipped > 0)
+            if (recovered > 0 || skipped > 0 || unrecoverable > 0)
             {
                 await CommitRecoveredChunkAsync().ConfigureAwait(false);
 
@@ -967,6 +972,22 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                                 .TryReserveAsync(evt, DedupLookupScope.LiveIngress, _cts.Token).ConfigureAwait(false);
                             if (reservationResult.IsSuppressed)
                             {
+                                // A pending claim justifies discarding this delivery only when
+                                // this batch holds the claim itself (a duplicate within the
+                                // batch). An external memory-only claim proves nothing durable —
+                                // its holder may abandon and release — so the event must be
+                                // retained: raise a retryable fault and let the batch wait for
+                                // the claim to commit (then a durable duplicate suppresses it)
+                                // or release (then this batch claims it).
+                                if (reservationResult.Status == DedupReservationStatus.PendingElsewhere &&
+                                    (reservationResult.Reservation.Key is null ||
+                                     !IsBatchLocalClaim(batchBuffer, reservationResult.Reservation.Key)))
+                                {
+                                    throw new PendingExternalDedupClaimException(
+                                        "Event identity is claimed by an in-flight reservation outside this " +
+                                        "batch; retaining the delivery until the external claim resolves.");
+                                }
+
                                 Interlocked.Increment(ref _deduplicatedCount);
                                 batchBuffer[i] = tracedEvent with { Suppressed = true };
                                 admittedThroughIndex = i + 1;
@@ -1125,7 +1146,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     retryPendingBatch =
                         (_wal != null && batchBuffer.Any(static traced => traced.WalSequence > 0)) ||
                         (sinkBatchFlushed && _dedupLedger != null && !dedupBatchCommitted &&
-                         batchBuffer.Any(static traced => traced.Reservation.IsHeld));
+                         batchBuffer.Any(static traced => traced.Reservation.IsHeld)) ||
+                        ex is PendingExternalDedupClaimException;
                     _logger.LogError(ex,
                         "Pipeline consumer iteration failed while persisting a batch of {BatchCount} events; {RecoveryAction}",
                         batchBuffer.Count,
@@ -1489,6 +1511,32 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             _highWaterMarkWarned = false;
             var utilization = (double)currentSize / _capacity;
             _logger.LogInformation("Pipeline queue utilization recovered to {Utilization:P0}", utilization);
+        }
+    }
+
+    private static bool IsBatchLocalClaim(List<TracedMarketEvent> batchBuffer, string claimKey)
+    {
+        for (var i = 0; i < batchBuffer.Count; i++)
+        {
+            var reservation = batchBuffer[i].Reservation;
+            if (reservation.IsHeld && string.Equals(reservation.Key, claimKey, StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Raised during admission when an event's identity is held by an in-flight reservation
+    /// outside the current batch. Retryable by design: the batch waits (with backoff) until the
+    /// external claim commits or releases, so the delivery is never silently discarded while no
+    /// durable copy of it exists.
+    /// </summary>
+    private sealed class PendingExternalDedupClaimException : InvalidOperationException
+    {
+        public PendingExternalDedupClaimException(string message)
+            : base(message)
+        {
         }
     }
 
