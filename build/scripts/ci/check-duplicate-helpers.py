@@ -89,7 +89,7 @@ _NUMBER_LITERAL = re.compile(r"\b\d[\w.]*")
 _IDENTIFIER = re.compile(r"@?[^\W\d]\w*")
 _STRING_PREFIX = re.compile(r'[$@]*"')
 _INTERESTING = re.compile(r'//|/\*|\'|[$@]+"|"')
-_EXPLICIT_FOREACH = re.compile(r"\bforeach\s*\(\s*[\w?<>\[\],:. ]+?\s+([^\W\d]\w*)\s+in\b")
+_EXPLICIT_FOREACH = re.compile(r"\bforeach\s*\(\s*([\w?<>\[\],:. ]+?)\s+([^\W\d]\w*)\s+in\b")
 # The CLR type behind each C# keyword alias: respelling `string` as `String` or
 # `System.String` is a style choice, not a different function.
 _TYPE_ALIASES = {
@@ -237,9 +237,17 @@ def _mask_strings_and_comments(text: str) -> str:
                     depth = 0
                     closer = cursor
                     while closer < length:
-                        if text[closer] == "{":
+                        hole_char = text[closer]
+                        if hole_char in "\"'":
+                            # A nested literal's braces are text, not hole delimiters;
+                            # skip to its closing quote before counting again.
+                            quote = hole_char
+                            closer += 1
+                            while closer < length and text[closer] != quote:
+                                closer += 2 if text[closer] == "\\" else 1
+                        elif hole_char == "{":
                             depth += 1
-                        elif text[closer] == "}":
+                        elif hole_char == "}":
                             depth -= 1
                             if depth == 0:
                                 break
@@ -423,7 +431,16 @@ def canonicalize_body(body: str, parameter_text: str) -> str:
     while text.startswith("(") and _matched_span(text, 0, "(", ")") == len(text):
         text = text[1:-1].strip()
 
-    text = _EXPLICIT_FOREACH.sub(r"foreach (var \1 in", text)
+    # An explicit foreach type is normalised to `var` only when it canonicalises to a
+    # builtin: `string?` or `global::System.String?` is the inferred type respelled,
+    # but a custom type can invoke a user-defined conversion and its members can
+    # behave differently, so it stays in the body and keeps the copy distinct.
+    def normalize_foreach(match: re.Match[str]) -> str:
+        if _canonical_type(match.group(1)) in set(_TYPE_ALIASES.values()):
+            return f"foreach (var {match.group(2)} in"
+        return match.group(0)
+
+    text = _EXPLICIT_FOREACH.sub(normalize_foreach, text)
 
     # `@name` and `name` are the same identifier in C#, so both the map keys and every
     # lookup strip the escape.
@@ -434,12 +451,6 @@ def canonicalize_body(body: str, parameter_text: str) -> str:
         renames.setdefault(local, f"§l{index}")
 
     text = _NUMBER_LITERAL.sub("⟪⟫", text)
-    # `String.IsNullOrWhiteSpace(...)` is `string.IsNullOrWhiteSpace(...)`: the alias
-    # fold applies to type references inside bodies exactly as it does to signatures.
-    text = _TYPE_ALIAS_PATTERN.sub(lambda match: _TYPE_ALIASES[match.group(1)], text)
-    # The null-forgiving operator has no runtime effect. Postfix `!` (after a value)
-    # is erased; prefix negation and `!=` are kept.
-    text = re.sub(r"(?<=[\w)\]⟧⟩⟫])!(?!=)", "", text)
 
     def rename(match: re.Match[str]) -> str:
         # An identifier after `.` is a member, never a parameter reference, so a
@@ -449,6 +460,16 @@ def canonicalize_body(body: str, parameter_text: str) -> str:
         return renames.get(match.group(0).lstrip("@"), match.group(0))
 
     text = _IDENTIFIER.sub(rename, text)
+
+    # `String.IsNullOrWhiteSpace(...)` is `string.IsNullOrWhiteSpace(...)`: the alias
+    # fold applies to type references inside bodies exactly as it does to signatures.
+    # It runs after the rename so a parameter legally *named* `String` is renamed as an
+    # identifier first rather than being folded out from under its own rename map;
+    # C# shadowing means real code cannot use one spelling as both at once.
+    text = _TYPE_ALIAS_PATTERN.sub(lambda match: _TYPE_ALIASES[match.group(1)], text)
+    # The null-forgiving operator has no runtime effect. Postfix `!` (after a value)
+    # is erased; prefix negation and `!=` are kept.
+    text = re.sub(r"(?<=[\w)\]⟧⟩⟫])!(?!=)", "", text)
 
     text = re.sub(r"\s+", " ", text)
     return re.sub(r" ?([^\w§ ]) ?", r"\1", text).strip()

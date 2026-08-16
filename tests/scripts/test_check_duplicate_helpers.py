@@ -488,6 +488,46 @@ class BodyCloneDetectionTests(unittest.TestCase):
                         "    }\n"})
         self.assertEqual(found, {"src/A/Thing.cs": [("PickFirst", "FirstNonBlank")]})
 
+    def test_a_parameter_named_string_alias_still_matches(self):
+        # A parameter legally named String renames as an identifier before the alias
+        # fold, so the fold cannot pull it out from under its own rename map.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? String)\n"
+                        "        => string.IsNullOrWhiteSpace(String) ? null : String.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_custom_typed_foreach_is_not_a_clone(self):
+        # A custom loop type can invoke a user-defined conversion; only builtin
+        # respellings normalize to var.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? PickFirst(params string?[] candidates)\n"
+                        "    {\n"
+                        "        if (candidates is null)\n"
+                        "        {\n"
+                        "            return null;\n"
+                        "        }\n"
+                        "\n"
+                        "        foreach (MyString candidate in candidates)\n"
+                        "        {\n"
+                        "            if (!string.IsNullOrWhiteSpace(candidate))\n"
+                        "            {\n"
+                        "                return candidate.Trim();\n"
+                        "            }\n"
+                        "        }\n"
+                        "\n"
+                        "        return null;\n"
+                        "    }\n"})
+        self.assertEqual(found, {})
+
+    def test_a_brace_inside_a_nested_hole_string_does_not_desync_the_masker(self):
+        # $"{Foo("}")}" holds a brace inside a nested string; misreading it as the
+        # hole's closer would treat the rest of the file as string text.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string Label(int n) => $\"{Fmt(\"}\")}\";\n"
+                        "    private static string? Clean(string? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
     def test_a_missing_canonical_home_fails_closed(self):
         # A moved TextPrimitives must not silently disable the scan and let the
         # baseline read as an improvement.
