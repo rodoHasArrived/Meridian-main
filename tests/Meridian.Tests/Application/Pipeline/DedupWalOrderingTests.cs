@@ -237,6 +237,44 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             "a committed claim is a durability-confirmed identity, so the waiting caller must suppress the event");
     }
 
+    [Fact]
+    public async Task IsDuplicateAsync_RacingReservation_AdmitsExactlyOneCaller()
+    {
+        // The legacy check and the reservation path race on the same fresh identity from a
+        // common start signal. Legacy admission goes through the same per-key pending slot as
+        // TryReserveAsync, so exactly one caller may ever be told the identity is new; a
+        // non-atomic check-then-record would intermittently admit both.
+        await using var ledger = await CreateLedgerAsync("ledger_legacy_race");
+
+        for (var round = 0; round < 400; round++)
+        {
+            var evt = CreateTradeEvent("RACE", 10_000 + round);
+            var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var legacyAdmitted = Task.Run(async () =>
+            {
+                await start.Task;
+                return !await ledger.IsDuplicateAsync(evt, CancellationToken.None);
+            });
+            var reservationAdmitted = Task.Run(async () =>
+            {
+                await start.Task;
+                var reservation = await ledger.TryReserveAsync(evt, DedupLookupScope.LiveIngress, CancellationToken.None);
+                if (!reservation.IsReserved)
+                    return false;
+
+                await ledger.CommitDurableAsync(new[] { reservation.Reservation }, CancellationToken.None);
+                return true;
+            });
+
+            start.SetResult();
+            var admissions = await Task.WhenAll(legacyAdmitted, reservationAdmitted);
+
+            ((admissions[0] ? 1 : 0) + (admissions[1] ? 1 : 0)).Should().Be(1,
+                $"round {round}: exactly one of the racing callers may admit a fresh identity");
+        }
+    }
+
     #endregion
 
     #region Pipeline ordering and fault injection

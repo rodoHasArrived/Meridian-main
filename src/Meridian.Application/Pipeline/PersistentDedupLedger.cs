@@ -203,9 +203,11 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     /// <remarks>
     /// Legacy admission check: a miss eagerly records a version-1 entry, i.e. without
     /// sink-durability confirmation, so it must not be used as a durability signal.
-    /// An identity held by an in-flight reservation is awaited (honouring
-    /// <paramref name="ct"/>) until the claim commits or releases, never reported as a
-    /// duplicate while only a memory-resident claim exists.
+    /// A miss is admitted through the same per-key pending claim the reservation path uses, so
+    /// the committed-state check and the legacy record are atomic with respect to concurrent
+    /// <see cref="TryReserveAsync"/> callers. An identity held by an in-flight reservation is
+    /// awaited (honouring <paramref name="ct"/>) until the claim commits or releases, never
+    /// reported as a duplicate while only a memory-resident claim exists.
     /// Durable persistence paths use <see cref="TryReserveAsync"/> + <see cref="CommitDurableAsync"/>.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -214,61 +216,76 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         Interlocked.Increment(ref _totalChecked);
 
         var key = GetCachedOrComputeEventKey(evt);
-        var nowTicks = DateTimeOffset.UtcNow.Ticks;
 
         // Check cache first
-        if (_cache.TryGetValue(key, out var existing))
-        {
-            // Entry exists and is not expired
-            if (nowTicks - existing.Ticks < _entryTtl.Ticks)
-            {
-                Interlocked.Increment(ref _totalDuplicates);
-                return true;
-            }
-        }
-
-        // An in-flight reservation claims the identity but proves nothing durable yet: its
-        // holder may still fail and release. Reporting it as a duplicate would let this caller
-        // discard a delivery while no durable copy exists, so wait for the claim to resolve —
-        // a commit turns it into a suppressing durable entry below, a release lets this caller
-        // record the identity itself.
-        while (_pendingReservations.ContainsKey(key))
-        {
-            await Task.Delay(10, ct).ConfigureAwait(false);
-        }
-
-        if (_cache.TryGetValue(key, out existing) &&
+        if (_cache.TryGetValue(key, out var existing) &&
             DateTimeOffset.UtcNow.Ticks - existing.Ticks < _entryTtl.Ticks)
         {
             Interlocked.Increment(ref _totalDuplicates);
             return true;
         }
 
-        // Not a duplicate — record it as a legacy (durability-unconfirmed) identity. The
-        // atomic update never lowers an existing entry's version: a durability confirmation
-        // published by a concurrent (or earlier, now TTL-expired) commit stays trusted, since
-        // sink durability, once proven, is not retracted by a later legacy sighting.
-        _cache.AddOrUpdate(
-            key,
-            static (_, ticks) => new DedupCacheEntry(ticks, EntryVersionLegacy),
-            static (_, existing, ticks) =>
-                new DedupCacheEntry(ticks, Math.Max(existing.Version, EntryVersionLegacy)),
-            nowTicks);
-        var ledgerLine = CreateLedgerLine(key, nowTicks, EntryVersionLegacy);
+        // A miss is admitted through the same per-key pending slot the reservation path uses,
+        // so the committed-state check and the legacy record are atomic with respect to
+        // concurrent TryReserveAsync callers — two callers can never both admit one identity.
+        // While the slot is held elsewhere its claim proves nothing durable (the holder may
+        // still fail and release), so wait for it to resolve: a commit surfaces here as a
+        // durable duplicate, a release lets this caller claim the slot and record the identity.
+        var token = Interlocked.Increment(ref _reservationTokenSequence);
+        while (!_pendingReservations.TryAdd(key, token))
+        {
+            await Task.Delay(10, ct).ConfigureAwait(false);
 
-        // Persist to disk (fire-and-forget the write, but serialize access)
-        await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+            if (_cache.TryGetValue(key, out existing) &&
+                DateTimeOffset.UtcNow.Ticks - existing.Ticks < _entryTtl.Ticks)
+            {
+                Interlocked.Increment(ref _totalDuplicates);
+                return true;
+            }
+        }
+
         try
         {
-            await EnsureWriterInitializedAsync(ct).ConfigureAwait(false);
-            await _writer!.WriteLineAsync(ledgerLine.AsMemory(), ct).ConfigureAwait(false);
+            // Double-check after acquiring the slot: a concurrent commit may have published the
+            // identity between the cache read above and the TryAdd (commits publish the cache
+            // entry before releasing their pending token, so it is guaranteed visible here).
+            var nowTicks = DateTimeOffset.UtcNow.Ticks;
+            if (_cache.TryGetValue(key, out existing) && nowTicks - existing.Ticks < _entryTtl.Ticks)
+            {
+                Interlocked.Increment(ref _totalDuplicates);
+                return true;
+            }
+
+            // Not a duplicate — record it as a legacy (durability-unconfirmed) identity. The
+            // atomic update never lowers an existing entry's version: a durability confirmation
+            // published by an earlier, now TTL-expired commit stays trusted, since sink
+            // durability, once proven, is not retracted by a later legacy sighting.
+            _cache.AddOrUpdate(
+                key,
+                static (_, ticks) => new DedupCacheEntry(ticks, EntryVersionLegacy),
+                static (_, existing, ticks) =>
+                    new DedupCacheEntry(ticks, Math.Max(existing.Version, EntryVersionLegacy)),
+                nowTicks);
+            var ledgerLine = CreateLedgerLine(key, nowTicks, EntryVersionLegacy);
+
+            // Persist to disk (fire-and-forget the write, but serialize access)
+            await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                await EnsureWriterInitializedAsync(ct).ConfigureAwait(false);
+                await _writer!.WriteLineAsync(ledgerLine.AsMemory(), ct).ConfigureAwait(false);
+            }
+            finally
+            {
+                _writeLock.Release();
+            }
+
+            return false;
         }
         finally
         {
-            _writeLock.Release();
+            ReleaseCore(key, token);
         }
-
-        return false;
     }
 
     /// <inheritdoc />
@@ -474,8 +491,11 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             return cached.Key;
         }
 
+        // TryAdd: concurrent callers may race to cache the same event instance (the store is
+        // shared and thread-safe); the computed key is deterministic, so the loser's value is
+        // identical and the lost race is safely ignored.
         var key = ComputeEventKey(evt);
-        _eventKeyCache.Add(evt, new CachedKeyBox(key));
+        _eventKeyCache.TryAdd(evt, new CachedKeyBox(key));
         return key;
     }
 
