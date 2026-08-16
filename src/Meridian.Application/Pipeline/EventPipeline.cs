@@ -64,6 +64,11 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
     private readonly bool _includePerEventLogScopes;
     private int _disposed;
     private int _activeConsumers;
+
+    // Events in a batch retained for in-place retry: drained from the channel but not yet
+    // counted as consumed. FlushAsync must treat them as outstanding work — the consumer's
+    // active flag alone dips to zero between retry iterations.
+    private int _retainedBatchEventCount;
     private int _finalFlushStarted;
     private long _consumerIterationFailures;
     private long _lastConsumerFaultTicks;
@@ -816,11 +821,16 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             // Channel is empty — check if the consumer has finished its batch.
             // This handles the DropOldest case where events were silently discarded
             // by the channel before reaching the consumer.
-            if (_channel.Reader.Count == 0 && Volatile.Read(ref _activeConsumers) == 0)
+            // A batch retained for retry is outstanding work even though the channel is empty
+            // and the consumer briefly reads as inactive between retry iterations — the flush
+            // must not acknowledge events that never reached the sink.
+            if (_channel.Reader.Count == 0 && Volatile.Read(ref _activeConsumers) == 0 &&
+                Volatile.Read(ref _retainedBatchEventCount) == 0)
             {
                 await Task.Delay(10, ct).ConfigureAwait(false);
                 var newConsumed = Interlocked.Read(ref _consumedCount);
-                if (_channel.Reader.Count == 0 && Volatile.Read(ref _activeConsumers) == 0 && newConsumed == consumed)
+                if (_channel.Reader.Count == 0 && Volatile.Read(ref _activeConsumers) == 0 &&
+                    Volatile.Read(ref _retainedBatchEventCount) == 0 && newConsumed == consumed)
                     break; // Consumer is idle, nothing left to process
             }
             else
@@ -883,13 +893,13 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         ThreadingUtilities.SetAboveNormalPriority();
 
         var batchBuffer = new List<TracedMarketEvent>(_maxAdaptiveBatchSize);
+        var reservationScratch = new List<DedupReservation>(_maxAdaptiveBatchSize);
+        var nextPendingEventIndex = 0;
 
         try
         {
-            var reservationScratch = new List<DedupReservation>(_maxAdaptiveBatchSize);
             var retryPendingBatch = false;
             var admittedThroughIndex = 0;
-            var nextPendingEventIndex = 0;
             var walBatchFlushed = false;
             var sinkBatchFlushed = false;
             var dedupBatchCommitted = false;
@@ -1162,6 +1172,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
 
                     Interlocked.Add(ref _consumedCount, batchBuffer.Count);
                     retryPendingBatch = false;
+                    Volatile.Write(ref _retainedBatchEventCount, 0);
                     admittedThroughIndex = 0;
                     nextPendingEventIndex = 0;
                 }
@@ -1187,6 +1198,10 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                          batchBuffer.Any(static traced => traced.Reservation.IsHeld)) ||
                         ex is PendingExternalDedupClaimException ||
                         ex is WalAdmissionException;
+                    // A retained batch is outstanding work that is no longer visible in the
+                    // channel and not yet counted as consumed: publish it so FlushAsync's
+                    // idle check cannot acknowledge a flush while its events are undelivered.
+                    Volatile.Write(ref _retainedBatchEventCount, retryPendingBatch ? batchBuffer.Count : 0);
                     _logger.LogError(ex,
                         "Pipeline consumer iteration failed while persisting a batch of {BatchCount} events; {RecoveryAction}",
                         batchBuffer.Count,
@@ -1291,12 +1306,9 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         catch (OperationCanceledException) { }
         finally
         {
-            // Cancellation (e.g. forced disposal) can exit mid-batch without reaching the
-            // in-loop cleanup, and the dedup store is an injected singleton that outlives this
-            // pipeline: any claims still pending here would stay PendingElsewhere for every
-            // later consumer of the same store. Token-checked release preserves claims that
-            // were already durably committed.
-            ReleaseAllReservations(batchBuffer);
+            // The consumer is exiting for good: nothing here is retained work any more (the
+            // final flush below promotes what it can), so unblock any explicit FlushAsync.
+            Volatile.Write(ref _retainedBatchEventCount, 0);
 
             if (Interlocked.Exchange(ref _finalFlushStarted, 1) == 0)
             {
@@ -1305,6 +1317,37 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                 {
                     using var flushTimeoutCts = new CancellationTokenSource(_finalFlushTimeout);
                     await _sink.FlushAsync(flushTimeoutCts.Token).ConfigureAwait(false);
+
+                    // The final flush just made any partially appended batch prefix durable in
+                    // the sink. Commit those events' identity claims BEFORE the release below:
+                    // releasing the claim of a durably persisted event would let successor
+                    // pipelines accept the same event again and WAL replay re-append it.
+                    if (_dedupLedger != null && nextPendingEventIndex > 0)
+                    {
+                        try
+                        {
+                            reservationScratch.Clear();
+                            var prefixBound = Math.Min(nextPendingEventIndex, batchBuffer.Count);
+                            for (var i = 0; i < prefixBound; i++)
+                            {
+                                if (batchBuffer[i].Reservation.IsHeld)
+                                    reservationScratch.Add(batchBuffer[i].Reservation);
+                            }
+
+                            if (reservationScratch.Count > 0)
+                            {
+                                await _dedupLedger.CommitDurableAsync(reservationScratch, flushTimeoutCts.Token).ConfigureAwait(false);
+                            }
+
+                            reservationScratch.Clear();
+                        }
+                        catch (Exception commitEx)
+                        {
+                            _logger.LogWarning(commitEx,
+                                "Failed to commit identity claims for the flushed batch prefix during shutdown; " +
+                                "the claims will be released and a replay or re-send may append duplicates");
+                        }
+                    }
 
                     // Final WAL commit for any remaining uncommitted records
                     if (_wal != null && _lastCommittedWalSequence > 0)
@@ -1323,6 +1366,14 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     _logger.LogError(ex, "Final flush failed during pipeline shutdown. Consumed {ConsumedCount} events before failure - potential data loss", _consumedCount);
                 }
             }
+
+            // Cancellation (e.g. forced disposal) can exit mid-batch without reaching the
+            // in-loop cleanup, and the dedup store is an injected singleton that outlives this
+            // pipeline: any claims still pending here would stay PendingElsewhere for every
+            // later consumer of the same store. Runs after the final flush so claims for the
+            // just-persisted prefix were committed, not discarded; token-checked release
+            // skips claims the commit above already resolved.
+            ReleaseAllReservations(batchBuffer);
         }
     }
 

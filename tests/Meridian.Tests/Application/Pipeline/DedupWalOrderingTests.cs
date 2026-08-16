@@ -1121,6 +1121,96 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         await ledger.DisposeAsync();
     }
 
+    [Fact]
+    public async Task FlushAsync_RetainedBatch_IsNotAcknowledgedUntilPersisted()
+    {
+        var walDir = Path.Combine(_rootDir, "wal_flush_retained");
+        Directory.CreateDirectory(walDir);
+        // Uninitialized WAL with age-based rotation disabled: admission fails and the batch is
+        // retained for retry — drained from the channel but never counted as consumed.
+        var wal = new WriteAheadLog(walDir, new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            MaxWalFileAge = null
+        });
+
+        var ledger = await CreateLedgerAsync("ledger_flush_retained");
+        var sink = new FaultSink();
+        await using (var pipeline = new EventPipeline(
+            sink, capacity: 100, enablePeriodicFlush: false, wal: wal, dedupLedger: ledger))
+        {
+            pipeline.TryPublish(CreateTradeEvent("FLUSHRET", 900));
+            await WaitUntilAsync(() => pipeline.GetStatistics().ConsumerIterationFailures >= 1);
+
+            // An explicit flush must keep waiting on the retained delivery, not acknowledge a
+            // flush while the event has never reached the sink.
+            using var flushCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(750));
+            OperationCanceledException? flushCancelled = null;
+            try
+            {
+                await pipeline.FlushAsync(flushCts.Token);
+            }
+            catch (OperationCanceledException oce)
+            {
+                flushCancelled = oce;
+            }
+
+            flushCancelled.Should().NotBeNull(
+                "a retained batch is outstanding work; FlushAsync must wait for it instead of returning success");
+            sink.AppendedEvents.Should().BeEmpty();
+
+            // The WAL recovers: the retained batch lands and the flush completes honestly.
+            await wal.InitializeAsync();
+            using var completeCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await pipeline.FlushAsync(completeCts.Token);
+            sink.AppendedEvents.Should().ContainSingle().Which.Symbol.Should().Be("FLUSHRET");
+        }
+
+        await ledger.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task Consumer_ForcedCancellationMidBatch_CommitsFlushedPrefixBeforeReleasingClaims()
+    {
+        var ledger = await CreateLedgerAsync("ledger_cancel_prefix");
+        var sink = new FaultSink { GateFirstAppend = true };
+        var gateEvt = CreateTradeEvent("GATE3", 1000);
+        var appendedEvt = CreateTradeEvent("PREFIXA", 1001);
+        var inflightEvt = CreateTradeEvent("PREFIXB", 1002);
+
+        var pipeline = new EventPipeline(
+            sink, capacity: 100, batchSize: 2, enablePeriodicFlush: false, dedupLedger: ledger,
+            finalFlushTimeout: TimeSpan.FromSeconds(5));
+
+        // Hold the consumer inside a first single-event batch so the next two events drain
+        // together, then block the batch mid-way: the second batch's first append returns,
+        // its second append parks inside the sink.
+        pipeline.TryPublish(gateEvt);
+        await sink.FirstAppendEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        pipeline.TryPublish(appendedEvt);
+        pipeline.TryPublish(inflightEvt);
+        sink.GateOnAppendNumber = 3;
+        sink.ReleaseGate();
+        await sink.NumberedGateEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Forced disposal cancels the batch after one append crossed the sink acknowledgement
+        // boundary but before the batch-level flush. The shutdown flush makes that prefix
+        // durable, so its identity must be committed — not released — while the in-flight
+        // append's claim is freed for a successor.
+        await pipeline.DisposeAsync();
+
+        (await ledger.TryReserveAsync(appendedEvt, DedupLookupScope.WalRecovery, CancellationToken.None))
+            .Status.Should().Be(DedupReservationStatus.Duplicate,
+                "the shutdown flush persisted the appended prefix, so its identity must be durability-confirmed");
+
+        var successorClaim = await ledger.TryReserveAsync(inflightEvt, DedupLookupScope.LiveIngress, CancellationToken.None);
+        successorClaim.IsReserved.Should().BeTrue(
+            "an append that never returned is not durable; its claim must be released so a successor can persist it");
+        ledger.Release(successorClaim.Reservation).Should().BeTrue();
+
+        await ledger.DisposeAsync();
+    }
+
     #endregion
 
     #region Helpers and fakes
@@ -1182,6 +1272,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         private readonly List<MarketEvent> _appendedEvents = new();
         private readonly object _lock = new();
         private readonly SemaphoreSlim _gate = new(0);
+        private readonly SemaphoreSlim _numberedGate = new(0);
         private int _appendFailuresRemaining;
         private int _flushFailuresRemaining;
         private int _successfulFlushCount;
@@ -1193,7 +1284,16 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         /// <summary>Blocks the first append attempt on a gate until <see cref="ReleaseGate"/>.</summary>
         public bool GateFirstAppend { get; init; }
 
+        /// <summary>
+        /// Blocks exactly the Nth (1-based) append attempt on its own gate until the pipeline
+        /// is cancelled; 0 disables. Signals <see cref="NumberedGateEntered"/> on entry.
+        /// </summary>
+        public int GateOnAppendNumber { get; set; }
+
         public TaskCompletionSource FirstAppendEntered { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource NumberedGateEntered { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public void ReleaseGate() => _gate.Release(10_000);
@@ -1224,6 +1324,12 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             {
                 FirstAppendEntered.TrySetResult();
                 await _gate.WaitAsync(ct).ConfigureAwait(false);
+            }
+
+            if (GateOnAppendNumber > 0 && attempt == GateOnAppendNumber)
+            {
+                NumberedGateEntered.TrySetResult();
+                await _numberedGate.WaitAsync(ct).ConfigureAwait(false);
             }
 
             if (FailOnAppendNumber > 0 && attempt == FailOnAppendNumber)

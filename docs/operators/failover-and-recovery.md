@@ -113,7 +113,11 @@ loss.
 
 - On startup the pipeline replays uncommitted WAL records to the primary sink. A crash that
   happened after the sink flush but before the dedup commit can produce duplicate rows in the
-  sink; that is expected and safe. Missing events are not expected — treat any gap as an incident.
+  sink; that is expected and safe. The no-loss guarantee begins at the WAL flush durability
+  boundary: once an event's WAL record is flushed, a missing event is not expected — treat any
+  gap in WAL-flushed data as an incident. Events a crash catches in the in-memory queue,
+  accepted but not yet WAL-flushed, are lost by design (see the producer-acceptance bullet
+  below) and are not a replay defect.
 - Deduplication entries are versioned. Version-2 entries mean "sink durability confirmed" and
   suppress replay; legacy version-1 entries (written before this versioning existed) only
   suppress live ingress and are deliberately replayed during recovery, then upgraded. After
