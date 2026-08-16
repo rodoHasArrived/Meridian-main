@@ -12,9 +12,15 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <remarks>
 /// This is a deliberate probe/scrape posture decision, not a convenience: external monitors
 /// (container healthchecks, load balancers, Prometheus) authenticate at the network boundary,
-/// not with operator sessions, and every payload here is sanitized status. Matching is exact
-/// (ignoring trailing slashes), so sub-paths stay authenticated — <c>/health/detailed</c> and
-/// the <c>/api/health</c> aliases remain governed by the session and API-key gates like any
+/// not with operator sessions. These payloads carry no secrets, credentials, or tenant/user
+/// data, but they are operational telemetry, not inert strings — <c>/health</c> reports
+/// figures such as drop rate, queue utilization, and memory, and <c>/metrics</c> serves the
+/// full registry including symbol-labelled series — so the boundary protecting them on the
+/// loopback-only supported posture is the host itself, and PRD-019 requires the container
+/// lane's PRD-013 disposition to add a scrape credential or sanitized surface before any
+/// port-published topology enters the support matrix. Matching is exact (ignoring trailing
+/// slashes), so sub-paths stay authenticated — <c>/health/detailed</c> and the
+/// <c>/api/health</c> aliases remain governed by the session and API-key gates like any
 /// other API surface.
 /// </remarks>
 public static class MonitoringEndpointExemptions
