@@ -1,9 +1,11 @@
 using System.Collections.Concurrent;
+using System.Threading.Channels;
 using Meridian.Execution;
 using Meridian.Execution.Live;
 using Meridian.Execution.Services;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging.Abstractions;
+using ExecutionSdk = Meridian.Execution.Sdk;
 
 namespace Meridian.Strategies.Live;
 
@@ -13,8 +15,9 @@ namespace Meridian.Strategies.Live;
 /// a recorded <see cref="StrategyRunEntry"/> to <see cref="TryLaunchAsync"/>, which resolves the
 /// concrete strategy from the catalog, subscribes the run's universe on the feed, drives the
 /// strategy callbacks per event, and routes resulting orders through the governed
-/// <see cref="IOrderManager"/> (OMS pre-trade gates included). Fills stream back from the OMS
-/// execution-report channel into <c>OnOrderFill</c>, closing the trading loop.
+/// <see cref="IOrderManager"/> (OMS pre-trade gates included). Fills stream back from an OMS
+/// delivery-or-accounted execution-report subscription into <c>OnOrderFill</c>, closing the
+/// trading loop without allowing one slow run to block every other run.
 /// </summary>
 public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
 {
@@ -41,7 +44,11 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
     // AggregatePortfolioService deduplicates by instance.
     private readonly Meridian.Execution.Services.PortfolioRegistry? _portfolioRegistry;
     private readonly Lock _pumpLock = new();
+    private readonly object _disposeSync = new();
     private Task? _reportPumpTask;
+    private Task? _disposeTask;
+    private TaskCompletionSource? _launchesDrained;
+    private int _activeLaunches;
     private int _disposed;
 
     public LiveTradingEngine(
@@ -83,117 +90,168 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(run);
 
-        if (!_options.Enabled)
+        var launchLease = TryEnterLaunch();
+        if (launchLease is null)
         {
-            return await DeferAsync(run, "The live trading engine is disabled on this host.", ct).ConfigureAwait(false);
+            return RunLaunchResult.Deferred("The live trading engine is shutting down.");
         }
 
-        if (Volatile.Read(ref _disposed) != 0)
+        using (launchLease)
         {
-            return await DeferAsync(run, "The live trading engine is shutting down.", ct).ConfigureAwait(false);
-        }
+            if (!_options.Enabled)
+            {
+                return await DeferAsync(run, "The live trading engine is disabled on this host.", ct).ConfigureAwait(false);
+            }
 
-        if (run.RunType is not (RunType.Paper or RunType.Live))
-        {
-            return RunLaunchResult.Deferred($"Run type {run.RunType} is not executable on the live trading engine.");
-        }
+            if (run.RunType is not (RunType.Paper or RunType.Live))
+            {
+                return RunLaunchResult.Deferred($"Run type {run.RunType} is not executable on the live trading engine.");
+            }
 
-        if (run.EndedAt.HasValue)
-        {
-            return RunLaunchResult.Deferred("Run has already ended.");
-        }
+            if (run.EndedAt.HasValue)
+            {
+                return RunLaunchResult.Deferred("Run has already ended.");
+            }
 
-        if (run.RunType == RunType.Live)
-        {
-            if (!_options.AllowLiveRuns)
+            if (run.RunType == RunType.Live)
+            {
+                if (!_options.AllowLiveRuns)
+                {
+                    return await DeferAsync(
+                        run,
+                        $"Live runs are disabled ({LiveTradingEngineOptions.SectionKey}:AllowLiveRuns is false); the run stays retained until live execution is enabled.",
+                        ct).ConfigureAwait(false);
+                }
+
+                if (_brokerageConfiguration is not { LiveExecutionEnabled: true })
+                {
+                    return await DeferAsync(
+                        run,
+                        "Live runs require BrokerageConfiguration.LiveExecutionEnabled; the run stays retained until brokerage routing is enabled.",
+                        ct).ConfigureAwait(false);
+                }
+            }
+
+            if (_activeRuns.ContainsKey(run.RunId))
+            {
+                return RunLaunchResult.Success();
+            }
+
+            if (!_catalog.TryCreate(run.StrategyId, run.ParameterSet, out var strategy, out var failureReason) || strategy is null)
+            {
+                return await DeferAsync(run, failureReason ?? "No live strategy implementation available.", ct).ConfigureAwait(false);
+            }
+
+            var universe = ResolveUniverse(run);
+            if (universe.Count == 0)
             {
                 return await DeferAsync(
                     run,
-                    $"Live runs are disabled ({LiveTradingEngineOptions.SectionKey}:AllowLiveRuns is false); the run stays retained until live execution is enabled.",
+                    "Run has no trading universe: set the 'symbols' run parameter or configure " +
+                    $"{LiveTradingEngineOptions.SectionKey}:DefaultSymbols.",
                     ct).ConfigureAwait(false);
             }
 
-            if (_brokerageConfiguration is not { LiveExecutionEnabled: true })
-            {
-                return await DeferAsync(
-                    run,
-                    "Live runs require BrokerageConfiguration.LiveExecutionEnabled; the run stays retained until brokerage routing is enabled.",
-                    ct).ConfigureAwait(false);
-            }
-        }
-
-        if (_activeRuns.ContainsKey(run.RunId))
-        {
-            return RunLaunchResult.Success();
-        }
-
-        if (!_catalog.TryCreate(run.StrategyId, run.ParameterSet, out var strategy, out var failureReason) || strategy is null)
-        {
-            return await DeferAsync(run, failureReason ?? "No live strategy implementation available.", ct).ConfigureAwait(false);
-        }
-
-        var universe = ResolveUniverse(run);
-        if (universe.Count == 0)
-        {
-            return await DeferAsync(
+            var fillQueueCapacity = Math.Max(1, _options.FillReportQueueCapacity);
+            var context = new LiveStrategyExecutionContext(_orderGateway, _feedAdapter, _portfolioState, universe);
+            var session = new LiveStrategyRunSession(
                 run,
-                "Run has no trading universe: set the 'symbols' run parameter or configure " +
-                $"{LiveTradingEngineOptions.SectionKey}:DefaultSymbols.",
+                strategy,
+                context,
+                _feed,
+                _orderManager,
+                _repository,
+                _auditTrail,
+                _loggerFactory.CreateLogger<LiveStrategyRunSession>(),
+                useSynchronousFillFallback: _orderManager is not OrderManagementSystem,
+                fillReportQueueCapacity: fillQueueCapacity);
+
+            var activeRun = new ActiveRun(session, fillQueueCapacity);
+            lock (_disposeSync)
+            {
+                // This commit check and DisposeAsync's admission close share one lock. A launch is
+                // therefore either visible to shutdown or deferred; it cannot materialize after
+                // the shutdown snapshot and escape lifecycle ownership.
+                if (_disposed != 0)
+                {
+                    activeRun.CompleteReportAdmission();
+                    session.CompleteExecutionReportAdmission();
+                    return RunLaunchResult.Deferred("The live trading engine is shutting down.");
+                }
+
+                if (!_activeRuns.TryAdd(run.RunId, activeRun))
+                {
+                    activeRun.CompleteReportAdmission();
+                    session.CompleteExecutionReportAdmission();
+                    return RunLaunchResult.Success();
+                }
+            }
+
+            try
+            {
+                StartReportPumpIfNeeded();
+                activeRun.StartDeliveryWorker(() => DeliverReportsToRunAsync(activeRun));
+
+                if (_portfolioRegistry is not null &&
+                    _portfolioState is Meridian.Execution.Models.IMultiAccountPortfolioState runPortfolio)
+                {
+                    _portfolioRegistry.Register(run.RunId, runPortfolio);
+                }
+
+                TryRegisterWithLifecycleManager(strategy);
+                activeRun.Execution = Task.Run(
+                    async () =>
+                    {
+                        try
+                        {
+                            await session.ExecuteAsync(_engineCts.Token).ConfigureAwait(false);
+                        }
+                        finally
+                        {
+                            activeRun.CompleteReportAdmission();
+                            try
+                            {
+                                await activeRun.Delivery.ConfigureAwait(false);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex,
+                                    "Execution-report delivery worker for run {RunId} faulted during retirement.",
+                                    run.RunId);
+                            }
+
+                            _activeRuns.TryRemove(run.RunId, out _);
+                            _portfolioRegistry?.Deregister(run.RunId);
+                        }
+                    },
+                    CancellationToken.None);
+                activeRun.CompleteInitialization();
+            }
+            catch (Exception ex)
+            {
+                _activeRuns.TryRemove(run.RunId, out _);
+                _portfolioRegistry?.Deregister(run.RunId);
+                activeRun.CompleteReportAdmission();
+                session.CompleteExecutionReportAdmission();
+                activeRun.CompleteInitialization();
+                return await DeferAsync(
+                    run,
+                    $"The live run could not initialize its execution-report lifecycle: {ex.Message}",
+                    ct).ConfigureAwait(false);
+            }
+
+            _logger.LogInformation(
+                "Live trading engine activated run {RunId} (strategy {StrategyId}, mode {RunType}, universe [{Universe}])",
+                run.RunId, run.StrategyId, run.RunType, string.Join(", ", universe));
+            await RecordAuditAsync(
+                run,
+                action: "LiveRunActivated",
+                outcome: "Activated",
+                message: $"Run activated with universe [{string.Join(", ", universe)}].",
                 ct).ConfigureAwait(false);
-        }
 
-        var context = new LiveStrategyExecutionContext(_orderGateway, _feedAdapter, _portfolioState, universe);
-        var session = new LiveStrategyRunSession(
-            run,
-            strategy,
-            context,
-            _feed,
-            _orderManager,
-            _repository,
-            _auditTrail,
-            _loggerFactory.CreateLogger<LiveStrategyRunSession>(),
-            useSynchronousFillFallback: !StartReportPumpIfNeeded(),
-            fillReportQueueCapacity: Math.Max(16, _options.FillReportQueueCapacity));
-
-        var activeRun = new ActiveRun(session);
-        if (!_activeRuns.TryAdd(run.RunId, activeRun))
-        {
             return RunLaunchResult.Success();
         }
-
-        if (_portfolioRegistry is not null &&
-            _portfolioState is Meridian.Execution.Models.IMultiAccountPortfolioState runPortfolio)
-        {
-            _portfolioRegistry.Register(run.RunId, runPortfolio);
-        }
-
-        TryRegisterWithLifecycleManager(strategy);
-        activeRun.Execution = Task.Run(
-            async () =>
-            {
-                try
-                {
-                    await session.ExecuteAsync(_engineCts.Token).ConfigureAwait(false);
-                }
-                finally
-                {
-                    _activeRuns.TryRemove(run.RunId, out _);
-                    _portfolioRegistry?.Deregister(run.RunId);
-                }
-            },
-            CancellationToken.None);
-
-        _logger.LogInformation(
-            "Live trading engine activated run {RunId} (strategy {StrategyId}, mode {RunType}, universe [{Universe}])",
-            run.RunId, run.StrategyId, run.RunType, string.Join(", ", universe));
-        await RecordAuditAsync(
-            run,
-            action: "LiveRunActivated",
-            outcome: "Activated",
-            message: $"Run activated with universe [{string.Join(", ", universe)}].",
-            ct).ConfigureAwait(false);
-
-        return RunLaunchResult.Success();
     }
 
     /// <summary>
@@ -208,6 +266,16 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             return false;
         }
 
+        await activeRun.Initialized.WaitAsync(ct).ConfigureAwait(false);
+        if (!_activeRuns.TryGetValue(runId, out var initializedRun)
+            || !ReferenceEquals(activeRun, initializedRun))
+        {
+            return false;
+        }
+
+        activeRun.Session.CloseOutboundOrderAdmission();
+        activeRun.CompleteReportAdmission();
+        await activeRun.Delivery.WaitAsync(ct).ConfigureAwait(false);
         activeRun.Session.RequestStop(completeRun: true);
         if (activeRun.Execution is { } execution)
         {
@@ -262,21 +330,120 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
     }
 
     /// <inheritdoc/>
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        lock (_disposeSync)
         {
-            return;
+            if (_disposeTask is not null)
+            {
+                return new ValueTask(_disposeTask);
+            }
+
+            Volatile.Write(ref _disposed, 1);
+            foreach (var activeRun in _activeRuns.Values)
+            {
+                activeRun.Session.CloseOutboundOrderAdmission();
+            }
+
+            var launchesDrained = _activeLaunches == 0
+                ? Task.CompletedTask
+                : (_launchesDrained ??= new TaskCompletionSource(
+                    TaskCreationOptions.RunContinuationsAsynchronously)).Task;
+
+            // Closing engine launch admission and OMS outbound-order admission occurs under this
+            // one lifecycle critical section. OMS operations that crossed their own gate first
+            // remain admitted and are drained; later submissions fail closed.
+            var omsShutdown = _orderManager is OrderManagementSystem oms
+                ? oms.DisposeAsync().AsTask()
+                : null;
+            _disposeTask = DisposeCoreAsync(launchesDrained, omsShutdown);
+            return new ValueTask(_disposeTask);
+        }
+    }
+
+    private async Task DisposeCoreAsync(Task launchesDrained, Task? omsShutdown)
+    {
+        var shutdownFailures = new List<Exception>();
+
+        // An admitted launch either committed its run before the lifecycle gate closed or observed
+        // shutdown and deferred. No launch can appear after this barrier.
+        await launchesDrained.ConfigureAwait(false);
+
+        // Keep the subscription pump, per-run delivery workers, and session event loops alive while
+        // OMS order operations and dequeued gateway reports complete their authoritative handoffs.
+        if (omsShutdown is not null)
+        {
+            try
+            {
+                await omsShutdown.ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                shutdownFailures.Add(ex);
+                _logger.LogError(ex, "Order management shutdown failed while live fill consumers remained active.");
+            }
         }
 
-        // Leave run entries open so a restarted host resumes them; only the sessions stop.
-        foreach (var activeRun in _activeRuns.Values)
+        Task? reportPump;
+        lock (_pumpLock)
+        {
+            reportPump = _reportPumpTask;
+        }
+
+        if (reportPump is not null)
+        {
+            try
+            {
+                await reportPump.ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (_engineCts.IsCancellationRequested)
+            {
+                // Expected only if another shutdown path already cancelled the engine token.
+            }
+            catch (Exception ex)
+            {
+                shutdownFailures.Add(ex);
+                _logger.LogError(ex, "Execution report pump faulted during engine shutdown.");
+            }
+        }
+
+        var activeRuns = _activeRuns.Values.ToArray();
+        foreach (var activeRun in activeRuns)
+        {
+            activeRun.CompleteReportAdmission();
+        }
+
+        var deliveryWorkers = activeRuns.Select(static activeRun => activeRun.Delivery).ToArray();
+        if (deliveryWorkers.Length > 0)
+        {
+            try
+            {
+                await Task.WhenAll(deliveryWorkers).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                shutdownFailures.Add(ex);
+                _logger.LogError(ex, "One or more per-run execution-report delivery workers failed during shutdown.");
+            }
+        }
+
+        // Leave run entries open so a restarted host resumes them; only the sessions stop after
+        // every report admitted before the OMS/subscription boundary has drained.
+        foreach (var activeRun in activeRuns)
         {
             activeRun.Session.RequestStop(completeRun: false);
         }
 
-        _engineCts.Cancel();
-        var executions = _activeRuns.Values
+        try
+        {
+            await _engineCts.CancelAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            shutdownFailures.Add(ex);
+        }
+
+        var executions = activeRuns
             .Select(static activeRun => activeRun.Execution)
             .Where(static execution => execution is not null)
             .Cast<Task>()
@@ -289,27 +456,52 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "One or more live sessions faulted during engine shutdown.");
-            }
-        }
-
-        if (_reportPumpTask is { } pump)
-        {
-            try
-            {
-                await pump.ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected: the pump consumes the OMS report stream with the engine token.
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Execution report pump faulted during engine shutdown.");
+                shutdownFailures.Add(ex);
+                _logger.LogError(ex, "One or more live sessions faulted during engine shutdown.");
             }
         }
 
         _engineCts.Dispose();
+
+        if (shutdownFailures.Count == 1)
+        {
+            throw shutdownFailures[0];
+        }
+
+        if (shutdownFailures.Count > 1)
+        {
+            throw new AggregateException(shutdownFailures);
+        }
+    }
+
+    private LaunchLease? TryEnterLaunch()
+    {
+        lock (_disposeSync)
+        {
+            if (_disposed != 0)
+            {
+                return null;
+            }
+
+            checked
+            {
+                _activeLaunches++;
+            }
+
+            return new LaunchLease(this);
+        }
+    }
+
+    private void ExitLaunch()
+    {
+        lock (_disposeSync)
+        {
+            _activeLaunches--;
+            if (_activeLaunches == 0)
+            {
+                _launchesDrained?.TrySetResult();
+            }
+        }
     }
 
     private IReadOnlySet<string> ResolveUniverse(StrategyRunEntry run)
@@ -342,39 +534,221 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
     }
 
     /// <summary>
-    /// Starts the shared OMS execution-report pump once. Returns <c>true</c> when a pump is
-    /// available (fills arrive via the report stream), <c>false</c> when the configured order
-    /// manager exposes no report channel and sessions must use the synchronous fill fallback.
+    /// Starts the shared OMS accounted execution-report pump once. The pump itself creates and
+    /// owns the subscription so every exit path unsubscribes in its <c>finally</c> block.
     /// </summary>
-    private bool StartReportPumpIfNeeded()
+    private void StartReportPumpIfNeeded()
     {
         if (_orderManager is not OrderManagementSystem oms)
         {
-            return false;
+            return;
         }
 
         lock (_pumpLock)
         {
-            _reportPumpTask ??= Task.Run(() => PumpExecutionReportsAsync(oms, _engineCts.Token), CancellationToken.None);
+            if (_reportPumpTask is null)
+            {
+                // Calling the async method directly runs subscription creation synchronously up to
+                // its first read await, so launch fails deterministically if OMS admission closed.
+                _reportPumpTask = PumpExecutionReportsAsync(oms, _engineCts.Token);
+            }
+            else if (_reportPumpTask.IsCompleted)
+            {
+                throw new InvalidOperationException(
+                    "The authoritative execution-report pump exited before engine shutdown.",
+                    _reportPumpTask.Exception);
+            }
         }
-
-        return true;
     }
 
-    private async Task PumpExecutionReportsAsync(OrderManagementSystem oms, CancellationToken ct)
+    private async Task PumpExecutionReportsAsync(
+        OrderManagementSystem oms,
+        CancellationToken ct)
     {
-        await foreach (var report in oms.ExecutionReports.ReadAllAsync(ct).ConfigureAwait(false))
+        var subscription = oms.SubscribeLosslessExecutionReports(
+            subscriberName: "live-trading-engine",
+            undeliverableHandler: AccountUndeliverableExecutionReportAsync);
+        var subscriptionFailed = false;
+        try
         {
-            var clientOrderId = report.ClientOrderId ?? report.OrderId;
-            if (!LiveStrategyRunSession.TryParseRunId(clientOrderId, out var runId))
+            await foreach (var report in subscription.Reports.ReadAllAsync(ct).ConfigureAwait(false))
             {
-                continue;
+                var clientOrderId = report.ClientOrderId ?? report.OrderId;
+                if (!LiveStrategyRunSession.TryParseRunId(clientOrderId, out var runId))
+                {
+                    continue;
+                }
+
+                if (_activeRuns.TryGetValue(runId, out var activeRun)
+                    && activeRun.TryAdmitReport(report))
+                {
+                    continue;
+                }
+
+                await AccountUndeliverableExecutionReportAsync(
+                        report,
+                        _activeRuns.ContainsKey(runId)
+                            ? $"Run '{runId}' reached its bounded delivery capacity."
+                            : $"Run '{runId}' retired before the report reached its session.",
+                        CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            subscriptionFailed = true;
+            try
+            {
+                await subscription.FailAsync(ex).ConfigureAwait(false);
+            }
+            catch (Exception cleanupFailure)
+            {
+                throw new AggregateException(
+                    "The live execution-report consumer and its fail-closed cleanup both failed.",
+                    ex,
+                    cleanupFailure);
             }
 
-            if (_activeRuns.TryGetValue(runId, out var activeRun))
+            throw;
+        }
+        finally
+        {
+            if (!subscriptionFailed)
             {
-                activeRun.Session.EnqueueExecutionReport(report);
+                await subscription.DisposeAsync().ConfigureAwait(false);
             }
+        }
+    }
+
+    private async Task DeliverReportsToRunAsync(ActiveRun activeRun)
+    {
+        await foreach (var report in activeRun.Reports.ReadAllAsync(CancellationToken.None).ConfigureAwait(false))
+        {
+            try
+            {
+                await activeRun.Session
+                    .EnqueueExecutionReportAsync(report, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (ChannelClosedException)
+            {
+                await AccountUndeliverableExecutionReportAsync(
+                        report,
+                        $"Run '{activeRun.Session.RunId}' closed its fill inbox before delivery.",
+                        CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await AccountUndeliverableExecutionReportAsync(
+                        report,
+                        $"Run '{activeRun.Session.RunId}' rejected fill delivery: {ex.Message}",
+                        CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+        }
+
+        activeRun.Session.CompleteExecutionReportAdmission();
+    }
+
+    private async ValueTask AccountUndeliverableExecutionReportAsync(
+        ExecutionSdk.ExecutionReport report,
+        string reason,
+        CancellationToken ct)
+    {
+        var clientOrderId = report.ClientOrderId ?? report.OrderId;
+        if (!LiveStrategyRunSession.TryParseRunId(clientOrderId, out var runId))
+        {
+            throw new OrderManagementSystem.ExecutionReportDeliveryException(
+                report,
+                $"{reason} The report has no live-run identity.");
+        }
+
+        var failure = new InvalidOperationException(
+            $"Accepted execution report for run '{runId}' could not reach its strategy session. "
+            + $"Order '{clientOrderId}', gateway order '{report.GatewayOrderId ?? "missing"}', "
+            + $"report {report.ReportType}, status {report.OrderStatus}, symbol '{report.Symbol}', "
+            + $"side {report.Side}, order quantity "
+            + $"{report.OrderQuantity.ToString(System.Globalization.CultureInfo.InvariantCulture)}, fill "
+            + $"{report.FilledQuantity.ToString(System.Globalization.CultureInfo.InvariantCulture)} at "
+            + $"{report.FillPrice?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "missing"}, "
+            + $"commission {report.Commission?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "missing"}, "
+            + $"report time {report.Timestamp:O}. {reason}");
+
+        _activeRuns.TryGetValue(runId, out var activeRun);
+        activeRun?.CompleteReportAdmission();
+
+        Exception? repositoryFailure = null;
+        try
+        {
+            var retainedRun = await _repository.GetRunByIdAsync(runId, CancellationToken.None).ConfigureAwait(false)
+                ?? throw new InvalidOperationException($"No retained strategy run '{runId}' exists for the late fill.");
+            await _repository.RecordLifecycleEventAsync(
+                    retainedRun.Fail(failure, "An accepted broker fill could not reach the live strategy session."),
+                    StrategyRunLifecycleEventType.Failed,
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            repositoryFailure = ex;
+        }
+
+        var auditRetained = false;
+        if (_auditTrail is not null)
+        {
+            try
+            {
+                await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                        AuditId: $"audit-{Guid.NewGuid():N}",
+                        Category: "Execution",
+                        Action: "LiveRunFillDeliveryFailed",
+                        Outcome: "Failed",
+                        OccurredAt: DateTimeOffset.UtcNow,
+                        Actor: ActorId,
+                        BrokerName: _orderGateway.BrokerName,
+                        OrderId: clientOrderId,
+                        RunId: runId,
+                        Symbol: report.Symbol,
+                        CorrelationId: runId,
+                        Message: failure.Message,
+                        Reason: "strategy-fill-undeliverable",
+                        Scope: $"run:{runId}/order:{clientOrderId}",
+                        Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["reportType"] = report.ReportType.ToString(),
+                            ["orderStatus"] = report.OrderStatus.ToString(),
+                            ["side"] = report.Side.ToString(),
+                            ["orderQuantity"] = report.OrderQuantity.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                            ["filledQuantity"] = report.FilledQuantity.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                            ["fillPrice"] = report.FillPrice?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "missing",
+                            ["commission"] = report.Commission?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "missing",
+                            ["gatewayOrderId"] = report.GatewayOrderId ?? string.Empty,
+                            ["reportTimestampUtc"] = report.Timestamp.ToUniversalTime().ToString("O")
+                        }), CancellationToken.None)
+                    .ConfigureAwait(false);
+                auditRetained = true;
+            }
+            catch (Exception ex)
+            {
+                repositoryFailure = repositoryFailure is null
+                    ? ex
+                    : new AggregateException(repositoryFailure, ex);
+            }
+        }
+
+        activeRun?.Session.RequestFailure(failure);
+        _logger.LogError(
+            failure,
+            "Live execution report for run {RunId}, order {OrderId}, was not delivered to its session.",
+            runId,
+            clientOrderId);
+
+        if (repositoryFailure is not null && !auditRetained)
+        {
+            throw new OrderManagementSystem.ExecutionReportDeliveryException(
+                report,
+                $"{reason} Neither the run repository nor durable execution audit retained the failure: {repositoryFailure.Message}");
         }
     }
 
@@ -438,10 +812,63 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         }
     }
 
-    private sealed class ActiveRun(LiveStrategyRunSession session)
+    private sealed class ActiveRun
     {
-        public LiveStrategyRunSession Session { get; } = session;
+        private readonly Channel<ExecutionSdk.ExecutionReport> _reports;
+        private readonly TaskCompletionSource _initialized =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _reportAdmissionClosed;
+
+        public ActiveRun(LiveStrategyRunSession session, int reportCapacity)
+        {
+            Session = session;
+            _reports = Channel.CreateBounded<ExecutionSdk.ExecutionReport>(new BoundedChannelOptions(reportCapacity)
+            {
+                SingleReader = true,
+                // The pump is the only data writer, but run stop/session retirement can complete
+                // admission concurrently with that write.
+                SingleWriter = false,
+                FullMode = BoundedChannelFullMode.Wait,
+                AllowSynchronousContinuations = false
+            });
+        }
+
+        public LiveStrategyRunSession Session { get; }
+
+        public ChannelReader<ExecutionSdk.ExecutionReport> Reports => _reports.Reader;
+
+        public Task Delivery { get; private set; } = Task.CompletedTask;
 
         public Task? Execution { get; set; }
+
+        public Task Initialized => _initialized.Task;
+
+        public bool TryAdmitReport(ExecutionSdk.ExecutionReport report)
+            => Volatile.Read(ref _reportAdmissionClosed) == 0
+               && _reports.Writer.TryWrite(report);
+
+        public void CompleteReportAdmission()
+        {
+            if (Interlocked.Exchange(ref _reportAdmissionClosed, 1) == 0)
+            {
+                _reports.Writer.TryComplete();
+            }
+        }
+
+        public void StartDeliveryWorker(Func<Task> worker)
+        {
+            ArgumentNullException.ThrowIfNull(worker);
+            Delivery = Task.Run(worker, CancellationToken.None);
+        }
+
+        public void CompleteInitialization() => _initialized.TrySetResult();
+    }
+
+    private sealed class LaunchLease(LiveTradingEngine owner) : IDisposable
+    {
+        private LiveTradingEngine? _owner = owner;
+
+        public void Dispose()
+            => Interlocked.Exchange(ref _owner, null)?.ExitLaunch();
     }
 }

@@ -7,6 +7,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
 using Meridian.Storage.Reporting;
 using Microsoft.Extensions.DependencyInjection;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -852,12 +853,6 @@ public sealed class ReportingRunReadinessService
     {
         var token = version.Split('.', 2, StringSplitOptions.TrimEntries)[0];
         return int.TryParse(token, out var parsed) && parsed > 0 ? parsed : 1;
-    }
-
-    private static string? NormalizeOptional(string? value)
-    {
-        var normalized = value?.Trim();
-        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
     }
 
     private static string ComputeEvidenceHash(

@@ -31,6 +31,12 @@ public static class ReconciliationServiceRegistration
         services.TryAddSingleton<ICanonicalStatementStore>(sp => new JsonCanonicalStatementStore(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<IReconciliationCaseStore>(sp => new JsonReconciliationCaseStore(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<IReconciliationBreakStore>(sp => new JsonReconciliationBreakStore(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<IStatementRunRecoveryRepository>(sp =>
+            new FileStatementRunRecoveryRepository(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<IStatementRunMatchArtifactStore>(sp =>
+            new FileStatementRunMatchArtifactStore(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<IStatementCaseworkCommitStore>(sp =>
+            new FileStatementCaseworkCommitStore(sp.GetRequiredService<StorageOptions>().RootPath));
         AddBrokerStatementServices(services);
         AddConnectorServices(services, static sp => sp.GetRequiredService<StorageOptions>().RootPath);
         return services;
@@ -51,6 +57,9 @@ public static class ReconciliationServiceRegistration
         services.TryAddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(dataRoot));
         services.TryAddSingleton<IReconciliationCaseStore>(_ => new JsonReconciliationCaseStore(dataRoot));
         services.TryAddSingleton<IReconciliationBreakStore>(_ => new JsonReconciliationBreakStore(dataRoot));
+        services.TryAddSingleton<IStatementRunRecoveryRepository>(_ => new FileStatementRunRecoveryRepository(dataRoot));
+        services.TryAddSingleton<IStatementRunMatchArtifactStore>(_ => new FileStatementRunMatchArtifactStore(dataRoot));
+        services.TryAddSingleton<IStatementCaseworkCommitStore>(_ => new FileStatementCaseworkCommitStore(dataRoot));
         AddBrokerStatementServices(services);
         AddConnectorServices(services, _ => dataRoot);
         return services;
@@ -108,6 +117,8 @@ public static class ReconciliationServiceRegistration
                 sp.GetService<ILogger<FileStatementMappingProfileStore>>()));
         services.TryAddSingleton<StatementMappingProfileCatalog>();
         services.TryAddSingleton(sp => sp.GetRequiredService<StatementMappingProfileCatalog>().BuildRegistry());
+        services.TryAddSingleton<IIbFlexWebServiceClient>(_ => new IbFlexWebServiceClient(
+            new HttpClient { Timeout = TimeSpan.FromMinutes(2) }));
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, CsvStatementConnector>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, OfxStatementConnector>());
@@ -116,6 +127,7 @@ public static class ReconciliationServiceRegistration
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, Camt053StatementConnector>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, Bai2StatementConnector>());
         services.TryAddSingleton<StatementConnectorRegistry>();
+        services.TryAddSingleton(sp => new StatementCanonicalEvidenceReader(resolveDataRoot(sp)));
 
         services.TryAddSingleton(sp => new StatementImportService(
             sp.GetRequiredService<StatementConnectorRegistry>(),

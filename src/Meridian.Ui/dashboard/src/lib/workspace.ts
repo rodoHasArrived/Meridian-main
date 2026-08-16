@@ -41,6 +41,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingExternalGlReconciliation: "/accounting/reconciliation/external-gl",
   accountingReconciliationMatch: "/accounting/reconciliation/match",
   accountingStatementImport: "/accounting/statement-import",
+  accountingMarginControl: "/accounting/margin-control",
   accountingCloseCalendar: "/accounting/close-calendar",
   accountingExceptions: "/accounting/exceptions",
   accountingSecurityMaster: "/accounting/security-master",
@@ -103,6 +104,41 @@ export type WorkstationRoutePath = (typeof WORKSTATION_ROUTE_CATALOG)[Workstatio
 export type WorkstationRouteQueryValue = string | number | boolean | null | undefined;
 
 /**
+ * Exact routes owned by the shared Data workbench. Keeping this list next to the
+ * typed catalog prevents an arbitrary `/data/*` path from silently rendering the
+ * Data root view.
+ */
+export const DATA_WORKSTATION_SCREEN_ROUTES: readonly WorkstationRoutePath[] = [
+  WORKSTATION_ROUTE_CATALOG.data,
+  WORKSTATION_ROUTE_CATALOG.dataImport,
+  WORKSTATION_ROUTE_CATALOG.dataProviders,
+  WORKSTATION_ROUTE_CATALOG.dataBackfills,
+  WORKSTATION_ROUTE_CATALOG.dataOperations,
+  WORKSTATION_ROUTE_CATALOG.dataAssurance,
+  WORKSTATION_ROUTE_CATALOG.dataExports,
+  WORKSTATION_ROUTE_CATALOG.dataQuery
+];
+
+/** Exact, non-parameterized routes owned by the Settings workbench. */
+export const SETTINGS_WORKSTATION_SCREEN_ROUTES: readonly WorkstationRoutePath[] = [
+  WORKSTATION_ROUTE_CATALOG.settings,
+  WORKSTATION_ROUTE_CATALOG.settingsPreferences,
+  WORKSTATION_ROUTE_CATALOG.settingsAccountingSystems,
+  WORKSTATION_ROUTE_CATALOG.settingsIntegrations,
+  WORKSTATION_ROUTE_CATALOG.settingsAccess,
+  WORKSTATION_ROUTE_CATALOG.settingsProviders,
+  WORKSTATION_ROUTE_CATALOG.settingsDiagnostics,
+  WORKSTATION_ROUTE_CATALOG.settingsDiagnosticsAdvanced,
+  WORKSTATION_ROUTE_CATALOG.settingsFeatureCoverage
+];
+
+/** Parameterized provider routes accepted by React Router and Settings route state. */
+export const SETTINGS_PROVIDER_SCREEN_ROUTE_PATTERNS = [
+  "/settings/providers/:providerId/setup",
+  "/settings/providers/:providerId/advanced"
+] as const;
+
+/**
  * Routes whose screens have no data source wired yet — they render a permanent
  * "not connected" empty state (Family Office is mounted without an
  * entityStructure; the Formula Workbench has no formula catalog endpoint).
@@ -110,7 +146,15 @@ export type WorkstationRouteQueryValue = string | number | boolean | null | unde
  * primary navigation and the command palette so operators are not steered into
  * dead ends. Remove a route from this set when its read model lands.
  */
-export const UNWIRED_WORKSTATION_ROUTES: ReadonlySet<string> = new Set<string>();
+export const UNWIRED_WORKSTATION_ROUTES: ReadonlySet<string> = new Set<string>([
+  // FamilyOfficeScreen is mounted without an entityStructure prop, so it defaults to null and
+  // always renders the "Family office data is not connected" empty state.
+  WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice,
+  // The Quant Lab formulas tab renders a hardcoded "not connected" card; the built
+  // strategy-formula-workbench component has no formula-catalog endpoint behind it. Only the
+  // formulas deep link is unwired — the Quant Lab route itself stays navigable.
+  `${WORKSTATION_ROUTE_CATALOG.strategyQuantLab}?view=formulas`
+]);
 
 const WORKSPACE_ROOT_ROUTES: Record<WorkspaceKey, WorkstationRoutePath> = {
   trading: WORKSTATION_ROUTE_CATALOG.trading,

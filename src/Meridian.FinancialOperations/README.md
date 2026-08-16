@@ -85,14 +85,16 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Reconciliation/Connectors/` - custodian/broker statement connector library (ADR-018):
   declarative versioned CSV/OFX mapping-profile documents with a file-backed store, live catalog,
   and format-drift detection; per-column mapping-confidence scoring; connectors for
-  profile-driven CSV, OFX 1.x/2.x bank + investment statements, IB Flex Report XML,
-  fetch-capable Alpaca activity + portfolio snapshots, and profile-less ISO 20022 camt.053 and
-  BAI2 institutional bank cash statements (content-sniffed, mapped directly to canonical records);
-  `StatementImportService` preview/commit
+  profile-driven CSV, OFX 1.x/2.x bank + investment statements, remotely fetched or uploaded IB
+  Flex Report XML, fetch-capable Alpaca activity + portfolio snapshots with bounded complete
+  pagination, and profile-less ISO 20022 camt.053 and BAI2 institutional bank cash statements
+  (content-sniffed, mapped directly to canonical records); `StatementImportService` preview/commit
   orchestration that renders deterministic canonical-CSV artifacts into the existing
   statement-run workflow (positions, transactions, cash balances, fees, and dividends all
-  classify per kind), returning retained break ids plus structured reconciliation case links for
-  the opened reconciliation work while retaining legacy case id/route arrays for compatibility; and
+  classify per kind), retains a structured canonical-evidence sidecar for account margin, complete
+  activity cursors, option lifecycle, tax-lot, and borrow evidence, and returns retained break ids
+  plus structured reconciliation case links for the opened reconciliation work while retaining
+  legacy case id/route arrays for compatibility; and
   persisted broker/custodian-classified fetch schedules with an idempotent schedule runner whose
   transient failures retain a stable non-sensitive status without advancing the last-successful-fetch
   watermark. Scheduled fetches reauthorize the retained tenant, company, fund, book, period, and
@@ -106,6 +108,15 @@ Use this README to understand the module before editing source files. Update the
 
 Statement reconciliation also lives here. Broker/custodian statement intake, mapping profiles, validation, duplicate detection, matching, break classification, reconciliation decision journals, statement-run persistence, and durable case materialization are Financial Operations behavior. Application commands and shared UI services invoke the module workflow, but they do not own reconciliation state, matching rules, or statement-run persistence.
 
+The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, uploaded or Web-Service-fetched IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Institutional bank cash statements are also ingested directly by the profile-less ISO 20022 camt.053 and BAI2 connectors (content-sniffed, closing-balance and signed entries mapped straight to canonical records) so most bank statements reconcile without hand-conversion. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. A sibling `canonical-evidence.json` retains provider account margin, activity subtype and cursor completeness, option lifecycle, tax-lot, and securities-borrow evidence without widening the legacy reconciliation CSV seam. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store. Alpaca activity retrieval pages to a bounded complete cursor and fails closed if the provider cannot prove continuity. IB Flex uses the documented v3 request/retrieve flow with bounded polling and trusted-host enforcement. Persisted schedules retain an explicit broker/custodian source classification, support operator run-now and background cadence, and default legacy snapshots to broker; a failed fetch records only the exception type and advances a separate attempt/cadence watermark so provider or configuration failures do not retry every scheduler tick while the last-successful-fetch cursor remains available for recovery.
+
+The shared Margin Control Center reads retained canonical evidence across providers, accounts, and
+prime brokers. Provider-reported buying power, maintenance margin, excess liquidity, and restriction
+flags remain authoritative. Meridian displays a clearly labelled Reg T or portfolio-margin shadow
+estimate only as a diagnostic comparison, never as liquidation or posting authority. Intraday
+snapshots are provisional; end-of-day certification is permission checked and blocked for stale,
+incomplete, or critical evidence.
+
 The UI Shared Statement Reconciliation Report intake adapter binds retained imports to an exact
 fund, ledger-book, open accounting-period, and as-of scope, starts or reuses the matching Operations
 Continuity workflow, and projects source obligations into the existing canonical reconciliation
@@ -117,8 +128,6 @@ synchronization. The adapter and its casework handoff may attach retained eviden
 post, approve, or close on an operator's behalf.
 
 The statement-run workflow reconciles each imported statement against Meridian's own book rather than against itself: `StatementRunWorkflowService` resolves internal positions, cash, and ledger transactions through `IInternalReconciliationPopulationProvider` (default: an empty book, so every row is a genuine unmatched break) and runs the shared `StatementMatchingEngine` across positions, cash, and transactions in exact / tolerance / candidate / unmatched tiers. Foreign-currency amounts normalize to the reporting base currency through a fail-closed `IReconciliationFxRateProvider` (identity-only by default, so cross-currency lines break unless a rate is configured); cash matching retains its original currency identity after conversion so distinct per-currency balances cannot cross-match. Both statement-only and internal-only records surface as breaks with a truthful tolerance-breached flag and engine-sourced confidence. A real `IFxRateProvider` implementation (`InMemoryFxRateProvider`, identity/inverse/triangulation with as-of selection) is available to the execution and ledger layers.
-
-The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Institutional bank cash statements are also ingested directly by the profile-less ISO 20022 camt.053 and BAI2 connectors (content-sniffed, closing-balance and signed entries mapped straight to canonical records) so most bank statements reconcile without hand-conversion. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is shared and duplicate-key idempotency is preserved. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store. Persisted schedules retain an explicit broker/custodian source classification, support operator run-now and background cadence, and default legacy snapshots to broker; a failed fetch records only the exception type and advances a separate attempt/cadence watermark so provider or configuration failures do not retry every scheduler tick while the last-successful-fetch cursor remains available for recovery.
 Import services capture bounded raw and canonical bytes once, compute authoritative SHA-256 values
 from those snapshots, validate any caller-supplied hash only as an assertion, and parse the same
 captured bytes. Canonical CSV rendering uses reversible RFC-style quoting for commas, quotes, and
@@ -593,6 +602,14 @@ evidence deletion.
 | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
 | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
+| `W10-RECON-001` | Durable break lineage identity and run-over-run break diff |
+| `W10-RECON-002` | Break clustering and bulk-resolution activation |
+| `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
+| `W10-SEAM-001` | Unified close-readiness projection behind one shared contract |
+| `W10-RECON-003` | Unified tolerance model and what-if replay workbench |
+| `W10-RECON-004` | Operator-taught match rules with promotion gate |
+| `W10-PERF-001` | Portfolio and investor return measurement |
+| `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

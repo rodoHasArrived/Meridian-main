@@ -118,6 +118,24 @@
       "review_by": "2027-02-01"
     },
     {
+      "path": "tests/Meridian.Tests/Storage/Banking/PostgresBankingIntegrityTests.cs",
+      "test": "BankingDatabaseFactAttribute",
+      "reason": "$\"Banking PostgreSQL tests are skipped because {DisableDockerVariable}=true.\"",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "PRD-016",
+      "review_by": "2027-02-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/Storage/Banking/PostgresBankingIntegrityTests.cs",
+      "test": "BankingDatabaseFactAttribute",
+      "reason": "\"Banking PostgreSQL tests are skipped because Docker is unavailable. \" + $\"Start Docker or set {ConnectionStringVariable} to an external PostgreSQL instance.\"",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "PRD-016",
+      "review_by": "2027-02-01"
+    },
+    {
       "path": "tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs",
       "test": "ProductionReadinessService_RequiresDimensionalReportQueryCertification",
       "reason": "Quarantined pending re-adjudication (a3a01eff): asserts the removed string-token dimensional model (CompletedControlCount==2 and dimensions.reporting-* rollout-scope-mismatch derived from string links); under the structured-artifact contract a bound dimensional artifact yields >=3 and those string-derived issues no longer fire. Needs a rewrite around subset dimensional artifacts.",

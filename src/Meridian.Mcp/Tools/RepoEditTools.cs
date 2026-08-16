@@ -126,20 +126,14 @@ public sealed class RepoEditTools(RepoPathService repo, ILogger<RepoEditTools> l
         psi.ArgumentList.Add(mode);
         configureArguments(psi.ArgumentList);
 
-        using var process = new Process { StartInfo = psi };
-        process.Start();
-
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        cts.CancelAfter(TimeoutMs);
-
-        var stdoutTask = process.StandardOutput.ReadToEndAsync(cts.Token);
-        var stderrTask = process.StandardError.ReadToEndAsync(cts.Token);
-
-        await process.WaitForExitAsync(cts.Token);
+        var processResult = await ToolProcessRunner.RunAsync(
+            psi,
+            TimeSpan.FromMilliseconds(TimeoutMs),
+            ct).ConfigureAwait(false);
         return new ToolRunResult(
-            process.ExitCode,
-            await stdoutTask,
-            await stderrTask);
+            processResult.ExitCode,
+            processResult.StandardOutput,
+            processResult.StandardError);
     }
 
     private static string FormatToolResult(string title, ToolRunResult result, string planPath)

@@ -97,8 +97,44 @@ public sealed class BackfillScheduleManager
 
                     if (schedule != null)
                     {
-                        // Recalculate next execution time
-                        schedule.NextExecutionAt = schedule.CalculateNextExecution();
+                        string? repairReason = null;
+                        if (BackfillSchedulePresets.TryMigrateLegacyMonthlyDeepBackfill(schedule))
+                        {
+                            repairReason =
+                                "Migrated the retained monthly-deep-backfill preset to explicit first-Sunday cron semantics.";
+                            _logger.LogInformation(
+                                "Migrated loaded backfill schedule {ScheduleId} to explicit first-Sunday cron semantics",
+                                schedule.ScheduleId);
+                        }
+
+                        if (schedule.Enabled)
+                        {
+                            if (TryCalculateNextExecution(schedule, out var nextExecution))
+                            {
+                                schedule.NextExecutionAt = nextExecution;
+                            }
+                            else
+                            {
+                                schedule.Enabled = false;
+                                schedule.NextExecutionAt = null;
+                                repairReason =
+                                    "Disabled the retained schedule because its cron expression or time zone has no valid future occurrence.";
+                                _logger.LogWarning(
+                                    "Disabled loaded backfill schedule {ScheduleId} because its cron expression or time zone has no valid future occurrence",
+                                    schedule.ScheduleId);
+                            }
+                        }
+                        else
+                        {
+                            schedule.NextExecutionAt = null;
+                        }
+
+                        if (repairReason is not null)
+                        {
+                            MarkScheduleRepair(schedule, repairReason);
+                            await PersistScheduleUnderLockAsync(schedule, ct).ConfigureAwait(false);
+                        }
+
                         loadedSchedules[schedule.ScheduleId] = schedule;
                     }
                 }
@@ -133,14 +169,11 @@ public sealed class BackfillScheduleManager
     {
         ArgumentNullException.ThrowIfNull(schedule);
 
-        if (!CronExpressionParser.IsValid(schedule.CronExpression))
-            throw new ArgumentException($"Invalid cron expression: {schedule.CronExpression}");
-
         if (string.IsNullOrWhiteSpace(schedule.Name))
             throw new ArgumentException("Schedule name is required");
 
         var candidate = CloneSchedule(schedule);
-        candidate.NextExecutionAt = candidate.CalculateNextExecution();
+        candidate.NextExecutionAt = ValidateAndCalculateNextExecution(candidate);
 
         await _persistLock.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -192,12 +225,9 @@ public sealed class BackfillScheduleManager
     {
         ArgumentNullException.ThrowIfNull(schedule);
 
-        if (!CronExpressionParser.IsValid(schedule.CronExpression))
-            throw new ArgumentException($"Invalid cron expression: {schedule.CronExpression}");
-
         var candidate = CloneSchedule(schedule);
         candidate.ModifiedAt = DateTimeOffset.UtcNow;
-        candidate.NextExecutionAt = candidate.CalculateNextExecution();
+        candidate.NextExecutionAt = ValidateAndCalculateNextExecution(candidate);
 
         await _persistLock.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -369,9 +399,9 @@ public sealed class BackfillScheduleManager
             candidate = CloneSchedule(existing);
             candidate.Enabled = enabled;
             candidate.ModifiedAt = DateTimeOffset.UtcNow;
-
-            if (enabled)
-                candidate.NextExecutionAt = candidate.CalculateNextExecution();
+            candidate.NextExecutionAt = enabled
+                ? ValidateAndCalculateNextExecution(candidate)
+                : null;
 
             await PersistScheduleUnderLockAsync(candidate, ct).ConfigureAwait(false);
             _schedules[scheduleId] = candidate;
@@ -418,7 +448,28 @@ public sealed class BackfillScheduleManager
                 else if (execution.Status == ExecutionStatus.Failed)
                     candidate.FailedExecutions++;
 
-                candidate.NextExecutionAt = candidate.CalculateNextExecution();
+                if (candidate.Enabled)
+                {
+                    if (TryCalculateNextExecution(candidate, out var nextExecution))
+                    {
+                        candidate.NextExecutionAt = nextExecution;
+                    }
+                    else
+                    {
+                        candidate.Enabled = false;
+                        candidate.NextExecutionAt = null;
+                        MarkScheduleRepair(
+                            candidate,
+                            "Disabled the schedule after execution because it has no valid future occurrence.");
+                        _logger.LogWarning(
+                            "Disabled backfill schedule {ScheduleId} after execution because it has no valid future occurrence",
+                            candidate.ScheduleId);
+                    }
+                }
+                else
+                {
+                    candidate.NextExecutionAt = null;
+                }
 
                 await PersistScheduleUnderLockAsync(candidate, ct).ConfigureAwait(false);
                 _schedules[candidate.ScheduleId] = candidate;
@@ -517,6 +568,58 @@ public sealed class BackfillScheduleManager
         var filePath = GetScheduleFilePath(schedule.ScheduleId);
         var json = JsonSerializer.Serialize(schedule, _jsonOptions);
         await AtomicFileWriter.WriteAsync(filePath, json, ct).ConfigureAwait(false);
+    }
+
+    private static DateTimeOffset? ValidateAndCalculateNextExecution(BackfillSchedule schedule)
+    {
+        if (!CronExpressionParser.IsValid(schedule.CronExpression))
+            throw new ArgumentException($"Invalid cron expression: {schedule.CronExpression}", nameof(schedule));
+
+        DateTimeOffset? nextExecution;
+        try
+        {
+            nextExecution = schedule.CalculateNextExecution();
+        }
+        catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
+        {
+            throw new ArgumentException($"Invalid time zone: {schedule.TimeZoneId}", nameof(schedule), ex);
+        }
+
+        if (schedule.Enabled && !nextExecution.HasValue)
+        {
+            throw new ArgumentException(
+                $"Enabled schedule '{schedule.ScheduleId}' has no future occurrence within the supported cron calendar horizon.",
+                nameof(schedule));
+        }
+
+        return schedule.Enabled ? nextExecution : null;
+    }
+
+    private static bool TryCalculateNextExecution(
+        BackfillSchedule schedule,
+        out DateTimeOffset? nextExecution)
+    {
+        nextExecution = null;
+        if (!CronExpressionParser.IsValid(schedule.CronExpression))
+            return false;
+
+        try
+        {
+            nextExecution = schedule.CalculateNextExecution();
+            return nextExecution.HasValue;
+        }
+        catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
+        {
+            return false;
+        }
+    }
+
+    private static void MarkScheduleRepair(BackfillSchedule schedule, string reason)
+    {
+        var repairedAt = DateTimeOffset.UtcNow;
+        schedule.ModifiedAt = repairedAt;
+        schedule.LastRepairReason = reason;
+        schedule.LastRepairedAt = repairedAt;
     }
 
     private BackfillSchedule CloneSchedule(BackfillSchedule schedule)

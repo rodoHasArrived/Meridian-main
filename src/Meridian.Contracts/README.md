@@ -24,6 +24,14 @@ or provider implementations.
 
 ## Key folders and files
 
+- `Integrity/` - the canonical SHA-256 digest contract. `Sha256Digest` is the single required seam
+  for digest validation and comparison; do not add a local `IsSha256`/`FixedHashEquals` helper.
+  It keeps three questions apart on purpose: `IsCanonical` enforces Meridian's canonical form
+  (64 lowercase hex) on write and certification paths, `IsWellFormed` accepts any 64 hex characters
+  for read paths, and `Compare`/`FixedEquals` decide whether two digests denote the same bytes.
+  Comparison is case-insensitive, because hex casing is a presentation detail and not a security
+  property, and it reports a malformed digest distinctly from a genuine mismatch so callers can stop
+  surfacing a data-hygiene problem as an integrity failure.
 - `Lifecycle/` - shared runtime state, readiness-check, shutdown-operation, shutdown-receipt,
   supervisor-manifest, exact-process-identity, database-identity, and session-receipt contracts.
 - `Operations/` - the program-wide verified terminal-outcome contract and append-only operational
@@ -38,6 +46,11 @@ or provider implementations.
   and event references, projection lineage, and query/command service contracts.
 - `Ledger/` - shared accounting configuration, ledger-book, posting-intent, journal query, dimension,
   authoritative book-context snapshot, and existing rule-pack reference contracts.
+  `LedgerDimensionTags` is the single owner of GL-dimension tag parsing and of the
+  "does this dimension set carry anything?" predicate. Storage, endpoint, reporting, and close
+  callers consume it rather than redeclaring a local copy, so a whitespace-only dimension value
+  cannot be treated as present at one layer and absent at another. Whitespace-only counts as
+  absent, matching the `NormalizeOptional` convention used across the ledger surface.
 - `SecurityMaster/` - shared Security Master command/read payloads, including corporate-action
   append requests, append results, structured audit metadata, and the injectable command service
   contract used by HTTP endpoints, imports, provider backfills, and workstation commands. The
@@ -137,6 +150,10 @@ references that do not name the resolved symbol or Security Master id. Operation
 journal candidate lines also carry optional `LedgerDimensionSetDto` scope so reviewed close,
 reconciliation, or accrual postings can preserve line-level fund/entity/cost-center/counterparty
 and external-GL dimensions through the Financial Operations posting gate.
+Strategy-run reconciliation summaries and rows also carry optional bank-entity/source scope,
+Operations Continuity correlation keys, a versioned logical-break identity, and the retained first
+observation time. These additive fields let shared governance and workstation consumers distinguish
+entity-scoped incidents without changing the legacy positional record constructors.
 Reconciliation break queue items carry optional `LedgerBookId` scope so shared Accounting,
 Reconciliation, and close-readiness surfaces can filter explicit book cases without inferring
 accounting ownership from fund labels, routes, or exception text.
@@ -1386,6 +1403,16 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
+| `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
+| `W10-RECON-001` | Durable break lineage identity and run-over-run break diff |
+| `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
+| `W10-RECON-002` | Break clustering and bulk-resolution activation |
+| `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
+| `W10-TAX-001` | Tax character, wash-sale, and lot-relief operator surface |
+| `W10-SEAM-001` | Unified close-readiness projection behind one shared contract |
+| `W10-RECON-004` | Operator-taught match rules with promotion gate |
+| `W10-PERF-001` | Portfolio and investor return measurement |
+| `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

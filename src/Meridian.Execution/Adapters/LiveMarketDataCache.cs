@@ -15,6 +15,7 @@ public sealed class LiveMarketDataCache : ILiveFeedAdapter
     private readonly ConcurrentDictionary<string, Trade> _lastTrades = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, BboQuotePayload> _lastQuotes = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, LOBSnapshot> _lastOrderBooks = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, HistoricalBar> _lastBars = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, byte> _subscribedSymbols = new(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
@@ -55,6 +56,15 @@ public sealed class LiveMarketDataCache : ILiveFeedAdapter
         _lastOrderBooks[symbol] = snapshot;
     }
 
+    /// <summary>Records the most recent completed bar for a symbol.</summary>
+    public void RecordBar(string symbol, HistoricalBar bar)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
+        ArgumentNullException.ThrowIfNull(bar);
+        _subscribedSymbols.TryAdd(symbol, 0);
+        _lastBars[symbol] = bar;
+    }
+
     /// <inheritdoc/>
     public Trade? GetLastTrade(string symbol) =>
         _lastTrades.TryGetValue(symbol, out var trade) ? trade : null;
@@ -66,6 +76,10 @@ public sealed class LiveMarketDataCache : ILiveFeedAdapter
     /// <inheritdoc/>
     public LOBSnapshot? GetLastOrderBook(string symbol) =>
         _lastOrderBooks.TryGetValue(symbol, out var snapshot) ? snapshot : null;
+
+    /// <inheritdoc/>
+    public HistoricalBar? GetLastBar(string symbol) =>
+        _lastBars.TryGetValue(symbol, out var bar) ? bar : null;
 
     /// <summary>
     /// Returns the best available reference price for a symbol: last trade price first,

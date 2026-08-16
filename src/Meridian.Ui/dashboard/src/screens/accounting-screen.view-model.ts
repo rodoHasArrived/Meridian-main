@@ -70,6 +70,7 @@ import {
   buildReconciliationQueuePanelViewState,
   buildReconciliationResolveDialogState,
   buildReconciliationStatementRunsViewState,
+  sortStatementRunsNewestFirst,
   resolveSelectedReconciliation,
 } from "./accounting-screen.reconciliation.view-model";
 export {
@@ -3532,7 +3533,7 @@ export function useSecurityMasterViewModel(
     setConflictActionError(null);
 
     try {
-      const updated = await services.resolveConflict({ conflictId, resolution, resolvedBy: "operator" });
+      const updated = await services.resolveConflict({ conflictId, resolution, resolvedBy: "operator", reason: `${resolution} action from the shared conflict queue.` });
       setConflicts((current) => current?.map((conflict) => (
         conflict.conflictId === conflictId ? updated : conflict
       )) ?? current);
@@ -3867,6 +3868,7 @@ export function useAccountingReconciliationViewModel(
   const [transactionLabPreview, setTransactionLabPreview] = useState<InvestmentAccountingTransactionLabPreview | null>(null);
   const [transactionLabError, setTransactionLabError] = useState<ApiErrorDisplay | null>(null);
   const calibrationRequestRevisionRef = useRef(0);
+  const statementRunsRequestRevisionRef = useRef(0);
 
   const reconciliationQueue = data?.reconciliationQueue ?? [];
   const selectedReconciliation = useMemo(
@@ -3964,54 +3966,41 @@ export function useAccountingReconciliationViewModel(
     };
   }, [refreshCalibrationSummary, workstream]);
 
-  const refreshStatementRuns = useCallback(() => {
+  const refreshStatementRuns = useCallback(async () => {
+    const revision = statementRunsRequestRevisionRef.current + 1;
+    statementRunsRequestRevisionRef.current = revision;
     setStatementRunsLoading(true);
     setStatementRunsError(null);
 
-    services.getStatementRuns()
-      .then((runs) => {
-        setStatementRuns(runs);
-      })
-      .catch((err) => {
-        setStatementRuns([]);
+    try {
+      const runs = await services.getStatementRuns();
+      if (statementRunsRequestRevisionRef.current === revision) {
+        setStatementRuns(sortStatementRunsNewestFirst(runs));
+      }
+    } catch (err) {
+      if (statementRunsRequestRevisionRef.current === revision) {
         setStatementRunsError(describeApiError(err, "Statement runs failed to load."));
-      })
-      .finally(() => {
+      }
+    } finally {
+      if (statementRunsRequestRevisionRef.current === revision) {
         setStatementRunsLoading(false);
-      });
+      }
+    }
   }, [services]);
 
   useEffect(() => {
     if (workstream !== "reconciliation" && workstream !== "exceptions") {
+      statementRunsRequestRevisionRef.current += 1;
+      setStatementRunsLoading(false);
       return;
     }
 
-    let cancelled = false;
-    setStatementRunsLoading(true);
-    setStatementRunsError(null);
-
-    services.getStatementRuns()
-      .then((runs) => {
-        if (!cancelled) {
-          setStatementRuns(runs);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setStatementRuns([]);
-          setStatementRunsError(describeApiError(err, "Statement runs failed to load."));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setStatementRunsLoading(false);
-        }
-      });
+    void refreshStatementRuns();
 
     return () => {
-      cancelled = true;
+      statementRunsRequestRevisionRef.current += 1;
     };
-  }, [services, workstream]);
+  }, [refreshStatementRuns, workstream]);
 
   useEffect(() => {
     if (!selectedReconciliation || workstream !== "ledger") {

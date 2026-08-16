@@ -171,6 +171,35 @@ function buildSystemReconciliationLine(
   };
 }
 
+export function sortStatementRunsNewestFirst(
+  statementRuns: readonly StatementRunSummaryWithMetadata[]
+): StatementRunSummaryWithMetadata[] {
+  return [...statementRuns].sort((left, right) => {
+    const leftTimestamp = statementRunTimestamp(left);
+    const rightTimestamp = statementRunTimestamp(right);
+    if (leftTimestamp !== rightTimestamp) {
+      return rightTimestamp - leftTimestamp;
+    }
+
+    return left.runId.localeCompare(right.runId);
+  });
+}
+
+function statementRunTimestamp(run: StatementRunSummaryWithMetadata): number {
+  for (const value of [run.importedAtUtc, run.completedAtUtc, run.startedAtUtc]) {
+    if (!value) {
+      continue;
+    }
+
+    const timestamp = Date.parse(value);
+    if (Number.isFinite(timestamp)) {
+      return timestamp;
+    }
+  }
+
+  return Number.NEGATIVE_INFINITY;
+}
+
 export function buildReconciliationStatementRunsViewState({
   statementRuns,
   fallbackQueue,
@@ -195,7 +224,7 @@ export function buildReconciliationStatementRunsViewState({
       caseCount: item.openBreakCount,
       importedAtUtc: item.lastUpdated
     }));
-  const sourceRows: StatementRunSummaryWithMetadata[] = statementRuns.length > 0 ? statementRuns : fallbackRows;
+  const sourceRows = sortStatementRunsNewestFirst(statementRuns.length > 0 ? statementRuns : fallbackRows);
   const effectiveSelectedRunId = resolveStatementRunSelection(sourceRows, selectedRunId);
   const rows = sourceRows.map((run) => buildStatementRunRow(run, effectiveSelectedRunId, detailPanelId));
   const selected = sourceRows.find((run) => run.runId === effectiveSelectedRunId) ?? null;
@@ -249,7 +278,7 @@ export function buildReconciliationComparisonViewState({
       caseCount: item.openBreakCount,
       importedAtUtc: item.lastUpdated
     }));
-  const sourceRows: StatementRunSummaryWithMetadata[] = statementRuns.length > 0 ? statementRuns : fallbackRows;
+  const sourceRows = sortStatementRunsNewestFirst(statementRuns.length > 0 ? statementRuns : fallbackRows);
   const effectiveSelectedRunId = resolveStatementRunSelection(sourceRows, selectedRunId);
   const sortedRows = [
     ...sourceRows.filter((row) => row.runId === effectiveSelectedRunId),

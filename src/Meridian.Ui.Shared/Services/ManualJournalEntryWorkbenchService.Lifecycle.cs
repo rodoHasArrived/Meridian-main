@@ -10,6 +10,7 @@ using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -969,27 +970,25 @@ public sealed partial class ManualJournalEntryWorkbenchService
             CounterpartyId: NormalizeOptional(dimensions?.CounterpartyId) ?? NormalizeOptional(counterpartyId),
             ExternalGlDimensions: externalDimensions
                 .OrderBy(item => item.Key, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(item => item.Key, item => item.Value, StringComparer.OrdinalIgnoreCase))
+                .ToDictionary(item => item.Key, item => item.Value, StringComparer.OrdinalIgnoreCase),
+            // Carried through rather than dropped. These seven are constructor parameters that
+            // default to null, so omitting them silently discarded any organization, portfolio,
+            // book, account, customer, vendor, or project dimension the caller supplied -- even
+            // when another field kept the set alive. AccountingReportPackageService's
+            // same-named normalizer already carries all nineteen.
+            OrganizationId: NormalizeOptional(dimensions?.OrganizationId),
+            PortfolioId: NormalizeOptional(dimensions?.PortfolioId),
+            BookId: NormalizeOptional(dimensions?.BookId),
+            AccountId: NormalizeOptional(dimensions?.AccountId),
+            CustomerId: NormalizeOptional(dimensions?.CustomerId),
+            VendorId: NormalizeOptional(dimensions?.VendorId),
+            ProjectId: NormalizeOptional(dimensions?.ProjectId))
         {
             PositionId = dimensions?.PositionId
         };
 
-        return HasAnyDimension(normalized) ? normalized : null;
+        return LedgerDimensionTags.HasAnyDimension(normalized) ? normalized : null;
     }
-
-    private static bool HasAnyDimension(LedgerDimensionSetDto dimensions)
-        => !string.IsNullOrWhiteSpace(dimensions.FundId) ||
-           !string.IsNullOrWhiteSpace(dimensions.EntityId) ||
-           !string.IsNullOrWhiteSpace(dimensions.SleeveId) ||
-           !string.IsNullOrWhiteSpace(dimensions.StrategyId) ||
-           !string.IsNullOrWhiteSpace(dimensions.InvestorId) ||
-           !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId) ||
-           dimensions.InstrumentId.HasValue ||
-           dimensions.PositionId.HasValue ||
-           !string.IsNullOrWhiteSpace(dimensions.TaxLotId) ||
-           !string.IsNullOrWhiteSpace(dimensions.CostCenterId) ||
-           !string.IsNullOrWhiteSpace(dimensions.CounterpartyId) ||
-           dimensions.ExternalGlDimensions.Count > 0;
 
     private static void ValidateRequiredDimensions(
         LedgerDimensionSetDto? dimensions,
@@ -1123,9 +1122,6 @@ public sealed partial class ManualJournalEntryWorkbenchService
         => string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException($"{parameterName} is required.", parameterName)
             : value.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static IReadOnlyList<string> NormalizePrincipalIds(IReadOnlyList<string>? values)
         => values?

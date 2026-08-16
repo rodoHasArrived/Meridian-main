@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ui.Services;
 using WpfServices = Meridian.Wpf.Services;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -283,9 +284,6 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
             ["classification"] = string.Equals(assetClass, "Equity", StringComparison.OrdinalIgnoreCase) ? "Common" : null
         });
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string ReadJsonString(JsonElement element, string propertyName)
         => element.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.String

@@ -183,6 +183,9 @@ public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBa
 {
     private const string MultiAssetCoverageRoute = UiApiRoutes.WorkstationPortfolioMultiAssetCoverage;
     private const string AssetOperationsRoute = UiApiRoutes.WorkstationAssetOperations;
+    private readonly WorkspaceShellContextService? _shellContextService;
+    private readonly SemaphoreSlim _shellContextGate = new(1, 1);
+    private bool _isMonitoringShellSignals;
 
     public IReadOnlyList<WorkspaceQueueItem> CockpitDecisionItems { get; } =
     [
@@ -298,10 +301,72 @@ public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBa
         }
     ];
 
-    public PortfolioWorkspaceShellViewModel()
+    public PortfolioWorkspaceShellViewModel(WorkspaceShellContextService? shellContextService = null)
         : base(ShellNavigationCatalog.GetWorkspaceShell("portfolio")!)
     {
+        _shellContextService = shellContextService;
     }
+
+    public event EventHandler? RefreshRequested;
+
+    public void Start()
+    {
+        if (_shellContextService is null || _isMonitoringShellSignals)
+        {
+            return;
+        }
+
+        _shellContextService.SignalsChanged += OnShellSignalsChanged;
+        _isMonitoringShellSignals = true;
+    }
+
+    public void Stop()
+    {
+        if (_shellContextService is null || !_isMonitoringShellSignals)
+        {
+            return;
+        }
+
+        _shellContextService.SignalsChanged -= OnShellSignalsChanged;
+        _isMonitoringShellSignals = false;
+    }
+
+    public async Task RefreshShellContextAsync(CancellationToken cancellationToken = default)
+    {
+        if (_shellContextService is null)
+        {
+            return;
+        }
+
+        await _shellContextGate.WaitAsync(cancellationToken);
+        try
+        {
+            ShellContext = await _shellContextService.CreateAsync(
+                new WorkspaceShellContextInput
+                {
+                    WorkspaceTitle = "Portfolio",
+                    WorkspaceSubtitle = "Accounts, exposure, imports, and close readiness over shared portfolio read models.",
+                    PrimaryScopeLabel = "Fund",
+                    ReviewStateLabel = "Close readiness"
+                },
+                cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Meridian.Wpf.Services.LoggingService.Instance.LogError("[PortfolioWorkspaceShell] Shell context refresh failed", ex);
+        }
+        finally
+        {
+            _shellContextGate.Release();
+        }
+    }
+
+    private void OnShellSignalsChanged(object? sender, EventArgs e)
+        => RefreshRequested?.Invoke(this, EventArgs.Empty);
 }
 
 public sealed class AccountingWorkspaceShellViewModel : WorkspaceShellViewModelBase
@@ -316,8 +381,10 @@ public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBa
 {
     private readonly FundContextService? _fundContextService;
     private readonly FundOperationsWorkspaceReadService? _workspaceReadService;
+    private readonly WorkspaceShellContextService? _shellContextService;
     private readonly SemaphoreSlim _refreshGate = new(1, 1);
     private bool _isMonitoringFundContext;
+    private bool _isMonitoringShellSignals;
     private IReadOnlyList<WorkspaceQueueItem> _cockpitDecisionItems = ReportingWorkspaceShellPresentationService.BuildFallbackDecisionItems();
     private string _writerSummaryText = "Locked";
     private string _approvalSummaryText = "Context";
@@ -327,11 +394,13 @@ public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBa
     public ReportingWorkspaceShellViewModel(
         FundContextService? fundContextService = null,
         FundOperationsWorkspaceReadService? workspaceReadService = null,
-        ReportingGovernanceWorkbenchViewModel? governance = null)
+        ReportingGovernanceWorkbenchViewModel? governance = null,
+        WorkspaceShellContextService? shellContextService = null)
         : base(ShellNavigationCatalog.GetWorkspaceShell("reporting")!)
     {
         _fundContextService = fundContextService;
         _workspaceReadService = workspaceReadService;
+        _shellContextService = shellContextService;
         Governance = governance;
         CommandGroup = ReportingWorkspaceShellPresentationService.BuildCommandGroup(hasFund: false);
     }
@@ -376,28 +445,38 @@ public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBa
 
     public void Start()
     {
-        if (_fundContextService is null || _isMonitoringFundContext)
+        if (_fundContextService is not null && !_isMonitoringFundContext)
         {
-            return;
+            _fundContextService.ActiveFundProfileChanged += OnFundContextChanged;
+            _isMonitoringFundContext = true;
         }
 
-        _fundContextService.ActiveFundProfileChanged += OnFundContextChanged;
-        _isMonitoringFundContext = true;
+        if (_shellContextService is not null && !_isMonitoringShellSignals)
+        {
+            _shellContextService.SignalsChanged += OnShellSignalsChanged;
+            _isMonitoringShellSignals = true;
+        }
     }
 
     public void Stop()
     {
-        if (_fundContextService is null || !_isMonitoringFundContext)
+        if (_fundContextService is not null && _isMonitoringFundContext)
         {
-            return;
+            _fundContextService.ActiveFundProfileChanged -= OnFundContextChanged;
+            _isMonitoringFundContext = false;
         }
 
-        _fundContextService.ActiveFundProfileChanged -= OnFundContextChanged;
-        _isMonitoringFundContext = false;
+        if (_shellContextService is not null && _isMonitoringShellSignals)
+        {
+            _shellContextService.SignalsChanged -= OnShellSignalsChanged;
+            _isMonitoringShellSignals = false;
+        }
     }
 
     public async Task RefreshAsync(CancellationToken cancellationToken = default)
     {
+        await RefreshShellContextAsync(cancellationToken).ConfigureAwait(true);
+
         if (_fundContextService?.CurrentFundProfile is not { } profile)
         {
             Governance?.SetFundContext(null, null);
@@ -465,7 +544,39 @@ public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBa
         SummarySnapshotDetailText = $"{reporting.Summary} Report writer, scheduled delivery, portfolio views, exports, branding, access, and audit lineage are refreshed from the shared fund-operations read model.";
     }
 
+    private async Task RefreshShellContextAsync(CancellationToken cancellationToken)
+    {
+        if (_shellContextService is null)
+        {
+            return;
+        }
+
+        try
+        {
+            ShellContext = await _shellContextService.CreateAsync(
+                new WorkspaceShellContextInput
+                {
+                    WorkspaceTitle = "Reporting",
+                    WorkspaceSubtitle = "Governed report packs, schedules, exports, and delivery evidence.",
+                    PrimaryScopeLabel = "Fund",
+                    ReviewStateLabel = "Approval"
+                },
+                cancellationToken).ConfigureAwait(true);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Meridian.Wpf.Services.LoggingService.Instance.LogError("[ReportingWorkspaceShell] Shell context refresh failed", ex);
+        }
+    }
+
     private void OnFundContextChanged(object? sender, FundProfileChangedEventArgs e)
+        => RefreshRequested?.Invoke(this, EventArgs.Empty);
+
+    private void OnShellSignalsChanged(object? sender, EventArgs e)
         => RefreshRequested?.Invoke(this, EventArgs.Empty);
 }
 

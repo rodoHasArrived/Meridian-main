@@ -5,6 +5,7 @@ using Meridian.Execution;
 using Meridian.Execution.Logging;
 using Meridian.Execution.Models;
 using Meridian.Execution.Services;
+using Meridian.Risk.Rules;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
@@ -46,7 +47,10 @@ public sealed record RiskRuleConfigDto(
     decimal? MaxGrossExposure = null,
     decimal? MaxSymbolConcentrationPercent = null,
     decimal? MaxOrderNotional = null,
-    decimal? EscalateOrderNotional = null);
+    decimal? EscalateOrderNotional = null,
+    decimal? MaxOrderQuantity = null,
+    decimal? MaxPriceDeviationPercent = null,
+    decimal? PriceCollarPercent = null);
 
 public sealed record RiskRuleConfigUpdateRequest(
     decimal? DefaultMaxPositionSize = null,
@@ -57,7 +61,10 @@ public sealed record RiskRuleConfigUpdateRequest(
     decimal? MaxGrossExposure = null,
     decimal? MaxSymbolConcentrationPercent = null,
     decimal? MaxOrderNotional = null,
-    decimal? EscalateOrderNotional = null);
+    decimal? EscalateOrderNotional = null,
+    decimal? MaxOrderQuantity = null,
+    decimal? MaxPriceDeviationPercent = null,
+    decimal? PriceCollarPercent = null);
 
 /// <summary>
 /// Single source of truth for operator-managed risk guardrail thresholds: it powers the read-only
@@ -88,6 +95,16 @@ public sealed class RiskRuleRuntimeService
     private decimal? _maxSymbolConcentrationPercent;
     private decimal? _maxOrderNotional;
     private decimal? _escalateOrderNotional;
+
+    // Fat-finger bands. Null = unconfigured: the corresponding limb approves without measuring.
+    private decimal? _maxOrderQuantity;
+    private decimal? _maxPriceDeviationPercent;
+
+    // Price collar. Null = unconfigured: the collar approves without measuring. Held beside
+    // the fat-finger band rather than inside FatFingerThresholds because the two feed different
+    // rules at different severities, and a single record would invite one rule reading the
+    // other's band.
+    private decimal? _priceCollarPercent;
 
     public RiskRuleRuntimeService(
         IServiceProvider services,
@@ -143,6 +160,42 @@ public sealed class RiskRuleRuntimeService
     public decimal? EscalateOrderNotional { get { lock (_gate) { return _escalateOrderNotional; } } }
 
     /// <summary>
+    /// Operator-tuned absolute per-order quantity ceiling, read per evaluation by the enforced
+    /// fat-finger rule. Null when unconfigured (the quantity limb approves).
+    /// </summary>
+    public decimal? MaxOrderQuantity { get { lock (_gate) { return _maxOrderQuantity; } } }
+
+    /// <summary>
+    /// Operator-tuned maximum aggressive price deviation from the market reference, in percent,
+    /// read per evaluation by the enforced fat-finger rule. Null when unconfigured (the price
+    /// limb approves, and a priced order with no reference price is no longer refused).
+    /// </summary>
+    public decimal? MaxPriceDeviationPercent { get { lock (_gate) { return _maxPriceDeviationPercent; } } }
+
+    /// <summary>
+    /// Both fat-finger limbs read under one lock, which is what the enforced rule consumes. Reading
+    /// the two properties above separately would let an evaluation straddle an update and observe a
+    /// pair that was never configured — a two-field change from (null quantity, 50% band) to
+    /// (100 quantity, null band) can otherwise be seen as (null, null), which the rule treats as
+    /// entirely unconfigured and approves through.
+    /// </summary>
+    public FatFingerThresholds FatFingerThresholds
+    {
+        get { lock (_gate) { return new FatFingerThresholds(_maxOrderQuantity, _maxPriceDeviationPercent); } }
+    }
+
+    /// <summary>
+    /// The collar band the escalating price rule consumes, read under the same lock. A single
+    /// value needs no atomic pairing of its own, but it is exposed as a record so the rule takes
+    /// a threshold type rather than a bare decimal and cannot be handed the fat-finger band by
+    /// mistake.
+    /// </summary>
+    public PriceCollarThresholds PriceCollarThresholds
+    {
+        get { lock (_gate) { return new PriceCollarThresholds(_priceCollarPercent); } }
+    }
+
+    /// <summary>
     /// Evaluates the drawdown circuit breaker against the same live portfolio state and
     /// operator-tuned threshold this service reports on the dashboard, so the guardrail can
     /// never show "Healthy" while it silently fails to gate an order. Invoked by the enforced
@@ -191,17 +244,78 @@ public sealed class RiskRuleRuntimeService
 
     public async Task<IReadOnlyList<RiskRuleStatusDto>> GetAllStatusesAsync(CancellationToken ct = default)
     {
-        var auditEntries = await GetAuditEntriesAsync(ct).ConfigureAwait(false);
         var asOf = DateTimeOffset.UtcNow;
-        return
-        [
+        var auditEntries = await GetAuditEntriesAsync(asOf, ct).ConfigureAwait(false);
+        var statuses = new[]
+        {
             BuildPositionLimitStatus(auditEntries, asOf),
             BuildDrawdownStatus(auditEntries, asOf),
             BuildOrderRateStatus(auditEntries, asOf),
             BuildGrossExposureStatus(auditEntries, asOf),
             BuildSymbolConcentrationStatus(auditEntries, asOf),
-            BuildOrderNotionalStatus(auditEntries, asOf)
-        ];
+            BuildOrderNotionalStatus(auditEntries, asOf),
+            BuildFatFingerStatus(auditEntries, asOf),
+            BuildPriceCollarStatus(auditEntries, asOf)
+        };
+
+        return WithAuditCoverageApplied(statuses);
+    }
+
+    /// <summary>
+    /// Refuses to report a rule healthy when the audit window it reasons over is incomplete.
+    /// <para>
+    /// Every rule above makes the same claim — no breach inside the liveness window — and that
+    /// claim is unverifiable when a burst has exceeded the audit trail's retention ceiling. The
+    /// fail-closed answer is to stop asserting it, not to log the shortfall and carry on: a
+    /// readiness gate reading "Healthy" cannot tell the difference between a quiet hour and an
+    /// hour nobody kept the records for. A rule already reporting a breach is left alone — it is
+    /// already constrained, and an incomplete window cannot make that less true.
+    /// </para>
+    /// </summary>
+    private IReadOnlyList<RiskRuleStatusDto> WithAuditCoverageApplied(RiskRuleStatusDto[] statuses)
+    {
+        var auditTrail = Resolve<ExecutionAuditTrailService>();
+        if (auditTrail is null)
+        {
+            return statuses;
+        }
+
+        // Two ways the evidence can fall short of the claim, and they need the same answer.
+        // Retention shorter than the liveness window is the subtler one: nothing is ever reported
+        // as a gap, because completeness is measured against the audit trail's own shorter window,
+        // so a 45-minute-old breach under a 30-minute retention window is trimmed silently while
+        // this service still promises to treat it as live. The consumer states its horizon, so the
+        // consumer is what has to check it.
+        // Completeness is asked at *this* service's horizon, not at the trail's retention window.
+        // A gap only hides something from this claim while it is inside the liveness window, so a
+        // two-hour trail and a one-hour claim must stop reporting constrained once the discard is an
+        // hour old. Asking the trail's own window instead would block order readiness through
+        // BuildRiskRuleGate for a second hour in which nothing assertable here was ever missing.
+        var horizonCovered = auditTrail.InMemoryRetentionWindow >= ViolationLivenessWindow;
+        var horizonComplete = auditTrail.RetentionWindowCompleteFor(ViolationLivenessWindow);
+        if (horizonCovered && horizonComplete)
+        {
+            return statuses;
+        }
+
+        _logger.LogWarning(
+            "Risk rule status reported constrained: the execution audit trail cannot establish the absence "
+            + "of a breach over the {LivenessWindow} liveness window (retention window {RetentionWindow}, "
+            + "complete over that horizon: {Complete}).",
+            ViolationLivenessWindow,
+            auditTrail.InMemoryRetentionWindow,
+            horizonComplete);
+
+        return statuses
+            .Select(static status => status.IsBreached
+                ? status
+                : status with
+                {
+                    State = "Constrained",
+                    Summary = "Audit retention does not cover the liveness window, so a recent breach "
+                        + "cannot be ruled out. Treating the rule as constrained until coverage recovers.",
+                })
+            .ToArray();
     }
 
     public async Task<RiskRuleStatusDto?> GetStatusAsync(string ruleName, CancellationToken ct = default)
@@ -272,6 +386,21 @@ public sealed class RiskRuleRuntimeService
                     MaxOrdersPerMinute: null,
                     MaxOrderNotional: _maxOrderNotional,
                     EscalateOrderNotional: _escalateOrderNotional),
+                "FatFinger" => new RiskRuleConfigDto(
+                    RuleName: "FatFinger",
+                    DefaultMaxPositionSize: null,
+                    SymbolPositionLimits: null,
+                    MaxDrawdownPercent: null,
+                    MaxOrdersPerMinute: null,
+                    MaxOrderQuantity: _maxOrderQuantity,
+                    MaxPriceDeviationPercent: _maxPriceDeviationPercent),
+                "PriceCollar" => new RiskRuleConfigDto(
+                    RuleName: "PriceCollar",
+                    DefaultMaxPositionSize: null,
+                    SymbolPositionLimits: null,
+                    MaxDrawdownPercent: null,
+                    MaxOrdersPerMinute: null,
+                    PriceCollarPercent: _priceCollarPercent),
                 _ => null
             };
         }
@@ -410,6 +539,97 @@ public sealed class RiskRuleRuntimeService
                     maxOrderNotional?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured",
                     escalateOrderNotional?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured");
                 break;
+            case "FatFinger":
+                if (!request.MaxOrderQuantity.HasValue && !request.MaxPriceDeviationPercent.HasValue)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(request.MaxOrderQuantity), "Provide MaxOrderQuantity and/or MaxPriceDeviationPercent.");
+                }
+
+                // Each limb merges independently against whatever is current at commit time, so
+                // setting one band never silently clears the other.
+                decimal? maxOrderQuantity = null;
+                decimal? maxPriceDeviationPercent = null;
+                decimal? collarUnderFatFingerBand = null;
+                await CommitThresholdsAsync(
+                    current =>
+                    {
+                        maxOrderQuantity = request.MaxOrderQuantity.HasValue
+                            ? NormalizeThreshold(request.MaxOrderQuantity, nameof(request.MaxOrderQuantity), required: false)
+                            : current.MaxOrderQuantity;
+                        maxPriceDeviationPercent = request.MaxPriceDeviationPercent.HasValue
+                            ? NormalizeThreshold(request.MaxPriceDeviationPercent, nameof(request.MaxPriceDeviationPercent), required: false)
+                            : current.MaxPriceDeviationPercent;
+
+                        // A sell can never breach a band of 100 or more: its aggressive deviation
+                        // is (reference - price) / reference, which for any positive price is
+                        // strictly under 100%. Such a band silently disables the sell side while
+                        // the dashboard still reports the rule configured, so a $0.01 sell against
+                        // a $100 bid would pass. Refuse it rather than accept a half-dead control.
+                        if (maxPriceDeviationPercent is >= 100m)
+                        {
+                            throw new ArgumentOutOfRangeException(
+                                nameof(request.MaxPriceDeviationPercent),
+                                "MaxPriceDeviationPercent must be below 100; a band at or above 100 can never reject a sell, silently disabling the sell side.");
+                        }
+
+                        collarUnderFatFingerBand = current.PriceCollarPercent;
+
+                        return current with
+                        {
+                            MaxOrderQuantity = maxOrderQuantity,
+                            MaxPriceDeviationPercent = maxPriceDeviationPercent
+                        };
+                    },
+                    actor,
+                    request.Reason,
+                    ct).ConfigureAwait(false);
+                _logger.LogInformation(
+                    "Risk rule config updated for {RuleName} by {Actor}: quantity ceiling {MaxOrderQuantity}, price-deviation band {MaxPriceDeviationPercent}%",
+                    normalizedRule,
+                    LogSanitizer.Sanitize(actor),
+                    maxOrderQuantity?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured",
+                    maxPriceDeviationPercent?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured");
+                WarnIfCollarUnreachable(maxPriceDeviationPercent, collarUnderFatFingerBand);
+                break;
+            case "PriceCollar":
+                if (!request.PriceCollarPercent.HasValue)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(request.PriceCollarPercent), "Provide PriceCollarPercent.");
+                }
+
+                decimal? priceCollarPercent = null;
+                decimal? fatFingerBandOverCollar = null;
+                await CommitThresholdsAsync(
+                    current =>
+                    {
+                        priceCollarPercent = NormalizeThreshold(
+                            request.PriceCollarPercent, nameof(request.PriceCollarPercent), required: false);
+
+                        // Same bound as the fat-finger band, and for the same reason: a sell's
+                        // aggressive deviation is strictly under 100%, so a collar at or above
+                        // that can never park a sell while the dashboard still reports the collar
+                        // configured. Refuse it rather than accept a half-dead control.
+                        if (priceCollarPercent is >= 100m)
+                        {
+                            throw new ArgumentOutOfRangeException(
+                                nameof(request.PriceCollarPercent),
+                                "PriceCollarPercent must be below 100; a collar at or above 100 can never park a sell, silently disabling the sell side.");
+                        }
+
+                        fatFingerBandOverCollar = current.MaxPriceDeviationPercent;
+
+                        return current with { PriceCollarPercent = priceCollarPercent };
+                    },
+                    actor,
+                    request.Reason,
+                    ct).ConfigureAwait(false);
+                _logger.LogInformation(
+                    "Risk rule config updated for {RuleName} by {Actor}: price collar {PriceCollarPercent}%",
+                    normalizedRule,
+                    LogSanitizer.Sanitize(actor),
+                    priceCollarPercent?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured");
+                WarnIfCollarUnreachable(fatFingerBandOverCollar, priceCollarPercent);
+                break;
             default:
                 return null;
         }
@@ -453,12 +673,24 @@ public sealed class RiskRuleRuntimeService
         }
     }
 
-    private async Task<IReadOnlyList<ExecutionAuditEntry>> GetAuditEntriesAsync(CancellationToken ct)
+    /// <summary>
+    /// Audit entries for the status projection: the newest 200 for history, and everything inside
+    /// the liveness window regardless of how much unrelated activity followed it.
+    /// <para>
+    /// A fixed count alone was wrong here, because every rule below makes a <em>time</em> claim —
+    /// "a breach in the last hour holds this rule constrained". Two hundred unrelated events after
+    /// a fat-finger refusal is an ordinary morning on an active desk, and it silently turned a live
+    /// breach into a healthy rule and reopened the readiness gate an hour early.
+    /// </para>
+    /// </summary>
+    private async Task<IReadOnlyList<ExecutionAuditEntry>> GetAuditEntriesAsync(
+        DateTimeOffset asOf,
+        CancellationToken ct)
     {
         var auditTrail = Resolve<ExecutionAuditTrailService>();
         return auditTrail is null
             ? Array.Empty<ExecutionAuditEntry>()
-            : await auditTrail.GetRecentAsync(200, ct).ConfigureAwait(false);
+            : await auditTrail.GetRecentOrSinceAsync(200, asOf - ViolationLivenessWindow, ct).ConfigureAwait(false);
     }
 
     private RiskRuleStatusDto BuildPositionLimitStatus(
@@ -512,7 +744,8 @@ public sealed class RiskRuleRuntimeService
         var violations = FindViolations(
             auditEntries,
             actionHint: "OrderRejected",
-            textHint: "position");
+            textHint: "position",
+            asOf);
         var breached = violations.Count > 0;
         var state = breached
             ? "Constrained"
@@ -565,7 +798,8 @@ public sealed class RiskRuleRuntimeService
         var violations = FindViolations(
             auditEntries,
             actionHint: "OrderRejected",
-            textHint: "drawdown");
+            textHint: "drawdown",
+            asOf);
         if (breached && violations.Count == 0)
         {
             violations = [$"Current drawdown is {drawdownPercent:F2}%."];
@@ -667,7 +901,8 @@ public sealed class RiskRuleRuntimeService
         var violations = FindViolations(
             auditEntries,
             actionHint: "OrderRejected",
-            textHint: "rate");
+            textHint: "rate",
+            asOf);
         if (breached && violations.Count == 0)
         {
             violations = [$"Observed {recentOrderCount} orders in the last minute."];
@@ -694,7 +929,7 @@ public sealed class RiskRuleRuntimeService
         var snapshot = Resolve<Meridian.Risk.IPortfolioExposureProvider>()?.GetSnapshot();
         var grossExposure = snapshot?.GrossExposure ?? 0m;
 
-        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "gross exposure");
+        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "gross exposure", asOf);
         var violations = DescribeViolations(violationEntries, "gross exposure");
         // Live state follows current exposure plus breaches inside the liveness window;
         // older rejections stay as evidence without pinning the rule Constrained.
@@ -751,7 +986,7 @@ public sealed class RiskRuleRuntimeService
             }
         }
 
-        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "concentration");
+        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "concentration", asOf);
         var violations = DescribeViolations(violationEntries, "concentration");
         var liveViolation = HasLiveViolation(violationEntries, asOf);
         var utilization = ComputeUtilization(topPercent, maxPercent);
@@ -804,7 +1039,7 @@ public sealed class RiskRuleRuntimeService
             .Where(static entry => string.Equals(entry.RuleName, "OrderNotional", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
-        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "notional");
+        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "notional", asOf);
         var violations = DescribeViolations(violationEntries, "notional");
         var configured = maxNotional.HasValue || escalateAt.HasValue;
         var breached = HasLiveViolation(violationEntries, asOf);
@@ -856,6 +1091,167 @@ public sealed class RiskRuleRuntimeService
     }
 
     /// <summary>
+    /// Whether a rejection was the fat-finger rule refusing an order it could not price, rather
+    /// than measuring one past a band. Checked against the structured violation code first and the
+    /// rendered text only as a fallback, so the classification does not depend on message wording.
+    /// </summary>
+    private static bool IsUnmeasurableRefusal(ExecutionAuditEntry entry) =>
+        MatchesViolationMetadata(entry, FatFingerRule.UnmeasurableCode)
+        || (entry.Reason?.Contains(FatFingerRule.UnmeasurableCode, StringComparison.OrdinalIgnoreCase) ?? false)
+        || (entry.Message?.Contains("has no reference price", StringComparison.OrdinalIgnoreCase) ?? false)
+        || (entry.Reason?.Contains("has no reference price", StringComparison.OrdinalIgnoreCase) ?? false);
+
+    private RiskRuleStatusDto BuildFatFingerStatus(
+        IReadOnlyList<ExecutionAuditEntry> auditEntries,
+        DateTimeOffset asOf)
+    {
+        // One reading of both limbs, for the same reason enforcement takes one: two separately
+        // locked reads can straddle a two-field update and observe a pair that never existed.
+        // Here the consequence is a status claim rather than an approval — the panel would report
+        // the rule unconfigured while both the old and the new configuration enforce a rail — and
+        // a guardrail that misreports itself is the failure this whole status surface exists to
+        // prevent.
+        var (maxQuantity, maxDeviationPercent) = FatFingerThresholds;
+
+        // An unmeasurable refusal is not a breach: the rule refused an order it could not price
+        // rather than measuring one past a band. Both rejections carry "fat-finger" text, so
+        // without this split the dashboard would report a measured band violation for an hour
+        // whenever a quote went missing - the exact claim the unmeasurable outcome exists to avoid.
+        //
+        // The split runs over the FULL audit set, before any truncation. FindViolationEntries keeps
+        // only the five most recent matches, so classifying afterwards would let five fresh
+        // missing-quote refusals push a real breach out of the window entirely and drop the rule
+        // from Constrained back to Observe while the breach was still live.
+        var unmeasurable = auditEntries.Where(IsUnmeasurableRefusal).ToList();
+        var measured = auditEntries.Except(unmeasurable).ToList();
+
+        // Both actions: the rule gates amendments as well as submissions, and a refused amendment
+        // is audited as OrderModifyRejected. Matching only OrderRejected reported the rule healthy
+        // while it was actively refusing aggressive modifications.
+        string[] rejectionActions = ["OrderRejected", "OrderModifyRejected"];
+        var violationEntries = FindViolationEntries(measured, rejectionActions, textHint: "fat-finger", asOf);
+        var unmeasurableEntries = FindViolationEntries(unmeasurable, rejectionActions, textHint: "fat-finger", asOf);
+
+        var violations = DescribeViolations(violationEntries, "fat-finger");
+        var configured = maxQuantity.HasValue || maxDeviationPercent.HasValue;
+        var breached = HasLiveViolation(violationEntries, asOf);
+        var pricingGap = !breached && HasLiveViolation(unmeasurableEntries, asOf);
+        var state = breached
+            ? "Constrained"
+            : pricingGap
+                ? "Observe"
+                : configured ? "Healthy" : "Observe";
+        var summary = breached
+            ? "Recent orders were rejected by the fat-finger quantity ceiling, price-deviation band, or wrong-side stop trigger."
+            : pricingGap
+                ? "Recent priced orders were refused because no reference price was available to measure them; no band was breached."
+                : configured
+                    ? "Fat-finger bands are configured and no recent breaches were detected."
+                    : "No fat-finger bands are configured; the rule approves all orders.";
+
+        var threshold = (maxQuantity, maxDeviationPercent) switch
+        {
+            (not null, not null) =>
+                $"reject > {maxQuantity.Value.ToString("G29", CultureInfo.InvariantCulture)} qty, "
+                + $"reject > {maxDeviationPercent.Value.ToString("G29", CultureInfo.InvariantCulture)}% through market",
+            (not null, null) => $"reject > {maxQuantity.Value.ToString("G29", CultureInfo.InvariantCulture)} qty",
+            (null, not null) => $"reject > {maxDeviationPercent.Value.ToString("G29", CultureInfo.InvariantCulture)}% through market",
+            _ => "unconfigured"
+        };
+
+        return new RiskRuleStatusDto(
+            RuleName: "FatFinger",
+            State: state,
+            Summary: summary,
+            IsBreached: breached,
+            Threshold: threshold,
+            // The gate measures each order on its own, so there is no standing value to report
+            // between orders. Saying so beats printing a zero that reads like measured headroom.
+            CurrentValue: configured ? "per-order" : "not enforced",
+            AsOf: asOf,
+            RecentViolations: violations.Count > 0
+                ? violations
+                : pricingGap
+                    ? DescribeViolations(unmeasurableEntries, "fat-finger")
+                    : violations,
+            UtilizationPercent: null,
+            Severity: "Error");
+    }
+
+    /// <summary>
+    /// Status for the escalating price collar.
+    /// <para>
+    /// Its evidence lives in two places rather than one, because the rule has two outcomes that
+    /// are audited differently. A collar breach parks the order, which the composite validator
+    /// records as <c>OrderParkedForApproval</c> and tracks in the escalation queue — so a query
+    /// over rejections alone would report the collar Healthy while orders sat waiting on it. A
+    /// priced order the collar cannot measure is a hard refusal instead: the validator excludes
+    /// unmeasurable from release precisely so an approval cannot stand in for a measurement that
+    /// never happened, and that refusal lands in the audit trail as a rejection.
+    /// </para>
+    /// </summary>
+    private RiskRuleStatusDto BuildPriceCollarStatus(
+        IReadOnlyList<ExecutionAuditEntry> auditEntries,
+        DateTimeOffset asOf)
+    {
+        var collarPercent = PriceCollarThresholds.CollarPercent;
+
+        // The queue is shared by every escalate-capable rule, so this filters to its own parked
+        // orders. Unresolved rather than merely pending, for the reason the notional guardrail
+        // gives: an entry approved but not yet routed is armed and still owed a decision trail.
+        var pendingEscalations = (Resolve<RiskEscalationQueueService>()?.GetUnresolved() ?? [])
+            .Where(static entry => string.Equals(entry.RuleName, "PriceCollar", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        // Matched on the structured code, not on wording. The collar's refusal message shares the
+        // phrase "has no reference price" with the fat-finger band's, so a text query would let
+        // each rule claim the other's pricing gaps.
+        var unmeasurableEntries = FindViolationEntries(
+            auditEntries,
+            actionHint: "OrderRejected",
+            textHint: PriceCollarRule.UnmeasurableCode,
+            asOf);
+
+        var configured = collarPercent.HasValue;
+        var pricingGap = HasLiveViolation(unmeasurableEntries, asOf);
+        var parked = pendingEscalations.Count > 0;
+        var state = !configured || pricingGap || parked ? "Observe" : "Healthy";
+        var summary = !configured
+            ? "No price collar is configured; the rule approves all orders."
+            : pricingGap
+                ? "Recent priced orders were refused because no reference price was available to measure them against the collar."
+                : parked
+                    ? $"{pendingEscalations.Count} order(s) are parked awaiting approval to price through the collar."
+                    : "A price collar is configured and no orders are parked against it.";
+
+        // Only the count, never the parked orders' details: this status is served by the rules
+        // endpoint, which has no order-management permission or fund-scope check.
+        var recentViolations = parked
+            ? [$"{pendingEscalations.Count} order(s) parked awaiting approval to price through the collar."]
+            : DescribeViolations(unmeasurableEntries, "price collar");
+
+        return new RiskRuleStatusDto(
+            RuleName: "PriceCollar",
+            State: state,
+            Summary: summary,
+            // Never breached, by construction. A parked order has not broken a rail — it is the
+            // rail working, and awaiting the judgement the collar exists to demand. Reporting it
+            // as a breach would drive the readiness gate that reads this field to treat every
+            // deliberate aggressive order as a fault. A pricing gap is not a breach either, for
+            // the reason the fat-finger band gives: the rule refused an order it could not price
+            // rather than measuring one past a band.
+            IsBreached: false,
+            Threshold: configured
+                ? $"escalate > {collarPercent!.Value.ToString("G29", CultureInfo.InvariantCulture)}% through market"
+                : "unconfigured",
+            CurrentValue: configured ? $"{pendingEscalations.Count} pending approval(s)" : "not enforced",
+            AsOf: asOf,
+            RecentViolations: recentViolations,
+            UtilizationPercent: null,
+            Severity: "Escalate");
+    }
+
+    /// <summary>
     /// Percentage of the threshold consumed by the current value, clamped to [0, 999.99].
     /// Null when no threshold is configured.
     /// </summary>
@@ -879,14 +1275,21 @@ public sealed class RiskRuleRuntimeService
     /// </summary>
     private static readonly TimeSpan ViolationLivenessWindow = TimeSpan.FromHours(1);
 
+    /// <summary>
+    /// Overload for rules whose breaches can also refuse an <em>amendment</em>. A modification the
+    /// rule rejects is audited as <c>OrderModifyRejected</c>, not <c>OrderRejected</c>, so a
+    /// single-action query reports the rule healthy while it is actively refusing amendments.
+    /// </summary>
     private static List<ExecutionAuditEntry> FindViolationEntries(
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
-        string actionHint,
-        string textHint)
+        IReadOnlyList<string> actionHints,
+        string textHint,
+        DateTimeOffset asOf)
     {
         return auditEntries
             .Where(entry =>
-                string.Equals(entry.Action, actionHint, StringComparison.OrdinalIgnoreCase) &&
+                actionHints.Any(hint => string.Equals(entry.Action, hint, StringComparison.OrdinalIgnoreCase)) &&
+                IsDatedPlausibly(entry, asOf) &&
                 ((entry.Message?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
                  (entry.Reason?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
                  MatchesViolationMetadata(entry, textHint)))
@@ -894,6 +1297,40 @@ public sealed class RiskRuleRuntimeService
             .Take(5)
             .ToList();
     }
+
+    private static List<ExecutionAuditEntry> FindViolationEntries(
+        IReadOnlyList<ExecutionAuditEntry> auditEntries,
+        string actionHint,
+        string textHint,
+        DateTimeOffset asOf)
+    {
+        return auditEntries
+            .Where(entry =>
+                string.Equals(entry.Action, actionHint, StringComparison.OrdinalIgnoreCase) &&
+                IsDatedPlausibly(entry, asOf) &&
+                ((entry.Message?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                 (entry.Reason?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                 MatchesViolationMetadata(entry, textHint)))
+            .OrderByDescending(static entry => entry.OccurredAt)
+            .Take(5)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Whether an entry's timestamp is believable enough to be evidence at all.
+    /// <para>
+    /// Misdated entries are dropped here, before the five-entry truncation, rather than only when
+    /// live state is computed. Filtering later is not equivalent: these entries sort newest-first,
+    /// so five far-future rows would take every slot and evict a genuine breach from half an hour
+    /// ago — and the retained five would then all fail the liveness bound, reporting the rule
+    /// Healthy at the exact moment it was constrained. An entry that cannot be dated is not
+    /// evidence for a breach or against one, so it is excluded from both the live state and the
+    /// displayed history. Only the future side is bounded: an entry older than the liveness window
+    /// is ordinary history and belongs in the list.
+    /// </para>
+    /// </summary>
+    private static bool IsDatedPlausibly(ExecutionAuditEntry entry, DateTimeOffset asOf) =>
+        entry.OccurredAt - asOf <= ViolationClockSkewAllowance;
 
     /// <summary>
     /// Searches the structured violation set the rejection audit carries, not just its headline.
@@ -910,7 +1347,32 @@ public sealed class RiskRuleRuntimeService
             pair.Key.StartsWith(ViolationMetadataPrefix, StringComparison.Ordinal) &&
             (pair.Key.EndsWith(".rule", StringComparison.Ordinal) ||
              pair.Key.EndsWith(".code", StringComparison.Ordinal)) &&
-            pair.Value.Contains(textHint, StringComparison.OrdinalIgnoreCase));
+            ContainsTokenIgnoringSeparators(pair.Value, textHint));
+
+    /// <summary>
+    /// Substring match that ignores word separators on both sides, because the same rule is named
+    /// three ways across the system and a literal search finds only one of them. The status query
+    /// asks for <c>fat-finger</c>, matching the prose in the rejection message, but the structured
+    /// metadata stores the rule as <c>FatFinger</c> and its codes as <c>FAT_FINGER_*</c> — so a
+    /// literal search read the headline and missed the metadata entirely. That mattered exactly
+    /// when the metadata is the only evidence: a rule whose breach is recorded behind a more
+    /// severe rule's headline is discoverable through <c>violation.*</c> and nowhere else, so a
+    /// FatFinger breach alongside a Critical exposure breach vanished from its own status.
+    /// </summary>
+    private static bool ContainsTokenIgnoringSeparators(string value, string textHint)
+    {
+        if (value.Contains(textHint, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return StripSeparators(value).Contains(StripSeparators(textHint), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string StripSeparators(string value) =>
+        value.Replace("-", string.Empty, StringComparison.Ordinal)
+            .Replace("_", string.Empty, StringComparison.Ordinal)
+            .Replace(" ", string.Empty, StringComparison.Ordinal);
 
     /// <summary>
     /// Reports the message belonging to the matched breach rather than the entry's headline, so a
@@ -930,7 +1392,7 @@ public sealed class RiskRuleRuntimeService
                     pair.Key.StartsWith(ViolationMetadataPrefix, StringComparison.Ordinal) &&
                     (pair.Key.EndsWith(".rule", StringComparison.Ordinal) ||
                      pair.Key.EndsWith(".code", StringComparison.Ordinal)) &&
-                    pair.Value.Contains(textHint, StringComparison.OrdinalIgnoreCase))
+                    ContainsTokenIgnoringSeparators(pair.Value, textHint))
                 .Select(pair => pair.Key[..pair.Key.LastIndexOf('.')])
                 .FirstOrDefault();
 
@@ -948,14 +1410,40 @@ public sealed class RiskRuleRuntimeService
     /// <summary>Prefix for the per-violation audit metadata keys, e.g. <c>violation.0.rule</c>.</summary>
     private const string ViolationMetadataPrefix = "violation.";
 
+    /// <summary>
+    /// How far ahead of <c>asOf</c> an audit entry may sit and still be treated as live. Clock
+    /// skew between a host and its audit sink is real and small; anything beyond this is a
+    /// misdated entry, not a recent one.
+    /// </summary>
+    private static readonly TimeSpan ViolationClockSkewAllowance = TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// Whether any of these breaches is recent enough to still describe the rule's live state.
+    /// <para>
+    /// The window is bounded at <em>both</em> ends. An unbounded upper end let a future-dated
+    /// entry — a backward clock step after an append, or a misdated retained entry — produce a
+    /// negative age, which trivially satisfies a one-hour ceiling and would hold the rule (and the
+    /// operator readiness gate reading it) Constrained until an hour past that timestamp. A badly
+    /// skewed entry could pin trading readiness for years. A bounded skew allowance keeps ordinary
+    /// host/sink drift live while refusing to treat a misdated entry as evidence of anything.
+    /// </para>
+    /// <para>
+    /// The upper bound is also applied by <see cref="IsDatedPlausibly"/> before candidates are
+    /// truncated, so it is deliberately repeated here: this method is the guarantee for any caller
+    /// that assembles its own entry list.
+    /// </para>
+    /// </summary>
     private static bool HasLiveViolation(IReadOnlyList<ExecutionAuditEntry> entries, DateTimeOffset asOf) =>
-        entries.Any(entry => asOf - entry.OccurredAt <= ViolationLivenessWindow);
+        entries.Any(entry =>
+            asOf - entry.OccurredAt <= ViolationLivenessWindow &&
+            IsDatedPlausibly(entry, asOf));
 
     private static List<string> FindViolations(
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
         string actionHint,
-        string textHint) =>
-        DescribeViolations(FindViolationEntries(auditEntries, actionHint, textHint), textHint);
+        string textHint,
+        DateTimeOffset asOf) =>
+        DescribeViolations(FindViolationEntries(auditEntries, actionHint, textHint, asOf), textHint);
 
     /// <summary>
     /// Drawdown as a percentage of the capital the P&amp;L was earned on, i.e. the starting
@@ -1006,8 +1494,35 @@ public sealed class RiskRuleRuntimeService
             "grossexposure" => "GrossExposure",
             "symbolconcentration" => "SymbolConcentration",
             "ordernotional" => "OrderNotional",
+            "fatfinger" => "FatFinger",
+            "pricecollar" => "PriceCollar",
             _ => null
         };
+    }
+
+    /// <summary>
+    /// Records that a configured collar can never fire, because the fat-finger band refuses first
+    /// at a tighter or equal distance.
+    /// <para>
+    /// This warns rather than refuses, because the two bands are set independently and either
+    /// ordering can produce the state: refusing a wide collar would still let a later narrowing of
+    /// the fat-finger band strand it. A rule that could only reject half the paths into a condition
+    /// would read as a guarantee it does not provide, so both call sites emit the same evidence
+    /// instead. The collar is not wrong here — it is redundant — and an operator deliberately
+    /// running one control is entitled to do so knowingly.
+    /// </para>
+    /// </summary>
+    private void WarnIfCollarUnreachable(decimal? fatFingerBand, decimal? collar)
+    {
+        if (fatFingerBand is not > 0m || collar is not > 0m || collar.Value < fatFingerBand.Value)
+        {
+            return;
+        }
+
+        _logger.LogWarning(
+            "Price collar of {PriceCollarPercent}% can never park an order: the fat-finger band rejects at {MaxPriceDeviationPercent}% first. Set the collar below the band for it to take effect.",
+            collar.Value.ToString("G29", CultureInfo.InvariantCulture),
+            fatFingerBand.Value.ToString("G29", CultureInfo.InvariantCulture));
     }
 
     /// <summary>
@@ -1045,7 +1560,10 @@ public sealed class RiskRuleRuntimeService
         decimal? MaxGrossExposure,
         decimal? MaxSymbolConcentrationPercent,
         decimal? MaxOrderNotional,
-        decimal? EscalateOrderNotional);
+        decimal? EscalateOrderNotional,
+        decimal? MaxOrderQuantity,
+        decimal? MaxPriceDeviationPercent,
+        decimal? PriceCollarPercent);
 
     /// <summary>
     /// Applies a threshold change with persist-then-publish ordering: the proposed state is
@@ -1073,7 +1591,10 @@ public sealed class RiskRuleRuntimeService
                     _maxGrossExposure,
                     _maxSymbolConcentrationPercent,
                     _maxOrderNotional,
-                    _escalateOrderNotional));
+                    _escalateOrderNotional,
+                    _maxOrderQuantity,
+                    _maxPriceDeviationPercent,
+                    _priceCollarPercent));
             }
 
             var snapshot = new RiskRuleRuntimeSnapshot(
@@ -1085,7 +1606,10 @@ public sealed class RiskRuleRuntimeService
                 MaxGrossExposure: proposed.MaxGrossExposure,
                 MaxSymbolConcentrationPercent: proposed.MaxSymbolConcentrationPercent,
                 MaxOrderNotional: proposed.MaxOrderNotional,
-                EscalateOrderNotional: proposed.EscalateOrderNotional);
+                EscalateOrderNotional: proposed.EscalateOrderNotional,
+                MaxOrderQuantity: proposed.MaxOrderQuantity,
+                MaxPriceDeviationPercent: proposed.MaxPriceDeviationPercent,
+                PriceCollarPercent: proposed.PriceCollarPercent);
             var payload = JsonSerializer.Serialize(snapshot, RiskRuleRuntimeSnapshotJsonContext.Default.RiskRuleRuntimeSnapshot);
             await AtomicFileWriter.WriteAsync(_options.SnapshotPath, payload, ct).ConfigureAwait(false);
 
@@ -1097,6 +1621,9 @@ public sealed class RiskRuleRuntimeService
                 _maxSymbolConcentrationPercent = proposed.MaxSymbolConcentrationPercent;
                 _maxOrderNotional = proposed.MaxOrderNotional;
                 _escalateOrderNotional = proposed.EscalateOrderNotional;
+                _maxOrderQuantity = proposed.MaxOrderQuantity;
+                _maxPriceDeviationPercent = proposed.MaxPriceDeviationPercent;
+                _priceCollarPercent = proposed.PriceCollarPercent;
             }
         }
         finally
@@ -1141,6 +1668,47 @@ public sealed class RiskRuleRuntimeService
                 _maxSymbolConcentrationPercent = snapshot.MaxSymbolConcentrationPercent is > 0m ? snapshot.MaxSymbolConcentrationPercent : null;
                 _maxOrderNotional = snapshot.MaxOrderNotional is > 0m ? snapshot.MaxOrderNotional : null;
                 _escalateOrderNotional = snapshot.EscalateOrderNotional is > 0m ? snapshot.EscalateOrderNotional : null;
+                // The two fat-finger rails are validated on the way in, not merely normalized. An
+                // optional rail is legitimately absent when an operator has not set one, so null
+                // hydrates as "unconfigured" — but a value the update endpoint would refuse is a
+                // different thing entirely, and quietly turning it into null would disable that
+                // limb while the dashboard still reported the rule configured. Reject rather than
+                // clamp: a value this far out means the file is not a configuration this service
+                // wrote, and the catch below fails closed on it.
+                //
+                // A negative ceiling is the same class of corruption as a band of 100.
+                if (snapshot.MaxOrderQuantity is < 0m)
+                {
+                    throw new InvalidOperationException(
+                        "The risk rule snapshot carries a negative fat-finger quantity ceiling. "
+                        + "Refusing to start with a silently disabled quantity limb.");
+                }
+
+                // A deviation band of 100 or more can never reject a sell, so the update endpoint
+                // refuses it; hydrating one would leave the sell side unprotected.
+                if (snapshot.MaxPriceDeviationPercent is < 0m or >= 100m)
+                {
+                    throw new InvalidOperationException(
+                        "The risk rule snapshot carries a fat-finger price-deviation band that is negative, or 100 or more and so unable to "
+                        + "reject any sell. Refusing to start with a silently one-sided or disabled price control.");
+                }
+
+                // Same bound as the fat-finger band, and for the same reason: a sell's aggressive
+                // deviation is strictly under 100%, so a collar at or above it can never park a
+                // sell while the dashboard still reports it configured. Thrown rather than skipped
+                // — abandoning the load here would leave the rails above already assigned and the
+                // ones below at their defaults, which is the silent half-configuration this whole
+                // block exists to refuse.
+                if (snapshot.PriceCollarPercent is < 0m or >= 100m)
+                {
+                    throw new InvalidOperationException(
+                        "The risk rule snapshot carries a price collar that is negative, or 100 or more and so unable to park any sell. "
+                        + "Refusing to start with a silently one-sided or disabled price collar.");
+                }
+
+                _maxOrderQuantity = snapshot.MaxOrderQuantity is > 0m ? snapshot.MaxOrderQuantity : null;
+                _maxPriceDeviationPercent = snapshot.MaxPriceDeviationPercent is > 0m ? snapshot.MaxPriceDeviationPercent : null;
+                _priceCollarPercent = snapshot.PriceCollarPercent is > 0m ? snapshot.PriceCollarPercent : null;
             }
         }
         catch (Exception exception)
@@ -1170,7 +1738,10 @@ public sealed record RiskRuleRuntimeSnapshot(
     decimal? MaxGrossExposure = null,
     decimal? MaxSymbolConcentrationPercent = null,
     decimal? MaxOrderNotional = null,
-    decimal? EscalateOrderNotional = null);
+    decimal? EscalateOrderNotional = null,
+    decimal? MaxOrderQuantity = null,
+    decimal? MaxPriceDeviationPercent = null,
+    decimal? PriceCollarPercent = null);
 
 [JsonSerializable(typeof(RiskRuleRuntimeSnapshot))]
 internal sealed partial class RiskRuleRuntimeSnapshotJsonContext : JsonSerializerContext

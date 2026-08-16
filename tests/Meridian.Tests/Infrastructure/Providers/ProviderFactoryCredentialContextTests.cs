@@ -15,6 +15,7 @@ using Meridian.Infrastructure.Adapters.Tiingo;
 using Meridian.Infrastructure.Adapters.TwelveData;
 using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Infrastructure.DataSources;
 using Meridian.Tests.Ui;
 using Xunit;
 
@@ -23,6 +24,39 @@ namespace Meridian.Tests.Infrastructure.Providers;
 [Collection(AlpacaCredentialEnvironmentCollection.Name)]
 public sealed class ProviderFactoryCredentialContextTests
 {
+    private static readonly IReadOnlyDictionary<string, string> ExpectedCanonicalProviderIds =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["alphavantage"] = "alphavantage",
+            ["alphavantage-corp-actions"] = "alphavantage",
+            ["alphavantage-symbols"] = "alphavantage",
+            ["alpaca"] = "alpaca",
+            ["alpaca-options"] = "alpaca",
+            ["finnhub"] = "finnhub",
+            ["finnhub-corp-actions"] = "finnhub",
+            ["fred"] = "fred",
+            ["fred-symbols"] = "fred",
+            ["nasdaq"] = "nasdaqdatalink",
+            ["nasdaq-corp-actions"] = "nasdaqdatalink",
+            ["nasdaq-symbols"] = "nasdaqdatalink",
+            ["polygon"] = "polygon",
+            ["polygon-options"] = "polygon",
+            ["robinhood"] = "robinhood",
+            ["tiingo"] = "tiingo",
+            ["tiingo-corp-actions"] = "tiingo",
+            ["tiingo-symbols"] = "tiingo",
+            ["twelvedata"] = "twelvedata",
+            ["twelvedata-corp-actions"] = "twelvedata",
+            ["twelvedata-symbols"] = "twelvedata"
+        };
+
+    public static IEnumerable<object[]> CredentialBearingProviderTypes()
+        => typeof(ProviderFactory).Assembly
+            .GetTypes()
+            .Where(type => !type.IsAbstract && AttributeCredentialResolver.GetAttributes(type).Count > 0)
+            .OrderBy(type => type.FullName, StringComparer.Ordinal)
+            .Select(type => new object[] { type });
+
     [Fact]
     public void EnvironmentCredentialResolver_CreateContext_UsesConfiguredValuesAsFallback()
     {
@@ -73,6 +107,134 @@ public sealed class ProviderFactoryCredentialContextTests
                 Directory.Delete(root, recursive: true);
             }
         }
+    }
+
+    [Theory]
+    [InlineData(typeof(TwelveDataHistoricalDataProvider))]
+    [InlineData(typeof(TwelveDataSymbolSearchProvider))]
+    [InlineData(typeof(CatalogIdentityCredentialProvider))]
+    public async Task StoredProviderCredentialResolver_CreateContext_UsesCanonicalDataSourceIdentityForTwelveData(
+        Type providerType)
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "provider-factory-twelve-data-store",
+            Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var store = new FileProviderCredentialStore(root);
+            await store.SaveAsync(new ProviderCredentialSaveRequest(
+                "twelvedata",
+                new Dictionary<string, string?>
+                {
+                    ["ApiKey"] = "stored-twelve-data-key"
+                },
+                Actor: "test"));
+            var resolver = new StoredProviderCredentialResolver(
+                store,
+                new EnvironmentCredentialResolver());
+
+            var context = resolver.CreateContext(
+                providerType,
+                new Dictionary<string, string?>(StringComparer.Ordinal)
+                {
+                    ["TWELVEDATA_API_KEY"] = "config-twelve-data-key"
+                });
+
+            context.Get("TWELVEDATA_API_KEY").Should().Be("stored-twelve-data-key");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(typeof(AlpacaOptionsMarketDataClient))]
+    [InlineData(typeof(AlpacaCryptoMarketDataClient))]
+    [InlineData(typeof(AlpacaNewsMarketDataClient))]
+    public async Task StoredProviderCredentialResolver_CreateContext_UsesNearestDeclaredIdentityForDerivedAlpacaStreams(
+        Type providerType)
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "provider-factory-alpaca-stream-store",
+            Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var store = new FileProviderCredentialStore(root);
+            await store.SaveAsync(new ProviderCredentialSaveRequest(
+                "alpaca",
+                new Dictionary<string, string?>
+                {
+                    ["KeyId"] = "stored-alpaca-key",
+                    ["SecretKey"] = "stored-alpaca-secret"
+                },
+                Actor: "test"));
+            var resolver = new StoredProviderCredentialResolver(
+                store,
+                new EnvironmentCredentialResolver());
+
+            var context = resolver.CreateContext(providerType);
+
+            context.Get("ALPACA_KEY_ID").Should().Be("stored-alpaca-key");
+            context.Get("ALPACA_SECRET_KEY").Should().Be("stored-alpaca-secret");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(CredentialBearingProviderTypes))]
+    public void ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(
+        Type providerType)
+    {
+        var dataSource = GetCredentialSourceAttribute(providerType);
+        dataSource.Should().NotBeNull($"{providerType.FullName} declares credentials and must resolve a data-source identity from its type hierarchy");
+        ExpectedCanonicalProviderIds.Should().ContainKey(
+            dataSource!.Id,
+            $"credential-bearing provider identity '{dataSource.Id}' must be mapped explicitly");
+
+        var expectedProviderId = ExpectedCanonicalProviderIds[dataSource.Id];
+        var descriptor = ProviderCredentialCatalog.Find(dataSource.Id);
+        descriptor.Should().NotBeNull($"credential-bearing provider identity '{dataSource.Id}' must resolve through the catalog");
+        descriptor!.ProviderId.Should().Be(expectedProviderId);
+
+        foreach (var credential in AttributeCredentialResolver.GetAttributes(providerType))
+        {
+            descriptor.RequiredFields.Any(field =>
+                    string.Equals(field.Name, credential.Name, StringComparison.OrdinalIgnoreCase) ||
+                    field.EnvironmentNames.Any(environmentName =>
+                        string.Equals(environmentName, credential.Name, StringComparison.OrdinalIgnoreCase)))
+                .Should().BeTrue(
+                    $"credential '{credential.Name}' on {providerType.FullName} must map to the canonical '{expectedProviderId}' descriptor");
+        }
+    }
+
+    private static DataSourceAttribute? GetCredentialSourceAttribute(Type providerType)
+    {
+        for (var candidate = providerType; candidate is not null; candidate = candidate.BaseType)
+        {
+            var dataSource = candidate.GetDataSourceAttribute();
+            if (dataSource is not null)
+            {
+                return dataSource;
+            }
+        }
+
+        return null;
     }
 
     [Fact]
@@ -337,6 +499,16 @@ public sealed class ProviderFactoryCredentialContextTests
 
             return new TestCredentialContext(configuredValues, _resolvedValues);
         }
+    }
+
+    [DataSource(
+        "twelve-data",
+        "Catalog identity credential provider",
+        Meridian.Infrastructure.DataSources.DataSourceType.Historical,
+        DataSourceCategory.Premium)]
+    [RequiresCredential("TWELVEDATA_API_KEY")]
+    private sealed class CatalogIdentityCredentialProvider
+    {
     }
 
     private sealed class TestCredentialContext : ICredentialContext

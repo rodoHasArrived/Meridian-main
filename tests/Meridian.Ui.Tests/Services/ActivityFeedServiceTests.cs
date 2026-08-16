@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services;
+using System.Collections.Concurrent;
 using System.Text.Json;
 
 namespace Meridian.Ui.Tests.Services;
@@ -517,6 +518,150 @@ public sealed class ActivityFeedServiceTests
         svc.Activities.Count(activity => activity.Id == id).Should().Be(1);
     }
 
+    [Fact]
+    public async Task AddServerEventIfNew_ConcurrentDuplicateIds_ShouldAddExactlyOnce()
+    {
+        using var fixture = new PathFixture("mdc-activity-concurrent-dedup");
+        await using var svc = new ActivityFeedService(
+            new FixedConfigService(fixture.ConfigPath, null),
+            (_, _, _) => Task.CompletedTask);
+        await svc.Initialization;
+        var id = "server:concurrent-" + Guid.NewGuid();
+
+        var results = await Task.WhenAll(Enumerable.Range(0, 64).Select(index => Task.Run(() =>
+            svc.AddServerEventIfNew(new ActivityItem
+            {
+                Id = id,
+                Title = $"Concurrent event {index}",
+                Type = ActivityType.Warning
+            }))));
+
+        results.Should().ContainSingle(added => added);
+        svc.Activities.Count(activity => activity.Id == id).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task PersistenceWorker_ConcurrentLogs_ShouldSerializeWritesAndCommitLatestSnapshot()
+    {
+        using var fixture = new PathFixture("mdc-activity-ordered-writes");
+        SeedEmptyPrimaryActivityLog(fixture);
+        var payloads = new ConcurrentQueue<string>();
+        var activeWriters = 0;
+        var maximumActiveWriters = 0;
+
+        async Task PersistAsync(string _, string payload, CancellationToken ct)
+        {
+            var active = Interlocked.Increment(ref activeWriters);
+            UpdateMaximum(ref maximumActiveWriters, active);
+            try
+            {
+                await Task.Delay(5, ct);
+                payloads.Enqueue(payload);
+            }
+            finally
+            {
+                Interlocked.Decrement(ref activeWriters);
+            }
+        }
+
+        await using var svc = new ActivityFeedService(
+            new FixedConfigService(fixture.ConfigPath, null),
+            PersistAsync);
+        await svc.Initialization;
+
+        var titles = Enumerable.Range(0, 32)
+            .Select(index => $"ordered-{index}-{Guid.NewGuid():N}")
+            .ToArray();
+        await Task.WhenAll(titles.Select(title =>
+            svc.LogActivityAsync(ActivityType.Info, title)));
+
+        maximumActiveWriters.Should().Be(1);
+        payloads.Should().HaveCount(titles.Length);
+        var latest = JsonSerializer.Deserialize<List<ActivityItem>>(
+            payloads.Last(),
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        latest.Should().NotBeNull();
+        latest!.Select(activity => activity.Title).Should().Contain(titles);
+    }
+
+    [Fact]
+    public async Task LogActivityAsync_PersistenceFailure_ShouldReachCallerAndFailureEvent()
+    {
+        using var fixture = new PathFixture("mdc-activity-write-failure");
+        SeedEmptyPrimaryActivityLog(fixture);
+        var writeAttempt = 0;
+        ActivityFeedPersistenceFailedEventArgs? failure = null;
+
+        Task PersistAsync(string _, string __, CancellationToken ___)
+        {
+            if (Interlocked.Increment(ref writeAttempt) == 1)
+            {
+                throw new IOException("activity persistence unavailable");
+            }
+
+            return Task.CompletedTask;
+        }
+
+        await using var svc = new ActivityFeedService(
+            new FixedConfigService(fixture.ConfigPath, null),
+            PersistAsync);
+        svc.PersistenceFailed += (_, args) => failure = args;
+        await svc.Initialization;
+
+        var act = () => svc.LogActivityAsync(ActivityType.Warning, "Durability failure");
+
+        await act.Should().ThrowAsync<IOException>()
+            .WithMessage("activity persistence unavailable");
+        svc.LastPersistenceError.Should().BeOfType<IOException>();
+        failure.Should().NotBeNull();
+        failure!.Path.Should().EndWith("activity_log.json");
+        failure.Exception.Should().BeSameAs(svc.LastPersistenceError);
+    }
+
+    [Fact]
+    public async Task DisposeAsync_ShouldDrainQueuedSynchronousActivity()
+    {
+        using var fixture = new PathFixture("mdc-activity-dispose-drain");
+        SeedEmptyPrimaryActivityLog(fixture);
+        var writeEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseWrite = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var payloads = new ConcurrentQueue<string>();
+
+        async Task PersistAsync(string _, string payload, CancellationToken ct)
+        {
+            writeEntered.TrySetResult();
+            await releaseWrite.Task.WaitAsync(ct);
+            payloads.Enqueue(payload);
+        }
+
+        var svc = new ActivityFeedService(
+            new FixedConfigService(fixture.ConfigPath, null),
+            PersistAsync);
+        await svc.Initialization;
+        var title = "drained-" + Guid.NewGuid().ToString("N");
+        svc.AddActivity(new ActivityItem { Title = title });
+        await writeEntered.Task;
+
+        var disposeTask = svc.DisposeAsync().AsTask();
+        disposeTask.IsCompleted.Should().BeFalse();
+        releaseWrite.TrySetResult();
+        await disposeTask;
+
+        var latest = JsonSerializer.Deserialize<List<ActivityItem>>(
+            payloads.Last(),
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        latest.Should().ContainSingle(activity => activity.Title == title);
+    }
+
+    private static void SeedEmptyPrimaryActivityLog(PathFixture fixture)
+    {
+        var activityLogDirectory = Path.Combine(fixture.RootPath, "data", "_logs");
+        Directory.CreateDirectory(activityLogDirectory);
+        // Presence prevents process-wide legacy fallback; JSON null avoids an initialization
+        // persistence request so each custom writer's first invocation remains test-owned.
+        File.WriteAllText(Path.Combine(activityLogDirectory, "activity_log.json"), "null");
+    }
+
     private static async Task WaitForActivityAsync(ActivityFeedService service, string id)
     {
         var deadline = DateTime.UtcNow.AddSeconds(5);
@@ -531,6 +676,18 @@ public sealed class ActivityFeedServiceTests
         }
 
         service.Activities.Should().Contain(activity => activity.Id == id);
+    }
+
+    private static void UpdateMaximum(ref int maximum, int candidate)
+    {
+        while (true)
+        {
+            var current = Volatile.Read(ref maximum);
+            if (candidate <= current || Interlocked.CompareExchange(ref maximum, candidate, current) == current)
+            {
+                return;
+            }
+        }
     }
 
     private static T GetPrivateField<T>(object instance, string fieldName)

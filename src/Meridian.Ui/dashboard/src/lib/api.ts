@@ -126,6 +126,9 @@ import type {
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
   ManualCsvProviderIntegrationDryRunRequest,
+  MarginControlCenter,
+  MarginCertificationRequest,
+  MarginCertificationResult,
   ProviderIntegrationActivationReadiness,
   ProviderIntegrationActivationRequest,
   ProviderIntegrationActivationResult,
@@ -3039,6 +3042,14 @@ export function getStatementConnectors(options: ApiRequestOptions = {}) {
   return getJson<StatementConnectorDescriptor[]>(STATEMENT_CONNECTOR_API_ENDPOINTS.connectors, options);
 }
 
+export function getMarginControlCenter(options: ApiRequestOptions = {}) {
+  return getJson<MarginControlCenter>(STATEMENT_CONNECTOR_API_ENDPOINTS.marginControl, options);
+}
+
+export function certifyMarginSnapshot(request: MarginCertificationRequest, options: ApiRequestOptions = {}) {
+  return postJson<MarginCertificationResult>(STATEMENT_CONNECTOR_API_ENDPOINTS.marginCertifications, request, options);
+}
+
 export function listStatementMappingProfiles(options: ApiRequestOptions = {}) {
   return getJson<StatementMappingProfile[]>(STATEMENT_CONNECTOR_API_ENDPOINTS.mappingProfiles, options);
 }
@@ -3493,7 +3504,7 @@ function normalizeSystemOverviewResponse(payload: unknown): SystemOverviewRespon
   }
 
   if ("systemStatus" in payload) {
-    const heartbeat = readString(payload.lastHeartbeatUtc) ?? readString(payload.timestampUtc) ?? new Date().toISOString();
+    const heartbeat = readString(payload.lastHeartbeatUtc) ?? readString(payload.timestampUtc);
     return {
       systemStatus: readSystemStatus(payload.systemStatus),
       providersOnline: readNumber(payload.providersOnline) ?? 0,
@@ -3517,7 +3528,7 @@ function normalizeLegacyStatusResponse(payload: Record<string, unknown>): System
   const metrics = isRecord(payload.metrics) ? payload.metrics : {};
   const pipeline = isRecord(payload.pipeline) ? payload.pipeline : {};
   const isConnected = readBoolean(payload.isConnected) ?? false;
-  const timestampUtc = readString(payload.timestampUtc) ?? readString(metrics.lastUpdatedUtc) ?? new Date().toISOString();
+  const timestampUtc = readString(payload.timestampUtc) ?? readString(metrics.lastUpdatedUtc);
   const published = readNumber(metrics.published) ?? readNumber(pipeline.publishedCount) ?? 0;
   const dropped = readNumber(metrics.dropped) ?? readNumber(pipeline.droppedCount) ?? 0;
   const eventsPerSecond = readNumber(metrics.eventsPerSecond);
@@ -3572,15 +3583,17 @@ function normalizeLegacyStatusResponse(payload: Record<string, unknown>): System
         tone: "default"
       }
     ],
-    recentEvents: [
-      {
-        id: "host-status",
-        type: systemStatus === "Offline" ? "error" : systemStatus === "Degraded" ? "warning" : "info",
-        message: buildLegacyStatusMessage(systemStatus, readString(payload.uptime), sourceProvider),
-        source: "Meridian host",
-        timestamp: timestampUtc
-      }
-    ],
+    recentEvents: timestampUtc
+      ? [
+          {
+            id: "host-status",
+            type: systemStatus === "Offline" ? "error" : systemStatus === "Degraded" ? "warning" : "info",
+            message: buildLegacyStatusMessage(systemStatus, readString(payload.uptime), sourceProvider),
+            source: "Meridian host",
+            timestamp: timestampUtc
+          }
+        ]
+      : [],
     degradedMode: readDegradedMode(payload.degradedMode)
   };
 }

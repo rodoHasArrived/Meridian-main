@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-07-27T07:05:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-08-15T12:47:37Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 13 |
-| `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 6 |
-| `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 5 |
-| `src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 4 |
-| `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 3 |
-| `src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 3 |
-| `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 3 |
-| `src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `86b5a548d` (2026-07-26T22:50:25-07:00) | 18 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs` | Desktop and UI Workflows | `86b5a548d` (2026-07-26T22:50:25-07:00) | 5 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationBreaks.cs` | Desktop and UI Workflows | `86b5a548d` (2026-07-26T22:50:25-07:00) | 3 |
+| `src/Meridian.Storage/Archival/AtomicFileWriter.cs` | Providers and Storage | `e8823fbcc` (2026-08-12T14:47:39+00:00) | 4 |
+| `src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs` | Host and Composition | `e8823fbcc` (2026-08-12T14:47:39+00:00) | 3 |
+| `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Unmapped | `d6bb9d45f` (2026-08-12T04:17:31+00:00) | 3 |
+| `src/Meridian.Application/README.md` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 6 |
+| `src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 3 |
+| `src/Meridian.Application/Integrations/ProviderIntegrationQuarantineReplayService.cs` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 3 |
+| `src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 3 |
+| `src/Meridian.Application/Integrations/ProviderIntegrationFieldTransforms.cs` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Dimensions.cs` | Desktop and UI Workflows | `1ec2e63f3` (2026-08-11T17:59:58+00:00) | 4 |
+| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs` | Desktop and UI Workflows | `1ec2e63f3` (2026-08-11T17:59:58+00:00) | 4 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `69881b684` (2026-08-11T17:54:42+00:00) | 6 |
+| `src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs` | Unmapped | `69881b684` (2026-08-11T17:54:42+00:00) | 3 |
+| `src/Meridian.Reporting/ReportGenerationService.cs` | Unmapped | `69881b684` (2026-08-11T17:54:42+00:00) | 3 |
+| `src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs` | Providers and Storage | `69881b684` (2026-08-11T17:54:42+00:00) | 3 |
+| `src/Meridian.Contracts/Ledger/LedgerDimensionTags.cs` | Host and Composition | `69881b684` (2026-08-11T17:54:42+00:00) | 1 |
 

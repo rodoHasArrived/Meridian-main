@@ -146,6 +146,9 @@ verify_dotnet() {
   run_step "Enforce no-new-god-file ratchet" \
     "$python_cmd" build/scripts/ci/check-file-size.py
 
+  run_step "Enforce consolidated-helper duplication ratchet" \
+    "$python_cmd" build/scripts/ci/check-duplicate-helpers.py
+
   run_step "Build web workstation .NET lane" \
     bash -c 'set -euo pipefail; dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore -p:EnableWindowsTargeting=true -p:UseAppHost=false 2>&1 | tee artifacts/build-logs/web-workstation-build.log'
 
@@ -178,6 +181,18 @@ verify_browser() {
 
   run_step "Build dashboard bundle" \
     bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run build 2>&1 | tee artifacts/build-logs/dashboard-build.log'
+
+  # PRD-018 freshness gate: the tracked canonical bundle must match what the current dashboard
+  # source builds, so the repo-launch demo can never serve stale assets.
+  run_step "Workstation bundle freshness gate" \
+    bash -c 'set -euo pipefail; \
+      if [ -n "$(git status --porcelain -- src/Meridian.Ui/wwwroot/workstation)" ]; then \
+        echo "The tracked workstation bundle lags src/Meridian.Ui/dashboard." >&2; \
+        echo "Run: npm --prefix src/Meridian.Ui/dashboard run build" >&2; \
+        echo "then commit the regenerated src/Meridian.Ui/wwwroot/workstation tree." >&2; \
+        git status --porcelain -- src/Meridian.Ui/wwwroot/workstation >&2; \
+        exit 1; \
+      fi'
 }
 
 verify_docs() {
@@ -192,6 +207,12 @@ verify_docs() {
   # runbook link that does not resolve strands the responder. Both used to be invisible.
   run_step "Validate observability contract" \
     "$python_cmd" build/scripts/ci/validate-observability-contract.py --summary
+
+  # The shipped sample config is what operators copy first. A provider value that is not a
+  # DataSourceKind member throws at startup because the converter fails closed, and a
+  # secret-shaped key teaches users to keep credentials in JSON the sample itself disclaims.
+  run_step "Validate sample config data sources" \
+    "$python_cmd" build/scripts/ci/check-sample-config-datasources.py
 
   # The contract gate is static. It cannot tell whether a rule fires on the condition it
   # claims, which is where every monitoring regression here has actually lived, so promtool

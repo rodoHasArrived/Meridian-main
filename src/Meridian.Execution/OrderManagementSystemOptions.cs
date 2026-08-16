@@ -10,6 +10,7 @@ public sealed class OrderManagementSystemOptions
     public const int DefaultMaxRetainedOrders = 5_000;
     public const int DefaultExecutionChannelCapacity = 1_000;
     public const int DefaultCancelAllMaxConcurrency = 8;
+    public static readonly TimeSpan DefaultExecutionSubscriberDrainTimeout = TimeSpan.FromSeconds(5);
 
     /// <summary>
     /// Maximum number of order states retained in memory before completed terminal orders are trimmed.
@@ -25,6 +26,13 @@ public sealed class OrderManagementSystemOptions
     /// Maximum number of broker cancel requests issued concurrently by <see cref="IOrderManager.CancelAllAsync"/>.
     /// </summary>
     public int CancelAllMaxConcurrency { get; init; } = DefaultCancelAllMaxConcurrency;
+
+    /// <summary>
+    /// Maximum normal-shutdown window in which an authoritative execution-report subscriber may
+    /// drain reports already accepted by the OMS. Any reports still buffered at the deadline are
+    /// routed through that subscription's explicit recovery/failure handler.
+    /// </summary>
+    public TimeSpan ExecutionSubscriberDrainTimeout { get; init; } = DefaultExecutionSubscriberDrainTimeout;
 
     /// <summary>
     /// Requires risk, portfolio-state, and operator-control dependencies during construction.
@@ -43,4 +51,10 @@ public sealed class OrderManagementSystemOptions
     public int ValidatedCancelAllMaxConcurrency => CancelAllMaxConcurrency > 0
         ? CancelAllMaxConcurrency
         : DefaultCancelAllMaxConcurrency;
+
+    public TimeSpan ValidatedExecutionSubscriberDrainTimeout =>
+        ExecutionSubscriberDrainTimeout > TimeSpan.Zero
+        && ExecutionSubscriberDrainTimeout != Timeout.InfiniteTimeSpan
+            ? ExecutionSubscriberDrainTimeout
+            : DefaultExecutionSubscriberDrainTimeout;
 }

@@ -143,6 +143,13 @@ public sealed record ExecutionReport
     public decimal FilledQuantity { get; init; }
     public decimal? FillPrice { get; init; }
     public decimal? Commission { get; init; }
+
+    /// <summary>Regulatory/exchange fees for this fill, when the gateway models them.</summary>
+    public decimal? Fees { get; init; }
+
+    /// <summary>Explicit slippage cash cost for this fill, when the gateway models it.</summary>
+    public decimal? SlippageCost { get; init; }
+
     public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.UtcNow;
     public string? RejectReason { get; init; }
     /// <summary>Broker-assigned order ID (may differ from the client-provided <see cref="OrderId"/>).</summary>
@@ -230,6 +237,13 @@ public sealed record OrderState
     /// orders must value these at the routed dollars, not quantity x price.
     /// </summary>
     public decimal? RoutedNotional { get; init; }
+
+    /// <summary>
+    /// The active gateway routes <see cref="Quantity"/> as face value and quotes the order price
+    /// as a percentage of par. Retained so working-order reserves and amendments use the same
+    /// economic sizing semantics as initial validation.
+    /// </summary>
+    public bool UsesFaceValuePercentageOfPar { get; init; }
 
     /// <summary>
     /// Contract multiplier for a derivative order: the notional one unit of

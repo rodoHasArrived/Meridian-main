@@ -1,0 +1,2191 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Meridian.Platform</name>
+    </assembly>
+    <members>
+        <member name="T:Meridian.Platform.ApiDocumentation.ApiDocumentationService">
+            <summary>
+            Service for generating API documentation from code and comments.
+            Implements QW-121: API Docs from Comments and DEV-9: API Explorer / Swagger UI.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.ApiDocumentation.ApiDocumentationService.GenerateOpenApiSpec">
+            <summary>
+            Generates OpenAPI 3.0 specification for the API.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.ApiDocumentation.ApiDocumentationService.GenerateSwaggerHtml(System.String)">
+            <summary>
+            Generates a Swagger UI HTML page.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.ApiDocumentation.ApiDocumentationService.GenerateMarkdownDocs">
+            <summary>
+            Generates markdown documentation for the API.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Coordination.ClusterCoordinatorService">
+            <summary>
+            Background service that maintains a single cluster coordinator via shared-storage lease competition.
+            Acquires the <c>leader/cluster-coordinator</c> lease on startup and renews it while running.
+            When the lease cannot be acquired or renewed, leadership is relinquished and the instance
+            transitions to follower mode.
+            </summary>
+            <remarks>
+            Registered as both <see cref="T:Meridian.Contracts.Coordination.IClusterCoordinator"/> (singleton) and a hosted service
+            so that the election loop starts automatically with the application lifetime.
+            </remarks>
+        </member>
+        <member name="P:Meridian.Platform.Coordination.ClusterCoordinatorService.IsLeader">
+            <inheritdoc/>
+        </member>
+        <member name="P:Meridian.Platform.Coordination.ClusterCoordinatorService.InstanceId">
+            <inheritdoc/>
+        </member>
+        <member name="E:Meridian.Platform.Coordination.ClusterCoordinatorService.LeadershipChanged">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Platform.Coordination.ClusterCoordinatorService.ExecuteAsync(System.Threading.CancellationToken)">
+            <summary>
+            Runs the election loop: attempts to become leader every 5 seconds while coordination is enabled.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Coordination.ClusterCoordinatorService.TryBecomeLeaderAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Platform.Coordination.ClusterCoordinatorService.StepDownAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Meridian.Platform.Coordination.LeaseManager">
+            <summary>
+            Platform-owned lease manager with automatic renewal and operator diagnostics.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Coordination.SplitBrainDetector">
+            <summary>
+            Background service that detects and heals split-brain conditions in the Meridian cluster.
+            A split-brain occurs when two instances simultaneously believe they hold the coordinator lease,
+            typically caused by a transient network partition or storage hiccup.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Coordination.SplitBrainDetector.ExecuteAsync(System.Threading.CancellationToken)">
+            <summary>Runs the split-brain detection loop until the application stops.</summary>
+        </member>
+        <member name="T:Meridian.Platform.DesignModule">
+            <summary>Physical module marker for the Platform bounded context.</summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.DiagnosticBundleService">
+            <summary>
+            Platform service for generating diagnostic bundles containing system state and logs.
+            Implements QW-16: Diagnostic Bundle Generator.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.DiagnosticBundleService.GenerateAsync(Meridian.Platform.Diagnostics.DiagnosticBundleOptions,System.Threading.CancellationToken)">
+            <summary>
+            Generates a diagnostic bundle as a ZIP file.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.DiagnosticBundleService.ReadBundle(System.String)">
+            <summary>
+            Reads a generated diagnostic bundle.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.DiagnosticBundleOptions">
+            <summary>
+            Options for diagnostic bundle generation.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.DiagnosticBundleOptions.#ctor(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32)">
+            <summary>
+            Options for diagnostic bundle generation.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.DiagnosticBundleResult">
+            <summary>
+            Result of diagnostic bundle generation.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.DiagnosticManifest">
+            <summary>
+            Manifest included in diagnostic bundle.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.ErrorRingBuffer">
+            <summary>
+            Thread-safe ring buffer for storing recent errors.
+            Part of the data quality framework (QW-58) to provide
+            the Last N Errors endpoint for diagnostics and monitoring.
+            </summary>
+            <remarks>
+            Uses a lock-free circular buffer implementation to minimize
+            overhead on hot paths while providing recent error visibility.
+            </remarks>
+        </member>
+        <member name="F:Meridian.Platform.Diagnostics.ErrorRingBuffer.DefaultCapacity">
+            <summary>
+            Default buffer capacity.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorRingBuffer.#ctor(System.Int32)">
+            <summary>
+            Creates a new error ring buffer with the specified capacity.
+            </summary>
+            <param name="capacity">Maximum number of errors to retain.</param>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorRingBuffer.Record(Meridian.Platform.Diagnostics.ErrorEntry)">
+            <summary>
+            Records an error in the ring buffer.
+            </summary>
+            <param name="error">The error entry to record.</param>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorRingBuffer.Record(System.Exception,System.String,System.String,System.String)">
+            <summary>
+            Records an error from an exception.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorRingBuffer.RecordWarning(System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Records a warning-level error.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorRingBuffer.RecordCritical(System.String,System.String,System.Exception,System.String,System.String,System.String)">
+            <summary>
+            Records a critical-level error.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorRingBuffer.GetRecent(System.Int32)">
+            <summary>
+            Gets the most recent N errors.
+            </summary>
+            <param name="count">Maximum number of errors to return.</param>
+            <returns>List of recent errors, most recent first.</returns>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorRingBuffer.GetByLevel(Meridian.Platform.Diagnostics.ErrorLevel,System.Int32)">
+            <summary>
+            Gets errors filtered by level.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorRingBuffer.GetBySymbol(System.String,System.Int32)">
+            <summary>
+            Gets errors filtered by symbol.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorRingBuffer.GetSince(System.DateTimeOffset)">
+            <summary>
+            Gets errors that occurred within the specified time window.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorRingBuffer.GetStats">
+            <summary>
+            Gets error statistics.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorRingBuffer.Clear">
+            <summary>
+            Clears all errors from the buffer.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Diagnostics.ErrorRingBuffer.Count">
+            <summary>
+            Gets the current number of errors stored.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Diagnostics.ErrorRingBuffer.Capacity">
+            <summary>
+            Gets the buffer capacity.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.ErrorEntry">
+            <summary>
+            Represents a recorded error entry.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorEntry.#ctor(System.String,System.DateTimeOffset,Meridian.Platform.Diagnostics.ErrorLevel,System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Represents a recorded error entry.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.ErrorLevel">
+            <summary>
+            Error severity level.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.ErrorStats">
+            <summary>
+            Statistics about recorded errors.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorStats.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.DateTimeOffset)">
+            <summary>
+            Statistics about recorded errors.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.ErrorTracker">
+            <summary>
+            Service for tracking and querying application errors.
+            Implements QW-58: Last N Errors Endpoint.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorTracker.RecordError(System.Exception,System.String)">
+            <summary>
+            Records an error for tracking.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorTracker.RecordError(Meridian.Platform.Diagnostics.TrackedError)">
+            <summary>
+            Records a tracked error.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorTracker.GetLastErrors(System.Int32,System.String,System.String)">
+            <summary>
+            Gets the last N errors.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorTracker.GetStatistics(System.Nullable{System.TimeSpan})">
+            <summary>
+            Gets error statistics.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorTracker.Clear">
+            <summary>
+            Clears all tracked errors.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ErrorTracker.ParseErrorsFromLogsAsync(System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Parses errors from log files.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.TrackedError">
+            <summary>
+            A tracked error entry.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.ErrorQueryResult">
+            <summary>
+            Result of an error query.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.ErrorStatistics">
+            <summary>
+            Error statistics.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.ShutdownDiagnosticsService">
+            <summary>
+            Tracks the most recent graceful shutdown sequence for support diagnostics.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.ShutdownContext">
+            <summary>
+            Context information passed to shutdown handlers.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ShutdownContext.#ctor(Meridian.Platform.Diagnostics.ShutdownReason,System.String,System.DateTimeOffset,System.Int32,System.String)">
+            <summary>
+            Context information passed to shutdown handlers.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.ShutdownResult">
+            <summary>
+            Result of the shutdown operation.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ShutdownResult.#ctor(System.Boolean,Meridian.Platform.Diagnostics.ShutdownReason,System.DateTimeOffset,System.DateTimeOffset,System.Double,System.Int64,System.Boolean,System.Int32,System.String,System.String[],System.String)">
+            <summary>
+            Result of the shutdown operation.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.ShutdownProgress">
+            <summary>
+            Progress information during shutdown.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.ShutdownProgress.#ctor(System.String,System.Int32,System.Int32,System.Int32,System.DateTimeOffset,System.String)">
+            <summary>
+            Progress information during shutdown.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.ShutdownReason">
+            <summary>
+            Reason for shutdown.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.SystemHealthChecker">
+            <summary>
+            Monitors system resources including disk space, memory, and CPU usage.
+            Provides health checks and alerts for resource constraints.
+            </summary>
+        </member>
+        <member name="E:Meridian.Platform.Diagnostics.SystemHealthChecker.OnHealthWarning">
+            <summary>
+            Event raised when a health warning is triggered.
+            </summary>
+        </member>
+        <member name="E:Meridian.Platform.Diagnostics.SystemHealthChecker.OnCriticalIssue">
+            <summary>
+            Event raised when a critical health issue is detected.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.SystemHealthChecker.AddMonitoredPath(System.String)">
+            <summary>
+            Adds a path to monitor for disk space.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.SystemHealthChecker.GetSnapshot">
+            <summary>
+            Gets the current system health snapshot.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.SystemHealthChecker.GetDiskSpaceInfo">
+            <summary>
+            Gets disk space information for all monitored paths.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.SystemHealthChecker.GetMemoryInfo">
+            <summary>
+            Gets memory information.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.SystemHealthChecker.GetCurrentWarnings">
+            <summary>
+            Gets all current health warnings.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.SystemHealthChecker.GetOverallStatus">
+            <summary>
+            Gets the overall health status.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.SystemHealthConfig">
+            <summary>
+            Configuration for system health thresholds.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Diagnostics.SystemHealthConfig.WarningDiskSpaceGb">
+            <summary>
+            Disk space warning threshold in GB.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Diagnostics.SystemHealthConfig.CriticalDiskSpaceGb">
+            <summary>
+            Disk space critical threshold in GB.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Diagnostics.SystemHealthConfig.WarningMemoryMb">
+            <summary>
+            Memory warning threshold in MB.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Diagnostics.SystemHealthConfig.CriticalMemoryMb">
+            <summary>
+            Memory critical threshold in MB.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Diagnostics.SystemHealthConfig.CheckIntervalSeconds">
+            <summary>
+            How often to check system health in seconds.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.SystemHealthSnapshot">
+            <summary>
+            Snapshot of system health at a point in time.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.DiskSpaceInfo">
+            <summary>
+            Information about disk space for a monitored path.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.DiskSpaceInfo.#ctor(System.String,System.String,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Boolean)">
+            <summary>
+            Information about disk space for a monitored path.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.MemoryInfo">
+            <summary>
+            Information about memory usage.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.MemoryInfo.#ctor(System.Double,System.Double,System.Double,System.Double,System.Int32,System.Int32,System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            Information about memory usage.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.SystemHealthWarning">
+            <summary>
+            A health warning from the system health checker.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Diagnostics.SystemHealthWarning.#ctor(Meridian.Platform.Diagnostics.HealthWarningCategory,Meridian.Platform.Diagnostics.HealthWarningSeverity,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})">
+            <summary>
+            A health warning from the system health checker.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.HealthWarningCategory">
+            <summary>
+            Category of health warning.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.HealthWarningSeverity">
+            <summary>
+            Severity of health warning.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Diagnostics.SystemHealthStatus">
+            <summary>
+            Overall system health status.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.BackpressureAlertService">
+            <summary>
+            Monitors pipeline backpressure and sends alerts when thresholds are exceeded.
+            Implements MON-18: Backpressure Alert.
+            </summary>
+        </member>
+        <member name="E:Meridian.Platform.Monitoring.BackpressureAlertService.OnBackpressureDetected">
+            <summary>
+            Event raised when backpressure is detected.
+            </summary>
+        </member>
+        <member name="E:Meridian.Platform.Monitoring.BackpressureAlertService.OnBackpressureResolved">
+            <summary>
+            Event raised when backpressure is resolved.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.BackpressureAlertService.RegisterPipelineProvider(System.Func{Meridian.Contracts.Pipeline.PipelineStatistics})">
+            <summary>
+            Registers the pipeline statistics provider.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.BackpressureAlertService.GetStatus">
+            <summary>
+            Gets the current backpressure status.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.BackpressureAlertConfig">
+            <summary>
+            Configuration for backpressure alerts.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.BackpressureAlertConfig.CheckIntervalSeconds">
+            <summary>
+            Interval between backpressure checks in seconds.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.BackpressureAlertConfig.WarningUtilizationPercent">
+            <summary>
+            Queue utilization percentage that triggers a warning.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.BackpressureAlertConfig.CriticalUtilizationPercent">
+            <summary>
+            Queue utilization percentage that triggers a critical alert.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.BackpressureAlertConfig.WarningDropRatePercent">
+            <summary>
+            Drop rate percentage that triggers a warning.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.BackpressureAlertConfig.CriticalDropRatePercent">
+            <summary>
+            Drop rate percentage that triggers a critical alert.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.BackpressureAlertConfig.ConsecutiveChecksBeforeAlert">
+            <summary>
+            Number of consecutive checks with high utilization before alerting.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.BackpressureAlertConfig.WarningAlertIntervalSeconds">
+            <summary>
+            Minimum interval between warning alerts in seconds.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.BackpressureAlertConfig.CriticalAlertIntervalSeconds">
+            <summary>
+            Minimum interval between critical alerts in seconds.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.BackpressureAlertConfig.SendWebhookOnResolved">
+            <summary>
+            Whether to send webhook when backpressure is resolved.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.BackpressureLevel">
+            <summary>
+            Backpressure severity level.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.BackpressureStatus">
+            <summary>
+            Current backpressure status.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.BackpressureStatus.#ctor(System.Boolean,Meridian.Platform.Monitoring.BackpressureLevel,System.Double,System.Int64,System.Double,System.TimeSpan,System.String)">
+            <summary>
+            Current backpressure status.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.BackpressureAlert">
+            <summary>
+            Backpressure alert event.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.BackpressureAlert.#ctor(Meridian.Platform.Monitoring.BackpressureLevel,System.Double,System.Int64,System.Int64,System.Double,System.TimeSpan,System.DateTimeOffset,System.String)">
+            <summary>
+            Backpressure alert event.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.BackpressureResolvedEvent">
+            <summary>
+            Event raised when backpressure is resolved.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.BackpressureResolvedEvent.#ctor(System.DateTimeOffset,System.TimeSpan,System.Int64)">
+            <summary>
+            Event raised when backpressure is resolved.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.CircuitBreakerStatusService">
+            <summary>
+            Tracks circuit breaker state transitions and provides an observable dashboard
+            of all circuit breakers in the system. Allows operators to see which providers
+            are healthy (closed), degraded (half-open), or failing (open) at a glance.
+            </summary>
+        </member>
+        <member name="E:Meridian.Platform.Monitoring.CircuitBreakerStatusService.OnStateChanged">
+            <summary>
+            Event raised when any circuit breaker changes state.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.CircuitBreakerStatusService.RecordStateTransition(System.String,Meridian.Platform.Monitoring.CircuitBreakerState,System.String,System.Nullable{System.Int32},System.Nullable{System.TimeSpan})">
+            <summary>
+            Registers or updates a circuit breaker's state.
+            Call this from resilience policy callbacks (OnOpened, OnClosed, OnHalfOpened).
+            </summary>
+            <param name="name">Unique name identifying this circuit breaker.</param>
+            <param name="newState">The new state being transitioned to.</param>
+            <param name="lastError">Optional error message that caused the transition.</param>
+            <param name="failureCount">Optional number of failures that triggered the transition.</param>
+            <param name="breakDuration">Optional break duration (stored for cooldown computation when state is Open).</param>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.CircuitBreakerStatusService.Register(System.String)">
+            <summary>
+            Registers a circuit breaker so it appears in the dashboard even before it trips.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.CircuitBreakerStatusService.GetDashboard">
+            <summary>
+            Gets the current status of all registered circuit breakers.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.CircuitBreakerState">
+            <summary>
+            Circuit breaker state enum.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.CircuitBreakerStateChange">
+            <summary>
+            Represents a circuit breaker state change event.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.CircuitBreakerStateChange.#ctor(System.String,Meridian.Platform.Monitoring.CircuitBreakerState,System.DateTimeOffset,System.String)">
+            <summary>
+            Represents a circuit breaker state change event.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.CircuitBreakerStatus">
+            <summary>
+            Status of a single circuit breaker.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.CircuitBreakerStatus.#ctor(System.String,System.String,System.DateTimeOffset,System.Int32,System.String,System.TimeSpan,System.Nullable{System.TimeSpan})">
+            <summary>
+            Status of a single circuit breaker.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.CircuitBreakerDashboard">
+            <summary>
+            Dashboard view of all circuit breakers.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.CircuitBreakerDashboard.#ctor(System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Platform.Monitoring.CircuitBreakerStatus},System.DateTimeOffset)">
+            <summary>
+            Dashboard view of all circuit breakers.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.Core.AlertDispatcher">
+            <summary>
+            Default implementation of IAlertDispatcher providing centralized
+            alert publishing and subscription management.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.AlertDispatcher.#ctor(System.Int32,Microsoft.Extensions.Logging.ILogger{Meridian.Platform.Monitoring.Core.AlertDispatcher})">
+            <summary>
+            Creates a new alert dispatcher.
+            </summary>
+            <param name="maxRecentAlerts">Maximum number of recent alerts to retain (default: 1000).</param>
+            <param name="log">Optional logger.</param>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.AlertDispatcher.Publish(Meridian.Core.Monitoring.Core.MonitoringAlert)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.AlertDispatcher.PublishAsync(Meridian.Core.Monitoring.Core.MonitoringAlert,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.AlertDispatcher.Subscribe(System.Action{Meridian.Core.Monitoring.Core.MonitoringAlert},Meridian.Core.Monitoring.Core.AlertFilter)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.AlertDispatcher.Subscribe(System.Func{Meridian.Core.Monitoring.Core.MonitoringAlert,System.Threading.Tasks.Task},Meridian.Core.Monitoring.Core.AlertFilter)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.AlertDispatcher.GetRecentAlerts(System.Int32,Meridian.Core.Monitoring.Core.AlertFilter)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.AlertDispatcher.GetStatistics">
+            <inheritdoc/>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.Core.AlertRunbookRegistry">
+            <summary>
+            Provides explicit mapping between alert rules and operator runbook sections.
+            Each entry includes the alert name, severity, runbook URL, probable causes,
+            and immediate mitigation steps.
+            </summary>
+            <remarks>
+            Addresses P0: "Alert-to-runbook linkage is implicit — slower incident triage".
+            This registry makes the linkage programmatic so that alerts dispatched via
+            <see cref="T:Meridian.Platform.Monitoring.Core.AlertDispatcher"/> can automatically include remediation guidance.
+            </remarks>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.AlertRunbookRegistry.RegisterDefaults">
+            <summary>
+            Registers the default alert-to-runbook mappings matching deploy/monitoring/alert-rules.yml.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.AlertRunbookRegistry.Register(Meridian.Platform.Monitoring.Core.AlertRunbookEntry)">
+            <summary>
+            Registers or updates an alert-runbook entry.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.AlertRunbookRegistry.GetByAlertName(System.String)">
+            <summary>
+            Gets the runbook entry for an alert by name.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.AlertRunbookRegistry.GetRunbookUrl(System.String)">
+            <summary>
+            Gets the runbook URL for an alert, or null if not mapped.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.AlertRunbookRegistry.GetAll">
+            <summary>
+            Gets all registered entries.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.AlertRunbookRegistry.GetBySeverity(System.String)">
+            <summary>
+            Gets entries filtered by severity.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.AlertRunbookRegistry.EnrichWithRunbook(Meridian.Core.Monitoring.Core.MonitoringAlert)">
+            <summary>
+            Enriches a <see cref="T:Meridian.Core.Monitoring.Core.MonitoringAlert"/> with runbook information by returning
+            a copy with augmented context.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.Core.AlertRunbookEntry">
+            <summary>
+            Maps a Prometheus alert rule to its operator runbook entry.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.AlertRunbookEntry.AlertName">
+            <summary>Alert rule name (matches Prometheus alert name).</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.AlertRunbookEntry.Severity">
+            <summary>Alert severity (critical, warning, info).</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.AlertRunbookEntry.IncidentPriority">
+            <summary>Incident priority (P1, P2, P3).</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.AlertRunbookEntry.Summary">
+            <summary>Short summary of the alert condition.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.AlertRunbookEntry.RunbookUrl">
+            <summary>Path to the runbook section for this alert.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.AlertRunbookEntry.SloId">
+            <summary>SLO ID this alert maps to, if any.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.AlertRunbookEntry.ProbableCauses">
+            <summary>Probable causes of this alert condition.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.AlertRunbookEntry.ImmediateActions">
+            <summary>Immediate mitigation actions.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.AlertRunbookEntry.RollbackCriteria">
+            <summary>Criteria for determining when a rollback is needed.</summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.Core.HealthCheckAggregator">
+            <summary>
+            Default implementation of IHealthCheckAggregator that runs health checks
+            in parallel and aggregates results.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.HealthCheckAggregator.#ctor(System.Nullable{System.TimeSpan},Microsoft.Extensions.Logging.ILogger{Meridian.Platform.Monitoring.Core.HealthCheckAggregator})">
+            <summary>
+            Creates a new health check aggregator.
+            </summary>
+            <param name="checkTimeout">Timeout for individual health checks (default: 5 seconds).</param>
+            <param name="log">Optional logger.</param>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.HealthCheckAggregator.Register(Meridian.Core.Monitoring.Core.IHealthCheckProvider)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.HealthCheckAggregator.Unregister(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.HealthCheckAggregator.CheckAllAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.HealthCheckAggregator.CheckAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.Core.SloDefinitionRegistry">
+            <summary>
+            Runtime registry of Service Level Objectives (SLOs) per subsystem.
+            Provides programmatic SLO checking, compliance scoring, and alert threshold mapping.
+            </summary>
+            <remarks>
+            Addresses P0: "SLOs not consistently documented per subsystem — hard to calibrate alerts".
+            Makes SLO definitions available at runtime for automated compliance checking
+            and maps each SLO to the relevant alert rule and runbook section.
+            </remarks>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.SloDefinitionRegistry.RegisterDefaults">
+            <summary>
+            Registers the default SLO definitions for all subsystems.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.SloDefinitionRegistry.Register(Meridian.Platform.Monitoring.Core.SloDefinition)">
+            <summary>
+            Registers or updates an SLO definition.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.SloDefinitionRegistry.Unregister(System.String)">
+            <summary>
+            Removes an SLO definition by its ID.
+            </summary>
+            <returns>True if the definition was removed; false if it was not found.</returns>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.SloDefinitionRegistry.Get(System.String)">
+            <summary>
+            Gets an SLO definition by its ID.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.SloDefinitionRegistry.GetAll(System.Nullable{Meridian.Platform.Monitoring.Core.SloSubsystem})">
+            <summary>
+            Gets all SLO definitions, optionally filtered by subsystem.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.SloDefinitionRegistry.Evaluate(System.String,System.Double)">
+            <summary>
+            Evaluates a metric value against its SLO definition.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.SloDefinitionRegistry.GetDashboard">
+            <summary>
+            Gets a compliance dashboard for all SLOs.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.Core.SloSubsystem">
+            <summary>
+            Subsystem classification for SLO grouping.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.Core.SloDefinition">
+            <summary>
+            Defines a single Service Level Objective with targets, thresholds, and linkage.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.SloDefinition.Id">
+            <summary>Unique SLO identifier (e.g., SLO-ING-001).</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.SloDefinition.Subsystem">
+            <summary>Subsystem this SLO belongs to.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.SloDefinition.Name">
+            <summary>Human-readable name.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.SloDefinition.Description">
+            <summary>Description of what this SLO measures.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.SloDefinition.MetricName">
+            <summary>Prometheus metric name used for measurement.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.SloDefinition.TargetValue">
+            <summary>Target value (the SLO threshold).</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.SloDefinition.CriticalThreshold">
+            <summary>Critical threshold beyond which the SLO is violated.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.SloDefinition.Unit">
+            <summary>Unit of measurement.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.SloDefinition.MeasurementWindow">
+            <summary>Window over which the metric is measured.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.SloDefinition.ErrorBudgetPercent">
+            <summary>Error budget as a percentage.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.SloDefinition.ErrorBudgetWindow">
+            <summary>Error budget window.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.SloDefinition.AlertRuleName">
+            <summary>Prometheus alert rule name linked to this SLO.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.SloDefinition.RunbookSection">
+            <summary>Link to the operator runbook section.</summary>
+        </member>
+        <member name="P:Meridian.Platform.Monitoring.Core.SloDefinition.SloDocSection">
+            <summary>Link to the SLO documentation section.</summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.Core.SloComplianceResult">
+            <summary>
+            Result of evaluating a metric against its SLO.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Monitoring.Core.SloComplianceResult.#ctor(System.String,Meridian.Platform.Monitoring.Core.SloComplianceState,System.Double,System.String)">
+            <summary>
+            Result of evaluating a metric against its SLO.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.Core.SloComplianceState">
+            <summary>
+            SLO compliance state.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.Core.SloComplianceDashboard">
+            <summary>
+            Dashboard of all SLO definitions grouped by subsystem.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.Core.SloSubsystemSummary">
+            <summary>
+            SLO summary for a subsystem.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Monitoring.Core.SloDefinitionSummary">
+            <summary>
+            Compact SLO definition for API responses.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Performance.ICoLocationProfileActivator">
+            <summary>
+            Activates exchange colocation profile for ultra-low-latency trading:
+            - GC to sustained low-latency mode
+            - Nagle algorithm disabled at socket and HTTP layers
+            - Optional thread affinity to CPU core 0 (exchange colocation data center pattern)
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Performance.ICoLocationProfileActivator.IsActive">
+            <summary>
+            Gets whether the CoLocation profile is currently active.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Performance.ICoLocationProfileActivator.Activate">
+            <summary>
+            Activates the colocation profile.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Performance.CoLocationProfileActivator">
+            <summary>
+            Implements exchange colocation profile activation.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Results.ErrorCode">
+            <summary>
+            Standardized error codes for the Meridian system.
+            Error codes are grouped by category using numeric ranges for easy filtering and categorization.
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.Unknown">
+            <summary>Unknown or unclassified error</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.InternalError">
+            <summary>Internal system error</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.Cancelled">
+            <summary>Operation was cancelled</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.Timeout">
+            <summary>Operation timed out</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.NotFound">
+            <summary>Resource not found</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.NotSupported">
+            <summary>Operation not supported</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.InvalidOperation">
+            <summary>Invalid operation for current state</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.ValidationFailed">
+            <summary>General validation failure</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.RequiredFieldMissing">
+            <summary>Required field is missing</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.OutOfRange">
+            <summary>Field value is out of valid range</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.InvalidFormat">
+            <summary>Invalid format for field value</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.DuplicateValue">
+            <summary>Duplicate value where uniqueness is required</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.ConstraintViolation">
+            <summary>Constraint violation</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.ConfigurationInvalid">
+            <summary>Configuration is invalid</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.ConfigurationMissing">
+            <summary>Required configuration is missing</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.ConfigurationOutOfRange">
+            <summary>Configuration value is out of valid range</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.CredentialsMissing">
+            <summary>API key or credential is missing</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.CredentialsInvalid">
+            <summary>API key or credential is invalid</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.ConnectionFailed">
+            <summary>Failed to establish connection</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.ConnectionLost">
+            <summary>Connection was lost</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.ConnectionRefused">
+            <summary>Connection was refused</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.ConnectionTimeout">
+            <summary>Connection timed out</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.AuthenticationFailed">
+            <summary>Authentication failed</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.SslError">
+            <summary>SSL/TLS error</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.DnsResolutionFailed">
+            <summary>DNS resolution failed</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.ProviderError">
+            <summary>Provider operation failed</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.ProviderUnavailable">
+            <summary>Provider is not available</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.RateLimitExceeded">
+            <summary>Rate limit exceeded</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.SubscriptionLimitExceeded">
+            <summary>Subscription limit exceeded</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.SymbolNotFound">
+            <summary>Symbol not found or not supported</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.InvalidProviderData">
+            <summary>Provider returned invalid data</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.NoDataAvailable">
+            <summary>Provider returned no data</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.CircuitBreakerOpen">
+            <summary>Circuit breaker is open</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.SequenceGap">
+            <summary>Sequence gap detected</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.OutOfOrderData">
+            <summary>Out of order data detected</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.DuplicateData">
+            <summary>Duplicate data detected</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.DataCorruption">
+            <summary>Data corruption detected</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.ChecksumMismatch">
+            <summary>Checksum validation failed</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.SchemaMismatch">
+            <summary>Schema version mismatch</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.StorageError">
+            <summary>Storage operation failed</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.FileNotFound">
+            <summary>File not found</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.FileAccessDenied">
+            <summary>File access denied</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.InsufficientDiskSpace">
+            <summary>Disk space insufficient</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.WriteFailed">
+            <summary>Write operation failed</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.ReadFailed">
+            <summary>Read operation failed</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.CompressionFailed">
+            <summary>Compression/decompression failed</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.SerializationFailed">
+            <summary>Serialization/deserialization failed</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.PublishFailed">
+            <summary>Message publish failed</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.ConsumeFailed">
+            <summary>Message consume failed</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.MessageDeserializationFailed">
+            <summary>Message deserialization failed</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.MessageValidationFailed">
+            <summary>Message validation failed</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.DeadLetterFailed">
+            <summary>Dead letter queue write failed</summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.ErrorCode.BrokerConnectionFailed">
+            <summary>Message broker connection failed</summary>
+        </member>
+        <member name="T:Meridian.Platform.Results.ErrorCodeExtensions">
+            <summary>
+            Extension methods for ErrorCode
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.ErrorCodeExtensions.GetCategory(Meridian.Platform.Results.ErrorCode)">
+            <summary>
+            Gets the category name for an error code
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.ErrorCodeExtensions.IsTransient(Meridian.Platform.Results.ErrorCode)">
+            <summary>
+            Determines if the error is transient and may succeed if retried
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.ErrorCodeExtensions.ToExitCode(Meridian.Platform.Results.ErrorCode)">
+            <summary>
+            Maps an error code to a process exit code (1-8) based on category.
+            Exit code 0 is reserved for success (not produced by this method).
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.ErrorCodeExtensions.FromException(System.Exception)">
+            <summary>
+            Maps a domain exception to the most appropriate <see cref="T:Meridian.Platform.Results.ErrorCode"/>.
+            Uses the exception type hierarchy from <c>Meridian.Core.Exceptions</c>
+            to produce category-accurate exit codes via <see cref="M:Meridian.Platform.Results.ErrorCodeExtensions.ToExitCode(Meridian.Platform.Results.ErrorCode)"/>.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.ErrorCodeExtensions.ToHttpStatusCode(Meridian.Platform.Results.ErrorCode)">
+            <summary>
+            Gets the suggested HTTP status code for an error code
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Results.FriendlyErrorFormatter">
+            <summary>
+            Formats errors with error codes, actionable suggestions, and user-friendly messages.
+            Provides consistent error presentation across the application.
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Results.FriendlyErrorFormatter.ErrorInfos">
+            <summary>
+            Error categories with codes and suggestions.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.FriendlyErrorFormatter.Format(System.Exception)">
+            <summary>
+            Formats an exception into a user-friendly error message.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.FriendlyErrorFormatter.Format(System.String,System.String)">
+            <summary>
+            Formats an error with a known key.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.FriendlyErrorFormatter.DisplayError(Meridian.Platform.Results.FormattedError,System.IO.TextWriter)">
+            <summary>
+            Displays an error to the console with formatting.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.FriendlyErrorFormatter.GetShortMessage(System.Exception)">
+            <summary>
+            Gets a short one-line error message.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.FriendlyErrorFormatter.GetAllErrorCodes">
+            <summary>
+            Gets all registered error codes with descriptions.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.FriendlyErrorFormatter.DisplayErrorCodeReference(System.IO.TextWriter)">
+            <summary>
+            Displays the error code reference.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Results.FormattedError">
+            <summary>
+            A formatted error ready for display.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.FormattedError.#ctor(System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            A formatted error ready for display.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Results.OperationError">
+            <summary>
+            Represents a standardized error from any operation in the system.
+            Can be used with Result&lt;T, OperationError&gt; for consistent error handling.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Results.Result`2">
+            <summary>
+            Represents the result of an operation that can either succeed with a value or fail with an error.
+            Provides a functional approach to error handling without exceptions.
+            </summary>
+            <typeparam name="TValue">The type of the success value</typeparam>
+            <typeparam name="TError">The type of the error</typeparam>
+        </member>
+        <member name="T:Meridian.Platform.Results.Result`1">
+            <summary>
+            Non-generic Result for operations that don't return a value
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Results.Result">
+            <summary>
+            Static factory methods for Result types
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.Result.Try``1(System.Func{``0})">
+            <summary>
+            Executes a function and captures any exception as a Result
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.Result.TryAsync``1(System.Func{System.Threading.Tasks.Task{``0}},System.Threading.CancellationToken)">
+            <summary>
+            Executes an async function and captures any exception as a Result
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Results.Result.Combine``2(System.Collections.Generic.IEnumerable{Meridian.Platform.Results.Result{``0,``1}})">
+            <summary>
+            Combines multiple results into a single result containing all values
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Runtime.CliModeResolver">
+            <summary>
+            Resolves the application run mode from CLI arguments.
+            Handles translation of legacy flags to unified --mode system.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Runtime.CliModeResolver.RunMode">
+            <summary>
+            Application run modes.
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Runtime.CliModeResolver.RunMode.Headless">
+            <summary>Headless mode - no UI, command-line only.</summary>
+        </member>
+        <member name="F:Meridian.Platform.Runtime.CliModeResolver.RunMode.Workstation">
+            <summary>Browser workstation mode - embedded local server without the streaming collector.</summary>
+        </member>
+        <member name="F:Meridian.Platform.Runtime.CliModeResolver.RunMode.Desktop">
+            <summary>Desktop mode - native desktop application with embedded server.</summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.CliModeResolver.TranslateLegacyFlags(System.String[])">
+            <summary>
+            Translates legacy CLI flags to the unified --mode system.
+            This provides backwards compatibility while funneling all modes through a single code path.
+            </summary>
+            <remarks>
+            Legacy flag mappings that still participate in mode resolution.
+            </remarks>
+            <param name="args">Command line arguments.</param>
+            <returns>The effective mode string, or null for headless.</returns>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.CliModeResolver.Resolve(System.String[])">
+            <summary>
+            Resolves the run mode from CLI arguments.
+            </summary>
+            <param name="args">Command line arguments.</param>
+            <returns>The resolved run mode.</returns>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.CliModeResolver.ResolveWithError(System.String[])">
+            <summary>
+            Resolves the run mode from CLI arguments, returning any error message.
+            </summary>
+            <param name="args">Command line arguments.</param>
+            <returns>Tuple of resolved mode and any error message.</returns>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.CliModeResolver.HasFlag(System.String[],System.String)">
+            <summary>
+            Checks if a specific flag is present in the arguments.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.CliModeResolver.GetArgValue(System.String[],System.String)">
+            <summary>
+            Gets the value following a specific argument key.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Runtime.DeploymentContext">
+            <summary>
+            Unified deployment context that captures all deployment-related settings at startup.
+            This reduces conditional branching across entry points by centralizing deployment mode logic.
+            </summary>
+            <remarks>
+            <para><b>Supported Deployment Modes:</b></para>
+            <list type="bullet">
+            <item><description><b>Headless</b> - Console application, no UI, suitable for servers/containers</description></item>
+            <item><description><b>Workstation</b> - Browser workstation local host without the streaming collector</description></item>
+            <item><description><b>Desktop</b> - Native desktop app with embedded HTTP server and collector</description></item>
+            </list>
+            <para>The context is immutable once created and provides all deployment-related decisions
+            through computed properties, eliminating scattered conditional logic.</para>
+            </remarks>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.DeploymentContext.Mode">
+            <summary>
+            The resolved deployment mode.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.DeploymentContext.HttpPort">
+            <summary>
+            The HTTP port for web/desktop modes. Defaults to 8080.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.DeploymentContext.HotReloadEnabled">
+            <summary>
+            Whether configuration hot reload is enabled.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.DeploymentContext.ConfigPath">
+            <summary>
+            Path to configuration file being used.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.DeploymentContext.EnvironmentName">
+            <summary>
+            The environment name (e.g., Development, Production).
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.DeploymentContext.ModeResolutionError">
+            <summary>
+            Error emitted while resolving the requested deployment mode, if any.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.DeploymentContext.IsDocker">
+            <summary>
+            Whether running in Docker container.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.DeploymentContext.IsOneShotCommand">
+            <summary>
+            Whether this is a one-shot command (validate, backfill, etc.) vs persistent operation.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.DeploymentContext.Command">
+            <summary>
+            The specific command being run, if any (e.g., "backfill", "wizard", "validate-config").
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.DeploymentContext.RequiresHttpServer">
+            <summary>
+            Whether the deployment requires an HTTP server.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.DeploymentContext.RunsCollector">
+            <summary>
+            Whether the deployment runs the data collector.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.DeploymentContext.ShowStartupSummary">
+            <summary>
+            Whether the deployment should display startup summary.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.DeploymentContext.RequiresGracefulShutdown">
+            <summary>
+            Whether graceful shutdown handling is required.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.DeploymentContext.ModeDescription">
+            <summary>
+            Description of the current deployment mode for logging/display.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.DeploymentContext.FromArgs(System.String[],System.String)">
+            <summary>
+            Creates a deployment context from command line arguments.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.DeploymentContext.ForCommand(System.String,System.String)">
+            <summary>
+            Creates a context for one-shot commands (wizard, validate, etc.).
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.DeploymentContext.ForDesktop(System.String,System.Int32,System.Boolean)">
+            <summary>
+            Creates a context for running in desktop mode.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.DeploymentContext.ForWorkstation(System.String,System.Int32,System.Boolean)">
+            <summary>
+            Creates a context for running the browser workstation local host without the streaming collector.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Runtime.DeploymentMode">
+            <summary>
+            Deployment modes supported by the application.
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Runtime.DeploymentMode.Headless">
+            <summary>
+            Headless mode - console application without UI.
+            Suitable for servers, containers, and background services.
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Runtime.DeploymentMode.Workstation">
+            <summary>
+            Browser workstation mode - embedded HTTP server only.
+            Does not auto-start streaming providers, subscriptions, or the collector pipeline.
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Runtime.DeploymentMode.Desktop">
+            <summary>
+            Desktop mode - native application with embedded HTTP server.
+            Runs both the data collector and UI server.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Runtime.GracefulShutdownHandler">
+            <summary>
+            Compatibility shutdown handler for callers that have not moved to the runtime lifecycle
+            control plane. Runtime hosts use IRuntimeLifecycleControlPlane and IRuntimeShutdownSequence.
+            </summary>
+        </member>
+        <member name="E:Meridian.Platform.Runtime.GracefulShutdownHandler.OnShutdownStarted">
+            <summary>
+            Event raised when shutdown begins.
+            </summary>
+        </member>
+        <member name="E:Meridian.Platform.Runtime.GracefulShutdownHandler.OnShutdownCompleted">
+            <summary>
+            Event raised when shutdown completes.
+            </summary>
+        </member>
+        <member name="E:Meridian.Platform.Runtime.GracefulShutdownHandler.OnProgress">
+            <summary>
+            Event raised to report shutdown progress.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.GracefulShutdownHandler.RegisterFlushable(Meridian.Core.Services.IFlushable)">
+            <summary>
+            Registers a flushable component that needs to be flushed on shutdown.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.GracefulShutdownHandler.RegisterDisposable(System.IAsyncDisposable)">
+            <summary>
+            Registers a disposable component that needs to be disposed on shutdown.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.GracefulShutdownHandler.RegisterShutdownCallback(System.Func{Meridian.Platform.Diagnostics.ShutdownContext,System.Threading.Tasks.Task})">
+            <summary>
+            Registers a callback to be invoked during shutdown.
+            Callbacks are invoked in registration order before flushing.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.GracefulShutdownHandler.ShutdownToken">
+            <summary>
+            Gets a cancellation token that is cancelled when shutdown is requested.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.GracefulShutdownHandler.ShutdownRequestedTask">
+            <summary>
+            Gets a task that completes when shutdown is requested.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.GracefulShutdownHandler.IsShuttingDown">
+            <summary>
+            Returns true if shutdown has been initiated.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.GracefulShutdownHandler.InitiateShutdownAsync(Meridian.Platform.Diagnostics.ShutdownReason,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Initiates graceful shutdown with the specified reason.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.GracefulShutdownHandler.WaitForShutdownAsync(System.Threading.CancellationToken)">
+            <summary>
+            Waits for shutdown to be requested, then performs graceful shutdown.
+            Use this in your main loop.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Runtime.GracefulShutdownConfig">
+            <summary>
+            Configuration for graceful shutdown behavior.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.GracefulShutdownConfig.TimeoutSeconds">
+            <summary>
+            Maximum time to wait for graceful shutdown in seconds.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.GracefulShutdownConfig.FlushTimeoutPerComponentSeconds">
+            <summary>
+            Maximum time to wait for each component to flush in seconds.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.GracefulShutdownConfig.DisposeTimeoutPerComponentSeconds">
+            <summary>
+            Maximum time to wait for each component to dispose in seconds.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.GracefulShutdownConfig.ForceExitOnTimeout">
+            <summary>
+            Whether to force exit if shutdown times out.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.GracefulShutdownConfig.ForceExitOnSecondSignal">
+            <summary>
+            Whether to force exit on second Ctrl+C signal.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Runtime.GracefulShutdownService">
+            <summary>
+            Compatibility IHostedService for non-lifecycle-control-plane callers. Runtime hosts use
+            LifecycleControlPlaneHostedService and must not co-register this adapter.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.GracefulShutdownService.#ctor(System.Collections.Generic.IEnumerable{Meridian.Core.Services.IFlushable},System.Nullable{System.TimeSpan})">
+            <summary>
+            Creates a new graceful shutdown service.
+            </summary>
+            <param name="flushables">Collection of flushable components to flush on shutdown</param>
+            <param name="shutdownTimeout">Maximum time to wait for flush operations (default: 30 seconds)</param>
+        </member>
+        <member name="T:Meridian.Platform.Runtime.ProgressDisplayService">
+            <summary>
+            Service for displaying real-time progress feedback during long-running operations.
+            Provides terminal-based progress bars, spinners, and status updates.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ProgressDisplayService.StartOperation(System.String,System.Int32)">
+            <summary>
+            Creates a progress tracker for a specific operation.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ProgressDisplayService.DisplayProgress(System.String,System.Int32,System.Int32,System.String)">
+            <summary>
+            Displays a progress bar with percentage and ETA.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ProgressDisplayService.StartSpinner(System.String)">
+            <summary>
+            Displays a spinner for indeterminate progress.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ProgressDisplayService.DisplayStatus(System.String)">
+            <summary>
+            Displays a status line that can be updated.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ProgressDisplayService.DisplaySuccess(System.String)">
+            <summary>
+            Displays a success message.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ProgressDisplayService.DisplayWarning(System.String)">
+            <summary>
+            Displays a warning message.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ProgressDisplayService.DisplayError(System.String)">
+            <summary>
+            Displays an error message.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ProgressDisplayService.ClearLine">
+            <summary>
+            Clears the current line.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ProgressDisplayService.StartChecklist(System.String,System.String[])">
+            <summary>
+            Displays a multi-step checklist.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ProgressDisplayService.DisplayTable(System.String,System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}})">
+            <summary>
+            Displays a summary table.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ProgressDisplayService.StartTiming">
+            <summary>
+            Starts the internal stopwatch for ETA calculations.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ProgressDisplayService.StopTiming">
+            <summary>
+            Stops the internal stopwatch.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Runtime.OperationProgress">
+            <summary>
+            Tracks progress for a specific operation.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.OperationProgress.Next(System.String)">
+            <summary>
+            Updates progress to the next item.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.OperationProgress.SetProgress(System.Int32,System.String)">
+            <summary>
+            Sets progress to a specific position.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Runtime.OperationProgress.PercentComplete">
+            <summary>
+            Gets the current progress percentage.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.OperationProgress.Complete">
+            <summary>
+            Completes the operation.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.OperationProgress.Failed(System.String)">
+            <summary>
+            Marks the operation as failed.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Runtime.ChecklistDisplay">
+            <summary>
+            Displays a multi-step checklist with status indicators.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ChecklistDisplay.StartStep(System.Int32)">
+            <summary>
+            Marks the current step as in progress and moves to next.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ChecklistDisplay.CompleteStep(System.Int32)">
+            <summary>
+            Marks a step as completed.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ChecklistDisplay.FailStep(System.Int32)">
+            <summary>
+            Marks a step as failed.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.ChecklistDisplay.SkipStep(System.Int32)">
+            <summary>
+            Marks a step as skipped.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Runtime.StartupSummary">
+            <summary>
+            Generates and displays a user-friendly summary of the configuration at startup.
+            Helps users understand what the application will do before it starts.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.StartupSummary.Display(Meridian.Core.Config.AppConfig,System.String,System.String[])">
+            <summary>
+            Displays a comprehensive startup summary.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.StartupSummary.DisplayCompact(Meridian.Core.Config.AppConfig)">
+            <summary>
+            Displays a compact one-line status.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.StartupSummary.PerformQuickCheck(Meridian.Core.Config.AppConfig)">
+            <summary>
+            Displays a quick status check.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.StartupSummary.DisplayQuickCheck(Meridian.Platform.Runtime.QuickCheckResult)">
+            <summary>
+            Displays the quick check results.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Runtime.QuickCheckResult">
+            <summary>
+            Result of a quick configuration check.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.QuickCheckResult.#ctor(System.Boolean,System.Collections.Generic.IReadOnlyList{Meridian.Platform.Runtime.QuickCheckIssue},System.Collections.Generic.IReadOnlyList{System.String})">
+            <summary>
+            Result of a quick configuration check.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Runtime.QuickCheckIssue">
+            <summary>
+            An issue found during quick check.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Runtime.QuickCheckIssue.#ctor(Meridian.Platform.Runtime.IssueSeverity,System.String,System.String)">
+            <summary>
+            An issue found during quick check.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Runtime.IssueSeverity">
+            <summary>
+            Severity level for quick check issues.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Scheduling.OperationalScheduler">
+            <summary>
+            Concrete implementation of <see cref="T:Meridian.Contracts.Services.IOperationalScheduler"/> that provides trading-hours-aware
+            scheduling of maintenance, backfill, and other operational tasks.
+            Coordinates with the trading calendar to schedule heavy operations during off-hours
+            and defers non-critical work to maintenance windows.
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Scheduling.OperationalScheduler.TradingHoursSensitiveOps">
+            <summary>
+            Operations that should be deferred during trading hours.
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Scheduling.OperationalScheduler.AlwaysAllowedOps">
+            <summary>
+            Operations that are always allowed regardless of trading hours.
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Scheduling.OperationalScheduler.DefaultWindows">
+            <summary>
+            Default maintenance windows when none are configured.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Scheduling.OperationalScheduler.IsWithinTradingHours">
+            <inheritdoc />
+        </member>
+        <member name="P:Meridian.Platform.Scheduling.OperationalScheduler.IsWithinMaintenanceWindow">
+            <inheritdoc />
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.OperationalScheduler.CanExecuteAsync(Meridian.Contracts.Services.OperationType,Meridian.Contracts.Services.ResourceRequirements,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.OperationalScheduler.FindNextAvailableSlotAsync(Meridian.Contracts.Services.OperationType,System.TimeSpan,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.OperationalScheduler.GetCurrentTradingSession">
+            <inheritdoc />
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.OperationalScheduler.GetNextTradingSession">
+            <inheritdoc />
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.OperationalScheduler.GetCurrentMaintenanceWindow">
+            <inheritdoc />
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.OperationalScheduler.GetNextMaintenanceWindow">
+            <inheritdoc />
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.OperationalScheduler.RegisterMaintenanceWindow(Meridian.Contracts.Services.MaintenanceWindow)">
+            <inheritdoc />
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.OperationalScheduler.RemoveMaintenanceWindow(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:Meridian.Platform.Scheduling.TradingCalendar">
+            <summary>
+            Provides US market trading calendar functionality including:
+            - Market holidays (NYSE/NASDAQ)
+            - Half-day trading sessions
+            - Regular, pre-market, and after-hours session times
+            - Timezone-aware market status queries
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Scheduling.TradingCalendar.PreMarketOpen">
+            <summary>
+            Pre-market session start time (4:00 AM ET).
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Scheduling.TradingCalendar.RegularMarketOpen">
+            <summary>
+            Regular session start time (9:30 AM ET).
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Scheduling.TradingCalendar.RegularMarketClose">
+            <summary>
+            Regular session end time (4:00 PM ET).
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Scheduling.TradingCalendar.HalfDayClose">
+            <summary>
+            Half-day session end time (1:00 PM ET).
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Scheduling.TradingCalendar.AfterHoursClose">
+            <summary>
+            After-hours session end time (8:00 PM ET).
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.#ctor">
+            <summary>
+            Creates a new trading calendar with US market holidays.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GetCurrentStatus">
+            <summary>
+            Gets the current market status.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GetStatusAt(System.DateTimeOffset)">
+            <summary>
+            Gets the market status at a specific time.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.IsTradingDay(System.DateOnly)">
+            <summary>
+            Checks if a specific date is a trading day.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.IsHalfDay(System.DateOnly)">
+            <summary>
+            Checks if a specific date is a half trading day.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.IsTodayTradingDay">
+            <summary>
+            Checks if today is a trading day.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GetNextTradingDay(System.DateOnly)">
+            <summary>
+            Gets the next trading day from a given date.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GetPreviousTradingDay(System.DateOnly)">
+            <summary>
+            Gets the previous trading day from a given date.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GetTradingDays(System.DateOnly,System.DateOnly)">
+            <summary>
+            Gets a list of trading days within a date range.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GetTradingDayCount(System.DateOnly,System.DateOnly)">
+            <summary>
+            Gets the count of trading days within a date range.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GetTimeUntilOpen">
+            <summary>
+            Gets the time until market open (regular session).
+            Returns null if market is currently open.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GetTimeUntilClose">
+            <summary>
+            Gets the time until market close.
+            Returns null if market is currently closed.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GetHolidays(System.Int32)">
+            <summary>
+            Gets all holidays for a given year.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GetHalfDays(System.Int32)">
+            <summary>
+            Gets all half-days for a given year.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GenerateHolidays(System.Int32,System.Int32)">
+            <summary>
+            Generates US market holidays for a range of years.
+            NYSE/NASDAQ observe the same holidays.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GenerateHalfDays(System.Int32,System.Int32)">
+            <summary>
+            Generates half trading days for a range of years.
+            Markets close at 1:00 PM ET on these days.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GetObservedHoliday(System.DateOnly)">
+            <summary>
+            Gets the observed holiday date (moves weekend holidays to Friday/Monday).
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GetNthWeekdayOfMonth(System.Int32,System.Int32,System.DayOfWeek,System.Int32)">
+            <summary>
+            Gets the Nth weekday of a month (e.g., 3rd Monday of January).
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GetLastWeekdayOfMonth(System.Int32,System.Int32,System.DayOfWeek)">
+            <summary>
+            Gets the last weekday of a month (e.g., last Monday of May).
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.GetGoodFriday(System.Int32)">
+            <summary>
+            Calculates Good Friday (Friday before Easter Sunday).
+            Uses the Anonymous Gregorian algorithm for Easter calculation.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.TradingCalendar.CalculateEaster(System.Int32)">
+            <summary>
+            Calculates Easter Sunday using the Anonymous Gregorian algorithm.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Scheduling.MarketStatus">
+            <summary>
+            Current market status information.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.MarketStatus.#ctor(Meridian.Platform.Scheduling.MarketState,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Boolean,System.DateTimeOffset)">
+            <summary>
+            Current market status information.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Scheduling.MarketStatus.IsRegularTradingHours">
+            <summary>
+            Returns true if regular trading is currently active.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Scheduling.MarketStatus.IsAnySessionActive">
+            <summary>
+            Returns true if any trading session is active (pre-market, regular, or after-hours).
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Scheduling.MarketStatus.TimeRemainingInSession">
+            <summary>
+            Returns the time remaining in the current session, or null if no session is active.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Scheduling.MarketState">
+            <summary>
+            Market trading state.
+            </summary>
+        </member>
+        <member name="F:Meridian.Platform.Scheduling.MarketState.Closed">
+            <summary>Market is closed.</summary>
+        </member>
+        <member name="F:Meridian.Platform.Scheduling.MarketState.PreMarket">
+            <summary>Pre-market session (4:00 AM - 9:30 AM ET).</summary>
+        </member>
+        <member name="F:Meridian.Platform.Scheduling.MarketState.Open">
+            <summary>Regular trading session (9:30 AM - 4:00 PM ET).</summary>
+        </member>
+        <member name="F:Meridian.Platform.Scheduling.MarketState.AfterHours">
+            <summary>After-hours session (4:00 PM - 8:00 PM ET).</summary>
+        </member>
+        <member name="T:Meridian.Platform.Scheduling.MarketHoliday">
+            <summary>
+            Market holiday information.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Scheduling.MarketHoliday.#ctor(System.DateOnly,System.String)">
+            <summary>
+            Market holiday information.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Tracing.DefaultEventMetrics">
+            <summary>
+            Default implementation that delegates to the existing static <see cref="T:Meridian.Platform.Tracing.Metrics"/> class.
+            Registered as a singleton in DI so all consumers share the same counters.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Tracing.EventTraceContext">
+            <summary>
+            Captures the trace context present when a market event enters the pipeline so
+            it can be restored after queueing on a different thread.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.EventTraceContext.#ctor(System.Diagnostics.ActivityContext,System.String)">
+            <summary>
+            Captures the trace context present when a market event enters the pipeline so
+            it can be restored after queueing on a different thread.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Tracing.Metrics">
+            <summary>
+            Minimal hot-path safe counters (no allocations; thread-safe).
+            Enhanced with latency tracking and GC monitoring.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.Metrics.RecordLatency(System.Int64)">
+            <summary>
+            Records a latency sample in ticks.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.Metrics.AverageLatencyUs">
+            <summary>
+            Gets the average latency in microseconds.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.Metrics.MinLatencyUs">
+            <summary>
+            Gets the minimum latency in microseconds.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.Metrics.MaxLatencyUs">
+            <summary>
+            Gets the maximum latency in microseconds.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.Metrics.LatencySampleCount">
+            <summary>
+            Gets the total number of latency samples recorded.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.Metrics.EventsPerSecond">
+            <summary>
+            Gets the events per second rate.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.Metrics.TradesPerSecond">
+            <summary>
+            Gets the trades per second rate.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.Metrics.DepthUpdatesPerSecond">
+            <summary>
+            Gets the depth updates per second rate.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.Metrics.HistoricalBarsPerSecond">
+            <summary>
+            Gets the historical bars per second rate (useful during backfills).
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.Metrics.DropRate">
+            <summary>
+            Gets the drop rate as a percentage.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.Metrics.UpdateGcCounts">
+            <summary>
+            Updates GC collection counts and calculates deltas since last update.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.Metrics.MemoryUsageMb">
+            <summary>
+            Gets the current memory usage in megabytes.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.Metrics.HeapSizeMb">
+            <summary>
+            Gets the GC heap size in megabytes.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.Metrics.Reset">
+            <summary>
+            Resets all counters to zero.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.Metrics.GetSnapshot">
+            <summary>
+            Gets a snapshot of all current metrics.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.Metrics.GetCombinedSnapshot">
+            <summary>
+            Gets a combined snapshot of all metrics including resubscription metrics.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Tracing.CombinedMetricsSnapshot">
+            <summary>
+            Combined snapshot including core metrics and resubscription metrics.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.CombinedMetricsSnapshot.#ctor(Meridian.Contracts.Monitoring.MetricsSnapshot,Meridian.Core.Subscriptions.Models.ResubscriptionMetricsSnapshot)">
+            <summary>
+            Combined snapshot including core metrics and resubscription metrics.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Tracing.OpenTelemetrySetup">
+             <summary>
+             OpenTelemetry setup for distributed tracing across the market data pipeline.
+             Traces events from provider → collector → storage with full context propagation.
+            
+             Based on: https://github.com/open-telemetry/opentelemetry-dotnet (Apache 2.0)
+             Reference: docs/open-source-references.md #15
+             </summary>
+        </member>
+        <member name="F:Meridian.Platform.Tracing.OpenTelemetrySetup.ActivitySource">
+            <summary>
+            The activity source for Meridian tracing.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.OpenTelemetrySetup.Initialize(Meridian.Platform.Tracing.OpenTelemetryConfiguration)">
+            <summary>
+            Initialize OpenTelemetry tracing with the specified configuration.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.OpenTelemetrySetup.AddOpenTelemetryTracing(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Platform.Tracing.OpenTelemetryConfiguration)">
+            <summary>
+            Add OpenTelemetry services to the DI container.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.OpenTelemetrySetup.Shutdown">
+            <summary>
+            Shutdown OpenTelemetry providers gracefully.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Tracing.MarketDataTracing">
+            <summary>
+            Tracing utilities for market data operations.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.MarketDataTracing.StartReceiveActivity(System.String,System.String)">
+            <summary>
+            Start a trace for receiving data from a market data provider.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.MarketDataTracing.StartProcessActivity(System.String,System.String)">
+            <summary>
+            Start a trace for processing a market event.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.MarketDataTracing.StartProcessActivity(System.String,System.String,System.Diagnostics.ActivityContext)">
+            <summary>
+            Start a trace for processing a market event with an explicit parent context restored
+            after an async queue boundary.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.MarketDataTracing.StartStorageActivity(System.String,System.String)">
+            <summary>
+            Start a trace for storing a market event.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.MarketDataTracing.StartStorageActivity(System.String,System.String,System.Diagnostics.ActivityContext)">
+            <summary>
+            Start a trace for storing a market event with an explicit parent context.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.MarketDataTracing.StartPublishActivity(System.String,System.String)">
+            <summary>
+            Start a trace for publishing to message bus.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.MarketDataTracing.StartWebSocketActivity(System.String,System.String)">
+            <summary>
+            Start a trace for WebSocket operations.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.MarketDataTracing.StartIndicatorActivity(System.String,System.String)">
+            <summary>
+            Start a trace for indicator calculation.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.MarketDataTracing.StartBatchConsumeActivity(System.Int32)">
+            <summary>
+            Start a trace for a pipeline batch consume operation.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.MarketDataTracing.StartBackfillActivity(System.String,System.String,System.String,System.String)">
+            <summary>
+            Start a trace for a backfill operation.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.MarketDataTracing.StartWalRecoveryActivity">
+            <summary>
+            Start a trace for a WAL recovery operation.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.MarketDataTracing.RecordError(System.Diagnostics.Activity,System.Exception)">
+            <summary>
+            Record an error on the current activity.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.MarketDataTracing.RecordLatency(System.Diagnostics.Activity,System.TimeSpan)">
+            <summary>
+            Add latency measurement to activity.
+            </summary>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.MarketDataTracing.RecordEventCount(System.Diagnostics.Activity,System.Int32)">
+            <summary>
+            Add event count to activity.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Tracing.OpenTelemetryConfiguration">
+            <summary>
+            Configuration for OpenTelemetry integration.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.OpenTelemetryConfiguration.EnableConsoleExporter">
+            <summary>
+            Enable console exporter for debugging.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.OpenTelemetryConfiguration.EnableOtlpExporter">
+            <summary>
+            Enable OTLP exporter for production observability.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.OpenTelemetryConfiguration.OtlpEndpoint">
+            <summary>
+            OTLP collector endpoint (e.g., "http://localhost:4317").
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.OpenTelemetryConfiguration.OtlpHeaders">
+            <summary>
+            Optional headers for OTLP exporter (e.g., for authentication).
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.OpenTelemetryConfiguration.SamplingRatio">
+            <summary>
+            Sampling ratio (0.0 to 1.0). 1.0 = sample all traces.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.OpenTelemetryConfiguration.TraceWebSocket">
+            <summary>
+            Enable tracing for WebSocket operations.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.OpenTelemetryConfiguration.TraceStorage">
+            <summary>
+            Enable tracing for storage operations.
+            </summary>
+        </member>
+        <member name="P:Meridian.Platform.Tracing.OpenTelemetryConfiguration.TraceMessaging">
+            <summary>
+            Enable tracing for message publishing.
+            </summary>
+        </member>
+        <member name="T:Meridian.Platform.Tracing.TracedEventMetrics">
+            <summary>
+            Decorates an <see cref="T:Meridian.Contracts.Monitoring.IEventMetrics"/> implementation with OpenTelemetry-compatible
+            <see cref="N:System.Diagnostics.Metrics"/> counters and histograms, enabling export to
+            OTLP, Prometheus, or any configured metrics backend without modifying hot-path code.
+            </summary>
+            <remarks>
+            This decorator follows the same zero-allocation pattern as the default pipeline metrics
+            implementation.
+            All counter increments use <see cref="F:System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining"/>.
+            The underlying <see cref="T:Meridian.Contracts.Monitoring.IEventMetrics"/> is always called first to preserve existing behavior.
+            </remarks>
+        </member>
+        <member name="M:Meridian.Platform.Tracing.TracedEventMetrics.#ctor(Meridian.Contracts.Monitoring.IEventMetrics)">
+            <summary>
+            Creates a traced metrics decorator wrapping the specified inner metrics implementation.
+            </summary>
+            <param name="inner">The underlying metrics implementation to delegate to.</param>
+        </member>
+    </members>
+</doc>

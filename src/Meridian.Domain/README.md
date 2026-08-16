@@ -58,6 +58,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `W10-RECON-004` | Operator-taught match rules with promotion gate |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

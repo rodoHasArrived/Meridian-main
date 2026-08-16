@@ -2,9 +2,11 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Reporting;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -88,7 +90,7 @@ public sealed partial class ReportingGovernanceCoordinatorService
             || !string.Equals(record.FileName, declaration.FileName, StringComparison.Ordinal)
             || !string.Equals(record.ContentType, declaration.ContentType, StringComparison.Ordinal)
             || record.ByteLength <= 0
-            || !IsSha256(record.Identity.ContentHashSha256)
+            || !Sha256Digest.IsWellFormed(record.Identity.ContentHashSha256)
             || !string.Equals(
                 record.Identity.ContentHashSha256,
                 record.Identity.ContentHashSha256.ToLowerInvariant(),
@@ -112,27 +114,15 @@ public sealed partial class ReportingGovernanceCoordinatorService
     private static string BuildPackageId(GovernedReportingRun run)
     {
         var canonical = $"{run.Scope.TenantId}\n{run.RunId}\n{run.Revision.ToString(CultureInfo.InvariantCulture)}";
-        return $"report-package-{ComputeSha256(Encoding.UTF8.GetBytes(canonical))}";
+        return $"report-package-{Sha256Digest.Compute(Encoding.UTF8.GetBytes(canonical))}";
     }
 
     private static string BuildSourceCheckpointEvidence(string checkpointId, string checkpointHash) =>
         $"reporting-source-checkpoint:{checkpointId}:{checkpointHash.ToLowerInvariant()}";
 
-    private static string ComputeSha256(ReadOnlySpan<byte> content) =>
-        Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
-
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 } && value.All(Uri.IsHexDigit);
-
     private static bool SameOptional(string? left, string? right) =>
         string.IsNullOrWhiteSpace(left) && string.IsNullOrWhiteSpace(right)
         || string.Equals(left?.Trim(), right?.Trim(), StringComparison.Ordinal);
-
-    private static string? NormalizeOptional(string? value)
-    {
-        var normalized = value?.Trim();
-        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
-    }
 
     private static void RequireText(string? value, string parameterName)
     {

@@ -5,7 +5,7 @@ This document captures the Meridian storage architecture as it exists today, plu
 
 > **Document status:** Living architecture reference — reflects the implemented storage layer.
 >
-> **Last updated:** 2026-06-30
+> **Last updated:** 2026-08-05
 >
 > **Audience:** Platform engineers, storage/infrastructure owners, and data operations.
 
@@ -63,6 +63,7 @@ This document captures the Meridian storage architecture as it exists today, plu
 ### Implemented Capabilities
 The storage layer currently delivers:
 - 8 file naming conventions (Flat, BySymbol, ByDate, ByType, BySource, ByAssetClass, Hierarchical, Canonical)
+- Reversible, collision-free JSONL path segments for symbol, provider, and asset-class identities
 - 4 date partition granularities (None, Daily, Hourly, Monthly)
 - Multi-dimensional `PartitionStrategy` (primary + secondary + tertiary dimensions)
 - 5 compression codecs (None, LZ4, Gzip, Zstd, Brotli)
@@ -90,6 +91,7 @@ The storage layer currently delivers:
 | Area | Status | Key Classes |
 |------|--------|-------------|
 | Naming conventions (8 patterns) | ✅ Implemented | `FileNamingConvention`, `JsonlStoragePolicy` |
+| JSONL identity/path safety | ✅ Implemented | `StoragePathSegmentCodec`, `JsonlStoragePolicy`, `JsonlMarketDataStore` |
 | Multi-dimensional partitioning | ✅ Implemented | `PartitionStrategy`, `PartitionDimension` |
 | Tier-based lifecycle policies | ✅ Implemented | `StoragePolicyConfig`, `TierMigrationService` |
 | Per-source/symbol quotas | ✅ Implemented | `QuotaOptions`, `QuotaEnforcementService` |
@@ -210,7 +212,30 @@ enum FileNamingConvention
 }
 ```
 
-### 3. Symbol Naming Standardization (Roadmap)
+### 3. JSONL Path Identity Encoding (Implemented)
+
+`JsonlStoragePolicy` treats symbol, provider, and asset-class values as identities rather than
+free-form relative paths. Plain ASCII identifiers remain readable only when they are safe and
+unambiguous. Other values are written by `StoragePathSegmentCodec` as `~` followed by canonical
+uppercase UTF-8 hex. Encoding covers path separators, whitespace, underscores used by the flat-file
+delimiter, a leading `~`, `.` and `..`, trailing dots, non-ASCII text, and Windows reserved device
+names. `TryParsePath(...)` decodes those segments when it reconstructs path metadata.
+
+Symbols are uppercased before encoding to match `SymbolId` identity. Path-sensitive values such as
+`BTC/USD`, `BTC:USD`, `BTC USD`, and `BTC_USD` therefore remain distinct instead of collapsing to
+the same sanitized directory. New writes use the reversible encoding. Symbol-based
+`JsonlMarketDataStore` candidate discovery also checks the pre-codec sanitized spelling, then applies
+the event-level query predicate, so existing JSONL files remain discoverable without making the
+legacy collision-prone spelling authoritative for new writes.
+
+`StorageOptions.FilePrefix` is validated when `JsonlStoragePolicy` is constructed. A non-empty
+prefix may contain only ASCII letters, digits, underscores, and hyphens; the policy appends the
+separator underscore. Any other value fails with `ArgumentException`. After every naming convention
+builds its path, `GetPath(...)` resolves the configured root and result to full paths and rejects a
+result outside that root. This is normalized path containment; it does not by itself certify an
+external filesystem or deployment environment.
+
+### 4. Symbol Naming Standardization (Roadmap)
 
 **Candidate canonical symbol registry shape:**
 
@@ -236,7 +261,7 @@ enum FileNamingConvention
 - Automatic alias resolution during queries
 - Cross-reference with industry identifiers (ISIN, FIGI, SEDOL)
 
-### 4. File Naming Metadata Encoding (Implemented Pattern)
+### 5. File Naming Metadata Encoding (Implemented Pattern)
 
 **Queryable metadata-oriented filename pattern:**
 
@@ -3274,7 +3299,7 @@ The modular design allows incremental adoption—start with basic naming convent
 
 ---
 
-**Version:** 2.1.2
-**Last Updated:** 2026-06-30
+**Version:** 2.1.3
+**Last Updated:** 2026-08-05
 **Focus:** Data Collection, Archival & External Analysis Export
 **See Also:** [Meridian README](https://github.com/rodoHasArrived/Meridian/blob/main/README.md) | [Architecture Overview](overview.md) | [Configuration Guide](../HELP.md#configuration) | [ADR-002: Tiered Storage](../../archive/docs/adr/002-tiered-storage-architecture.md)

@@ -37,6 +37,7 @@ import type {
   SecurityMasterConflict,
   SecurityMasterTrustSnapshot
 } from "@/types";
+import { requireFirst, requirePresent } from "@/test/fixtures";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -1619,6 +1620,36 @@ describe("AccountingScreen", () => {
     expect(screen.queryByRole("navigation", { name: "Accounting task modes" })).not.toBeInTheDocument();
   });
 
+  it("presents control-center scope as aggregate metadata instead of inert filters", async () => {
+    // The control center lives in the Posture section, which `showPosture` gates off unless the
+    // route names it — see `accountingSectionHashVisibility` in the task-mode view model. Without
+    // the hash the section never renders, so the assertions below cannot find it.
+    await renderAccountingScreen({
+      ...data,
+      controlCenter: {
+        closeReadiness: "ReviewRequired",
+        portfolioFilterOptions: ["all-portfolios", "equity"],
+        accountFilterOptions: ["fund-alpha"],
+        blockerSeverityDistribution: [],
+        agingCurves: [],
+        ownerWorkload: [],
+        slaBreachCount: 1,
+        trendSnapshots: [],
+        drillLinks: [],
+        alerts: []
+      }
+    }, "/accounting#accounting-posture");
+
+    const controlCenter = screen.getByRole("region", { name: "Operations control center" });
+    expect(within(controlCenter).getByText("Portfolio coverage")).toBeInTheDocument();
+    expect(controlCenter).toHaveTextContent("all-portfolios, equity");
+    expect(within(controlCenter).getByText("Account coverage")).toBeInTheDocument();
+    expect(controlCenter).toHaveTextContent("fund-alpha");
+    expect(screen.queryByRole("combobox", { name: /portfolio filter/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: /account filter/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/does not present a selector until the service supplies per-scope measures/i)).toBeInTheDocument();
+  });
+
   it("renders Accounting Rules Studio details and shared dry-run previews", async () => {
     const generatedPostings: GeneratedPostingLine[] = [
       {
@@ -1856,14 +1887,14 @@ describe("AccountingScreen", () => {
           description: "Credit cash settlement."
         }
       ],
-      generatedPostingLines: workspace.postingRules[0].generatedPostings,
+      generatedPostingLines: requirePresent(requireFirst(workspace.postingRules, "workspace.postingRules").generatedPostings, "postingRules[0].generatedPostings"),
       validationIssues: []
     };
     const journalCandidateResult: PostingRuleJournalCandidateResult = {
       dryRunResult,
       selectedRuleId: "rule-trade-buy",
       selectedRuleVersion: "v3",
-      generatedPostingLines: workspace.postingRules[0].generatedPostings,
+      generatedPostingLines: requirePresent(requireFirst(workspace.postingRules, "workspace.postingRules").generatedPostings, "postingRules[0].generatedPostings"),
       postingCommand: {
         commandId: "00000000-0000-4000-8000-000000000101",
         aggregateId: "00000000-0000-4000-8000-000000000102",
@@ -4269,7 +4300,7 @@ describe("AccountingScreen", () => {
         securityId: "22222222-2222-2222-2222-222222222222",
         securityDisplayName: "Apple Inc."
       } : line),
-      evidenceLinks: request.evidenceLinks,
+      evidenceLinks: request.evidenceLinks ?? [],
       evidenceAttachments: [request.attachment]
     }));
     vi.mocked(api.validateManualJournalEntryDraft).mockImplementationOnce((request) => Promise.resolve(request.draft));
@@ -5221,7 +5252,8 @@ describe("AccountingScreen", () => {
     expect(api.resolveSecurityConflict).toHaveBeenCalledWith({
       conflictId: "conflict-1",
       resolution: "AcceptA",
-      resolvedBy: "operator"
+      resolvedBy: "operator",
+      reason: "AcceptA action from the shared conflict queue."
     });
   });
 

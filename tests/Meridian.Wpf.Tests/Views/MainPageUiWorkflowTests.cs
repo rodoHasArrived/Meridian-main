@@ -63,7 +63,9 @@ public sealed class MainPageUiWorkflowTests
             facade.CommandPaletteTextBox.Text.Should().BeEmpty();
             facade.TryHandleCommandPaletteDirectionalKey(Key.Down).Should().BeTrue();
 
-            facade.ViewModel.SelectedCommandPalettePage?.PageTag.Should().Be("Backtest");
+            facade.ViewModel.SelectedCommandPalettePage?.PageTag.Should().Be(
+                "OperatorReadinessConsole",
+                "the readiness console leads the Launchpad group ahead of the strategy pages");
             facade.CommandPaletteResults.SelectedItem.Should().BeSameAs(facade.ViewModel.SelectedCommandPalettePage);
             facade.CommandPaletteTextBox.Text.Should().BeEmpty();
             facade.TryHandleCommandPaletteDirectionalKey(Key.Up).Should().BeTrue();
@@ -411,7 +413,12 @@ public sealed class MainPageUiWorkflowTests
             using var facade = new MainPageUiAutomationFacade(fundContextService);
 
             await RefreshShellContextAsync(facade.ViewModel).ConfigureAwait(true);
-            RunMatUiAutomationFacade.DrainDispatcher();
+            // ActivateShell also queues a latest-wins refresh, so wait for the winning revision's
+            // presentation state instead of assuming the directly invoked revision was applied.
+            await WaitForConditionAsync(
+                () => facade.ViewModel.PrimaryWorkflowSummary is not null &&
+                      facade.ViewModel.SecondaryWorkflowSummaries.Count == 6,
+                timeoutMs: 15000).ConfigureAwait(true);
             facade.ViewModel.PrimaryWorkflowSummary.Should().NotBeNull();
             facade.ViewModel.SecondaryWorkflowSummaries.Should().HaveCount(6);
 

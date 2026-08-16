@@ -12,6 +12,26 @@ namespace Meridian.Contracts.SecurityMaster;
 /// </summary>
 public static class SecurityTermReader
 {
+    /// <summary>
+    /// Resolves the effective equity classification label. Canonical custom classifications use
+    /// <c>classification="Other"</c> as the discriminant and retain the raw label in
+    /// <c>otherClassification</c>; legacy rows may carry that raw label directly.
+    /// </summary>
+    public static string? ReadEquityClassification(JsonElement source)
+    {
+        var classification = ReadStrictString(source, "classification");
+        return string.Equals(classification, "Other", StringComparison.OrdinalIgnoreCase)
+            ? ReadStrictString(source, "otherClassification") ?? classification
+            : classification;
+    }
+
+    private static string? ReadStrictString(JsonElement source, string propertyName)
+        => TryGetProperty(source, propertyName, out var property)
+           && property.ValueKind == JsonValueKind.String
+           && !string.IsNullOrWhiteSpace(property.GetString())
+            ? property.GetString()
+            : null;
+
     /// <summary>Case-insensitive property lookup within a single JSON object element.</summary>
     public static bool TryGetProperty(JsonElement element, string propertyName, out JsonElement value)
     {

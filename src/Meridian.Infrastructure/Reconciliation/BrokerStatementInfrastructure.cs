@@ -116,6 +116,7 @@ public interface ICanonicalStatementStore
     Task<bool> ImportExistsByDuplicateKeyAsync(string duplicateKey, CancellationToken ct = default);
     Task SaveImportAsync(CanonicalStatementImport import, IReadOnlyList<CanonicalStatementRow> rows, CancellationToken ct = default);
     Task<bool> TrySaveImportAsync(CanonicalStatementImport import, IReadOnlyList<CanonicalStatementRow> rows, CancellationToken ct = default);
+    Task<BrokerStatementImportResult?> GetImportAsync(string importId, CancellationToken ct = default);
     Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken ct = default);
 }
 
@@ -224,7 +225,43 @@ public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalSta
         return Task.FromResult<IReadOnlyList<CanonicalStatementImport>>(imports);
     }
 
-    private sealed record ImportEnvelope(CanonicalStatementImport import);
+    public async Task<BrokerStatementImportResult?> GetImportAsync(
+        string importId,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(importId);
+        var path = Path.Combine(_folder, $"{ReconciliationRecordFileName.For(importId.Trim())}.json");
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            64 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        var envelope = await JsonSerializer.DeserializeAsync<ImportEnvelope>(stream, cancellationToken: ct)
+            .ConfigureAwait(false);
+        if (envelope?.import is null)
+        {
+            throw new InvalidDataException($"Canonical statement import '{importId}' retained a null import payload.");
+        }
+
+        if (!string.Equals(envelope.import.ImportId, importId.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException(
+                $"Canonical statement import '{importId}' retained mismatched identity '{envelope.import.ImportId}'.");
+        }
+
+        return new BrokerStatementImportResult(envelope.import, envelope.rows ?? []);
+    }
+
+    private sealed record ImportEnvelope(
+        CanonicalStatementImport import,
+        IReadOnlyList<CanonicalStatementRow>? rows = null);
 }
 
 public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : IBrokerStatementService
@@ -234,8 +271,17 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
     private const int MaximumLineCharacters = 64 * 1024;
     private static readonly string[] ExpectedColumns =
         ["account", "symbol", "quantity", "price", "cashAmount", "activityType", "tradeDate"];
+    // The canonical artifact written by StatementImportService is this parser's own input, so the
+    // accepted optional suffix must stay a prefix-compatible superset of what that writer emits, in
+    // the same order. Widening here keeps narrower artifacts written before a column was added
+    // readable, because a shorter header is still a valid prefix of the full list. Only the first
+    // four are carried onto CanonicalStatementRow; the remainder are artifact-level provenance that
+    // reconciliation does not consume, and are tolerated rather than mapped.
     private static readonly string[] OptionalCanonicalColumns =
-        ["settlementDate", "currency", "feesCommission", "externalTransactionId"];
+    [
+        "settlementDate", "currency", "feesCommission", "externalTransactionId", "activityCategory",
+        "activitySubtype", "providerActivityCode", "relatedTransactionId", "orderId", "description"
+    ];
 
     public async Task<BrokerStatementValidationResult> ValidateAsync(BrokerStatementImportRequest request, CancellationToken ct = default)
     {
@@ -402,7 +448,7 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 throw new InvalidDataException($"Statement CSV row {recordStartLine} contains an invalid numeric or date value.");
             }
 
-            // Capture the optional canonical columns (settlementDate, currency, feesCommission,
+            // Capture the four optional canonical columns (settlementDate, currency, feesCommission,
             // externalTransactionId) that the header validation already guaranteed are present in
             // order. These flow into currency-aware, external-id-based matching downstream instead
             // of being discarded at the canonical-row boundary.
@@ -599,7 +645,43 @@ public interface IReconciliationBreakStore
         StatementBreakCaseworkUpdate update,
         CancellationToken ct = default)
         => throw new NotSupportedException(
-            "This reconciliation break store does not support durable statement casework synchronization.");
+            "Direct statement-break casework mutation is unavailable; prepare an immutable statement casework commit first.");
+
+    Task MaterializeRunProjectionAsync(
+        ReconciliationBreakRecord initialRecord,
+        StatementRunProjectionAudit audit,
+        IReadOnlyList<ReconciliationBreakRecord> authorizedImages,
+        CancellationToken ct = default)
+        => throw new NotSupportedException(
+            "This reconciliation break store does not support verified statement-run projection.");
+
+    Task<StatementRunProjectionAudit?> GetRunProjectionAuditAsync(
+        string runId,
+        string breakId,
+        CancellationToken ct = default)
+        => Task.FromResult<StatementRunProjectionAudit?>(null);
+
+    Task MaterializeCaseworkBreakAsync(
+        IStatementCaseworkCommitStore commitStore,
+        string commandId,
+        string inputHashSha256,
+        CancellationToken ct = default)
+        => throw new NotSupportedException(
+            "This reconciliation break store does not support source-commit break projection.");
+
+    Task MaterializeCaseworkAuditAsync(
+        IStatementCaseworkCommitStore commitStore,
+        string commandId,
+        string inputHashSha256,
+        CancellationToken ct = default)
+        => throw new NotSupportedException(
+            "This reconciliation break store does not support source-commit audit projection.");
+
+    Task<StatementBreakCaseworkAuditEvent?> GetCaseworkAuditAsync(
+        string breakId,
+        string commandId,
+        CancellationToken ct = default)
+        => Task.FromResult<StatementBreakCaseworkAuditEvent?>(null);
 }
 
 public sealed record StatementBreakCaseworkUpdate(
@@ -641,10 +723,6 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
 {
     private readonly string _folder;
     private readonly SemaphoreSlim _gate = new(1, 1);
-    private readonly JsonSerializerOptions _jsonOptions = new()
-    {
-        WriteIndented = true
-    };
 
     public JsonReconciliationBreakStore(string dataRoot)
     {
@@ -662,7 +740,12 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
             {
                 ArgumentNullException.ThrowIfNull(record);
                 await AtomicFileWriter
-                    .WriteAsync(BreakPath(record.BreakId), JsonSerializer.Serialize(record, _jsonOptions), ct)
+                    .WriteAsync(
+                        BreakPath(record.BreakId),
+                        JsonSerializer.Serialize(
+                            record,
+                            StatementDurabilityJsonContext.Default.ReconciliationBreakRecord),
+                        ct)
                     .ConfigureAwait(false);
             }
         }
@@ -689,9 +772,13 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
                 FileShare.Read,
                 64 * 1024,
                 FileOptions.Asynchronous | FileOptions.SequentialScan);
-            var record = await JsonSerializer
-                .DeserializeAsync<ReconciliationBreakRecord>(stream, _jsonOptions, ct)
-                .ConfigureAwait(false);
+            var record = await JsonSerializer.DeserializeAsync(
+                    stream,
+                    StatementDurabilityJsonContext.Default.ReconciliationBreakRecord,
+                    ct)
+                .ConfigureAwait(false)
+                ?? throw new InvalidDataException(
+                    $"Reconciliation break artifact '{path}' retained a null payload.");
             if (record is not null && string.Equals(record.Status, "Open", StringComparison.OrdinalIgnoreCase))
             {
                 items.Add(record);
@@ -717,79 +804,214 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
         }
     }
 
-    public async Task<ReconciliationBreakRecord> ApplyCaseworkAsync(
+    public Task<ReconciliationBreakRecord> ApplyCaseworkAsync(
         StatementBreakCaseworkUpdate update,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(update);
         ValidateCaseworkUpdate(update);
+        ct.ThrowIfCancellationRequested();
+        throw new NotSupportedException(
+            "Direct statement-break casework mutation is unavailable; use the immutable statement casework commit protocol.");
+    }
+
+    public async Task MaterializeRunProjectionAsync(
+        ReconciliationBreakRecord initialRecord,
+        StatementRunProjectionAudit audit,
+        IReadOnlyList<ReconciliationBreakRecord> authorizedImages,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(initialRecord);
+        ValidateRunProjectionAudit(initialRecord, audit);
+        ValidateAuthorizedBreakImages(initialRecord, authorizedImages);
+        var authoritativeRecord = authorizedImages[^1];
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var retained = await ReadBreakCoreAsync(initialRecord.BreakId, ct).ConfigureAwait(false);
+            var auditPath = RunProjectionAuditPath(initialRecord.RunId, initialRecord.BreakId);
+            var retainedAudit = await ReadRunProjectionAuditCoreAsync(auditPath, ct).ConfigureAwait(false);
+            if (retained is not null && !authorizedImages.Any(image => SameArtifact(retained, image)))
+            {
+                throw new InvalidOperationException(
+                    $"Statement break '{initialRecord.BreakId}' is outside its immutable match/source-commit authority chain.");
+            }
+
+            if (retainedAudit is not null && !SameArtifact(retainedAudit, audit))
+            {
+                throw new InvalidOperationException(
+                    $"Statement break '{initialRecord.BreakId}' retains a conflicting run-projection audit.");
+            }
+
+            if (retained is null || !SameArtifact(retained, authoritativeRecord))
+            {
+                await AtomicFileWriter
+                    .WriteAsync(
+                        BreakPath(initialRecord.BreakId),
+                        JsonSerializer.Serialize(
+                            authoritativeRecord,
+                            StatementDurabilityJsonContext.Default.ReconciliationBreakRecord),
+                        ct)
+                    .ConfigureAwait(false);
+            }
+
+            if (retainedAudit is null)
+            {
+                await AtomicFileWriter
+                    .WriteAsync(
+                        auditPath,
+                        JsonSerializer.Serialize(
+                            audit,
+                            StatementDurabilityJsonContext.Default.StatementRunProjectionAudit),
+                        ct)
+                    .ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<StatementRunProjectionAudit?> GetRunProjectionAuditAsync(
+        string runId,
+        string breakId,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(breakId);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await ReadRunProjectionAuditCoreAsync(
+                    RunProjectionAuditPath(runId, breakId),
+                    ct)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task MaterializeCaseworkBreakAsync(
+        IStatementCaseworkCommitStore commitStore,
+        string commandId,
+        string inputHashSha256,
+        CancellationToken ct = default)
+    {
+        var envelope = await RequirePreparedCommitAsync(
+                commitStore,
+                commandId,
+                inputHashSha256,
+                ct)
+            .ConfigureAwait(false);
+        var original = envelope.OriginalBreak;
+        var next = envelope.NextBreak;
+        if (!string.Equals(original.BreakId, next.BreakId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(original.ImportId, next.ImportId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Statement source-commit break images must identify the same retained break.", nameof(next));
+        }
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var inputHash = ComputeCaseworkInputHash(update);
-            var receiptPath = CaseworkReceiptPath(update.CommandId);
-            if (File.Exists(receiptPath))
+            var current = await ReadBreakCoreAsync(next.BreakId, ct).ConfigureAwait(false);
+            if (current is not null && SameArtifact(current, next))
             {
-                var retained = await ReadJsonAsync<StatementBreakCaseworkReceipt>(receiptPath, ct).ConfigureAwait(false)
-                    ?? throw new InvalidDataException(
-                        $"Statement break casework receipt '{update.CommandId}' retained a null payload.");
-                if (!string.Equals(retained.BreakId, update.BreakId, StringComparison.OrdinalIgnoreCase) ||
-                    !string.Equals(retained.InputHashSha256, inputHash, StringComparison.Ordinal))
-                {
-                    throw new InvalidOperationException(
-                        $"Statement break casework command '{update.CommandId}' is already bound to different input.");
-                }
-
-                return retained.Record;
+                return;
             }
 
-            var current = await ReadBreakCoreAsync(update.BreakId, ct).ConfigureAwait(false)
-                ?? throw new InvalidOperationException(
-                    $"Source statement break '{update.BreakId}' was not found.");
-            if (!string.Equals(current.ImportId, update.ImportId, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(current.RunId, update.ImportId, StringComparison.OrdinalIgnoreCase))
+            if (current is not null && !SameArtifact(current, original))
             {
                 throw new InvalidOperationException(
-                    $"Source statement break '{update.BreakId}' is not owned by import '{update.ImportId}'.");
+                    $"Source statement break '{next.BreakId}' no longer matches either retained source-commit image.");
             }
 
-            var next = current with { Status = update.Status.Trim() };
-            var audit = new StatementBreakCaseworkAuditEvent(
-                EventId: $"statement-casework:{inputHash[..24]}",
-                BreakId: current.BreakId,
-                ImportId: current.ImportId,
-                PreviousStatus: current.Status,
-                NewStatus: next.Status,
-                Actor: update.Actor.Trim(),
-                Action: update.Action.Trim(),
-                CommandId: update.CommandId.Trim(),
-                CorrelationId: update.CorrelationId.Trim(),
-                Reason: Normalize(update.Reason),
-                Disposition: Normalize(update.Disposition),
-                ApprovalActor: Normalize(update.ApprovalActor),
-                ApprovalReference: Normalize(update.ApprovalReference),
-                SupersedingBreakId: Normalize(update.SupersedingBreakId),
-                EvidenceLinks: NormalizeEvidence(update.EvidenceLinks),
-                OccurredAtUtc: update.OccurredAtUtc.ToUniversalTime(),
-                InputHashSha256: inputHash);
-            var receipt = new StatementBreakCaseworkReceipt(
-                update.CommandId.Trim(),
-                current.BreakId,
-                inputHash,
-                next,
-                audit);
+            await AtomicFileWriter
+                .WriteAsync(
+                    BreakPath(next.BreakId),
+                    JsonSerializer.Serialize(
+                        next,
+                        StatementDurabilityJsonContext.Default.ReconciliationBreakRecord),
+                    ct)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task MaterializeCaseworkAuditAsync(
+        IStatementCaseworkCommitStore commitStore,
+        string commandId,
+        string inputHashSha256,
+        CancellationToken ct = default)
+    {
+        var envelope = await RequirePreparedCommitAsync(
+                commitStore,
+                commandId,
+                inputHashSha256,
+                ct)
+            .ConfigureAwait(false);
+        var audit = envelope.BreakAudit;
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var path = CaseworkAuditPath(audit.BreakId, audit.CommandId);
+            var current = File.Exists(path)
+                ? await ReadJsonAsync(
+                        path,
+                        StatementDurabilityJsonContext.Default.StatementBreakCaseworkAuditEvent,
+                        ct)
+                    .ConfigureAwait(false)
+                : null;
+            if (current is not null)
+            {
+                if (!SameArtifact(current, audit))
+                {
+                    throw new InvalidOperationException(
+                        $"Statement break audit for command '{audit.CommandId}' conflicts with the retained source commit.");
+                }
+
+                return;
+            }
 
             await AtomicFileWriter
-                .WriteAsync(BreakPath(next.BreakId), JsonSerializer.Serialize(next, _jsonOptions), ct)
+                .WriteAsync(
+                    path,
+                    JsonSerializer.Serialize(
+                        audit,
+                        StatementDurabilityJsonContext.Default.StatementBreakCaseworkAuditEvent),
+                    ct)
                 .ConfigureAwait(false);
-            await AtomicFileWriter
-                .WriteAsync(CaseworkAuditPath(next.BreakId, update.CommandId), JsonSerializer.Serialize(audit, _jsonOptions), ct)
-                .ConfigureAwait(false);
-            await AtomicFileWriter
-                .WriteAsync(receiptPath, JsonSerializer.Serialize(receipt, _jsonOptions), ct)
-                .ConfigureAwait(false);
-            return next;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<StatementBreakCaseworkAuditEvent?> GetCaseworkAuditAsync(
+        string breakId,
+        string commandId,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(breakId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(commandId);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var path = CaseworkAuditPath(breakId, commandId);
+            return File.Exists(path)
+                ? await ReadJsonAsync(
+                        path,
+                        StatementDurabilityJsonContext.Default.StatementBreakCaseworkAuditEvent,
+                        ct)
+                    .ConfigureAwait(false)
+                : null;
         }
         finally
         {
@@ -803,11 +1025,19 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
     {
         var path = BreakPath(breakId);
         return File.Exists(path)
-            ? await ReadJsonAsync<ReconciliationBreakRecord>(path, ct).ConfigureAwait(false)
+            ? await ReadJsonAsync(
+                    path,
+                    StatementDurabilityJsonContext.Default.ReconciliationBreakRecord,
+                    ct)
+                .ConfigureAwait(false)
             : null;
     }
 
-    private async Task<T?> ReadJsonAsync<T>(string path, CancellationToken ct)
+    private static async Task<T?> ReadJsonAsync<T>(
+        string path,
+        System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> typeInfo,
+        CancellationToken ct)
+        where T : class
     {
         await using var stream = new FileStream(
             path,
@@ -816,18 +1046,44 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
             FileShare.Read,
             64 * 1024,
             FileOptions.Asynchronous | FileOptions.SequentialScan);
-        return await JsonSerializer.DeserializeAsync<T>(stream, _jsonOptions, ct).ConfigureAwait(false);
+        return await JsonSerializer.DeserializeAsync(stream, typeInfo, ct).ConfigureAwait(false)
+            ?? throw new InvalidDataException($"Statement durability artifact '{path}' retained a null payload.");
     }
+
+    private static async Task<StatementCaseworkCommitEnvelope> RequirePreparedCommitAsync(
+        IStatementCaseworkCommitStore commitStore,
+        string commandId,
+        string inputHashSha256,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(commitStore);
+        ArgumentException.ThrowIfNullOrWhiteSpace(commandId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(inputHashSha256);
+        var envelope = await commitStore.GetAsync(commandId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException(
+                $"Statement casework command '{commandId}' cannot project before its immutable commit is prepared.");
+        if (!StatementDurabilityHashing.FixedTimeEquals(envelope.InputHashSha256, inputHashSha256))
+        {
+            throw new InvalidOperationException(
+                $"Statement casework command '{commandId}' is bound to different prepared input.");
+        }
+
+        return envelope;
+    }
+
+    private async Task<StatementRunProjectionAudit?> ReadRunProjectionAuditCoreAsync(
+        string path,
+        CancellationToken ct)
+        => File.Exists(path)
+            ? await ReadJsonAsync(
+                    path,
+                    StatementDurabilityJsonContext.Default.StatementRunProjectionAudit,
+                    ct)
+                .ConfigureAwait(false)
+            : null;
 
     private string BreakPath(string breakId)
         => Path.Combine(_folder, $"{ReconciliationRecordFileName.For(breakId)}.json");
-
-    private string CaseworkReceiptPath(string commandId)
-        => Path.Combine(
-            _folder,
-            "_casework",
-            "receipts",
-            $"{CaseworkCommandFileName(commandId)}.json");
 
     private string CaseworkAuditPath(string breakId, string commandId)
         => Path.Combine(
@@ -837,32 +1093,16 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
             ReconciliationRecordFileName.For(breakId),
             $"{CaseworkCommandFileName(commandId)}.json");
 
+    private string RunProjectionAuditPath(string runId, string breakId)
+        => Path.Combine(
+            _folder,
+            "_run-projections",
+            ReconciliationRecordFileName.For(runId),
+            $"{ReconciliationRecordFileName.For(breakId)}.json");
+
     private static string CaseworkCommandFileName(string commandId)
         => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(commandId.Trim())))
             .ToLowerInvariant();
-
-    private string ComputeCaseworkInputHash(StatementBreakCaseworkUpdate update)
-    {
-        var canonical = JsonSerializer.Serialize(update with
-        {
-            BreakId = update.BreakId.Trim(),
-            ImportId = update.ImportId.Trim(),
-            Status = update.Status.Trim(),
-            Actor = update.Actor.Trim(),
-            Action = update.Action.Trim(),
-            CommandId = update.CommandId.Trim(),
-            CorrelationId = update.CorrelationId.Trim(),
-            Reason = Normalize(update.Reason),
-            Disposition = Normalize(update.Disposition),
-            ApprovalActor = Normalize(update.ApprovalActor),
-            ApprovalReference = Normalize(update.ApprovalReference),
-            SupersedingBreakId = Normalize(update.SupersedingBreakId),
-            EvidenceLinks = NormalizeEvidence(update.EvidenceLinks),
-            OccurredAtUtc = update.OccurredAtUtc.ToUniversalTime()
-        }, _jsonOptions);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-            $"meridian.statement-break-casework.v1\n{canonical}"))).ToLowerInvariant();
-    }
 
     private static void ValidateCaseworkUpdate(StatementBreakCaseworkUpdate update)
     {
@@ -879,21 +1119,58 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
         }
     }
 
-    private static IReadOnlyList<string> NormalizeEvidence(IReadOnlyList<string>? evidence)
-        => (evidence ?? [])
-            .Where(static value => !string.IsNullOrWhiteSpace(value))
-            .Select(static value => value.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+    private static void ValidateRunProjectionAudit(
+        ReconciliationBreakRecord record,
+        StatementRunProjectionAudit audit)
+    {
+        ArgumentNullException.ThrowIfNull(audit);
+        if (audit.SchemaVersion != StatementRunProjectionAudit.CurrentSchemaVersion ||
+            !string.Equals(audit.RunId, record.RunId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(audit.ImportId, record.ImportId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(audit.ProjectionKind, StatementRunProjectionAudit.BreakKind, StringComparison.Ordinal) ||
+            !string.Equals(audit.ProjectionId, record.BreakId, StringComparison.OrdinalIgnoreCase) ||
+            !StatementDurabilityHashing.FixedTimeEquals(
+                audit.ArtifactSha256,
+                StatementDurabilityHashing.Hash(record)))
+        {
+            throw new InvalidDataException(
+                $"Statement break '{record.BreakId}' run-projection audit does not bind the supplied immutable artifact.");
+        }
+    }
 
-    private static string? Normalize(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    private static void ValidateAuthorizedBreakImages(
+        ReconciliationBreakRecord initialRecord,
+        IReadOnlyList<ReconciliationBreakRecord> authorizedImages)
+    {
+        ArgumentNullException.ThrowIfNull(authorizedImages);
+        if (authorizedImages.Count == 0 || !SameArtifact(authorizedImages[0], initialRecord) ||
+            authorizedImages.Any(image =>
+                image is null ||
+                !string.Equals(image.BreakId, initialRecord.BreakId, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(image.RunId, initialRecord.RunId, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(image.ImportId, initialRecord.ImportId, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidDataException(
+                $"Statement break '{initialRecord.BreakId}' received an invalid immutable authority chain.");
+        }
+    }
 
-    private sealed record StatementBreakCaseworkReceipt(
-        string CommandId,
-        string BreakId,
-        string InputHashSha256,
-        ReconciliationBreakRecord Record,
-        StatementBreakCaseworkAuditEvent Audit);
+    private static bool SameArtifact(ReconciliationBreakRecord left, ReconciliationBreakRecord right)
+        => StatementDurabilityHashing.FixedTimeEquals(
+            StatementDurabilityHashing.Hash(left),
+            StatementDurabilityHashing.Hash(right));
+
+    private static bool SameArtifact(StatementBreakCaseworkAuditEvent left, StatementBreakCaseworkAuditEvent right)
+        => StatementDurabilityHashing.FixedTimeEquals(
+            StatementDurabilityHashing.Hash(left),
+            StatementDurabilityHashing.Hash(right));
+
+    private static bool SameArtifact(StatementRunProjectionAudit left, StatementRunProjectionAudit right)
+        => StatementDurabilityHashing.FixedTimeEquals(
+            StatementDurabilityHashing.Hash(
+                left,
+                StatementDurabilityJsonContext.Default.StatementRunProjectionAudit),
+            StatementDurabilityHashing.Hash(
+                right,
+                StatementDurabilityJsonContext.Default.StatementRunProjectionAudit));
 }

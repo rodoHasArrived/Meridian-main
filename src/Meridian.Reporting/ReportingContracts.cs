@@ -20,6 +20,29 @@ public enum ReportingRunStatus
     Failed
 }
 
+/// <summary>
+/// Bounds only terminal run snapshots whose durable reload has been revision-verified. Active,
+/// in-flight, unsaved, and compatibility-store snapshots without verifiable reload are never
+/// eviction candidates.
+/// </summary>
+public sealed class ReportingOrchestrationRetentionOptions
+{
+    public const int DefaultMaxRetainedTerminalRuns = 256;
+
+    public int MaxRetainedTerminalRuns { get; init; } = DefaultMaxRetainedTerminalRuns;
+}
+
+/// <summary>
+/// Point-in-time diagnostics for reporting orchestration retention and keyed lifecycle locks.
+/// The retained count may exceed the configured terminal cap when active or unsaved runs exist.
+/// </summary>
+public sealed record ReportingOrchestrationRetentionSnapshot(
+    int RetainedRunCount,
+    int EvictionEligibleTerminalRunCount,
+    int ActiveRunLockCount,
+    int MaxRetainedTerminalRuns,
+    bool HasDurableStore);
+
 public enum ReportingTemplateFamily
 {
     InvestorStatement,

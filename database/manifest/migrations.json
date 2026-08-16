@@ -235,6 +235,24 @@
       "sha256": "e88af99934cd1679d86e82550b2ef8a5d954ae87489105d5facce856149f26b2"
     },
     {
+      "filename": "027_security_master_field_provenance.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 27,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/027_security_master_field_provenance.sql",
+      "schema": "security_master",
+      "sha256": "4849baa13c44ff8ff7df128fe929ed7ceba393b049ab0f0283f414493da57b65"
+    },
+    {
+      "filename": "028_security_master_revision_values_and_versioned_provenance.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 28,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/028_security_master_revision_values_and_versioned_provenance.sql",
+      "schema": "security_master",
+      "sha256": "f4e5b1dc957c3d9faff4a44ff7a03b96ae61fd3c1a2f95e5217aae795043e59a"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -712,6 +730,15 @@
       "sha256": "e8225f2acd5bb0e47c1ecf41dfacaefe8b608928db825c442bdfda26be976af4"
     },
     {
+      "filename": "003_payment_intent_integrity.sql",
+      "immutable": true,
+      "migration_set_id": "banking",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Banking/Migrations/003_payment_intent_integrity.sql",
+      "schema": "banking",
+      "sha256": "b6be816522f0070d1b7da2ddb59f573d4bfa6c3ab431f33eb709d1c61ef964f0"
+    },
+    {
       "filename": "001_money_market.sql",
       "immutable": true,
       "migration_set_id": "money-market",
@@ -848,7 +875,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "3e3e5a160e8d2305c5c4bbe4513ddc07f7292ae10c4c2fb5a43971778c95882d",
+  "fingerprint": "074db69b45fc567136428b4ee8eaa198d2c3ac2325c5924ad94b4801c6830cc8",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1086,7 +1113,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 94,
+    "files": 97,
     "migration_sets": 10,
     "waivers": 1,
     "warnings": 0

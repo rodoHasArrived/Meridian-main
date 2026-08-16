@@ -31,7 +31,13 @@
 > delivery: Trial Balance now renders as a tab of the Ledger Explorer
 > (`/accounting/ledger?view=trial-balance`) and the Formula Workbench placeholder as a tab of
 > Quant Lab (`/strategy/quant-lab?view=formulas`); both retired routes redirect with query and
-> hash scope preserved via `legacyWorkspaceRedirect()`. The Evidence Workbench is canonicalized
+> hash scope preserved via `legacyWorkspaceRedirect()`. **Update (2026-08-11):** the Formula
+> Workbench tab has since been withdrawn. The placeholder only ever rendered a permanent
+> "catalog is not connected" card, so the fold delivered a navigable dead end rather than a
+> tool; `/strategy/quant-lab?view=formulas` is registered in `UNWIRED_WORKSTATION_ROUTES` and a
+> stale link now canonicalizes to the Script Lab. The fold is completed by mounting the built
+> `strategy-formula-workbench` component against a real formula-catalog endpoint, which
+> remains outstanding. The Evidence Workbench is canonicalized
 > to `/reporting/evidence`: the `/accounting/evidence` and `/data/evidence` mounts and the
 > `/accounting/evidence/detail` stub redirect there with subject scope preserved, matching the
 > existing `evidenceWorkbenchPath()` gravity. The Market Data desk

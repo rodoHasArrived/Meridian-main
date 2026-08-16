@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { describeApiError } from "@/lib/api-errors";
 
-export type RequestLifecyclePhase = "idle" | "running" | "succeeded" | "failed" | "aborted" | "stale";
+export type RequestLifecyclePhase = "idle" | "running" | "succeeded" | "partial" | "failed" | "aborted" | "stale";
 
 export interface RequestBackoffMetadata {
   attempt: number;
@@ -31,7 +31,13 @@ export interface RequestLifecycleToken {
   signal: AbortSignal;
   startedAt: string;
   isCurrent: () => boolean;
-  safeSetState: <T>(setter: Dispatch<SetStateAction<T>>, value: SetStateAction<T>) => boolean;
+  /**
+   * `T` is deduced from `setter` alone. `value` is wrapped in `NoInfer` because the common call
+   * `safeSetState(setModel, null)` would otherwise deduce `T` as `null` from the value and then
+   * demand a `Dispatch<SetStateAction<null>>` setter, which no caller has. Under
+   * `strictFunctionTypes` that mismatch is an error rather than a silently bivariant pass.
+   */
+  safeSetState: <T>(setter: Dispatch<SetStateAction<T>>, value: SetStateAction<NoInfer<T>>) => boolean;
 }
 
 export interface RequestRetryContext {
@@ -126,7 +132,7 @@ export function useRequestLifecycle({
   const safeSetState = useCallback(<T,>(
     version: number,
     setter: Dispatch<SetStateAction<T>>,
-    value: SetStateAction<T>
+    value: SetStateAction<NoInfer<T>>
   ) => {
     if (!isCurrentVersion(version)) {
       return false;
@@ -238,7 +244,7 @@ export function useRequestLifecycle({
       signal: controller.signal,
       startedAt,
       isCurrent: () => isCurrentVersion(version),
-      safeSetState: <T,>(setter: Dispatch<SetStateAction<T>>, value: SetStateAction<T>) => safeSetState(version, setter, value)
+      safeSetState: <T,>(setter: Dispatch<SetStateAction<T>>, value: SetStateAction<NoInfer<T>>) => safeSetState(version, setter, value)
     };
   }, [clearScheduledRetry, isCurrentVersion, maxRetries, operation, runningMessage, safeSetState]);
 
@@ -270,6 +276,34 @@ export function useRequestLifecycle({
     }));
     return true;
   }, [clearScheduledRetry, isCurrentVersion, markStale, successMessage]);
+
+  const partial = useCallback((token: RequestLifecycleToken, error: unknown, options: FailRequestOptions = {}) => {
+    if (!isCurrentVersion(token.version)) {
+      markStale(token.version);
+      return false;
+    }
+
+    clearScheduledRetry();
+    if (controllerRef.current?.signal === token.signal) {
+      controllerRef.current = null;
+    }
+    inFlightRef.current = false;
+    const display = describeApiError(error, options.fallback ?? failureMessage);
+    setStatus((current) => ({
+      ...current,
+      phase: "partial",
+      inFlight: false,
+      version: token.version,
+      message: options.message ?? display.summary,
+      error: display.summary,
+      settledAt: new Date().toISOString(),
+      backoff: {
+        ...current.backoff,
+        nextRetryDelayMs: null
+      }
+    }));
+    return true;
+  }, [clearScheduledRetry, failureMessage, isCurrentVersion, markStale]);
 
   const fail = useCallback((token: RequestLifecycleToken, error: unknown, options: FailRequestOptions = {}) => {
     if (!isCurrentVersion(token.version)) {
@@ -353,11 +387,12 @@ export function useRequestLifecycle({
     status,
     start,
     succeed,
+    partial,
     fail,
     finish,
     abort,
     invalidate,
     isCurrentVersion,
     markStale
-  }), [abort, fail, finish, invalidate, isCurrentVersion, markStale, start, status, succeed]);
+  }), [abort, fail, finish, invalidate, isCurrentVersion, markStale, partial, start, status, succeed]);
 }

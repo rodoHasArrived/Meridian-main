@@ -200,6 +200,25 @@ public sealed class DirectLendingWorkflowTests
     }
 
     [Fact]
+    public async Task ChargePrepaymentPenaltyAsync_ShouldRejectStalePrincipalBasis()
+    {
+        var service = new InMemoryDirectLendingService();
+        var loan = await service.CreateLoanAsync(BuildCreateRequestWithPenaltyRate(0.02m));
+        await service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 23)));
+        await service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(500_000m, new DateOnly(2026, 3, 23), new DateOnly(2026, 3, 23), "wire-3"));
+
+        var act = () => service.ChargePrepaymentPenaltyAsync(
+            loan.LoanId,
+            new ChargePrepaymentPenaltyRequest(400_000m, new DateOnly(2026, 3, 24), "stale-basis"));
+
+        var exception = await Assert.ThrowsAsync<DirectLendingCommandException>(act);
+        var servicing = await service.GetServicingStateAsync(loan.LoanId);
+
+        exception.Error.Code.Should().Be(DirectLendingErrorCode.ConcurrencyConflict);
+        servicing!.Balances.PenaltyAccruedUnpaid.Should().Be(0m);
+    }
+
+    [Fact]
     public async Task ChargePrepaymentPenaltyAsync_ShouldThrowValidation_WhenPrepaymentNotAllowed()
     {
         var service = new InMemoryDirectLendingService();

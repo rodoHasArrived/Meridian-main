@@ -105,6 +105,13 @@ internal static class DemoWorkspaceCli
     /// </summary>
     private static void PrepareDemoRuntimeEnvironment()
     {
+        // Mark this process as the demo serving host so composition (W9-TRUTH-001) pins the
+        // seeded provenance label without re-parsing CLI verbs.
+        if (IsUnset(DemoWorkspaceLayout.DemoModeEnvironmentVariable))
+        {
+            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, "true");
+        }
+
         if (IsUnset("MERIDIAN_DATABASE_URL") && IsUnset("MERIDIAN_USE_INMEMORY_GOVERNANCE"))
         {
             Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
@@ -137,6 +144,16 @@ internal static class DemoWorkspaceCli
                 $"  reconciliation casework: {(report.Provisioning.ReconciliationLoaded ? "loaded" : "unavailable")} ({report.Provisioning.ReconciliationBreaksSeeded} new)");
             Console.WriteLine(
                 $"  paper strategy run:      {(report.Provisioning.StrategyRunLoaded ? "loaded" : "unavailable")}");
+            Console.WriteLine(
+                $"  fund account:            {(report.Provisioning.FundAccountLoaded ? "loaded" : "unavailable")}");
+            Console.WriteLine(
+                $"  portfolio positions:     {(report.Provisioning.PortfolioPositionsLoaded ? "loaded" : "unavailable")}");
+            Console.WriteLine(
+                $"  journal drafts:          {report.Provisioning.JournalDraftsSeeded} retained");
+            Console.WriteLine(
+                $"  report pack:             {(report.Provisioning.ReportPackLoaded ? "loaded" : "unavailable")}");
+            Console.WriteLine(
+                $"  market history:          {report.MarketHistoryTradePrintsSeeded} seeded trade prints");
             foreach (var warning in report.Provisioning.Warnings)
             {
                 Console.WriteLine($"  warning: {warning}");

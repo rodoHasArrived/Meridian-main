@@ -10,6 +10,12 @@ namespace Meridian.Storage.Maintenance;
 public sealed class ArchiveMaintenanceSchedule
 {
     /// <summary>
+    /// Monotonic persisted revision used to reject stale full-schedule replacements. A zero value
+    /// is retained as the legacy, revision-unaware compatibility sentinel.
+    /// </summary>
+    public long Revision { get; set; }
+
+    /// <summary>
     /// Unique identifier for this schedule.
     /// </summary>
     public string ScheduleId { get; init; } = Guid.NewGuid().ToString("N")[..12];
@@ -30,8 +36,10 @@ public sealed class ArchiveMaintenanceSchedule
     public bool Enabled { get; set; } = true;
 
     /// <summary>
-    /// Cron expression for scheduling (standard 5-field cron format).
-    /// Examples: "0 3 * * *" (daily at 3am), "0 4 * * 0" (weekly on Sunday at 4am)
+    /// Cron expression for scheduling (five-field cron plus Meridian's explicit <c>d#n</c>
+    /// ordinal-day extension).
+    /// Examples: "0 3 * * *" (daily at 3am), "0 4 * * 0" (weekly on Sunday at 4am),
+    /// and "0 1 * * 0#1" (first Sunday of the month at 1am).
     /// </summary>
     public string CronExpression { get; set; } = "0 3 * * *";
 
@@ -53,7 +61,7 @@ public sealed class ArchiveMaintenanceSchedule
     /// <summary>
     /// Paths to include in maintenance. Empty = use configured storage root.
     /// </summary>
-    public List<string> TargetPaths { get; init; } = new();
+    public List<string> TargetPaths { get; set; } = new();
 
     /// <summary>
     /// Priority level for this maintenance task.
@@ -83,7 +91,7 @@ public sealed class ArchiveMaintenanceSchedule
     /// <summary>
     /// When the schedule was created.
     /// </summary>
-    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>
     /// When the schedule was last modified.
@@ -126,9 +134,25 @@ public sealed class ArchiveMaintenanceSchedule
     public int FailedExecutions { get; set; }
 
     /// <summary>
+    /// Durable execution outbox entry for the one schedule occurrence that is currently awaiting
+    /// publication, queued, running, or awaiting conservative recovery after an interrupted run.
+    /// </summary>
+    public ArchiveMaintenanceExecutionClaim? PendingExecution { get; set; }
+
+    /// <summary>
+    /// Describes the last durable repair applied while loading this retained schedule.
+    /// </summary>
+    public string? LastRepairReason { get; set; }
+
+    /// <summary>
+    /// When the last durable load-time repair was applied.
+    /// </summary>
+    public DateTimeOffset? LastRepairedAt { get; set; }
+
+    /// <summary>
     /// Tags for categorization and filtering.
     /// </summary>
-    public List<string> Tags { get; init; } = new();
+    public List<string> Tags { get; set; } = new();
 
     /// <summary>
     /// Gets the timezone info for cron evaluation.
@@ -144,6 +168,39 @@ public sealed class ArchiveMaintenanceSchedule
         var baseTime = from ?? DateTimeOffset.UtcNow;
         return CronExpressionParser.GetNextOccurrence(CronExpression, TimeZone, baseTime);
     }
+}
+
+/// <summary>
+/// Durable outbox/lease state for a claimed schedule occurrence. The execution input snapshot is
+/// retained with the claim so later schedule edits cannot change work that was already accepted.
+/// </summary>
+public sealed class ArchiveMaintenanceExecutionClaim
+{
+    public string ExecutionId { get; init; } = Guid.NewGuid().ToString("N")[..12];
+    public DateTimeOffset OccurrenceAt { get; init; }
+    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
+    public bool ManualTrigger { get; init; }
+    public string ScheduleName { get; init; } = string.Empty;
+    public MaintenanceTaskType TaskType { get; init; }
+    public MaintenanceTaskOptions Options { get; init; } = new();
+    public List<string> TargetPaths { get; init; } = new();
+    public TimeSpan MaxDuration { get; init; } = TimeSpan.FromHours(2);
+    public ArchiveMaintenanceClaimState State { get; set; } = ArchiveMaintenanceClaimState.Pending;
+    public string? LeaseOwner { get; set; }
+    public DateTimeOffset? LeaseExpiresAt { get; set; }
+    public DateTimeOffset? RunningAt { get; set; }
+    public string? LastError { get; set; }
+}
+
+/// <summary>
+/// Lifecycle of one durable archive-maintenance execution claim.
+/// </summary>
+public enum ArchiveMaintenanceClaimState : byte
+{
+    Pending,
+    Dispatched,
+    Running,
+    Interrupted
 }
 
 /// <summary>
@@ -426,6 +483,11 @@ public sealed record MaintenanceIssue(
 /// </summary>
 public static class MaintenanceSchedulePresets
 {
+    internal const string MonthlyCompressionDescription =
+        "Monthly recompression with optimal settings for cold data";
+    internal const string MonthlyCompressionCronExpression = "0 1 * * 0#1";
+    internal const string LegacyMonthlyCompressionCronExpression = "0 1 1-7 * 0";
+
     /// <summary>
     /// Daily health check at 3 AM UTC.
     /// </summary>
@@ -493,8 +555,8 @@ public static class MaintenanceSchedulePresets
     public static ArchiveMaintenanceSchedule MonthlyCompression(string name) => new()
     {
         Name = name,
-        Description = "Monthly recompression with optimal settings for cold data",
-        CronExpression = "0 1 1-7 * 0",
+        Description = MonthlyCompressionDescription,
+        CronExpression = MonthlyCompressionCronExpression,
         TaskType = MaintenanceTaskType.Compression,
         Priority = MaintenancePriority.Background,
         MaxDuration = TimeSpan.FromHours(6),
@@ -505,6 +567,39 @@ public static class MaintenanceSchedulePresets
             RecompressExisting = true
         }
     };
+
+    /// <summary>
+    /// Migrates only the strongly fingerprinted legacy monthly-compression preset. Custom
+    /// schedules that intentionally use POSIX day-of-month/day-of-week OR semantics are retained.
+    /// </summary>
+    internal static bool TryMigrateLegacyMonthlyCompression(ArchiveMaintenanceSchedule schedule)
+    {
+        ArgumentNullException.ThrowIfNull(schedule);
+
+        var options = schedule.Options;
+        if (!string.Equals(
+                schedule.CronExpression,
+                LegacyMonthlyCompressionCronExpression,
+                StringComparison.Ordinal)
+            || !string.Equals(
+                schedule.Description,
+                MonthlyCompressionDescription,
+                StringComparison.Ordinal)
+            || !string.Equals(schedule.TimeZoneId, "UTC", StringComparison.Ordinal)
+            || schedule.TaskType != MaintenanceTaskType.Compression
+            || schedule.Priority != MaintenancePriority.Background
+            || schedule.MaxDuration != TimeSpan.FromHours(6)
+            || options is null
+            || !string.Equals(options.TargetCompressionCodec, "zstd", StringComparison.Ordinal)
+            || options.CompressionLevel != 19
+            || !options.RecompressExisting)
+        {
+            return false;
+        }
+
+        schedule.CronExpression = MonthlyCompressionCronExpression;
+        return true;
+    }
 
     /// <summary>
     /// Daily retention enforcement at 5 AM UTC.

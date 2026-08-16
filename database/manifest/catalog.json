@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "9a2791b45f13976b81fb47d94342a817c60ec337bd0f245725012fc02791cbeb",
+  "database_fingerprint": "62bdf779df512ac50fa8e96098d2802f0226a6f4dd468c1d7e42e9218b811bd7",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -336,6 +336,138 @@
       "target_kind": "index",
       "target_name": "ux_book_position_projection_scope",
       "target_schema": "asset_operations"
+    },
+    {
+      "fingerprint": "c81f922ec1e6748639d7319cdecfb3fc641d17c9ea4da1128ff4137a7c6aa92a",
+      "kind": "normal",
+      "source": "banking.ck_bank_transactions_currency on banking.bank_transactions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.bank_transactions.currency",
+      "target_kind": "table column",
+      "target_name": "bank_transactions",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "87e3ec022b11594e725c4463a5703679044b5cb9bda1183f20c29b055737057a",
+      "kind": "normal",
+      "source": "banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.bank_transactions.canonical_input_hash",
+      "target_kind": "table column",
+      "target_name": "bank_transactions",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "cc2bc58703533c06b1ba9360b727ebc30b24b56df495ed87bf93311dc4052955",
+      "kind": "normal",
+      "source": "banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.bank_transactions.evidence_id",
+      "target_kind": "table column",
+      "target_name": "bank_transactions",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "ac967e1192d98a8525ce94bcaf3adbb4abef001af56d7e7468ea61d68c06121f",
+      "kind": "normal",
+      "source": "banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.bank_transactions.pending_payment_id",
+      "target_kind": "table column",
+      "target_name": "bank_transactions",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "384fa8323142aad546a80c041af685071d595d6b8ed663d3bfdb08cc15c9f03b",
+      "kind": "normal",
+      "source": "banking.ck_pending_payments_currency on banking.pending_payments",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.currency",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "245cd8a98ca6b424ca18e52fc8cfeaae1163233a80b7c5cddc8aaee68a0cfb68",
+      "kind": "normal",
+      "source": "banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.currency",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "cb2a144c095af106218202feb83d654dcab213d9e78c6f24806cf1fed072efb3",
+      "kind": "normal",
+      "source": "banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.currency_remediated_at",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "532d44e794296d9fc3f165d1093cde2f783c8e2beea77c0cc3c4f72c4501a7c2",
+      "kind": "normal",
+      "source": "banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.currency_remediated_by",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "edb4e5dda454680ac8472d54cf03a791727ffd2df6fa15437082ad2cf7ebbc0f",
+      "kind": "normal",
+      "source": "banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.currency_remediation_reason",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "2ffb2b4f1149d23d999460815cdae25ab79e1fe45c2f1e670548d6859c0ede82",
+      "kind": "normal",
+      "source": "banking.fk_bank_transactions_pending_payment on banking.bank_transactions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.pending_payment_id",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "ef95b9d32b16b9329641bcb854dfdaf9cbdda827d67e17917fc1ee571e0e6854",
+      "kind": "normal",
+      "source": "banking.fk_bank_transactions_pending_payment on banking.bank_transactions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments_pkey",
+      "target_kind": "index",
+      "target_name": "pending_payments_pkey",
+      "target_schema": "banking"
     },
     {
       "fingerprint": "f720a04031bbc20f69afb33bf7298ff7c700c867f418515a0fd17eaf2178a993",
@@ -6685,6 +6817,10 @@
       "object": "column:banking.bank_transactions.bank_transaction_id"
     },
     {
+      "fingerprint": "f31580bc9079785e82f9cca4c2b8f138061725c048b62d32fe797eb23fb290a1",
+      "object": "column:banking.bank_transactions.canonical_input_hash"
+    },
+    {
       "fingerprint": "c7de60cb028367d88ab04ad25edf111e31ccad78beaa32d39a9085417ed649dd",
       "object": "column:banking.bank_transactions.currency"
     },
@@ -6697,12 +6833,20 @@
       "object": "column:banking.bank_transactions.entity_id"
     },
     {
+      "fingerprint": "6ace3a9dec96e772e3b4aad21c434a884871921d4daac9e0e05b461b486d814a",
+      "object": "column:banking.bank_transactions.evidence_id"
+    },
+    {
       "fingerprint": "92f5c8eb608aaac58eca1ee62926487ba16b28316e9e21044c533f4f15b06a86",
       "object": "column:banking.bank_transactions.external_ref"
     },
     {
       "fingerprint": "58e7dfd82a3013977d0ef60cfe0ace538171d4f49a3dfedf81d5050605fc449f",
       "object": "column:banking.bank_transactions.is_voided"
+    },
+    {
+      "fingerprint": "8f49cd5abc00b456344aca84243c823315d5676a9cdc35bf8ebb659935c5da58",
+      "object": "column:banking.bank_transactions.pending_payment_id"
     },
     {
       "fingerprint": "40df7559468bafefdd57a0374636207f1aa2fd9482a81f0fe20f3c7513b405e8",
@@ -6727,6 +6871,22 @@
     {
       "fingerprint": "8b92db9eacda225c45c902376b0fb447963c6c21fd6fc0d1b346432a0a3ce4db",
       "object": "column:banking.pending_payments.amount"
+    },
+    {
+      "fingerprint": "cabbd8d175f6e479804edc6319eeae6525415f02760c7a4943dd552679f73ba7",
+      "object": "column:banking.pending_payments.currency"
+    },
+    {
+      "fingerprint": "b655eefc3f8a9254aa85ab7d8e3cf5c40f44ec45ee6bc5aa4deac6c5f4398ec9",
+      "object": "column:banking.pending_payments.currency_remediated_at"
+    },
+    {
+      "fingerprint": "ae3affb086f0d6a808e24fb9956f4e18ea925c44eac56a7902c47aac342c76e1",
+      "object": "column:banking.pending_payments.currency_remediated_by"
+    },
+    {
+      "fingerprint": "d85d82de4d1cd439055178caabfd49deb22811295e0821ed90a36ab249479ec7",
+      "object": "column:banking.pending_payments.currency_remediation_reason"
     },
     {
       "fingerprint": "9c084f84f49754cf51a03c184d135d81be504c94fa5dcd33f344f97f66f0c727",
@@ -12221,6 +12381,46 @@
       "object": "column:security_master.security_events.stream_version"
     },
     {
+      "fingerprint": "cadead7bc748bf941114cacf48a9ef23b89a86af58b522ac68806eadde36aad7",
+      "object": "column:security_master.security_field_provenance.as_of"
+    },
+    {
+      "fingerprint": "b4f653e4f76bdebf326f2ed5b19c4d565a907f273f9b6f42c2eba46f96d00ebc",
+      "object": "column:security_master.security_field_provenance.confidence"
+    },
+    {
+      "fingerprint": "d467983deb492738c905ca87746694c009e7a410002b26ee39903cbd08a54429",
+      "object": "column:security_master.security_field_provenance.field_path"
+    },
+    {
+      "fingerprint": "b9c32cf224d0eea685f241827843827659776087a7418f22d2c86a84fc2fe6f9",
+      "object": "column:security_master.security_field_provenance.origin"
+    },
+    {
+      "fingerprint": "e729c20df5b579c7990ca80d693d4a34600fa1ea1799194673ffddd888b8df74",
+      "object": "column:security_master.security_field_provenance.origin_reference"
+    },
+    {
+      "fingerprint": "761c5d91ab85be2950b0591dd9103845d6efe992d574b421a9b8fa5cf485f9a5",
+      "object": "column:security_master.security_field_provenance.recorded_at"
+    },
+    {
+      "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+      "object": "column:security_master.security_field_provenance.security_id"
+    },
+    {
+      "fingerprint": "400d54068bc8e190d104aefbe8d7478f0996a5958bb6ed43851778c3b3c107f3",
+      "object": "column:security_master.security_field_provenance.source_system"
+    },
+    {
+      "fingerprint": "c553a4b46b864760b26094aba1145e3c610af9b736a46a4aa53a4e12f26f8468",
+      "object": "column:security_master.security_field_provenance.source_version"
+    },
+    {
+      "fingerprint": "4761fc4956855e5135c291c137cd7b3d8fe2b61e48798a55464111d48bd4dcf9",
+      "object": "column:security_master.security_field_provenance.updated_by"
+    },
+    {
       "fingerprint": "77534e439b733eddd78e9a79fbad0b8429febc835c554256bcd4f601fe850e9d",
       "object": "column:security_master.security_identifiers.confidence"
     },
@@ -12355,6 +12555,14 @@
     {
       "fingerprint": "cbf01d2e825a59e2f6a88bbaf0ec542eb77b24cef2e6ba787d2e20d4370a6de8",
       "object": "column:security_master.security_master_revisions.field_path"
+    },
+    {
+      "fingerprint": "b5426ebb4c3a62b3869dc53f0e4642749379baf169d007311fbfb073e4fcd37e",
+      "object": "column:security_master.security_master_revisions.field_value"
+    },
+    {
+      "fingerprint": "44d347a600df5885a5dda2264d1ebbe4013ef1cd30e32b7793d233962ef1c6c1",
+      "object": "column:security_master.security_master_revisions.field_value_recorded"
     },
     {
       "fingerprint": "d2f889c188dd71ddfcfa524fedde3eabc2d21352827de59d5c79bc6e71f256e9",
@@ -13187,6 +13395,26 @@
     {
       "fingerprint": "ca8e92f2f6feb52a03a0f3c4b7afc15022ee64a387d3df15f56b2f9e397ea968",
       "object": "constraint:banking.bank_transactions.bank_transactions_pkey"
+    },
+    {
+      "fingerprint": "4b2586f1415de8aac16a58e13cdec750c76f9787aced7be04be3cae0ca89446c",
+      "object": "constraint:banking.bank_transactions.ck_bank_transactions_currency"
+    },
+    {
+      "fingerprint": "ace278aa5e6e10bc5ad7aa0810c9804f360af2c39420b876b7bb39ff98dc0131",
+      "object": "constraint:banking.bank_transactions.ck_bank_transactions_payment_evidence"
+    },
+    {
+      "fingerprint": "1cfc9d644417e54c299006727681c14515f40e2fde455537ecb07dc6315130e8",
+      "object": "constraint:banking.bank_transactions.fk_bank_transactions_pending_payment"
+    },
+    {
+      "fingerprint": "0f0895bdbd9ad16d1df3beb494f13ab8331eedc4b2c1148061986618ed78dd9c",
+      "object": "constraint:banking.pending_payments.ck_pending_payments_currency"
+    },
+    {
+      "fingerprint": "6928f107a62fd7807b08345e793b993e7a141ae4c45f8f07d6bd8d23e303c139",
+      "object": "constraint:banking.pending_payments.ck_pending_payments_currency_remediation"
     },
     {
       "fingerprint": "57b4cbe750d44b75019082196b824b55ecc4ae474842b65de087949b19dcb3da",
@@ -14785,6 +15013,10 @@
       "object": "constraint:security_master.security_events.security_events_security_id_stream_version_key"
     },
     {
+      "fingerprint": "66b4a20cf573669ea752d580fa2828aaf81605ad5f1adaa0feeafb95445ce736",
+      "object": "constraint:security_master.security_field_provenance.security_field_provenance_pkey"
+    },
+    {
       "fingerprint": "43cd6bf6918d69d94084a85f9e5edb9014170b6089cc4f827eaee2dda2a3a573",
       "object": "constraint:security_master.security_identifiers.security_identifiers_pkey"
     },
@@ -15027,6 +15259,50 @@
     {
       "fingerprint": "bfc02bd0d088261b19ab424b92f6fa208fb29ee1e7c0109288e89432ae810445",
       "object": "dependency:asset_operations.fk_position_economic_state_position_scope on asset_operations.position_economic_state_projections->asset_operations.ux_book_position_projection_scope:normal"
+    },
+    {
+      "fingerprint": "c81f922ec1e6748639d7319cdecfb3fc641d17c9ea4da1128ff4137a7c6aa92a",
+      "object": "dependency:banking.ck_bank_transactions_currency on banking.bank_transactions->banking.bank_transactions.currency:normal"
+    },
+    {
+      "fingerprint": "87e3ec022b11594e725c4463a5703679044b5cb9bda1183f20c29b055737057a",
+      "object": "dependency:banking.ck_bank_transactions_payment_evidence on banking.bank_transactions->banking.bank_transactions.canonical_input_hash:normal"
+    },
+    {
+      "fingerprint": "cc2bc58703533c06b1ba9360b727ebc30b24b56df495ed87bf93311dc4052955",
+      "object": "dependency:banking.ck_bank_transactions_payment_evidence on banking.bank_transactions->banking.bank_transactions.evidence_id:normal"
+    },
+    {
+      "fingerprint": "ac967e1192d98a8525ce94bcaf3adbb4abef001af56d7e7468ea61d68c06121f",
+      "object": "dependency:banking.ck_bank_transactions_payment_evidence on banking.bank_transactions->banking.bank_transactions.pending_payment_id:normal"
+    },
+    {
+      "fingerprint": "384fa8323142aad546a80c041af685071d595d6b8ed663d3bfdb08cc15c9f03b",
+      "object": "dependency:banking.ck_pending_payments_currency on banking.pending_payments->banking.pending_payments.currency:normal"
+    },
+    {
+      "fingerprint": "245cd8a98ca6b424ca18e52fc8cfeaae1163233a80b7c5cddc8aaee68a0cfb68",
+      "object": "dependency:banking.ck_pending_payments_currency_remediation on banking.pending_payments->banking.pending_payments.currency:normal"
+    },
+    {
+      "fingerprint": "cb2a144c095af106218202feb83d654dcab213d9e78c6f24806cf1fed072efb3",
+      "object": "dependency:banking.ck_pending_payments_currency_remediation on banking.pending_payments->banking.pending_payments.currency_remediated_at:normal"
+    },
+    {
+      "fingerprint": "532d44e794296d9fc3f165d1093cde2f783c8e2beea77c0cc3c4f72c4501a7c2",
+      "object": "dependency:banking.ck_pending_payments_currency_remediation on banking.pending_payments->banking.pending_payments.currency_remediated_by:normal"
+    },
+    {
+      "fingerprint": "edb4e5dda454680ac8472d54cf03a791727ffd2df6fa15437082ad2cf7ebbc0f",
+      "object": "dependency:banking.ck_pending_payments_currency_remediation on banking.pending_payments->banking.pending_payments.currency_remediation_reason:normal"
+    },
+    {
+      "fingerprint": "2ffb2b4f1149d23d999460815cdae25ab79e1fe45c2f1e670548d6859c0ede82",
+      "object": "dependency:banking.fk_bank_transactions_pending_payment on banking.bank_transactions->banking.pending_payments.pending_payment_id:normal"
+    },
+    {
+      "fingerprint": "ef95b9d32b16b9329641bcb854dfdaf9cbdda827d67e17917fc1ee571e0e6854",
+      "object": "dependency:banking.fk_bank_transactions_pending_payment on banking.bank_transactions->banking.pending_payments_pkey:normal"
     },
     {
       "fingerprint": "f720a04031bbc20f69afb33bf7298ff7c700c867f418515a0fd17eaf2178a993",
@@ -17173,6 +17449,10 @@
       "object": "index:banking.ix_bank_transactions_entity_id"
     },
     {
+      "fingerprint": "da3b23b9b8a08fb1c3bd2343898e2c37545327d9d6a905b7e71810a625e05473",
+      "object": "index:banking.ix_bank_transactions_pending_payment_id"
+    },
+    {
       "fingerprint": "d8ff81c37f99ca31dd2b439a9a2785b04dbbc7f573c99cadcab11c9d8d9062a1",
       "object": "index:banking.ix_pending_payments_entity_id"
     },
@@ -17187,6 +17467,10 @@
     {
       "fingerprint": "3fd37d1a3ea61eedab447bd4292421a246b777ddfc029c7ec4ccd7ac4651c91a",
       "object": "index:banking.schema_migrations_pkey"
+    },
+    {
+      "fingerprint": "b517d425b444b76f571e40f6bc83a11ff3763c7f50218c6d3552baae6d9bdbc0",
+      "object": "index:banking.ux_bank_transactions_payment_evidence"
     },
     {
       "fingerprint": "6b73ac1cb5ea6bcec44a3e9ae169868e279f3613c4d2a623078a3bfc360fabaa",
@@ -18253,6 +18537,10 @@
       "object": "index:security_master.ix_security_events_security_id_sequence"
     },
     {
+      "fingerprint": "5aec317cc407da76fcff7d7aa42abcead177b009f49a7047aebb8ae849cdd887",
+      "object": "index:security_master.ix_security_field_provenance_security"
+    },
+    {
       "fingerprint": "ec55ceb77c70d7fc257ac37eac056a6a3aa7b342f76ca9830937a9ea7a8374ff",
       "object": "index:security_master.ix_security_identifiers_lookup"
     },
@@ -18439,6 +18727,10 @@
     {
       "fingerprint": "83d03efaa42e0f1961ee7b37ccb08fd54cc28c8d81802017a553ac61c30b02a3",
       "object": "index:security_master.security_events_security_id_stream_version_key"
+    },
+    {
+      "fingerprint": "6d4a103bcb63242ab25a779f6e9d2bc00c6e197b50e77b3084a11cea290f3fce",
+      "object": "index:security_master.security_field_provenance_pkey"
     },
     {
       "fingerprint": "683fce49619ad6dd565b6d31697b180ae72e92eeb65052c61b237e90e13c5dd2",
@@ -19137,6 +19429,10 @@
       "object": "rls:security_master.security_events"
     },
     {
+      "fingerprint": "27ab7ae4a165427a6a6fd1679e8712bb17508d4bfae2c021b68ae420d0099feb",
+      "object": "rls:security_master.security_field_provenance"
+    },
+    {
       "fingerprint": "68207fa0e99cf37c18c35794eb1521a121838c1a210964a6d5ca99fac806bf0d",
       "object": "rls:security_master.security_identifiers"
     },
@@ -19217,7 +19513,7 @@
       "object": "schema:asset_operations"
     },
     {
-      "fingerprint": "f2356c67a5936d3611aceba76e1585399b04d8d5cb3e79fff902df1f778d4c02",
+      "fingerprint": "13eb851755849f99d829e419847342c0ee8065d83fcb48e16b188c7c1ea89b90",
       "object": "schema:banking"
     },
     {
@@ -19249,7 +19545,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "d3baca69e8da5bfa325812c902497037c25dd3d55a0026064feb2394a1bebf57",
+      "fingerprint": "e29412963a3cdba76b280e694586b6793e56af1be24c67a9c0e3d389bd0c53ae",
       "object": "schema:security_master"
     },
     {
@@ -19341,11 +19637,11 @@
       "object": "table:asset_operations.position_economic_state_projections"
     },
     {
-      "fingerprint": "4eb1efd6557cfb9d1b5587974aa17d4219d1ff0508ad9bb8b22136fa6b9b5600",
+      "fingerprint": "8399679df82e7bbc0b3c6d62341ad97c04c6709b1364998da4ee485225fc4fbe",
       "object": "table:banking.bank_transactions"
     },
     {
-      "fingerprint": "d06a287fbe151a7ad5b1c73f7f9ee494deadaf7461b790e743de8e0302bb09cb",
+      "fingerprint": "2ee6d7539cb127fd3267b26c497c546db925bab9a55a503e32d095eda995a103",
       "object": "table:banking.pending_payments"
     },
     {
@@ -19825,6 +20121,10 @@
       "object": "table:security_master.security_events"
     },
     {
+      "fingerprint": "1008a37464d084d8f6e04d34e1abd8a318aba56a8a50632ebafdda8c5e3956f4",
+      "object": "table:security_master.security_field_provenance"
+    },
+    {
       "fingerprint": "aa6edfaa218a72f303e82d5f504aea49e155a2efa202b2404f85ac2b088780c2",
       "object": "table:security_master.security_identifiers"
     },
@@ -19837,7 +20137,7 @@
       "object": "table:security_master.security_master_quality_reports"
     },
     {
-      "fingerprint": "078085deacff03b9679444c6bd4defec666be661f1a858f956085c2c5aa54570",
+      "fingerprint": "5c9ca5ebd8f8a6c076a8d872166ebce89645684f1ecaf1b72f6f21d31c8d9a93",
       "object": "table:security_master.security_master_revisions"
     },
     {
@@ -31177,12 +31477,145 @@
       "comment": null,
       "comments": [],
       "composite_types": [],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "fingerprint": "c81f922ec1e6748639d7319cdecfb3fc641d17c9ea4da1128ff4137a7c6aa92a",
+          "kind": "normal",
+          "source": "banking.ck_bank_transactions_currency on banking.bank_transactions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.bank_transactions.currency",
+          "target_kind": "table column",
+          "target_name": "bank_transactions",
+          "target_schema": "banking"
+        },
+        {
+          "fingerprint": "87e3ec022b11594e725c4463a5703679044b5cb9bda1183f20c29b055737057a",
+          "kind": "normal",
+          "source": "banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.bank_transactions.canonical_input_hash",
+          "target_kind": "table column",
+          "target_name": "bank_transactions",
+          "target_schema": "banking"
+        },
+        {
+          "fingerprint": "cc2bc58703533c06b1ba9360b727ebc30b24b56df495ed87bf93311dc4052955",
+          "kind": "normal",
+          "source": "banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.bank_transactions.evidence_id",
+          "target_kind": "table column",
+          "target_name": "bank_transactions",
+          "target_schema": "banking"
+        },
+        {
+          "fingerprint": "ac967e1192d98a8525ce94bcaf3adbb4abef001af56d7e7468ea61d68c06121f",
+          "kind": "normal",
+          "source": "banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.bank_transactions.pending_payment_id",
+          "target_kind": "table column",
+          "target_name": "bank_transactions",
+          "target_schema": "banking"
+        },
+        {
+          "fingerprint": "384fa8323142aad546a80c041af685071d595d6b8ed663d3bfdb08cc15c9f03b",
+          "kind": "normal",
+          "source": "banking.ck_pending_payments_currency on banking.pending_payments",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.pending_payments.currency",
+          "target_kind": "table column",
+          "target_name": "pending_payments",
+          "target_schema": "banking"
+        },
+        {
+          "fingerprint": "245cd8a98ca6b424ca18e52fc8cfeaae1163233a80b7c5cddc8aaee68a0cfb68",
+          "kind": "normal",
+          "source": "banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.pending_payments.currency",
+          "target_kind": "table column",
+          "target_name": "pending_payments",
+          "target_schema": "banking"
+        },
+        {
+          "fingerprint": "cb2a144c095af106218202feb83d654dcab213d9e78c6f24806cf1fed072efb3",
+          "kind": "normal",
+          "source": "banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.pending_payments.currency_remediated_at",
+          "target_kind": "table column",
+          "target_name": "pending_payments",
+          "target_schema": "banking"
+        },
+        {
+          "fingerprint": "532d44e794296d9fc3f165d1093cde2f783c8e2beea77c0cc3c4f72c4501a7c2",
+          "kind": "normal",
+          "source": "banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.pending_payments.currency_remediated_by",
+          "target_kind": "table column",
+          "target_name": "pending_payments",
+          "target_schema": "banking"
+        },
+        {
+          "fingerprint": "edb4e5dda454680ac8472d54cf03a791727ffd2df6fa15437082ad2cf7ebbc0f",
+          "kind": "normal",
+          "source": "banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.pending_payments.currency_remediation_reason",
+          "target_kind": "table column",
+          "target_name": "pending_payments",
+          "target_schema": "banking"
+        },
+        {
+          "fingerprint": "2ffb2b4f1149d23d999460815cdae25ab79e1fe45c2f1e670548d6859c0ede82",
+          "kind": "normal",
+          "source": "banking.fk_bank_transactions_pending_payment on banking.bank_transactions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.pending_payments.pending_payment_id",
+          "target_kind": "table column",
+          "target_name": "pending_payments",
+          "target_schema": "banking"
+        },
+        {
+          "fingerprint": "ef95b9d32b16b9329641bcb854dfdaf9cbdda827d67e17917fc1ee571e0e6854",
+          "kind": "normal",
+          "source": "banking.fk_bank_transactions_pending_payment on banking.bank_transactions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.pending_payments_pkey",
+          "target_kind": "index",
+          "target_name": "pending_payments_pkey",
+          "target_schema": "banking"
+        }
+      ],
       "domains": [],
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "f2356c67a5936d3611aceba76e1585399b04d8d5cb3e79fff902df1f778d4c02",
+      "fingerprint": "13eb851755849f99d829e419847342c0ee8065d83fcb48e16b188c7c1ea89b90",
       "foreign_tables": [],
       "functions": [],
       "logical_modules": [
@@ -31432,10 +31865,122 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "8f49cd5abc00b456344aca84243c823315d5676a9cdc35bf8ebb659935c5da58",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "pending_payment_id",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6ace3a9dec96e772e3b4aad21c434a884871921d4daac9e0e05b461b486d814a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "evidence_id",
+              "nullable": true,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f31580bc9079785e82f9cca4c2b8f138061725c048b62d32fe797eb23fb290a1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "canonical_input_hash",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "currency"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (currency ~ '^[A-Z]{3}$'::text) NOT VALID",
+              "delete_action": null,
+              "fingerprint": "4b2586f1415de8aac16a58e13cdec750c76f9787aced7be04be3cae0ca89446c",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_bank_transactions_currency",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": false
+            },
+            {
+              "columns": [
+                "pending_payment_id",
+                "evidence_id",
+                "canonical_input_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (pending_payment_id IS NULL AND evidence_id IS NULL AND canonical_input_hash IS NULL OR pending_payment_id IS NOT NULL AND evidence_id IS NOT NULL AND btrim(evidence_id) <> ''::text AND length(evidence_id) <= 200 AND canonical_input_hash ~ '^[0-9A-F]{64}$'::text) NOT VALID",
+              "delete_action": null,
+              "fingerprint": "ace278aa5e6e10bc5ad7aa0810c9804f360af2c39420b876b7bb39ff98dc0131",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_bank_transactions_payment_evidence",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": false
+            },
+            {
+              "columns": [
+                "pending_payment_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (pending_payment_id) REFERENCES banking.pending_payments(pending_payment_id) ON DELETE RESTRICT NOT VALID",
+              "delete_action": "restrict",
+              "fingerprint": "1cfc9d644417e54c299006727681c14515f40e2fde455537ecb07dc6315130e8",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "fk_bank_transactions_pending_payment",
+              "no_inherit": true,
+              "referenced_columns": [
+                "pending_payment_id"
+              ],
+              "referenced_schema": "banking",
+              "referenced_table": "pending_payments",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": false
+            },
             {
               "columns": [
                 "bank_transaction_id"
@@ -31459,7 +32004,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "4eb1efd6557cfb9d1b5587974aa17d4219d1ff0508ad9bb8b22136fa6b9b5600",
+          "fingerprint": "8399679df82e7bbc0b3c6d62341ad97c04c6709b1364998da4ee485225fc4fbe",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -31527,6 +32072,51 @@
               "ready": true,
               "security_labels": [],
               "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_bank_transactions_pending_payment_id ON banking.bank_transactions USING btree (pending_payment_id) WHERE (pending_payment_id IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "da3b23b9b8a08fb1c3bd2343898e2c37545327d9d6a905b7e71810a625e05473",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "pending_payment_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_bank_transactions_pending_payment_id",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "pending_payment_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_bank_transactions_payment_evidence ON banking.bank_transactions USING btree (pending_payment_id, evidence_id)",
+              "expression": null,
+              "fingerprint": "b517d425b444b76f571e40f6bc83a11ff3763c7f50218c6d3552baae6d9bdbc0",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "pending_payment_id",
+                "evidence_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_bank_transactions_payment_evidence",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
               "valid": true
             }
           ],
@@ -31766,10 +32356,117 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "cabbd8d175f6e479804edc6319eeae6525415f02760c7a4943dd552679f73ba7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency",
+              "nullable": true,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ae3affb086f0d6a808e24fb9956f4e18ea925c44eac56a7902c47aac342c76e1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency_remediated_by",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d85d82de4d1cd439055178caabfd49deb22811295e0821ed90a36ab249479ec7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency_remediation_reason",
+              "nullable": true,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "b655eefc3f8a9254aa85ab7d8e3cf5c40f44ec45ee6bc5aa4deac6c5f4398ec9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency_remediated_at",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "currency"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (currency IS NULL OR currency ~ '^[A-Z]{3}$'::text) NOT VALID",
+              "delete_action": null,
+              "fingerprint": "0f0895bdbd9ad16d1df3beb494f13ab8331eedc4b2c1148061986618ed78dd9c",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_pending_payments_currency",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": false
+            },
+            {
+              "columns": [
+                "currency_remediated_by",
+                "currency_remediation_reason",
+                "currency_remediated_at",
+                "currency"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (currency_remediated_by IS NULL AND currency_remediation_reason IS NULL AND currency_remediated_at IS NULL OR currency IS NOT NULL AND currency_remediated_by IS NOT NULL AND btrim(currency_remediated_by) <> ''::text AND currency_remediation_reason IS NOT NULL AND btrim(currency_remediation_reason) <> ''::text AND currency_remediated_at IS NOT NULL) NOT VALID",
+              "delete_action": null,
+              "fingerprint": "6928f107a62fd7807b08345e793b993e7a141ae4c45f8f07d6bd8d23e303c139",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_pending_payments_currency_remediation",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": false
+            },
             {
               "columns": [
                 "pending_payment_id"
@@ -31793,7 +32490,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "d06a287fbe151a7ad5b1c73f7f9ee494deadaf7461b790e743de8e0302bb09cb",
+          "fingerprint": "2ee6d7539cb127fd3267b26c497c546db925bab9a55a503e32d095eda995a103",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -32308,10 +33005,122 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "8f49cd5abc00b456344aca84243c823315d5676a9cdc35bf8ebb659935c5da58",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "pending_payment_id",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6ace3a9dec96e772e3b4aad21c434a884871921d4daac9e0e05b461b486d814a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "evidence_id",
+              "nullable": true,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f31580bc9079785e82f9cca4c2b8f138061725c048b62d32fe797eb23fb290a1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "canonical_input_hash",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "currency"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (currency ~ '^[A-Z]{3}$'::text) NOT VALID",
+              "delete_action": null,
+              "fingerprint": "4b2586f1415de8aac16a58e13cdec750c76f9787aced7be04be3cae0ca89446c",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_bank_transactions_currency",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": false
+            },
+            {
+              "columns": [
+                "pending_payment_id",
+                "evidence_id",
+                "canonical_input_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (pending_payment_id IS NULL AND evidence_id IS NULL AND canonical_input_hash IS NULL OR pending_payment_id IS NOT NULL AND evidence_id IS NOT NULL AND btrim(evidence_id) <> ''::text AND length(evidence_id) <= 200 AND canonical_input_hash ~ '^[0-9A-F]{64}$'::text) NOT VALID",
+              "delete_action": null,
+              "fingerprint": "ace278aa5e6e10bc5ad7aa0810c9804f360af2c39420b876b7bb39ff98dc0131",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_bank_transactions_payment_evidence",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": false
+            },
+            {
+              "columns": [
+                "pending_payment_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (pending_payment_id) REFERENCES banking.pending_payments(pending_payment_id) ON DELETE RESTRICT NOT VALID",
+              "delete_action": "restrict",
+              "fingerprint": "1cfc9d644417e54c299006727681c14515f40e2fde455537ecb07dc6315130e8",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "fk_bank_transactions_pending_payment",
+              "no_inherit": true,
+              "referenced_columns": [
+                "pending_payment_id"
+              ],
+              "referenced_schema": "banking",
+              "referenced_table": "pending_payments",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": false
+            },
             {
               "columns": [
                 "bank_transaction_id"
@@ -32335,7 +33144,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "4eb1efd6557cfb9d1b5587974aa17d4219d1ff0508ad9bb8b22136fa6b9b5600",
+          "fingerprint": "8399679df82e7bbc0b3c6d62341ad97c04c6709b1364998da4ee485225fc4fbe",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -32403,6 +33212,51 @@
               "ready": true,
               "security_labels": [],
               "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_bank_transactions_pending_payment_id ON banking.bank_transactions USING btree (pending_payment_id) WHERE (pending_payment_id IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "da3b23b9b8a08fb1c3bd2343898e2c37545327d9d6a905b7e71810a625e05473",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "pending_payment_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_bank_transactions_pending_payment_id",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "pending_payment_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_bank_transactions_payment_evidence ON banking.bank_transactions USING btree (pending_payment_id, evidence_id)",
+              "expression": null,
+              "fingerprint": "b517d425b444b76f571e40f6bc83a11ff3763c7f50218c6d3552baae6d9bdbc0",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "pending_payment_id",
+                "evidence_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_bank_transactions_payment_evidence",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
               "valid": true
             }
           ],
@@ -32642,10 +33496,117 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "cabbd8d175f6e479804edc6319eeae6525415f02760c7a4943dd552679f73ba7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency",
+              "nullable": true,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ae3affb086f0d6a808e24fb9956f4e18ea925c44eac56a7902c47aac342c76e1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency_remediated_by",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d85d82de4d1cd439055178caabfd49deb22811295e0821ed90a36ab249479ec7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency_remediation_reason",
+              "nullable": true,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "b655eefc3f8a9254aa85ab7d8e3cf5c40f44ec45ee6bc5aa4deac6c5f4398ec9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency_remediated_at",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "currency"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (currency IS NULL OR currency ~ '^[A-Z]{3}$'::text) NOT VALID",
+              "delete_action": null,
+              "fingerprint": "0f0895bdbd9ad16d1df3beb494f13ab8331eedc4b2c1148061986618ed78dd9c",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_pending_payments_currency",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": false
+            },
+            {
+              "columns": [
+                "currency_remediated_by",
+                "currency_remediation_reason",
+                "currency_remediated_at",
+                "currency"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (currency_remediated_by IS NULL AND currency_remediation_reason IS NULL AND currency_remediated_at IS NULL OR currency IS NOT NULL AND currency_remediated_by IS NOT NULL AND btrim(currency_remediated_by) <> ''::text AND currency_remediation_reason IS NOT NULL AND btrim(currency_remediation_reason) <> ''::text AND currency_remediated_at IS NOT NULL) NOT VALID",
+              "delete_action": null,
+              "fingerprint": "6928f107a62fd7807b08345e793b993e7a141ae4c45f8f07d6bd8d23e303c139",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_pending_payments_currency_remediation",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": false
+            },
             {
               "columns": [
                 "pending_payment_id"
@@ -32669,7 +33630,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "d06a287fbe151a7ad5b1c73f7f9ee494deadaf7461b790e743de8e0302bb09cb",
+          "fingerprint": "2ee6d7539cb127fd3267b26c497c546db925bab9a55a503e32d095eda995a103",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -100635,7 +101596,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "d3baca69e8da5bfa325812c902497037c25dd3d55a0026064feb2394a1bebf57",
+      "fingerprint": "e29412963a3cdba76b280e694586b6793e56af1be24c67a9c0e3d389bd0c53ae",
       "foreign_tables": [],
       "functions": [
         {
@@ -117090,6 +118051,306 @@
               "comment": null,
               "data_type": "text",
               "default": null,
+              "fingerprint": "d467983deb492738c905ca87746694c009e7a410002b26ee39903cbd08a54429",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "field_path",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b9c32cf224d0eea685f241827843827659776087a7418f22d2c86a84fc2fe6f9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "origin",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "400d54068bc8e190d104aefbe8d7478f0996a5958bb6ed43851778c3b3c107f3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "source_system",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "cadead7bc748bf941114cacf48a9ef23b89a86af58b522ac68806eadde36aad7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "as_of",
+              "nullable": true,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "4761fc4956855e5135c291c137cd7b3d8fe2b61e48798a55464111d48bd4dcf9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_by",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric",
+              "default": null,
+              "fingerprint": "b4f653e4f76bdebf326f2ed5b19c4d565a907f273f9b6f42c2eba46f96d00ebc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "confidence",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "e729c20df5b579c7990ca80d693d4a34600fa1ea1799194673ffddd888b8df74",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "origin_reference",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "761c5d91ab85be2950b0591dd9103845d6efe992d574b421a9b8fa5cf485f9a5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "c553a4b46b864760b26094aba1145e3c610af9b736a46a4aa53a4e12f26f8468",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "source_version",
+              "nullable": true,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "security_id",
+                "field_path",
+                "origin"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id, field_path, origin)",
+              "delete_action": null,
+              "fingerprint": "66b4a20cf573669ea752d580fa2828aaf81605ad5f1adaa0feeafb95445ce736",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_field_provenance_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "1008a37464d084d8f6e04d34e1abd8a318aba56a8a50632ebafdda8c5e3956f4",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_security_field_provenance_security ON security_master.security_field_provenance USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "5aec317cc407da76fcff7d7aa42abcead177b009f49a7047aebb8ae849cdd887",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_security_field_provenance_security",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_field_provenance_pkey ON security_master.security_field_provenance USING btree (security_id, field_path, origin)",
+              "expression": null,
+              "fingerprint": "6d4a103bcb63242ab25a779f6e9d2bc00c6e197b50e77b3084a11cea290f3fce",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id",
+                "field_path",
+                "origin"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_field_provenance_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_field_provenance",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
               "fingerprint": "2370f05c7d4b8a5c5b7a65f03a0876a49ba79ce593144b0c29f29587f7d41389",
               "generated": null,
               "generated_expression": null,
@@ -118224,6 +119485,38 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b5426ebb4c3a62b3869dc53f0e4642749379baf169d007311fbfb073e4fcd37e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "field_value",
+              "nullable": true,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "boolean",
+              "default": "false",
+              "fingerprint": "44d347a600df5885a5dda2264d1ebbe4013ef1cd30e32b7793d233962ef1c6c1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "field_value_recorded",
+              "nullable": false,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "bool",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -118251,7 +119544,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "078085deacff03b9679444c6bd4defec666be661f1a858f956085c2c5aa54570",
+          "fingerprint": "5c9ca5ebd8f8a6c076a8d872166ebce89645684f1ecaf1b72f6f21d31c8d9a93",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -123731,6 +125024,14 @@
           "forced": false,
           "policies": [],
           "relation": "security_events",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "27ab7ae4a165427a6a6fd1679e8712bb17508d4bfae2c021b68ae420d0099feb",
+          "forced": false,
+          "policies": [],
+          "relation": "security_field_provenance",
           "schema": "security_master"
         },
         {
@@ -140352,6 +141653,306 @@
               "comment": null,
               "data_type": "text",
               "default": null,
+              "fingerprint": "d467983deb492738c905ca87746694c009e7a410002b26ee39903cbd08a54429",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "field_path",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b9c32cf224d0eea685f241827843827659776087a7418f22d2c86a84fc2fe6f9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "origin",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "400d54068bc8e190d104aefbe8d7478f0996a5958bb6ed43851778c3b3c107f3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "source_system",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "cadead7bc748bf941114cacf48a9ef23b89a86af58b522ac68806eadde36aad7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "as_of",
+              "nullable": true,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "4761fc4956855e5135c291c137cd7b3d8fe2b61e48798a55464111d48bd4dcf9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_by",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric",
+              "default": null,
+              "fingerprint": "b4f653e4f76bdebf326f2ed5b19c4d565a907f273f9b6f42c2eba46f96d00ebc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "confidence",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "e729c20df5b579c7990ca80d693d4a34600fa1ea1799194673ffddd888b8df74",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "origin_reference",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "761c5d91ab85be2950b0591dd9103845d6efe992d574b421a9b8fa5cf485f9a5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "c553a4b46b864760b26094aba1145e3c610af9b736a46a4aa53a4e12f26f8468",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "source_version",
+              "nullable": true,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "security_id",
+                "field_path",
+                "origin"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id, field_path, origin)",
+              "delete_action": null,
+              "fingerprint": "66b4a20cf573669ea752d580fa2828aaf81605ad5f1adaa0feeafb95445ce736",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_field_provenance_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "1008a37464d084d8f6e04d34e1abd8a318aba56a8a50632ebafdda8c5e3956f4",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_security_field_provenance_security ON security_master.security_field_provenance USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "5aec317cc407da76fcff7d7aa42abcead177b009f49a7047aebb8ae849cdd887",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_security_field_provenance_security",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_field_provenance_pkey ON security_master.security_field_provenance USING btree (security_id, field_path, origin)",
+              "expression": null,
+              "fingerprint": "6d4a103bcb63242ab25a779f6e9d2bc00c6e197b50e77b3084a11cea290f3fce",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id",
+                "field_path",
+                "origin"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_field_provenance_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_field_provenance",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
               "fingerprint": "2370f05c7d4b8a5c5b7a65f03a0876a49ba79ce593144b0c29f29587f7d41389",
               "generated": null,
               "generated_expression": null,
@@ -141433,6 +143034,38 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b5426ebb4c3a62b3869dc53f0e4642749379baf169d007311fbfb073e4fcd37e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "field_value",
+              "nullable": true,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "boolean",
+              "default": "false",
+              "fingerprint": "44d347a600df5885a5dda2264d1ebbe4013ef1cd30e32b7793d233962ef1c6c1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "field_value_recorded",
+              "nullable": false,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "bool",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -141460,7 +143093,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "078085deacff03b9679444c6bd4defec666be661f1a858f956085c2c5aa54570",
+          "fingerprint": "5c9ca5ebd8f8a6c076a8d872166ebce89645684f1ecaf1b72f6f21d31c8d9a93",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [

@@ -1,8 +1,9 @@
 using System.Linq;
 using System.Text.Json;
-using Meridian.Core.Config;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
+using Meridian.Core.Config;
+using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
 using Meridian.ProviderSdk;
@@ -90,6 +91,7 @@ public static class ProviderExtendedEndpoints
             }, jsonOptions);
         })
         .WithName("TriggerProviderFailover")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageProviders))
         .WithDescription("Manually triggers a failover to a specified target provider.")
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -105,6 +107,7 @@ public static class ProviderExtendedEndpoints
             }, jsonOptions);
         })
         .WithName("ResetProviderFailover")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageProviders))
         .WithDescription("Resets the failover state to defaults, clearing any manual overrides.")
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -180,6 +183,7 @@ public static class ProviderExtendedEndpoints
             }, jsonOptions);
         })
         .WithName("SwitchProvider")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageProviders))
         .WithDescription("Switches the active streaming data source to the specified provider.")
         .Produces(200)
         .Produces(400)

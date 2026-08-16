@@ -339,7 +339,12 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             for capture in self.web_screenshot_routes.get("captures", [])
         }
 
+        # 77 after retiring W05E (web-strategy-formula-workbench): the Quant Lab Formulas tab is
+        # withdrawn while /strategy/quant-lab?view=formulas stays in UNWIRED_WORKSTATION_ROUTES, so
+        # the capture navigated to a route the screen now canonicalizes away and waited for text
+        # that no longer renders.
         self.assertEqual(77, len(captures))
+        self.assertNotIn("W05E", captures)
         self.assertEqual("/data/import", captures["W06I"].get("path"))
         self.assertEqual("/data/operations", captures["W06J"].get("path"))
         self.assertEqual("/data/assurance", captures["W06K"].get("path"))

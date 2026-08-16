@@ -1,8 +1,9 @@
 using System.Text.Json;
 using Meridian.Application.Monitoring;
-using Meridian.DataIntegration.Monitoring;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;
+using Meridian.DataIntegration.Monitoring;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -232,6 +233,14 @@ public static class MessagingEndpoints
                     timestamp = DateTimeOffset.UtcNow
                 }, jsonOptions);
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // The caller hung up. Propagate instead of recording a delivery failure: the
+                // counters and error log below are operator-visible, so counting an aborted
+                // request as a failed send would put a webhook delivery that never happened
+                // into the messaging error queue.
+                throw;
+            }
             catch (Exception ex)
             {
                 sw.Stop();
@@ -257,6 +266,7 @@ public static class MessagingEndpoints
             }
         })
         .WithName("TestMessaging")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.AdminMaintenance))
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -299,6 +309,7 @@ public static class MessagingEndpoints
             }, jsonOptions);
         })
         .WithName("PurgeMessagingQueue")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.AdminMaintenance))
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -376,6 +387,12 @@ public static class MessagingEndpoints
                     timestamp = DateTimeOffset.UtcNow
                 }, jsonOptions);
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // The caller hung up mid-retry. Propagate rather than answering 200 with
+                // retried = false, which reads as "the retry ran and failed".
+                throw;
+            }
             catch (Exception ex)
             {
                 return Results.Json(new
@@ -388,6 +405,7 @@ public static class MessagingEndpoints
             }
         })
         .WithName("RetryMessagingError")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.AdminMaintenance))
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }

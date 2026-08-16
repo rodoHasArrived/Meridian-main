@@ -1,0 +1,76 @@
+name: AI Navigation Refresh
+
+# The verify-docs lane fails once docs/ai/generated/repo-navigation.json ages past
+# check-ai-navigation-freshness.py's 14-day maximum. That gate is time-based rather than
+# change-based, so without a scheduled refresh it eventually red-lights main and every open
+# pull request regardless of what they touch — the failure lands on whoever pushes next.
+# This job regenerates the artifact weekly, which keeps a comfortable margin: one skipped or
+# failed run still leaves the artifact inside the window.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-navigation-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: Refresh AI navigation artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install docs script dependencies
+        run: python -m pip install --requirement build/scripts/docs/requirements.txt
+
+      - name: Regenerate AI navigation artifact
+        run: |
+          python3 build/scripts/docs/generate-ai-navigation.py \
+            --json-output docs/ai/generated/repo-navigation.json \
+            --markdown-output docs/ai/generated/repo-navigation.md \
+            --summary
+
+      - name: Verify freshness gate now passes
+        # Guards against a regenerated-but-still-stale artifact: if the generator ever stops
+        # stamping generatedAt, the refresh must fail loudly here rather than open a pull
+        # request that leaves verify-docs red.
+        run: python3 build/scripts/docs/check-ai-navigation-freshness.py
+
+      - name: Open navigation refresh pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: automation/ai-navigation-refresh
+          base: ${{ github.event.repository.default_branch }}
+          title: "chore: refresh AI navigation artifact"
+          commit-message: "chore: refresh AI navigation artifact"
+          body: |
+            Scheduled regeneration of `docs/ai/generated/repo-navigation.{json,md}` by the
+            AI Navigation Refresh workflow.
+
+            The artifact carries a 14-day freshness gate enforced by `verify-docs`
+            (`build/scripts/docs/check-ai-navigation-freshness.py`). This refresh keeps the
+            gate green so the staleness failure never lands on an unrelated pull request.
+          add-paths: |
+            docs/ai/generated/repo-navigation.json
+            docs/ai/generated/repo-navigation.md
+          delete-branch: true

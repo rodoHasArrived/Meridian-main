@@ -34,6 +34,7 @@ public sealed class AccountingFeatureModuleTests
             "AccountingShell",
             "FundStructureSetup",
             "FundLedger",
+            "OperationsContinuity",
             "RunLedger",
             "RunCashFlow",
             "FundBanking",
@@ -198,7 +199,7 @@ public sealed class AccountingFeatureModuleTests
     [InlineData("AccountingShell", "AccountingShell", "accounting")]
     [InlineData("GovernanceShell", "AccountingShell", "accounting")]
     [InlineData("AccountingWorkspace", "AccountingShell", "accounting")]
-    [InlineData("OperationsContinuity", "FundLedger", "accounting")]
+    [InlineData("OperationsContinuity", "OperationsContinuity", "accounting")]
     [InlineData("OperationsClose", "FundLedger", "accounting")]
     [InlineData("AccountingClose", "FundAccountingClose", "accounting")]
     [InlineData("CloseManagement", "FundAccountingClose", "accounting")]

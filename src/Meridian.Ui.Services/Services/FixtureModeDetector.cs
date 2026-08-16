@@ -28,6 +28,7 @@ public sealed class FixtureModeDetector
     private volatile bool _isFixtureMode;
     private volatile bool _isOfflineMode;
     private volatile bool _backendReachable = true;
+    private volatile string? _serverDataProvenanceToken;
 
     private FixtureModeDetector()
     {
@@ -63,9 +64,17 @@ public sealed class FixtureModeDetector
     public bool IsBackendReachable => _backendReachable;
 
     /// <summary>
-    /// Gets whether any non-live mode is active (fixture or offline).
+    /// Non-real data provenance reported by the connected backend (for example
+    /// <c>seeded</c> when the host is serving a seeded demo workspace), or <c>null</c>
+    /// when the backend serves real data or has not reported yet.
     /// </summary>
-    public bool IsNonLiveMode => _isFixtureMode || _isOfflineMode;
+    public string? ServerDataProvenanceToken => _serverDataProvenanceToken;
+
+    /// <summary>
+    /// Gets whether any non-live mode is active (fixture, offline, or a backend that
+    /// reports simulated/seeded/sample data).
+    /// </summary>
+    public bool IsNonLiveMode => _isFixtureMode || _isOfflineMode || _serverDataProvenanceToken is not null;
 
     /// <summary>
     /// Gets the normalized non-live mode kind for UI tone selection.
@@ -84,6 +93,8 @@ public sealed class FixtureModeDetector
     {
         (true, _) => "Demo data mode - sample workflow data; live services are not connected.",
         (_, true) => "Offline - local backend is unreachable; showing cached or fallback data.",
+        _ when _serverDataProvenanceToken is not null =>
+            $"{_serverDataProvenanceToken.ToUpperInvariant()} data - the connected workspace is serving simulated/seeded records, not live provider-backed data.",
         _ => string.Empty
     };
 
@@ -100,6 +111,30 @@ public sealed class FixtureModeDetector
     {
         _isFixtureMode = enabled;
         ModeChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Records the data provenance the connected backend reports for the records it
+    /// serves. Pass a non-real provenance token (<c>simulated</c>, <c>seeded</c>,
+    /// <c>sample</c>) to surface the persistent shell banner, or <c>null</c> when the
+    /// backend serves real data. W9-TRUTH-001: a workstation attached to a seeded demo
+    /// workspace must keep labeling it.
+    /// </summary>
+    public void ReportServerDataProvenance(string? nonRealProvenanceToken)
+    {
+        var normalized = string.IsNullOrWhiteSpace(nonRealProvenanceToken)
+            ? null
+            : nonRealProvenanceToken.Trim().ToLowerInvariant();
+        if (string.Equals(normalized, "real", StringComparison.Ordinal))
+        {
+            normalized = null;
+        }
+
+        if (!string.Equals(_serverDataProvenanceToken, normalized, StringComparison.Ordinal))
+        {
+            _serverDataProvenanceToken = normalized;
+            ModeChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     /// <summary>

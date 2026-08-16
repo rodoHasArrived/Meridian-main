@@ -1,5 +1,6 @@
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -599,9 +600,6 @@ public sealed class CapitalAccountWorkbenchService : ICapitalAccountWorkbenchSer
 
     private static bool Matches(string? value, string? filter)
         => filter is null || string.Equals(value ?? string.Empty, filter, StringComparison.OrdinalIgnoreCase);
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static IReadOnlyList<string> Normalize(IEnumerable<string> values)
         => values

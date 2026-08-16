@@ -23,8 +23,16 @@ services:
     # Keep the container running so VS Code can attach
     command: sleep infinity
     environment:
+      # Unified money-path persistence. Without this the ledger, fund accounts, fund structure,
+      # asset operations, banking, money market, and scoped access domains fall back to in-memory
+      # stores, so the dev shell boots at PERSISTENCE: PARTIAL and loses journal entries,
+      # approvals, and reconciliations on every restart. MeridianDatabaseEnvironment normalizes the
+      # postgres:// form and propagates it only into per-domain variables that are unset, so the
+      # two explicit strings below still win for their domains.
+      MERIDIAN_DATABASE_URL: "postgres://dev:devpass@db:5432/meridian"
       # Database connection strings consumed by integration tests and app
       MERIDIAN_SECURITY_MASTER_CONNECTION_STRING: "Host=db;Port=5432;Database=meridian;Username=dev;Password=devpass;Include Error Detail=true"
+      # Direct Lending inherits from Security Master rather than the unified variable, so it stays explicit.
       MERIDIAN_DIRECT_LENDING_CONNECTION_STRING: "Host=db;Port=5432;Database=meridian;Username=dev;Password=devpass;Include Error Detail=true"
       # .NET telemetry / first-run noise suppression
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"

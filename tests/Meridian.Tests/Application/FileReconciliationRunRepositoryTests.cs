@@ -99,6 +99,108 @@ public sealed class FileReconciliationRunRepositoryTests : IDisposable
         (await reader.GetByIdAsync("recon-x")).Should().NotBeNull();
     }
 
+    [Fact]
+    public async Task SaveWithFirstObservationContinuityAsync_ConcurrentOutOfOrderWritersPreserveEarliestObservation()
+    {
+        var earlierAt = new DateTimeOffset(2026, 8, 4, 8, 0, 0, TimeSpan.Zero);
+        var laterAt = earlierAt.AddHours(3);
+        var earlierWriter = CreateRepository();
+        var laterWriter = CreateRepository();
+
+        await Task.WhenAll(
+            laterWriter.SaveWithFirstObservationContinuityAsync(
+                BuildContinuityDetail("reconciliation-later", "run-concurrent", laterAt)),
+            earlierWriter.SaveWithFirstObservationContinuityAsync(
+                BuildContinuityDetail("reconciliation-earlier", "run-concurrent", earlierAt)));
+
+        var latest = await CreateRepository().GetLatestForRunAsync("run-concurrent");
+
+        latest.Should().NotBeNull();
+        latest!.Summary.ReconciliationRunId.Should().Be("reconciliation-later");
+        latest.Breaks.Should().ContainSingle();
+        latest.Breaks[0].FirstObservedAt.Should().Be(earlierAt);
+        latest.Breaks[0].LogicalBreakIdentity.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task SaveWithFirstObservationContinuityAsync_EqualTimestampUsesCommitOrderNotRandomRunId()
+    {
+        var observedAt = new DateTimeOffset(2026, 8, 4, 8, 0, 0, TimeSpan.Zero);
+        var repository = CreateRepository();
+        await repository.SaveWithFirstObservationContinuityAsync(
+            BuildContinuityDetail("reconciliation-zzzz-break", "run-equal-time", observedAt));
+        await repository.SaveWithFirstObservationContinuityAsync(
+            BuildMatchedContinuityDetail("reconciliation-aaaa-match", "run-equal-time", observedAt));
+
+        var latest = await CreateRepository().GetLatestForRunAsync("run-equal-time");
+
+        latest.Should().NotBeNull();
+        latest!.Summary.ReconciliationRunId.Should().Be("reconciliation-aaaa-match");
+        latest.Matches.Should().ContainSingle();
+
+        var reopenedAt = observedAt.AddMinutes(1);
+        var reopened = await repository.SaveWithFirstObservationContinuityAsync(
+            BuildContinuityDetail("reconciliation-reopened", "run-equal-time", reopenedAt));
+        reopened.Breaks[0].FirstObservedAt.Should().Be(reopenedAt);
+    }
+
+    [Fact]
+    public async Task ExecuteWithLatestForRunLeaseAsync_HoldsCrossInstanceMutationLeaseThroughCallback()
+    {
+        var createdAt = new DateTimeOffset(2026, 8, 4, 8, 0, 0, TimeSpan.Zero);
+        var leaseOwner = CreateRepository();
+        var competingWriter = CreateRepository();
+        await leaseOwner.SaveAsync(BuildDetail("reconciliation-leased", "run-leased", createdAt));
+        var callbackStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseCallback = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var leasedRead = leaseOwner.ExecuteWithLatestForRunLeaseAsync(
+            "run-leased",
+            async (latest, ct) =>
+            {
+                callbackStarted.TrySetResult(true);
+                await releaseCallback.Task.WaitAsync(ct);
+                return latest!.Summary.ReconciliationRunId;
+            });
+        await callbackStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        var competingSave = competingWriter.SaveAsync(
+            BuildDetail("reconciliation-competing", "run-leased", createdAt.AddMinutes(1)));
+        try
+        {
+            competingSave.IsCompleted.Should().BeFalse();
+        }
+        finally
+        {
+            releaseCallback.TrySetResult(true);
+        }
+
+        (await leasedRead).Should().Be("reconciliation-leased");
+        await competingSave;
+        (await CreateRepository().GetLatestForRunAsync("run-leased"))!
+            .Summary.ReconciliationRunId.Should().Be("reconciliation-competing");
+    }
+
+    [Fact]
+    public async Task ExecuteWithLatestForRunLeaseAsync_ReentryFailsFastInsteadOfDeadlocking()
+    {
+        var createdAt = new DateTimeOffset(2026, 8, 4, 8, 0, 0, TimeSpan.Zero);
+        var repository = CreateRepository();
+        var reentrantReader = CreateRepository();
+        await repository.SaveAsync(BuildDetail("reconciliation-reentrant", "run-reentrant", createdAt));
+
+        var act = () => repository.ExecuteWithLatestForRunLeaseAsync(
+            "run-reentrant",
+            async (_, ct) =>
+            {
+                _ = await reentrantReader.GetLatestForRunAsync("run-reentrant", ct);
+                return true;
+            });
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*cannot re-enter*");
+    }
+
     private FileReconciliationRunRepository CreateRepository()
         => new(_dataRoot, NullLogger<FileReconciliationRunRepository>.Instance);
 
@@ -121,6 +223,76 @@ public sealed class FileReconciliationRunRepositoryTests : IDisposable
                 AmountTolerance: 0.01m,
                 MaxAsOfDriftMinutes: 10),
             Matches: [],
+            Breaks: []);
+
+    private static ReconciliationRunDetail BuildContinuityDetail(
+        string reconciliationRunId,
+        string runId,
+        DateTimeOffset createdAt)
+        => new(
+            new ReconciliationRunSummary(
+                ReconciliationRunId: reconciliationRunId,
+                RunId: runId,
+                CreatedAt: createdAt,
+                PortfolioAsOf: createdAt,
+                LedgerAsOf: createdAt,
+                MatchCount: 0,
+                BreakCount: 1,
+                OpenBreakCount: 1,
+                HasTimingDrift: false,
+                AmountTolerance: 0.01m,
+                MaxAsOfDriftMinutes: 10),
+            Matches: [],
+            Breaks:
+            [
+                new ReconciliationBreakDto(
+                    "cash-balance",
+                    "Cash balance",
+                    ReconciliationBreakCategory.AmountMismatch,
+                    ReconciliationBreakStatus.Open,
+                    "ledger",
+                    1m,
+                    2m,
+                    1m,
+                    ReconciliationBreakSeverity.High,
+                    "Cash differs.",
+                    null,
+                    null)
+                {
+                    FirstObservedAt = createdAt
+                }
+            ]);
+
+    private static ReconciliationRunDetail BuildMatchedContinuityDetail(
+        string reconciliationRunId,
+        string runId,
+        DateTimeOffset createdAt)
+        => new(
+            new ReconciliationRunSummary(
+                ReconciliationRunId: reconciliationRunId,
+                RunId: runId,
+                CreatedAt: createdAt,
+                PortfolioAsOf: createdAt,
+                LedgerAsOf: createdAt,
+                MatchCount: 1,
+                BreakCount: 0,
+                OpenBreakCount: 0,
+                HasTimingDrift: false,
+                AmountTolerance: 0.01m,
+                MaxAsOfDriftMinutes: 10),
+            Matches:
+            [
+                new ReconciliationMatchDto(
+                    "cash-balance",
+                    "Cash balance",
+                    "portfolio",
+                    "ledger",
+                    1m,
+                    1m,
+                    0m,
+                    null,
+                    null)
+            ],
             Breaks: []);
 
     public void Dispose()

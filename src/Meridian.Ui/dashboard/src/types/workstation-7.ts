@@ -1263,7 +1263,7 @@ export interface SystemOverviewResponse {
   activeBackfills: number;
   symbolsMonitored: number;
   storageHealth: "Healthy" | "Warning" | "Critical";
-  lastHeartbeatUtc: string;
+  lastHeartbeatUtc: string | null;
   metrics: MetricSnapshot[];
   recentEvents: SystemEventRecord[];
   degradedMode?: DegradedModeStatus | null;

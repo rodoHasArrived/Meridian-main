@@ -15,6 +15,7 @@ using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Lifecycle;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Collectors;
 using Meridian.Execution;
@@ -137,10 +138,15 @@ public sealed class UiServer : IAsyncDisposable
             }
 
             var contentRootPath = Directory.GetCurrentDirectory();
+            // PRD-018: serve the canonical workstation bundle independent of launch directory.
+            // A null resolution keeps the legacy {contentRoot}/wwwroot default so the readiness
+            // check (not the web-root wiring) owns the operator-facing failure.
+            var workstationWebRootPath = WorkstationAssetTree.ResolveWebRoot(contentRootPath);
             var serviceRegistrationStopwatch = Stopwatch.StartNew();
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions
             {
-                ContentRootPath = contentRootPath
+                ContentRootPath = contentRootPath,
+                WebRootPath = workstationWebRootPath
             });
             if (File.Exists(configPath))
             {
@@ -320,6 +326,10 @@ public sealed class UiServer : IAsyncDisposable
                 builder.Configuration.GetSection(Meridian.Execution.Adapters.PaperTradingGatewayOptions.SectionKey)
                     .Get<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()
                 ?? new Meridian.Execution.Adapters.PaperTradingGatewayOptions());
+            builder.Services.AddSingleton(
+                builder.Configuration.GetSection(Meridian.Execution.PaperMatching.PaperTradingCostOptions.SectionKey)
+                    .Get<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()
+                ?? new Meridian.Execution.PaperMatching.PaperTradingCostOptions());
             var configuredOrderManagement = builder.Configuration
                 .GetSection(OrderManagementSystemOptions.SectionKey)
                 .Get<OrderManagementSystemOptions>() ?? new OrderManagementSystemOptions();
@@ -341,7 +351,12 @@ public sealed class UiServer : IAsyncDisposable
                         sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>(),
                         securityMaster: null,
                         options: sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
-                        liveFeed: sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>()));
+                        liveFeed: sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>(),
+                        costOptions: sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()));
+                // Resting limit/stop orders re-evaluate when the market event tap records
+                // fresh data for their symbol (W9-PAPER-003 matching loop).
+                builder.Services.AddSingleton<Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger>(sp =>
+                    (Meridian.Execution.Adapters.PaperTradingGateway)sp.GetRequiredService<IOrderGateway>());
             }
             builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
             builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
@@ -381,7 +396,10 @@ public sealed class UiServer : IAsyncDisposable
                         sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>(),
                         sp.GetService<ISecurityMasterQueryService>(),
                         sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
-                        sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>()));
+                        sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>(),
+                        sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()));
+                builder.Services.AddSingleton<Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger>(sp =>
+                    (Meridian.Execution.PaperTradingGateway)sp.GetRequiredService<IExecutionGateway>());
             }
 
             // Registers BrokerageConfiguration plus the live-mode IExecutionGateway/IOrderGateway
@@ -393,16 +411,16 @@ public sealed class UiServer : IAsyncDisposable
             // strategies against the live market data feed through the OMS.
             builder.Services.AddLiveTradingEngine(builder.Configuration);
 
-            // Quant Lab — opt-in via configuration "QuantLab:Enabled". Off by default because the
-            // engine compiles and executes arbitrary C# in-process. Production/customer distributions
-            // fail closed until execution is moved behind a separately isolated worker boundary.
+            // Quant Lab — opt-in via "QuantLab:Enabled". Each run uses the dedicated contained worker,
+            // but that worker retains the launching identity's file/network permissions. Production and
+            // customer distributions therefore remain fail-closed pending OS-profile certification.
             var quantLabEnabled = builder.Configuration.GetValue<bool>("QuantLab:Enabled");
-            ProductionServiceRegistrationPolicy.EnsureInProcessQuantLabIsAllowed(
+            ProductionServiceRegistrationPolicy.EnsureIsolatedQuantLabIsAllowed(
                 builder.Services,
                 quantLabEnabled);
             if (quantLabEnabled)
             {
-                builder.Services.AddMeridianQuantScript();
+                builder.Services.AddMeridianQuantScript(builder.Configuration);
             }
 
             // Register OpenAPI/Swagger services
@@ -482,6 +500,25 @@ public sealed class UiServer : IAsyncDisposable
 
             ValidateAuthenticationTransportSecurity(builder.Environment, _apiHostOptions);
             configureServices?.Invoke(builder.Services);
+
+            // W9-TRUTH-001: pin the provenance this composed graph must surface. A demo host is
+            // seeded by definition; otherwise the ADR-019 policy resolves the label — a
+            // supported-local composition that binds any in-memory durable store forces the
+            // simulated label, and a fully durable graph stays real (unlabeled). The pinned
+            // declaration feeds /api/demo/mode so both workstation shells keep rendering the
+            // persistent label, and tells the startup guard this composition deliberately runs
+            // labeled instead of asserting durable stores.
+            if (DemoWorkspaceLayout.IsDemoModeRequested(Array.Empty<string>()))
+            {
+                builder.Services.ForceDataProvenanceLabel(DataProvenance.Seeded);
+            }
+
+            var composedProvenance = ProductionServiceRegistrationPolicy.ResolveComposedDataProvenance(builder.Services);
+            if (composedProvenance.IsNonReal())
+            {
+                builder.Services.ForceDataProvenanceLabel(composedProvenance);
+            }
+
             serviceRegistrationStopwatch.Stop();
 
             var appBuildStopwatch = Stopwatch.StartNew();
@@ -903,10 +940,16 @@ public sealed class UiServer : IAsyncDisposable
                         "Workstation assets are not required by this host posture."));
                 }
 
-                var indexPath = Path.Combine(contentRootPath, "wwwroot", "workstation", "index.html");
-                return ValueTask.FromResult(File.Exists(indexPath)
-                    ? new RuntimeReadinessCheckResult(LifecycleCheckStatus.Passing, "Workstation bundle is available.")
-                    : new RuntimeReadinessCheckResult(LifecycleCheckStatus.Failing, "Workstation bundle is unavailable."));
+                // Re-probe on every readiness evaluation so a bundle built after startup is
+                // picked up by the next check instead of requiring a host restart.
+                var resolvedWebRoot = WorkstationAssetTree.ResolveWebRoot(contentRootPath);
+                return ValueTask.FromResult(resolvedWebRoot is not null
+                    ? new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Passing,
+                        $"Workstation bundle is available at {Path.Combine(resolvedWebRoot, "workstation")}.")
+                    : new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Failing,
+                        WorkstationAssetTree.DescribeUnavailable()));
             }));
 
         services.AddSingleton<IRuntimeReadinessCheck>(new DelegateRuntimeReadinessCheck(

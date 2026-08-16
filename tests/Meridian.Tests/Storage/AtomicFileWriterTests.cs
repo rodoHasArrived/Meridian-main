@@ -243,4 +243,118 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
         File.Exists(path).Should().BeTrue();
         (await File.ReadAllBytesAsync(path)).Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task WriteAsync_Bytes_AppliesRequestedUnixCreateMode()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "secret.bin");
+
+        var content = new byte[] { 1, 2, 3 };
+
+        await AtomicFileWriter.WriteAsync(
+            path, content, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        (await File.ReadAllBytesAsync(path)).Should().Equal(content);
+    }
+
+    // Without an explicit mode the destination's permissions win, so replacing an over-permissive
+    // secret would silently restore the mode that made it over-permissive. An explicit mode has to
+    // override the destination rather than inherit from it.
+    [Fact]
+    public async Task WriteAsync_Bytes_ExplicitModeOverridesAnExistingWiderMode()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "widened.bin");
+        await File.WriteAllBytesAsync(path, new byte[] { 9 });
+        File.SetUnixFileMode(
+            path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+
+        await AtomicFileWriter.WriteAsync(
+            path, new byte[] { 1, 2, 3 }, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+
+    [Fact]
+    public async Task WriteAsync_Bytes_WithoutModeStillPreservesExistingPermissions()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "inherited.bin");
+        await File.WriteAllBytesAsync(path, new byte[] { 9 });
+        File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        await AtomicFileWriter.WriteAsync(path, new byte[] { 1, 2, 3 });
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+
+    [Fact]
+    public async Task WriteAsync_String_AppliesRequestedUnixCreateMode()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "secret.json");
+
+        await AtomicFileWriter.WriteAsync(
+            path, "{\"token\":\"secret\"}", UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        (await File.ReadAllTextAsync(path)).Should().Be("{\"token\":\"secret\"}");
+    }
+
+    [Fact]
+    public async Task WriteAsync_String_ExplicitModeOverridesAnExistingWiderMode()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "widened.json");
+        await File.WriteAllTextAsync(path, "old");
+        File.SetUnixFileMode(
+            path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+
+        await AtomicFileWriter.WriteAsync(path, "new", UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+
+    // The text overload writes through a byte path when a mode is requested; a BOM there would
+    // corrupt readers that token-split the raw content, so encoding must not change with the mode.
+    [Fact]
+    public async Task WriteAsync_String_WithModeStillWritesUtf8WithoutABom()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "nobom.txt");
+
+        await AtomicFileWriter.WriteAsync(
+            path, "Hello 世界", UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        // Byte-exact against a BOM-free encode: this pins both "no BOM" and the content in one
+        // assertion, where a prefix check would only rule out the three bytes it names.
+        var bytes = await File.ReadAllBytesAsync(path);
+        bytes.Should().Equal(Encoding.UTF8.GetBytes("Hello 世界"));
+    }
 }

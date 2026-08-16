@@ -184,6 +184,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_VERSION: "8.25.1"
 
   browser-workstation:
     name: verify-fast (browser workstation)
@@ -216,7 +217,7 @@ jobs:
       - name: Lint dashboard source
         run: npm --prefix src/Meridian.Ui/dashboard run lint
 
-      - name: Enforce strictNullChecks on dashboard source
+      - name: Enforce TypeScript strict on dashboard source
         run: npm --prefix src/Meridian.Ui/dashboard run typecheck:strict
 
       - name: Run dashboard tests
@@ -225,12 +226,22 @@ jobs:
       - name: Build dashboard bundle
         run: npm --prefix src/Meridian.Ui/dashboard run build
 
+      - name: Workstation bundle freshness gate (PRD-018)
+        run: |
+          if [ -n "$(git status --porcelain -- src/Meridian.Ui/wwwroot/workstation)" ]; then
+            echo "The tracked workstation bundle lags src/Meridian.Ui/dashboard." >&2
+            echo "Run: npm --prefix src/Meridian.Ui/dashboard run build" >&2
+            echo "then commit the regenerated src/Meridian.Ui/wwwroot/workstation tree." >&2
+            git status --porcelain -- src/Meridian.Ui/wwwroot/workstation >&2
+            exit 1
+          fi
+
       - name: Upload browser workstation artifacts
         if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
           name: ci-browser-workstation-${{ github.run_number }}-${{ github.run_attempt }}
-          path: src/Meridian.Ui/dashboard/dist
+          path: src/Meridian.Ui/wwwroot/workstation
           if-no-files-found: ignore
           retention-days: 14
 

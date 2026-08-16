@@ -67,8 +67,11 @@ public sealed record JournalEntryMetadata(
             InvestorId = string.IsNullOrWhiteSpace(InvestorId) ? null : InvestorId.Trim(),
             PaymentIntentId = string.IsNullOrWhiteSpace(PaymentIntentId) ? null : PaymentIntentId.Trim(),
             SettlementReference = string.IsNullOrWhiteSpace(SettlementReference) ? null : SettlementReference.Trim(),
-            Tags = tags,
-            EvidenceReferences = EvidenceReferences.Select(static item => item.Normalize()).ToArray(),
+            Tags = tags is null
+                ? null
+                : ReadOnlyCollectionHelpers.FreezeDictionary(tags, StringComparer.OrdinalIgnoreCase),
+            EvidenceReferences = ReadOnlyCollectionHelpers.FreezeList(
+                EvidenceReferences.Select(static item => item.Normalize())),
         };
     }
 }

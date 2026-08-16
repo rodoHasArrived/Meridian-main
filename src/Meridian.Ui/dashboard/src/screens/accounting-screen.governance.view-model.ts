@@ -74,15 +74,9 @@ import type {
   AccountingProductionReadiness,
   AccountingProductionReadinessRequest,
   AccountingProductionCertificationProfile,
-  AccountingDimensionalCertificationArtifact,
-  AccountingDimensionalCertificationLane,
-  AccountingTenantAdminCertificationArtifact,
-  AccountingTenantAdminCertificationLane,
   AccountingTenantAdministrationProfile,
   AccountingApprovalQueueConfiguration,
   AccountingDimensionMappingConfiguration,
-  AccountingWorkflowCertificationArtifact,
-  AccountingWorkflowCertificationLane,
   AccountingJournalTemplatePreview,
   AccountingRuleDryRunMatch,
   AccountingRuleTestCase,
@@ -579,31 +573,7 @@ export function useAccountingConfigurationViewModel(
       return;
     }
 
-    const evidenceReferences = withProductionCertificationControlEvidence(
-      retainedEvidenceReferences,
-      productionCertificationProfile,
-      productionCertificationDraft
-    );
-    const workflowCertificationArtifact = buildAccountingWorkflowCertificationArtifact(
-      productionCertificationProfile,
-      productionCertificationDraft,
-      evidenceReferences,
-      correlationId
-    );
-    const dimensionalCertificationArtifact = buildAccountingDimensionalCertificationArtifact(
-      productionCertificationProfile,
-      productionCertificationDraft,
-      evidenceReferences,
-      correlationId
-    );
-    const tenantAdminCertificationArtifact = buildAccountingTenantAdminCertificationArtifact(
-      productionCertificationProfile,
-      tenantAdministrationProfile,
-      tenantAdministrationDraft,
-      evidenceReferences,
-      workspace?.ledgerBookId ?? null,
-      correlationId
-    );
+    const evidenceReferences = retainedEvidenceReferences;
     const nextProfile: AccountingProductionCertificationProfile = {
       ...productionCertificationProfile,
       postingRulesLedgerBookNativeCertified: productionCertificationDraft.postingRulesLedgerBookNativeCertified,
@@ -625,18 +595,12 @@ export function useAccountingConfigurationViewModel(
       updatedBy: "browser-accounting-operator",
       evidenceReferences,
       correlationId,
-      workflowCertificationArtifacts: mergeAccountingCertificationArtifacts(
-        productionCertificationProfile.workflowCertificationArtifacts,
-        workflowCertificationArtifact
-      ),
-      dimensionalCertificationArtifacts: mergeAccountingCertificationArtifacts(
-        productionCertificationProfile.dimensionalCertificationArtifacts,
-        dimensionalCertificationArtifact
-      ),
-      tenantAdminCertificationArtifacts: mergeAccountingCertificationArtifacts(
-        productionCertificationProfile.tenantAdminCertificationArtifacts,
-        tenantAdminCertificationArtifact
-      )
+      // Certified artifacts and retained-evidence bindings are server-owned command output. Clear
+      // any cached values so this request cannot be mistaken for certification authority.
+      workflowCertificationArtifacts: [],
+      dimensionalCertificationArtifacts: [],
+      tenantAdminCertificationArtifacts: [],
+      retainedEvidence: []
     };
 
     setProductionCertificationProfileSaveBusy(true);
@@ -659,7 +623,7 @@ export function useAccountingConfigurationViewModel(
     } finally {
       setProductionCertificationProfileSaveBusy(false);
     }
-  }, [productionCertificationDraft, productionCertificationProfile, productionCertificationProfileSaveBusy, refresh, services, tenantAdministrationDraft, tenantAdministrationProfile, workspace?.ledgerBookId]);
+  }, [productionCertificationDraft, productionCertificationProfile, productionCertificationProfileSaveBusy, refresh, services]);
 
   const updateTenantAdministrationControl = useCallback((controlId: string, checked: boolean) => {
     setTenantAdministrationDraft((current) => {
@@ -3512,276 +3476,6 @@ function buildAccountingProductionCertificationProfileFromReadiness(
   };
 }
 
-function withProductionCertificationControlEvidence(
-  evidenceReferences: string[],
-  profile: AccountingProductionCertificationProfile | null,
-  draft: AccountingProductionCertificationProfileDraft | null
-): string[] {
-  const ledgerBookId = profile?.ledgerBookId?.trim();
-  if (!profile || !draft || !ledgerBookId) {
-    return evidenceReferences;
-  }
-
-  if (evidenceReferences.some((reference) => reference.toLowerCase().includes("production-certification/full"))) {
-    return evidenceReferences;
-  }
-
-  const tenantId = profile.tenantId?.trim() || "tenant";
-  const companyId = profile.companyId?.trim() || "company";
-  const fundProfileId = profile.fundProfileId?.trim() || "fund";
-  const scopePrefix = `evidence://tenant/${tenantId}/company/${companyId}/fund/${fundProfileId}/ledger-book/${ledgerBookId}/production-certification`;
-  const generated: string[] = [];
-  const addWorkflowEvidence = (certified: boolean, marker: string) => {
-    if (!certified) {
-      return;
-    }
-
-    generated.push(`${scopePrefix}/${marker}`);
-  };
-  const addDimensionEvidence = (certified: boolean, marker: string) => {
-    if (!certified) {
-      return;
-    }
-
-    generated.push(`${scopePrefix}/dimensions/${marker}/dimension-scope/canonical-production`);
-  };
-
-  addWorkflowEvidence(draft.postingRulesLedgerBookNativeCertified, "posting-candidate");
-  addWorkflowEvidence(draft.journalLifecycleLedgerBookNativeCertified, "journal-lifecycle");
-  addWorkflowEvidence(draft.closeReportingLedgerBookNativeCertified, "close-reporting");
-  addWorkflowEvidence(draft.closePlanConfigurationLedgerBookNativeCertified, "close-plan-configuration");
-  addWorkflowEvidence(draft.externalGlLedgerBookNativeCertified, "external-gl");
-  addWorkflowEvidence(draft.reconciliationLedgerBookNativeCertified, "reconciliation");
-  addWorkflowEvidence(draft.directLendingLedgerBookNativeCertified, "direct-lending");
-  addWorkflowEvidence(draft.strategyLedgerReadLedgerBookNativeCertified, "strategy-ledger");
-  addDimensionEvidence(draft.periodReportDimensionQueriesCertified, "period-report");
-  addDimensionEvidence(draft.crossPeriodReportDimensionQueriesCertified, "cross-period");
-  addDimensionEvidence(draft.journalQueryDimensionFiltersCertified, "journal-query");
-  addDimensionEvidence(draft.externalExportDimensionMappingCertified, "external-export");
-  addDimensionEvidence(draft.ledgerLineDimensionsPersistedCertified, "ledger-line");
-  addDimensionEvidence(draft.trialBalanceDimensionFiltersCertified, "trial-balance-filter");
-  addDimensionEvidence(draft.reportPackageDimensionProvenanceCertified, "report-package-provenance");
-
-  return [...evidenceReferences, ...generated]
-    .filter((item, index, items) => item.length > 0 && items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index);
-}
-
-function buildAccountingWorkflowCertificationArtifact(
-  profile: AccountingProductionCertificationProfile,
-  draft: AccountingProductionCertificationProfileDraft,
-  evidenceReferences: string[],
-  correlationId: string
-): AccountingWorkflowCertificationArtifact | null {
-  const ledgerBookId = profile.ledgerBookId?.trim();
-  if (!ledgerBookId) {
-    return null;
-  }
-
-  const lanes: AccountingWorkflowCertificationLane[] = [
-    buildWorkflowCertificationLane(draft.postingRulesLedgerBookNativeCertified, "PostingRules", evidenceReferences, "posting-candidate"),
-    buildWorkflowCertificationLane(draft.journalLifecycleLedgerBookNativeCertified, "JournalLifecycle", evidenceReferences, "journal-lifecycle"),
-    buildWorkflowCertificationLane(draft.closeReportingLedgerBookNativeCertified, "CloseReporting", evidenceReferences, "close-reporting"),
-    buildWorkflowCertificationLane(draft.closePlanConfigurationLedgerBookNativeCertified, "ClosePlanConfiguration", evidenceReferences, "close-plan-configuration"),
-    buildWorkflowCertificationLane(draft.externalGlLedgerBookNativeCertified, "ExternalGl", evidenceReferences, "external-gl"),
-    buildWorkflowCertificationLane(draft.reconciliationLedgerBookNativeCertified, "Reconciliation", evidenceReferences, "reconciliation"),
-    buildWorkflowCertificationLane(draft.directLendingLedgerBookNativeCertified, "DirectLendingProjection", evidenceReferences, "direct-lending"),
-    buildWorkflowCertificationLane(draft.strategyLedgerReadLedgerBookNativeCertified, "StrategyLedgerReads", evidenceReferences, "strategy-ledger")
-  ].filter((lane): lane is AccountingWorkflowCertificationLane => lane !== null);
-
-  if (lanes.length === 0) {
-    return null;
-  }
-
-  return {
-    certificationId: `${correlationId}-workflow`,
-    status: "Certified",
-    tenantId: profile.tenantId ?? null,
-    companyId: profile.companyId ?? null,
-    fundProfileId: profile.fundProfileId,
-    ledgerBookId,
-    certifiedBy: "browser-accounting-operator",
-    certifiedAtUtc: new Date().toISOString(),
-    sourceService: "browser-accounting-configure",
-    lanes,
-    evidenceReferences,
-    issues: [],
-    correlationId
-  };
-}
-
-function buildAccountingDimensionalCertificationArtifact(
-  profile: AccountingProductionCertificationProfile,
-  draft: AccountingProductionCertificationProfileDraft,
-  evidenceReferences: string[],
-  correlationId: string
-): AccountingDimensionalCertificationArtifact | null {
-  const ledgerBookId = profile.ledgerBookId?.trim();
-  if (!ledgerBookId) {
-    return null;
-  }
-
-  const lanes: AccountingDimensionalCertificationLane[] = [
-    buildDimensionalCertificationLane(draft.ledgerLineDimensionsPersistedCertified, "LedgerLinePersistence", evidenceReferences, "ledger-line"),
-    buildDimensionalCertificationLane(draft.trialBalanceDimensionFiltersCertified, "TrialBalanceFilters", evidenceReferences, "trial-balance-filter"),
-    buildDimensionalCertificationLane(draft.periodReportDimensionQueriesCertified, "PeriodReports", evidenceReferences, "period-report"),
-    buildDimensionalCertificationLane(draft.crossPeriodReportDimensionQueriesCertified, "CrossPeriodReports", evidenceReferences, "cross-period"),
-    buildDimensionalCertificationLane(draft.journalQueryDimensionFiltersCertified, "JournalFilters", evidenceReferences, "journal-query"),
-    buildDimensionalCertificationLane(draft.reportPackageDimensionProvenanceCertified, "ReportPackageProvenance", evidenceReferences, "report-package-provenance"),
-    buildDimensionalCertificationLane(draft.externalExportDimensionMappingCertified, "ExternalExportMappings", evidenceReferences, "external-export")
-  ].filter((lane): lane is AccountingDimensionalCertificationLane => lane !== null);
-
-  if (lanes.length === 0) {
-    return null;
-  }
-
-  return {
-    certificationId: `${correlationId}-dimensions`,
-    status: "Certified",
-    tenantId: profile.tenantId ?? null,
-    companyId: profile.companyId ?? null,
-    fundProfileId: profile.fundProfileId,
-    ledgerBookId,
-    dimensionScopeEvidenceKey: "canonical-production",
-    certifiedBy: "browser-accounting-operator",
-    certifiedAtUtc: new Date().toISOString(),
-    sourceService: "browser-accounting-configure",
-    lanes,
-    evidenceReferences,
-    issues: [],
-    correlationId
-  };
-}
-
-function buildWorkflowCertificationLane(
-  certified: boolean,
-  kind: AccountingWorkflowCertificationLane["kind"],
-  evidenceReferences: string[],
-  marker: string
-): AccountingWorkflowCertificationLane | null {
-  if (!certified) {
-    return null;
-  }
-
-  return {
-    kind,
-    status: "Passed",
-    evidenceReferences: filterCertificationLaneEvidence(evidenceReferences, marker),
-    issues: []
-  };
-}
-
-function buildDimensionalCertificationLane(
-  certified: boolean,
-  kind: AccountingDimensionalCertificationLane["kind"],
-  evidenceReferences: string[],
-  marker: string
-): AccountingDimensionalCertificationLane | null {
-  if (!certified) {
-    return null;
-  }
-
-  return {
-    kind,
-    status: "Passed",
-    evidenceReferences: filterCertificationLaneEvidence(evidenceReferences, marker),
-    issues: []
-  };
-}
-
-function buildAccountingTenantAdminCertificationArtifact(
-  profile: AccountingProductionCertificationProfile,
-  tenantProfile: AccountingTenantAdministrationProfile | null,
-  draft: AccountingTenantAdministrationProfileDraft | null,
-  evidenceReferences: string[],
-  ledgerBookId: string | null | undefined,
-  correlationId: string
-): AccountingTenantAdminCertificationArtifact | null {
-  if (!tenantProfile || !draft) {
-    return null;
-  }
-
-  const lanes: AccountingTenantAdminCertificationLane[] = [
-    buildTenantAdminCertificationLane(draft.tenantScopeConfigured, "TenantScope", evidenceReferences, "tenant-scope"),
-    buildTenantAdminCertificationLane(draft.adminRoleProfileConfigured, "AdminRoleProfile", evidenceReferences, "admin-role"),
-    buildTenantAdminCertificationLane(draft.scopedAccessPoliciesConfigured, "ScopedAccessPolicies", evidenceReferences, "scoped-access"),
-    buildTenantAdminCertificationLane(draft.reportingGroupsConfigured, "ReportingGroups", evidenceReferences, "reporting-group"),
-    buildTenantAdminCertificationLane(draft.accountingAdminSurfaceConfigured, "AccountingAdminSurface", evidenceReferences, "accounting-admin-surface"),
-    buildTenantAdminCertificationLane(draft.browserAccountingAdminSurfaceConfigured, "BrowserAccountingAdminSurface", evidenceReferences, "browser-accounting-admin"),
-    buildTenantAdminCertificationLane(draft.wpfAccountingAdminSurfaceConfigured, "WpfAccountingAdminSurface", evidenceReferences, "wpf-admin-studio"),
-    buildTenantAdminCertificationLane(draft.chartAdministrationStudioConfigured, "ChartAdministrationStudio", evidenceReferences, "chart-administration"),
-    buildTenantAdminCertificationLane(draft.ruleTestPromotionStudioConfigured, "RuleTestPromotionStudio", evidenceReferences, "rule-test-promotion"),
-    buildTenantAdminCertificationLane(draft.closeSetupStudioConfigured, "CloseSetupStudio", evidenceReferences, "close-setup"),
-    buildTenantAdminCertificationLane(draft.providerMappingStudioConfigured, "ProviderMappingStudio", evidenceReferences, "provider-mapping"),
-    buildTenantAdminCertificationLane(draft.tenantCompanyReportGroupSetupStudioConfigured, "TenantCompanyReportGroupSetupStudio", evidenceReferences, "tenant-company-report-group"),
-    buildTenantAdminCertificationLane(draft.auditReviewToolingConfigured, "AuditReviewTooling", evidenceReferences, "audit-review"),
-    buildTenantAdminCertificationLane(draft.bulkImportExportSafeguardsConfigured, "BulkImportExportSafeguards", evidenceReferences, "bulk-import-export"),
-    buildTenantAdminCertificationLane(draft.performanceValidationConfigured, "PerformanceValidation", evidenceReferences, "performance-validation"),
-    buildTenantAdminCertificationLane(draft.disasterRecoveryRunbookConfigured, "DisasterRecoveryRunbook", evidenceReferences, "disaster-recovery"),
-    buildTenantAdminCertificationLane(draft.ledgerBookAdministrationStudioConfigured, "LedgerBookAdministrationStudio", evidenceReferences, "ledger-book-administration"),
-    buildTenantAdminCertificationLane(draft.postingRuleAuthoringStudioConfigured, "PostingRuleAuthoringStudio", evidenceReferences, "posting-rule-authoring"),
-    buildTenantAdminCertificationLane(draft.approvalQueueStudioConfigured, "ApprovalQueueStudio", evidenceReferences, "approval-queue"),
-    buildTenantAdminCertificationLane(draft.dimensionMappingStudioConfigured, "DimensionMappingStudio", evidenceReferences, "dimension-mapping"),
-    buildTenantAdminCertificationLane(draft.implementationSandboxConfigured, "ImplementationSandbox", evidenceReferences, "implementation-sandbox")
-  ].filter((lane): lane is AccountingTenantAdminCertificationLane => lane !== null);
-
-  if (lanes.length === 0) {
-    return null;
-  }
-
-  return {
-    certificationId: `${correlationId}-tenant-admin`,
-    status: "Certified",
-    tenantId: tenantProfile.tenantId,
-    companyId: tenantProfile.companyId,
-    fundProfileId: profile.fundProfileId,
-    ledgerBookId: ledgerBookId?.trim() || profile.ledgerBookId || null,
-    certifiedBy: "browser-accounting-operator",
-    certifiedAtUtc: new Date().toISOString(),
-    sourceService: "browser-accounting-configure",
-    lanes,
-    evidenceReferences,
-    issues: [],
-    correlationId
-  };
-}
-
-function buildTenantAdminCertificationLane(
-  certified: boolean,
-  kind: AccountingTenantAdminCertificationLane["kind"],
-  evidenceReferences: string[],
-  marker: string
-): AccountingTenantAdminCertificationLane | null {
-  if (!certified) {
-    return null;
-  }
-
-  return {
-    kind,
-    status: "Passed",
-    evidenceReferences: filterCertificationLaneEvidence(evidenceReferences, marker),
-    issues: []
-  };
-}
-
-function filterCertificationLaneEvidence(evidenceReferences: string[], marker: string): string[] {
-  const normalizedMarker = marker.toLowerCase();
-  const scoped = evidenceReferences.filter((reference) => reference.toLowerCase().includes(normalizedMarker));
-  return scoped.length > 0 ? scoped : evidenceReferences;
-}
-
-function mergeAccountingCertificationArtifacts<T extends { certificationId: string }>(
-  current: T[] | null | undefined,
-  next: T | null
-): T[] {
-  if (!next) {
-    return current ?? [];
-  }
-
-  return [
-    ...(current ?? []).filter((artifact) => artifact.certificationId.toLowerCase() !== next.certificationId.toLowerCase()),
-    next
-  ];
-}
 
 function buildAccountingTenantAdministrationProfileEditorViewModel(
   profile: AccountingTenantAdministrationProfile | null,

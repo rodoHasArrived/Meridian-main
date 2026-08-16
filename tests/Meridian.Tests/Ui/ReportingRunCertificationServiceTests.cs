@@ -1201,15 +1201,21 @@ public sealed class ReportingRunCertificationServiceTests
             XNamespace spreadsheet = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
             workbook.Descendants(spreadsheet + "sheet")
                 .Select(static element => element.Attribute("name")?.Value)
-                .Should().Contain(static name =>
-                    name != null
-                    && name.StartsWith("Statement of Changes in", StringComparison.Ordinal));
-            using var reader = new StreamReader(
-                archive.GetEntry("xl/sharedStrings.xml")!.Open(),
-                Encoding.UTF8);
-            var sharedStrings = await reader.ReadToEndAsync();
-            sharedStrings.Should().Contain("1,000,000.00");
-            sharedStrings.Should().Contain("250,000.00");
+                .Should().Contain(static name => name == "Partners' Capital",
+                    "the bespoke partners' capital layout renders as its own dedicated sheet");
+        }
+
+        // The bespoke sheet writes money as typed numeric cells rather than shared strings, so the
+        // canonical figures are asserted as cell values on the dedicated sheet.
+        using (var workbook = new ClosedXML.Excel.XLWorkbook(new MemoryStream(firstWorkbook)))
+        {
+            var partnersCapital = workbook.Worksheet("Partners' Capital");
+            var numericValues = partnersCapital.CellsUsed()
+                .Where(static cell => cell.DataType == ClosedXML.Excel.XLDataType.Number)
+                .Select(static cell => cell.GetDouble())
+                .ToList();
+            numericValues.Should().Contain(1_000_000d);
+            numericValues.Should().Contain(250_000d);
         }
     }
 
@@ -1469,8 +1475,12 @@ public sealed class ReportingRunCertificationServiceTests
         sharedStrings.Should().Contain("Income &amp; Gains");
         sharedStrings.Should().Contain("Expenses");
         sharedStrings.Should().Contain("Fees");
+        // Bespoke-layout canonical markers that a workbook rebuilt from certified display rows can
+        // never produce. The bespoke sheet legitimately carries an "Other" column, so only the
+        // display-row model's exact "Allocated" header remains a forbidden fingerprint.
+        sharedStrings.Should().Contain("Net asset value (NAV base)");
+        sharedStrings.Should().Contain("Ownership %");
         sharedStrings.Should().NotContain(">Allocated<");
-        sharedStrings.Should().NotContain(">Other<");
     }
 
     private static CertifiedPartnersCapitalProjection SamplePartnersCapital() => new(

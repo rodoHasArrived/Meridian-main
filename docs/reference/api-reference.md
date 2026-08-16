@@ -241,7 +241,7 @@ All endpoints return errors in a consistent format:
 | Historical Data | 2 | Stored historical data query and date-range lookup |
 | Ingestion Jobs | 2 | Resumable ingestion job listing and summary |
 | Packaging | 6 | Portable data package creation, import, validation, listing |
-| Maintenance | 18 | Archive maintenance schedules, executions, status, presets |
+| Maintenance | 19 | Archive maintenance schedules, executions, status, presets |
 | Providers | 8 | Provider status, metrics, catalog, comparison, latency |
 | Options | 7 | Options chains, expirations, strikes, quotes, refresh, provider status |
 | Execution | 21 | Execution blotter, keyed position actions, session continuity, orders, health, audit, controls |
@@ -564,11 +564,12 @@ and denying or withdrawing an entry also retires any approvals linked through it
 | GET | `/api/maintenance/schedules` | List all maintenance schedules |
 | POST | `/api/maintenance/schedules` | Create a maintenance schedule |
 | GET | `/api/maintenance/schedules/{scheduleId}` | Get a specific schedule |
-| PUT | `/api/maintenance/schedules/{scheduleId}` | Update a schedule |
+| PUT | `/api/maintenance/schedules/{scheduleId}` | Update a schedule; returns `409 Conflict` for a stale retained revision |
 | DELETE | `/api/maintenance/schedules/{scheduleId}` | Delete a schedule |
 | POST | `/api/maintenance/schedules/{scheduleId}/enable` | Enable a schedule |
 | POST | `/api/maintenance/schedules/{scheduleId}/disable` | Disable a schedule |
-| POST | `/api/maintenance/schedules/{scheduleId}/trigger` | Trigger a schedule immediately |
+| POST | `/api/maintenance/schedules/{scheduleId}/trigger` | Trigger a schedule immediately; returns `409 Conflict` while that schedule already has queued or running work |
+| POST | `/api/maintenance/schedules/{scheduleId}/run` | Compatibility alias for immediate schedule execution with the same `409 Conflict` behavior |
 | GET | `/api/maintenance/schedules/{scheduleId}/executions` | Execution history for a schedule |
 | GET | `/api/maintenance/schedules/{scheduleId}/summary` | Summary for a specific schedule |
 | GET | `/api/maintenance/schedules/summary` | Summary across all schedules |
@@ -584,12 +585,21 @@ and denying or withdrawing an entry also retires any approvals linked through it
 | GET | `/api/maintenance/presets` | List available maintenance task presets |
 | GET | `/api/maintenance/task-types` | List available task type identifiers |
 
+Maintenance cron validation accepts five-field expressions plus Meridian's ordinal-weekday
+extension `d#n` in the day-of-week field (for example, `0#1` means the first Sunday). When both
+day-of-month and day-of-week are restricted, standard day-field OR semantics apply.
+
 ### Quality Drops (`/api/quality/drops/*`)
 
 | Method | Route | Description |
 |--------|-------|-------------|
 | GET | `/api/quality/drops` | Dropped event statistics |
 | GET | `/api/quality/drops/{symbol}` | Drops for specific symbol |
+
+`GET /api/quality/errors/statistics` retains the existing `totalErrors` and `errorRate` meanings:
+both describe the bounded records currently retained. The additive `retainedTotalErrors` and
+`retainedErrorRate` fields make that scope explicit, while `lifetimeTotalErrors` and
+`lifetimeErrorRate` report detections over the current tracker generation.
 
 ### Environment Designer (`/api/environment-designer/*`)
 

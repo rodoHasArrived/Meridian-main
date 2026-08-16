@@ -31,8 +31,10 @@ public sealed class BackfillSchedule
     public bool Enabled { get; set; } = true;
 
     /// <summary>
-    /// Cron expression for scheduling (standard 5-field cron format).
-    /// Examples: "0 2 * * *" (daily at 2am), "0 3 * * 0" (weekly on Sunday at 3am)
+    /// Cron expression for scheduling (five-field cron plus Meridian's explicit <c>d#n</c>
+    /// ordinal-day extension).
+    /// Examples: "0 2 * * *" (daily at 2am), "0 3 * * 0" (weekly on Sunday at 3am),
+    /// and "0 1 * * 0#1" (first Sunday of the month at 1am).
     /// </summary>
     public string CronExpression { get; set; } = "0 2 * * *";
 
@@ -137,6 +139,16 @@ public sealed class BackfillSchedule
     public List<string> Tags { get; init; } = new();
 
     /// <summary>
+    /// Reason the schedule was last repaired automatically while loading retained state.
+    /// </summary>
+    public string? LastRepairReason { get; set; }
+
+    /// <summary>
+    /// UTC timestamp of the last automatic retained-state repair.
+    /// </summary>
+    public DateTimeOffset? LastRepairedAt { get; set; }
+
+    /// <summary>
     /// Gets the timezone info for cron evaluation.
     /// </summary>
     [JsonIgnore]
@@ -212,6 +224,11 @@ public enum ScheduledBackfillType : byte
 /// </summary>
 public static class BackfillSchedulePresets
 {
+    internal const string MonthlyDeepBackfillDescription =
+        "Monthly deep backfill to ensure data integrity";
+    internal const string LegacyMonthlyDeepBackfillCronExpression = "0 1 1-7 * 0";
+    internal const string MonthlyDeepBackfillCronExpression = "0 1 * * 0#1";
+
     /// <summary>
     /// Daily gap-fill at 2 AM UTC.
     /// </summary>
@@ -260,11 +277,38 @@ public static class BackfillSchedulePresets
     public static BackfillSchedule MonthlyDeepBackfill(string name, IEnumerable<string>? symbols = null) => new()
     {
         Name = name,
-        Description = "Monthly deep backfill to ensure data integrity",
-        CronExpression = "0 1 1-7 * 0",
+        Description = MonthlyDeepBackfillDescription,
+        CronExpression = MonthlyDeepBackfillCronExpression,
         BackfillType = ScheduledBackfillType.FullBackfill,
         LookbackDays = 365,
         Symbols = symbols?.ToList() ?? new List<string>(),
         Priority = BackfillPriority.Deferred
     };
+
+    /// <summary>
+    /// Migrates only the legacy monthly preset fingerprint to the explicit ordinal-day syntax.
+    /// An arbitrary custom schedule that happens to use the legacy expression is not rewritten.
+    /// </summary>
+    internal static bool TryMigrateLegacyMonthlyDeepBackfill(BackfillSchedule schedule)
+    {
+        ArgumentNullException.ThrowIfNull(schedule);
+
+        if (!string.Equals(
+                schedule.CronExpression,
+                LegacyMonthlyDeepBackfillCronExpression,
+                StringComparison.Ordinal)
+            || !string.Equals(
+                schedule.Description,
+                MonthlyDeepBackfillDescription,
+                StringComparison.Ordinal)
+            || schedule.BackfillType != ScheduledBackfillType.FullBackfill
+            || schedule.LookbackDays != 365
+            || schedule.Priority != BackfillPriority.Deferred)
+        {
+            return false;
+        }
+
+        schedule.CronExpression = MonthlyDeepBackfillCronExpression;
+        return true;
+    }
 }

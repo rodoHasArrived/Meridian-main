@@ -2556,21 +2556,23 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 <AccountingValue label="Close readiness" value={data.controlCenter.closeReadiness} />
                 <AccountingValue label="SLA breach count" value={String(data.controlCenter.slaBreachCount)} />
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="space-y-1">
-                  <span className="text-xs text-muted-foreground">Portfolio filter</span>
-                  <select className="w-full rounded border bg-background px-2 py-1 text-sm">
-                    {data.controlCenter.portfolioFilterOptions.map((option) => <option key={option}>{option}</option>)}
-                  </select>
-                </label>
-                <label className="space-y-1">
-                  <span className="text-xs text-muted-foreground">Account filter</span>
-                  <select className="w-full rounded border bg-background px-2 py-1 text-sm">
-                    <option>all-accounts</option>
-                    {data.controlCenter.accountFilterOptions.map((option) => <option key={option}>{option}</option>)}
-                  </select>
-                </label>
+              <div
+                className="grid gap-3 sm:grid-cols-2"
+                role="group"
+                aria-label="Operations control center scope"
+              >
+                <AccountingValue
+                  label="Portfolio coverage"
+                  value={data.controlCenter.portfolioFilterOptions.join(", ") || "All portfolios"}
+                />
+                <AccountingValue
+                  label="Account coverage"
+                  value={data.controlCenter.accountFilterOptions.join(", ") || "All accounts"}
+                />
               </div>
+              <p className="text-xs text-muted-foreground">
+                Control-center measures are aggregate service results. Meridian does not present a selector until the service supplies per-scope measures.
+              </p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {data.controlCenter.trendSnapshots.map((snapshot) => (
                   <div key={snapshot.metric} className="rounded border border-border/70 px-2 py-1">
