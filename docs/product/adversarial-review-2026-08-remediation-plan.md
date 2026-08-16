@@ -785,8 +785,9 @@ still `in_progress`.
   [Docs Regeneration Automation — Design Constraints](../engineering/docs-regeneration-automation-design.md).
   Read that note before implementing; six earlier attempts at a one-line fix were each refuted by a
   different interaction.
-  **Verify:** per the note's verification section, which enumerates nine scenarios — including an
-  adversarial case asserting the privileged writer rejects paths outside its base-owned manifest.
+  **Verify:** per the note's verification section, which enumerates ten scenarios — including an
+  adversarial case asserting the privileged writer rejects paths outside its base-owned manifest,
+  and a fixed-point case asserting the *first* repaired head is green.
   Assert that every artifact **the job's final drift check enforces** matches the merged tree; that
   check deliberately excludes the best-effort UML binaries, so requiring the full generation
   sequence to match would fail whenever PlantUML is unavailable. Assert too that the accepted
