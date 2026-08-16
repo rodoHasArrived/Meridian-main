@@ -933,6 +933,17 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     for (var i = admittedThroughIndex; i < batchBuffer.Count; i++)
                     {
                         var tracedEvent = batchBuffer[i];
+
+                        // Suppression decisions (validation rejects, duplicate claims) are final
+                        // for the batch: when admission restarts after releasing claims to an
+                        // external holder, suppressed items must not be re-processed or
+                        // re-counted.
+                        if (tracedEvent.Suppressed)
+                        {
+                            admittedThroughIndex = i + 1;
+                            continue;
+                        }
+
                         var evt = tracedEvent.Event;
                         using var processActivity = MarketDataTracing.StartProcessActivity(
                             GetEventTypeName(evt.Type),
@@ -989,9 +1000,18 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                                     (reservationResult.Reservation.Key is null ||
                                      !IsBatchLocalClaim(batchBuffer, reservationResult.Reservation.Key)))
                                 {
+                                    // Never wait on an external claim while holding claims of our
+                                    // own: two consumers admitting crossed identity orders would
+                                    // otherwise each hold what the other waits for, deadlocked in
+                                    // their retry loops. Releasing our claims (and restarting
+                                    // admission on the retry) lets the external holder make
+                                    // progress; nothing here has touched the sink yet.
+                                    ReleaseAllReservations(batchBuffer);
+                                    admittedThroughIndex = 0;
                                     throw new PendingExternalDedupClaimException(
                                         "Event identity is claimed by an in-flight reservation outside this " +
-                                        "batch; retaining the delivery until the external claim resolves.");
+                                        "batch; batch claims were released and the delivery is retained until " +
+                                        "the external claim resolves.");
                                 }
 
                                 Interlocked.Increment(ref _deduplicatedCount);

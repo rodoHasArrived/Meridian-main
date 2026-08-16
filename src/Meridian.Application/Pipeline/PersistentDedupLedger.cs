@@ -203,6 +203,9 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     /// <remarks>
     /// Legacy admission check: a miss eagerly records a version-1 entry, i.e. without
     /// sink-durability confirmation, so it must not be used as a durability signal.
+    /// An identity held by an in-flight reservation is awaited (honouring
+    /// <paramref name="ct"/>) until the claim commits or releases, never reported as a
+    /// duplicate while only a memory-resident claim exists.
     /// Durable persistence paths use <see cref="TryReserveAsync"/> + <see cref="CommitDurableAsync"/>.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -224,8 +227,18 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             }
         }
 
-        // An in-flight reservation claims the identity even though it is not committed yet.
-        if (_pendingReservations.ContainsKey(key))
+        // An in-flight reservation claims the identity but proves nothing durable yet: its
+        // holder may still fail and release. Reporting it as a duplicate would let this caller
+        // discard a delivery while no durable copy exists, so wait for the claim to resolve —
+        // a commit turns it into a suppressing durable entry below, a release lets this caller
+        // record the identity itself.
+        while (_pendingReservations.ContainsKey(key))
+        {
+            await Task.Delay(10, ct).ConfigureAwait(false);
+        }
+
+        if (_cache.TryGetValue(key, out existing) &&
+            DateTimeOffset.UtcNow.Ticks - existing.Ticks < _entryTtl.Ticks)
         {
             Interlocked.Increment(ref _totalDuplicates);
             return true;

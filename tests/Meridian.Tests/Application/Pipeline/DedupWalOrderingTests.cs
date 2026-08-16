@@ -192,6 +192,51 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             "compaction must preserve the durability-confirmed version");
     }
 
+    [Fact]
+    public async Task IsDuplicateAsync_PendingClaimRelease_WaitsAndRecordsIdentityAsNew()
+    {
+        await using var ledger = await CreateLedgerAsync("ledger_legacy_wait_release");
+        var evt = CreateTradeEvent("LEGWAIT", 9);
+
+        var claim = await ledger.TryReserveAsync(evt, DedupLookupScope.LiveIngress, CancellationToken.None);
+        claim.IsReserved.Should().BeTrue();
+
+        // The claim is memory-only and its holder may still fail: reporting it as a duplicate
+        // would let this caller discard a delivery while no durable copy exists.
+        var duplicateCheck = ledger.IsDuplicateAsync(evt, CancellationToken.None).AsTask();
+        await Task.Delay(150);
+        duplicateCheck.IsCompleted.Should().BeFalse(
+            "an in-flight reservation proves nothing durable, so the legacy check must wait for it to resolve");
+
+        // The holder abandons without persisting: the waiting caller records the identity itself.
+        ledger.Release(claim.Reservation).Should().BeTrue();
+        (await duplicateCheck.WaitAsync(TimeSpan.FromSeconds(5))).Should().BeFalse(
+            "a released claim never became durable, so the waiting caller must treat the event as new");
+
+        (await ledger.IsDuplicateAsync(evt, CancellationToken.None)).Should().BeTrue(
+            "the waiting caller must have recorded the identity when the claim resolved as released");
+    }
+
+    [Fact]
+    public async Task IsDuplicateAsync_PendingClaimCommit_WaitsAndReportsDurableDuplicate()
+    {
+        await using var ledger = await CreateLedgerAsync("ledger_legacy_wait_commit");
+        var evt = CreateTradeEvent("LEGCOMMIT", 10);
+
+        var claim = await ledger.TryReserveAsync(evt, DedupLookupScope.LiveIngress, CancellationToken.None);
+        claim.IsReserved.Should().BeTrue();
+
+        var duplicateCheck = ledger.IsDuplicateAsync(evt, CancellationToken.None).AsTask();
+        await Task.Delay(150);
+        duplicateCheck.IsCompleted.Should().BeFalse(
+            "a pending claim must never resolve the legacy check before it commits or releases");
+
+        // The holder proves sink durability: the waiting caller sees a committed duplicate.
+        await ledger.CommitDurableAsync(new[] { claim.Reservation }, CancellationToken.None);
+        (await duplicateCheck.WaitAsync(TimeSpan.FromSeconds(5))).Should().BeTrue(
+            "a committed claim is a durability-confirmed identity, so the waiting caller must suppress the event");
+    }
+
     #endregion
 
     #region Pipeline ordering and fault injection
@@ -939,6 +984,72 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         successorClaim.IsReserved.Should().BeTrue(
             "a cancelled consumer must release its pending claims so a successor can process the identity");
         ledger.Release(successorClaim.Reservation).Should().BeTrue();
+
+        await ledger.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task Consumer_ExternalPendingClaim_ReleasesOwnBatchClaimsWhileWaiting()
+    {
+        // Two consumers sharing one dedup store can admit the same identities in crossed order:
+        // if each waited on the other's claim while holding its own, both would deadlock in
+        // their retry loops. A batch blocked by an external claim must therefore release every
+        // claim it holds before waiting.
+        var ledger = await CreateLedgerAsync("ledger_claim_release_wait");
+        var sink = new FaultSink { GateFirstAppend = true };
+        var gateEvt = CreateTradeEvent("GATE2", 800);
+        var heldEvt = CreateTradeEvent("HELDX", 801);
+        var blockedEvt = CreateTradeEvent("EXTY", 802);
+
+        await using (var pipeline = new EventPipeline(
+            sink, capacity: 100, batchSize: 3, enablePeriodicFlush: false, dedupLedger: ledger))
+        {
+            // Hold the consumer inside a first single-event batch so the two follow-up events
+            // drain together as one batch.
+            pipeline.TryPublish(gateEvt);
+            await sink.FirstAppendEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            // A concurrent caller sharing the store claims the second event's identity.
+            var externalClaim = await ledger.TryReserveAsync(blockedEvt, DedupLookupScope.LiveIngress, CancellationToken.None);
+            externalClaim.IsReserved.Should().BeTrue();
+
+            pipeline.TryPublish(heldEvt);
+            pipeline.TryPublish(blockedEvt);
+            sink.ReleaseGate();
+
+            await WaitUntilAsync(() => pipeline.GetStatistics().ConsumerIterationFailures >= 1);
+
+            // While the batch waits on the external claim, the first event's identity must be
+            // reservable by a concurrent caller — the observable proof that the batch released
+            // its own claims instead of holding them across the wait.
+            DedupReservation probeClaim = default;
+            var probeTimer = System.Diagnostics.Stopwatch.StartNew();
+            while (!probeClaim.IsHeld && probeTimer.ElapsedMilliseconds < 10_000)
+            {
+                var probe = await ledger.TryReserveAsync(heldEvt, DedupLookupScope.LiveIngress, CancellationToken.None);
+                if (probe.IsReserved)
+                    probeClaim = probe.Reservation;
+                else
+                    await Task.Delay(5);
+            }
+
+            probeClaim.IsHeld.Should().BeTrue(
+                "a batch waiting on an external claim must release its own claims so concurrent holders can make progress");
+
+            // Both external claims resolve without persisting: the retained batch re-admits
+            // every event and nothing is lost or double-counted.
+            ledger.Release(probeClaim).Should().BeTrue();
+            ledger.Release(externalClaim.Reservation).Should().BeTrue();
+
+            await WaitUntilAsync(() => sink.AppendedEvents.Count >= 3);
+            await pipeline.FlushAsync(CancellationToken.None);
+
+            sink.AppendedEvents.Select(evt => evt.Symbol).Should().BeEquivalentTo(
+                new[] { "GATE2", "HELDX", "EXTY" },
+                "the retained batch must persist every event exactly once after the claims resolve");
+            pipeline.DeduplicatedCount.Should().Be(0,
+                "external pending claims must be waited out, never counted as duplicates");
+        }
 
         await ledger.DisposeAsync();
     }
