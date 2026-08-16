@@ -15,6 +15,7 @@ public static class ApiProblemTypes
     public const string NotFound = "https://meridian.io/errors/not-found";
     public const string MethodNotAllowed = "https://meridian.io/errors/method-not-allowed";
     public const string Conflict = "https://meridian.io/errors/conflict";
+    public const string VersionConflict = "https://meridian.io/errors/version-conflict";
     public const string UnsupportedMediaType = "https://meridian.io/errors/unsupported-media-type";
     public const string UnprocessableEntity = "https://meridian.io/errors/unprocessable-entity";
     public const string TooManyRequests = "https://meridian.io/errors/too-many-requests";
@@ -90,6 +91,45 @@ public static class ApiProblemDetails
             ApiProblemTypes.Conflict,
             "State Conflict",
             detail);
+
+    /// <summary>
+    /// The canonical 409 body for an optimistic-concurrency (stale expected version) conflict.
+    /// Version values are transported as invariant strings so numeric versions, revision tokens,
+    /// and timestamp revisions all fit one contract; omitted values simply leave the extension
+    /// member out. See <c>docs/reference/api-conflict-contract.md</c> for the full contract and
+    /// which route families have converged on it.
+    /// </summary>
+    public static IResult VersionConflict(
+        HttpContext? context,
+        string detail,
+        string? resourceId = null,
+        string? expectedVersion = null,
+        string? currentVersion = null)
+    {
+        var extensions = new Dictionary<string, object?>();
+        if (resourceId is not null)
+        {
+            extensions["resourceId"] = resourceId;
+        }
+
+        if (expectedVersion is not null)
+        {
+            extensions["expectedVersion"] = expectedVersion;
+        }
+
+        if (currentVersion is not null)
+        {
+            extensions["currentVersion"] = currentVersion;
+        }
+
+        return Problem(
+            context,
+            StatusCodes.Status409Conflict,
+            ApiProblemTypes.VersionConflict,
+            "Version Conflict",
+            detail,
+            additionalExtensions: extensions);
+    }
 
     public static IResult TooManyRequests(
         HttpContext? context,

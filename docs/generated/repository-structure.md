@@ -1715,6 +1715,7 @@ Meridian-main
 │   │   │   ├── risk-engine-severity-and-decision-journal-blueprint.md
 │   │   │   └── w10-mark-001-fail-closed-marks.md
 │   │   ├── dead-code-inventory.md
+│   │   ├── docs-regeneration-automation-design.md
 │   │   ├── free-development-tools.md
 │   │   ├── live-trading-engine.md
 │   │   ├── practical-csharp-wpf-financial-markets.md
@@ -1810,7 +1811,6 @@ Meridian-main
 │   │   │   ├── source-readme-coverage.json
 │   │   │   └── source-readme-coverage.normalized.yml
 │   │   ├── configuration-schema.md
-│   │   ├── documentation-coverage.md
 │   │   ├── interfaces.md
 │   │   ├── project-context.md
 │   │   ├── project-dependencies.md
@@ -1886,6 +1886,7 @@ Meridian-main
 │   ├── reference
 │   │   ├── accounting-configuration.md
 │   │   ├── accounting-report-packs.md
+│   │   ├── api-conflict-contract.md
 │   │   ├── api-reference.md
 │   │   ├── appsettings-schema.md
 │   │   ├── backtest-preflight-and-stage-telemetry.md

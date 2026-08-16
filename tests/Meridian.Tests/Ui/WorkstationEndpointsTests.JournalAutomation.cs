@@ -1,5 +1,7 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
@@ -66,6 +68,17 @@ public sealed partial class WorkstationEndpointsTests
             history.PreviousVersion == owned.Version &&
             history.ResultVersion == rearmed.Version);
         staleResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        using (var staleProblem = JsonDocument.Parse(await staleResponse.Content.ReadAsStringAsync()))
+        {
+            var problem = staleProblem.RootElement;
+            problem.GetProperty("type").GetString().Should().Be(ApiProblemTypes.VersionConflict);
+            problem.GetProperty("resourceId").GetString().Should().Be("owned");
+            problem.GetProperty("expectedVersion").GetString().Should().Be(
+                owned.Version.ToString(CultureInfo.InvariantCulture));
+            problem.GetProperty("currentVersion").GetString().Should().Be(
+                rearmed!.Version.ToString(CultureInfo.InvariantCulture));
+        }
+
         runningResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
