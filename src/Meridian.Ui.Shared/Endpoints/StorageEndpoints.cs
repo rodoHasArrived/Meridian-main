@@ -304,7 +304,7 @@ public static class StorageEndpoints
             }, "Storage cleanup failed.", logger);
         })
         .WithName("RunStorageCleanup").Produces(200).Produces(500)
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageStorage))
+        .RequirePermission(UserPermission.ManageStorage)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // GET /api/storage/archive/stats — archive tier statistics
@@ -456,7 +456,7 @@ public static class StorageEndpoints
             }, "Storage tier migration failed.", logger);
         })
         .WithName("MigrateTier").Produces(200).Produces(400)
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageStorage))
+        .RequirePermission(UserPermission.ManageStorage)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // GET /api/storage/tiers/statistics — tier statistics
@@ -509,7 +509,7 @@ public static class StorageEndpoints
             }, "Storage defragmentation failed.", logger);
         })
         .WithName("RunDefragmentation").Produces(200)
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageStorage))
+        .RequirePermission(UserPermission.ManageStorage)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // POST /api/storage/convert-parquet — convert completed JSONL files to Parquet
@@ -534,7 +534,7 @@ public static class StorageEndpoints
             }, "Parquet conversion failed.", logger);
         })
         .WithName("ConvertToParquet").Produces(200)
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageStorage))
+        .RequirePermission(UserPermission.ManageStorage)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // GET /api/storage/capacity-forecast — predictive storage capacity warning

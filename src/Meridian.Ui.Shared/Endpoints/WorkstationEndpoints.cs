@@ -2699,7 +2699,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(result, jsonOptions);
         })
-        .WithName("BulkResolveSecurityMasterWorkstationConflicts")
+        .WithName("BulkResolveSecurityMasterWorkstationConflicts").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<BulkResolveSecurityMasterConflictsRequest>("application/json")
         .Produces<BulkResolveSecurityMasterConflictsResult>(200)
         .Produces(403)

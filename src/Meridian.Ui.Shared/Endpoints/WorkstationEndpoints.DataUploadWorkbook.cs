@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Globalization;
 using System.IO.Compression;
 using System.Xml.Linq;
@@ -164,7 +165,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(preview, jsonOptions);
         })
-        .WithName("PreviewWorkstationOnboardingWorkbook")
+        .WithName("PreviewWorkstationOnboardingWorkbook").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<DataUploadWorkbookPreviewResultDto>(200)
         .ProducesValidationProblem()
         .Produces(403);

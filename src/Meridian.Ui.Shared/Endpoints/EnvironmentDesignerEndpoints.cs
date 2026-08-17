@@ -55,7 +55,7 @@ public static class EnvironmentDesignerEndpoints
             return Results.Json(draft, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
         .WithName("CreateEnvironmentDraft")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ModifyConfig))
+        .RequirePermission(UserPermission.ModifyConfig)
         .Produces<EnvironmentDraftDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -77,7 +77,7 @@ public static class EnvironmentDesignerEndpoints
             return Results.Json(saved, jsonOptions);
         })
         .WithName("SaveEnvironmentDraft")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ModifyConfig))
+        .RequirePermission(UserPermission.ModifyConfig)
         .Produces<EnvironmentDraftDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -91,7 +91,7 @@ public static class EnvironmentDesignerEndpoints
             return Results.NoContent();
         })
         .WithName("DeleteEnvironmentDraft")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ModifyConfig))
+        .RequirePermission(UserPermission.ModifyConfig)
         .Produces(StatusCodes.Status204NoContent);
 
         group.MapPost("/validate", async (JsonElement body, HttpContext context) =>
@@ -112,7 +112,7 @@ public static class EnvironmentDesignerEndpoints
             return Results.Json(validation, jsonOptions);
         })
         .WithName("ValidateEnvironmentDraft")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ModifyConfig))
+        .RequirePermission(UserPermission.ModifyConfig)
         .Produces<EnvironmentValidationResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -132,7 +132,7 @@ public static class EnvironmentDesignerEndpoints
             return Results.Json(preview, jsonOptions);
         })
         .WithName("PreviewEnvironmentPublish")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ModifyConfig))
+        .RequirePermission(UserPermission.ModifyConfig)
         .Produces<EnvironmentPublishPreviewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -152,7 +152,7 @@ public static class EnvironmentDesignerEndpoints
             return Results.Json(version, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
         .WithName("PublishEnvironmentDraft")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ModifyConfig))
+        .RequirePermission(UserPermission.ModifyConfig)
         .Produces<PublishedEnvironmentVersionDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -214,7 +214,7 @@ public static class EnvironmentDesignerEndpoints
             return Results.Json(rolledBack, jsonOptions);
         })
         .WithName("RollbackEnvironmentVersion")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ModifyConfig))
+        .RequirePermission(UserPermission.ModifyConfig)
         .Produces<PublishedEnvironmentVersionDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
 
