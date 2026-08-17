@@ -52,7 +52,7 @@ public static class AccountingSystemEndpoints
             var result = await service.AssessAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("AssessAccountingProductionReadiness")
+        .WithName("AssessAccountingProductionReadiness").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingProductionReadinessDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden);
 
@@ -114,7 +114,7 @@ public static class AccountingSystemEndpoints
                 });
             }
         })
-        .WithName("UpsertAccountingTenantAdministrationProfile")
+        .WithName("UpsertAccountingTenantAdministrationProfile").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingTenantAdministrationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -184,7 +184,7 @@ public static class AccountingSystemEndpoints
                 });
             }
         })
-        .WithName("UpsertAccountingProductionCertificationProfile")
+        .WithName("UpsertAccountingProductionCertificationProfile").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingProductionCertificationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -221,7 +221,7 @@ public static class AccountingSystemEndpoints
                 });
             }
         })
-        .WithName("ExecuteAccountingMigrationRun")
+        .WithName("ExecuteAccountingMigrationRun").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingMigrationRunExecutionResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -290,7 +290,7 @@ public static class AccountingSystemEndpoints
                 });
             }
         })
-        .WithName("UpsertAccountingMigrationRunArtifact")
+        .WithName("UpsertAccountingMigrationRunArtifact").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingMigrationRunArtifactDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -358,7 +358,7 @@ public static class AccountingSystemEndpoints
                 });
             }
         })
-        .WithName("UpsertAccountingMigrationWorkerPlan")
+        .WithName("UpsertAccountingMigrationWorkerPlan").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingMigrationRunWorkerPlanDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -385,7 +385,7 @@ public static class AccountingSystemEndpoints
             var result = await service.ImportAsync(previewRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("PreviewAccountingSystemImport")
+        .WithName("PreviewAccountingSystemImport").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingSystemImportDetailDto>(StatusCodes.Status200OK)
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -518,7 +518,7 @@ public static class AccountingSystemEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("UpsertAccountingSystemMappingProfile")
+        .WithName("UpsertAccountingSystemMappingProfile").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<ExternalGlMappingProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict)
@@ -599,7 +599,7 @@ public static class AccountingSystemEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("CreateAccountingSystemExportPackage")
+        .WithName("CreateAccountingSystemExportPackage").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<ExternalGlExportPackageDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict)
@@ -680,7 +680,7 @@ public static class AccountingSystemEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("CertifyAccountingSystemExportPackage")
+        .WithName("CertifyAccountingSystemExportPackage").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<ExternalGlExportPackageDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)

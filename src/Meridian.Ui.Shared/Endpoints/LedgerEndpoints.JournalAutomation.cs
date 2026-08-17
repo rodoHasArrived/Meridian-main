@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.Api;
@@ -191,7 +192,7 @@ public static partial class LedgerEndpoints
                 return EndpointHelpers.Forbidden();
             }
         })
-        .WithName("ConfigureLedgerJournalAutomationMonthlySchedule")
+        .WithName("ConfigureLedgerJournalAutomationMonthlySchedule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<AutomatedJournalScheduleWorkItem>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -223,7 +224,7 @@ public static partial class LedgerEndpoints
                 context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("RunDueLedgerJournalAutomationMonthlySchedules")
+        .WithName("RunDueLedgerJournalAutomationMonthlySchedules").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<AutomatedJournalScheduledBatchResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
@@ -342,7 +343,7 @@ public static partial class LedgerEndpoints
                 return EndpointHelpers.Forbidden();
             }
         })
-        .WithName("ConfigureLedgerJournalAutomationDailyMarkToMarketSchedule")
+        .WithName("ConfigureLedgerJournalAutomationDailyMarkToMarketSchedule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<DailyValuationScheduleWorkItem>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -374,7 +375,7 @@ public static partial class LedgerEndpoints
                 context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("RunDueLedgerJournalAutomationDailyMarkToMarketSchedules")
+        .WithName("RunDueLedgerJournalAutomationDailyMarkToMarketSchedules").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<DailyValuationScheduledBatchResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
@@ -421,7 +422,7 @@ public static partial class LedgerEndpoints
                 return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
-        .WithName("ApproveAndPostLedgerJournalAutomationDailyMarkToMarketBatch")
+        .WithName("ApproveAndPostLedgerJournalAutomationDailyMarkToMarketBatch").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<DailyValuationBatchLifecycleResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -464,7 +465,7 @@ public static partial class LedgerEndpoints
                 return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
-        .WithName("RunLedgerJournalAutomationDailyMarkToMarketIntake")
+        .WithName("RunLedgerJournalAutomationDailyMarkToMarketIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<DailyMarkToMarketIntakeRunResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -507,7 +508,7 @@ public static partial class LedgerEndpoints
                 return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
-        .WithName("RunLedgerJournalAutomationDividendIntake")
+        .WithName("RunLedgerJournalAutomationDividendIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -552,7 +553,7 @@ public static partial class LedgerEndpoints
                 return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
-        .WithName("RunLedgerJournalAutomationFeeAccrualIntake")
+        .WithName("RunLedgerJournalAutomationFeeAccrualIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -595,7 +596,7 @@ public static partial class LedgerEndpoints
                 return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
-        .WithName("RunLedgerJournalAutomationPeriodCloseIntake")
+        .WithName("RunLedgerJournalAutomationPeriodCloseIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
