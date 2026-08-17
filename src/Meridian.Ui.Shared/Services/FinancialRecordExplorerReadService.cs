@@ -3547,7 +3547,7 @@ public sealed partial class FinancialRecordExplorerReadService
             HasText(publication.SignedOffRole) &&
             HasText(publication.SignOffContext) &&
             publication.SignedOffAt != default &&
-            publication.ActionOrigin == OperationsActionOriginDto.HumanOperator &&
+            Meridian.Contracts.Operations.OperationsOriginGuard.IsHumanOperator(publication.ActionOrigin) &&
             HasCompleteReportEvidence(publication.EvidenceLinks) &&
             record.AuditTrail.Any(static audit =>
                 audit.ToState == ReportPackWorkflowStateDto.Approved &&

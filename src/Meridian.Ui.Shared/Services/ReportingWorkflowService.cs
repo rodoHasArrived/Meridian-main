@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Operations;
 using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
@@ -1580,13 +1581,7 @@ public sealed class ReportPackWorkflowService
     }
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
-    {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
-        {
-            throw new InvalidOperationException(
-                $"Reviewed automation cannot {action}; a human operator approval is required.");
-        }
-    }
+        => OperationsOriginGuard.RequireHumanOperator(actionOrigin, action);
 
     private static void EnsureHumanOriginForMaterialTransition(
         ReportPackWorkflowStateDto target,

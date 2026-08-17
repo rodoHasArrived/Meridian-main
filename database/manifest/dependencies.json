@@ -7450,6 +7450,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.HumanOperatorRequiredException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Operations.IOperationalCaseHistoryStore"
     },
     {
@@ -7565,6 +7571,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Operations.OperationsContractsJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationsOriginGuard"
     },
     {
       "kind": "contract-set-member",
@@ -42598,7 +42610,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "d79d268442b47844ef3c11cde67ceff2288e61cad7f8ce40d34a227c2be99a63",
+  "fingerprint": "eddf0d1735cdf0117c8081f01011a55dfd533183042cac61e44e649b04bd6519",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -50098,6 +50110,12 @@
       "label": "Meridian.Contracts.Operations.DataProvenanceExtensions"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Operations.HumanOperatorRequiredException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.HumanOperatorRequiredException"
+    },
+    {
       "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Operations.IOperationalCaseHistoryStore",
       "kind": "contract-type",
@@ -50216,6 +50234,12 @@
       "id": "contract:Meridian.Contracts.Operations.OperationsContractsJsonContext",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Operations.OperationsContractsJsonContext"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Operations.OperationsOriginGuard",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationsOriginGuard"
     },
     {
       "classification": "record",
@@ -62129,10 +62153,10 @@
   ],
   "summary": {
     "contract_references": 2932,
-    "contract_set_memberships": 3356,
-    "edges": 7081,
+    "contract_set_memberships": 3358,
+    "edges": 7083,
     "foreign_keys": 95,
     "logical_references": 6,
-    "nodes": 3362
+    "nodes": 3364
   }
 }

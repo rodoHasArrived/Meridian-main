@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
@@ -114,13 +115,7 @@ public sealed partial class AccountingConfigurationService
             link.Contains(approvalId, StringComparison.OrdinalIgnoreCase));
 
     private static void EnsureRuleStudioHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
-    {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
-        {
-            throw new InvalidOperationException(
-                $"Reviewed automation cannot {action}; a human operator approval is required.");
-        }
-    }
+        => OperationsOriginGuard.RequireHumanOperator(actionOrigin, action);
 
     private static bool HasActivationEvidence(IReadOnlyList<string>? evidenceLinks)
         => evidenceLinks?.Any(static link =>

@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.Identity.Auth;
@@ -707,12 +708,20 @@ public static class AccountingSystemEndpoints
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)
     {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(actionOrigin))
         {
-            throw new ArgumentException("Accounting migration worker plan retention requires a human operator origin.", nameof(actionOrigin));
+            throw new ArgumentException(
+                "Accounting migration worker plan retention requires a human operator origin.",
+                nameof(actionOrigin),
+                OperationsOriginGuard.Refusal("retain accounting migration worker plans"));
         }
     }
 
+    // Type first, message second. Refusals raised by a module-specific type carry the signal as the
+    // inner exception, so both positions are checked before falling back to the canonical wording,
+    // which is what a governance rewording would otherwise silently break.
     private static bool IsReviewedAutomationOriginError(Exception ex)
-        => ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.OrdinalIgnoreCase);
+        => ex is HumanOperatorRequiredException
+            || ex.InnerException is HumanOperatorRequiredException
+            || ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.OrdinalIgnoreCase);
 }

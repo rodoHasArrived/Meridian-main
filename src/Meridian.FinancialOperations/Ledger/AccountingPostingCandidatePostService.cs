@@ -3,6 +3,7 @@ using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
@@ -50,9 +51,11 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Candidate);
 
-        if (request.ActionOrigin != OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(request.ActionOrigin))
         {
-            throw new InvalidOperationException("Generated accounting posting candidates require a human-operator action origin before append.");
+            throw new HumanOperatorRequiredException(
+                "post generated accounting posting candidates",
+                "Generated accounting posting candidates require a human-operator action origin before append.");
         }
 
         var journalStore = _journalStore

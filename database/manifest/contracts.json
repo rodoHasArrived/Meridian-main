@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "1f12781b85ec66fd54427934331b17bbdaee752636fcedd572825b9f44dcf5d2",
+      "fingerprint": "a6ce27291a5ae12bf89cc28eb2801919f266ecadd96b043560cd108e02bafb70",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1252,6 +1252,7 @@
         "Meridian.Contracts.Operations.DataProvenance",
         "Meridian.Contracts.Operations.DataProvenanceBadge",
         "Meridian.Contracts.Operations.DataProvenanceExtensions",
+        "Meridian.Contracts.Operations.HumanOperatorRequiredException",
         "Meridian.Contracts.Operations.IOperationalCaseHistoryStore",
         "Meridian.Contracts.Operations.OperationalCaseApproval",
         "Meridian.Contracts.Operations.OperationalCaseAssignment",
@@ -1271,6 +1272,7 @@
         "Meridian.Contracts.Operations.OperationPostconditionState",
         "Meridian.Contracts.Operations.OperationRecoveryAction",
         "Meridian.Contracts.Operations.OperationsContractsJsonContext",
+        "Meridian.Contracts.Operations.OperationsOriginGuard",
         "Meridian.Contracts.Operations.OperationTerminalState",
         "Meridian.Contracts.Operations.VerifiedOperationOutcome",
         "Meridian.Contracts.Operations.VerifiedOperationOutcomeValidator",
@@ -3518,7 +3520,7 @@
       ]
     }
   ],
-  "fingerprint": "494c15c479f4484c1e6d6f0e64971a8ff4c31d8631def681699a22456b56ed1f",
+  "fingerprint": "28727d8d11c1a0dc61a28a6387b6b18b23fd62a01e6e78564c10985e5cdc6758",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5169,13 +5171,14 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "d1764e4d2d6f22d94202a4dc2cdb799807a6b5c0204855f1179660ba8e1c8d76",
+      "fingerprint": "b460f75f4bec7cb7de25c6a8dc77463436ade550deef5116c0302e81f8a6373c",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Operations",
       "object_ids": [
         "Meridian.Contracts.Operations.DataProvenance",
         "Meridian.Contracts.Operations.DataProvenanceBadge",
         "Meridian.Contracts.Operations.DataProvenanceExtensions",
+        "Meridian.Contracts.Operations.HumanOperatorRequiredException",
         "Meridian.Contracts.Operations.IOperationalCaseHistoryStore",
         "Meridian.Contracts.Operations.OperationalCaseApproval",
         "Meridian.Contracts.Operations.OperationalCaseAssignment",
@@ -5195,6 +5198,7 @@
         "Meridian.Contracts.Operations.OperationPostconditionState",
         "Meridian.Contracts.Operations.OperationRecoveryAction",
         "Meridian.Contracts.Operations.OperationsContractsJsonContext",
+        "Meridian.Contracts.Operations.OperationsOriginGuard",
         "Meridian.Contracts.Operations.OperationTerminalState",
         "Meridian.Contracts.Operations.VerifiedOperationOutcome",
         "Meridian.Contracts.Operations.VerifiedOperationOutcomeValidator"
@@ -6599,7 +6603,7 @@
       "contract_sets": [
         "identity-access-contracts"
       ],
-      "fingerprint": "ef8cdcbabd8c96b72c0eca8a561e66f0270ef27471d58eb7c212575c6f99024e",
+      "fingerprint": "dceb92abd2adb802889df662451bd9df77dcb56c8cec54ad3ee8074282e9a9e6",
       "mapped_schemas": [
         "identity_access"
       ],
@@ -183798,6 +183802,56 @@
       "type_parameters": []
     },
     {
+      "base_types": [
+        "InvalidOperationException"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "cb42acdd14d6e657eaa7ce34ac597711a38f809e227605bba7f6245676b64035",
+      "full_name": "Meridian.Contracts.Operations.HumanOperatorRequiredException",
+      "id": "Meridian.Contracts.Operations.HumanOperatorRequiredException",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Action",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "string",
+          "source_line": 25,
+          "type": "string"
+        }
+      ],
+      "name": "HumanOperatorRequiredException",
+      "namespace": "Meridian.Contracts.Operations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Operations.HumanOperatorRequiredException",
+      "references": [],
+      "source": {
+        "line": 14,
+        "path": "src/Meridian.Contracts/Operations/OperationsOriginGuard.cs"
+      },
+      "sources": [
+        {
+          "line": 14,
+          "path": "src/Meridian.Contracts/Operations/OperationsOriginGuard.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
       "base_types": [],
       "classification": "service_contract",
       "containing_type": null,
@@ -186014,6 +186068,39 @@
         {
           "line": 43,
           "path": "src/Meridian.Contracts/Operations/OperationsContractsJsonContext.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "6883e6070bde24db034f3b12c240f81793739d3e5f4887c7b2dcae43554a965c",
+      "full_name": "Meridian.Contracts.Operations.OperationsOriginGuard",
+      "id": "Meridian.Contracts.Operations.OperationsOriginGuard",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "OperationsOriginGuard",
+      "namespace": "Meridian.Contracts.Operations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Operations.OperationsOriginGuard",
+      "references": [],
+      "source": {
+        "line": 45,
+        "path": "src/Meridian.Contracts/Operations/OperationsOriginGuard.cs"
+      },
+      "sources": [
+        {
+          "line": 45,
+          "path": "src/Meridian.Contracts/Operations/OperationsOriginGuard.cs"
         }
       ],
       "type_parameters": []
@@ -363161,7 +363248,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ef8288e7a71aed0a3c64b8246691bff94cd9602397ac5a2f3de9450e02b041ce",
+      "fingerprint": "4f82cb6eb2496030f63a841cd118c41fc322c6c136ae0b2fc798ca7f6af915f2",
       "full_name": "Meridian.Identity.AccessScopeRef",
       "id": "Meridian.Identity.AccessScopeRef",
       "kind": "record",
@@ -363180,7 +363267,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 42,
+          "source_line": 43,
           "type": "Guid?"
         },
         {
@@ -363194,7 +363281,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccessScopeKindDto",
-          "source_line": 42,
+          "source_line": 43,
           "type": "AccessScopeKindDto"
         }
       ],
@@ -363206,12 +363293,12 @@
         "Meridian.Identity.Auth.AccessScopeKindDto"
       ],
       "source": {
-        "line": 42,
+        "line": 43,
         "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
       },
       "sources": [
         {
-          "line": 42,
+          "line": 43,
           "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
         }
       ],
@@ -367486,7 +367573,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "39554bb4d1a48a0858dd26ddb2c1cf79fb2c43470d969f639bce378ce986c1a8",
+      "fingerprint": "18c9bb18297737c3cafea00f0d2094e161986ecbfb90dd759639672d47d54551",
       "full_name": "Meridian.Identity.IAccessScopeLineageProvider",
       "id": "Meridian.Identity.IAccessScopeLineageProvider",
       "kind": "interface",
@@ -367500,12 +367587,12 @@
       "qualified_name": "Meridian.Identity.IAccessScopeLineageProvider",
       "references": [],
       "source": {
-        "line": 34,
+        "line": 35,
         "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
       },
       "sources": [
         {
-          "line": 34,
+          "line": 35,
           "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
         }
       ],
@@ -367560,7 +367647,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "7f1bfbb3eb2508958c98957d5dfa439c62c8c98e3f76b3e9abb20b1e58fe11f5",
+      "fingerprint": "861afaa63a0185a568dda4aa3d83ddd82befd016a12379e7c033baee83448598",
       "full_name": "Meridian.Identity.IScopedAccessAssignmentService",
       "id": "Meridian.Identity.IScopedAccessAssignmentService",
       "kind": "interface",
@@ -367574,12 +367661,12 @@
       "qualified_name": "Meridian.Identity.IScopedAccessAssignmentService",
       "references": [],
       "source": {
-        "line": 6,
+        "line": 7,
         "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
       },
       "sources": [
         {
-          "line": 6,
+          "line": 7,
           "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
         }
       ],
@@ -367634,7 +367721,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "670faaa6da148f7c83b35b4b3df80317f2837215d8950f122784bba33547521a",
+      "fingerprint": "da7aec102e735ce256a9dc5e2fdabac3c142955b5cbb76a6743a56e048da03d4",
       "full_name": "Meridian.Identity.IScopedAuthorizationService",
       "id": "Meridian.Identity.IScopedAuthorizationService",
       "kind": "interface",
@@ -367648,12 +367735,12 @@
       "qualified_name": "Meridian.Identity.IScopedAuthorizationService",
       "references": [],
       "source": {
-        "line": 23,
+        "line": 24,
         "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
       },
       "sources": [
         {
-          "line": 23,
+          "line": 24,
           "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
         }
       ],
@@ -368031,7 +368118,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "caf9967c00891aad470cfb9d0fe65734d6be5e681b15f1a79680399835cd024d",
+      "fingerprint": "73c6c52f73cd719015d43933a9550af03dfa9067edced2c70262c59241285755",
       "full_name": "Meridian.Identity.ScopedAccessService",
       "id": "Meridian.Identity.ScopedAccessService",
       "kind": "class",
@@ -368048,12 +368135,12 @@
         "Meridian.Identity.IScopedAuthorizationService"
       ],
       "source": {
-        "line": 44,
+        "line": 45,
         "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
       },
       "sources": [
         {
-          "line": 44,
+          "line": 45,
           "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
         }
       ],
