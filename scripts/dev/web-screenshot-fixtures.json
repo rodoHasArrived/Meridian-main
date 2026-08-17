@@ -2,6 +2,121 @@
   "version": 1,
   "description": "Static fixture responses served by Playwright page.route() during web screenshot capture. Keeps screenshots independent of a running Meridian API backend. Update when API response shapes change.",
   "routes": {
+    "/api/workstation/first-run/": {
+      "isComplete": true,
+      "goal": "operate-fund",
+      "starterKitId": "fund-operations",
+      "dataChoice": "provider",
+      "workspace": {
+        "id": "primary",
+        "name": "Meridian Workspace",
+        "isSample": false,
+        "badge": "LOCAL",
+        "safetyMessage": "Local workspace data.",
+        "samplePackVersion": ""
+      },
+      "starterKits": [
+        {
+          "id": "personal-portfolio",
+          "name": "Personal Portfolio Desk",
+          "goal": "monitor-investments",
+          "description": "Track holdings, watchlists, and portfolio changes.",
+          "defaultRoute": "/portfolio"
+        },
+        {
+          "id": "fund-operations",
+          "name": "Fund Operations Desk",
+          "goal": "operate-fund",
+          "description": "Run daily controls, approvals, and operational evidence.",
+          "defaultRoute": "/accounting/operations-continuity"
+        },
+        {
+          "id": "accounting-reconciliation",
+          "name": "Accounting and Reconciliation Desk",
+          "goal": "reconcile-accounts",
+          "description": "Import statements, investigate breaks, and close with evidence.",
+          "defaultRoute": "/accounting/statement-import"
+        },
+        {
+          "id": "strategy-research",
+          "name": "Strategy Research Desk",
+          "goal": "research-strategies",
+          "description": "Research, backtest, and paper-trade governed strategies.",
+          "defaultRoute": "/strategy"
+        },
+        {
+          "id": "market-data",
+          "name": "Market Data Desk",
+          "goal": "collect-market-data",
+          "description": "Connect, validate, and monitor trusted market data.",
+          "defaultRoute": "/data"
+        }
+      ],
+      "outcomes": [
+        {
+          "key": "workspace-opened",
+          "label": "Open or create a workspace",
+          "actionLabel": "Open workspace",
+          "route": "/portfolio",
+          "isComplete": true,
+          "completedAtUtc": "2026-07-13T17:50:00Z"
+        },
+        {
+          "key": "data-imported",
+          "label": "Import sample or real data",
+          "actionLabel": "Import data",
+          "route": "/accounting/statement-import",
+          "isComplete": true,
+          "completedAtUtc": "2026-07-13T17:52:00Z"
+        },
+        {
+          "key": "validation-resolved",
+          "label": "Resolve one validation issue",
+          "actionLabel": "Review breaks",
+          "route": "/accounting/reconciliation/match",
+          "isComplete": true,
+          "completedAtUtc": "2026-07-13T17:54:00Z"
+        },
+        {
+          "key": "report-run",
+          "label": "Run one report",
+          "actionLabel": "Run report",
+          "route": "/reporting/run",
+          "isComplete": true,
+          "completedAtUtc": "2026-07-13T17:56:00Z"
+        },
+        {
+          "key": "result-saved",
+          "label": "Save or export one useful result",
+          "actionLabel": "Review results",
+          "route": "/reporting/library",
+          "isComplete": true,
+          "completedAtUtc": "2026-07-13T17:58:00Z"
+        }
+      ],
+      "recommendedActions": [
+        {
+          "label": "Open your desk",
+          "route": "/accounting/operations-continuity",
+          "description": "See the workspace configured for your goal."
+        },
+        {
+          "label": "Add starting data",
+          "route": "/accounting/statement-import",
+          "description": "Import and validate a statement or holdings file."
+        },
+        {
+          "label": "Run a report",
+          "route": "/reporting/run",
+          "description": "Produce a useful result and keep the evidence."
+        }
+      ],
+      "sampleWorkspace": null
+    },
+    "/api/demo/mode": {
+      "enabled": true,
+      "provenance": "seeded"
+    },
     "/api/workstation/session": {
       "displayName": "Ops Desk",
       "role": "Operator",

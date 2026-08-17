@@ -14,6 +14,8 @@
       "docLabel": "Daily Control Tower",
       "waitForText": "Daily Control Tower Workstation",
       "requiredApiRoutes": [
+        "/api/workstation/first-run/",
+        "/api/demo/mode",
         "/api/workstation/session",
         "/api/status",
         "/api/workstation/workflow-summary"
