@@ -108,7 +108,7 @@ public static partial class WorkstationEndpoints
                 service.BuildRunTrace(document, validation));
             return Results.Json(response, jsonOptions);
         })
-        .WithName("SaveStrategyDesignerDraft")
+        .WithName("SaveStrategyDesignerDraft").RequirePermission(UserPermission.ManageStrategies)
         .Produces<StrategyDesignDraftSaveResponse>(200)
         .Produces(400)
         .Produces(403)
@@ -293,7 +293,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(CreateBacktestResponse(document, preview, runId, metrics, null, biasDisclosure), jsonOptions);
         })
-        .WithName("RunStrategyDesignerBacktest")
+        .WithName("RunStrategyDesignerBacktest").RequirePermission(UserPermission.ManageStrategies)
         .Produces<StrategyDesignRunBacktestResponse>(200)
         .Produces(400)
         .Produces(403)
