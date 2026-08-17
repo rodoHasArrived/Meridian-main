@@ -1,4 +1,5 @@
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -26,12 +27,7 @@ public sealed partial class AccountingCloseManagementService
             string.Equals(signOff.Role, requiredRole, StringComparison.OrdinalIgnoreCase));
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
-    {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
-        {
-            throw new InvalidOperationException($"Reviewed automation cannot {action}; a human operator must perform this accounting close action.");
-        }
-    }
+        => OperationsOriginGuard.RequireHumanOperator(actionOrigin, action);
 
     private static void EnsureIndependentCloseTaskSignOffActor(
         OperationsCloseChecklistTaskDto task,

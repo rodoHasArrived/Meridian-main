@@ -88,9 +88,11 @@ public static class AccountingPostingCommandValidator
                 "Accounting posting command expected version is required at the production ledger append boundary.");
         }
 
-        if (command.ActionOrigin != OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(command.ActionOrigin))
         {
-            throw new LedgerValidationException("Material accounting posting commands require a human-operator action origin.");
+            throw new LedgerValidationException(
+                "Material accounting posting commands require a human-operator action origin.",
+                OperationsOriginGuard.Refusal("append material accounting posting commands"));
         }
 
         if (string.IsNullOrWhiteSpace(command.IdempotencyKey))

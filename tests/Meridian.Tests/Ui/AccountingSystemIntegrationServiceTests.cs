@@ -6320,6 +6320,11 @@ public sealed class AccountingSystemIntegrationServiceTests
             var body = await response.Content.ReadAsStringAsync();
             body.Should().Contain("human operator");
         }
+
+        var productionCertificationProblem =
+            await ReadAsync<HttpValidationProblemDetails>(productionCertificationResponse);
+        productionCertificationProblem.Errors["request"].Should().Equal(
+            "Only a human operator can certify accounting production controls.");
     }
 
     [Fact]

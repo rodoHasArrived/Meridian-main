@@ -897,11 +897,11 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     Error: $"Cannot move break from {item.Status} to {request.Status}.");
             }
 
-            if (request.ActionOrigin != OperationsActionOriginDto.HumanOperator)
+            if (!OperationsOriginGuard.IsHumanOperator(request.ActionOrigin))
             {
                 var validation = Invalid(
                     item,
-                    "Reviewed automation cannot resolve or dismiss reconciliation breaks; a human operator approval is required.",
+                    OperationsOriginGuard.RefusalMessage("resolve or dismiss reconciliation breaks"),
                     ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator,
                     ["actionOrigin"],
                     ReconciliationCaseLifecycleState.Resolved);

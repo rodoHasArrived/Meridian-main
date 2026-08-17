@@ -1,4 +1,5 @@
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Operations;
 using Meridian.Identity.Auth;
 using Meridian.Identity;
 using Microsoft.AspNetCore.Builder;
@@ -718,8 +719,13 @@ public static class AuthEndpoints
             ? Results.Unauthorized()
             : EndpointHelpers.Forbidden();
 
+    // Type first, message second. A governance refusal now arrives as HumanOperatorRequiredException,
+    // so the wording of the refusal is no longer load-bearing for the status code it maps to. The
+    // prefix test stays only for any gate still throwing a bare InvalidOperationException with the
+    // canonical text; those are the sites a wording change would silently reclassify.
     private static bool IsReviewedAutomationRejection(InvalidOperationException ex)
-        => ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.Ordinal);
+        => ex is HumanOperatorRequiredException
+            || ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.Ordinal);
 
     private sealed record ManageUsersActor(string Actor, int? StatusCode);
 }

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Store;
 using Microsoft.Extensions.Logging;
@@ -468,9 +469,12 @@ public sealed class FileAccountingProductionCertificationProfileStore :
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)
     {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(actionOrigin))
         {
-            throw new ArgumentException("Only a human operator can certify accounting production readiness profiles.", nameof(actionOrigin));
+            throw new ArgumentException(
+                "Only a human operator can certify accounting production readiness profiles.",
+                nameof(actionOrigin),
+                OperationsOriginGuard.Refusal("certify accounting production readiness profiles"));
         }
     }
 

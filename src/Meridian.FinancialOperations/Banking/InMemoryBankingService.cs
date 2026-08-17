@@ -1,4 +1,5 @@
 using Meridian.Contracts.Banking;
+using Meridian.Contracts.Operations;
 
 namespace Meridian.FinancialOperations.Banking;
 
@@ -152,10 +153,11 @@ public sealed class InMemoryBankingService : IBankingService
         Meridian.Contracts.Workstation.OperationsActionOriginDto actionOrigin,
         string action)
     {
-        if (actionOrigin != Meridian.Contracts.Workstation.OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(actionOrigin))
         {
             throw new BankingException(
-                $"Reviewed automation cannot {action}; a human operator approval is required.");
+                OperationsOriginGuard.RefusalMessage(action),
+                OperationsOriginGuard.Refusal(action));
         }
     }
 
