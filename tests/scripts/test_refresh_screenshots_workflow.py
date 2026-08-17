@@ -151,6 +151,29 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         missing_paths = sorted(explicit_pages - captured_paths)
         self.assertEqual([], missing_paths, f"Missing explicit app route screenshots: {missing_paths}")
 
+    def test_first_run_activation_gate_passes_during_capture(self) -> None:
+        """The app shell blocks every route behind /api/workstation/first-run/ until it
+        reports a completed activation. Without these fixtures the Playwright mock answers
+        404, the shell renders the activation gate instead of .workstation-frame, and every
+        capture times out (two 120s waits per route until the job ceiling)."""
+        fixture_routes = self.web_screenshot_fixtures.get("routes", {})
+
+        self.assertIn("/api/workstation/first-run/", fixture_routes)
+        first_run = fixture_routes["/api/workstation/first-run/"]
+        self.assertIs(True, first_run.get("isComplete"))
+        self.assertFalse(first_run.get("workspace", {}).get("isSample"))
+
+        self.assertIn("/api/demo/mode", fixture_routes)
+        self.assertIn("enabled", fixture_routes["/api/demo/mode"])
+
+    def test_capture_script_fails_fast_on_systemic_shell_mount_failures(self) -> None:
+        """A shell that never mounts fails every route at the full navigation timeout
+        (twice per route) until the CI job ceiling cancels the run. The capture script
+        must label the frame-mount timeout and abort early when the failure is systemic."""
+        self.assertIn("App shell failed to mount", self.web_screenshot_capture_script)
+        self.assertIn("shellMountFailureLimit", self.web_screenshot_capture_script)
+        self.assertIn("Aborting capture run", self.web_screenshot_capture_script)
+
     def test_strategy_designer_screenshot_route_has_fixture_evidence(self) -> None:
         captures = self.web_screenshot_routes.get("captures", [])
         designer_capture = next(
