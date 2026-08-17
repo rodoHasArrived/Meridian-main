@@ -105,7 +105,8 @@ internal static class OrderNotionalResolver
         OrderRequest request,
         PortfolioExposureSnapshot snapshot,
         Func<string, decimal?>? referencePriceLookup,
-        Func<string, OrderSide, decimal?>? sideAwarePriceLookup)
+        Func<string, OrderSide, decimal?>? sideAwarePriceLookup,
+        bool inferredOccOption)
     {
         // Broker-native notional sizing still wins: it is what the gateway routes.
         if (BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is { } brokerNotional)
@@ -151,7 +152,9 @@ internal static class OrderNotionalResolver
                 return null;
             }
 
-            var multiplier = ResolveMultiplier(leg.OptionContract ?? request.OptionContract);
+            var multiplier = inferredOccOption
+                ? DefaultContractMultiplier
+                : ResolveMultiplier(leg.OptionContract ?? request.OptionContract);
             total += Math.Abs(request.Quantity) * Math.Abs(leg.RatioQuantity) * price * multiplier;
             priced = true;
         }
@@ -191,11 +194,19 @@ internal static class OrderNotionalResolver
         // Broker adapters may infer an option from its compact OCC symbol even when a
         // caller omitted OptionContract. Risk must classify that same route as a
         // derivative or it will measure premium-only notional without the 100x multiplier.
+        var inferredOccOption = request.Legs is not { Count: > 0 } &&
+            request.OptionContract is null &&
+            IsOccOptionSymbol(request.Symbol);
         if (request.Legs is { Count: > 0 } ||
             request.OptionContract is not null ||
-            IsOccOptionSymbol(request.Symbol))
+            inferredOccOption)
         {
-            return ResolveDerivative(request, snapshot, referencePriceLookup, sideAwarePriceLookup);
+            return ResolveDerivative(
+                request,
+                snapshot,
+                referencePriceLookup,
+                sideAwarePriceLookup,
+                inferredOccOption);
         }
 
         // Broker-native notional sizing (Alpaca metadata "notional"/"alpaca:notional")

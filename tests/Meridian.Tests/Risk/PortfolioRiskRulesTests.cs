@@ -464,7 +464,12 @@ public sealed class PortfolioRiskRulesTests
         // measure 100 contracts x $5 premium x 100, not treat them as $500 of shares.
         var order = CreateOrder(symbol: "AAPL261218C00250000", quantity: 100m);
 
-        (await rule.EvaluateAsync(order)).IsApproved.Should().BeFalse();
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse();
+        result.RejectReason.Should().Be(
+            "Order notional limit: 50000.00 exceeds 20000.00 ceiling",
+            "100 OCC contracts at a $5 premium must use the standard 100x multiplier");
     }
 
     [Fact]
