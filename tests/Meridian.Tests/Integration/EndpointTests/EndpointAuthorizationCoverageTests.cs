@@ -40,6 +40,9 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
         "POST /api/auth/csrf",
         // First-run setup completes before any user or permission store exists.
         "POST /api/setup/account",
+        // Bootstrap is the same seam behind a one-use setup token: it can only create the
+        // first administrator, and refuses whenever any account already exists.
+        "POST /api/auth/bootstrap",
         // 410 Gone tombstones for the retired legacy reporting lifecycle. They perform no action
         // and answer every caller with the canonical replacement route; guarding them would swap
         // that pointer for a 403 while protecting nothing. Remove the entry when the tombstone is
@@ -71,17 +74,16 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
     /// </summary>
     internal static readonly HashSet<string> UnguardedMutationBaseline = new(StringComparer.OrdinalIgnoreCase)
     {
+        // Declared (reconciliation any-of set) and enforced; still listed because the sweep's
+        // "{}" body cannot bind IReadOnlyList<CollateralInputRow>, so binding answers 400 before
+        // any filter runs. The declarative ratchet is the operative guarantee for this route.
+        "POST /api/workstation/collateral/ingest",
         "DELETE /api/maintenance/schedules/{id}/delete",
         "DELETE /api/maintenance/schedules/{scheduleId}",
         "DELETE /api/packaging/{fileName}",
         "DELETE /api/symbols/{symbol}",
-        "DELETE /api/workstation/reconciliation/break-queue/{breakId}/comments/{commentId}",
-        "DELETE /api/workstation/workflows/presets/{presetId}",
         "POST /api/alignment/create",
         "POST /api/alignment/preview",
-        "POST /api/auth/access-assignments/{assignmentId}/revoke",
-        "POST /api/auth/accounts/{username}/disable",
-        "POST /api/auth/accounts/{username}/password-reset",
         "POST /api/backfill/checkpoints/{jobId}/resume",
         "POST /api/backfill/cost-estimate",
         "POST /api/compliance/actions/evaluate",
@@ -134,24 +136,9 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
         "POST /api/symbols/{symbol}/archive",
         "POST /api/symbols/{symbol}/remove",
         "POST /api/symbols/{symbol}/update",
-        "POST /api/workstation/collateral/ingest",
-        "POST /api/workstation/data/query",
-        "POST /api/workstation/desktop/launch",
-        "POST /api/workstation/financial-record-explorers/{explorerId}/saved-views",
-        "POST /api/workstation/first-run/outcomes/complete",
-        "POST /api/workstation/runs/compare",
-        "POST /api/workstation/runs/diff",
-        "POST /api/workstation/strategy/designer/preview",
-        "POST /api/workstation/strategy/designer/validate",
-        "POST /api/workstation/strategy/engine/validate-run",
-        "POST /api/workstation/workflows/presets",
-        "POST /api/workstation/workflows/presets/{presetId}/pin",
-        "POST /api/workstation/workflows/presets/{presetId}/used",
         "POST /hooks/reporting/distribution/{transportId}/deliveries/{jobId}/receipts",
         "POST /portal/reporting/access-grants/{grantId}/exchange",
-        "PUT /api/auth/accounts/{username}",
         "PUT /api/maintenance/schedules/{scheduleId}",
-        "PUT /api/workstation/workflows/presets/{presetId}",
     };
 
     [Fact]
