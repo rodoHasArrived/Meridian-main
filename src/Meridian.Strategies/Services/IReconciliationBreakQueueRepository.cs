@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 
@@ -414,8 +414,7 @@ public sealed record ReconciliationBreakQueueTransitionResult(
         ReconciliationBreakQueueTransitionErrorCode errorCode)
     {
         var now = DateTimeOffset.UtcNow;
-        var inputHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-            $"{status}|{item?.BreakId}|{item?.Version}|{errorCode}|{error}"))).ToLowerInvariant();
+        var inputHash = Sha256Digest.ComputeUtf8($"{status}|{item?.BreakId}|{item?.Version}|{errorCode}|{error}");
         var evidenceId = "reconciliation-transition-result";
         var succeeded = status == ReconciliationBreakQueueTransitionStatus.Success;
         var failed = status == ReconciliationBreakQueueTransitionStatus.Failed;

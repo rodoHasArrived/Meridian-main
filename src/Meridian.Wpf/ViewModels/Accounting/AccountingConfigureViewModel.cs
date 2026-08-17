@@ -1,8 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
@@ -12,6 +10,7 @@ using Meridian.FinancialOperations.Ledger;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 
@@ -3890,7 +3889,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private static Guid CreateStableGuid(params string?[] parts)
     {
         var input = string.Join("|", parts.Select(static part => part?.Trim() ?? string.Empty));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        var hash = Sha256Digest.ComputeBytesUtf8(input);
         var bytes = hash[..16].ToArray();
         return new Guid(bytes);
     }

@@ -1,7 +1,7 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.IO;
 using Meridian.Domain.Reconciliation;
@@ -625,7 +625,7 @@ public sealed class StatementImportService(
     /// always produces byte-identical bytes and therefore the same duplicate key.
     /// </summary>
     private static string ComputeSha256Hex(ReadOnlySpan<byte> content)
-        => Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        => Sha256Digest.Compute(content);
 
     internal static string RenderCanonicalArtifact(IReadOnlyList<StatementCanonicalRecord> records)
     {

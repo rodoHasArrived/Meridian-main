@@ -1,7 +1,6 @@
 using Meridian.Domain.Reconciliation;
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
@@ -150,9 +149,8 @@ internal static class StatementRunMatcher
             ordinal.ToString(CultureInfo.InvariantCulture),
             sourceReference,
             breakCode);
-        var digest = SHA256.HashData(Encoding.UTF8.GetBytes(material));
         // 32 hex characters keeps the shape callers already store and index on.
-        return Convert.ToHexString(digest)[..32].ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(material)[..32];
     }
 
     private static void ValidateStatementAccounts(

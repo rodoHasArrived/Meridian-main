@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
@@ -64,8 +64,7 @@ public static partial class WorkstationEndpoints
             (request.ResolutionNote ?? string.Empty).Trim(),
             (request.OperatorRationale ?? string.Empty).Trim(),
             OperationsActionOriginDto.HumanOperator.ToString());
-        var inputHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(material)))
-            .ToLowerInvariant();
+        var inputHash = Sha256Digest.ComputeUtf8(material);
         var commandId = $"statement-legacy-resolve:{inputHash}";
         var commandBase = current;
         if (StatementCaseworkHandoffObligation.HasPending(current, commandId)

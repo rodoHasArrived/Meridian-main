@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Channels;
+using Meridian.Contracts.Integrity;
 using Meridian.Core.Config;
 using Meridian.Core.IO;
 using Meridian.Execution.Sdk;
@@ -1042,9 +1043,7 @@ public sealed class FileAlpacaTradeUpdateCursorStore : IAlpacaTradeUpdateCursorS
     private static string ComputeAccountHash(string providerAccountId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(providerAccountId);
-        return Convert.ToHexString(SHA256.HashData(
-                Encoding.UTF8.GetBytes(providerAccountId.Trim())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(providerAccountId.Trim());
     }
 }
 

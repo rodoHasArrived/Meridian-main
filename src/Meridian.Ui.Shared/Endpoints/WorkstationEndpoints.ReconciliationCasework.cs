@@ -6,6 +6,7 @@ using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -54,8 +55,8 @@ public static partial class WorkstationEndpoints
             Source = "workstation-reconciliation-casework",
             ActionOrigin = OperationsActionOriginDto.HumanOperator,
             Privileged = HasGovernedWorkflowReopenPermission(context),
-            ApprovalActor = NormalizeApprovalEvidence(request.ApprovalActor),
-            ApprovalReference = NormalizeApprovalEvidence(request.ApprovalReference)
+            ApprovalActor = NormalizeOptional(request.ApprovalActor),
+            ApprovalReference = NormalizeOptional(request.ApprovalReference)
         };
         try
         {
@@ -114,8 +115,8 @@ public static partial class WorkstationEndpoints
             Actor = currentUser,
             Source = "workstation-reconciliation-bulk-casework",
             ActionOrigin = OperationsActionOriginDto.HumanOperator,
-            ApprovalActor = NormalizeApprovalEvidence(request.ApprovalActor),
-            ApprovalReference = NormalizeApprovalEvidence(request.ApprovalReference)
+            ApprovalActor = NormalizeOptional(request.ApprovalActor),
+            ApprovalReference = NormalizeOptional(request.ApprovalReference)
         };
         try
         {
@@ -140,8 +141,5 @@ public static partial class WorkstationEndpoints
             transition.Error,
             transition.ErrorCode.ToString(),
             transition.Validation?.MissingFields);
-
-    private static string? NormalizeApprovalEvidence(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
 }

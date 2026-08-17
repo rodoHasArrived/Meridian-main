@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -966,9 +966,7 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
     internal static string ComputeMigrationChecksum(string sql)
     {
         ArgumentNullException.ThrowIfNull(sql);
-        return Convert.ToHexString(
-                SHA256.HashData(Encoding.UTF8.GetBytes(sql)))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(sql);
     }
 
     internal static IReadOnlyList<string> ResolveMissingCompatibilityMarkers(

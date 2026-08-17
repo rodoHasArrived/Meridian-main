@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Serialization;
 using Meridian.Storage;
@@ -54,7 +54,7 @@ public sealed class FileSecurityValidationSnapshotStore : ISecurityValidationSna
             Actor: string.IsNullOrWhiteSpace(request.Actor) ? null : request.Actor.Trim(),
             Reason: request.Reason.Trim(),
             RecordedAtUtc: recordedAt,
-            ReportHashSha256: Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(reportJson))).ToLowerInvariant(),
+            ReportHashSha256: Sha256Digest.ComputeUtf8(reportJson),
             Report: report,
             EvidenceLinks: request.EvidenceLinks);
 

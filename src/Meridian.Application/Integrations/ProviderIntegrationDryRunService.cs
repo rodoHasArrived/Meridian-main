@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -7,6 +6,7 @@ using Meridian.Contracts.Integrations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using static Meridian.Application.Integrations.ProviderIntegrationFieldTransforms;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.Integrations;
 
@@ -562,8 +562,7 @@ public sealed class ProviderIntegrationDryRunService
     private static string StableId(params string[] parts)
     {
         var input = string.Join("|", parts);
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
-        return Convert.ToHexString(hash)[..24].ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(input)[..24];
     }
 
     private sealed record ManualCsvRawPayload(

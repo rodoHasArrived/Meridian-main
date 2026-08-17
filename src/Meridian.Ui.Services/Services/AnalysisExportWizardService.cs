@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Security.Cryptography;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Services;
 
@@ -893,8 +893,7 @@ public sealed class AnalysisExportWizardService
     {
         var safeStem = CreateSafeFileStem(symbol);
         var normalizedSymbol = symbol.Trim();
-        var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(normalizedSymbol));
-        var suffix = Convert.ToHexString(hashBytes, 0, 4).ToLowerInvariant();
+        var suffix = Sha256Digest.ComputeUtf8(normalizedSymbol)[..8];
         return $"{safeStem}_{suffix}";
     }
 

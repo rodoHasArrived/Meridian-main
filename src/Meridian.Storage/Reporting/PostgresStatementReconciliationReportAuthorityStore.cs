@@ -1,6 +1,5 @@
 using System.Buffers.Binary;
 using System.Data;
-using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
@@ -1006,7 +1005,7 @@ public sealed class PostgresStatementReconciliationReportAuthorityStore :
         }
 
         return BinaryPrimitives.ReadInt64BigEndian(
-            SHA256.HashData(Encoding.UTF8.GetBytes(canonicalIdentity)));
+            Sha256Digest.ComputeBytesUtf8(canonicalIdentity));
     }
 
     private static DateTimeOffset ReadUtcTimestamp(NpgsqlDataReader reader, int ordinal) =>

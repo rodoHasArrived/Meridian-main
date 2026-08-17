@@ -1,9 +1,9 @@
 using System.Collections.Immutable;
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Tenancy;
@@ -1075,7 +1075,7 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
             writer.WriteEndArray();
             writer.WriteEndObject();
         }
-        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     private static void ValidateParameterEnums(ReportingRunParametersDto parameters)

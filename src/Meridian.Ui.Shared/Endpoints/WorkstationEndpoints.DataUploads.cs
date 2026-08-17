@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
@@ -11,6 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -758,7 +758,7 @@ public static partial class WorkstationEndpoints
 
     private static string BuildDataUploadId(byte[] fileBytes)
     {
-        var hash = Convert.ToHexString(SHA256.HashData(fileBytes))[..12].ToLowerInvariant();
+        var hash = Sha256Digest.Compute(fileBytes)[..12];
         return "UP-" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture) + "-" + hash;
     }
 

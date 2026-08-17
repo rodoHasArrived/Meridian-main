@@ -1,7 +1,6 @@
-using System.Security.Cryptography;
-using System.Text;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -92,7 +91,7 @@ internal static class AssetAccountingCandidateCanonicalizer
 
     private static Guid CreateId(params string[] components)
     {
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(string.Join('|', components)));
+        var hash = Sha256Digest.ComputeBytesUtf8(string.Join('|', components));
         return new Guid(hash.AsSpan(0, 16));
     }
 }

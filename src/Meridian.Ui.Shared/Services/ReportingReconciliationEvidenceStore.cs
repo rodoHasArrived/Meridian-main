@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
 using Meridian.Storage.Archival;
@@ -394,19 +394,17 @@ public sealed class FileReportingReconciliationEvidenceStore :
 
     private static string ComputeSnapshotHash(
         IReadOnlyList<ReportingReconciliationEvidenceReceipt> receipts) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-            JsonSerializer.Serialize(
+        Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(
                 receipts.ToArray(),
                 typeof(ReportingReconciliationEvidenceReceipt[]),
-                ReportingReconciliationEvidenceJsonContext.Default)))).ToLowerInvariant();
+                ReportingReconciliationEvidenceJsonContext.Default));
 
     private static string ComputeLegacySnapshotHash(
         IReadOnlyList<ReportingReconciliationEvidenceReceipt> receipts) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-            JsonSerializer.Serialize(
+        Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(
                 receipts.Select(ToLegacyReceipt).ToArray(),
                 typeof(LegacyReportingReconciliationEvidenceReceipt[]),
-                ReportingReconciliationEvidenceJsonContext.Default)))).ToLowerInvariant();
+                ReportingReconciliationEvidenceJsonContext.Default));
 
     private static LegacyReportingReconciliationEvidenceReceipt ToLegacyReceipt(
         ReportingReconciliationEvidenceReceipt receipt) =>
@@ -542,7 +540,7 @@ public sealed class FileReportingReconciliationEvidenceStore :
             writer.WriteEndObject();
         }
 
-        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     private static void RequireLegacyText(string? value, string parameterName)
