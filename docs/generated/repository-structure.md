@@ -2096,6 +2096,7 @@ Meridian-main
 │   │   │   ├── web-accounting-journal-entries.png
 │   │   │   ├── web-accounting-journal-entry-detail.png
 │   │   │   ├── web-accounting-ledger.png
+│   │   │   ├── web-accounting-margin-control.png
 │   │   │   ├── web-accounting-operations-continuity.png
 │   │   │   ├── web-accounting-reconciliation-match.png
 │   │   │   ├── web-accounting-reconciliation.png
