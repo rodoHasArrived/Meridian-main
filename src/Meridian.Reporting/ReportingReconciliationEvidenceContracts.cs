@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
@@ -616,7 +616,7 @@ public static class ReportingReconciliationEvidenceValidation
             writer.WriteEndObject();
         }
 
-        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     private static ImmutableArray<string> BuildCloseWorkflowEvidenceIds(
@@ -820,7 +820,7 @@ public static class ReportingReconciliationEvidenceValidation
         {
             WriteBreakEvidence(writer, item, includeDeclaredHash: false);
         }
-        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     private static void WriteBreakEvidence(

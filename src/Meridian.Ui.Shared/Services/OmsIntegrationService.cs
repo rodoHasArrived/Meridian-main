@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Meridian.Ui.Shared.Contracts.Integrations;
 
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -183,7 +184,7 @@ internal sealed class InMemoryOmsIntegrationApiHandler : IOmsIntegrationApiHandl
     public OmsKeyRotationResult RotateSigningKey(OmsKeyRotationRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var material = SHA256.HashData(Encoding.UTF8.GetBytes($"{request.KeyId}|{request.CorrelationId}|{request.EffectiveAtUtc:O}"));
+        var material = Sha256Digest.ComputeBytesUtf8($"{request.KeyId}|{request.CorrelationId}|{request.EffectiveAtUtc:O}");
         _signingKeys.AddOrUpdate(request.KeyId, material, (_, _) => material);
         EnqueueAudit(new OmsIntegrationAuditEntry(
             _timeProvider.GetUtcNow(),
@@ -249,7 +250,7 @@ internal sealed class InMemoryOmsIntegrationApiHandler : IOmsIntegrationApiHandl
     private static string ComputeKey(OmsInboundMessage msg)
     {
         var raw = $"{msg.SourceSystem}|{msg.ExternalOrderId}|{msg.EventType}|{msg.EventTimestampUtc:O}|{msg.PayloadHash}";
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(raw));
+        var hash = Sha256Digest.ComputeBytesUtf8(raw);
         return Convert.ToHexString(hash);
     }
 

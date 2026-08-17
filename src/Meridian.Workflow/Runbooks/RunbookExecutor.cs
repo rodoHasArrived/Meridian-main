@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 
 namespace Meridian.Workflow.Runbooks;
@@ -808,8 +808,7 @@ public sealed class RunbookExecutor : IRunbookExecutor
         string description,
         DateTimeOffset capturedAtUtc)
     {
-        var contentHash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(
-            $"{evidenceId}\n{kind}\n{description}\n{capturedAtUtc:O}")));
+        var contentHash = Sha256Digest.ComputeUtf8($"{evidenceId}\n{kind}\n{description}\n{capturedAtUtc:O}");
         return new OperationEvidenceReference(
             evidenceId,
             kind,
@@ -829,17 +828,17 @@ public sealed class RunbookExecutor : IRunbookExecutor
             .Append(definition.UpdatedAtUtc.ToUniversalTime().ToString("O"));
         foreach (var step in definition.Steps)
         {
-            var payloadHash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(step.Payload ?? string.Empty)));
+            var payloadHash = Sha256Digest.ComputeUtf8(step.Payload ?? string.Empty);
             builder.Append('\n').Append(step.Kind).Append(':').Append(payloadHash);
         }
 
-        return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString())));
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static string ComputeStepInputHash(RunbookStep step)
     {
         var value = $"{step.Kind}\n{step.Payload}";
-        return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
+        return Sha256Digest.ComputeUtf8(value);
     }
 
     private sealed class CaseHistoryAppendException(Exception innerException)

@@ -1,7 +1,7 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 
@@ -511,7 +511,7 @@ public sealed class ReconciliationGovernanceService
     private static string ComputeSnapshotFingerprint(ReconciliationRunDetail detail)
     {
         var payload = JsonSerializer.SerializeToUtf8Bytes(detail, FingerprintJsonOptions);
-        return $"sha256:{Convert.ToHexString(SHA256.HashData(payload)).ToLowerInvariant()}";
+        return $"sha256:{Sha256Digest.Compute(payload)}";
     }
 
     private static decimal Absolute(decimal value) =>

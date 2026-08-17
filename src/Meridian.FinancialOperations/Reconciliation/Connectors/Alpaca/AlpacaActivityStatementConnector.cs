@@ -1,7 +1,7 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution.Sdk;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca;
@@ -325,7 +325,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             records,
             issues,
             new StatementFormatFingerprint(
-                Convert.ToHexString(SHA256.HashData(document.Content.Span)).ToLowerInvariant(),
+                Sha256Digest.Compute(document.Content.Span),
                 detectedColumns.Select(static column => column.ToLowerInvariant()).ToArray(),
                 "json"),
             AccountSnapshots: snapshot.Portfolio?.AccountSnapshot is { } accountSnapshot ? [accountSnapshot] : [],

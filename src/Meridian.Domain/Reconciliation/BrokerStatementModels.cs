@@ -1,6 +1,5 @@
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Domain.Reconciliation;
 
@@ -168,7 +167,7 @@ public static class StatementDuplicateKey
 
         var material = string.Join('|', materialParts);
 
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(material));
+        var bytes = Sha256Digest.ComputeBytesUtf8(material);
         return Convert.ToHexString(bytes);
     }
 
@@ -300,7 +299,7 @@ public static class StatementDuplicateKey
     private static string Hash(IReadOnlyList<string> materialParts)
     {
         var material = string.Join('|', materialParts);
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(material));
+        var bytes = Sha256Digest.ComputeBytesUtf8(material);
         return Convert.ToHexString(bytes);
     }
 

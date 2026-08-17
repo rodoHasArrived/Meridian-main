@@ -1,7 +1,7 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.StrategyEngine;
 
 namespace Meridian.Strategies.Services;
@@ -402,6 +402,6 @@ public sealed class StrategyEngineValidationService
                 .ToDictionary(static item => item.Key.Trim(), static item => item.Value?.Trim() ?? string.Empty, StringComparer.OrdinalIgnoreCase)
         };
         var json = JsonSerializer.Serialize(canonical, HashJsonOptions);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(json);
     }
 }

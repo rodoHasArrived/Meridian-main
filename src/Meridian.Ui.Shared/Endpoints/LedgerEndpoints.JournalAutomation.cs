@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
@@ -80,18 +81,19 @@ public static partial class LedgerEndpoints
 
                 if (existing?.State == AutomatedJournalScheduleStateDto.Running)
                 {
-                    return Results.Conflict(new
-                    {
-                        error = $"Automated journal schedule '{existing.ScheduleId}' is Running and cannot be reconfigured until its durable claim completes or resumes."
-                    });
+                    return ApiProblemDetails.Conflict(
+                        context,
+                        $"Automated journal schedule '{existing.ScheduleId}' is Running and cannot be reconfigured until its durable claim completes or resumes.");
                 }
 
                 if (existing is not null && request.Version != existing.Version)
                 {
-                    return Results.Conflict(new
-                    {
-                        error = $"Automated journal schedule '{existing.ScheduleId}' version is stale. Expected {request.Version}, current {existing.Version}."
-                    });
+                    return ApiProblemDetails.VersionConflict(
+                        context,
+                        $"Automated journal schedule '{existing.ScheduleId}' version is stale. Expected {request.Version}, current {existing.Version}.",
+                        resourceId: existing.ScheduleId,
+                        expectedVersion: request.Version.ToString(CultureInfo.InvariantCulture),
+                        currentVersion: existing.Version.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (existing is not null && existing.JournalEntryIds.Count > 0)
@@ -115,10 +117,9 @@ public static partial class LedgerEndpoints
                             ManualJournalEntryStatusDto.Submitted or
                             ManualJournalEntryStatusDto.Approved)
                         {
-                            return Results.Conflict(new
-                            {
-                                error = $"Automated journal schedule '{existing.ScheduleId}' cannot be re-armed while retained draft '{journalEntryId:D}' is pending. Post or reject the current draft before rearming."
-                            });
+                            return ApiProblemDetails.Conflict(
+                                context,
+                                $"Automated journal schedule '{existing.ScheduleId}' cannot be re-armed while retained draft '{journalEntryId:D}' is pending. Post or reject the current draft before rearming.");
                         }
                     }
                 }
@@ -176,7 +177,14 @@ public static partial class LedgerEndpoints
             }
             catch (AutomatedJournalScheduleConcurrencyException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                // Canonical optimistic-concurrency contract: the exception's version data reaches
+                // the client instead of being flattened into the message text.
+                return ApiProblemDetails.VersionConflict(
+                    context,
+                    ex.Message,
+                    resourceId: ex.ScheduleId,
+                    expectedVersion: ex.ExpectedVersion.ToString(CultureInfo.InvariantCulture),
+                    currentVersion: ex.ActualVersion.ToString(CultureInfo.InvariantCulture));
             }
             catch (InvalidOperationException)
             {
@@ -187,7 +195,7 @@ public static partial class LedgerEndpoints
         .Produces<AutomatedJournalScheduleWorkItem>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
@@ -299,10 +307,9 @@ public static partial class LedgerEndpoints
                             ManualJournalEntryStatusDto.Submitted or
                             ManualJournalEntryStatusDto.Approved)
                         {
-                            return Results.Conflict(new
-                            {
-                                error = $"Daily valuation schedule '{existing.ScheduleId}' cannot be reconfigured while retained batch draft '{journalEntryId:D}' is pending. Post or reject the current batch first."
-                            });
+                            return ApiProblemDetails.Conflict(
+                                context,
+                                $"Daily valuation schedule '{existing.ScheduleId}' cannot be reconfigured while retained batch draft '{journalEntryId:D}' is pending. Post or reject the current batch first.");
                         }
                     }
                 }
@@ -339,7 +346,7 @@ public static partial class LedgerEndpoints
         .Produces<DailyValuationScheduleWorkItem>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
@@ -411,14 +418,14 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
         .WithName("ApproveAndPostLedgerJournalAutomationDailyMarkToMarketBatch")
         .Produces<DailyValuationBatchLifecycleResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
@@ -454,14 +461,14 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
         .WithName("RunLedgerJournalAutomationDailyMarkToMarketIntake")
         .Produces<DailyMarkToMarketIntakeRunResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
@@ -497,14 +504,14 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
         .WithName("RunLedgerJournalAutomationDividendIntake")
         .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
@@ -542,14 +549,14 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
         .WithName("RunLedgerJournalAutomationFeeAccrualIntake")
         .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
@@ -585,14 +592,14 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
         .WithName("RunLedgerJournalAutomationPeriodCloseIntake")
         .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()

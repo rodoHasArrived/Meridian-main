@@ -1,8 +1,8 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Replay;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Export;
 
@@ -478,7 +478,7 @@ load_trades <- function(symbol = NULL) {
     private async Task<string> ComputeChecksumAsync(string path, CancellationToken ct)
     {
         await using var stream = File.OpenRead(path);
-        var hash = await SHA256.HashDataAsync(stream, ct);
+        var hash = await Sha256Digest.ComputeBytesAsync(stream, ct);
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 

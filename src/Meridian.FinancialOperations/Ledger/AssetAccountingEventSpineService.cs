@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
@@ -1234,7 +1233,7 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
     private static string Fingerprint(AssetAccountingEventSpineDto projection)
     {
         var payload = JsonSerializer.SerializeToUtf8Bytes(projection, CanonicalJsonOptions);
-        return Convert.ToHexString(SHA256.HashData(payload)).ToLowerInvariant();
+        return Sha256Digest.Compute(payload);
     }
 
     private static bool PayloadEquals<T>(T left, T right)

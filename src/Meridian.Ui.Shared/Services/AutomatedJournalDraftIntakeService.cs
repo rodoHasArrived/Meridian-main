@@ -1,7 +1,7 @@
-using System.Security.Cryptography;
-using System.Text;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
+using Meridian.Contracts.Integrity;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -317,7 +317,7 @@ public sealed class AutomatedJournalDraftIntakeService
         string? periodId,
         string? entityId)
     {
-        var pendingBatchCorrelationId = NormalizeText(
+        var pendingBatchCorrelationId = NormalizeOptional(
             pendingOverlap.TreasuryContext?.BatchCorrelationId);
         return existingDrafts
             .Where(IsPendingDailyValuationDraft)
@@ -332,7 +332,7 @@ public sealed class AutomatedJournalDraftIntakeService
                 StringComparison.OrdinalIgnoreCase))
             .Where(existingDraft => pendingBatchCorrelationId is not null
                 ? string.Equals(
-                    NormalizeText(existingDraft.TreasuryContext?.BatchCorrelationId),
+                    NormalizeOptional(existingDraft.TreasuryContext?.BatchCorrelationId),
                     pendingBatchCorrelationId,
                     StringComparison.OrdinalIgnoreCase)
                 : HasOverlappingValuationScope(existingDraft, candidate))
@@ -392,9 +392,6 @@ public sealed class AutomatedJournalDraftIntakeService
     private static string? NormalizeOptionalUpperInvariant(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim().ToUpperInvariant();
 
-    private static string? NormalizeText(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private sealed record ValuationScopeKey(Guid? SecurityId, string? Symbol, string? FinancialAccountId);
 
     private static ManualJournalEntryDraftDto BuildDraftDto(
@@ -453,7 +450,7 @@ public sealed class AutomatedJournalDraftIntakeService
             TreasuryContext: new TreasuryLedgerContextDto(
                 EffectiveDate: effectiveDate,
                 IdempotencyKey: idempotencyKey,
-                BatchCorrelationId: NormalizeText(request.BatchCorrelationId)),
+                BatchCorrelationId: NormalizeOptional(request.BatchCorrelationId)),
             AutomationEvidenceAssessment: evidenceAssessment);
     }
 
@@ -485,7 +482,7 @@ public sealed class AutomatedJournalDraftIntakeService
     {
         var seed = FormattableString.Invariant(
             $"automated-journal|tenant={NormalizeIdentity(request.TenantId)}|company={NormalizeIdentity(request.CompanyId)}|fund={NormalizeIdentity(request.FundProfileId)}|book={request.LedgerBookId?.ToString("N") ?? "-"}|entity={NormalizeIdentity(request.EntityId)}|currency={NormalizeIdentity(request.Currency)}|event={idempotencyKey.Trim().ToLowerInvariant()}");
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(seed));
+        var hash = Sha256Digest.ComputeBytesUtf8(seed);
         return new Guid(hash.AsSpan(0, 16));
     }
 

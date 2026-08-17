@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.ComponentModel;
-using System.Security.Cryptography;
 using System.Text.Json.Serialization.Metadata;
 using Meridian.Contracts.Integrity;
 using Meridian.Domain.Reconciliation;
@@ -1305,8 +1304,8 @@ public sealed class StatementRunWorkflowService(
 
     private static string BuildDeterministicId(string prefix, string breakId)
     {
-        var hash = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(
-            $"{prefix}|{breakId.Trim()}"))).ToLowerInvariant();
+        var hash = Sha256Digest.Compute(System.Text.Encoding.UTF8.GetBytes(
+            $"{prefix}|{breakId.Trim()}"));
         return $"{prefix}:{hash[..24]}";
     }
 

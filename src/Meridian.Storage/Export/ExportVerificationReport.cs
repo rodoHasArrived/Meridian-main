@@ -1,8 +1,8 @@
-using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Core.Logging;
 using Serilog;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Export;
 
@@ -162,7 +162,7 @@ public sealed class ExportVerifier
     private static async Task<string> ComputeChecksumAsync(string path, CancellationToken ct)
     {
         await using var stream = File.OpenRead(path);
-        var hash = await SHA256.HashDataAsync(stream, ct);
+        var hash = await Sha256Digest.ComputeBytesAsync(stream, ct);
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 

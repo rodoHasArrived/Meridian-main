@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
 using static Meridian.Contracts.Text.TextPrimitives;
 
@@ -106,7 +107,7 @@ public sealed class ReportingAccessGrantService
             ct.ThrowIfCancellationRequested();
             var rawToken = RandomNumberGenerator.GetBytes(TokenByteCount);
             var token = Convert.ToHexString(rawToken).ToLowerInvariant();
-            var tokenHash = Convert.ToHexString(SHA256.HashData(rawToken)).ToLowerInvariant();
+            var tokenHash = Sha256Digest.Compute(rawToken);
             var grantId = $"grant_{Convert.ToHexString(RandomNumberGenerator.GetBytes(GrantIdByteCount)).ToLowerInvariant()}";
             var grant = new ReportingAccessGrantRecord(
                 grantId,
@@ -153,7 +154,7 @@ public sealed class ReportingAccessGrantService
         var grantId = NormalizeRequired(credential.GrantId, nameof(credential.GrantId));
         var rawToken = ParseToken(credential.Token);
         var token = Convert.ToHexString(rawToken).ToLowerInvariant();
-        var tokenHash = Convert.ToHexString(SHA256.HashData(rawToken)).ToLowerInvariant();
+        var tokenHash = Sha256Digest.Compute(rawToken);
         var now = _timeProvider.GetUtcNow();
         if (request.ExpiresAtUtc <= now)
         {
@@ -508,19 +509,19 @@ public sealed class ReportingAccessGrantService
     {
         if (string.IsNullOrWhiteSpace(token) || token.Length != TokenByteCount * 2)
         {
-            return SHA256.HashData(Array.Empty<byte>());
+            return Sha256Digest.ComputeBytes(Array.Empty<byte>());
         }
 
         try
         {
             var rawToken = Convert.FromHexString(token);
             return rawToken.Length == TokenByteCount
-                ? SHA256.HashData(rawToken)
-                : SHA256.HashData(Array.Empty<byte>());
+                ? Sha256Digest.ComputeBytes(rawToken)
+                : Sha256Digest.ComputeBytes(Array.Empty<byte>());
         }
         catch (FormatException)
         {
-            return SHA256.HashData(Array.Empty<byte>());
+            return Sha256Digest.ComputeBytes(Array.Empty<byte>());
         }
     }
 

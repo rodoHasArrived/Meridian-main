@@ -1,8 +1,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Immutable;
-using System.Security.Cryptography;
-using System.Text;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -1613,7 +1611,7 @@ public sealed class DeterministicReportingSectionRenderer : IReportingSectionRen
     private static string ComputeHash(params string[] values)
     {
         var joined = string.Join('|', values);
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(joined));
+        var bytes = Sha256Digest.ComputeBytesUtf8(joined);
         return Convert.ToHexString(bytes);
     }
 }

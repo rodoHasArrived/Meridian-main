@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.SecurityMaster;
@@ -2334,7 +2335,7 @@ public sealed partial class FundOperationsWorkspaceReadService
         };
 
         var json = JsonSerializer.SerializeToUtf8Bytes(source, ReportArtifactJsonOptions);
-        return Convert.ToHexString(SHA256.HashData(json)).ToLowerInvariant();
+        return Sha256Digest.Compute(json);
     }
 
     private static IReadOnlyList<FundReportPackLineagePointerDto> BuildLineagePointers(
@@ -4335,7 +4336,7 @@ public sealed partial class FundOperationsWorkspaceReadService
             builder.Append(row.TryGetValue(column.Name, out var value) ? value : string.Empty);
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static string BuildStructuredExportRoute(
@@ -4416,7 +4417,7 @@ public sealed partial class FundOperationsWorkspaceReadService
             retainedPath,
             retainedManifestPath,
             versionStamp);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(input))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(input);
     }
 
     private static string BuildStructuredExportIntegritySummary(

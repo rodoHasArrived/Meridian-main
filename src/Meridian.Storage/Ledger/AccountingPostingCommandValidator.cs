@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
@@ -6,6 +5,7 @@ using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using static Meridian.Contracts.Text.TextPrimitives;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Ledger;
 
@@ -482,8 +482,7 @@ public static class AccountingPostingCommandValidator
             WriteCanonicalJson(writer, element);
         }
 
-        var hash = SHA256.HashData(stream.ToArray());
-        return $"sha256:{Convert.ToHexString(hash).ToLowerInvariant()}";
+        return $"sha256:{Sha256Digest.Compute(stream.ToArray())}";
     }
 
     private static void WriteCanonicalJson(Utf8JsonWriter writer, JsonElement element)

@@ -548,12 +548,12 @@ public sealed partial class TradingOperatorReadinessService : ITradingOperatorRe
                 HasReference: false,
                 HasRetainedEvidence: false,
                 MatchesActiveOverride: !IsLiveOverrideChecklistItem(checklistItem),
-                RequiredManualOverrideId: NormalizeEvidenceReferenceToken(manualOverrideId));
+                RequiredManualOverrideId: Meridian.Contracts.Text.TextPrimitives.NormalizeOptional(manualOverrideId));
         }
 
         var value = GetPromotionEvidenceReferenceValue(reference);
         var hasRetainedEvidence = value.Length > 0;
-        var requiredManualOverrideId = NormalizeEvidenceReferenceToken(manualOverrideId);
+        var requiredManualOverrideId = Meridian.Contracts.Text.TextPrimitives.NormalizeOptional(manualOverrideId);
         var matchesActiveOverride = !IsLiveOverrideChecklistItem(checklistItem) ||
             (!string.IsNullOrWhiteSpace(requiredManualOverrideId) &&
              ContainsPromotionEvidenceReferenceToken(value, requiredManualOverrideId));

@@ -1,10 +1,10 @@
 {
-  "total_files": 650,
-  "total_lines": 129473,
-  "orphaned_count": 255,
+  "total_files": 651,
+  "total_lines": 129681,
+  "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 233,
+  "todo_count": 238,
   "average_lines": 199.2,
   "health_score": 80,
   "orphaned_files": [
@@ -218,7 +218,6 @@
     "docs/engineering/security-master-architecture-audit-2026-08-13.md",
     "docs/engineering/wpf-perf-uiux-audit-2026-06-14.md",
     "docs/generated/configuration-schema.md",
-    "docs/generated/documentation-coverage.md",
     "docs/generated/interfaces.md",
     "docs/generated/project-dependencies.md",
     "docs/generated/provider-registry.md",
@@ -1154,7 +1153,7 @@
     },
     {
       "path": "docs/ai/claude/CLAUDE.storage.md",
-      "line_count": 813,
+      "line_count": 790,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1162,7 +1161,7 @@
     },
     {
       "path": "docs/ai/claude/CLAUDE.structure.md",
-      "line_count": 1595,
+      "line_count": 1594,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2209,6 +2208,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/docs-regeneration-automation-design.md",
+      "line_count": 328,
+      "has_heading": true,
+      "todo_count": 5,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/free-development-tools.md",
       "line_count": 74,
       "has_heading": true,
@@ -2250,7 +2257,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 302,
+      "line_count": 303,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2569,14 +2576,6 @@
       "stale": false
     },
     {
-      "path": "docs/generated/documentation-coverage.md",
-      "line_count": 202,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/generated/interfaces.md",
       "line_count": 4,
       "has_heading": true,
@@ -2618,7 +2617,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10465,
+      "line_count": 10464,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2746,7 +2745,7 @@
     },
     {
       "path": "docs/operators/failover-and-recovery.md",
-      "line_count": 182,
+      "line_count": 162,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2938,7 +2937,7 @@
     },
     {
       "path": "docs/product/adversarial-review-2026-08-remediation-plan.md",
-      "line_count": 1182,
+      "line_count": 1215,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2970,7 +2969,7 @@
     },
     {
       "path": "docs/product/functionality-deepening-brainstorm-2026-07.md",
-      "line_count": 669,
+      "line_count": 674,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3123,6 +3122,14 @@
     {
       "path": "docs/reference/accounting-report-packs.md",
       "line_count": 423,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/api-conflict-contract.md",
+      "line_count": 94,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3314,7 +3321,7 @@
     },
     {
       "path": "docs/reference/README.md",
-      "line_count": 139,
+      "line_count": 140,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5082,7 +5089,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 576,
+      "line_count": 569,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

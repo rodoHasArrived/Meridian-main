@@ -237,9 +237,7 @@ public static class ReportingGovernanceCanonicalValidation
                 "The source and reconciliation checkpoint identities must be distinct.");
         }
 
-        var parameterHash = Convert.ToHexString(SHA256.HashData(
-                Encoding.UTF8.GetBytes(snapshot.ParametersCanonicalJson!)))
-            .ToLowerInvariant();
+        var parameterHash = Sha256Digest.ComputeUtf8(snapshot.ParametersCanonicalJson!);
         if (!StringComparer.Ordinal.Equals(snapshot.ParametersHash, parameterHash))
         {
             throw new ReportingGovernanceException(
@@ -350,8 +348,7 @@ public static class ReportingGovernanceCanonicalValidation
             }
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical.ToString());
     }
 
     public static string ComputeImmutableRunFingerprint(GovernedReportingRun run)
@@ -370,8 +367,7 @@ public static class ReportingGovernanceCanonicalValidation
         AppendCanonical(canonical, run.CreatedAtUtc.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
         AppendCanonical(canonical, run.RestatementOfRunId);
         AppendCanonical(canonical, run.RestatementRequestId);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical.ToString());
     }
 
     public static string BuildInitialRunAuditNote(GovernedReportingRun run) =>
@@ -411,8 +407,7 @@ public static class ReportingGovernanceCanonicalValidation
             AppendCanonical(canonical, request.ApprovedAtUtc?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
             AppendCanonical(canonical, request.DraftRunId);
         }
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical.ToString());
     }
 
     public static string BuildRestatementRequestAuditNote(ReportingRestatementRequest request) =>
@@ -447,8 +442,7 @@ public static class ReportingGovernanceCanonicalValidation
         {
             AppendCanonical(canonical, evidenceId);
         }
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical.ToString());
     }
 
     public static string BuildReleaseAuditNote(ReportingReleaseReceipt release) =>

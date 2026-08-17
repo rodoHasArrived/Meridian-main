@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Identity.Auth;
 using Meridian.Strategies.Models;
@@ -409,7 +409,7 @@ public static class StrategyLifecycleEndpoints
     }
 
     private static string HashText(string value) =>
-        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
+        Sha256Digest.ComputeUtf8(value);
 }
 
 // --- DTOs ---

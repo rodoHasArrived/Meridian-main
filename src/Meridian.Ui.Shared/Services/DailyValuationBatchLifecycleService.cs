@@ -1,6 +1,7 @@
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using static Meridian.Contracts.Text.TextPrimitives;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -376,7 +377,7 @@ public sealed class DailyValuationBatchLifecycleService
     {
         var seed = System.Text.Encoding.UTF8.GetBytes(
             $"daily-valuation-lifecycle|{batchCorrelationId}|{journalEntryId:N}|{action}");
-        return new Guid(System.Security.Cryptography.SHA256.HashData(seed).AsSpan(0, 16)).ToString("D");
+        return new Guid(Sha256Digest.ComputeBytes(seed).AsSpan(0, 16)).ToString("D");
     }
 
     private static string BuildRecoveredBatchCorrelationId(
@@ -385,7 +386,7 @@ public sealed class DailyValuationBatchLifecycleService
     {
         var seed = System.Text.Encoding.UTF8.GetBytes(
             $"daily-valuation-recovered-lifecycle|{schedule.ScheduleId.Trim().ToLowerInvariant()}|{string.Join('|', journalEntryIds.Order())}");
-        return new Guid(System.Security.Cryptography.SHA256.HashData(seed).AsSpan(0, 16)).ToString("D");
+        return new Guid(Sha256Digest.ComputeBytes(seed).AsSpan(0, 16)).ToString("D");
     }
 
     private static string ActionEvidenceToken(JournalEntryLifecycleActionDto action)

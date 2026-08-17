@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 
@@ -504,7 +504,7 @@ public sealed record StrategyRunEntry(
         AppendCanonicalCollection(builder, nameof(PaperValidationReferences), paperValidationReferences);
         AppendCanonicalCollection(builder, nameof(GovernedReportReferences), governedReportReferences);
 
-        return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString())));
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     /// <summary>
@@ -546,7 +546,7 @@ public sealed record StrategyRunEntry(
             AppendCanonical(builder, parameter.Value);
         }
 
-        return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString())));
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     internal static string ComputeLegacyInputHash(
@@ -573,7 +573,7 @@ public sealed record StrategyRunEntry(
             AppendCanonical(builder, parameter.Value);
         }
 
-        return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString())));
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     internal static bool HasNonBlankEvidenceDeclarations(

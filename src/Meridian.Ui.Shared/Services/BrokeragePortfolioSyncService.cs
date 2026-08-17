@@ -9,6 +9,7 @@ using Meridian.Storage.Archival;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -160,7 +161,7 @@ public sealed class BrokeragePortfolioSyncService
         if (link is null)
         {
             var requestProviderId = NormalizeProviderId(request.ProviderId);
-            var requestExternalAccountId = NormalizeExternalAccountId(request.ExternalAccountId);
+            var requestExternalAccountId = NormalizeOptional(request.ExternalAccountId);
             if (requestProviderId is not null && requestExternalAccountId is not null)
             {
                 link = new WorkstationBrokerageAccountLinkDto(
@@ -362,7 +363,7 @@ public sealed class BrokeragePortfolioSyncService
         }
 
         var providerId = NormalizeProviderId(request.ProviderId);
-        var externalAccountId = NormalizeExternalAccountId(request.ExternalAccountId);
+        var externalAccountId = NormalizeOptional(request.ExternalAccountId);
         if (providerId is null || externalAccountId is null)
         {
             return null;
@@ -1106,7 +1107,7 @@ public sealed class BrokeragePortfolioSyncService
         CancellationToken ct)
     {
         var requestProviderId = NormalizeProviderId(request?.ProviderId);
-        var requestExternalAccountId = NormalizeExternalAccountId(request?.ExternalAccountId);
+        var requestExternalAccountId = NormalizeOptional(request?.ExternalAccountId);
         if (requestProviderId is not null && requestExternalAccountId is not null)
         {
             var requestedAccount = await ResolveFundAccountAsync(fundAccountId, ct).ConfigureAwait(false);
@@ -1134,9 +1135,9 @@ public sealed class BrokeragePortfolioSyncService
 
         var providerId = NormalizeProviderId(account.Institution)
             ?? _options.DefaultProviderId;
-        var externalAccountId = NormalizeExternalAccountId(account.CustodianDetails?.SubAccountNumber)
-            ?? NormalizeExternalAccountId(account.PortfolioId)
-            ?? NormalizeExternalAccountId(account.AccountCode);
+        var externalAccountId = NormalizeOptional(account.CustodianDetails?.SubAccountNumber)
+            ?? NormalizeOptional(account.PortfolioId)
+            ?? NormalizeOptional(account.AccountCode);
 
         if (string.IsNullOrWhiteSpace(providerId) || string.IsNullOrWhiteSpace(externalAccountId))
         {
@@ -1295,9 +1296,6 @@ public sealed class BrokeragePortfolioSyncService
             ? "alpaca"
             : value.ToLowerInvariant();
     }
-
-    private static string? NormalizeExternalAccountId(string? externalAccountId)
-        => string.IsNullOrWhiteSpace(externalAccountId) ? null : externalAccountId.Trim();
 
     private static void ValidatePortfolioSnapshot(
         WorkstationBrokerageAccountLinkDto link,
