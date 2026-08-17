@@ -1,5 +1,6 @@
 import importlib.util
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -168,6 +169,51 @@ class GeneratorContractTests(unittest.TestCase):
         # half the guard against a metric that inflates itself.
         self.assertEqual(("docs/status", "docs/generated"), module.GENERATED_DOC_ROOTS)
 
+    def test_the_corpus_is_an_allowlist_of_contract_roots(self) -> None:
+        # Subtracting prose does not converge -- four review rounds on #2703 each found a document
+        # where root, file, or heading filtering guessed wrong. The corpus is now the roots that
+        # exist to describe contracts. Pinned so widening it is a deliberate edit, not a drift.
+        self.assertEqual(("docs/reference",), module.CONTRACT_DOC_ROOTS)
+
+    def test_a_document_outside_the_allowlist_is_dropped(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            route = "/api/auth/accounts/{username}/password-reset"
+            # Both a prose review and a delivery plan that states a contract's field set while
+            # arguing it is incomplete -- the shape no syntactic rule separated reliably.
+            for rel in ("docs/product/analysis.md", "docs/product/w9-delivery-plan.md"):
+                path = root / rel
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(f"### W9-INGEST-009\n\n`{route}` carries no scope.\n", encoding="utf-8")
+
+            self.assertFalse(documents_route(route, module._load_docs_text(root)))
+
+            reference = root / "docs/reference/auth-api.md"
+            reference.parent.mkdir(parents=True, exist_ok=True)
+            reference.write_text(f"### `POST {route}`\n\nResets a password.\n", encoding="utf-8")
+
+            # The same route in a reference document still counts, so the exclusion narrows the
+            # corpus rather than breaking the metric.
+            self.assertTrue(documents_route(route, module._load_docs_text(root)))
+
+    def test_a_contract_heading_outside_the_allowlist_does_not_rescue_a_document(self) -> None:
+        # The heading rule this replaced would have credited this. It is dropped now because the
+        # question is no longer "does this document look like a contract description" -- which was
+        # not decidable -- but "is it reference documentation".
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            route = "/api/fund-structure/reporting/runs/{runId}/stream"
+            blueprint = root / "docs/product/report-run-stream-blueprint.md"
+            blueprint.parent.mkdir(parents=True, exist_ok=True)
+            blueprint.write_text(
+                f"## 7. Contracts summary\n\n- **New wire:** `GET {route}`\n", encoding="utf-8")
+
+            self.assertFalse(documents_route(route, module._load_docs_text(root)))
+
     def test_the_boundary_rule_is_reachable_from_the_dashboard(self) -> None:
         # `_index_docs` replaced a per-item scan that these tests used to call directly. Once the
         # scan was no longer on the hot path, tests against it proved nothing about the artifact.
@@ -187,6 +233,86 @@ class _CoverageModuleTestCase(unittest.TestCase):
         self.cov = importlib.util.module_from_spec(spec_cov)
         sys.modules[spec_cov.name] = self.cov
         spec_cov.loader.exec_module(self.cov)
+
+
+class CoverageCorpusExclusionTests(_CoverageModuleTestCase):
+    """The public-type metric shares the corpus flaw, so it takes the same exclusion (#2703)."""
+
+    def test_the_type_corpus_is_an_allowlist(self) -> None:
+        self.assertEqual(
+            ("docs/reference/", "docs/generated/database/"),
+            self.cov.DOC_CONTENT_INCLUDE_PREFIXES,
+        )
+
+    def test_the_corpus_holds_no_gitignored_root(self) -> None:
+        # docs/docfx/api/*.yml is gitignored (.gitignore:235) and rebuilt locally, so scanning it
+        # would make coverage depend on whether the operator had run DocFX -- a number CI and a
+        # developer would disagree about. The remediation must name a tracked root instead.
+        self.assertNotIn("docs/docfx/api/", self.cov.DOC_CONTENT_INCLUDE_PREFIXES)
+        self.assertTrue("docs/reference/".startswith(self.cov.DOC_CONTENT_INCLUDE_PREFIXES))
+
+    def test_the_public_type_remediation_names_a_scanned_root(self) -> None:
+        source = (SCRIPTS / "generate-coverage.py").read_text(encoding="utf-8")
+        recommendations = source[source.index("def _recommendations("):]
+        self.assertIn("docs/reference/", recommendations)
+        self.assertNotIn("Consider generating API docs with DocFX", recommendations)
+
+    def test_the_database_catalog_stays_in_the_type_corpus(self) -> None:
+        # The counterweight. Excluding docs/generated/ wholesale once dropped 41 files and marked
+        # 763 genuinely documented types as gaps; the catalog is reference material.
+        self.assertIn("docs/generated/database/", self.cov.DOC_CONTENT_INCLUDE_PREFIXES)
+
+    def test_reference_roots_stay_in_the_type_corpus(self) -> None:
+        # The counterweight: an earlier over-exclusion here dropped 41 files and marked 763
+        # genuinely documented types as gaps. These roots carry real reference material.
+        for kept in ("docs/reference/", "docs/generated/database/"):
+            self.assertTrue(
+                kept.startswith(self.cov.DOC_CONTENT_INCLUDE_PREFIXES),
+                f"{kept} must remain in the documentation corpus",
+            )
+
+
+class AutoSyncSectionPreservationTests(_CoverageModuleTestCase):
+    """Two producers share docs/status/coverage-report.md.
+
+    scripts/update_coverage_report.py appends a `<!-- auto-sync:coverage -->` section with the
+    nightly test-coverage line; this generator rewrites the whole file. Since the default output
+    became the shared file (#2713), regeneration must carry the nightly section over instead of
+    silently deleting the latest reading.
+    """
+
+    def test_the_nightly_section_is_carried_over(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = Path(temp_dir) / "coverage-report.md"
+            output.write_text(
+                "# Old report\n\n<!-- auto-sync:coverage -->\n"
+                "**Last run:** 2026-08-15 — line coverage: **41.2%** (12 project(s))\n",
+                encoding="utf-8",
+            )
+            section = self.cov._preserved_auto_sync_section(output)
+
+            self.assertIn("<!-- auto-sync:coverage -->", section)
+            self.assertIn("41.2%", section)
+            self.assertNotIn("# Old report", section)
+
+    def test_no_section_means_nothing_is_appended(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = Path(temp_dir) / "coverage-report.md"
+            output.write_text("# Old report, no marker\n", encoding="utf-8")
+            self.assertEqual("", self.cov._preserved_auto_sync_section(output))
+
+    def test_a_missing_output_file_means_nothing_is_appended(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            self.assertEqual(
+                "",
+                self.cov._preserved_auto_sync_section(Path(temp_dir) / "absent.md"),
+            )
+
+    def test_the_write_path_carries_the_section(self) -> None:
+        # The helper only protects the report if the write site actually calls it.
+        source = (SCRIPTS / "generate-coverage.py").read_text(encoding="utf-8")
+        write_site = source[source.index("# Write Markdown report"):]
+        self.assertIn("_preserved_auto_sync_section(output)", write_site)
 
 
 class NamesTermTests(_CoverageModuleTestCase):
@@ -495,16 +621,21 @@ class CoverageReportBoundaryTests(_CoverageModuleTestCase):
         self.assertTrue(self._documented("PriceMark", "The `PriceMark` record carries"))
         self.assertTrue(self._documented("PriceMark", "PriceMark."))
 
-    def test_only_the_self_referential_reports_are_excluded(self) -> None:
-        # Narrow on purpose. `repository-structure.md` lists every path in the repository and
-        # `documentation-coverage.md` is this generator's own output, so both would let a type
-        # count as documented for existing or for being reported undocumented. Excluding the
-        # whole `docs/generated/` subtree instead — which an earlier revision of this branch did —
-        # dropped 41 files and marked 763 genuinely documented types as gaps.
+    def test_only_the_self_referential_reports_are_hard_excluded(self) -> None:
+        # Two separate reasons, both narrow on purpose.
+        #
+        # Self-referential: `repository-structure.md` lists every path in the repository, and
+        # `docs/status/` holds this generator's own report (coverage-report.md), so both would let
+        # a type count as documented for existing or for being reported undocumented. Excluding
+        # the whole `docs/generated/` subtree instead — which an earlier revision of this branch
+        # did — dropped 41 files and marked 763 genuinely documented types as gaps. The old
+        # second copy at docs/generated/documentation-coverage.md was deleted with #2713.
+        #
+        # Prose roots are handled separately by PROSE_DOC_PREFIXES, which filters per document
+        # rather than per root so contract-bearing blueprints keep their credits (#2703).
         self.assertEqual(
             (
                 "docs/status/",
-                "docs/generated/documentation-coverage.md",
                 "docs/generated/repository-structure.md",
             ),
             self.cov.DOC_CONTENT_EXCLUDE_PREFIXES,
@@ -521,8 +652,7 @@ class CoverageReportBoundaryTests(_CoverageModuleTestCase):
 
         excluded = [
             k for k in loaded
-            if k in ("docs/generated/documentation-coverage.md",
-                     "docs/generated/repository-structure.md")
+            if k == "docs/generated/repository-structure.md"
             or k.startswith("docs/status/")
         ]
         self.assertEqual([], excluded)

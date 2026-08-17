@@ -510,6 +510,7 @@ public sealed class WorkflowLibraryEndpointTests
         context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
         context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
         context.Items[LoginSessionMiddleware.CurrentUserKey] = "workflow-test-operator";
+        context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = Meridian.Identity.Auth.UserPermission.ViewStrategies;
         await next();
     }
 }

@@ -1,3 +1,4 @@
+using static Meridian.Contracts.Text.TextPrimitives;
 namespace Meridian.Contracts.Ledger;
 
 /// <summary>
@@ -42,7 +43,12 @@ public static class LedgerDimensionTags
                || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
                || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
                || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)
-               || dimensions.ExternalGlDimensions.Count > 0
+               // A blank key or value is not a dimension. ExtractExternalGlDimensions never emits
+               // one, so this only bites on a caller-supplied dictionary -- where the close path
+               // already answered "not dimensioned" and everyone else answered "dimensioned".
+               // Holding that rule here keeps the two from disagreeing (#2672).
+               || dimensions.ExternalGlDimensions.Any(static pair =>
+                      !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
                || !string.IsNullOrWhiteSpace(dimensions.OrganizationId)
                || !string.IsNullOrWhiteSpace(dimensions.PortfolioId)
                || !string.IsNullOrWhiteSpace(dimensions.BookId)
@@ -145,7 +151,4 @@ public static class LedgerDimensionTags
         => value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
             ? NormalizeOptional(value[prefix.Length..])
             : null;
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

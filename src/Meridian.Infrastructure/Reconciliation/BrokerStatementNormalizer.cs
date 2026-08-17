@@ -1,6 +1,5 @@
-using System.Security.Cryptography;
-using System.Text;
 using Meridian.Domain.Reconciliation;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Infrastructure.Reconciliation;
 
@@ -23,7 +22,6 @@ public sealed class BrokerStatementNormalizer
 
     private static string ComputeFingerprint(string value)
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(value));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(value);
     }
 }

@@ -146,6 +146,12 @@ verify_dotnet() {
   run_step "Enforce no-new-god-file ratchet" \
     "$python_cmd" build/scripts/ci/check-file-size.py
 
+  run_step "Enforce consolidated-helper duplication ratchet" \
+    "$python_cmd" build/scripts/ci/check-duplicate-helpers.py
+
+  run_step "Enforce inline SHA-256 hashing ratchet" \
+    "$python_cmd" build/scripts/ci/check-inline-sha256.py
+
   run_step "Build web workstation .NET lane" \
     bash -c 'set -euo pipefail; dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore -p:EnableWindowsTargeting=true -p:UseAppHost=false 2>&1 | tee artifacts/build-logs/web-workstation-build.log'
 
@@ -204,6 +210,12 @@ verify_docs() {
   # runbook link that does not resolve strands the responder. Both used to be invisible.
   run_step "Validate observability contract" \
     "$python_cmd" build/scripts/ci/validate-observability-contract.py --summary
+
+  # The shipped sample config is what operators copy first. A provider value that is not a
+  # DataSourceKind member throws at startup because the converter fails closed, and a
+  # secret-shaped key teaches users to keep credentials in JSON the sample itself disclaims.
+  run_step "Validate sample config data sources" \
+    "$python_cmd" build/scripts/ci/check-sample-config-datasources.py
 
   # The contract gate is static. It cannot tell whether a rule fires on the condition it
   # claims, which is where every monitoring regression here has actually lived, so promtool

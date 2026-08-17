@@ -1,7 +1,7 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrations;
+using Meridian.Contracts.Integrity;
 using Meridian.Storage.Archival;
 
 namespace Meridian.Storage.Integrations;
@@ -288,5 +288,5 @@ public sealed class FileProviderIntegrationManifestStore :
     }
 
     private static string HashSegment(string value)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+        => Sha256Digest.ComputeUtf8(value);
 }

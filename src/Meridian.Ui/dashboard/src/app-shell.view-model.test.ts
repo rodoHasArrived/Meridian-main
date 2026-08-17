@@ -114,7 +114,7 @@ describe("app shell view model", () => {
     expect(trustStripSource).toContain("export function buildTrustStripState");
     expect(trustStripSource).toContain("function buildProviderTrustStripItem");
     expect(trustStripSource).toContain("function formatCount");
-    expect(trustStripSource).toContain("packageJson.version");
+    expect(trustStripSource).toContain("__APP_VERSION__");
     expect(trustStripSource).toContain("Provider posture has not loaded yet.");
     expect(commandPaletteSource).toContain("export function buildCommandPaletteTriggerState");
     expect(commandPaletteSource).toContain("export function resolveAppShellCommandPaletteShortcut");
@@ -216,7 +216,7 @@ describe("app shell view model", () => {
     expect(source).not.toContain("function buildProviderTrustStripItem");
     expect(source).not.toContain("function titleCase");
     expect(source).not.toContain("function formatCount");
-    expect(source).not.toContain("packageJson.version");
+    expect(source).not.toContain("__APP_VERSION__");
     expect(source).not.toContain("Provider posture has not loaded yet.");
     expect(source).not.toContain("export function buildCommandPaletteTriggerState");
     expect(source).not.toContain("export function resolveAppShellCommandPaletteShortcut");

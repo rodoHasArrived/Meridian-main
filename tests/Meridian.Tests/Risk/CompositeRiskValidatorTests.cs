@@ -240,6 +240,41 @@ public sealed class CompositeRiskValidatorTests
             "a pricing gap establishes no breach, so one unpriceable order must not halt the desk");
     }
 
+    /// <summary>
+    /// An escalate-capable rule that could not measure the order is refused with its reason
+    /// intact, and not offered for release.
+    /// <para>
+    /// The escalation path deliberately excludes unmeasurable results — an operator can authorise
+    /// accepting a known breach, not a measurement that never happened — which leaves them to the
+    /// severity switch below it. That switch treated every Escalate result as "another rule owns
+    /// the refusal", so when this was the only refusing rule the order came back blocked (the
+    /// violation is blocking, and <see cref="RiskValidationResult.IsApproved"/> computes false as a
+    /// safety net) but carrying no reject reason and with the unmeasurable flag cleared. The
+    /// submitter was told an order was refused and nothing about why.
+    /// </para>
+    /// </summary>
+    [Fact]
+    public async Task ValidateOrderAsync_EscalatingRuleCannotMeasureOrder_RejectsWithItsReasonRatherThanSilently()
+    {
+        var validator = new CompositeRiskValidator(
+            [
+                new StubRiskRule(
+                    "price-collar",
+                    RiskValidationResult.Unmeasurable("No reference price is available to measure this order."),
+                    severity: RiskRuleSeverity.Escalate)
+            ],
+            NullLogger<CompositeRiskValidator>.Instance);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse("an order that cannot be measured still fails closed");
+        result.IsUnmeasurable.Should().BeTrue("the outcome must stay unmeasurable so no approval can release it");
+        result.RequiresApproval.Should().BeFalse("nothing was measured, so there is no breach to approve");
+        result.RejectReason.Should().Contain(
+            "No reference price",
+            "a refusal with no stated reason leaves the submitter unable to act on it");
+    }
+
     [Fact]
     public async Task ValidateOrderAsync_CriticalSeverityWithBreakerAlreadyOpen_DoesNotRewriteBreakerState()
     {

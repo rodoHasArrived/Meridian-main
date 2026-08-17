@@ -12,6 +12,7 @@ using Meridian.Reporting;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -402,7 +403,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             var archivedAtUtc = DateTimeOffset.UtcNow;
             var archivedPayloadHash = ComputeCanonicalHash(state.Snapshot.LegacySchedules);
             var receipt = new ReportingLegacyArchiveReceipt(
-                ComputeSha256(JsonSerializer.Serialize(new
+                Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
                 {
                     kind = "schedule",
                     actor = recoveryAuthority.ActorPrincipalId!.Trim(),
@@ -530,8 +531,8 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             NormalizeOptional(schedule.TenantId),
             NormalizeOptional(schedule.CompanyId),
             rawPayload,
-            ComputeSha256(rawPayload),
-            ComputeSha256(CanonicalizeJson(rawPayload)),
+            Sha256Digest.ComputeUtf8(rawPayload),
+            Sha256Digest.ComputeUtf8(CanonicalizeJson(rawPayload)),
             LegacyScheduleRemediation);
     }
 
@@ -600,7 +601,6 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
                     throw new InvalidDataException(
                         $"The reporting schedule snapshot contains duplicate release handoff '{handoff.HandoffId}'.");
                 }
-
             }
         }
     }
@@ -617,10 +617,10 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
                 || (string.IsNullOrWhiteSpace(entry.TenantId) != string.IsNullOrWhiteSpace(entry.CompanyId))
                 || string.IsNullOrWhiteSpace(entry.RawPayloadJson)
                 || !string.Equals(entry.Remediation, LegacyScheduleRemediation, StringComparison.Ordinal)
-                || !Sha256Digest.FixedEquals(entry.RawPayloadHashSha256, ComputeSha256(entry.RawPayloadJson))
+                || !Sha256Digest.FixedEquals(entry.RawPayloadHashSha256, Sha256Digest.ComputeUtf8(entry.RawPayloadJson))
                 || !Sha256Digest.FixedEquals(
                     entry.CanonicalPayloadHashSha256,
-                    ComputeSha256(CanonicalizeJson(entry.RawPayloadJson))))
+                    Sha256Digest.ComputeUtf8(CanonicalizeJson(entry.RawPayloadJson))))
             {
                 throw new InvalidDataException(
                     "Archived legacy reporting schedule inventory checksum or schema is invalid.");
@@ -901,7 +901,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             throw new InvalidDataException("Legacy reporting schedule archive receipt is invalid.");
         }
 
-        var expectedId = ComputeSha256(JsonSerializer.Serialize(new
+        var expectedId = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
             kind = "schedule",
             actor = receipt.ActorPrincipalId,
@@ -919,7 +919,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
         IReadOnlyList<ReportingScheduleEntry> schedules,
         IReadOnlyList<LegacyReportingScheduleEntry> legacySchedules,
         ReportingLegacyArchiveReceipt? archiveReceipt) =>
-        ComputeSha256(JsonSerializer.Serialize(new
+        Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
             schedules,
             legacySchedules,
@@ -927,13 +927,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
         }, _jsonOptions));
 
     private string ComputeCanonicalHash<T>(T value) =>
-        ComputeSha256(JsonSerializer.Serialize(value, _jsonOptions));
-
-    private static string ComputeSha256(string value) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
-
-    private static string? NormalizeOptional(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(value, _jsonOptions));
 
     private static string CanonicalizeJson(string rawJson)
     {
@@ -1395,8 +1389,16 @@ public sealed partial class ReportingScheduleService
             var current = _schedules.GetValueOrDefault(prepared.Identity);
             if (!ReferenceEquals(current, prepared.ExpectedExisting))
             {
-                throw new InvalidOperationException(
-                    "The reporting schedule changed while its recipient directory bindings were being validated; retry the upsert.");
+                // A racing writer landed while delivery targets were being validated. Typed so
+                // endpoints map it to the canonical 409 version-conflict body instead of the 400
+                // a plain InvalidOperationException falls through to.
+                throw current is not null
+                    ? ReportingScheduleConcurrencyException.ForConflict(
+                        current,
+                        prepared.ExpectedExisting?.UpdatedAtUtc)
+                    : ReportingScheduleConcurrencyException.ForMissing(
+                        prepared.Candidate,
+                        prepared.ExpectedExisting!.UpdatedAtUtc);
             }
 
             _schedules[prepared.Identity] = prepared.Candidate;
@@ -2212,7 +2214,6 @@ public sealed partial class ReportingScheduleService
             .ThenBy(static handoff => handoff.HandoffId, StringComparer.Ordinal)
             .ToArray();
     }
-
 
     private IReadOnlyList<IReadOnlyDictionary<string, string>>? ResolveDatasetRows(
         ReportingScheduleRecordDto schedule,
@@ -3181,8 +3182,7 @@ public sealed partial class ReportingScheduleService
             return false;
         }
 
-        var computed = SHA256.HashData(Encoding.UTF8.GetBytes(
-            JsonSerializer.Serialize(ReportAccessPolicyEvaluator.Normalize(schedule.AccessPolicySnapshot))));
+        var computed = Sha256Digest.ComputeBytesUtf8(JsonSerializer.Serialize(ReportAccessPolicyEvaluator.Normalize(schedule.AccessPolicySnapshot)));
         return retained.Length == computed.Length
             && CryptographicOperations.FixedTimeEquals(retained, computed);
     }
@@ -3225,9 +3225,7 @@ public sealed partial class ReportingScheduleService
     }
 
     internal static string ComputeAccessPolicySnapshotHash(ReportAccessPolicyDto policy) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-                JsonSerializer.Serialize(ReportAccessPolicyEvaluator.Normalize(policy)))))
-            .ToLowerInvariant();
+        Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(ReportAccessPolicyEvaluator.Normalize(policy)));
 
     internal static string? ComputeDeliveryTargetsSnapshotHash(
         IReadOnlyList<ReportingScheduleDeliveryTargetDto>? targets)
@@ -3252,9 +3250,7 @@ public sealed partial class ReportingScheduleService
             })
             .OrderBy(static target => target.DistributionId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-                JsonSerializer.Serialize(canonical))))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(canonical));
     }
 
     internal static bool HasValidDeliveryTargetsSnapshot(ReportingScheduleRecordDto schedule)

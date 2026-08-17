@@ -46,24 +46,31 @@ STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
 CS_FILE_EXTENSIONS: Tuple[str, ...] = (".cs",)
 
 DOC_FILE_EXTENSIONS: Tuple[str, ...] = (".md",)
-# Two *self-referential* reports are excluded, not the whole generated tree.
+# The corpus is an allowlist of roots that exist to describe contracts, not a denylist of prose.
 #
-# `docs/generated/repository-structure.md` lists every path in the repository, and a C# file is
-# conventionally named for the single public type it holds — so a type counted as documented
-# purely because its own source file exists. `docs/generated/documentation-coverage.md` is this
-# generator's own output, which names every undocumented item it finds: counting it would let a
-# type become documented by being reported as undocumented.
+# Subtracting prose was tried first and does not converge: four review rounds on #2703 each found a
+# document where root-, file-, or heading-level filtering guessed wrong, because these roots
+# interleave description and argument inside single documents. A delivery plan can state a DTO's
+# complete field set in order to argue that the DTO is missing something.
 #
-# The rest of `docs/generated/` stays in the corpus, and that distinction matters:
-# `docs/generated/database/**` is the PostgreSQL data-object catalog
-# (`docs/generated/README.md`), and pages like
-# `docs/generated/database/contracts/ledger-contracts-page-01.md` carry real field-level reference
-# documentation for types such as `AccountingApprovalQueueConfigurationDto`. An earlier revision
-# excluded the whole subtree: 41 files left the corpus and 763 genuinely documented types were
-# marked as gaps.
+# docs/generated/database/** is included because it is the PostgreSQL data-object catalog
+# (docs/generated/README.md), and pages such as
+# docs/generated/database/contracts/ledger-contracts-page-01.md carry real field-level reference
+# documentation. An earlier revision excluded that subtree: 41 files left the corpus and 763
+# genuinely documented types were marked as gaps. It is reference material and belongs here.
+#
+# The self-referential exclusions below stay regardless. Neither is reachable under the current
+# allowlist, but the guard is kept so widening the allowlist cannot silently reintroduce them:
+# repository-structure.md lists every path in the repository, so a type would count as documented
+# purely because its own source file exists, and docs/status/ holds this generator's own report
+# (docs/status/coverage-report.md), so a type would count by being reported as undocumented.
+DOC_CONTENT_INCLUDE_PREFIXES: Tuple[str, ...] = (
+    "docs/reference/",
+    "docs/generated/database/",
+)
+
 DOC_CONTENT_EXCLUDE_PREFIXES: Tuple[str, ...] = (
     "docs/status/",
-    "docs/generated/documentation-coverage.md",
     "docs/generated/repository-structure.md",
 )
 
@@ -830,17 +837,13 @@ def _load_doc_contents(root: Path) -> Dict[str, str]:
     if docs_dir.is_dir():
         for md_file in _collect_files(docs_dir, DOC_FILE_EXTENSIONS):
             rel_path = _rel(md_file, root)
+            if not rel_path.startswith(DOC_CONTENT_INCLUDE_PREFIXES):
+                continue
             if rel_path.startswith(DOC_CONTENT_EXCLUDE_PREFIXES):
                 continue
             contents[rel_path] = _read_text_safe(md_file)
-    # Also include CLAUDE.md at repo root
-    claude_md = root / "CLAUDE.md"
-    if claude_md.is_file():
-        contents[_rel(claude_md, root)] = _read_text_safe(claude_md)
-    # And README.md
-    readme = root / "README.md"
-    if readme.is_file():
-        contents[_rel(readme, root)] = _read_text_safe(readme)
+    # CLAUDE.md and README.md are deliberately absent: both are project orientation prose, and a
+    # type named in either was being counted as documented on the same footing as a reference page.
     return contents
 
 
@@ -882,14 +885,16 @@ def _recommendations(report: CoverageReport) -> List[str]:  # noqa: C901
             if count > 50:
                 recs.append(
                     f"**{cat.category}**: {count} undocumented types. "
-                    "Consider generating API docs with DocFX (`docfx docfx.json`) "
-                    "to cover the long tail of public types automatically."
+                    "Add reference entries under `docs/reference/` for the types that "
+                    "carry contracts. Running DocFX does not move this metric: it emits "
+                    "browsable output from XML doc comments into `docs/docfx/api/*.yml`, "
+                    "which is gitignored and so is not part of the scanned corpus."
                 )
             elif count > 0:
                 recs.append(
                     f"**{cat.category}**: {count} undocumented type(s). "
-                    "Add entries to `docs/reference/api-reference.md` or relevant "
-                    "architecture docs for the most important ones."
+                    "Add entries to `docs/reference/api-reference.md` for the most "
+                    "important ones."
                 )
 
         elif cat.category == "API Endpoints":
@@ -1085,6 +1090,26 @@ def build_report(root: Path) -> CoverageReport:
     return report
 
 
+AUTO_SYNC_COVERAGE_MARKER = "<!-- auto-sync:coverage -->"
+
+
+def _preserved_auto_sync_section(output: Path) -> str:
+    """The nightly test-coverage summary section, carried over from the existing report.
+
+    scripts/update_coverage_report.py appends a marker section with the latest nightly line
+    coverage to the same file this generator writes. Regenerating the documentation-coverage
+    report must not silently delete that reading — the two metrics share one status doc.
+    """
+    try:
+        existing = output.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    index = existing.find(AUTO_SYNC_COVERAGE_MARKER)
+    if index == -1:
+        return ""
+    return "\n" + existing[index:].rstrip() + "\n"
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     """Entry point for the documentation coverage generator."""
     parser = argparse.ArgumentParser(
@@ -1102,7 +1127,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         type=Path,
         default=None,
         help="Path to write the Markdown coverage report. "
-        "Defaults to docs/generated/documentation-coverage.md.",
+        "Defaults to docs/status/coverage-report.md, the copy the docs automation maintains.",
     )
     parser.add_argument(
         "--summary",
@@ -1118,10 +1143,13 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"Error: root directory does not exist: {root}", file=sys.stderr)
         return 1
 
+    # The default matches the path run-docs-automation.py passes explicitly, so a bare CLI run and
+    # the pipeline maintain the same report. The old default, docs/generated/documentation-coverage.md,
+    # was a second tracked copy nothing regenerated, which let it drift into contradiction (#2713).
     output: Path = (
         args.output
         if args.output is not None
-        else root / "docs" / "generated" / "documentation-coverage.md"
+        else root / "docs" / "status" / "coverage-report.md"
     )
 
     try:
@@ -1134,6 +1162,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     md = generate_markdown(report)
     try:
         output.parent.mkdir(parents=True, exist_ok=True)
+        md += _preserved_auto_sync_section(output)
         output.write_text(md, encoding="utf-8")
         print(f"Coverage report written to {output}")
     except OSError as exc:

@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -8,6 +7,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Evidence;
 
@@ -607,9 +607,7 @@ public sealed partial class FileEvidenceArtifactStore
                 return false;
             }
 
-            var contentHash = Convert.ToHexString(
-                    await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false))
-                .ToLowerInvariant();
+            var contentHash = await Sha256Digest.ComputeAsync(stream, ct).ConfigureAwait(false);
             return string.Equals(
                 contentHash,
                 NormalizeHash(artifact.ContentHashSha256),

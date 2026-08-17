@@ -1,0 +1,612 @@
+from __future__ import annotations
+
+import importlib.util
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+
+SCRIPT_PATH = Path(__file__).resolve().parents[2] / "build" / "scripts" / "ci" / "check-duplicate-helpers.py"
+SPEC = importlib.util.spec_from_file_location("check_duplicate_helpers", SCRIPT_PATH)
+assert SPEC and SPEC.loader
+ratchet = importlib.util.module_from_spec(SPEC)
+sys.modules["check_duplicate_helpers"] = ratchet
+SPEC.loader.exec_module(ratchet)
+
+
+def count(sources: dict[str, str]) -> dict[str, int]:
+    """Run the detector over a throwaway repo containing exactly these sources."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        root = Path(temp_dir)
+        for rel, text in sources.items():
+            path = root / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+        return ratchet.count_declarations(root)
+
+
+class DuplicateHelperDetectionTests(unittest.TestCase):
+    def test_counts_private_declaration(self):
+        found = count({"src/A/Thing.cs":
+                       "    private static string? NormalizeOptional(string? value)\n"
+                       "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": 1})
+
+    def test_counts_internal_and_public_declarations(self):
+        found = count({
+            "src/A/One.cs": "    internal static string RequireText(string? v) => v!;\n",
+            "src/A/Two.cs": "    public static string? TrimOrNull(string? v) => v;\n",
+        })
+        self.assertEqual(found, {"src/A/One.cs": 1, "src/A/Two.cs": 1})
+
+    def test_ignores_call_sites(self):
+        """A call is not a declaration; only the latter is duplication."""
+        found = count({"src/A/Caller.cs":
+                       "        var a = NormalizeOptional(request.Id);\n"
+                       "        var b = RequireText(request.Name);\n"
+                       "        return FirstNonBlank(a, b);\n"})
+        self.assertEqual(found, {})
+
+    def test_ignores_the_canonical_home(self):
+        found = count({"src/Meridian.Contracts/Text/TextPrimitives.cs":
+                       "    public static string? NormalizeOptional(string? value) => value;\n"})
+        self.assertEqual(found, {})
+
+    def test_ignores_near_name_variants(self):
+        """Renaming a divergent copy to say what it does is the fix, not a violation."""
+        found = count({"src/A/Folding.cs":
+                       "    private static string? NormalizeOptionalUpperInvariant(string? v) => v;\n"
+                       "    private static string? NormalizeOptionalToken(string? v) => v;\n"})
+        self.assertEqual(found, {})
+
+    def test_counts_each_declaration_in_a_file(self):
+        found = count({"src/A/Several.cs":
+                       "    private static string? NormalizeOptional(string? v) => v;\n"
+                       "    private static string RequireText(string? v) => v!;\n"
+                       "    private static string? FirstNonEmpty(params string?[] v) => null;\n"})
+        self.assertEqual(found, {"src/A/Several.cs": 3})
+
+    def test_ignores_non_csharp_and_build_output(self):
+        found = count({
+            "src/A/notes.md": "private static string? NormalizeOptional(string? v) => v;\n",
+            "src/A/obj/Generated.cs": "    private static string? NormalizeOptional(string? v) => v;\n",
+            "src/A/bin/Copied.cs": "    private static string? NormalizeOptional(string? v) => v;\n",
+        })
+        self.assertEqual(found, {})
+
+
+FAKE_TEXT_PRIMITIVES = """
+public static class TextPrimitives
+{
+    public static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    public static string RequireText(string? value, string? paramName = null)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException("Value must be non-empty text.", paramName);
+        }
+
+        return value.Trim();
+    }
+
+    public static string? FirstNonBlank(params string?[] values)
+    {
+        if (values is null)
+        {
+            return null;
+        }
+
+        foreach (var value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value.Trim();
+            }
+        }
+
+        return null;
+    }
+}
+"""
+
+
+def clones(sources: dict[str, str]) -> dict[str, list[tuple[str, str]]]:
+    """Run the body scan over a throwaway repo that owns the canonical helpers."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        root = Path(temp_dir)
+        staged = {"src/Meridian.Contracts/Text/TextPrimitives.cs": FAKE_TEXT_PRIMITIVES}
+        staged.update(sources)
+        for rel, text in staged.items():
+            path = root / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+        return ratchet.scan_body_clones(root)
+
+
+class BodyCloneDetectionTests(unittest.TestCase):
+    """A renamed copy must be recognised by what it does, not what it is called (#2702)."""
+
+    def test_a_renamed_clone_is_detected(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? text)\n"
+                        "        => string.IsNullOrWhiteSpace(text) ? null : text.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_braced_single_return_matches_the_expression_form(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? NullIfBlank(string? s)\n"
+                        "    {\n"
+                        "        return string.IsNullOrWhiteSpace(s) ? null : s.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("NullIfBlank", "NormalizeOptional")]})
+
+    def test_a_different_predicate_is_not_a_clone(self):
+        # IsNullOrEmpty is a different function; member names are deliberately not folded.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? s)\n"
+                        "        => string.IsNullOrEmpty(s) ? null : s.Trim();\n"})
+        self.assertEqual(found, {})
+
+    def test_a_behaviour_changing_copy_is_not_a_clone(self):
+        # The historical failure mode: same shape plus case folding is a different function.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? s)\n"
+                        "        => string.IsNullOrWhiteSpace(s) ? null : s.Trim().ToLowerInvariant();\n"})
+        self.assertEqual(found, {})
+
+    def test_a_guard_clone_matches_despite_a_different_message(self):
+        # Exception message literals are folded: the helper is RequireText whatever it says.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string value, string parameterName)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(value))\n"
+                        "        {\n"
+                        "            throw new ArgumentException(\"Different message entirely.\", parameterName);\n"
+                        "        }\n"
+                        "\n"
+                        "        return value.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("RequireTrimmed", "RequireText")]})
+
+    def test_a_loop_clone_matches_with_renamed_locals(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? PickFirst(params string?[] candidates)\n"
+                        "    {\n"
+                        "        if (candidates is null)\n"
+                        "        {\n"
+                        "            return null;\n"
+                        "        }\n"
+                        "\n"
+                        "        foreach (var candidate in candidates)\n"
+                        "        {\n"
+                        "            if (!string.IsNullOrWhiteSpace(candidate))\n"
+                        "            {\n"
+                        "                return candidate.Trim();\n"
+                        "            }\n"
+                        "        }\n"
+                        "\n"
+                        "        return null;\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("PickFirst", "FirstNonBlank")]})
+
+    def test_an_interpolated_message_running_code_is_not_a_clone(self):
+        # The interpolation expression is executed code, not message text: a guard whose
+        # message calls something can mutate state or throw, so folding it away would
+        # report a behaviour-changing copy as exact.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string value, string name)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(value))\n"
+                        "        {\n"
+                        "            throw new ArgumentException($\"{RecordAndFormat(value)}\", name);\n"
+                        "        }\n"
+                        "\n"
+                        "        return value.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {})
+
+    def test_an_interpolated_message_of_plain_text_still_matches(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string value, string name)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(value))\n"
+                        "        {\n"
+                        "            throw new ArgumentException($\"plain text only\", name);\n"
+                        "        }\n"
+                        "\n"
+                        "        return value.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("RequireTrimmed", "RequireText")]})
+
+    def test_an_explicitly_typed_foreach_clone_is_detected(self):
+        # `foreach (string? candidate in ...)` is the same loop as `foreach (var value in ...)`.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? PickFirst(params string?[] candidates)\n"
+                        "    {\n"
+                        "        if (candidates is null)\n"
+                        "        {\n"
+                        "            return null;\n"
+                        "        }\n"
+                        "\n"
+                        "        foreach (string? candidate in candidates)\n"
+                        "        {\n"
+                        "            if (!string.IsNullOrWhiteSpace(candidate))\n"
+                        "            {\n"
+                        "                return candidate.Trim();\n"
+                        "            }\n"
+                        "        }\n"
+                        "\n"
+                        "        return null;\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("PickFirst", "FirstNonBlank")]})
+
+    def test_a_method_shaped_snippet_inside_a_string_is_not_a_declaration(self):
+        # A generator template carrying helper-shaped text is data, not a declaration.
+        found = clones({"src/A/Template.cs":
+                        "    private const string Template = @\"\n"
+                        "    private static string? Clean(string? text)\n"
+                        "        => string.IsNullOrWhiteSpace(text) ? null : text.Trim();\n"
+                        "    \";\n"})
+        self.assertEqual(found, {})
+
+    def test_comment_markers_inside_a_string_do_not_corrupt_the_body(self):
+        # `//` in a URL is text. Stripping it as a comment would truncate the real body
+        # and let this clone (whose only difference is the folded literal) evade.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string value, string name)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(value))\n"
+                        "        {\n"
+                        "            throw new ArgumentException(\"see https://docs.example/rule\", name);\n"
+                        "        }\n"
+                        "\n"
+                        "        return value.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("RequireTrimmed", "RequireText")]})
+
+    def test_a_protected_clone_is_detected(self):
+        # The name scan covers protected declarations; the body scan must match its scope.
+        found = clones({"src/A/Thing.cs":
+                        "    protected static string? NullIfBlank(string? value)"
+                        " => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("NullIfBlank", "NormalizeOptional")]})
+
+    def test_a_raw_interpolated_message_running_code_is_not_a_clone(self):
+        # Raw interpolated strings carry executed code too.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string value, string name)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(value))\n"
+                        "        {\n"
+                        "            throw new ArgumentException($\"\"\"{RecordAndFormat(value)}\"\"\", name);\n"
+                        "        }\n"
+                        "\n"
+                        "        return value.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {})
+
+    def test_an_attribute_named_argument_does_not_hide_the_parameter(self):
+        # `[Example(Name = "x")]` contains an `=` that is not the parameter default; the
+        # real parameter must still be normalised or the clone evades by decoration.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean([Example(Name = \"candidate\")] string? input)\n"
+                        "        => string.IsNullOrWhiteSpace(input) ? null : input.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_dynamic_typed_lookalike_is_not_a_clone(self):
+        # Same text over dynamic dispatches differently; the parameter type is part of
+        # what makes two helpers the same function. Nullability stays erased, though:
+        # `string` vs `string?` differs only at compile time, so it must not demote a
+        # genuine clone (the RequireTrimmed cases above rely on exactly that).
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(dynamic value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {})
+
+    def test_a_multi_dollar_raw_message_running_code_is_not_a_clone(self):
+        # In $$-strings the interpolation delimiter is two braces; treating {{ as an
+        # escape would mask the executed call away.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string value, string name)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(value))\n"
+                        "        {\n"
+                        "            throw new ArgumentException($$\"\"\"{{RecordAndFormat(value)}}\"\"\", name);\n"
+                        "        }\n"
+                        "\n"
+                        "        return value.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {})
+
+    def test_a_bcl_spelled_parameter_type_still_matches(self):
+        # System.String and string are the same CLR type; respelling is not a new function.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(System.String? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_redundant_outer_parentheses_still_match(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? value)\n"
+                        "        => (string.IsNullOrWhiteSpace(value) ? null : value.Trim());\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_modifier_only_clone_is_detected(self):
+        # `static` without accessibility is implicitly private; the style choice must
+        # not hide the copy.
+        found = clones({"src/A/Thing.cs":
+                        "    static string? Clean(string? x)"
+                        " => string.IsNullOrWhiteSpace(x) ? null : x.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_parameter_named_str_does_not_corrupt_the_literal_sentinel(self):
+        # The sentinels are symbol-only because a marker containing identifier text is
+        # rewritten by the rename pass when a parameter shares its spelling.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string str, string name)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(str))\n"
+                        "        {\n"
+                        "            throw new ArgumentException(\"message\", name);\n"
+                        "        }\n"
+                        "\n"
+                        "        return str.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("RequireTrimmed", "RequireText")]})
+
+    def test_a_four_quote_raw_string_does_not_leak_its_contents(self):
+        # A 4-quote raw delimiter exists so the contents can hold a literal triple
+        # quote; closing on the inner run would scan the rest of the template as code.
+        found = clones({"src/A/Template.cs":
+                        "    private const string Template = \"\"\"\"\n"
+                        "    has \"\"\" inside, then a method shape:\n"
+                        "    private static string? Clean(string? text)\n"
+                        "        => string.IsNullOrWhiteSpace(text) ? null : text.Trim();\n"
+                        "    \"\"\"\";\n"})
+        self.assertEqual(found, {})
+
+    def test_a_different_return_type_is_not_a_clone(self):
+        # Same body returning object? is not interchangeable: replacing it with the
+        # string-returning owner can change downstream overload resolution.
+        found = clones({"src/A/Thing.cs":
+                        "    private static object? Clean(string? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {})
+
+    def test_an_unsafe_modified_clone_is_detected(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static unsafe string? Clean(string? x)"
+                        " => string.IsNullOrWhiteSpace(x) ? null : x.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_ref_qualified_lookalike_is_not_a_clone(self):
+        # ref changes call syntax, overload resolution, and delegate shape; a
+        # ref-qualified helper is not interchangeable with the by-value owner.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(ref string? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {})
+
+    def test_a_literal_brace_before_a_raw_interpolation_still_shields_the_code(self):
+        # In $$-strings a run of three braces is one literal brace plus a two-brace
+        # interpolation open; masking the whole run would hide the executed call.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string RequireTrimmed(string value, string name)\n"
+                        "    {\n"
+                        "        if (string.IsNullOrWhiteSpace(value))\n"
+                        "        {\n"
+                        "            throw new ArgumentException($$\"\"\"{{{RecordAndFormat(value)}}}\"\"\", name);\n"
+                        "        }\n"
+                        "\n"
+                        "        return value.Trim();\n"
+                        "    }\n"})
+        self.assertEqual(found, {})
+
+    def test_an_escaped_identifier_spelling_still_normalizes(self):
+        # @value and value are the same identifier in C#.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? @value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_partially_parsed_canonical_home_fails_closed(self):
+        # Two of three owners parsing must not silently retire the third's protection.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            home = root / "src" / "Meridian.Contracts" / "Text"
+            home.mkdir(parents=True)
+            (home / "TextPrimitives.cs").write_text(
+                "public static class TextPrimitives\n{\n"
+                "    public static string? NormalizeOptional(string? value)\n"
+                "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(RuntimeError) as raised:
+                ratchet.scan_body_clones(root)
+            self.assertIn("RequireText", str(raised.exception))
+
+    def test_a_new_owner_method_does_not_widen_the_ratchet(self):
+        # A method added to TextPrimitives becomes an owner only via CANONICAL_OWNERS.
+        found = clones({
+            "src/Meridian.Contracts/Text/TextPrimitives.cs":
+                FAKE_TEXT_PRIMITIVES.replace(
+                    "public static string? NormalizeOptional",
+                    "public static string Echo(string value) => value;\n\n"
+                    "    public static string? NormalizeOptional"),
+            "src/A/Thing.cs":
+                "    private static string Repeat(string value) => value;\n",
+        })
+        self.assertEqual(found, {})
+
+    def test_a_global_qualified_return_type_still_parses(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static global::System.String? Clean(string? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_an_alias_spelled_receiver_in_the_body_still_matches(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? value)\n"
+                        "        => String.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_null_forgiving_operator_still_matches_and_negation_is_kept(self):
+        found = clones({
+            "src/A/Suppressed.cs":
+                "    private static string? Clean(string? value)\n"
+                "        => string.IsNullOrWhiteSpace(value) ? null : value!.Trim();\n",
+            # Logical negation is behaviour; inverting the predicate is not a clone.
+            "src/A/Negated.cs":
+                "    private static string? Clean(string? value)\n"
+                "        => !string.IsNullOrWhiteSpace(value) ? value.Trim() : null;\n",
+        })
+        self.assertEqual(found, {"src/A/Suppressed.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_qualified_foreach_type_still_normalizes(self):
+        # All three type grammars (return, parameter, foreach) accept qualification.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? PickFirst(params string?[] candidates)\n"
+                        "    {\n"
+                        "        if (candidates is null)\n"
+                        "        {\n"
+                        "            return null;\n"
+                        "        }\n"
+                        "\n"
+                        "        foreach (global::System.String? candidate in candidates)\n"
+                        "        {\n"
+                        "            if (!string.IsNullOrWhiteSpace(candidate))\n"
+                        "            {\n"
+                        "                return candidate.Trim();\n"
+                        "            }\n"
+                        "        }\n"
+                        "\n"
+                        "        return null;\n"
+                        "    }\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("PickFirst", "FirstNonBlank")]})
+
+    def test_a_parameter_named_string_alias_still_matches(self):
+        # A parameter legally named String renames as an identifier before the alias
+        # fold, so the fold cannot pull it out from under its own rename map.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? String)\n"
+                        "        => string.IsNullOrWhiteSpace(String) ? null : String.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_custom_typed_foreach_is_not_a_clone(self):
+        # A custom loop type can invoke a user-defined conversion; only builtin
+        # respellings normalize to var.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? PickFirst(params string?[] candidates)\n"
+                        "    {\n"
+                        "        if (candidates is null)\n"
+                        "        {\n"
+                        "            return null;\n"
+                        "        }\n"
+                        "\n"
+                        "        foreach (MyString candidate in candidates)\n"
+                        "        {\n"
+                        "            if (!string.IsNullOrWhiteSpace(candidate))\n"
+                        "            {\n"
+                        "                return candidate.Trim();\n"
+                        "            }\n"
+                        "        }\n"
+                        "\n"
+                        "        return null;\n"
+                        "    }\n"})
+        self.assertEqual(found, {})
+
+    def test_a_brace_inside_a_nested_hole_string_does_not_desync_the_masker(self):
+        # $"{Foo("}")}" holds a brace inside a nested string; misreading it as the
+        # hole's closer would treat the rest of the file as string text.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string Label(int n) => $\"{Fmt(\"}\")}\";\n"
+                        "    private static string? Clean(string? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_missing_canonical_home_fails_closed(self):
+        # A moved TextPrimitives must not silently disable the scan and let the
+        # baseline read as an improvement.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "src" / "A").mkdir(parents=True)
+            (root / "src" / "A" / "Thing.cs").write_text(
+                "    private static string? Clean(string? x) => x;\n", encoding="utf-8")
+            with self.assertRaises(RuntimeError):
+                ratchet.scan_body_clones(root)
+
+    def test_a_global_qualified_alias_still_matches(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(global::System.String? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_verbatim_string_of_quotes_is_not_a_raw_string(self):
+        # @"""" is a one-character verbatim string containing a quote; reading it as a
+        # raw delimiter consumed the rest of the file and hid every later clone.
+        found = clones({"src/A/Thing.cs":
+                        "    private const string Q = @\"\"\"\";\n"
+                        "    private static string? Clean(string? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_parameter_sharing_a_member_name_does_not_rewrite_the_member(self):
+        # A parameter named Trim must rename its references but not the .Trim() member.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? Trim)\n"
+                        "        => string.IsNullOrWhiteSpace(Trim) ? null : Trim.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_unicode_parameter_name_is_normalized(self):
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? Clean(string? τιμή)\n"
+                        "        => string.IsNullOrWhiteSpace(τιμή) ? null : τιμή.Trim();\n"})
+        self.assertEqual(found, {"src/A/Thing.cs": [("Clean", "NormalizeOptional")]})
+
+    def test_a_tracked_name_is_the_name_ratchets_jurisdiction(self):
+        # One copy must never be counted by both detectors.
+        found = clones({"src/A/Thing.cs":
+                        "    private static string? NormalizeOptional(string? value)\n"
+                        "        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();\n"})
+        self.assertEqual(found, {})
+
+    def test_the_canonical_home_is_not_a_clone_of_itself(self):
+        self.assertEqual(clones({}), {})
+
+    def test_committed_clone_baseline_matches_the_current_tree(self):
+        """The checked-in body-clone baseline must describe reality too."""
+        import json
+        baseline = json.loads(ratchet.DEFAULT_BASELINE.read_text(encoding="utf-8"))
+        allowed = baseline.get("body_clones", {})
+        current = ratchet.scan_body_clones(ratchet.REPO_ROOT)
+        for rel, entries in sorted(current.items()):
+            self.assertLessEqual(
+                len(entries),
+                allowed.get(rel, 0),
+                f"{rel} has renamed clone(s) not covered by the baseline: {entries}",
+            )
+
+
+class TrackedHelperTests(unittest.TestCase):
+    def test_tracks_the_shared_surface_and_its_aliases(self):
+        self.assertEqual(
+            set(ratchet.TRACKED_HELPERS),
+            {"NormalizeOptional", "RequireText", "FirstNonBlank", "TrimOrNull", "FirstNonEmpty"},
+        )
+
+    def test_committed_baseline_matches_the_current_tree(self):
+        """The checked-in baseline must describe reality, or the ratchet is decorative."""
+        import json
+        baseline = json.loads(ratchet.DEFAULT_BASELINE.read_text(encoding="utf-8"))
+        current = ratchet.count_declarations(ratchet.REPO_ROOT)
+        for rel, found in sorted(current.items()):
+            self.assertIn(rel, baseline["files"], f"{rel} declares a tracked helper but is absent from the baseline")
+            self.assertLessEqual(found, baseline["files"][rel], f"{rel} exceeds its baseline")
+
+
+if __name__ == "__main__":
+    unittest.main()

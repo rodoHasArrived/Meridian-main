@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
@@ -751,8 +750,7 @@ public sealed class ReportingStatementImportEvidenceRetainer : IStatementImportE
             scope.CompanyId,
             scope.WorkflowId,
             runId.Trim());
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)))
-            .ToLowerInvariant();
+        var hash = Sha256Digest.ComputeUtf8(canonical);
         return $"statement-evidence-{hash[..32]}";
     }
 
@@ -778,7 +776,7 @@ public sealed class ReportingStatementImportEvidenceRetainer : IStatementImportE
         + "&documentClassification=Statement";
 
     private static string ComputeHash(ReadOnlySpan<byte> content) =>
-        Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        Sha256Digest.Compute(content);
 
     private static string RequireIdentity(string? value, string kind) =>
         string.IsNullOrWhiteSpace(value)

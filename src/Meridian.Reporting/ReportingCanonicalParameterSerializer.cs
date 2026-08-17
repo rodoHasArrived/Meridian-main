@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
@@ -73,9 +73,7 @@ public static class ReportingCanonicalParameterSerializer
     public static string ComputeHash(
         ReportingRunParametersDto parameters,
         bool requiresCertifiedLedgerPresentation = false) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-                Serialize(parameters, requiresCertifiedLedgerPresentation))))
-            .ToLowerInvariant();
+        Sha256Digest.ComputeUtf8(Serialize(parameters, requiresCertifiedLedgerPresentation));
 
     private static void WriteOptional(
         Utf8JsonWriter writer,

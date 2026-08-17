@@ -1,13 +1,14 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -572,9 +573,6 @@ public sealed class ReportTemplateRegistryService
 
         return normalized;
     }
-
-    private static string? NormalizeOptional(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static IReadOnlyList<ReportWriterMetricDefinitionDto> NormalizeGridMetrics(IReadOnlyList<ReportWriterMetricDefinitionDto>? metrics) =>
         metrics?
@@ -1411,8 +1409,7 @@ public sealed class ReportPackWorkflowService
             throw new UnauthorizedAccessException("The reporting pack access policy belongs to another company.");
         }
 
-        var accessPolicyHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-            JsonSerializer.Serialize(normalizedAccessPolicy)))).ToLowerInvariant();
+        var accessPolicyHash = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(normalizedAccessPolicy));
         var record = new ReportPackWorkflowRecordDto(id, fundProfileId, fundAccountId, period, templateId, ReportPackWorkflowStateDto.Draft, 1, now, actor, now,
             [new ReportPackAuditEventDto(now, actor, "create", ReportPackWorkflowStateDto.Draft, ReportPackWorkflowStateDto.Draft)]
             , null,
@@ -1574,9 +1571,9 @@ public sealed class ReportPackWorkflowService
                 DateTimeOffset.UtcNow,
                 NormalizeEvidenceLinks(evidenceLinks),
                 NormalizePublicationBrandingTheme(brandingTheme),
-                SignedOffRole: NormalizeWorkflowOptional(signedOffRole) ?? role.Trim(),
-                SignOffReason: NormalizeWorkflowOptional(signOffReason) ?? NormalizeWorkflowOptional(note),
-                SignOffContext: NormalizeWorkflowOptional(signOffContext) ?? BuildPublicationSignOffContext(actor, role, actionOrigin),
+                SignedOffRole: NormalizeOptional(signedOffRole) ?? role.Trim(),
+                SignOffReason: NormalizeOptional(signOffReason) ?? NormalizeOptional(note),
+                SignOffContext: NormalizeOptional(signOffContext) ?? BuildPublicationSignOffContext(actor, role, actionOrigin),
                 ActionOrigin: actionOrigin)
         };
         SaveAndIndex(next);
@@ -1728,9 +1725,6 @@ public sealed class ReportPackWorkflowService
         OperationsActionOriginDto actionOrigin) =>
         $"Published by {actor.Trim()} as {role.Trim()} via {actionOrigin}.";
 
-    private static string? NormalizeWorkflowOptional(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private static IReadOnlyList<ReportPackLineProvenanceDto> NormalizeLineProvenance(IReadOnlyList<ReportPackLineProvenanceDto>? lineProvenance) =>
         lineProvenance?
             .Where(static item =>
@@ -1749,19 +1743,19 @@ public sealed class ReportPackWorkflowService
             SourceKind = item.SourceKind.Trim(),
             SourceId = item.SourceId.Trim(),
             EvidenceId = item.EvidenceId.Trim(),
-            RunId = NormalizeNullable(item.RunId),
-            LedgerEntryId = NormalizeNullable(item.LedgerEntryId),
-            ReconciliationCaseId = NormalizeNullable(item.ReconciliationCaseId),
-            ReportValue = NormalizeNullable(item.ReportValue),
-            SourceSessionId = NormalizeNullable(item.SourceSessionId),
-            ReconciliationRunId = NormalizeNullable(item.ReconciliationRunId),
-            ProviderEventId = NormalizeNullable(item.ProviderEventId),
-            SecurityMasterId = NormalizeNullable(item.SecurityMasterId),
-            SecurityDefinitionId = NormalizeNullable(item.SecurityDefinitionId),
-            ReconciliationOutcome = NormalizeNullable(item.ReconciliationOutcome),
-            ApprovalId = NormalizeNullable(item.ApprovalId),
+            RunId = NormalizeOptional(item.RunId),
+            LedgerEntryId = NormalizeOptional(item.LedgerEntryId),
+            ReconciliationCaseId = NormalizeOptional(item.ReconciliationCaseId),
+            ReportValue = NormalizeOptional(item.ReportValue),
+            SourceSessionId = NormalizeOptional(item.SourceSessionId),
+            ReconciliationRunId = NormalizeOptional(item.ReconciliationRunId),
+            ProviderEventId = NormalizeOptional(item.ProviderEventId),
+            SecurityMasterId = NormalizeOptional(item.SecurityMasterId),
+            SecurityDefinitionId = NormalizeOptional(item.SecurityDefinitionId),
+            ReconciliationOutcome = NormalizeOptional(item.ReconciliationOutcome),
+            ApprovalId = NormalizeOptional(item.ApprovalId),
             FinancialRecordExplorerId = NormalizeFinancialRecordExplorerId(item.FinancialRecordExplorerId),
-            FinancialRecordHref = NormalizeNullable(item.FinancialRecordHref)
+            FinancialRecordHref = NormalizeOptional(item.FinancialRecordHref)
         };
 
         var explorerId = normalized.FinancialRecordExplorerId ?? ResolveFinancialRecordExplorerId(normalized);
@@ -1803,7 +1797,7 @@ public sealed class ReportPackWorkflowService
 
     private static string? NormalizeFinancialRecordExplorerId(string? value)
     {
-        var normalized = NormalizeNullable(value);
+        var normalized = NormalizeOptional(value);
         if (normalized is null)
         {
             return null;
@@ -1872,9 +1866,9 @@ public sealed class ReportPackWorkflowService
             NormalizeRequired(theme.AccentColor, nameof(theme.AccentColor)),
             NormalizeRequired(theme.TextColor, nameof(theme.TextColor)),
             NormalizeRequired(theme.BackgroundColor, nameof(theme.BackgroundColor)),
-            NormalizeNullable(theme.LogoUri),
-            NormalizeNullable(theme.FooterText),
-            NormalizeNullable(theme.Disclaimer),
+            NormalizeOptional(theme.LogoUri),
+            NormalizeOptional(theme.FooterText),
+            NormalizeOptional(theme.Disclaimer),
             theme.IsBuiltIn);
     }
 
@@ -1883,9 +1877,6 @@ public sealed class ReportPackWorkflowService
         ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
         return value.Trim();
     }
-
-    private static string? NormalizeNullable(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void EnsureLineProvenanceTraceable(IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance)
     {

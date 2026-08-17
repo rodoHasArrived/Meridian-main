@@ -11,8 +11,8 @@ describe("useRequestLifecycle", () => {
       return { lifecycle, value, setValue };
     });
 
-    let older: ReturnType<typeof result.current.lifecycle.start>;
-    let newer: ReturnType<typeof result.current.lifecycle.start>;
+    let older!: ReturnType<typeof result.current.lifecycle.start>;
+    let newer!: ReturnType<typeof result.current.lifecycle.start>;
     act(() => {
       older = result.current.lifecycle.start();
       newer = result.current.lifecycle.start();
@@ -67,8 +67,8 @@ describe("useRequestLifecycle", () => {
   it("Scenario_RefreshButtonBurst_DropModeRunsOnlyOneInFlightRequest", () => {
     const { result } = renderHook(() => useRequestLifecycle({ operation: "backfill preview" }));
 
-    let first: ReturnType<typeof result.current.start>;
-    let dropped: ReturnType<typeof result.current.start>;
+    let first!: ReturnType<typeof result.current.start>;
+    let dropped!: ReturnType<typeof result.current.start>;
     act(() => {
       first = result.current.start({ busyMode: "drop" });
       dropped = result.current.start({ busyMode: "drop" });
@@ -83,7 +83,7 @@ describe("useRequestLifecycle", () => {
       result.current.succeed(first!);
     });
 
-    let next: ReturnType<typeof result.current.start>;
+    let next!: ReturnType<typeof result.current.start>;
     act(() => {
       next = result.current.start({ busyMode: "drop" });
     });
@@ -94,7 +94,7 @@ describe("useRequestLifecycle", () => {
   it("Scenario_FullRefreshInvalidatesSubsidiaryRequest_ClearsRunningStatus", () => {
     const { result } = renderHook(() => useRequestLifecycle({ operation: "trading refresh" }));
 
-    let subsidiary: ReturnType<typeof result.current.start>;
+    let subsidiary!: ReturnType<typeof result.current.start>;
     act(() => {
       subsidiary = result.current.start();
     });
@@ -359,7 +359,7 @@ describe("useRequestLifecycle", () => {
   it("Scenario_StaleSucceedDiscarded_DoesNotAdvanceLastSucceededAt", () => {
     const { result } = renderHook(() => useRequestLifecycle({ operation: "quote refresh" }));
 
-    let older: ReturnType<typeof result.current.start>;
+    let older!: ReturnType<typeof result.current.start>;
     act(() => {
       older = result.current.start();
       result.current.start();

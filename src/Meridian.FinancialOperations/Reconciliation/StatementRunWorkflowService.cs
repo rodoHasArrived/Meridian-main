@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.ComponentModel;
-using System.Security.Cryptography;
 using System.Text.Json.Serialization.Metadata;
+using Meridian.Contracts.Integrity;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
 
@@ -854,7 +854,10 @@ public sealed class StatementRunWorkflowService(
             FileShare.Read,
             64 * 1024,
             FileOptions.Asynchronous | FileOptions.SequentialScan);
-        return Convert.ToHexString(await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false));
+        // Canonical lowercase is safe here: every comparator of these hashes decodes hex bytes
+        // (StatementDurabilityHashing.FixedTimeEquals — including the retained-record check), so
+        // previously persisted uppercase values still verify (#2691).
+        return await Sha256Digest.ComputeAsync(stream, ct).ConfigureAwait(false);
     }
 
     private static void AssertOptionalHash(string? assertion, string actual, string label)
@@ -1301,8 +1304,8 @@ public sealed class StatementRunWorkflowService(
 
     private static string BuildDeterministicId(string prefix, string breakId)
     {
-        var hash = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(
-            $"{prefix}|{breakId.Trim()}"))).ToLowerInvariant();
+        var hash = Sha256Digest.Compute(System.Text.Encoding.UTF8.GetBytes(
+            $"{prefix}|{breakId.Trim()}"));
         return $"{prefix}:{hash[..24]}";
     }
 

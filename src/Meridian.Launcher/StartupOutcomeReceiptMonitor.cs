@@ -148,6 +148,9 @@ internal static class StartupOutcomeReceiptMonitor
             CompletedAtUtc: completedAtUtc,
             AttemptNumber: attemptNumber,
             CorrelationId: requestId,
+            // Deliberately NOT routed through Sha256Digest (which lowercases): receipt hashes
+            // cross the launcher/supervisor process boundary and persist across restarts, so a
+            // casing change must be coordinated on both sides at once (#2691).
             InputHashSha256: Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(
                 $"{requestId}\n{supervisorPath}"))),
             Postconditions:
@@ -248,6 +251,7 @@ internal static class StartupOutcomeReceiptMonitor
             fingerprint = new StartupOutcomeReceiptFingerprint(
                 bytes.LongLength,
                 info.LastWriteTimeUtc.Ticks,
+                // Kept uppercase for consistency with the receipt hash family above (#2691).
                 Convert.ToHexString(SHA256.HashData(bytes)),
                 outcome.OperationId,
                 outcome.OperationKind,

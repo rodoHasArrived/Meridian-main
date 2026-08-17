@@ -1,7 +1,7 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Serialization;
 
@@ -142,7 +142,7 @@ public sealed record PaperSessionFillRecord(
             fill.FillPrice is { } fillPrice ? FormatDecimal(fillPrice) : "-",
             FormatDecimal(fill.Commission ?? 0m),
             fill.Timestamp.ToUniversalTime().Ticks.ToString(CultureInfo.InvariantCulture));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonicalIdentity));
+        var hash = Sha256Digest.ComputeBytesUtf8(canonicalIdentity);
         return new Guid(hash.AsSpan(0, 16));
     }
 
@@ -151,7 +151,7 @@ public sealed record PaperSessionFillRecord(
     {
         ArgumentNullException.ThrowIfNull(fill);
         var json = JsonSerializer.SerializeToUtf8Bytes(fill, ExecutionJsonContext.Default.ExecutionReport);
-        return Convert.ToHexStringLower(SHA256.HashData(json));
+        return Sha256Digest.Compute(json);
     }
 
     /// <summary>Validates the envelope version, identity, and canonical content hash.</summary>

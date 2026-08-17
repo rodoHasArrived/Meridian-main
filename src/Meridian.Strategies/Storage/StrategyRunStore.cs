@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
@@ -1281,7 +1281,7 @@ public sealed class StrategyRunStore : IStrategyRepository
         $"strategy-run:{entry.RunId}:{entry.LastLifecycleEvent}:{HashText(snapshotJson)}";
 
     private static string HashText(string value) =>
-        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
+        Sha256Digest.ComputeUtf8(value);
 
     private static string BuildCaseId(string runId) => $"strategy-run:{runId}";
 

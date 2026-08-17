@@ -1,12 +1,13 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Evidence;
 
@@ -221,7 +222,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         };
         ValidateRetainedArtifactReferences(packet);
         var retainedExportJson = JsonSerializer.Serialize(manifest, _jsonOptions);
-        var contentHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(retainedExportJson))).ToLowerInvariant();
+        var contentHash = Sha256Digest.ComputeUtf8(retainedExportJson);
         var vaultId = $"ev-{contentHash[..24]}";
         // The scoped hash suffix prevents different tenants exporting the same subject in the
         // same millisecond from sharing and overwriting one manifest path.
@@ -444,7 +445,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             Scope = scope
         };
         var manifestJson = JsonSerializer.Serialize(manifest, _jsonOptions);
-        var manifestHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(manifestJson))).ToLowerInvariant();
+        var manifestHash = Sha256Digest.ComputeUtf8(manifestJson);
         var vaultIdentity = new EvidenceVaultIdentityDto(
             VaultId: vaultId,
             SubjectKind: subjectKind,
@@ -610,7 +611,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
     private string ComputeManifestContentHash(RetainedEvidenceManifestDto manifest)
     {
         var json = JsonSerializer.Serialize(manifest, _jsonOptions);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(json);
     }
 
     private static EvidenceVaultIdentityDto NormalizeVaultIdentityForContentHash(EvidenceVaultIdentityDto identity)
@@ -1464,9 +1465,6 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         return value.Trim();
     }
 
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private static string? FirstNonEmpty(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
 
@@ -1502,7 +1500,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             throw new ArgumentException("Evidence vault intake content exceeds the 100 MB vault artifact limit.", nameof(request));
         }
 
-        var contentHash = Convert.ToHexString(SHA256.HashData(content.Content)).ToLowerInvariant();
+        var contentHash = Sha256Digest.Compute(content.Content);
         if (!string.IsNullOrWhiteSpace(expectedHash) &&
             !string.Equals(NormalizeHash(expectedHash), contentHash, StringComparison.OrdinalIgnoreCase))
         {
@@ -1611,7 +1609,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         string? scope)
     {
         var seed = $"{tenantId}|{scope}|{subjectKind}|{subjectId}|{fileName}|{contentHash}|{capturedAt:O}";
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(seed))).ToLowerInvariant();
+        var hash = Sha256Digest.ComputeUtf8(seed);
         return $"ev-{hash[..24]}";
     }
 
@@ -2256,7 +2254,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             }
 
             var bytes = await File.ReadAllBytesAsync(sourcePath, ct).ConfigureAwait(false);
-            var hash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+            var hash = Sha256Digest.Compute(bytes);
             if (!string.IsNullOrWhiteSpace(artifact.Hash) &&
                 !string.Equals(NormalizeHash(artifact.Hash), hash, StringComparison.OrdinalIgnoreCase))
             {
@@ -2353,7 +2351,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         }
 
         var stem = SanitizePathSegment(string.IsNullOrWhiteSpace(artifact.Kind) ? artifact.ArtifactId : artifact.Kind);
-        var artifactHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(artifact.ArtifactId))).ToLowerInvariant()[..12];
+        var artifactHash = Sha256Digest.ComputeUtf8(artifact.ArtifactId)[..12];
         return $"{stem}-{artifactHash}{extension}";
     }
 
@@ -2383,5 +2381,4 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
     private static readonly StringComparison PathComparison = OperatingSystem.IsWindows()
         ? StringComparison.OrdinalIgnoreCase
         : StringComparison.Ordinal;
-
 }

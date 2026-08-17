@@ -7,6 +7,7 @@ using System.Text.Json;
 using Meridian.Reporting;
 using Npgsql;
 using NpgsqlTypes;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Reporting;
 
@@ -345,7 +346,7 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
             ValidateRunForWrite(run, expectedVersion: null);
 
             var payload = SerializeRun(run with { AuditTrail = [] });
-            var payloadHash = ComputeSha256(payload);
+            var payloadHash = Sha256Digest.ComputeUtf8(payload);
 
             try
             {
@@ -424,7 +425,7 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
             }
 
             var payload = SerializeRun(run with { AuditTrail = [] });
-            var payloadHash = ComputeSha256(payload);
+            var payloadHash = Sha256Digest.ComputeUtf8(payload);
             await using var command = CreateCommand();
             command.CommandText =
                 $"""
@@ -550,7 +551,7 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
             ValidateRestatementForWrite(tenantId, request, expectedVersion: null);
 
             var payload = SerializeRestatement(request with { AuditTrail = [] });
-            var payloadHash = ComputeSha256(payload);
+            var payloadHash = Sha256Digest.ComputeUtf8(payload);
 
             try
             {
@@ -605,7 +606,7 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
             ValidateRestatementForWrite(tenantId, request, expectedVersion);
 
             var payload = SerializeRestatement(request with { AuditTrail = [] });
-            var payloadHash = ComputeSha256(payload);
+            var payloadHash = Sha256Digest.ComputeUtf8(payload);
             await using var command = CreateCommand();
             command.CommandText =
                 $"""
@@ -1060,7 +1061,7 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
                     row.AggregateVersion,
                     row.StateFormatVersion,
                     row.StateHashSha256,
-                    StringComparer.Ordinal.Equals(ComputeSha256(row.StatePayload), row.StateHashSha256),
+                    StringComparer.Ordinal.Equals(Sha256Digest.ComputeUtf8(row.StatePayload), row.StateHashSha256),
                     exception.Message);
             }
         }
@@ -1156,7 +1157,7 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
                     row.AggregateVersion,
                     row.StateFormatVersion,
                     row.StateHashSha256,
-                    StringComparer.Ordinal.Equals(ComputeSha256(row.StatePayload), row.StateHashSha256),
+                    StringComparer.Ordinal.Equals(Sha256Digest.ComputeUtf8(row.StatePayload), row.StateHashSha256),
                     exception.Message);
             }
         }
@@ -1417,7 +1418,7 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
             AppendLegacyCanonical(canonical, entry.ToRestatementState is null ? null : (int)entry.ToRestatementState.Value);
             AppendLegacyCanonical(canonical, entry.Note);
             AppendLegacyCanonical(canonical, entry.PreviousHash);
-            return ComputeSha256(canonical.ToString());
+            return Sha256Digest.ComputeUtf8(canonical.ToString());
         }
 
         private static void AppendLegacyCanonical(StringBuilder target, object? value)
@@ -1484,7 +1485,7 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
                 (object?)entry.PreviousHash ?? DBNull.Value);
             command.Parameters.AddWithValue("event_hash", NpgsqlDbType.Text, entry.Hash);
             command.Parameters.AddWithValue("event_payload", NpgsqlDbType.Text, payload);
-            command.Parameters.AddWithValue("payload_hash_sha256", NpgsqlDbType.Text, ComputeSha256(payload));
+            command.Parameters.AddWithValue("payload_hash_sha256", NpgsqlDbType.Text, Sha256Digest.ComputeUtf8(payload));
             command.Parameters.AddWithValue("hash_format_version", NpgsqlDbType.Smallint, CurrentFormatVersion);
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -1814,7 +1815,7 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
 
         private static void VerifyPayloadChecksum(string kind, string id, string payload, string expectedHash)
         {
-            var actualHash = ComputeSha256(payload);
+            var actualHash = Sha256Digest.ComputeUtf8(payload);
             if (!StringComparer.Ordinal.Equals(actualHash, expectedHash))
             {
                 throw Integrity(kind, id, $"payload SHA-256 {actualHash} does not match retained checksum {expectedHash}");
@@ -1906,9 +1907,6 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
                 throw Integrity("reporting governance audit event", id, "the retained event payload is invalid JSON", exception);
             }
         }
-
-        private static string ComputeSha256(string value) =>
-            Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 
         private static string NormalizeKey(string value, string parameterName)
         {

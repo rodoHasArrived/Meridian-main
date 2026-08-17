@@ -4,6 +4,7 @@ using Meridian.Contracts.Workstation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -66,7 +67,7 @@ public sealed class AutomatedJournalScheduledWorker
         string? tenantId,
         string? companyId,
         CancellationToken ct = default)
-        => await RunDueCoreAsync(nowUtc, NormalizeScope(tenantId), NormalizeScope(companyId), scopeSpecified: true, ct: ct)
+        => await RunDueCoreAsync(nowUtc, NormalizeOptional(tenantId), NormalizeOptional(companyId), scopeSpecified: true, ct: ct)
             .ConfigureAwait(false);
 
     private async Task<AutomatedJournalScheduledBatchResult> RunDueCoreAsync(
@@ -571,9 +572,6 @@ public sealed class AutomatedJournalScheduledWorker
             history.State == AutomatedJournalScheduleStateDto.Running &&
             history.CompletedAtUtc is null);
     }
-
-    private static string? NormalizeScope(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 /// <summary>TimeProvider-driven host loop; <see cref="RunOnceAsync"/> is the deterministic seam.</summary>

@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 
@@ -187,7 +187,7 @@ public static class OperationsWorkflowAuditHashing
             var legacyCanonicalJson = JsonSerializer.Serialize(
                 legacyHashInput,
                 OperationsWorkflowAuditHashJsonContext.Default.LegacyAuditHashInput);
-            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(legacyCanonicalJson))).ToLowerInvariant();
+            return Sha256Digest.ComputeUtf8(legacyCanonicalJson);
         }
 
         VerifiedOperationOutcomeValidator.ValidateAndThrow(outcome);
@@ -213,6 +213,6 @@ public static class OperationsWorkflowAuditHashing
         var canonicalJson = JsonSerializer.Serialize(
             hashInput,
             OperationsWorkflowAuditHashJsonContext.Default.OutcomeAuditHashInput);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonicalJson))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonicalJson);
     }
 }

@@ -3,6 +3,7 @@ using System.Text.Json;
 using Meridian.Core.IO;
 using Meridian.Reporting;
 using Meridian.Storage.Archival;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Shared.Evidence;
 
@@ -100,7 +101,7 @@ public sealed class FileStatementReconciliationReportAuthorityStore
         var content = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
         var identity = new ReportingArtifactIdentity(
             normalizedScope.TenantId,
-            ComputeSha256(content));
+            Sha256Digest.Compute(content));
         var metadata = await ReadMetadataAsync(path, cancellationToken).ConfigureAwait(false);
         if (metadata is not null)
         {
@@ -147,7 +148,7 @@ public sealed class FileStatementReconciliationReportAuthorityStore
         var path = GetDocumentPath(document.Scope, document.DocumentKey);
         _pathGuard.EnsurePath(path);
         var content = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
-        var actualHash = ComputeSha256(content);
+        var actualHash = Sha256Digest.Compute(content);
         if (content.LongLength != document.ByteSize
             || !string.Equals(
                 actualHash,
@@ -180,7 +181,7 @@ public sealed class FileStatementReconciliationReportAuthorityStore
         var normalizedKey = NormalizeDocumentKey(documentKey);
         var path = GetDocumentPath(normalizedScope, normalizedKey);
         var bytes = content.ToArray();
-        var hash = ComputeSha256(bytes);
+        var hash = Sha256Digest.Compute(bytes);
         var now = DateTimeOffset.UtcNow;
         var existing = await GetDocumentAsync(normalizedScope, normalizedKey, cancellationToken)
             .ConfigureAwait(false);
@@ -505,9 +506,6 @@ public sealed class FileStatementReconciliationReportAuthorityStore
         || documentKey.StartsWith("artifacts/history/", StringComparison.Ordinal);
 
     private static string GetMetadataPath(string documentPath) => documentPath + MetadataSuffix;
-
-    private static string ComputeSha256(byte[] content) =>
-        Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
 
     private sealed record FileDocumentMetadata(
         string TenantId,

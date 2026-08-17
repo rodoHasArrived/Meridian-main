@@ -30,7 +30,10 @@ export function buildPrivateCapitalFundEventCommandCenterRoute(
 }
 
 export function manualJournalPrivateCapitalReadinessTone(
-  readiness: PrivateCapitalFundEventLedgerRecord["readiness"]
+  // Accepts null because the final branch already returns "outline" for an absent readiness; the
+  // narrower parameter type made that branch reachable only for the empty string. Widening a
+  // parameter is safe for every existing caller.
+  readiness: PrivateCapitalFundEventLedgerRecord["readiness"] | null
 ): "danger" | "success" | "warning" | "outline" {
   if (readiness === "Blocked") return "danger";
   if (readiness === "Ready" || readiness === "Published") return "success";

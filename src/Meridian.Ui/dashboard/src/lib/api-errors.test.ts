@@ -136,4 +136,23 @@ describe("isAbortError", () => {
     expect(isAbortError("AbortError")).toBe(false);
     expect(isAbortError({ name: "AbortError" })).toBe(false);
   });
+
+  it("surfaces the `error` field most workstation endpoints actually return", () => {
+    // 395 endpoints return `new { error = "..." }` rather than RFC-7807 problem details. Without
+    // this fallback the operator sees only "Request failed (400)" instead of the server's reason.
+    const error = createApiErrorFromResponseBody("/api/historical/bars", 400, JSON.stringify({ error: "Symbol is required." }));
+
+    expect(error.detail).toBe("Symbol is required.");
+    expect(error.message).toContain("Symbol is required.");
+  });
+
+  it("prefers RFC-7807 detail over the legacy error field when both are present", () => {
+    const error = createApiErrorFromResponseBody(
+      "/api/historical/bars",
+      400,
+      JSON.stringify({ detail: "Detailed problem statement.", error: "legacy" })
+    );
+
+    expect(error.detail).toBe("Detailed problem statement.");
+  });
 });

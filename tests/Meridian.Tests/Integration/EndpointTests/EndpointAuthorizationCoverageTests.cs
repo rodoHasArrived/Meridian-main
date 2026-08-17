@@ -31,7 +31,7 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
     /// authentication endpoints must be reachable to authenticate at all, and lifecycle/demo seams
     /// are guarded by their own tokens or environment gates rather than user permissions.
     /// </summary>
-    private static readonly HashSet<string> PermissionlessMutationAllowlist = new(StringComparer.OrdinalIgnoreCase)
+    internal static readonly HashSet<string> PermissionlessMutationAllowlist = new(StringComparer.OrdinalIgnoreCase)
     {
         // Authentication bootstrap: login/logout/refresh must be callable before permissions exist.
         "POST /api/auth/login",
@@ -40,6 +40,28 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
         "POST /api/auth/csrf",
         // First-run setup completes before any user or permission store exists.
         "POST /api/setup/account",
+        // Bootstrap is the same seam behind a one-use setup token: it can only create the
+        // first administrator, and refuses whenever any account already exists.
+        "POST /api/auth/bootstrap",
+        // 410 Gone tombstones for the retired legacy reporting lifecycle. They perform no action
+        // and answer every caller with the canonical replacement route; guarding them would swap
+        // that pointer for a 403 while protecting nothing. Remove the entry when the tombstone is
+        // unmapped.
+        "POST /api/fund-structure/report-pack-preview",
+        "POST /api/fund-structure/report-packs",
+        "POST /api/fund-structure/reporting/packs",
+        "POST /api/fund-structure/reporting/packs/create",
+        "POST /api/fund-structure/reporting/packs/{reportId:guid}/validate",
+        "POST /api/fund-structure/reporting/packs/{reportId:guid}/submit",
+        "POST /api/fund-structure/reporting/packs/{reportId:guid}/approve",
+        "POST /api/fund-structure/reporting/packs/{reportId:guid}/reject",
+        "POST /api/fund-structure/reporting/packs/{reportId:guid}/publish",
+        "POST /api/fund-structure/reporting/packs/{reportId:guid}/restatements",
+        "POST /api/fund-structure/reporting/packs/{reportId:guid}/restate",
+        "POST /api/fund-structure/reporting/packs/{reportId:guid}/archive",
+        "POST /api/fund-structure/reporting/packs/{reportId:guid}/deliveries",
+        "POST /api/fund-structure/reporting/packs/{reportId:guid}/deliveries/failures",
+        "POST /api/fund-structure/reporting/schedules/run-due",
     };
 
 
@@ -50,57 +72,25 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
     /// a deliberate exception, a fixed route MUST be removed, and any newly mapped mutating route
     /// that is neither guarded nor allowlisted fails this test immediately.
     /// </summary>
-    private static readonly HashSet<string> UnguardedMutationBaseline = new(StringComparer.OrdinalIgnoreCase)
+    internal static readonly HashSet<string> UnguardedMutationBaseline = new(StringComparer.OrdinalIgnoreCase)
     {
+        // Declared (reconciliation any-of set) and enforced; still listed because the sweep's
+        // "{}" body cannot bind IReadOnlyList<CollateralInputRow>, so binding answers 400 before
+        // any filter runs. The declarative ratchet is the operative guarantee for this route.
+        "POST /api/workstation/collateral/ingest",
         "DELETE /api/maintenance/schedules/{id}/delete",
         "DELETE /api/maintenance/schedules/{scheduleId}",
         "DELETE /api/packaging/{fileName}",
         "DELETE /api/symbols/{symbol}",
-        "DELETE /api/workstation/reconciliation/break-queue/{breakId}/comments/{commentId}",
-        "DELETE /api/workstation/workflows/presets/{presetId}",
         "POST /api/alignment/create",
         "POST /api/alignment/preview",
-        "POST /api/auth/access-assignments/{assignmentId}/revoke",
-        "POST /api/auth/accounts/{username}/disable",
-        "POST /api/auth/accounts/{username}/password-reset",
         "POST /api/backfill/checkpoints/{jobId}/resume",
         "POST /api/backfill/cost-estimate",
         "POST /api/compliance/actions/evaluate",
         "POST /api/execution/orders/submit",
-        "POST /api/fund-structure/assignments",
-        "POST /api/fund-structure/businesses",
-        "POST /api/fund-structure/clients",
-        "POST /api/fund-structure/entities",
-        "POST /api/fund-structure/funds",
-        "POST /api/fund-structure/investment-portfolios",
-        "POST /api/fund-structure/ledger-mapping-assignments",
-        "POST /api/fund-structure/links",
-        "POST /api/fund-structure/links/validate",
-        "POST /api/fund-structure/organizations",
-        "POST /api/fund-structure/report-pack-preview",
-        "POST /api/fund-structure/report-packs",
         "POST /api/fund-structure/reporting/distribution/access-grants",
         "POST /api/fund-structure/reporting/distribution/access-grants/{grantId}/revoke",
         "POST /api/fund-structure/reporting/distribution/deliveries",
-        "POST /api/fund-structure/reporting/packs",
-        "POST /api/fund-structure/reporting/packs/create",
-        "POST /api/fund-structure/reporting/packs/{reportId:guid}/approve",
-        "POST /api/fund-structure/reporting/packs/{reportId:guid}/archive",
-        "POST /api/fund-structure/reporting/packs/{reportId:guid}/deliveries",
-        "POST /api/fund-structure/reporting/packs/{reportId:guid}/deliveries/failures",
-        "POST /api/fund-structure/reporting/packs/{reportId:guid}/publish",
-        "POST /api/fund-structure/reporting/packs/{reportId:guid}/reject",
-        "POST /api/fund-structure/reporting/packs/{reportId:guid}/restate",
-        "POST /api/fund-structure/reporting/packs/{reportId:guid}/restatements",
-        "POST /api/fund-structure/reporting/packs/{reportId:guid}/submit",
-        "POST /api/fund-structure/reporting/packs/{reportId:guid}/validate",
-        "POST /api/fund-structure/reporting/schedules/run-due",
-        "POST /api/fund-structure/reporting/templates/{templateName}/versions/{version:int}/approve",
-        "POST /api/fund-structure/reporting/templates/{templateName}/versions/{version:int}/reject",
-        "POST /api/fund-structure/reporting/templates/{templateName}/versions/{version:int}/submit",
-        "POST /api/fund-structure/setup-drafts/validate",
-        "POST /api/fund-structure/sleeves",
-        "POST /api/fund-structure/vehicles",
         "POST /api/health/providers/{provider}/test",
         "POST /api/lean/results/ingest",
         "POST /api/ledger/periods/{periodId:guid}/close",
@@ -146,24 +136,9 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
         "POST /api/symbols/{symbol}/archive",
         "POST /api/symbols/{symbol}/remove",
         "POST /api/symbols/{symbol}/update",
-        "POST /api/workstation/collateral/ingest",
-        "POST /api/workstation/data/query",
-        "POST /api/workstation/desktop/launch",
-        "POST /api/workstation/financial-record-explorers/{explorerId}/saved-views",
-        "POST /api/workstation/first-run/outcomes/complete",
-        "POST /api/workstation/runs/compare",
-        "POST /api/workstation/runs/diff",
-        "POST /api/workstation/strategy/designer/preview",
-        "POST /api/workstation/strategy/designer/validate",
-        "POST /api/workstation/strategy/engine/validate-run",
-        "POST /api/workstation/workflows/presets",
-        "POST /api/workstation/workflows/presets/{presetId}/pin",
-        "POST /api/workstation/workflows/presets/{presetId}/used",
         "POST /hooks/reporting/distribution/{transportId}/deliveries/{jobId}/receipts",
         "POST /portal/reporting/access-grants/{grantId}/exchange",
-        "PUT /api/auth/accounts/{username}",
         "PUT /api/maintenance/schedules/{scheduleId}",
-        "PUT /api/workstation/workflows/presets/{presetId}",
     };
 
     [Fact]
@@ -262,9 +237,14 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
             {
                 Microsoft.AspNetCore.Routing.Patterns.RoutePatternLiteralPart literal => literal.Content,
                 Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterPart parameter =>
-                    parameter.Name.Contains("id", StringComparison.OrdinalIgnoreCase)
-                        ? "11111111-1111-1111-1111-111111111111"
-                        : "sweep-test",
+                    // Constraint-aware: rendering "sweep-test" into an {x:int} segment 404s at
+                    // routing, so the route is never swept and a guarded route reads as unguarded.
+                    parameter.ParameterPolicies.Any(policy =>
+                        policy.Content is "int" or "long" or "min(1)")
+                        ? "1"
+                        : parameter.Name.Contains("id", StringComparison.OrdinalIgnoreCase)
+                            ? "11111111-1111-1111-1111-111111111111"
+                            : "sweep-test",
                 Microsoft.AspNetCore.Routing.Patterns.RoutePatternSeparatorPart separator => separator.Content,
                 _ => "sweep-test",
             }));

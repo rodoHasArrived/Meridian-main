@@ -2,6 +2,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Reporting;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -112,7 +113,4 @@ public sealed class LedgerReportingPartnersCapitalSource : IReportingPartnersCap
                 StringComparison.OrdinalIgnoreCase)
             || string.Equals(period.PeriodId.ToString("D"), trimmed, StringComparison.OrdinalIgnoreCase);
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

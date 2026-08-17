@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Globalization;
+using Meridian.Contracts.Integrity;
 using Meridian.Domain.Reconciliation;
 using Meridian.Storage.Archival;
 
@@ -74,10 +75,13 @@ internal static class BrokerStatementSourceSnapshot
         }
 
         var content = buffer.ToArray();
+        // Canonical lowercase is safe here: caller assertions verify via AssertHash (decoded
+        // bytes, case-insensitive) and duplicate keys normalize their hash inputs to uppercase
+        // before deriving the key, so previously persisted imports still match (#2691).
         return new BrokerStatementFileSnapshot(
             path,
             content,
-            Convert.ToHexString(SHA256.HashData(content)));
+            Sha256Digest.Compute(content));
     }
 
     private static void AssertHash(string? assertion, string authoritativeHash, string label)
@@ -151,7 +155,7 @@ internal static class ReconciliationRecordFileName
     }
 
     private static string Hash(string value)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+        => Sha256Digest.ComputeUtf8(value);
 }
 
 public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalStatementStore
@@ -625,6 +629,9 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
     private static string Hash(string input)
         => HashBytes(Encoding.UTF8.GetBytes(input));
 
+    // Deliberately NOT routed through Sha256Digest (which lowercases): these hashes become
+    // persisted per-row identities on CanonicalStatementRow, so changing the casing would
+    // detach retained statement rows from their identities (#2691).
     private static string HashBytes(byte[] input) => Convert.ToHexString(SHA256.HashData(input));
 
     private static bool IsSupportedStatementSource(string source) =>
@@ -1101,8 +1108,7 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
             $"{ReconciliationRecordFileName.For(breakId)}.json");
 
     private static string CaseworkCommandFileName(string commandId)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(commandId.Trim())))
-            .ToLowerInvariant();
+        => Sha256Digest.ComputeUtf8(commandId.Trim());
 
     private static void ValidateCaseworkUpdate(StatementBreakCaseworkUpdate update)
     {

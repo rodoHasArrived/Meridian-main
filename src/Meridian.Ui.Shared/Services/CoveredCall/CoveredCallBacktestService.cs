@@ -1,11 +1,11 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Channels;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
@@ -778,8 +778,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         ValidateScope(scope);
         var identity = $"{scope.TenantId.Trim().Length}:{scope.TenantId.Trim()}" +
                        $"{scope.CompanyId.Trim().Length}:{scope.CompanyId.Trim()}";
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity)))
-            .ToLowerInvariant();
+        var hash = Sha256Digest.ComputeUtf8(identity);
         return $"{StrategyId}:{hash[..16]}";
     }
 

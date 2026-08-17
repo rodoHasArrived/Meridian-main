@@ -1,11 +1,11 @@
 {
-  "total_files": 646,
-  "total_lines": 126492,
-  "orphaned_count": 255,
+  "total_files": 651,
+  "total_lines": 129682,
+  "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 223,
-  "average_lines": 195.8,
+  "todo_count": 238,
+  "average_lines": 199.2,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -215,14 +215,13 @@
     "docs/development/score-reason-taxonomy.md",
     "docs/development/synthetic-provider-test-harness.md",
     "docs/docfx/api/index.md",
+    "docs/engineering/security-master-architecture-audit-2026-08-13.md",
     "docs/engineering/wpf-perf-uiux-audit-2026-06-14.md",
     "docs/generated/configuration-schema.md",
-    "docs/generated/documentation-coverage.md",
     "docs/generated/interfaces.md",
     "docs/generated/project-dependencies.md",
     "docs/generated/provider-registry.md",
     "docs/integrations/tastytrade-endpoint-coverage.md",
-    "docs/product/adversarial-program-review-2026-07.md",
     "docs/product/deferred-expansion-boundaries.md",
     "docs/reference/governance-report-packs.md",
     "docs/reference/research-briefing-workflow.md",
@@ -1130,7 +1129,7 @@
     },
     {
       "path": "docs/ai/claude/CLAUDE.providers.md",
-      "line_count": 882,
+      "line_count": 880,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1162,7 +1161,7 @@
     },
     {
       "path": "docs/ai/claude/CLAUDE.structure.md",
-      "line_count": 1595,
+      "line_count": 1594,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1522,7 +1521,7 @@
     },
     {
       "path": "docs/architecture/module-conventions.md",
-      "line_count": 99,
+      "line_count": 102,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1602,7 +1601,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 351,
+      "line_count": 492,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1850,7 +1849,7 @@
     },
     {
       "path": "docs/development/god-file-burn-down-plan.md",
-      "line_count": 232,
+      "line_count": 234,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2010,7 +2009,7 @@
     },
     {
       "path": "docs/development/web-ui-structural-improvement-proposal.md",
-      "line_count": 408,
+      "line_count": 414,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2209,6 +2208,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/docs-regeneration-automation-design.md",
+      "line_count": 328,
+      "has_heading": true,
+      "todo_count": 5,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/free-development-tools.md",
       "line_count": 74,
       "has_heading": true,
@@ -2250,9 +2257,17 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 302,
+      "line_count": 303,
       "has_heading": true,
       "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/security-master-architecture-audit-2026-08-13.md",
+      "line_count": 230,
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -2561,14 +2576,6 @@
       "stale": false
     },
     {
-      "path": "docs/generated/documentation-coverage.md",
-      "line_count": 202,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/generated/interfaces.md",
       "line_count": 4,
       "has_heading": true,
@@ -2610,7 +2617,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10426,
+      "line_count": 10465,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2794,7 +2801,7 @@
     },
     {
       "path": "docs/operators/provider-credentials.md",
-      "line_count": 119,
+      "line_count": 122,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2921,6 +2928,22 @@
       "stale": false
     },
     {
+      "path": "docs/product/adversarial-program-review-2026-08.md",
+      "line_count": 556,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/adversarial-review-2026-08-remediation-plan.md",
+      "line_count": 1215,
+      "has_heading": true,
+      "todo_count": 7,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/data-provider-accounting-brainstorm-2026-07.md",
       "line_count": 640,
       "has_heading": true,
@@ -2939,6 +2962,14 @@
     {
       "path": "docs/product/excel-onboarding-workbook-brainstorm-2026-07.md",
       "line_count": 363,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/functionality-deepening-brainstorm-2026-07.md",
+      "line_count": 674,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2986,9 +3017,9 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 279,
+      "line_count": 295,
       "has_heading": true,
-      "todo_count": 2,
+      "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -3097,6 +3128,14 @@
       "stale": false
     },
     {
+      "path": "docs/reference/api-conflict-contract.md",
+      "line_count": 94,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/api-reference.md",
       "line_count": 701,
       "has_heading": true,
@@ -3106,7 +3145,7 @@
     },
     {
       "path": "docs/reference/appsettings-schema.md",
-      "line_count": 54,
+      "line_count": 53,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3186,7 +3225,7 @@
     },
     {
       "path": "docs/reference/environment-variables.md",
-      "line_count": 243,
+      "line_count": 218,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3282,7 +3321,7 @@
     },
     {
       "path": "docs/reference/README.md",
-      "line_count": 139,
+      "line_count": 140,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3570,7 +3609,7 @@
     },
     {
       "path": "docs/source/generated/source-roadmap-traceability.md",
-      "line_count": 199,
+      "line_count": 202,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5082,7 +5121,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1481,
+      "line_count": 1471,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5130,7 +5169,7 @@
     },
     {
       "path": "src/Meridian.Execution.Sdk/README.md",
-      "line_count": 90,
+      "line_count": 95,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5138,7 +5177,7 @@
     },
     {
       "path": "src/Meridian.Execution/README.md",
-      "line_count": 218,
+      "line_count": 255,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5298,7 +5337,7 @@
     },
     {
       "path": "src/Meridian.Risk/README.md",
-      "line_count": 111,
+      "line_count": 184,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5338,7 +5377,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2225,
+      "line_count": 2226,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5346,7 +5385,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1370,
+      "line_count": 1373,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

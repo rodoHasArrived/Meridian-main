@@ -37,6 +37,42 @@ public sealed class LedgerDimensionTagsTests
             .Should()
             .BeTrue();
 
+    [Fact]
+    public void HasAnyDimension_TreatsABlankExternalGlEntryAsAbsent()
+    {
+        // A pair with a blank key or value is not a dimension. ExtractExternalGlDimensions never
+        // emits one, so this only arises from a caller-supplied dictionary -- where the close path
+        // answered "not dimensioned" and every other caller answered "dimensioned" (#2672). The
+        // stricter reading now lives here so the two cannot disagree.
+        LedgerDimensionTags.HasAnyDimension(new LedgerDimensionSetDto(
+            ExternalGlDimensions: new Dictionary<string, string> { ["  "] = "100" }))
+            .Should()
+            .BeFalse();
+
+        LedgerDimensionTags.HasAnyDimension(new LedgerDimensionSetDto(
+            ExternalGlDimensions: new Dictionary<string, string> { ["costCentre"] = "  " }))
+            .Should()
+            .BeFalse();
+    }
+
+    [Fact]
+    public void HasAnyDimension_CountsAnExternalGlEntryWithBothSidesPopulated() =>
+        LedgerDimensionTags.HasAnyDimension(new LedgerDimensionSetDto(
+            ExternalGlDimensions: new Dictionary<string, string> { ["costCentre"] = "100" }))
+            .Should()
+            .BeTrue();
+
+    [Fact]
+    public void HasAnyDimension_CountsAPopulatedEntryAlongsideABlankOne() =>
+        LedgerDimensionTags.HasAnyDimension(new LedgerDimensionSetDto(
+            ExternalGlDimensions: new Dictionary<string, string>
+            {
+                ["  "] = "100",
+                ["costCentre"] = "200"
+            }))
+            .Should()
+            .BeTrue();
+
     // Guards against a copy that silently covers only part of the dimension set: every field on
     // LedgerDimensionSetDto must, on its own, be enough to make the set "dimensioned". One of the
     // predicate copies this consolidation replaced checked only 11 of the 19 fields.

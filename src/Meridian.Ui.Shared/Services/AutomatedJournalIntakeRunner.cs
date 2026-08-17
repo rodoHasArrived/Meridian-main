@@ -3,6 +3,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -323,7 +324,7 @@ public sealed class AutomatedJournalIntakeRunner
                 .Order(StringComparer.Ordinal));
         var seed = FormattableString.Invariant(
             $"daily-valuation-batch|{requestedCorrelationSeed?.Trim() ?? "unseeded"}|{request.FundProfileId.Trim().ToLowerInvariant()}|{request.LedgerBookId:N}|{request.PeriodId:N}|{request.AsOf.ToUniversalTime():O}|{DailyValuationPositionService.ComputeStaticPositionHash(positions)}|{draftRevision}");
-        return new Guid(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(seed)).AsSpan(0, 16))
+        return new Guid(Sha256Digest.ComputeBytesUtf8(seed).AsSpan(0, 16))
             .ToString("D");
     }
 

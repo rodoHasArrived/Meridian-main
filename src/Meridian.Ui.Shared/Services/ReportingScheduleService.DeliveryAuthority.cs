@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Reporting;
@@ -206,8 +206,7 @@ public sealed partial class ReportingScheduleService
             targetDistributionId,
             recipientKind.ToString(),
             recipientPrincipalId.Trim());
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical);
     }
 
     private static ReportingAccessPrincipalScope ResolveScheduledRecipientPrincipal(

@@ -1,8 +1,8 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.DirectLending;
 
@@ -554,7 +554,7 @@ public sealed class DirectLendingServicerStatementService : IDirectLendingServic
            issue.Severity.Equals("Critical", StringComparison.OrdinalIgnoreCase);
 
     private static string ComputeHash(string value)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+        => Sha256Digest.ComputeUtf8(value);
 
     private static List<string> SplitCsvLine(string line)
     {

@@ -1,12 +1,13 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.Canonicalization;
 using Meridian.Storage;
 using Meridian.Storage.Services;
 using Meridian.Ui.Shared.Evidence;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -404,8 +405,7 @@ public sealed class StorageAssuranceService
         Fingerprint(file));
 
     private static string Fingerprint(FileInfo file) => ComputeDigest($"{file.FullName}|{file.Length}|{file.LastWriteTimeUtc.Ticks}");
-    private static string ComputeDigest(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
-    private static string? NormalizeOptional(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    private static string ComputeDigest(string value) => Sha256Digest.ComputeUtf8(value);
 
     private static bool CanWrite(string root)
     {

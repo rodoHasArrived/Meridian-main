@@ -301,6 +301,23 @@ public sealed class CompositeRiskValidator : IRiskValidator
 
                 switch (rule.Severity)
                 {
+                    // An escalate-capable rule that could not measure the order, which the branch
+                    // above deliberately excludes from release: an operator can authorise accepting
+                    // a known breach, not a measurement that never happened. Refused here rather
+                    // than left to fall through, because `continue` assumes another rule owns the
+                    // refusal. When this is the only one, the order was still blocked — the
+                    // violation is blocking, so RiskValidationResult.IsApproved computes false as a
+                    // safety net — but it came back with no reject reason and IsUnmeasurable
+                    // cleared, so the submitter was told nothing about why.
+                    case RiskRuleSeverity.Escalate when result.IsUnmeasurable:
+                        _logger.LogWarning(
+                            "Risk rule {RuleName} (Escalate) rejected an order it could not measure; "
+                                + "an approval cannot release it because nothing was measured",
+                            rule.RuleName);
+                        return Block(RestoreOnFailure(
+                            WithWarnings(RiskValidationResult.Unmeasurable(reason), warnings),
+                            releasedEntries));
+
                     // Reached only when a blocking breach elsewhere outranked this escalation.
                     // The order is rejected on that breach; this rule contributes its finding.
                     case RiskRuleSeverity.Escalate:

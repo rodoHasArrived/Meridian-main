@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.AccountingClose;
 
@@ -180,7 +180,7 @@ public sealed class FxTranslationService
         LedgerDimensionSetDto? dimensions)
     {
         var input = string.Join('|', ledgerId, period.ToString("yyyy-MM-dd"), accountCode, functionalAmount, reportingAmount, rate.FromCurrency, rate.ToCurrency, rate.RateDate.ToString("yyyy-MM-dd"), rate.Rate, rate.SourceEventId, rate.RateId, TrialBalanceProjectionService.DimensionSignature(dimensions));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        var hash = Sha256Digest.ComputeBytesUtf8(input);
         return new Guid(hash[..16]);
     }
 }
@@ -413,8 +413,7 @@ public sealed class CloseEvidencePackageService
             Append(builder, blocker);
         }
 
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
-        return Convert.ToHexString(hash).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static void Append(StringBuilder builder, string value)
@@ -569,7 +568,7 @@ public sealed class TrialBalanceProjectionService
 
         if (actual is null)
         {
-            return !HasAnyDimension(expected);
+            return !LedgerDimensionTags.HasAnyDimension(expected);
         }
 
         return Matches(expected.FundId, actual.FundId) &&
@@ -632,7 +631,7 @@ public sealed class TrialBalanceProjectionService
 
     private static string BuildDimensionSignature(LedgerDimensionSetDto? dimensions)
     {
-        if (dimensions is null || !HasAnyDimension(dimensions))
+        if (dimensions is null || !LedgerDimensionTags.HasAnyDimension(dimensions))
         {
             return "dimension:none";
         }
@@ -666,27 +665,6 @@ public sealed class TrialBalanceProjectionService
             ? $"{signature}|positionId={dimensions.PositionId.Value:D}"
             : signature;
     }
-
-    private static bool HasAnyDimension(LedgerDimensionSetDto dimensions)
-        => !string.IsNullOrWhiteSpace(dimensions.FundId) ||
-            !string.IsNullOrWhiteSpace(dimensions.EntityId) ||
-            !string.IsNullOrWhiteSpace(dimensions.SleeveId) ||
-            !string.IsNullOrWhiteSpace(dimensions.StrategyId) ||
-            !string.IsNullOrWhiteSpace(dimensions.InvestorId) ||
-            !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId) ||
-            dimensions.InstrumentId.HasValue ||
-            dimensions.PositionId.HasValue ||
-            !string.IsNullOrWhiteSpace(dimensions.TaxLotId) ||
-            !string.IsNullOrWhiteSpace(dimensions.CostCenterId) ||
-            !string.IsNullOrWhiteSpace(dimensions.CounterpartyId) ||
-            !string.IsNullOrWhiteSpace(dimensions.OrganizationId) ||
-            !string.IsNullOrWhiteSpace(dimensions.PortfolioId) ||
-            !string.IsNullOrWhiteSpace(dimensions.BookId) ||
-            !string.IsNullOrWhiteSpace(dimensions.AccountId) ||
-            !string.IsNullOrWhiteSpace(dimensions.CustomerId) ||
-            !string.IsNullOrWhiteSpace(dimensions.VendorId) ||
-            !string.IsNullOrWhiteSpace(dimensions.ProjectId) ||
-            dimensions.ExternalGlDimensions.Any(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value));
 
     private static string NormalizeToken(string? value)
         => string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToUpperInvariant();

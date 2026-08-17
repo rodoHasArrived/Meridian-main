@@ -605,7 +605,7 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
             var archivedAtUtc = DateTimeOffset.UtcNow;
             var archivedPayloadHash = ComputeLegacyEntriesHash(state.Snapshot.LegacyRuns);
             var receipt = new ReportingLegacyArchiveReceipt(
-                ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+                Sha256Digest.Compute(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
                 {
                     kind = "run",
                     actor = recoveryAuthority.ActorPrincipalId!.Trim(),
@@ -768,8 +768,8 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
             run.Manifest.OperationalScope?.OrganizationId,
             run.Manifest.OperationalScope?.CompanyId,
             rawPayload,
-            ComputeSha256(Encoding.UTF8.GetBytes(rawPayload)),
-            ComputeSha256(Encoding.UTF8.GetBytes(canonicalPayload)),
+            Sha256Digest.Compute(Encoding.UTF8.GetBytes(rawPayload)),
+            Sha256Digest.Compute(Encoding.UTF8.GetBytes(canonicalPayload)),
             LegacyRunRemediation);
     }
 
@@ -837,10 +837,10 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
                 || !string.Equals(entry.Remediation, LegacyRunRemediation, StringComparison.Ordinal)
                 || !Sha256Digest.FixedEquals(
                     entry.RawPayloadHashSha256,
-                    ComputeSha256(Encoding.UTF8.GetBytes(entry.RawPayloadJson)))
+                    Sha256Digest.Compute(Encoding.UTF8.GetBytes(entry.RawPayloadJson)))
                 || !Sha256Digest.FixedEquals(
                     entry.CanonicalPayloadHashSha256,
-                    ComputeSha256(Encoding.UTF8.GetBytes(CanonicalizeJson(entry.RawPayloadJson)))))
+                    Sha256Digest.Compute(Encoding.UTF8.GetBytes(CanonicalizeJson(entry.RawPayloadJson)))))
             {
                 throw new InvalidDataException(
                     "Archived legacy reporting run inventory checksum or schema is invalid.");
@@ -911,7 +911,7 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
     // (or absent → default) array member, and hashing it directly would throw. Normalizing here
     // keeps hashing robust and consistent with the save-side computation.
     private string ComputeManifestHash(ReportingOutputManifest manifest) =>
-        ComputeSha256(Encoding.UTF8.GetBytes(
+        Sha256Digest.Compute(Encoding.UTF8.GetBytes(
             JsonSerializer.Serialize(NormalizeManifestArrays(manifest), _jsonOptions)));
 
     // A manifest can carry default (uninitialized) ImmutableArray members — most commonly on the
@@ -936,15 +936,15 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
         value.IsDefault ? ImmutableArray<T>.Empty : value;
 
     private string ComputePayloadHash(IReadOnlyList<ReportingRunSnapshot> runs) =>
-        ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(runs, _jsonOptions)));
+        Sha256Digest.Compute(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(runs, _jsonOptions)));
 
     private string ComputeLegacyEntriesHash(IReadOnlyList<LegacyReportingRunEntry> entries) =>
-        ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entries, _jsonOptions)));
+        Sha256Digest.Compute(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entries, _jsonOptions)));
 
     private string ComputeLegacyPayloadHash(
         IReadOnlyList<LegacyReportingRunEntry> entries,
         ReportingLegacyArchiveReceipt? archiveReceipt) =>
-        ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+        Sha256Digest.Compute(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
         {
             entries,
             archiveReceipt
@@ -1060,7 +1060,7 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
             throw new InvalidDataException("Legacy reporting run archive receipt is invalid.");
         }
 
-        var expectedArchiveId = ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+        var expectedArchiveId = Sha256Digest.Compute(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
         {
             kind = "run",
             actor = receipt.ActorPrincipalId,
@@ -1180,9 +1180,6 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
         string runId) =>
         string.Equals(manifest.OperationalScope?.TenantId, tenantId, StringComparison.Ordinal)
         && string.Equals(manifest.RunId, runId, StringComparison.OrdinalIgnoreCase);
-
-    private static string ComputeSha256(ReadOnlySpan<byte> bytes) =>
-        Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 
     private string SnapshotPath => Path.Combine(_options.RootDirectory, SnapshotFileName);
 

@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.OperationsContinuity;
@@ -1215,8 +1215,7 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
 
     private static string BuildStableId(string prefix, string commandId, string breakId)
     {
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-            $"{prefix}|{commandId.Trim()}|{breakId.Trim()}"))).ToLowerInvariant();
+        var hash = Sha256Digest.ComputeUtf8($"{prefix}|{commandId.Trim()}|{breakId.Trim()}");
         return $"{prefix}:{hash[..24]}";
     }
 

@@ -1,8 +1,8 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Banking;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Ledger;
@@ -11,6 +11,7 @@ using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -234,7 +235,6 @@ public sealed partial class AccountingConfigurationService
                 {
                     issues.Add(Issue("posting-rule.generated-unbalanced", AccountingConfigurationValidationSeverityDto.Warning, $"Posting rule '{rule.RuleId}' generated-posting static amounts are not balanced.", rule.RuleId, "Confirm formula-driven generated postings balance during dry run."));
                 }
-
             }
 
             if (rule.Allocations.Count > 0)
@@ -950,7 +950,7 @@ public sealed partial class AccountingConfigurationService
     private static string Hash(AccountingConfigurationWorkspaceDto workspace)
     {
         var json = JsonSerializer.Serialize(workspace);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(json);
     }
 
     private sealed record PostingRuleApprovalProtectedDefinition(
@@ -1005,9 +1005,6 @@ public sealed partial class AccountingConfigurationService
         => string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException($"{parameterName} is required.", parameterName)
             : value.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string? FirstText(string? preferred, string? fallback)
         => NormalizeOptional(preferred) ?? NormalizeOptional(fallback);

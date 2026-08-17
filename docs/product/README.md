@@ -32,6 +32,17 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     live status stays in the roadmap registry. `W10-MARK-001` and `W10-SEAM-001` are pulled forward
     ahead of the W9 close-out because they serve the release gate
 - Treat the following as dated working design inputs, not canonical status sources:
+  - [Adversarial Program Review (2026-08)](adversarial-program-review-2026-08.md) — independent
+    whole-program adverse review of end-user functionality with `file:line` evidence; re-tests the
+    2026-07 review's headline, documents acceptance-vs-wired drift, and ranks improvement areas by
+    end-user value uplift
+  - [Adversarial Review 2026-08 Remediation Plan](adversarial-review-2026-08-remediation-plan.md) —
+    every finding from that review as a tracked todo with a code-ready implementation plan
+    (evidence, change, verification, effort, dependencies) across thirteen sequenced workstreams;
+    a working plan, not a status source
+  - [Adversarial Program Review (2026-07)](adversarial-program-review-2026-07.md) — prior
+    independent review pass that motivated the activation-over-expansion and truth-discipline
+    doctrines; see its 2026-07-26 follow-up in `archive/docs/assessments/`
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization snapshot; use the roadmap registry, not this dated sequencing, for live status
   - [Data Provider & Accounting Code Brainstorm (2026-07)](data-provider-accounting-brainstorm-2026-07.md) —
@@ -60,6 +71,11 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     five grounded ideas for populating security-master, entity, ledger, and account data via a
     prepared Excel workbook (download → fill → upload → review → governed commit) and tying
     provider connection setup to the imported instrument universe
+  - [Functionality Deepening Brainstorm (2026-07)](functionality-deepening-brainstorm-2026-07.md) —
+    eleven code-grounded ideas for deepening existing subsystems (risk, alerting, promotion
+    governance, reconciliation matching, approvals, close evidence, backfill, marks, order
+    lifecycle), anchored to a depth survey of declared-but-dead seams and sequenced around the
+    W9 slate
 - If you need evidence-backed examples of current operations, check:
   - [generated roadmap outputs](../roadmap/generated/)
   - Current project source-of-truth references listed below.

@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
@@ -7,6 +6,7 @@ using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Export;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -925,7 +925,7 @@ public sealed partial class ReportPackRunReadService
             retainedPath,
             retainedManifestPath,
             versionStamp);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(input))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(input);
     }
 
     private static string BuildStructuredExportIntegritySummary(
@@ -1270,7 +1270,7 @@ public sealed partial class ReportPackRunReadService
             builder.Append(row.TryGetValue(column.Name, out var value) ? value : string.Empty);
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static IReadOnlyList<string> BuildPortfolioCutTags(
@@ -2362,9 +2362,6 @@ public sealed partial class ReportPackRunReadService
         // default to the token-gated secure portal for channels without an explicit egress hint.
         return ReportPackDeliveryModeDto.SecurePortal;
     }
-
-    private static string? NormalizeOptional(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static WorkstationReportPackDistributionPayload BuildDistribution(
         ReportPackDistributionPolicy policy,

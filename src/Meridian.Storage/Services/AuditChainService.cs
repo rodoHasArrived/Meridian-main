@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
 using Serilog;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Services;
 
@@ -98,7 +99,7 @@ public sealed class AuditChainService : IAuditChainService
         string fileHash;
         using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
-            var fileHashBytes = await SHA256.HashDataAsync(fileStream, ct).ConfigureAwait(false);
+            var fileHashBytes = await Sha256Digest.ComputeBytesAsync(fileStream, ct).ConfigureAwait(false);
             fileHash = Convert.ToHexString(fileHashBytes).ToLowerInvariant();
         }
 
@@ -147,8 +148,7 @@ public sealed class AuditChainService : IAuditChainService
 
             // Create the chain entry: hash(filePath || fileHash || previousHash)
             var entryData = $"{filePath}{fileHash}{previousHash}";
-            var entryHashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(entryData));
-            var entryHash = Convert.ToHexString(entryHashBytes).ToLowerInvariant();
+            var entryHash = Sha256Digest.ComputeUtf8(entryData);
 
             var entry = new
             {
@@ -296,7 +296,7 @@ public sealed class AuditChainService : IAuditChainService
                     }
 
                     await using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    var currentFileHashBytes = await SHA256.HashDataAsync(fileStream, ct).ConfigureAwait(false);
+                    var currentFileHashBytes = await Sha256Digest.ComputeBytesAsync(fileStream, ct).ConfigureAwait(false);
                     var currentFileHash = Convert.ToHexString(currentFileHashBytes).ToLowerInvariant();
 
                     if (!string.Equals(currentFileHash, fileHash, StringComparison.OrdinalIgnoreCase))
@@ -313,8 +313,7 @@ public sealed class AuditChainService : IAuditChainService
                     }
 
                     var expectedEntryData = $"{path}{fileHash}{recordedPreviousHash}";
-                    var expectedEntryHashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(expectedEntryData));
-                    var expectedEntryHash = Convert.ToHexString(expectedEntryHashBytes).ToLowerInvariant();
+                    var expectedEntryHash = Sha256Digest.ComputeUtf8(expectedEntryData);
 
                     if (!string.Equals(expectedEntryHash, currentHash, StringComparison.OrdinalIgnoreCase))
                     {

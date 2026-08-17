@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Store;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -651,9 +652,6 @@ internal static class AutomatedJournalScheduleProjection
         => string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException($"{label} is required.")
             : value.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static AutomatedJournalCapitalAccountReconciliationDto? NormalizeReconciliation(
         AutomatedJournalCapitalAccountReconciliationDto? reconciliation)

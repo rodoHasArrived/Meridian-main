@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
@@ -9,6 +8,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -1028,7 +1028,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
     private static string Fingerprint(AssetAccountingEventSpineDto projection)
     {
         var payload = JsonSerializer.SerializeToUtf8Bytes(projection, CanonicalJsonOptions);
-        return Convert.ToHexString(SHA256.HashData(payload)).ToLowerInvariant();
+        return Sha256Digest.Compute(payload);
     }
 
     private static bool PayloadEquals<T>(T left, T right)
@@ -1258,8 +1258,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         Guid sourceEventId,
         AssetLotMutationIntentDto intent)
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(
-            $"asset-lot|{ledgerBookId:D}|{sourceEventId:D}|{intent}"));
+        var bytes = Sha256Digest.ComputeBytesUtf8($"asset-lot|{ledgerBookId:D}|{sourceEventId:D}|{intent}");
         return new Guid(bytes.AsSpan(0, 16));
     }
 
@@ -1662,9 +1661,6 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         => string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException($"{parameterName} is required.", parameterName)
             : value.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void EnsureUniqueEvidenceIds(
         IReadOnlyList<RetainedEvidenceIdentityDto> evidence,

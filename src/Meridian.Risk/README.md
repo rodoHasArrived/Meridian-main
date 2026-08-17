@@ -6,7 +6,7 @@ module_id: SRC-RISK
 path: src/Meridian.Risk
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-05-20
+last_reviewed: 2026-08-11
 ---
 
 # src/Meridian.Risk
@@ -22,11 +22,82 @@ This layer owns risk decision logic and reusable rules. It should stay independe
 ## Key folders and files
 
 - `Rules/` - individual risk rules: position limit, drawdown circuit breaker, order-rate
-  throttle, and the portfolio-aware gross-exposure, symbol-concentration, and order-notional
-  gates.
+  throttle, the order-entry fat-finger gate, and the portfolio-aware gross-exposure,
+  symbol-concentration, and order-notional gates.
 - `PortfolioExposure.cs` - `IPortfolioExposureProvider` and the exposure snapshot the
   portfolio-aware rules consume (fed from `IAggregatePortfolioService` by the host).
 - Risk interfaces and shared validation primitives.
+
+## Order-entry fat-finger gate
+
+`Rules/FatFingerRule.cs` catches mistyped orders before any portfolio rule sees them
+(`Priority = -10`, severity `Error`), so an inflated order is attributed to the slip rather than
+to whichever exposure ceiling its size happened to breach. Both thresholds are operator-tuned
+through the runtime service and null-disables the limb; an entirely unconfigured rule approves
+without measuring.
+
+- **Quantity ceiling** - the largest unit count any single leg actually routes, which for a package
+  is `Quantity x RatioQuantity` rather than the top-level count. Skipped for broker-notional
+  orders, whose `Quantity` field carries dollars, and fixed-income orders, whose field carries face
+  value after the active gateway has resolved that sizing semantic; both are gated on economic size
+  by `OrderNotionalRule` instead.
+- **Price-deviation band** - directional, not symmetric. Only the aggressive side is measured
+  (a buy paying above the reference, a sell hitting below it), because a symmetric band would
+  reject the entire resting book.
+- **Wrong-side stop trigger** - the mirror of the band above. A correctly placed buy stop sits
+  *above* the market and a sell stop *below* it, so a buy stop typed beneath the market is already
+  crossed and a stop-market order that triggers on acceptance routes with no price protection at
+  all. Trigger deviation is measured on the wrong side only, so a protective stop placed correctly
+  never breaches however far away it sits.
+
+The two price limbs read *different* references, because a limit and a trigger answer different
+questions:
+
+- **A limit** is measured against `IPortfolioExposureProvider.TryGetTouchPrice` — the raw crossing
+  side of the book, not the conservative `TryGetExecutablePrice` valuation mark the sizing rules
+  use. Sizing must never *under*-measure the exposure an order creates, so its mark takes the larger
+  of mid and touch; a price control must compare against what the order can actually trade at.
+  Measuring a sell against that mark would make an ordinary marketable sell at the bid look priced
+  through the market by half the spread.
+- **A trigger** is measured against `TryGetTriggerReferencePrice`, which reads **the matcher's own
+  observation** rather than rebuilding one: the production provider captures
+  `PaperMarketObservation` from the live feed and resolves through
+  `PaperMarketObservation.ResolveStopTriggerPrice`, the single definition of the precedence
+  (`LastTradePrice ?? BarClose ?? crossing side`) that `PaperOrderMatchingPolicy` itself uses. That
+  is deliberately one shared method and not two matching implementations, because every attempt to
+  reconstruct it diverged somewhere: consulting the quote first falsely rejects a resting stop when
+  the print trails the quote and falsely approves an already-triggered one when it leads; dropping
+  the bar-close leg reproduces the false approval on a bar-driven session; and applying this
+  provider's staleness filter drops a six-minute-old print the matcher will still fire from. Note
+  that last one — the age filter that protects every *valuation* accessor here is precisely wrong
+  for this one, because the question is not "what is this worth" but "will the engine fire this",
+  and where the guard and the engine disagree the engine is the authority. That reasoning holds
+  only while the paper matcher **is** the engine, so the unfiltered observation is used only in a
+  paper composition. Against a live broker nobody here decides the fill and the feed cache retains
+  prints indefinitely, so the same precedence runs over current observations instead — a stale $50
+  print must lose to a fresh $100 ask, or a buy stop at $60 reads as resting while the broker sees
+  it already crossed. The posture defaults to live, because that is where guessing wrong routes an
+  unbounded order.
+
+- **A stop-limit's limit** is measured against *its own trigger*, which is what it is priced off.
+
+These limbs gate both submission and every amendment that supplies a limit or stop price. The OMS
+re-enters the validator regardless of numeric direction, because lowering a sell limit or buy stop
+can be more dangerous even while measured notional falls. The rule still reads only the top-level
+`LimitPrice` and `StopPrice`, so the attached legs of an Alpaca bracket, OCO, or OTO order — routed
+from metadata — are not measured; that gap remains recorded on the roadmap row.
+
+Both thresholds are read as a single `FatFingerThresholds` value rather than two accessors, so an
+evaluation cannot straddle a two-field configuration update and observe a pair that never existed.
+
+Market, trailing-stop, and multi-leg orders contribute no price at all; `FatFingerRule`'s type
+remarks carry the reason for each exclusion. Auction limits carry a routed price but currently have
+no auction-indicative or prior-close reference seam, so they fail closed as unmeasurable while the
+band is configured instead of being compared with the continuous BBO or routed unchecked. With the
+band configured, a measurable order whose symbol has no reference price is refused as
+`FAT_FINGER_UNMEASURABLE` rather than approved — a band an unpriceable order sails past is not a
+band — and that refusal is deliberately unmeasurable rather than a breach, so a pricing gap does not
+trip the circuit breaker.
 
 ## Important workflows
 
@@ -46,8 +117,9 @@ exposes one. Rule severity maps to a real outcome in `CompositeRiskValidator`:
 Portfolio-aware rules read a `PortfolioExposureSnapshot` per evaluation, so thresholds tuned
 through the UI runtime service apply immediately and enforcement always sees the same
 aggregated cross-run exposure the Portfolio workspace reports. Thresholds are operator-tuned
-(null means unconfigured and the rule approves); order notional resolves from the limit/stop
-price or the symbol's reference price and never guesses a price for unknown symbols.
+(null means unconfigured and the rule approves); capped buy limits resolve from their limit,
+while uncapped orders require a current symbol reference price. A configured rule rejects an
+order it cannot price rather than guessing or approving it unmeasured.
 
 Every rule is evaluated before any decision is taken, so an order breaching several limits reports
 all of them rather than the first one encountered. The outcome is still chosen by the first blocking
@@ -87,6 +159,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | --- | --- |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W7-LIVE-001` | Live-readiness governance |
+| `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

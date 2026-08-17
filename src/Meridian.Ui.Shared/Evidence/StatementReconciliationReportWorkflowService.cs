@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Text;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
@@ -834,7 +836,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
         return new RetainedArtifactSet(
             generation,
             descriptors,
-            Convert.ToHexString(SHA256.HashData(manifestBytes)));
+            Sha256Digest.Compute(manifestBytes));
     }
 
     private async Task<StatementReconciliationReportArtifactGenerationDto> ArchiveCurrentArtifactGenerationAsync(
@@ -899,7 +901,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
         }
 
         var manifestBytes = await File.ReadAllBytesAsync(manifestPath, ct).ConfigureAwait(false);
-        var manifestHash = Convert.ToHexString(SHA256.HashData(manifestBytes));
+        var manifestHash = Sha256Digest.Compute(manifestBytes);
         ValidateCurrentArtifactManifest(manifestBytes, manifestHash, workflow);
         var archiveDirectory = GetArtifactGenerationArchiveDirectory(directory, generation);
         Directory.CreateDirectory(archiveDirectory);
@@ -954,7 +956,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
             generatedAtValues[0],
             workflow.EvidenceReferences ?? []);
         var receiptBytes = await File.ReadAllBytesAsync(receiptPath, ct).ConfigureAwait(false);
-        var receiptHash = Convert.ToHexString(SHA256.HashData(receiptBytes));
+        var receiptHash = Sha256Digest.Compute(receiptBytes);
         var auditEvidence = receipt.EvidenceReferences
             .Concat(BuildArtifactGenerationEvidenceReferences(
                 generation,
@@ -1161,7 +1163,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
         StatementReconciliationReportArtifactDto descriptor,
         byte[] content)
     {
-        var actualHash = Convert.ToHexString(SHA256.HashData(content));
+        var actualHash = Sha256Digest.Compute(content);
         if (content.LongLength != descriptor.ByteLength
             || !string.Equals(
                 actualHash,
@@ -1191,7 +1193,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
             fileName,
             contentType,
             content.LongLength,
-            Convert.ToHexString(SHA256.HashData(content)),
+            Sha256Digest.Compute(content),
             UiApiRoutes.WithParam(
                 UiApiRoutes.WithParam(
                     UiApiRoutes.ReconciliationStatementReconciliationReportArtifact,
@@ -1248,7 +1250,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
             StatementReconciliationReportWorkflowStatusDto.InputRetained,
             Version: 1,
             command.TenantId.Trim(),
-            Normalize(command.CompanyId),
+            TextPrimitives.NormalizeOptional(command.CompanyId),
             command.Import.SourceInstitution.Trim(),
             command.Import.FundAccountId.Trim(),
             command.Import.ExternalAccountId.Trim(),
@@ -1462,10 +1464,13 @@ public sealed partial class StatementReconciliationReportWorkflowService
 
     private static string BuildWorkflowId(StatementReconciliationReportStartCommand command, string prefix)
     {
+        // Deliberately NOT routed through Sha256Digest (which lowercases): this uppercase hex string
+        // is an input to the workflow-identity digest below, so changing its casing would change
+        // every derived workflowId and orphan previously persisted workflows (#2691).
         var contentHash = Convert.ToHexString(SHA256.HashData(command.Import.Document.Content.Span));
         var identity = string.Join('|',
             command.TenantId.Trim(),
-            Normalize(command.CompanyId),
+            TextPrimitives.NormalizeOptional(command.CompanyId),
             CanonicalizeSemanticIdentity(command.Import.SourceInstitution),
             CanonicalizeSemanticIdentity(command.Import.FundAccountId),
             CanonicalizeSemanticIdentity(command.Import.ExternalAccountId),
@@ -1477,7 +1482,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
             CanonicalizeSemanticIdentity(command.Import.Document.ExternalAccountId),
             CanonicalizeSemanticIdentity(command.Import.ToleranceProfileId),
             contentHash);
-        return prefix + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity)))[..32].ToLowerInvariant();
+        return prefix + Sha256Digest.ComputeUtf8(identity)[..32];
     }
 
     private IReadOnlyList<WorkflowLocation> BuildWorkflowLocations(
@@ -1603,7 +1608,7 @@ public sealed partial class StatementReconciliationReportWorkflowService
     private static void EnsureScopeMatches(WorkflowSnapshot snapshot, string tenantId, string? companyId)
     {
         if (!string.Equals(snapshot.Workflow.TenantId, tenantId.Trim(), StringComparison.Ordinal)
-            || !string.Equals(snapshot.Workflow.CompanyId, Normalize(companyId), StringComparison.Ordinal))
+            || !string.Equals(snapshot.Workflow.CompanyId, TextPrimitives.NormalizeOptional(companyId), StringComparison.Ordinal))
             throw new UnauthorizedAccessException("Statement reconciliation report workflow belongs to another tenant or company scope.");
     }
 
@@ -1633,9 +1638,9 @@ public sealed partial class StatementReconciliationReportWorkflowService
                     ResolveDataRootPath(request.RelativeInputPath),
                     ct)
                 .ConfigureAwait(false);
-            identityMatches = SHA256.HashData(retainedInput)
+            identityMatches = Sha256Digest.ComputeBytes(retainedInput)
                 .AsSpan()
-                .SequenceEqual(SHA256.HashData(import.Document.Content.Span));
+                .SequenceEqual(Sha256Digest.ComputeBytes(import.Document.Content.Span));
         }
 
         if (!identityMatches)
@@ -1735,11 +1740,8 @@ public sealed partial class StatementReconciliationReportWorkflowService
            && retained.AccountingPeriodId == expected.AccountingPeriodId
            && retained.AsOfDate == expected.AsOfDate;
 
-    private static string? Normalize(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private static string? CanonicalizeSemanticIdentity(string? value)
-        => Normalize(value)?.ToUpperInvariant();
+        => TextPrimitives.NormalizeOptional(value)?.ToUpperInvariant();
 
     private static bool SemanticIdentityEquals(string? left, string? right)
         => string.Equals(

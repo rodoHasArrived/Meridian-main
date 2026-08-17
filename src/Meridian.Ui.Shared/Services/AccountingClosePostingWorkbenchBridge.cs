@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Tenancy;
@@ -680,7 +680,7 @@ public sealed class AccountingClosePostingWorkbenchBridge :
             writer.WriteEndObject();
         }
 
-        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     private static string ComputeChecklistEvidenceHash(
@@ -722,7 +722,7 @@ public sealed class AccountingClosePostingWorkbenchBridge :
             writer.WriteEndObject();
         }
 
-        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     private static void WriteEvidenceLinks(
@@ -826,7 +826,7 @@ public sealed class AccountingClosePostingWorkbenchBridge :
             writer.WriteEndObject();
         }
 
-        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     private static void ValidateCloseCheckpoint(
@@ -1379,7 +1379,7 @@ public sealed class AccountingClosePostingWorkbenchBridge :
             command.ApprovalReference?.Trim().ToLowerInvariant() ?? string.Empty,
             command.CorrelationId?.Trim().ToLowerInvariant() ?? string.Empty,
             string.Join(';', normalizedEvidence));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical);
     }
 
     private static bool IsSameReopenReplay(

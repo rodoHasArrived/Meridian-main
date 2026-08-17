@@ -174,7 +174,7 @@ public static class ReportingCertifiedManifestValidation
             writer.WriteEndArray();
         }
 
-        return ComputeSha256(stream.ToArray());
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     public static string ComputeSnapshotHash(ReportingOutputManifest manifest)
@@ -227,7 +227,7 @@ public static class ReportingCertifiedManifestValidation
                 readinessHash = manifest.Readiness.EvidenceHash,
                 certifiedDatasetHash = ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows)
             });
-        return ComputeSha256(Encoding.UTF8.GetBytes(payload));
+        return Sha256Digest.Compute(Encoding.UTF8.GetBytes(payload));
     }
 
     private static bool IsUtc(DateTimeOffset value) =>
@@ -248,6 +248,4 @@ public static class ReportingCertifiedManifestValidation
             _ => "Primary"
         };
 
-    private static string ComputeSha256(ReadOnlySpan<byte> value) =>
-        Convert.ToHexString(SHA256.HashData(value)).ToLowerInvariant();
 }

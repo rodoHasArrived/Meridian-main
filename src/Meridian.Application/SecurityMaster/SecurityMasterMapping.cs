@@ -98,7 +98,7 @@ internal static class SecurityMasterMapping
             {
                 ["sourceSystem"] = sourceSystem,
                 ["reason"] = reason,
-                ["schemaVersion"] = 2,
+                ["schemaVersion"] = SecurityMasterSchemaVersions.EconomicTerms,
                 ["payloadType"] = "SecurityEconomicDefinition"
             },
             SecurityMasterJsonContext.Default.DictionaryStringObject);

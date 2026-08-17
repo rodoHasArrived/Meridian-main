@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using Meridian.Core.Logging;
 using Serilog;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Services;
 
@@ -55,8 +56,7 @@ public sealed class StorageChecksumService
     {
         ArgumentNullException.ThrowIfNull(data, nameof(data));
 
-        var hash = SHA256.HashData(data);
-        return Convert.ToHexString(hash).ToLowerInvariant();
+        return Sha256Digest.Compute(data);
     }
 
     /// <summary>

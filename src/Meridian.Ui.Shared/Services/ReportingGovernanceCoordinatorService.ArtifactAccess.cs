@@ -6,6 +6,7 @@ using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Reporting;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -113,24 +114,15 @@ public sealed partial class ReportingGovernanceCoordinatorService
     private static string BuildPackageId(GovernedReportingRun run)
     {
         var canonical = $"{run.Scope.TenantId}\n{run.RunId}\n{run.Revision.ToString(CultureInfo.InvariantCulture)}";
-        return $"report-package-{ComputeSha256(Encoding.UTF8.GetBytes(canonical))}";
+        return $"report-package-{Sha256Digest.Compute(Encoding.UTF8.GetBytes(canonical))}";
     }
 
     private static string BuildSourceCheckpointEvidence(string checkpointId, string checkpointHash) =>
         $"reporting-source-checkpoint:{checkpointId}:{checkpointHash.ToLowerInvariant()}";
 
-    private static string ComputeSha256(ReadOnlySpan<byte> content) =>
-        Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
-
     private static bool SameOptional(string? left, string? right) =>
         string.IsNullOrWhiteSpace(left) && string.IsNullOrWhiteSpace(right)
         || string.Equals(left?.Trim(), right?.Trim(), StringComparison.Ordinal);
-
-    private static string? NormalizeOptional(string? value)
-    {
-        var normalized = value?.Trim();
-        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
-    }
 
     private static void RequireText(string? value, string parameterName)
     {

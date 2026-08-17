@@ -22,6 +22,42 @@ public sealed class Sha256DigestTests
     }
 
     [Fact]
+    public void Compute_Stream_EmitsCanonicalLowercaseHexFromCurrentPosition()
+    {
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes("skiptest"));
+        stream.Position = 4;
+
+        var digest = Sha256Digest.Compute(stream);
+
+        digest.Should().Be(LowercaseDigest, "only the bytes after the current position are hashed");
+        Sha256Digest.IsCanonical(digest).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ComputeAsync_EmitsCanonicalLowercaseHexMatchingCompute()
+    {
+        var payload = Encoding.UTF8.GetBytes("test");
+        using var stream = new MemoryStream(payload);
+
+        var digest = await Sha256Digest.ComputeAsync(stream);
+
+        digest.Should().Be(LowercaseDigest);
+        Sha256Digest.IsCanonical(digest).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ComputeAsync_HashesFromCurrentPosition()
+    {
+        var payload = Encoding.UTF8.GetBytes("skiptest");
+        using var stream = new MemoryStream(payload);
+        stream.Position = 4;
+
+        var digest = await Sha256Digest.ComputeAsync(stream);
+
+        digest.Should().Be(LowercaseDigest, "only the bytes after the current position are hashed");
+    }
+
+    [Fact]
     public void Compute_MatchesFrameworkHash()
     {
         var payload = Encoding.UTF8.GetBytes("meridian");
@@ -29,6 +65,51 @@ public sealed class Sha256DigestTests
         Sha256Digest.Compute(payload)
             .Should()
             .Be(Convert.ToHexString(SHA256.HashData(payload)).ToLowerInvariant());
+    }
+
+    // The byte-form members exist so non-hex consumers (deterministic IDs, binary receipts) can
+    // migrate onto the primitive without changing a single output byte — so byte-for-byte equality
+    // with the framework call is the whole contract.
+    [Fact]
+    public void ComputeBytes_MatchesFrameworkHashExactly()
+    {
+        var payload = Encoding.UTF8.GetBytes("meridian");
+
+        Sha256Digest.ComputeBytes(payload).Should().Equal(SHA256.HashData(payload));
+        Sha256Digest.ComputeBytesUtf8("meridian").Should().Equal(SHA256.HashData(payload));
+    }
+
+    [Fact]
+    public void ComputeBytes_IsTheDecodedFormOfCompute()
+    {
+        var payload = Encoding.UTF8.GetBytes("meridian");
+
+        Convert.ToHexString(Sha256Digest.ComputeBytes(payload))
+            .ToLowerInvariant()
+            .Should()
+            .Be(Sha256Digest.Compute(payload));
+    }
+
+    [Fact]
+    public async Task ComputeBytesAsync_HashesFromCurrentPosition()
+    {
+        var payload = Encoding.UTF8.GetBytes("skiptest");
+        using var stream = new MemoryStream(payload);
+        stream.Position = 4;
+
+        var digest = await Sha256Digest.ComputeBytesAsync(stream);
+
+        digest.Should().Equal(
+            Sha256Digest.ComputeBytesUtf8("test"),
+            "only the bytes after the current position are hashed");
+    }
+
+    [Fact]
+    public void ComputeBytesUtf8_RejectsNull()
+    {
+        var act = () => Sha256Digest.ComputeBytesUtf8(null!);
+
+        act.Should().Throw<ArgumentNullException>();
     }
 
     [Theory]

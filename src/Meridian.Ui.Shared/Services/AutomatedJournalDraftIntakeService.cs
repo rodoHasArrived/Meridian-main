@@ -1,7 +1,7 @@
-using System.Security.Cryptography;
-using System.Text;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
+using Meridian.Contracts.Integrity;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -317,7 +317,7 @@ public sealed class AutomatedJournalDraftIntakeService
         string? periodId,
         string? entityId)
     {
-        var pendingBatchCorrelationId = NormalizeText(
+        var pendingBatchCorrelationId = NormalizeOptional(
             pendingOverlap.TreasuryContext?.BatchCorrelationId);
         return existingDrafts
             .Where(IsPendingDailyValuationDraft)
@@ -332,7 +332,7 @@ public sealed class AutomatedJournalDraftIntakeService
                 StringComparison.OrdinalIgnoreCase))
             .Where(existingDraft => pendingBatchCorrelationId is not null
                 ? string.Equals(
-                    NormalizeText(existingDraft.TreasuryContext?.BatchCorrelationId),
+                    NormalizeOptional(existingDraft.TreasuryContext?.BatchCorrelationId),
                     pendingBatchCorrelationId,
                     StringComparison.OrdinalIgnoreCase)
                 : HasOverlappingValuationScope(existingDraft, candidate))
@@ -357,15 +357,15 @@ public sealed class AutomatedJournalDraftIntakeService
         var existingScopes = existing.Lines
             .Select(static line => new ValuationScopeKey(
                 line.SecurityId ?? line.Dimensions?.InstrumentId,
-                NormalizeOptional(line.LedgerAccountSymbol ?? line.SecurityDisplayName),
-                NormalizeOptional(line.LedgerAccountFinancialAccountId)))
+                NormalizeOptionalUpperInvariant(line.LedgerAccountSymbol ?? line.SecurityDisplayName),
+                NormalizeOptionalUpperInvariant(line.LedgerAccountFinancialAccountId)))
             .Where(static key => key.SecurityId.HasValue || key.Symbol is not null)
             .ToHashSet();
         var candidateScopes = candidate.Lines
             .Select(line => new ValuationScopeKey(
                 candidate.Event.SecurityId ?? line.dimensions?.InstrumentId,
-                NormalizeOptional(line.account.Symbol ?? candidate.Event.Symbol),
-                NormalizeOptional(line.account.FinancialAccountId)))
+                NormalizeOptionalUpperInvariant(line.account.Symbol ?? candidate.Event.Symbol),
+                NormalizeOptionalUpperInvariant(line.account.FinancialAccountId)))
             .Where(static key => key.SecurityId.HasValue || key.Symbol is not null)
             .ToHashSet();
 
@@ -378,16 +378,19 @@ public sealed class AutomatedJournalDraftIntakeService
     private static string DescribeValuationScope(AutomatedJournalDraft draft)
     {
         var line = draft.Lines.FirstOrDefault();
-        var symbol = NormalizeOptional(line.account?.Symbol) ?? NormalizeOptional(draft.Event.Symbol) ?? "unknown security";
-        var account = NormalizeOptional(line.account?.FinancialAccountId) ?? "unscoped account";
+        var symbol = NormalizeOptionalUpperInvariant(line.account?.Symbol) ?? NormalizeOptionalUpperInvariant(draft.Event.Symbol) ?? "unknown security";
+        var account = NormalizeOptionalUpperInvariant(line.account?.FinancialAccountId) ?? "unscoped account";
         return $"{symbol}/{account}";
     }
 
-    private static string? NormalizeOptional(string? value)
+    /// <summary>Trims to null and upper-cases.</summary>
+    /// <remarks>
+    /// Named for the case folding. It previously shared the name and signature of the plain
+    /// trim-to-null helper used in dozens of other files, so the difference was invisible at
+    /// the call site even though this one changes the value it returns.
+    /// </remarks>
+    private static string? NormalizeOptionalUpperInvariant(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim().ToUpperInvariant();
-
-    private static string? NormalizeText(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed record ValuationScopeKey(Guid? SecurityId, string? Symbol, string? FinancialAccountId);
 
@@ -447,7 +450,7 @@ public sealed class AutomatedJournalDraftIntakeService
             TreasuryContext: new TreasuryLedgerContextDto(
                 EffectiveDate: effectiveDate,
                 IdempotencyKey: idempotencyKey,
-                BatchCorrelationId: NormalizeText(request.BatchCorrelationId)),
+                BatchCorrelationId: NormalizeOptional(request.BatchCorrelationId)),
             AutomationEvidenceAssessment: evidenceAssessment);
     }
 
@@ -479,7 +482,7 @@ public sealed class AutomatedJournalDraftIntakeService
     {
         var seed = FormattableString.Invariant(
             $"automated-journal|tenant={NormalizeIdentity(request.TenantId)}|company={NormalizeIdentity(request.CompanyId)}|fund={NormalizeIdentity(request.FundProfileId)}|book={request.LedgerBookId?.ToString("N") ?? "-"}|entity={NormalizeIdentity(request.EntityId)}|currency={NormalizeIdentity(request.Currency)}|event={idempotencyKey.Trim().ToLowerInvariant()}");
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(seed));
+        var hash = Sha256Digest.ComputeBytesUtf8(seed);
         return new Guid(hash.AsSpan(0, 16));
     }
 
