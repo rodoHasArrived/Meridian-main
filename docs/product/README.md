@@ -32,6 +32,11 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     live status stays in the roadmap registry. `W10-MARK-001` and `W10-SEAM-001` are pulled forward
     ahead of the W9 close-out because they serve the release gate
 - Treat the following as dated working design inputs, not canonical status sources:
+  - [Adversarial Program Review (2026-08-18)](adversarial-program-review-2026-08-18.md) — follow-up
+    independent whole-program adverse review that re-tests all 25 headline findings of the
+    2026-08-10 pass against the ~321 commits landed since, documents the built-but-unwired
+    remediation pattern with `file:line` evidence, and re-ranks improvement areas by end-user
+    value uplift
   - [Adversarial Program Review (2026-08)](adversarial-program-review-2026-08.md) — independent
     whole-program adverse review of end-user functionality with `file:line` evidence; re-tests the
     2026-07 review's headline, documents acceptance-vs-wired drift, and ranks improvement areas by
