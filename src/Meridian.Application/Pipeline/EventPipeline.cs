@@ -469,6 +469,15 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             if (chunkAppended > 0)
             {
                 Interlocked.Add(ref _recoveredCount, chunkAppended);
+
+                // Publish the replay metric here too, for the same reason: these records are
+                // durable and will not be enumerated again, so a later chunk failure must not
+                // strand their telemetry — a retry recovers only what remains and could never
+                // restore it. The series takes a running total because IncTo raises to a
+                // maximum rather than adding.
+                PrometheusMetrics.RecordWalRecovery(
+                    recovered,
+                    _wal.LastRecoveryDurationMs / 1000.0);
             }
 
             chunkAppended = 0;
@@ -634,11 +643,13 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             throw;
         }
 
-        // Emit WAL recovery metrics to Prometheus. The count is the number of records actually
-        // replayed to the sink, not the WAL's scan tally: that tally includes records whose
-        // payload proved undeserializable and were dropped as corruption, so reporting it would
-        // claim recovery successes that never reached the sink and contradict both the
-        // corruption counter and RecoveredCount.
+        // Final emission, covering a pass that committed no chunk (nothing to recover) so the
+        // duration gauge still reflects it. Committed chunks already published their own
+        // running total above, which survives a later chunk failure. The count is the number of
+        // records actually replayed to the sink, never the WAL's scan tally: that tally counts
+        // records whose payload proved undeserializable and were dropped as corruption, so
+        // reporting it would claim recovery successes that never reached the sink and
+        // contradict both the corruption counter and RecoveredCount.
         PrometheusMetrics.RecordWalRecovery(
             recovered,
             _wal.LastRecoveryDurationMs / 1000.0);

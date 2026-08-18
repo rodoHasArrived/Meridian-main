@@ -792,9 +792,19 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             failingSink, capacity: 100, enablePeriodicFlush: false, wal: wal2, dedupLedger: ledger);
         pipeline1.RecoveryCommitBatchSize = 10;
 
+        var replayMetricBefore = await ReadRecoveryEventMetricAsync();
+
         await Assert.ThrowsAsync<InvalidOperationException>(() => pipeline1.RecoverAsync());
         pipeline1.RecoveredCount.Should().Be(10,
             "the first chunk crossed its durable boundary and must be counted even though a later chunk failed");
+
+        // The same reasoning applies to the exported metric: the committed chunk's records are
+        // durable and never enumerated again, so a retry could not restore their telemetry.
+        // The series is monotonic, so a delta assertion tolerates other recoveries running
+        // concurrently.
+        (await ReadRecoveryEventMetricAsync()).Should().BeGreaterThanOrEqualTo(
+            replayMetricBefore + 10,
+            "a committed chunk must publish its replay telemetry before a later chunk fails");
         await pipeline1.DisposeAsync();
 
         // Second recovery resumes from the failed chunk: only the 15 uncommitted records replay.
@@ -1379,6 +1389,33 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         }
 
         return text.ToString();
+    }
+
+    /// <summary>
+    /// Reads the current value of the exported <c>mdc_wal_recovery_events_total</c> series from
+    /// the default registry, so tests can assert on replay telemetry without reaching into the
+    /// private counter fields.
+    /// </summary>
+    private static async Task<double> ReadRecoveryEventMetricAsync()
+    {
+        using var buffer = new MemoryStream();
+        await Prometheus.Metrics.DefaultRegistry.CollectAndExportAsTextAsync(buffer);
+        var exposition = System.Text.Encoding.UTF8.GetString(buffer.ToArray());
+
+        foreach (var line in exposition.Split('\n'))
+        {
+            if (!line.StartsWith("mdc_wal_recovery_events_total ", StringComparison.Ordinal))
+                continue;
+
+            var value = line.Split(' ')[^1].Trim();
+            if (double.TryParse(value, System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out var parsed))
+            {
+                return parsed;
+            }
+        }
+
+        return 0;
     }
 
     private static async Task WaitUntilAsync(Func<bool> condition, int timeoutMs = 10_000)
