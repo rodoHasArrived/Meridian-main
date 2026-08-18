@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Domain;
@@ -91,7 +92,7 @@ public static class ReplayEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("StartReplay")
+        .WithName("StartReplay").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(400)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -105,7 +106,7 @@ public static class ReplayEndpoints
             session.Status = "paused";
             return Results.Json(new { sessionId, status = session.Status, eventsProcessed = session.EventsProcessed }, jsonOptions);
         })
-        .WithName("PauseReplay")
+        .WithName("PauseReplay").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -119,7 +120,7 @@ public static class ReplayEndpoints
             session.Status = "running";
             return Results.Json(new { sessionId, status = session.Status, eventsProcessed = session.EventsProcessed }, jsonOptions);
         })
-        .WithName("ResumeReplay")
+        .WithName("ResumeReplay").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -133,7 +134,7 @@ public static class ReplayEndpoints
             session.Cancel();
             return Results.Json(new { sessionId, status = "stopped", eventsProcessed = session.EventsProcessed }, jsonOptions);
         })
-        .WithName("StopReplay")
+        .WithName("StopReplay").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -146,7 +147,7 @@ public static class ReplayEndpoints
 
             return Results.Json(new { sessionId, positionMs = req.PositionMs, status = session.Status }, jsonOptions);
         })
-        .WithName("SeekReplay")
+        .WithName("SeekReplay").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -160,7 +161,7 @@ public static class ReplayEndpoints
             session.Speed = req.SpeedMultiplier;
             return Results.Json(new { sessionId, speedMultiplier = session.Speed, status = session.Status }, jsonOptions);
         })
-        .WithName("SetReplaySpeed")
+        .WithName("SetReplaySpeed").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);

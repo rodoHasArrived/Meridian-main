@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Globalization;
 using System.Text.Json;
 using Meridian.DataIntegration.Monitoring.DataQuality;
@@ -193,7 +194,7 @@ public static class DataQualityEndpoints
                         QualityApiJsonContext.Default.QualityGapRemediationResponse,
                         statusCode: StatusCodes.Status502BadGateway)
                 };
-            }, ct));
+            }, ct)).RequirePermission(UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityGapsTimeline, (string symbol, string? date) =>
             guard.HandleSync(() =>
@@ -278,7 +279,7 @@ public static class DataQualityEndpoints
                 return success
                     ? Json(new QualityAnomalyAcknowledgementResponse(Acknowledged: true))
                     : Results.NotFound($"Anomaly {anomalyId} not found");
-            }));
+            })).RequirePermission(UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityAnomaliesStatistics, () =>
             guard.HandleSync(() => Json(qualityService.AnomalyDetector.GetStatistics())));
@@ -373,7 +374,7 @@ public static class DataQualityEndpoints
                 var filePath = await qualityService.ExportReportAsync(report, format, ct);
 
                 return Results.Ok(new { filePath, format = format.ToString() });
-            }, ct));
+            }, ct)).RequirePermission(UserPermission.ManageStorage);
 
         // ==================== HEALTH ====================
 
