@@ -131,6 +131,13 @@ and UI presentation concerns in their owning layers.
   `EventCanonicalizer`, and the Data Integration-owned `CanonicalizingPublisher` decorator.
   Application still owns the concrete event pipeline, dead-letter/quarantine implementation, and
   composition wiring that supplies the Domain-owned quarantine sink port.
+- `EventPipeline` durability follows a fixed, resumable batch order — validate → reserve
+  (memory-only dedup claim) → WAL append → WAL flush → sink append → sink flush → dedup
+  commit/flush → WAL commit. Producer-channel acceptance (`TryPublish`/`PublishAsync`) is
+  admission-only, not a durable acknowledgement. Dedup identities persist as versioned ledger
+  entries: version 2 confirms sink durability and suppresses WAL replay, while legacy version-1
+  entries only suppress live ingress and are replayed (then upgraded) during recovery, keeping
+  crash semantics at-least-once — a replayed duplicate is possible, silent loss is not.
 - Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
   propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry,
   the Platform `DefaultEventMetrics` implementation, and the Platform `TracedEventMetrics`
