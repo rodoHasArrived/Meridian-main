@@ -90,7 +90,7 @@ public static class ProviderExtendedEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("TriggerProviderFailover")
+        .WithName("TriggerProviderFailover").RequirePermission(UserPermission.ManageProviders)
         .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageProviders))
         .WithDescription("Manually triggers a failover to a specified target provider.")
         .Produces(200)
@@ -106,7 +106,7 @@ public static class ProviderExtendedEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("ResetProviderFailover")
+        .WithName("ResetProviderFailover").RequirePermission(UserPermission.ManageProviders)
         .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageProviders))
         .WithDescription("Resets the failover state to defaults, clearing any manual overrides.")
         .Produces(200)
@@ -182,7 +182,7 @@ public static class ProviderExtendedEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("SwitchProvider")
+        .WithName("SwitchProvider").RequirePermission(UserPermission.ManageProviders)
         .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageProviders))
         .WithDescription("Switches the active streaming data source to the specified provider.")
         .Produces(200)

@@ -101,7 +101,7 @@ public static partial class WorkstationEndpoints
             return await ExecuteWorkbenchAsync(
                 () => service.UpdateSecurityFieldAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
         })
-        .WithName("SecurityMasterWorkbenchField")
+        .WithName("SecurityMasterWorkbenchField").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityMasterEditResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
@@ -137,7 +137,7 @@ public static partial class WorkstationEndpoints
             return await ExecuteWorkbenchAsync(
                 () => service.ResolveSourceConflictAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
         })
-        .WithName("SecurityMasterWorkbenchResolveConflict")
+        .WithName("SecurityMasterWorkbenchResolveConflict").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityMasterConflictResolutionDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
@@ -185,7 +185,7 @@ public static partial class WorkstationEndpoints
             return await ExecuteWorkbenchAsync(
                 () => service.SubmitForApprovalAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
         })
-        .WithName("SecurityMasterWorkbenchSubmit")
+        .WithName("SecurityMasterWorkbenchSubmit").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityMasterEditResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
@@ -223,7 +223,7 @@ public static partial class WorkstationEndpoints
             return await ExecuteWorkbenchAsync(
                 () => service.ApproveRevisionAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
         })
-        .WithName("SecurityMasterWorkbenchApprove")
+        .WithName("SecurityMasterWorkbenchApprove").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityMasterEditResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
@@ -262,7 +262,7 @@ public static partial class WorkstationEndpoints
             return await ExecuteWorkbenchAsync(
                 () => service.DiscardRevisionAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
         })
-        .WithName("SecurityMasterWorkbenchDiscard")
+        .WithName("SecurityMasterWorkbenchDiscard").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityMasterEditResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
@@ -298,7 +298,7 @@ public static partial class WorkstationEndpoints
             return await ExecuteWorkbenchAsync(
                 () => service.PublishRevisionAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
         })
-        .WithName("SecurityMasterWorkbenchPublish")
+        .WithName("SecurityMasterWorkbenchPublish").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityMasterPublishResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)

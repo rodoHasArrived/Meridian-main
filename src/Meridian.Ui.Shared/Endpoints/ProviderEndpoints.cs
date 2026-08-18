@@ -126,7 +126,7 @@ public static class ProviderEndpoints
 
             return Results.Ok(new { id });
         })
-        .WithName("UpsertDataSource")
+        .WithName("UpsertDataSource").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Creates or updates a data source configuration entry.")
         .Produces(200)
         .Produces(400)
@@ -156,7 +156,7 @@ public static class ProviderEndpoints
 
             return Results.Ok();
         })
-        .WithName("DeleteDataSource")
+        .WithName("DeleteDataSource").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Removes a data source configuration by ID.")
         .Produces(200)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -191,7 +191,7 @@ public static class ProviderEndpoints
 
             return Results.Ok();
         })
-        .WithName("ToggleDataSource")
+        .WithName("ToggleDataSource").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Toggles the enabled/disabled state of a data source.")
         .Produces(200)
         .Produces(404)
@@ -225,7 +225,7 @@ public static class ProviderEndpoints
 
             return Results.Ok();
         })
-        .WithName("SetDefaultSources")
+        .WithName("SetDefaultSources").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Sets the default real-time and historical data source IDs.")
         .Produces(200)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -258,7 +258,7 @@ public static class ProviderEndpoints
 
             return Results.Ok();
         })
-        .WithName("UpdateFailoverSettings")
+        .WithName("UpdateFailoverSettings").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Updates automatic failover settings including timeout and enable/disable.")
         .Produces(200)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -279,7 +279,7 @@ public static class ProviderEndpoints
                 ? Results.Json(result, jsonOptions)
                 : Results.BadRequest(result);
         })
-        .WithName("ConfigureProvider")
+        .WithName("ConfigureProvider").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Creates a provider data-source configuration from the browser provider setup form.")
         .Produces<ProviderSetupResult>(200)
         .Produces<ProviderSetupResult>(400)
@@ -706,7 +706,7 @@ public static class ProviderEndpoints
 
             return Results.Ok(new { id });
         })
-        .WithName("UpsertDataSourceAlias")
+        .WithName("UpsertDataSourceAlias").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Alias for /api/config/datasources POST for backward compatibility.")
         .Produces(200)
         .Produces(400)
