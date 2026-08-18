@@ -821,37 +821,37 @@
     {
       "method": "GET",
       "path": "/api/backfill/checkpoints",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:25",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:26",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/checkpoints/validation",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:37",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:38",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/checkpoints/resumable",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:91",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:92",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/checkpoints/{jobId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:118",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:119",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/checkpoints/{jobId}/pending",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:144",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:145",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/backfill/checkpoints/{jobId}/resume",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:204",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:205",
       "documented": true
     },
     {
@@ -1007,13 +1007,13 @@
     {
       "method": "POST",
       "path": "/api/schedules/cron/validate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs:20",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs:21",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/schedules/cron/next-runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs:42",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs:43",
       "documented": false
     },
     {
@@ -1673,61 +1673,61 @@
     {
       "method": "GET",
       "path": "/api/health/summary",
-      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:28",
+      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:29",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/health/providers",
-      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:55",
+      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:56",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/health/providers/{provider}/diagnostics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:103",
+      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:104",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/health/storage",
-      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:153",
+      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:154",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/health/events",
-      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:188",
+      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:189",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/health/metrics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:201",
+      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:202",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/health/providers/{provider}/test",
-      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:220",
+      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:221",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/health/diagnostics/bundle",
-      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:258",
+      "source": "src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:259",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/alignment/create",
-      "source": "src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:176",
+      "source": "src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:177",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/alignment/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:196",
+      "source": "src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:197",
       "documented": false
     },
     {
@@ -2507,43 +2507,43 @@
     {
       "method": "GET",
       "path": "/api/options/expirations/{underlyingSymbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:27",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:28",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/options/strikes/{underlyingSymbol}/{expiration}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:50",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:51",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/options/chains/{underlyingSymbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:77",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:78",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/options/quotes/{underlyingSymbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:135",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:136",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/options/summary",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:155",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:156",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/options/underlyings",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:183",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:184",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/options/refresh",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:201",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:202",
       "documented": true
     },
     {
@@ -2987,43 +2987,43 @@
     {
       "method": "GET",
       "path": "/api/resilience/circuit-breakers",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:25",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:26",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/backfill/cost-estimate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:48",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:49",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/admin/retention/compliance-report",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:88",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:89",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/sampling/create",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:24",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:25",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/sampling/estimate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:111",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:112",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/sampling/saved",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:153",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:154",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/sampling/{sampleId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:177",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:178",
       "documented": false
     },
     {
@@ -3563,19 +3563,19 @@
     {
       "method": "GET",
       "path": "/api/subscriptions/active",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:21",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:22",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/subscriptions/subscribe",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:43",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:44",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/subscriptions/unsubscribe/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:72",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:73",
       "documented": false
     },
     {
