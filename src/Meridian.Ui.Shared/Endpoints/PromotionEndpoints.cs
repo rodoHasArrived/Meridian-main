@@ -72,7 +72,7 @@ public static class PromotionEndpoints
                 ? Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created)
                 : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
         })
-        .WithName("ApprovePromotion")
+        .WithName("ApprovePromotion").RequirePermission(UserPermission.ManageStrategies)
         .Produces<PromotionDecisionResult>(201)
         .Produces<PromotionDecisionResult>(400)
         .Produces(401)
@@ -102,7 +102,7 @@ public static class PromotionEndpoints
                 .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("RejectPromotion")
+        .WithName("RejectPromotion").RequirePermission(UserPermission.ManageStrategies)
         .Produces<PromotionDecisionResult>(200)
         .Produces(401)
         .Produces<PromotionDecisionResult>(403)
@@ -171,7 +171,7 @@ public static class PromotionEndpoints
                 ? Results.NotFound(new { error = $"Run '{runId}' was not found." })
                 : Results.Json(updated.WalkForwardEvidence, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("RecordWalkForwardEvidence")
+        .WithName("RecordWalkForwardEvidence").RequirePermission(UserPermission.ManageStrategies)
         .Produces<StrategyRunWalkForwardEvidence>(201)
         .Produces(400)
         .Produces(401)

@@ -61,7 +61,7 @@ public static class AdminEndpoints
             var execution = await maintService.ExecuteMaintenanceAsync(taskType, null, req?.TargetPaths, ct);
             return Results.Json(execution, jsonOptions);
         })
-        .WithName("RunAdminMaintenance")
+        .WithName("RunAdminMaintenance").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -129,7 +129,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("MigrateAdminStorage")
+        .WithName("MigrateAdminStorage").RequirePermission(UserPermission.ManageStorage)
         .Produces(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -208,7 +208,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("DeleteAdminRetention")
+        .WithName("DeleteAdminRetention").RequirePermission(UserPermission.ManageStorage)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -224,7 +224,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("ApplyAdminRetention")
+        .WithName("ApplyAdminRetention").RequirePermission(UserPermission.ManageStorage)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -281,7 +281,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("ExecuteAdminCleanup")
+        .WithName("ExecuteAdminCleanup").RequirePermission(UserPermission.ManageStorage)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -341,7 +341,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("RunAdminSelftest")
+        .WithName("RunAdminSelftest").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 

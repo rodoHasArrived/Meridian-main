@@ -118,7 +118,7 @@ public static class QuantLabEndpoints
             return Results.Json(new QuantParametersResponse(dtos), jsonOptions);
         })
         .WithName("ExtractQuantParameters")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageStrategies))
+        .RequirePermission(UserPermission.ManageStrategies)
         .Produces(200)
         .Produces(503);
 

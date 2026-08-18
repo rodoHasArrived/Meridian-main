@@ -174,7 +174,7 @@ public static class RiskEndpoints
             {
                 return Results.Problem(exception.Message, statusCode: StatusCodes.Status503ServiceUnavailable);
             }
-        })
+        }).RequirePermission(UserPermission.ManageOrders)
         .Produces<RiskRuleConfigDto>(200)
         .Produces(400)
         .Produces(404)
@@ -358,7 +358,7 @@ public static class RiskEndpoints
             return Results.Json(
                 new RiskEscalationApprovalResponse(ToDto(latest), releaseResult),
                 jsonOptions);
-        })
+        }).RequirePermission(UserPermission.ManageOrders)
         .Produces<RiskEscalationApprovalResponse>(200)
         .Produces(403)
         .Produces(404)
@@ -416,7 +416,7 @@ public static class RiskEndpoints
                 // resurrectable; the entry remains pending for a retry.
                 return Results.Problem(exception.Message, statusCode: StatusCodes.Status503ServiceUnavailable);
             }
-        })
+        }).RequirePermission(UserPermission.ManageOrders)
         .Produces<RiskEscalationDto>(200)
         .Produces(403)
         .Produces(404)

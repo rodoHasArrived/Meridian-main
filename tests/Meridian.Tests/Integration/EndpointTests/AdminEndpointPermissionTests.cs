@@ -39,11 +39,13 @@ public sealed class AdminEndpointPermissionTests : IClassFixture<EndpointTestFix
     }
 
     [Fact]
-    public async Task PostAdminMaintenanceRun_WithoutAuth_ReturnsForbidden()
+    public async Task PostAdminMaintenanceRun_WithoutAuth_ReturnsUnauthorized()
     {
         var content = new StringContent("{}", Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/admin/maintenance/run", content);
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares AdminMaintenance/ManageStorage since W9-GOV-008: a request with no
+        // session is unauthenticated rather than forbidden. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -61,11 +63,13 @@ public sealed class AdminEndpointPermissionTests : IClassFixture<EndpointTestFix
     }
 
     [Fact]
-    public async Task PostAdminSelftest_WithoutAuth_ReturnsForbidden()
+    public async Task PostAdminSelftest_WithoutAuth_ReturnsUnauthorized()
     {
         var content = new StringContent("{}", Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/admin/selftest", content);
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares AdminMaintenance/ManageStorage since W9-GOV-008: a request with no
+        // session is unauthenticated rather than forbidden. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     // ── Admin storage endpoints ──────────────────────────────────────────────
@@ -78,11 +82,13 @@ public sealed class AdminEndpointPermissionTests : IClassFixture<EndpointTestFix
     }
 
     [Fact]
-    public async Task PostAdminStorageMigrate_WithoutAuth_ReturnsForbidden()
+    public async Task PostAdminStorageMigrate_WithoutAuth_ReturnsUnauthorized()
     {
         var content = new StringContent("{}", Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/admin/storage/migrate/hot", content);
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares AdminMaintenance/ManageStorage since W9-GOV-008: a request with no
+        // session is unauthenticated rather than forbidden. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -109,18 +115,22 @@ public sealed class AdminEndpointPermissionTests : IClassFixture<EndpointTestFix
     }
 
     [Fact]
-    public async Task DeleteAdminRetention_WithoutAuth_ReturnsForbidden()
+    public async Task DeleteAdminRetention_WithoutAuth_ReturnsUnauthorized()
     {
         var response = await _client.DeleteAsync("/api/admin/retention/some-policy-id/delete");
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares AdminMaintenance/ManageStorage since W9-GOV-008: a request with no
+        // session is unauthenticated rather than forbidden. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
-    public async Task PostAdminRetentionApply_WithoutAuth_ReturnsForbidden()
+    public async Task PostAdminRetentionApply_WithoutAuth_ReturnsUnauthorized()
     {
         var content = new StringContent("{}", Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/admin/retention/apply", content);
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares AdminMaintenance/ManageStorage since W9-GOV-008: a request with no
+        // session is unauthenticated rather than forbidden. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     // ── Admin cleanup endpoints ──────────────────────────────────────────────
@@ -133,11 +143,13 @@ public sealed class AdminEndpointPermissionTests : IClassFixture<EndpointTestFix
     }
 
     [Fact]
-    public async Task PostAdminCleanupExecute_WithoutAuth_ReturnsForbidden()
+    public async Task PostAdminCleanupExecute_WithoutAuth_ReturnsUnauthorized()
     {
         var content = new StringContent("{}", Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/admin/cleanup/execute", content);
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares AdminMaintenance/ManageStorage since W9-GOV-008: a request with no
+        // session is unauthenticated rather than forbidden. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     // ── Admin config endpoints ───────────────────────────────────────────────
