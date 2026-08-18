@@ -545,7 +545,7 @@ public static class LeanEndpoints
                 });
             }
         })
-        .WithName("IngestLeanResults")
+        .WithName("IngestLeanResults").RequirePermission(UserPermission.ManageStrategies)
         .Produces(200)
         .Produces(400)
         .Produces(404)

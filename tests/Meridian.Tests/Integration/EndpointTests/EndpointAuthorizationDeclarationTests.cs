@@ -46,10 +46,11 @@ public sealed class EndpointAuthorizationDeclarationTests : EndpointIntegrationT
         "POST /api/alignment/preview",
         "POST /api/backfill/checkpoints/{jobId}/resume",
         "POST /api/backfill/cost-estimate",
-        "POST /api/compliance/actions/evaluate",
-        "POST /api/execution/orders/submit",
         "POST /api/health/providers/{provider}/test",
-        "POST /api/lean/results/ingest",
+        // Guarded, but by role rather than permission: TryGetLedgerCloseActor admits only the
+        // Admin and Accounting roles. EndpointAuthorizationMetadata carries permissions, so there
+        // is no honest declaration for a role gate -- declaring a permission would state a policy
+        // the route does not enforce. Stays listed until the guard is expressed in permissions.
         "POST /api/ledger/periods/{periodId:guid}/close",
         "POST /api/maintenance/execute",
         "POST /api/maintenance/executions/cleanup",
@@ -64,13 +65,17 @@ public sealed class EndpointAuthorizationDeclarationTests : EndpointIntegrationT
         "POST /api/packaging/create",
         "POST /api/packaging/import",
         "POST /api/packaging/validate",
+        // SECURITY FINDING, deliberately left visible rather than allowlisted: unlike the
+        // reporting delivery hook two entries above, this route verifies nothing at all -- no
+        // Plaid signature, no shared secret, no session -- so any caller who can reach the host
+        // can record forged webhook events into the ingestion pipeline. It stays in the baseline
+        // until that ingress is authenticated; allowlisting it would assert an authentication
+        // story that does not exist.
         "POST /api/plaid/webhook",
         "POST /api/providers/{providerName}/test",
         "POST /api/quality/anomalies/{anomalyId}/acknowledge",
         "POST /api/quality/gaps/{symbol}",
         "POST /api/quality/reports/export",
-        "POST /api/quant/run",
-        "POST /api/reference-data/options/chains/import",
         "POST /api/replay/start",
         "POST /api/replay/{sessionId}/pause",
         "POST /api/replay/{sessionId}/resume",
@@ -80,8 +85,6 @@ public sealed class EndpointAuthorizationDeclarationTests : EndpointIntegrationT
         "POST /api/sampling/create",
         "POST /api/schedules/cron/next-runs",
         "POST /api/schedules/cron/validate",
-        "POST /api/security-master/corporate-actions/inbox/apply",
-        "POST /api/security-master/corporate-actions/ingest",
         "POST /api/subscriptions/subscribe",
         "POST /api/subscriptions/unsubscribe/{symbol}",
         "POST /api/symbols/add",
@@ -94,7 +97,6 @@ public sealed class EndpointAuthorizationDeclarationTests : EndpointIntegrationT
         "POST /api/symbols/{symbol}/remove",
         "POST /api/symbols/{symbol}/update",
         "POST /hooks/reporting/distribution/{transportId}/deliveries/{jobId}/receipts",
-        "POST /portal/reporting/access-grants/{grantId}/exchange",
         "PUT /api/maintenance/schedules/{scheduleId}",
     };
 

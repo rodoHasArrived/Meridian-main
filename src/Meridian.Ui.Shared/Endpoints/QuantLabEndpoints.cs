@@ -79,7 +79,7 @@ public static class QuantLabEndpoints
                     statusCode: StatusCodes.Status500InternalServerError);
             }
         })
-        .WithName("RunQuantScript")
+        .WithName("RunQuantScript").RequirePermission(UserPermission.ManageStrategies)
         .Produces(200)
         .Produces(400)
         .Produces(500)

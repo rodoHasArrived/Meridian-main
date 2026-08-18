@@ -672,7 +672,7 @@ public static class SecurityMasterEndpoints
             context.RequestServices.GetService<AppSecurityMaster.CorporateActions.CorporateActionInboxState>()?.Record(result);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("IngestSecurityMasterCorporateActions")
+        .WithName("IngestSecurityMasterCorporateActions").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AppSecurityMaster.CorporateActions.CorporateActionIngestRequest>("application/json")
         .Produces<AppSecurityMaster.CorporateActions.CorporateActionIngestResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
@@ -729,7 +729,7 @@ public static class SecurityMasterEndpoints
                 return Results.BadRequest(ex.Message);
             }
         })
-        .WithName("ApplySecurityMasterCorporateActionInboxProposal")
+        .WithName("ApplySecurityMasterCorporateActionInboxProposal").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AppSecurityMaster.CorporateActions.CorporateActionInboxApplyRequest>("application/json")
         .Produces<SecurityMasterCorporateActionAppendResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
