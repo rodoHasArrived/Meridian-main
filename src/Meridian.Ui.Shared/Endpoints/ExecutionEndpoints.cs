@@ -44,7 +44,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(snapshot, jsonOptions);
         })
-        .WithName("GetExecutionAccount")
+        .WithName("GetExecutionAccount").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionAccountSnapshot>(200)
         .Produces(503);
 
@@ -57,7 +57,7 @@ public static class ExecutionEndpoints
             var positions = portfolio.Positions.Values.ToArray();
             return Results.Json(positions, jsonOptions);
         })
-        .WithName("GetExecutionPositions")
+        .WithName("GetExecutionPositions").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionPosition[]>(200)
         .Produces(503);
 
@@ -71,7 +71,7 @@ public static class ExecutionEndpoints
                 ? Results.Problem("Execution position services are not active.", statusCode: StatusCodes.Status503ServiceUnavailable)
                 : Results.Json(snapshot, jsonOptions);
         })
-        .WithName("GetExecutionBlotterPositions")
+        .WithName("GetExecutionBlotterPositions").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionBlotterSnapshotResponse>(200)
         .Produces(503);
 
@@ -91,7 +91,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(snapshot, jsonOptions);
         })
-        .WithName("GetExecutionPortfolio")
+        .WithName("GetExecutionPortfolio").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionPortfolioSnapshot>(200)
         .Produces(503);
 
@@ -106,7 +106,7 @@ public static class ExecutionEndpoints
             var orders = oms.GetOpenOrders();
             return Results.Json(orders, jsonOptions);
         })
-        .WithName("GetOpenOrders")
+        .WithName("GetOpenOrders").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<OrderState>>(200)
         .Produces(503);
 
@@ -121,7 +121,7 @@ public static class ExecutionEndpoints
                 ? Results.NotFound()
                 : Results.Json(order, jsonOptions);
         })
-        .WithName("GetOrderById")
+        .WithName("GetOrderById").RequirePermission(UserPermission.ViewTrades)
         .Produces<OrderState>(200)
         .Produces(404)
         .Produces(503);
@@ -324,7 +324,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(health, jsonOptions);
         })
-        .WithName("GetExecutionHealth")
+        .WithName("GetExecutionHealth").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionGatewayHealth>(200)
         .Produces(503);
 
@@ -336,7 +336,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(gateway.Capabilities, jsonOptions);
         })
-        .WithName("GetExecutionCapabilities")
+        .WithName("GetExecutionCapabilities").RequirePermission(UserPermission.ViewTrades)
         .Produces<OrderGatewayCapabilities>(200)
         .Produces(503);
 
@@ -353,7 +353,7 @@ public static class ExecutionEndpoints
                 .ConfigureAwait(false);
             return Results.Json(entries, jsonOptions);
         })
-        .WithName("GetExecutionAudit")
+        .WithName("GetExecutionAudit").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<ExecutionAuditEntry>>(200);
 
         group.MapGet("/audit/search", async (
@@ -402,7 +402,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(result, jsonOptions);
         })
-        .WithName("SearchExecutionAuditTrail")
+        .WithName("SearchExecutionAuditTrail").RequirePermission(UserPermission.ViewTrades)
         .Produces<AuditTrailExplorerResultDto>(200);
 
         group.MapGet("/controls", (HttpContext context) =>
@@ -415,7 +415,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(controls.GetSnapshot(), jsonOptions);
         })
-        .WithName("GetExecutionControls")
+        .WithName("GetExecutionControls").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(503);
 
@@ -697,7 +697,7 @@ public static class ExecutionEndpoints
             var sessions = persistence.GetSessions();
             return Results.Json(sessions, jsonOptions);
         })
-        .WithName("GetExecutionSessions")
+        .WithName("GetExecutionSessions").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<PaperSessionSummaryDto>>(200);
 
         group.MapGet("/sessions/{sessionId}", async (string sessionId, HttpContext context) =>
@@ -710,7 +710,7 @@ public static class ExecutionEndpoints
             var session = persistence.GetSession(sessionId);
             return session is null ? Results.NotFound() : Results.Json(session, jsonOptions);
         })
-        .WithName("GetExecutionSessionById")
+        .WithName("GetExecutionSessionById").RequirePermission(UserPermission.ViewTrades)
         .Produces<PaperSessionDetailDto>(200)
         .Produces(404);
 
@@ -732,7 +732,7 @@ public static class ExecutionEndpoints
                 session.OrderHistory);
             return Results.Json(report, jsonOptions);
         })
-        .WithName("GetExecutionSessionTcaReport")
+        .WithName("GetExecutionSessionTcaReport").RequirePermission(UserPermission.ViewTrades)
         .Produces<SessionTcaReport>(200)
         .Produces(404);
 
@@ -926,7 +926,7 @@ public static class ExecutionEndpoints
                 },
                 jsonOptions);
         })
-        .WithName("ReplayExecutionSession")
+        .WithName("ReplayExecutionSession").RequirePermission(UserPermission.ManageOrders)
         .Produces<PaperSessionReplayVerificationDto>(200)
         .Produces(404)
         .Produces(503);
@@ -949,7 +949,7 @@ public static class ExecutionEndpoints
             var single = BuildLegacySingleAccountSnapshot(portfolio);
             return Results.Json(new[] { single }, jsonOptions);
         })
-        .WithName("GetExecutionAccounts")
+        .WithName("GetExecutionAccounts").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<ExecutionAccountDetailSnapshot>>(200)
         .Produces(503);
 
@@ -970,7 +970,7 @@ public static class ExecutionEndpoints
 
             return Results.NotFound();
         })
-        .WithName("GetExecutionAccountById")
+        .WithName("GetExecutionAccountById").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionAccountDetailSnapshot>(200)
         .Produces(404)
         .Produces(503);
@@ -994,7 +994,7 @@ public static class ExecutionEndpoints
 
             return Results.NotFound();
         })
-        .WithName("GetExecutionAccountPositions")
+        .WithName("GetExecutionAccountPositions").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionPosition[]>(200)
         .Produces(404)
         .Produces(503);
@@ -1013,7 +1013,7 @@ public static class ExecutionEndpoints
             var aggregate = MultiAccountPortfolioSnapshot.FromAccounts([singleSnap]);
             return Results.Json(aggregate, jsonOptions);
         })
-        .WithName("GetExecutionPortfolioAggregate")
+        .WithName("GetExecutionPortfolioAggregate").RequirePermission(UserPermission.ViewTrades)
         .Produces<MultiAccountPortfolioSnapshot>(200)
         .Produces(503);
 
