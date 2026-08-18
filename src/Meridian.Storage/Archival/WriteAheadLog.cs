@@ -27,8 +27,10 @@ public sealed class WriteAheadLog : IAsyncDisposable
     private readonly SemaphoreSlim _truncateLock = new(1, 1);
 
     // Prometheus counters for WAL recovery observability (2.3)
-    // mdc_wal_recovery_events_total is intentionally not registered here: the replay consumer
-    // owns that series (see InitializeAsync), and PrometheusMetrics registers it for export.
+    private static readonly Counter WalRecoveryEventsTotal = Metrics.CreateCounter(
+        "mdc_wal_recovery_events_total",
+        "Total number of valid events recovered from WAL on startup");
+
     private static readonly Counter WalRecoveryCorruptedTotal = Metrics.CreateCounter(
         "mdc_wal_recovery_corrupted_records_total",
         "Total number of corrupted WAL records encountered during recovery");
@@ -165,13 +167,14 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
         var totalCorrupted = CorruptedRecordCount;
 
-        // Emit Prometheus recovery metrics (2.3). The events series is deliberately NOT raised
-        // here: this scan counts every checksum-valid record found, including ones whose
-        // payload later proves undeserializable and is dropped as corruption. Publishing that
-        // tally would claim recovery successes for records that never reached durable storage,
-        // and because the series uses IncTo (monotonic max) it would also mask the smaller,
-        // truthful count the replay consumer reports. The scan tally stays available through
-        // LastRecoveryEventCount and the log line below; the replayer owns the series.
+        // Emit Prometheus recovery metrics (2.3). This series is the scan tally — every
+        // checksum-valid record found — and every WAL consumer gets it, including the ones
+        // that replay records themselves without going through EventPipeline. It deliberately
+        // does not claim durable replay: a record counted here can still fail payload
+        // deserialization and be dropped as corruption during replay. Consumers that replay
+        // report what actually reached storage through mdc_wal_replayed_events_total, which is
+        // a separate series precisely because this one cannot answer that question.
+        WalRecoveryEventsTotal.IncTo(totalRecoveredEvents);
         WalRecoveryCorruptedTotal.IncTo(totalCorrupted);
         WalRecoveryDurationSeconds.Set(recoveryStopwatch.Elapsed.TotalSeconds);
 

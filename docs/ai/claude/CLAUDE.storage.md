@@ -307,7 +307,13 @@ validate → reserve (dedup, memory-only) → WAL append → WAL flush
   but are untrusted during WAL recovery: their records are replayed, then upgraded.
 - **Crash semantics are at-least-once.** A crash after the sink flush but before the dedup
   commit may replay a duplicate on the next startup; it can never silently lose an event. A sink
-  failure never causes a premature dedup mark, and a dedup failure never re-appends the sink.
+  failure never causes a premature dedup mark. In the live consumer a dedup failure never
+  re-appends the sink either: the batch is retained and retries the commit alone. WAL recovery
+  does not carry that second guarantee — a dedup commit failure there releases the chunk's
+  claims and leaves its WAL horizon uncommitted, so the retried pass re-appends that chunk to
+  the sink. That is the at-least-once trade working as intended (a duplicate rather than a
+  loss), and it is the expected explanation when investigating duplicates traced to a failed
+  recovery.
 - **Recovery fails closed.** Sink or dedup-store failures during `RecoverAsync` propagate
   instead of acknowledging records that were not replayed; checksum-valid records with
   undeserializable payloads follow `WalOptions.CorruptionMode` (`Halt` throws).
