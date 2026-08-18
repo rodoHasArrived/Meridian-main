@@ -40,7 +40,7 @@ public static class EdgarReferenceDataEndpoints
             var result = await orchestrator.IngestAsync(normalizedRequest, ct).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("IngestEdgarSecurityMaster")
+        .WithName("IngestEdgarSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<EdgarIngestRequest>("application/json")
         .Produces<EdgarIngestResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)

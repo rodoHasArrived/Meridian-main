@@ -56,7 +56,7 @@ public static class ProviderConnectionEndpoints
                 return Results.NotFound(new { error = ex.Message });
             }
         })
-        .WithName("PutProviderCredentials")
+        .WithName("PutProviderCredentials").RequirePermission(UserPermission.ManageCredentials)
         .Produces<ProviderCredentialMutationResultDto>(StatusCodes.Status200OK)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -80,7 +80,7 @@ public static class ProviderConnectionEndpoints
                 return Results.NotFound(new { error = ex.Message });
             }
         })
-        .WithName("VerifyProviderConnection")
+        .WithName("VerifyProviderConnection").RequirePermission(UserPermission.ManageCredentials)
         .Produces<ProviderCredentialVerificationResultDto>(StatusCodes.Status200OK)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -105,7 +105,7 @@ public static class ProviderConnectionEndpoints
                 return Results.NotFound(new { error = ex.Message });
             }
         })
-        .WithName("DeleteProviderCredentials")
+        .WithName("DeleteProviderCredentials").RequirePermission(UserPermission.ManageCredentials)
         .Produces<ProviderCredentialMutationResultDto>(StatusCodes.Status200OK)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }

@@ -92,7 +92,7 @@ public static class PlaidEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
             }
         })
-        .WithName("CreatePlaidLinkToken")
+        .WithName("CreatePlaidLinkToken").RequireAnyPermission(UserPermission.ManageCredentials, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<PlaidLinkTokenResponse>(StatusCodes.Status200OK);
 
@@ -117,7 +117,7 @@ public static class PlaidEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
             }
         })
-        .WithName("ExchangePlaidPublicToken")
+        .WithName("ExchangePlaidPublicToken").RequireAnyPermission(UserPermission.ManageCredentials, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<PlaidPublicTokenExchangeResult>(StatusCodes.Status201Created);
 
@@ -147,7 +147,7 @@ public static class PlaidEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
             }
         })
-        .WithName("SyncPlaidItem")
+        .WithName("SyncPlaidItem").RequireAnyPermission(UserPermission.ManageCredentials, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<PlaidSyncResult>(StatusCodes.Status200OK);
 
@@ -189,7 +189,7 @@ public static class PlaidEndpoints
                 ? StatusCodes.Status201Created
                 : StatusCodes.Status409Conflict);
         })
-        .WithName("CreatePlaidSandboxTransfer")
+        .WithName("CreatePlaidSandboxTransfer").RequirePermission(UserPermission.ManageDirectLending)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<PlaidTransferResult>(StatusCodes.Status201Created)
         .Produces<PlaidTransferResult>(StatusCodes.Status409Conflict);
