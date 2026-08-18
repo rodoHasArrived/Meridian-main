@@ -21,7 +21,7 @@ public static class ComplianceEndpoints
             var result = approvals.CreateRequest(actor, request);
             return Results.Json(result, statusCode: StatusCodes.Status201Created, options: jsonOptions);
         })
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+        .RequirePermission(UserPermission.ManageUsers);
 
         app.MapPost("/api/compliance/approval-requests/{approvalRequestId}/decisions", (
             HttpContext http,
@@ -43,7 +43,7 @@ public static class ComplianceEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+        .RequirePermission(UserPermission.ManageUsers);
 
         app.MapPost("/api/compliance/actions/evaluate", (
             HttpContext http,
@@ -96,7 +96,7 @@ public static class ComplianceEndpoints
                 ct).ConfigureAwait(false);
             return Results.Ok(result);
         })
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+        .RequirePermission(UserPermission.ManageUsers);
 
         app.MapPost("/api/compliance/access-reviews/run", async (
             HttpContext http,
@@ -112,7 +112,7 @@ public static class ComplianceEndpoints
                 ct).ConfigureAwait(false);
             return Results.Ok(result);
         })
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+        .RequirePermission(UserPermission.ManageUsers);
 
         app.MapGet("/api/compliance/access-reviews", ([FromServices] AccessReviewService reviews) => Results.Ok(reviews.GetReviews()))
             .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));

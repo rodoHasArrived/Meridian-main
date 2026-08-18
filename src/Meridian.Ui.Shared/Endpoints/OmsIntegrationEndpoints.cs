@@ -31,7 +31,7 @@ public static class OmsIntegrationEndpoints
             {
                 return Results.BadRequest(new { error = ex.Message });
             }
-        });
+        }).RequirePermission(UserPermission.ManageOrders);
 
         group.MapGet("/messages", (HttpContext context, IOmsIntegrationApiHandler handler) =>
         {
@@ -68,7 +68,7 @@ public static class OmsIntegrationEndpoints
             {
                 return Results.BadRequest(new { error = ex.Message });
             }
-        });
+        }).RequirePermission(UserPermission.ManageOrders);
 
         group.MapPost("/auth/signing-keys/rotate", (HttpContext context, OmsKeyRotationRequest request, IOmsIntegrationApiHandler handler) =>
         {
@@ -78,7 +78,7 @@ public static class OmsIntegrationEndpoints
             }
 
             return Results.Json(handler.RotateSigningKey(request), jsonOptions);
-        });
+        }).RequirePermission(UserPermission.ManageCredentials);
 
         group.MapGet("/audit", (HttpContext context, int? take, IOmsIntegrationApiHandler handler) =>
         {
