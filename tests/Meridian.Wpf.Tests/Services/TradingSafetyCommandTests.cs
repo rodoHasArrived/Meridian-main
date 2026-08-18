@@ -1,5 +1,7 @@
 using FluentAssertions;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels;
 using Xunit;
 
 namespace Meridian.Wpf.Tests.Services;
@@ -133,6 +135,58 @@ public sealed class TradingSafetyCommandTests
         outcome.Succeeded.Should().BeFalse();
         client.CancelAllCalls.Should().Be(0);
         client.HaltCalls.Should().Be(0);
+    }
+
+    // ================================================================
+    // Shell dispatch: the command bar path must reach the service.
+    // The service-level tests above cannot catch a dead seam — a fully
+    // implemented, DI-registered service that no ViewModel ever calls.
+    // ================================================================
+
+    [Fact]
+    public async Task PressingCancelAllInTheShell_ReachesTheSharedExecutionService_AndReportsItsVerdict()
+    {
+        var client = new RecordingSafetyControlClient();
+        var viewModel = new TradingWorkspaceShellViewModel(
+            presentationService: null,
+            safetyCommands: CreateService(client));
+
+        await viewModel.ExecuteCommandActionAsync("CancelAll");
+
+        client.CancelAllCalls.Should().Be(1);
+        viewModel.DeskActionStatusText.Should().Be(
+            client.CancelAllResult.Message,
+            "the operator must read the sweep's own verdict, not local confirmation copy");
+    }
+
+    [Fact]
+    public async Task PressingStopInTheShell_HaltsTrading_AndStillOpensTheVerificationPane()
+    {
+        var client = new RecordingSafetyControlClient();
+        var viewModel = new TradingWorkspaceShellViewModel(
+            presentationService: null,
+            safetyCommands: CreateService(client));
+        TradingWorkspaceShellActionRequest? raised = null;
+        viewModel.ActionRequested += (_, request) => raised = request;
+
+        await viewModel.ExecuteCommandActionAsync("Stop");
+
+        client.HaltCalls.Should().Be(1);
+        viewModel.DeskActionStatusText.Should().Be("Trading halted.");
+        raised.Should().NotBeNull("pane layout still belongs to the mapper");
+        raised!.Value.PageTag.Should().Be("RunRisk");
+    }
+
+    [Fact]
+    public async Task ShellComposedWithoutASafetyService_ReportsThatNothingWasSent()
+    {
+        var viewModel = new TradingWorkspaceShellViewModel();
+
+        await viewModel.ExecuteCommandActionAsync("Stop");
+
+        viewModel.DeskActionStatusText.Should().Contain(
+            "not sent",
+            "a halt that never reached the execution service must never read like a halt");
     }
 
     private static TradingSafetyCommandService CreateService(

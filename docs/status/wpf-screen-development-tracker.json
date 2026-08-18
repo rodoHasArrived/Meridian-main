@@ -7,7 +7,7 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "2bf5863b0731",
+  "sourceFingerprint": "fbad89562b4d",
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 97,
@@ -113,6 +113,7 @@
         "tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/TradingSafetyCommandTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceStateTokenTests.cs",
         "tests/Meridian.Wpf.Tests/Shell/PaneHostViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Shell/ShellNavigationCoordinatorTests.cs",
@@ -145,7 +146,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs, +21 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs, +22 more."
         }
       ],
       "openTaskCount": 0
@@ -298,6 +299,7 @@
         "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/TradingSafetyCommandTests.cs",
         "tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Shell/PaneHostViewModelTests.cs",
@@ -321,7 +323,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +11 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +12 more."
         }
       ],
       "openTaskCount": 0

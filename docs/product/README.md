@@ -45,6 +45,10 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     every finding from that review as a tracked todo with a code-ready implementation plan
     (evidence, change, verification, effort, dependencies) across thirteen sequenced workstreams;
     a working plan, not a status source
+  - [Production-Readiness Backlog (2026-08)](production-readiness-backlog-2026-08.md) — the
+    ten-item production-readiness ordering of that estate, re-verified against source on
+    2026-08-18 with corrections for stale claims and one new blocker finding (fixed-income
+    booking); records the three built-but-dead fixes landed on the same branch
   - [Adversarial Program Review (2026-07)](adversarial-program-review-2026-07.md) — prior
     independent review pass that motivated the activation-over-expansion and truth-discipline
     doctrines; see its 2026-07-26 follow-up in `archive/docs/assessments/`

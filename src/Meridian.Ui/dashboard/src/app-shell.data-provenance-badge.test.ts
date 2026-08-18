@@ -18,7 +18,8 @@ describe("buildDataProvenanceBadgeViewModel", () => {
   it.each([
     ["simulated", "SIMULATED", "Simulated data"],
     ["seeded", "SEEDED", "Seeded demo data"],
-    ["sample", "SAMPLE", "Sample data"]
+    ["sample", "SAMPLE", "Sample data"],
+    ["unknown", "UNKNOWN", "Data source unverified"]
   ] as const)("labels %s data as a persistent, non-dismissable badge", (provenance, label, headline) => {
     const badge = buildDataProvenanceBadgeViewModel({ provenance });
 
@@ -59,6 +60,10 @@ describe("normalizeDataProvenance", () => {
     expect(normalizeDataProvenance("mystery-source")).toBe("simulated");
   });
 
+  it("treats a wire token 'unknown' as a claim to fail closed on, not as the client unknown state", () => {
+    expect(normalizeDataProvenance("unknown")).toBe("simulated");
+  });
+
   it.each([null, undefined, "", "   ", 0, {}, []])(
     "fails closed for missing or malformed wire value %p",
     (token) => {
@@ -93,14 +98,38 @@ describe("resolveWorkstationDataProvenance", () => {
     })).toBe("seeded");
   });
 
-  it("claims real data only after the server explicitly reports demo mode disabled", () => {
+  it("claims real data only when the server itself reports a real tape", () => {
+    // An unanswered probe is `unknown` — a persistent badge with a retry control —
+    // never a silent real claim and never a confirmed SIMULATED brand.
     expect(resolveWorkstationDataProvenance({
       usingDevelopmentFixtures: false,
       demoMode: null
-    })).toBe("simulated");
+    })).toBe("unknown");
     expect(resolveWorkstationDataProvenance({
       usingDevelopmentFixtures: false,
-      demoMode: { enabled: false, provenance: "seeded" }
+      demoMode: { enabled: false, provenance: "real" }
     })).toBe("real");
+  });
+
+  // The credentialed-host case the pin exists for: `enabled` comes from a credentials
+  // heuristic, so a host holding an Alpaca or Polygon key while replaying a pinned
+  // Simulated tape reports enabled:false. Reading the label only under `enabled` threw
+  // the pin away and rendered no banner at all on a simulated tape.
+  it.each([
+    ["simulated", "simulated"],
+    ["seeded", "seeded"],
+    ["sample", "sample"]
+  ] as const)("honors a pinned %s label even when demo mode reports disabled", (pinned, expected) => {
+    expect(resolveWorkstationDataProvenance({
+      usingDevelopmentFixtures: false,
+      demoMode: { enabled: false, provenance: pinned }
+    })).toBe(expected);
+  });
+
+  it("treats a disabled response that pins no provenance as unresolved, not real", () => {
+    expect(resolveWorkstationDataProvenance({
+      usingDevelopmentFixtures: false,
+      demoMode: { enabled: false }
+    })).toBe("unknown");
   });
 });
