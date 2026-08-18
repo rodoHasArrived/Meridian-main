@@ -3469,6 +3469,7 @@ Meridian-main
 │   │   │   └── StatusWriter.cs
 │   │   ├── Pipeline
 │   │   │   ├── DeadLetterSink.cs
+│   │   │   ├── DedupReservation.cs
 │   │   │   ├── DroppedEventAuditTrail.cs
 │   │   │   ├── DualPathEventPipeline.cs
 │   │   │   ├── EventPipeline.cs
@@ -8853,6 +8854,7 @@ Meridian-main
 │   │   │   │   ├── BackpressureSignalTests.cs
 │   │   │   │   ├── CompositePublisherTests.cs
 │   │   │   │   ├── DeadLetterSinkTests.cs
+│   │   │   │   ├── DedupWalOrderingTests.cs
 │   │   │   │   ├── DroppedEventAuditTrailTests.cs
 │   │   │   │   ├── DualPathEventPipelineTests.cs
 │   │   │   │   ├── EventPipelineMetricsTests.cs

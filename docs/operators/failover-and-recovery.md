@@ -106,6 +106,30 @@ would discard data.
 - Keep evidence-first actions first; preserve immutable event stream and command trace for every intervention.
 - Prefer source-owned recovery controls in runtime/services over local ad-hoc toggles.
 
+## Ingest WAL Replay Semantics
+
+Market-data ingest recovery is at-least-once: prefer a detectable, idempotent replay over silent
+loss.
+
+- On startup the pipeline replays uncommitted WAL records to the primary sink. A crash that
+  happened after the sink flush but before the dedup commit can produce duplicate rows in the
+  sink; that is expected and safe. The no-loss guarantee begins at the WAL flush durability
+  boundary: once an event's WAL record is flushed, a missing event is not expected — treat any
+  gap in WAL-flushed data as an incident. Events a crash catches in the in-memory queue,
+  accepted but not yet WAL-flushed, are lost by design (see the producer-acceptance bullet
+  below) and are not a replay defect.
+- Deduplication entries are versioned. Version-2 entries mean "sink durability confirmed" and
+  suppress replay; legacy version-1 entries (written before this versioning existed) only
+  suppress live ingress and are deliberately replayed during recovery, then upgraded. After
+  upgrading a legacy install, one recovery pass may therefore write duplicates for events that
+  were already persisted — reconcile downstream rather than deleting WAL files.
+- Recovery fails closed. If the sink or the dedup ledger is unavailable, startup recovery
+  surfaces the failure instead of acknowledging records it could not replay; fix the store and
+  restart rather than truncating the WAL. Checksum-valid records whose payload cannot be
+  deserialized follow `WalOptions.CorruptionMode` (`Halt` blocks startup for operator review).
+- Producer acceptance (`TryPublish`/`PublishAsync`) is admission into the in-memory queue only —
+  never treat it as a durable acknowledgement when reasoning about loss windows.
+
 ## Recovery Decision Matrix
 
 1. Detect symptom and scope (single provider, module, or full workflow surface).
