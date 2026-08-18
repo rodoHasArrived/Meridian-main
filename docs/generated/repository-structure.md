@@ -1860,6 +1860,7 @@ Meridian-main
 │   │   └── security-master-passport-workbench.md
 │   ├── product
 │   │   ├── adversarial-program-review-2026-07.md
+│   │   ├── adversarial-program-review-2026-08-18.md
 │   │   ├── adversarial-program-review-2026-08.md
 │   │   ├── adversarial-review-2026-08-remediation-plan.md
 │   │   ├── data-provider-accounting-brainstorm-2026-07.md
@@ -1871,6 +1872,7 @@ Meridian-main
 │   │   ├── meridian-design-document.md
 │   │   ├── portfolio-cash-ladder-blueprint-2026-07.md
 │   │   ├── product-roadmap-priorities-2026-07.md
+│   │   ├── production-readiness-backlog-2026-08.md
 │   │   ├── README.md
 │   │   ├── w10-depth-slate-2026-07.md
 │   │   ├── w9-close-out-delivery-plan-2026-08.md
@@ -2096,6 +2098,7 @@ Meridian-main
 │   │   │   ├── web-accounting-journal-entries.png
 │   │   │   ├── web-accounting-journal-entry-detail.png
 │   │   │   ├── web-accounting-ledger.png
+│   │   │   ├── web-accounting-margin-control.png
 │   │   │   ├── web-accounting-operations-continuity.png
 │   │   │   ├── web-accounting-reconciliation-match.png
 │   │   │   ├── web-accounting-reconciliation.png
@@ -2256,7 +2259,6 @@ Meridian-main
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
-│   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
 │   │   ├── workflow-drift-report.md
 │   │   ├── workflow-manifest.json
@@ -3937,6 +3939,7 @@ Meridian-main
 │   │   │   ├── OperationalCaseHistoryContracts.cs
 │   │   │   ├── OperationalCaseHistoryHashing.cs
 │   │   │   ├── OperationsContractsJsonContext.cs
+│   │   │   ├── OperationsOriginGuard.cs
 │   │   │   └── VerifiedOperationOutcome.cs
 │   │   ├── Options
 │   │   │   └── OptionReferenceDtos.cs
@@ -6835,6 +6838,7 @@ Meridian-main
 │   │   │   │   ├── ApiProblemDetails.cs
 │   │   │   │   ├── MeridianApiExceptionHandler.cs
 │   │   │   │   └── MeridianApiProblemDetailsServiceCollectionExtensions.cs
+│   │   │   ├── AccountAdministrationGuardMiddleware.cs
 │   │   │   ├── AccountingSystemEndpoints.cs
 │   │   │   ├── AdminEndpoints.cs
 │   │   │   ├── AnalyticsEndpoints.cs
@@ -8956,6 +8960,8 @@ Meridian-main
 │   │   │   │   └── Sha256DigestTests.cs
 │   │   │   ├── Ledger
 │   │   │   │   └── LedgerDimensionTagsTests.cs
+│   │   │   ├── Operations
+│   │   │   │   └── OperationsOriginGuardTests.cs
 │   │   │   ├── Text
 │   │   │   │   └── TextPrimitivesTests.cs
 │   │   │   ├── AppConfigDtoRoundTripTests.cs
@@ -9328,6 +9334,7 @@ Meridian-main
 │   │   │   │   ├── HealthEndpointTests.cs
 │   │   │   │   ├── HistoricalEndpointTests.cs
 │   │   │   │   ├── IBEndpointTests.cs
+│   │   │   │   ├── InitialAccountBootstrapEndpointTests.cs
 │   │   │   │   ├── LeanEndpointTests.cs
 │   │   │   │   ├── LiveDataEndpointTests.cs
 │   │   │   │   ├── MaintenanceEndpointTests.cs

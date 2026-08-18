@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -19,7 +20,8 @@ public sealed class MaintenanceEndpointTests : IClassFixture<EndpointTestFixture
 
     public MaintenanceEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        // Maintenance scheduling and execution require AdminMaintenance (W9-GOV-008).
+        _client = fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
     }
 
     #region GET /api/maintenance/schedules - List Schedules
@@ -244,9 +246,13 @@ public sealed class MaintenanceEndpointTests : IClassFixture<EndpointTestFixture
 
         var response = await _client.PostAsync("/api/admin/maintenance/run", content);
 
+        // Unauthorized joins the tolerated set because the route declares AdminMaintenance
+        // (W9-GOV-008): this fixture sends no session, and a declared route answers 401 for an
+        // absent permissions snapshot where the handler guard used to answer 403.
         response.StatusCode.Should().BeOneOf(
             HttpStatusCode.OK,
             HttpStatusCode.Accepted,
+            HttpStatusCode.Unauthorized,
             HttpStatusCode.Forbidden,
             HttpStatusCode.NotImplemented);
     }

@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Ui.Shared.Services;
@@ -71,7 +72,7 @@ public static class ProviderModuleEndpoints
                 ? Results.Json(result, jsonOptions)
                 : Results.BadRequest(result);
         })
-        .WithName("UpsertProviderModule")
+        .WithName("UpsertProviderModule").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Creates or updates a provider module configuration. Credentials are stored server-side and never returned.")
         .Produces(200)
         .Produces(400)
@@ -99,7 +100,7 @@ public static class ProviderModuleEndpoints
                 ? Results.Json(result, jsonOptions)
                 : Results.BadRequest(result);
         })
-        .WithName("UpdateProviderModule")
+        .WithName("UpdateProviderModule").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Updates an existing provider module configuration by ID.")
         .Produces(200)
         .Produces(400)
@@ -124,7 +125,7 @@ public static class ProviderModuleEndpoints
                 ? Results.Ok()
                 : Results.BadRequest(new { error = result.Error });
         })
-        .WithName("DeleteProviderModule")
+        .WithName("DeleteProviderModule").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Removes a provider module configuration and all stored credentials for that module.")
         .Produces(200)
         .Produces(400)
@@ -147,7 +148,7 @@ public static class ProviderModuleEndpoints
                 ? Results.Json(result, jsonOptions)
                 : Results.BadRequest(result);
         })
-        .WithName("SetProviderModuleEnabled")
+        .WithName("SetProviderModuleEnabled").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Enables or disables a provider module. Applied live without restart; also persisted to config.")
         .Produces(200)
         .Produces(400)
@@ -167,7 +168,7 @@ public static class ProviderModuleEndpoints
             var result = await setupService.TestModuleAsync(moduleId, ct).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("TestProviderModule")
+        .WithName("TestProviderModule").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Validates credentials and optionally probes live connectivity for a provider module.")
         .Produces<ProviderModuleTestResult>(200)
         .Produces(StatusCodes.Status403Forbidden)
@@ -199,7 +200,7 @@ public static class ProviderModuleEndpoints
             lifetime.StopApplication();
             return Results.Ok(new { restarting = true, message = "Application restart initiated. Reconnect in a few seconds." });
         })
-        .WithName("RestartProviderHost")
+        .WithName("RestartProviderHost").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Triggers a graceful application restart to apply provider configuration changes that require a reload.")
         .Produces(200)
         .Produces(StatusCodes.Status403Forbidden)

@@ -45,7 +45,7 @@ public static class AnalyticsEndpoints
             }, jsonOptions);
         })
         .WithName("RepairAnalyticsGaps")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.TriggerBackfill))
+        .RequirePermission(UserPermission.TriggerBackfill)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 

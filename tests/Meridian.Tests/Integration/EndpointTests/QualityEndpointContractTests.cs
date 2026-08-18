@@ -6,6 +6,7 @@ using Meridian.Application.Backfill;
 using Meridian.Application.DataQuality;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Contracts.Api;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Api.Quality;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
@@ -288,6 +289,14 @@ public sealed class QualityEndpointContractTests
             builder.Services.AddSingleton(remediationService);
 
         var app = builder.Build();
+        // The quality mutations require ManageStorage (W9-GOV-008), matching the sibling
+        // /api/storage/quality routes. This host composes the endpoints without the session
+        // middleware, so stamp the permissions snapshot the authorization filter reads.
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ManageStorage;
+            await next();
+        });
         app.MapDataQualityEndpoints(app.Services.GetRequiredService<DataQualityMonitoringService>());
         app.StartAsync().GetAwaiter().GetResult();
         return Task.FromResult(new HostContext(app, qualityService, anomalyId));

@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -66,7 +67,7 @@ public static partial class WorkstationEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("CertifyMarginAccountSnapshot")
+        .WithName("CertifyMarginAccountSnapshot").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<MarginCertificationResultDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
@@ -140,7 +141,7 @@ public static partial class WorkstationEndpoints
                 return MissingDataUploadPayload("profile", ex.Message);
             }
         })
-        .WithName("UpsertStatementMappingProfile")
+        .WithName("UpsertStatementMappingProfile").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementMappingProfileDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
@@ -171,7 +172,7 @@ public static partial class WorkstationEndpoints
                 return MissingDataUploadPayload("profileId", ex.Message);
             }
         })
-        .WithName("DeleteStatementMappingProfile")
+        .WithName("DeleteStatementMappingProfile").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces(204)
         .Produces(403)
         .Produces(404)
@@ -229,7 +230,7 @@ public static partial class WorkstationEndpoints
             var preview = await importService.PreviewAsync(document!, connectorId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(preview, jsonOptions);
         })
-        .WithName("PreviewStatementImport")
+        .WithName("PreviewStatementImport").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementImportPreviewDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
@@ -353,7 +354,7 @@ public static partial class WorkstationEndpoints
                         : StatusCodes.Status409Conflict);
             }
         })
-        .WithName("CommitStatementImport")
+        .WithName("CommitStatementImport").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementImportCommitResultDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
@@ -448,7 +449,7 @@ public static partial class WorkstationEndpoints
                     statusCode: StatusCodes.Status409Conflict);
             }
         })
-        .WithName("PreviewStatementFetch")
+        .WithName("PreviewStatementFetch").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementImportPreviewDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
@@ -603,7 +604,7 @@ public static partial class WorkstationEndpoints
                         : StatusCodes.Status409Conflict);
             }
         })
-        .WithName("UpsertStatementFetchSchedule")
+        .WithName("UpsertStatementFetchSchedule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementFetchScheduleDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
@@ -645,7 +646,7 @@ public static partial class WorkstationEndpoints
             var deleted = await scheduleStore.DeleteAsync(schedule.ScheduleId, context.RequestAborted).ConfigureAwait(false);
             return deleted ? Results.NoContent() : Results.NotFound();
         })
-        .WithName("DeleteStatementFetchSchedule")
+        .WithName("DeleteStatementFetchSchedule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces(204)
         .Produces(403)
         .Produces(404)
@@ -699,7 +700,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(result, jsonOptions);
         })
-        .WithName("RunStatementFetchSchedule")
+        .WithName("RunStatementFetchSchedule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementImportCommitResultDto>(200)
         .Produces(403)
         .Produces(404)

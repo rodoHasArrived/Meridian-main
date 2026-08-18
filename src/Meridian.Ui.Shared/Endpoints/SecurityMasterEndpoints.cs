@@ -154,7 +154,7 @@ public static class SecurityMasterEndpoints
                 });
             }
         })
-        .WithName("DraftSecurityMasterAssetProfile")
+        .WithName("DraftSecurityMasterAssetProfile").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<SecurityAssetProfileGovernanceResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -195,7 +195,7 @@ public static class SecurityMasterEndpoints
                 });
             }
         })
-        .WithName("ApproveSecurityMasterAssetProfile")
+        .WithName("ApproveSecurityMasterAssetProfile").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<SecurityAssetProfileGovernanceResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -236,7 +236,7 @@ public static class SecurityMasterEndpoints
                 });
             }
         })
-        .WithName("RollbackSecurityMasterAssetProfile")
+        .WithName("RollbackSecurityMasterAssetProfile").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<SecurityAssetProfileGovernanceResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -275,7 +275,7 @@ public static class SecurityMasterEndpoints
 
             return Results.Json(detail, jsonOptions);
         })
-        .WithName("ResolveSecurityMaster")
+        .WithName("ResolveSecurityMaster").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -307,7 +307,7 @@ public static class SecurityMasterEndpoints
             var results = await queryService.SearchAsync(request, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("SearchSecurityMaster")
+        .WithName("SearchSecurityMaster").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecuritySummaryDto>>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -358,7 +358,7 @@ public static class SecurityMasterEndpoints
             var detail = await service.CreateAsync(request, ct).ConfigureAwait(false);
             return Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("CreateSecurityMaster")
+        .WithName("CreateSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
@@ -386,7 +386,7 @@ public static class SecurityMasterEndpoints
             var detail = await service.AmendTermsAsync(request, ct).ConfigureAwait(false);
             return Results.Json(detail, jsonOptions);
         })
-        .WithName("AmendSecurityMaster")
+        .WithName("AmendSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
@@ -414,7 +414,7 @@ public static class SecurityMasterEndpoints
             await service.DeactivateAsync(request, ct).ConfigureAwait(false);
             return Results.NoContent();
         })
-        .WithName("DeactivateSecurityMaster")
+        .WithName("DeactivateSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
@@ -442,7 +442,7 @@ public static class SecurityMasterEndpoints
             var alias = await service.UpsertAliasAsync(request, ct).ConfigureAwait(false);
             return Results.Json(alias, jsonOptions);
         })
-        .WithName("UpsertSecurityMasterAlias")
+        .WithName("UpsertSecurityMasterAlias").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityAliasDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
@@ -521,7 +521,7 @@ public static class SecurityMasterEndpoints
 
             return Results.Json(detail, jsonOptions);
         })
-        .WithName("AmendSecurityMasterPreferredEquityTerms")
+        .WithName("AmendSecurityMasterPreferredEquityTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AmendPreferredEquityTermsRequest>("application/json")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
@@ -578,7 +578,7 @@ public static class SecurityMasterEndpoints
 
             return Results.Json(detail, jsonOptions);
         })
-        .WithName("AmendSecurityMasterConvertibleEquityTerms")
+        .WithName("AmendSecurityMasterConvertibleEquityTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AmendConvertibleEquityTermsRequest>("application/json")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
@@ -643,7 +643,7 @@ public static class SecurityMasterEndpoints
                 return Results.BadRequest(ex.Message);
             }
         })
-        .WithName("AppendSecurityMasterCorporateAction")
+        .WithName("AppendSecurityMasterCorporateAction").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<CorporateActionDto>("application/json")
         .Produces<SecurityMasterCorporateActionAppendResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
@@ -672,7 +672,7 @@ public static class SecurityMasterEndpoints
             context.RequestServices.GetService<AppSecurityMaster.CorporateActions.CorporateActionInboxState>()?.Record(result);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("IngestSecurityMasterCorporateActions")
+        .WithName("IngestSecurityMasterCorporateActions").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AppSecurityMaster.CorporateActions.CorporateActionIngestRequest>("application/json")
         .Produces<AppSecurityMaster.CorporateActions.CorporateActionIngestResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
@@ -729,7 +729,7 @@ public static class SecurityMasterEndpoints
                 return Results.BadRequest(ex.Message);
             }
         })
-        .WithName("ApplySecurityMasterCorporateActionInboxProposal")
+        .WithName("ApplySecurityMasterCorporateActionInboxProposal").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AppSecurityMaster.CorporateActions.CorporateActionInboxApplyRequest>("application/json")
         .Produces<SecurityMasterCorporateActionAppendResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
@@ -871,7 +871,7 @@ public static class SecurityMasterEndpoints
                 ? Results.NotFound()
                 : Results.Json(updated, jsonOptions);
         })
-        .WithName("ResolveSecurityMasterConflict")
+        .WithName("ResolveSecurityMasterConflict").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityMasterConflict>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
@@ -906,7 +906,7 @@ public static class SecurityMasterEndpoints
                 ct: ct).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("ImportSecurityMaster")
+        .WithName("ImportSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<AppSecurityMaster.SecurityMasterImportResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
@@ -1027,7 +1027,7 @@ public static class SecurityMasterEndpoints
                 return Results.Conflict(new { error = exception.Message });
             }
         })
-        .WithName("PatchSecurityMasterOperatorOverrides")
+        .WithName("PatchSecurityMasterOperatorOverrides").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<OperatorOverridesPatchRequest>("application/json")
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
@@ -1095,7 +1095,7 @@ public static class SecurityMasterEndpoints
             // Any other InvalidOperationException (e.g. Security Master not configured) is an operational
             // failure and is intentionally left to surface as a 500 rather than be masked as a 404.
         })
-        .WithName("RecordSecurityMasterOperatorOverrideDecision")
+        .WithName("RecordSecurityMasterOperatorOverrideDecision").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<OperatorOverrideDecisionRequest>("application/json")
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
@@ -1122,7 +1122,7 @@ public static class SecurityMasterEndpoints
             var detail = await service.AmendPreferredEquityTermsAsync(securityId, request, ct).ConfigureAwait(false);
             return Results.Json(detail, jsonOptions);
         })
-        .WithName("PatchSecurityPreferredTerms")
+        .WithName("PatchSecurityPreferredTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)

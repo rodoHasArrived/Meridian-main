@@ -78,7 +78,7 @@ public static class ProviderRoutingEndpoints
             var result = await service.PreviewAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("PreviewProviderRoute")
+        .WithName("PreviewProviderRoute").RequirePermission(UserPermission.ManageCredentials)
         .WithDescription("Previews the selected provider route for a capability request.")
         .Produces<RoutePreviewResponse>(StatusCodes.Status200OK);
     }

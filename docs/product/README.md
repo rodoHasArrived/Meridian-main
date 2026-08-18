@@ -32,6 +32,11 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     live status stays in the roadmap registry. `W10-MARK-001` and `W10-SEAM-001` are pulled forward
     ahead of the W9 close-out because they serve the release gate
 - Treat the following as dated working design inputs, not canonical status sources:
+  - [Adversarial Program Review (2026-08-18)](adversarial-program-review-2026-08-18.md) — follow-up
+    independent whole-program adverse review that re-tests all 25 headline findings of the
+    2026-08-10 pass against the ~321 commits landed since, documents the built-but-unwired
+    remediation pattern with `file:line` evidence, and re-ranks improvement areas by end-user
+    value uplift
   - [Adversarial Program Review (2026-08)](adversarial-program-review-2026-08.md) — independent
     whole-program adverse review of end-user functionality with `file:line` evidence; re-tests the
     2026-07 review's headline, documents acceptance-vs-wired drift, and ranks improvement areas by
@@ -40,6 +45,10 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     every finding from that review as a tracked todo with a code-ready implementation plan
     (evidence, change, verification, effort, dependencies) across thirteen sequenced workstreams;
     a working plan, not a status source
+  - [Production-Readiness Backlog (2026-08)](production-readiness-backlog-2026-08.md) — the
+    ten-item production-readiness ordering of that estate, re-verified against source on
+    2026-08-18 with corrections for stale claims and one new blocker finding (fixed-income
+    booking); records the three built-but-dead fixes landed on the same branch
   - [Adversarial Program Review (2026-07)](adversarial-program-review-2026-07.md) — prior
     independent review pass that motivated the activation-over-expansion and truth-discipline
     doctrines; see its 2026-07-26 follow-up in `archive/docs/assessments/`

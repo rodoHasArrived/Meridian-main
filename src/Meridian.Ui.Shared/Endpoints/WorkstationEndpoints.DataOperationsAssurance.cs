@@ -83,7 +83,7 @@ public static partial class WorkstationEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("ApplyWorkstationIngestionOperationAction")
+        .WithName("ApplyWorkstationIngestionOperationAction").RequirePermission(UserPermission.TriggerBackfill)
         .Produces<IngestionOperationActionResultDto>()
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -132,7 +132,7 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("PreviewWorkstationStorageMaintenance")
+        .WithName("PreviewWorkstationStorageMaintenance").RequirePermission(UserPermission.ManageStorage)
         .Produces<StorageMaintenancePreviewDto>()
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -180,7 +180,7 @@ public static partial class WorkstationEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("ExecuteWorkstationStorageMaintenance")
+        .WithName("ExecuteWorkstationStorageMaintenance").RequirePermission(UserPermission.ManageStorage)
         .Produces<StorageMaintenanceResultDto>()
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)

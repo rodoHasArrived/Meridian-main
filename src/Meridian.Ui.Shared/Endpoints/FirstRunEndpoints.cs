@@ -25,7 +25,7 @@ public static class FirstRunEndpoints
             try
             { return Results.Ok(await service.CompleteOutcomeAsync(CurrentUser(context), request.Key, ct).ConfigureAwait(false)); }
             catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
-        });
+        }).RequireAuthenticatedSession();
         app.MapPost(
                 "/api/workstation/desktop/launch",
                 (HttpContext context, DesktopLaunchRequest request, [FromServices] DesktopWorkstationLaunchService service) =>
@@ -47,7 +47,7 @@ public static class FirstRunEndpoints
                             new { error = message },
                             statusCode: StatusCodes.Status409Conflict);
                 })
-            .WithTags("Workstation");
+            .WithTags("Workstation").RequireAuthenticatedSession();
 
         app.MapGet(
                 "/api/auth/desktop-launch/{ticket}",

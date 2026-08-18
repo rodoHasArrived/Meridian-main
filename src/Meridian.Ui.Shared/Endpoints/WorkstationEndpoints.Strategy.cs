@@ -108,7 +108,7 @@ public static partial class WorkstationEndpoints
                 service.BuildRunTrace(document, validation));
             return Results.Json(response, jsonOptions);
         })
-        .WithName("SaveStrategyDesignerDraft")
+        .WithName("SaveStrategyDesignerDraft").RequirePermission(UserPermission.ManageStrategies)
         .Produces<StrategyDesignDraftSaveResponse>(200)
         .Produces(400)
         .Produces(403)
@@ -130,7 +130,7 @@ public static partial class WorkstationEndpoints
             var normalized = service.Normalize(document);
             return Results.Json(service.Validate(normalized), jsonOptions);
         })
-        .WithName("ValidateStrategyDesignerDocument")
+        .WithName("ValidateStrategyDesignerDocument").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyDesignValidationResult>(200)
         .Produces(400)
         .Produces(501);
@@ -154,7 +154,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(preview, jsonOptions)
                 : Results.Json(preview, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
         })
-        .WithName("PreviewStrategyDesignerDocument")
+        .WithName("PreviewStrategyDesignerDocument").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyDesignPreviewResult>(200)
         .Produces(400)
         .Produces(501);
@@ -293,7 +293,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(CreateBacktestResponse(document, preview, runId, metrics, null, biasDisclosure), jsonOptions);
         })
-        .WithName("RunStrategyDesignerBacktest")
+        .WithName("RunStrategyDesignerBacktest").RequirePermission(UserPermission.ManageStrategies)
         .Produces<StrategyDesignRunBacktestResponse>(200)
         .Produces(400)
         .Produces(403)
@@ -377,7 +377,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(result, jsonOptions)
                 : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
         })
-        .WithName("ValidateStrategyEngineRun")
+        .WithName("ValidateStrategyEngineRun").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyEngineValidationResult>(200)
         .Produces<StrategyEngineValidationResult>(400)
         .Produces(501);

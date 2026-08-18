@@ -266,7 +266,7 @@ public static class MessagingEndpoints
             }
         })
         .WithName("TestMessaging")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.AdminMaintenance))
+        .RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -309,7 +309,7 @@ public static class MessagingEndpoints
             }, jsonOptions);
         })
         .WithName("PurgeMessagingQueue")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.AdminMaintenance))
+        .RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -405,7 +405,7 @@ public static class MessagingEndpoints
             }
         })
         .WithName("RetryMessagingError")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.AdminMaintenance))
+        .RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }

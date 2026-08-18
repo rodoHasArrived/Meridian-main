@@ -1,6 +1,7 @@
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using static Meridian.Contracts.Ledger.LedgerDimensionTags;
@@ -480,10 +481,11 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
     {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(actionOrigin))
         {
             throw new LedgerBookValidationException(
-                $"Reviewed automation cannot {action}; a human operator approval is required.");
+                OperationsOriginGuard.RefusalMessage(action),
+                OperationsOriginGuard.Refusal(action));
         }
     }
 

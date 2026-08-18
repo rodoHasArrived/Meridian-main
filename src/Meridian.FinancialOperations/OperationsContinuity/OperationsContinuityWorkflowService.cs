@@ -2939,14 +2939,14 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
         OperationsGateKeyDto? gate,
         string actionLabel)
     {
-        if (actionOrigin == OperationsActionOriginDto.HumanOperator)
+        if (OperationsOriginGuard.IsHumanOperator(actionOrigin))
         {
             return null;
         }
 
         var blocker = new OperationsWorkflowBlockerDto(
             "REVIEWED_AUTOMATION_MATERIAL_ACTION_REJECTED",
-            $"{actionLabel} requires a human operator origin; reviewed automation may suggest, summarize, draft, and flag but cannot mutate the operating record.",
+            OperationsOriginGuard.BlockerMessage(actionLabel),
             gate,
             "Critical",
             []);

@@ -195,7 +195,7 @@ public static class ExecutionEndpoints
                 _ => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
             };
         })
-        .WithName("SubmitOrder")
+        .WithName("SubmitOrder").RequirePermission(UserPermission.ManageOrders)
         .Produces<OrderResult>(201)
         .Produces<OrderResult>(202)
         .Produces<OrderResult>(400)
@@ -255,7 +255,7 @@ public static class ExecutionEndpoints
                 ? Results.Json(actionResult, jsonOptions)
                 : Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
         })
-        .WithName("CancelOrder")
+        .WithName("CancelOrder").RequirePermission(UserPermission.ManageOrders)
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
         .Produces(503);
@@ -299,7 +299,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(actionResult, jsonOptions);
         })
-        .WithName("CancelAllOrders")
+        .WithName("CancelAllOrders").RequirePermission(UserPermission.ManageOrders)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<TradingActionResult>(200)
         .Produces(403)
@@ -524,7 +524,7 @@ public static class ExecutionEndpoints
                     : (object)ExecutionCircuitBreakerActivationResponse.From(snapshot, sweepOutcome),
                 jsonOptions);
         })
-        .WithName("UpdateExecutionCircuitBreaker")
+        .WithName("UpdateExecutionCircuitBreaker").RequirePermission(UserPermission.ManageOrders)
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(403)
         .Produces(429)
@@ -555,7 +555,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(snapshot, jsonOptions);
         })
-        .WithName("UpdateExecutionDefaultPositionLimit")
+        .WithName("UpdateExecutionDefaultPositionLimit").RequirePermission(UserPermission.ManageOrders)
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(403)
         .Produces(429)
@@ -586,7 +586,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(snapshot, jsonOptions);
         })
-        .WithName("UpdateExecutionSymbolPositionLimit")
+        .WithName("UpdateExecutionSymbolPositionLimit").RequirePermission(UserPermission.ManageOrders)
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(403)
         .Produces(429)
@@ -631,7 +631,7 @@ public static class ExecutionEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("CreateExecutionManualOverride")
+        .WithName("CreateExecutionManualOverride").RequirePermission(UserPermission.ManageOrders)
         .Produces<ExecutionManualOverride>(201)
         .Produces(403)
         .Produces(429)
@@ -677,7 +677,7 @@ public static class ExecutionEndpoints
                     OccurredAt: DateTimeOffset.UtcNow),
                 jsonOptions);
         })
-        .WithName("ClearExecutionManualOverride")
+        .WithName("ClearExecutionManualOverride").RequirePermission(UserPermission.ManageOrders)
         .Produces<TradingActionResult>(200)
         .Produces(403)
         .Produces(429)
@@ -798,7 +798,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(session, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("CreateExecutionSession")
+        .WithName("CreateExecutionSession").RequirePermission(UserPermission.ExecuteTrades)
         .Produces<PaperSessionSummaryDto>(201)
         .Produces(400)
         .Produces(429)
@@ -855,7 +855,7 @@ public static class ExecutionEndpoints
                     AuditId: auditEntry?.AuditId),
                 jsonOptions);
         })
-        .WithName("CloseExecutionSession")
+        .WithName("CloseExecutionSession").RequirePermission(UserPermission.ManageOrders)
         .Produces<TradingActionResult>(200)
         .Produces(404)
         .Produces(503);
@@ -1066,7 +1066,7 @@ public static class ExecutionEndpoints
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
         })
-        .WithName("ClosePositionByKey")
+        .WithName("ClosePositionByKey").RequirePermission(UserPermission.ExecuteTrades)
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
         .Produces(403)
@@ -1119,7 +1119,7 @@ public static class ExecutionEndpoints
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
         })
-        .WithName("UpsizePositionByKey")
+        .WithName("UpsizePositionByKey").RequirePermission(UserPermission.ExecuteTrades)
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
         .Produces(403)
@@ -1185,7 +1185,7 @@ public static class ExecutionEndpoints
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
         })
-        .WithName("ClosePosition")
+        .WithName("ClosePosition").RequirePermission(UserPermission.ExecuteTrades)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)

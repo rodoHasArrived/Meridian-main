@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -130,7 +131,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(response, jsonOptions);
         })
-        .WithName("PreviewWorkstationDataUpload")
+        .WithName("PreviewWorkstationDataUpload").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<DataUploadPreviewResultDto>(200)
         .ProducesValidationProblem()
         .Produces(403);
@@ -283,7 +284,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(response, jsonOptions);
         })
-        .WithName("ImportWorkstationBankStatement")
+        .WithName("ImportWorkstationBankStatement").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<BankStatementImportResultDto>(200)
         .ProducesValidationProblem()
         .Produces(403)

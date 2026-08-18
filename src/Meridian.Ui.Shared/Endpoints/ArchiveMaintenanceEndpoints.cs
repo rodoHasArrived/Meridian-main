@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Application.Scheduling;
 using Meridian.Core.Scheduling;
@@ -93,7 +94,7 @@ public static class ArchiveMaintenanceEndpoints
                 _ => null
             },
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
 
         app.MapDelete("/api/maintenance/schedules/{scheduleId}", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
@@ -109,7 +110,7 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to delete schedule",
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
 
         // ==================== SCHEDULE CONTROL ====================
         // NOTE: POST /schedules/{id}/enable and POST /schedules/{id}/disable are registered
@@ -134,7 +135,7 @@ public static class ArchiveMaintenanceEndpoints
                 _ => null
             },
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
 
         // ==================== IMMEDIATE EXECUTION ====================
 
@@ -160,7 +161,7 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Maintenance execution failed",
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
 
         app.MapPost("/api/maintenance/executions/{executionId}/cancel", async (
             ScheduledArchiveMaintenanceService maintenanceService,
@@ -175,7 +176,7 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to cancel execution",
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
 
         // ==================== EXECUTION HISTORY ====================
 
@@ -337,7 +338,7 @@ public static class ArchiveMaintenanceEndpoints
                 _ => null
             },
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
 
         // ==================== PRESETS ====================
 
@@ -434,7 +435,7 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to cleanup history",
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
     }
 
     private static MaintenanceTaskOptions MapOptions(MaintenanceOptionsDto? dto)

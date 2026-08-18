@@ -149,7 +149,7 @@ public static class ExportEndpoints
             return Results.Json(CreateExportResponse(result, profile), jsonOptions);
         })
         .WithName("ExportAnalysis")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ExportData))
+        .RequirePermission(UserPermission.ExportData)
         .Produces(200)
         .Produces(400)
         .Produces(503)
@@ -229,7 +229,7 @@ public static class ExportEndpoints
                 statusCode: StatusCodes.Status501NotImplemented);
         })
         .WithName("ExportQualityReport")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ExportData))
+        .RequirePermission(UserPermission.ExportData)
         .Produces<SpecializedExportApiResponse>(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -292,7 +292,7 @@ public static class ExportEndpoints
             return Results.Json(CreateSpecializedExportResponse(result, profile!), jsonOptions);
         })
         .WithName("ExportOrderflow")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ExportData))
+        .RequirePermission(UserPermission.ExportData)
         .Produces(200)
         .Produces(400)
         .Produces(503)
@@ -354,7 +354,7 @@ public static class ExportEndpoints
             return Results.Json(CreateSpecializedExportResponse(result, profile!), jsonOptions);
         })
         .WithName("ExportIntegrity")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ExportData))
+        .RequirePermission(UserPermission.ExportData)
         .Produces(200)
         .Produces(400)
         .Produces(503)
@@ -422,7 +422,7 @@ public static class ExportEndpoints
         // Strategy package export is canonical; the research route is retained for clients still on the old API name.
         group.MapPost(UiApiRoutes.ExportStrategyPackage, ExportStrategyPackageAsync)
         .WithName("ExportStrategyPackage")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ExportData))
+        .RequirePermission(UserPermission.ExportData)
         .Produces(200)
         .Produces(400)
         .Produces(503)
@@ -430,7 +430,7 @@ public static class ExportEndpoints
 
         group.MapPost(UiApiRoutes.ExportResearchPackage, ExportStrategyPackageAsync)
         .WithName("ExportResearchPackage")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ExportData))
+        .RequirePermission(UserPermission.ExportData)
         .Produces(200)
         .Produces(400)
         .Produces(503)

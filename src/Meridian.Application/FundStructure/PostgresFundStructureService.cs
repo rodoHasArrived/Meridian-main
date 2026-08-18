@@ -5,6 +5,7 @@ using Meridian.Contracts.Services;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Entities.FundStructure;
 using Meridian.Storage.FundStructure;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Application.FundStructure;
 
@@ -336,8 +337,8 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 IsActive = request.IsActive ?? existing.IsActive,
                 EffectiveFrom = request.EffectiveFrom ?? existing.EffectiveFrom,
                 EffectiveTo = request.EffectiveTo ?? existing.EffectiveTo,
-                Description = CleanOptional(request.Description) ?? existing.Description,
-                RegistrationNumber = CleanOptional(request.RegistrationNumber) ?? existing.RegistrationNumber,
+                Description = NormalizeOptional(request.Description) ?? existing.Description,
+                RegistrationNumber = NormalizeOptional(request.RegistrationNumber) ?? existing.RegistrationNumber,
                 LifecycleStatus = request.LifecycleStatus ?? existing.LifecycleStatus,
                 BeneficialOwners = request.BeneficialOwners is null
                     ? existing.BeneficialOwners
@@ -1345,7 +1346,6 @@ public sealed class PostgresFundStructureService : IFundStructureService
 
     // ── Static utilities ──────────────────────────────────────────────────────
 
-
     private static FundStructureNodeKindDto ResolveKnownNodeKind(
         Guid nodeId,
         IReadOnlyDictionary<Guid, FundStructureNodeKindDto> nodeKinds)
@@ -1423,8 +1423,8 @@ public sealed class PostgresFundStructureService : IFundStructureService
             Name = CleanRequired(entity.Name, entity.Name),
             Jurisdiction = CleanRequired(entity.Jurisdiction, entity.Jurisdiction),
             BaseCurrency = CleanRequired(entity.BaseCurrency, entity.BaseCurrency).ToUpperInvariant(),
-            RegistrationNumber = CleanOptional(entity.RegistrationNumber),
-            Description = CleanOptional(entity.Description),
+            RegistrationNumber = NormalizeOptional(entity.RegistrationNumber),
+            Description = NormalizeOptional(entity.Description),
             BeneficialOwners = NormalizeBeneficialOwners(entity.BeneficialOwners),
             LifecycleEvents = NormalizeLifecycleEvents(entity.LifecycleEvents)
         };
@@ -1438,8 +1438,8 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 .Select(static owner => owner with
                 {
                     OwnerName = owner.OwnerName.Trim(),
-                    OwnerIdentifier = CleanOptional(owner.OwnerIdentifier),
-                    Notes = CleanOptional(owner.Notes)
+                    OwnerIdentifier = NormalizeOptional(owner.OwnerIdentifier),
+                    Notes = NormalizeOptional(owner.Notes)
                 })
                 .ToList();
 
@@ -1454,7 +1454,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 {
                     RecordedBy = lifecycleEvent.RecordedBy.Trim(),
                     Summary = lifecycleEvent.Summary.Trim(),
-                    EvidenceReference = CleanOptional(lifecycleEvent.EvidenceReference)
+                    EvidenceReference = NormalizeOptional(lifecycleEvent.EvidenceReference)
                 })
                 .OrderBy(static lifecycleEvent => lifecycleEvent.OccurredAt)
                 .ThenBy(static lifecycleEvent => lifecycleEvent.EventId)
@@ -1483,8 +1483,6 @@ public sealed class PostgresFundStructureService : IFundStructureService
         var value = string.IsNullOrWhiteSpace(candidate) ? fallback : candidate;
         return value.Trim();
     }
-
-    private static string? CleanOptional(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static InvestmentPortfolioSummaryDto ApplyOperatingParent(
         InvestmentPortfolioSummaryDto p, Guid? clientId = null, Guid? fundId = null, Guid? sleeveId = null, Guid? vehicleId = null)

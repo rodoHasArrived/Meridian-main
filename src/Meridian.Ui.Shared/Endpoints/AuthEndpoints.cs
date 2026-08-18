@@ -1,7 +1,9 @@
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Operations;
 using Meridian.Identity.Auth;
 using Meridian.Identity;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -242,7 +244,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = ex.Message });
                     }
                 })
-            .WithName("UpsertUserAccount")
+            .WithName("UpsertUserAccount").RequireManageUsersSession()
             .WithSummary("Creates or updates a governed user account with a stored password hash.")
             .Produces<UserAccountMutationResultDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
@@ -301,7 +303,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = ex.Message });
                     }
                 })
-            .WithName("ResetUserAccountPassword")
+            .WithName("ResetUserAccountPassword").RequireManageUsersSession()
             .WithSummary("Resets a user account password and can revoke active sessions.")
             .Produces<UserAccountMutationResultDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
@@ -361,7 +363,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = ex.Message });
                     }
                 })
-            .WithName("SetUserAccountDisabled")
+            .WithName("SetUserAccountDisabled").RequireManageUsersSession()
             .WithSummary("Disables or re-enables a governed user account and can revoke active sessions.")
             .Produces<UserAccountMutationResultDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
@@ -394,7 +396,7 @@ public static class AuthEndpoints
                         ct).ConfigureAwait(false);
                     return Results.Ok(result);
                 })
-            .WithName("RevokeUserSessions")
+            .WithName("RevokeUserSessions").RequireManageUsersSession()
             .WithSummary("Revokes active login sessions by account or for all accounts.")
             .Produces<UserSessionRevokeResultDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -469,7 +471,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = ex.Message });
                     }
                 })
-            .WithName("UpsertRolePermissionProfile")
+            .WithName("UpsertRolePermissionProfile").RequireManageUsersSession()
             .WithSummary("Creates or updates a governed custom role profile with audit evidence.")
             .Produces<RolePermissionProfileUpsertResultDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
@@ -550,7 +552,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = ex.Message });
                     }
                 })
-            .WithName("CreateScopedAccessAssignment")
+            .WithName("CreateScopedAccessAssignment").RequireManageUsersSession()
             .WithSummary("Creates a governed scoped access assignment with audit evidence.")
             .Produces<UserAccessAssignmentMutationResultDto>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
@@ -605,7 +607,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = ex.Message });
                     }
                 })
-            .WithName("RevokeScopedAccessAssignment")
+            .WithName("RevokeScopedAccessAssignment").RequireManageUsersSession()
             .WithSummary("Revokes a governed scoped access assignment using optimistic concurrency.")
             .Produces<UserAccessAssignmentMutationResultDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
@@ -654,6 +656,32 @@ public static class AuthEndpoints
             CompanyId: string.IsNullOrWhiteSpace(ctxCompanyId) ? null : ctxCompanyId.Trim());
     }
 
+    /// <summary>
+    /// Declares and enforces the ManageUsers requirement for an account-administration route.
+    /// <para>
+    /// This is not <c>RequirePermission</c>: /api/auth/* is exempt from LoginSessionMiddleware, so
+    /// the request-Items permission snapshot that filter reads is never populated here. Enforcement
+    /// resolves the session cookie directly, exactly as <see cref="ResolveManageUsersActor"/> does
+    /// in the handlers — and the filter runs before any request validation, so a sessionless caller
+    /// gets 401 instead of the pre-auth validation responses these routes used to leak. The stamped
+    /// metadata is identical to a declarative RequirePermission(ManageUsers).
+    /// </para>
+    /// </summary>
+    private static RouteHandlerBuilder RequireManageUsersSession(this RouteHandlerBuilder builder)
+    {
+        builder.AddEndpointFilter(async (invocation, next) =>
+        {
+            var http = invocation.HttpContext;
+            var sessionService = http.RequestServices.GetRequiredService<LoginSessionService>();
+            var actor = ResolveManageUsersActor(http, sessionService, requestedBy: "account-admin");
+            return actor.StatusCode is { } statusCode
+                ? ToAuthorizationFailure(statusCode)
+                : await next(invocation);
+        });
+        builder.WithMetadata(new EndpointAuthorizationMetadata(new[] { UserPermission.ManageUsers }, requireAll: true));
+        return builder;
+    }
+
     private static ManageUsersActor ResolveManageUsersActor(
         HttpContext context,
         LoginSessionService sessionService,
@@ -691,8 +719,13 @@ public static class AuthEndpoints
             ? Results.Unauthorized()
             : EndpointHelpers.Forbidden();
 
+    // Type first, message second. A governance refusal now arrives as HumanOperatorRequiredException,
+    // so the wording of the refusal is no longer load-bearing for the status code it maps to. The
+    // prefix test stays only for any gate still throwing a bare InvalidOperationException with the
+    // canonical text; those are the sites a wording change would silently reclassify.
     private static bool IsReviewedAutomationRejection(InvalidOperationException ex)
-        => ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.Ordinal);
+        => ex is HumanOperatorRequiredException
+            || ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.Ordinal);
 
     private sealed record ManageUsersActor(string Actor, int? StatusCode);
 }

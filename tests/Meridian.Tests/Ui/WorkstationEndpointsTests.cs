@@ -5989,7 +5989,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewStrategies);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildRun(
@@ -6024,7 +6024,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewStrategies);
 
         var client = app.GetTestClient();
         var response = await client.PostAsJsonAsync("/api/workstation/runs/compare", new { runIds = new[] { "only-one" } });
@@ -6038,7 +6038,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewStrategies);
 
         var runIds = Enumerable.Range(1, 11).Select(index => $"cmp-{index}").ToArray();
         var client = app.GetTestClient();
@@ -6069,7 +6069,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewStrategies);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildRun(
@@ -6187,7 +6187,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewStrategies);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationReadyRun("diff-base") with
@@ -6249,7 +6249,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewStrategies);
 
         var client = app.GetTestClient();
         var response = await client.PostAsJsonAsync("/api/workstation/runs/diff",
