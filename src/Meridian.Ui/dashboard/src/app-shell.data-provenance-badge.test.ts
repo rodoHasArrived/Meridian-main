@@ -98,7 +98,7 @@ describe("resolveWorkstationDataProvenance", () => {
     })).toBe("seeded");
   });
 
-  it("claims real data only after the server explicitly reports demo mode disabled", () => {
+  it("claims real data only when the server itself reports a real tape", () => {
     // An unanswered probe is `unknown` — a persistent badge with a retry control —
     // never a silent real claim and never a confirmed SIMULATED brand.
     expect(resolveWorkstationDataProvenance({
@@ -107,7 +107,29 @@ describe("resolveWorkstationDataProvenance", () => {
     })).toBe("unknown");
     expect(resolveWorkstationDataProvenance({
       usingDevelopmentFixtures: false,
-      demoMode: { enabled: false, provenance: "seeded" }
+      demoMode: { enabled: false, provenance: "real" }
     })).toBe("real");
+  });
+
+  // The credentialed-host case the pin exists for: `enabled` comes from a credentials
+  // heuristic, so a host holding an Alpaca or Polygon key while replaying a pinned
+  // Simulated tape reports enabled:false. Reading the label only under `enabled` threw
+  // the pin away and rendered no banner at all on a simulated tape.
+  it.each([
+    ["simulated", "simulated"],
+    ["seeded", "seeded"],
+    ["sample", "sample"]
+  ] as const)("honors a pinned %s label even when demo mode reports disabled", (pinned, expected) => {
+    expect(resolveWorkstationDataProvenance({
+      usingDevelopmentFixtures: false,
+      demoMode: { enabled: false, provenance: pinned }
+    })).toBe(expected);
+  });
+
+  it("treats a disabled response that pins no provenance as unresolved, not real", () => {
+    expect(resolveWorkstationDataProvenance({
+      usingDevelopmentFixtures: false,
+      demoMode: { enabled: false }
+    })).toBe("unknown");
   });
 });

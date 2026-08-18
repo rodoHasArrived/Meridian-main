@@ -61,7 +61,7 @@ public static class ComplianceEndpoints
             var evt = auditLog.Append(actor, request);
             return Results.Json(new { allowed = true, reason = decision.Reason, auditEventId = evt.EventId, hash = evt.Hash }, options: jsonOptions);
         })
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+        .RequirePermission(UserPermission.ManageUsers);
 
         app.MapGet("/api/compliance/audit/extract", ([FromServices] ImmutableAuditLogService auditLog) =>
             Results.Ok(new { integrityValid = auditLog.VerifyIntegrity(), events = auditLog.GetAll() }))

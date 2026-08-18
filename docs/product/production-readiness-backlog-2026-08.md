@@ -3,15 +3,20 @@
 **Status:** active working plan; not a governance or roadmap-status document
 **Owner:** core-team
 **Reviewed:** 2026-08-18
-**Source:** prioritized cut of the [Adversarial Program Review (2026-08)](adversarial-program-review-2026-08.md)
-and its [remediation plan](adversarial-review-2026-08-remediation-plan.md), re-verified against
-current source on 2026-08-18 (main @ `277a6529`, post-PR #2779 declaration-lane close).
+**Source:** the ranked improvement list of the
+[Adversarial Program Review (2026-08-18)](adversarial-program-review-2026-08-18.md), which re-tests
+the [2026-08-10 pass](adversarial-program-review-2026-08.md) and its
+[remediation plan](adversarial-review-2026-08-remediation-plan.md) against the ~321 commits landed
+since. Independently re-verified against current source on 2026-08-18.
 
-This is the ten-item production-readiness ordering of the AR8 remediation estate. Every claim
-below was re-checked against the working tree before being recorded; where a review-era claim went
-stale, the correction is stated rather than repeated. `AR8-nn` references point into the
-remediation plan, which keeps the code-ready implementation detail. Live roadmap truth stays in
-`docs/roadmap/data/*.yml`.
+This is the ten-item production-readiness ordering of that estate. Every claim below was re-checked
+against the working tree before being recorded; where a review-era claim went stale, the correction
+is stated rather than repeated. `AR8-nn` references point into the remediation plan, which keeps
+the code-ready implementation detail. Live roadmap truth stays in `docs/roadmap/data/*.yml`.
+
+The 2026-08-18 review's headline is the frame for item 1: **the remediation itself now exhibits the
+program's core disease — the fix gets built, tested, registered, and left unwired at the last
+seam.** All three of its flagship examples are closed by this branch.
 
 **Landed with this document** (branch `claude/production-readiness-backlog-bjz32o`): the three
 built-but-dead fixes in item 1 — bootstrap ordering, the WPF safety seam, and the browser
@@ -42,15 +47,26 @@ completed here by connecting the last seam:
   `DeskActionStatusText`; pane layout stays with the mapper. ViewModel-level dispatch tests added
   (`tests/Meridian.Wpf.Tests/Services/TradingSafetyCommandTests.cs`) — the prior suite only
   exercised the service in isolation, which is exactly how the dead seam survived.
-- **Browser provenance pin** *(AR8-19)* — the demo-mode probe ran once with an empty catch; a
-  null result rendered the non-dismissable red SIMULATED banner for the whole session, teaching
-  operators to ignore the product's lead safety signal. **Fixed:** the probe retries with backoff;
-  `DataProvenanceKind` gains an explicit `unknown` state distinct from `simulated` (a wire token
-  `"unknown"` still fails closed to simulated — `unknown` is a client transport state, never a
-  server claim); the banner renders `unknown` as a warning with a "Retry live data" control while
-  confirmed simulated keeps the red danger banner with no controls. The pre-built
-  `app-shell.development-fixture-notice.ts` (seeded-fixture case) remains unmounted — tracked
-  under item 9, not silently claimed.
+- **Browser provenance pin** *(AR8-19 plus the 2026-08-18 flagship)* — two distinct defects, both
+  closed:
+  - *The pin was discarded.* `resolveWorkstationDataProvenance` read the server's pinned
+    `provenance` only when `demoMode.enabled` was truthy and otherwise returned `"real"`. Since
+    `enabled` comes from a credentials heuristic, a host holding an Alpaca or Polygon key while
+    replaying a pinned-Simulated tape rendered **no banner at all** — exactly the credentialed-host
+    case the pin was built for — and a unit test locked that behavior in. **Fixed:** the pinned
+    label is authoritative whenever present, regardless of `enabled`; the test is corrected and
+    extended to the simulated/seeded/sample pins.
+  - *A failed probe branded a real install SIMULATED.* The demo-mode probe ran once with an empty
+    catch, so one dropped request showed the non-dismissable red banner for the whole session,
+    teaching operators to ignore the product's lead safety signal. **Fixed:** the probe retries
+    with backoff, and `DataProvenanceKind` gains an explicit `unknown` state distinct from
+    `simulated` (a wire token `"unknown"` still fails closed to simulated — `unknown` is a client
+    transport state, never a server claim), rendered as a warning with a "Retry live data" control
+    while confirmed simulated keeps the red danger banner and no controls. A disabled response
+    that pins no provenance at all is also `unknown` rather than `real`.
+
+  The pre-built `app-shell.development-fixture-notice.ts` (seeded-fixture case) remains unmounted —
+  tracked under item 9, not silently claimed.
 
 ## 2. Make reconciliation actually reconcile
 

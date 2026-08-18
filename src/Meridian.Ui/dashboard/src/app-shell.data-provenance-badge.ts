@@ -92,17 +92,28 @@ export interface WorkstationDataProvenanceInput {
 }
 
 /**
- * Resolves the shell-wide trust label. A positive demo-mode response and any development-fixture
- * usage take precedence over a real-data claim. Until the server has explicitly reported that demo
- * mode is disabled, the shell reports `unknown` — a distinct persistent badge with a retry
- * affordance — rather than branding a real install SIMULATED because one probe failed, and never
- * silently claiming real data.
+ * Resolves the shell-wide trust label.
+ *
+ * The server's pinned `provenance` is authoritative whenever it is present, **whether or not
+ * `enabled` is set**. `enabled` is derived from a credentials heuristic, so a host holding an
+ * Alpaca or Polygon key while replaying a pinned-Simulated tape reports `enabled: false` — which
+ * is precisely the case the pin exists for. Reading the label only under `enabled` threw the pin
+ * away and rendered no banner on a simulated tape.
+ *
+ * Demo mode still refuses a `real` claim, development-fixture usage still outranks a disabled
+ * posture, and an unanswered probe stays `unknown` — a persistent badge with a retry affordance —
+ * rather than branding a real install SIMULATED because one request failed. Nothing here ever
+ * silently claims real data.
  */
 export function resolveWorkstationDataProvenance({
   usingDevelopmentFixtures,
   demoMode
 }: WorkstationDataProvenanceInput): DataProvenanceKind {
-  if (demoMode?.enabled) {
+  if (!demoMode) {
+    return usingDevelopmentFixtures ? "seeded" : "unknown";
+  }
+
+  if (demoMode.enabled) {
     const reported = normalizeDataProvenance(demoMode.provenance);
     return reported === "real" ? "simulated" : reported;
   }
@@ -111,7 +122,13 @@ export function resolveWorkstationDataProvenance({
     return "seeded";
   }
 
-  return demoMode ? "real" : "unknown";
+  // A response that carries no provenance at all states nothing to honor. That is unresolved,
+  // not real and not confirmed simulated, so it takes the retryable `unknown` badge.
+  if (demoMode.provenance === undefined || demoMode.provenance === null) {
+    return "unknown";
+  }
+
+  return normalizeDataProvenance(demoMode.provenance);
 }
 
 export function buildDataProvenanceBadgeViewModel({

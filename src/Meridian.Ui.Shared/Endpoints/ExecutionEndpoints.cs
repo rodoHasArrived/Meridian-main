@@ -195,7 +195,7 @@ public static class ExecutionEndpoints
                 _ => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
             };
         })
-        .WithName("SubmitOrder")
+        .WithName("SubmitOrder").RequirePermission(UserPermission.ManageOrders)
         .Produces<OrderResult>(201)
         .Produces<OrderResult>(202)
         .Produces<OrderResult>(400)
