@@ -12,7 +12,7 @@ internal sealed class BacktestContext(
     BacktestLedger ledger,
     string defaultBrokerageAccountId) : IBacktestContext
 {
-    private readonly List<Order> _pendingOrders = [];
+    private readonly List<Order> _workingOrders = [];
 
     public IReadOnlySet<string> Universe => universe;
     public DateTimeOffset CurrentTime { get; internal set; }
@@ -65,7 +65,7 @@ internal sealed class BacktestContext(
             TakeProfitPrice: request.TakeProfitPrice,
             StopLossPrice: request.StopLossPrice);
 
-        _pendingOrders.Add(order);
+        AddWorkingOrder(order);
         return order.OrderId;
     }
 
@@ -127,16 +127,69 @@ internal sealed class BacktestContext(
             AccountId: accountId));
     }
 
-    public void CancelOrder(Guid orderId) =>
-        _pendingOrders.RemoveAll(o => o.OrderId == orderId);
+    public void CancelOrder(Guid orderId) => RemoveWorkingOrder(orderId);
 
     public void CancelContingentOrders(Guid parentOrderId) =>
-        _pendingOrders.RemoveAll(o => o.ParentOrderId == parentOrderId);
+        _workingOrders.RemoveAll(order => order.ParentOrderId == parentOrderId);
 
-    internal IReadOnlyList<Order> DrainPendingOrders()
+    internal IReadOnlyList<Order> GetWorkingOrdersSnapshot() => _workingOrders.ToArray();
+
+    internal bool TryGetWorkingOrder(Guid orderId, out Order order)
     {
-        var orders = _pendingOrders.ToList();
-        _pendingOrders.Clear();
-        return orders;
+        var index = FindWorkingOrderIndex(orderId);
+        if (index >= 0)
+        {
+            order = _workingOrders[index];
+            return true;
+        }
+
+        order = null!;
+        return false;
     }
+
+    internal void AddWorkingOrder(Order order)
+    {
+        ArgumentNullException.ThrowIfNull(order);
+        if (FindWorkingOrderIndex(order.OrderId) >= 0)
+            throw new InvalidOperationException($"Working order '{order.OrderId}' already exists.");
+
+        _workingOrders.Add(order);
+    }
+
+    internal void AddWorkingOrders(IEnumerable<Order> orders)
+    {
+        ArgumentNullException.ThrowIfNull(orders);
+        foreach (var order in orders)
+            AddWorkingOrder(order);
+    }
+
+    internal bool UpdateWorkingOrder(Order order)
+    {
+        ArgumentNullException.ThrowIfNull(order);
+        var index = FindWorkingOrderIndex(order.OrderId);
+        if (index < 0)
+            return false;
+
+        _workingOrders[index] = order;
+        return true;
+    }
+
+    internal bool RemoveWorkingOrder(Guid orderId)
+    {
+        var index = FindWorkingOrderIndex(orderId);
+        if (index < 0)
+            return false;
+
+        _workingOrders.RemoveAt(index);
+        return true;
+    }
+
+    internal int RemoveWorkingOrders(Predicate<Order> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        return _workingOrders.RemoveAll(predicate);
+    }
+
+    private int FindWorkingOrderIndex(Guid orderId) =>
+        _workingOrders.FindIndex(order => order.OrderId == orderId);
 }

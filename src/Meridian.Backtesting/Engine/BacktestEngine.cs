@@ -120,7 +120,6 @@ public sealed class BacktestEngine(
             conservatism: request.FillConservatism);
         var delistingMonitor = new DelistingMonitor(request.DelistingPolicy, request.DelistingHaircutPercent, request.DelistingGraceDays);
 
-        var pendingOrders = new List<Order>();
         var allSnapshots = new List<PortfolioSnapshot>();
         var allCashFlows = new List<CashFlowEntry>();
         var allFills = new List<FillEvent>();
@@ -154,7 +153,7 @@ public sealed class BacktestEngine(
             // Day boundary — close out the previous day and apply any gap-day asset events.
             if (evtDate > currentDay)
             {
-                AdvanceDays(currentDay, evtDate, portfolio, ctx, strategy, pendingOrders, allSnapshots, allCashFlows, assetEventsByDate, progress, request.From, totalDays, eventsProcessed, rollingState, stageTimer, delistingMonitor, allFills, logger, request.FillTiming, lastEventTimestamps, ct);
+                AdvanceDays(currentDay, evtDate, portfolio, ctx, strategy, allSnapshots, allCashFlows, assetEventsByDate, progress, request.From, totalDays, eventsProcessed, rollingState, stageTimer, delistingMonitor, allFills, logger, request.FillTiming, lastEventTimestamps, ct);
                 currentDay = evtDate;
             }
 
@@ -170,20 +169,16 @@ public sealed class BacktestEngine(
             // Dispatch to strategy
             DispatchEvent(strategy, ctx, evt);
 
-            // Collect new orders placed by strategy
-            var newOrders = ctx.DrainPendingOrders();
-            pendingOrders.AddRange(newOrders);
-
-            // Try to fill pending orders against current event
-            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, logger, rollingState, request.DefaultExecutionModel, request.FillTiming);
+            // Try to fill the context-owned authoritative working orders against this event.
+            ProcessPendingOrders(evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, logger, rollingState, request.DefaultExecutionModel, request.FillTiming);
         }
 
         // Final day-end for the last processed day and any remaining asset-event-only dates.
-        ProcessDayEnd(currentDay, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, delistingMonitor, allFills, logger, request.FillTiming, lastEventTimestamps, ct);
+        ProcessDayEnd(currentDay, portfolio, ctx, strategy, allSnapshots, allCashFlows, delistingMonitor, allFills, logger, request.FillTiming, lastEventTimestamps, ct);
         for (var date = currentDay.AddDays(1); date <= request.To; date = date.AddDays(1))
         {
             ApplyScheduledAssetEvents(date, assetEventsByDate, portfolio, ctx);
-            ProcessDayEnd(date, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, delistingMonitor, allFills, logger, request.FillTiming, lastEventTimestamps, ct);
+            ProcessDayEnd(date, portfolio, ctx, strategy, allSnapshots, allCashFlows, delistingMonitor, allFills, logger, request.FillTiming, lastEventTimestamps, ct);
         }
 
         strategy.OnFinished(ctx);
@@ -245,7 +240,7 @@ public sealed class BacktestEngine(
             .ToArray();
     }
 
-    private Task<IReadOnlyList<IAsyncEnumerable<MarketEvent>>> BuildSymbolStreamsAsync(
+    private async Task<IReadOnlyList<IAsyncEnumerable<MarketEvent>>> BuildSymbolStreamsAsync(
         IReadOnlyList<string> replaySymbols,
         BacktestRequest request,
         CancellationToken ct)
@@ -257,22 +252,72 @@ public sealed class BacktestEngine(
             if (!Directory.Exists(symbolRoot))
                 symbolRoot = request.DataRoot;  // flat layout fallback
 
-            var reader = new JsonlReplayer(symbolRoot);
-            var symbolStream = FilterBySymbolAndDate(reader.ReadEventsAsync(), symbol, request.From, request.To);
-
-            // Apply corporate action adjustments if enabled
+            CorporateActionAdjustmentPlan? adjustmentPlan = null;
             if (request.AdjustForCorporateActions && corporateActionAdjustment != null)
             {
-                symbolStream = ApplyCorporateActionAdjustmentsAsync(symbolStream, symbol, corporateActionAdjustment, ct);
+                // Adjustment factors (especially cash dividends) require the complete requested
+                // price series. The first pass retains bars only, prepares one immutable plan at
+                // the request's pinned as-of boundary, and then closes every replay reader.
+                var historicalBars = new List<HistoricalBar>();
+                var preparationReader = new JsonlReplayer(symbolRoot);
+                await foreach (var evt in FilterBySymbolAndDate(
+                                   preparationReader.ReadEventsAsync(ct),
+                                   symbol,
+                                   request.From,
+                                   request.To,
+                                   ct).ConfigureAwait(false))
+                {
+                    if (evt.Payload is HistoricalBar bar)
+                        historicalBars.Add(bar);
+                }
+
+                var asOfUtc = new DateTimeOffset(
+                    request.To.ToDateTime(TimeOnly.MaxValue),
+                    TimeSpan.Zero);
+                adjustmentPlan = await corporateActionAdjustment
+                    .PrepareAsync(historicalBars, symbol, asOfUtc, ct)
+                    .ConfigureAwait(false);
             }
+
+            // Open a fresh replay for the execution pass. The immutable plan avoids repeated
+            // Security Master queries and ensures every bar uses the same content version.
+            var replayReader = new JsonlReplayer(symbolRoot);
+            var symbolStream = FilterBySymbolAndDate(
+                replayReader.ReadEventsAsync(ct),
+                symbol,
+                request.From,
+                request.To,
+                ct);
+            if (adjustmentPlan is not null)
+                symbolStream = ApplyCorporateActionPlanAsync(symbolStream, symbol, adjustmentPlan, ct);
 
             streams.Add(symbolStream);
         }
-        return Task.FromResult<IReadOnlyList<IAsyncEnumerable<MarketEvent>>>(streams);
+
+        return streams;
     }
 
     /// <summary>
-    /// Wraps a symbol stream to apply corporate action adjustments incrementally to HistoricalBar events.
+    /// Applies a prepared immutable corporate-action plan to HistoricalBar events while preserving
+    /// streaming for the execution replay pass.
+    /// </summary>
+    internal static async IAsyncEnumerable<MarketEvent> ApplyCorporateActionPlanAsync(
+        IAsyncEnumerable<MarketEvent> source,
+        string symbol,
+        CorporateActionAdjustmentPlan adjustmentPlan,
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        await foreach (var evt in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            if (evt.Payload is HistoricalBar bar)
+                yield return evt with { Symbol = symbol, Payload = adjustmentPlan.Apply(bar) };
+            else
+                yield return evt;
+        }
+    }
+
+    /// <summary>
+    /// Compatibility wrapper for callers that explicitly use the legacy per-bar service seam.
     /// </summary>
     internal static async IAsyncEnumerable<MarketEvent> ApplyCorporateActionAdjustmentsAsync(
         IAsyncEnumerable<MarketEvent> source,
@@ -339,7 +384,6 @@ public sealed class BacktestEngine(
         SimulatedPortfolio portfolio,
         BacktestContext ctx,
         IBacktestStrategy strategy,
-        List<Order> pendingOrders,
         List<PortfolioSnapshot> snapshots,
         List<CashFlowEntry> allCashFlows,
         IReadOnlyDictionary<DateOnly, List<AssetEvent>> assetEventsByDate,
@@ -356,14 +400,14 @@ public sealed class BacktestEngine(
         IReadOnlyDictionary<string, DateTimeOffset> lastEventTimestamps,
         CancellationToken ct)
     {
-        ProcessDayEnd(fromDay, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, delistingMonitor, allFills, logger, fillTiming, lastEventTimestamps, ct);
+        ProcessDayEnd(fromDay, portfolio, ctx, strategy, snapshots, allCashFlows, delistingMonitor, allFills, logger, fillTiming, lastEventTimestamps, ct);
 
         for (var date = fromDay.AddDays(1); date <= toDay; date = date.AddDays(1))
         {
             ApplyScheduledAssetEvents(date, assetEventsByDate, portfolio, ctx);
 
             if (date < toDay)
-                ProcessDayEnd(date, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, delistingMonitor, allFills, logger, fillTiming, lastEventTimestamps, ct);
+                ProcessDayEnd(date, portfolio, ctx, strategy, snapshots, allCashFlows, delistingMonitor, allFills, logger, fillTiming, lastEventTimestamps, ct);
 
             var equity = portfolio.ComputeCurrentEquity();
             var daysElapsed = (date.ToDateTime(TimeOnly.MinValue) - requestFrom.ToDateTime(TimeOnly.MinValue)).Days;
@@ -444,7 +488,6 @@ public sealed class BacktestEngine(
     }
 
     private static void ProcessPendingOrders(
-        List<Order> pendingOrders,
         MarketEvent evt,
         IFillModel lobModel,
         IFillModel barModel,
@@ -458,10 +501,14 @@ public sealed class BacktestEngine(
         ExecutionModel requestDefault = ExecutionModel.Auto,
         FillTiming fillTiming = FillTiming.NextBar)
     {
-        var filled = new List<Guid>();
-        for (var i = pendingOrders.Count - 1; i >= 0; i--)
+        // Iterate a stable snapshot. Strategy fill callbacks may submit or cancel orders; every
+        // mutation goes through BacktestContext and newly submitted orders are first eligible on a
+        // later market event (or are excluded by the next-bar timestamp rule).
+        foreach (var snapshotOrder in ctx.GetWorkingOrdersSnapshot())
         {
-            var order = pendingOrders[i];
+            if (!ctx.TryGetWorkingOrder(snapshotOrder.OrderId, out var order))
+                continue;
+
             if (!order.Symbol.Equals(evt.EffectiveSymbol, StringComparison.OrdinalIgnoreCase))
                 continue;
 
@@ -473,71 +520,150 @@ public sealed class BacktestEngine(
 
             var model = SelectFillModel(order, evt, lobModel, barModel, marketImpactModel, requestDefault);
             var result = model.TryFill(order, evt);
-            var acceptedFilledQuantity = 0L;
+            var acceptedFills = new List<FillEvent>(result.Fills.Count);
+            var acceptedCandidateCount = 0;
+            var proposedFilledQuantity = result.Fills.Sum(static fill => fill.FilledQuantity);
+            var fillOrKillHasCompleteProposal =
+                order.TimeInForce != TimeInForce.FillOrKill ||
+                Math.Abs(proposedFilledQuantity) == order.RemainingQuantity;
 
-            foreach (var fill in result.Fills)
+            if (order.TimeInForce == TimeInForce.FillOrKill &&
+                fillOrKillHasCompleteProposal &&
+                result.Fills.Count > 0)
             {
                 try
                 {
-                    portfolio.ProcessFill(fill);
+                    var authoritativeFills = portfolio.ProcessFillsAtomically(result.Fills);
+                    acceptedFills.AddRange(authoritativeFills);
+                    acceptedCandidateCount = authoritativeFills.Count;
                 }
                 catch (InvalidOperationException ex)
                 {
-                    // Account rule violation (e.g. short-selling or margin disabled).
-                    // Reject this fill rather than crashing the entire backtest run.
                     logger.LogWarning(ex,
-                        "Fill rejected for order {OrderId} on {Symbol}: {Message}. The fill has been discarded.",
-                        fill.OrderId, fill.Symbol, ex.Message);
-                    continue;
+                        "Atomic fill-or-kill batch rejected for order {OrderId} on {Symbol}: {Message}. No slices were accepted.",
+                        order.OrderId, order.Symbol, ex.Message);
                 }
+            }
+            else if (order.TimeInForce != TimeInForce.FillOrKill)
+            {
+                foreach (var candidateFill in result.Fills)
+                {
+                    try
+                    {
+                        var authoritativeFill = portfolio.ProcessFill(candidateFill);
+                        acceptedFills.Add(authoritativeFill);
+                        acceptedCandidateCount++;
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        // Account rule violation (e.g. short-selling or margin disabled).
+                        // Reject this fill rather than crashing the entire backtest run.
+                        logger.LogWarning(ex,
+                            "Fill rejected for order {OrderId} on {Symbol}: {Message}. The fill has been discarded.",
+                            candidateFill.OrderId, candidateFill.Symbol, ex.Message);
+                    }
+                }
+            }
 
-                ContingentOrderManager.ReconcileOcoSiblings(pendingOrders, order, fill);
+            var acceptedFilledQuantity = acceptedFills.Sum(static fill => fill.FilledQuantity);
+            var updatedOrder = BuildAuthoritativeOrderState(
+                order,
+                result.UpdatedOrder,
+                acceptedFilledQuantity,
+                result.Fills.Count);
+            updatedOrder = ApplyTimeInForceTerminalState(order, updatedOrder);
+            var allProposedFillsAccepted = acceptedCandidateCount == result.Fills.Count;
+            var removeOrder = ShouldRemoveOrder(
+                order,
+                result,
+                updatedOrder,
+                allProposedFillsAccepted);
+
+            if (removeOrder)
+                ctx.RemoveWorkingOrder(order.OrderId);
+            else
+                ctx.UpdateWorkingOrder(updatedOrder);
+
+            foreach (var fill in acceptedFills)
+            {
+                ContingentOrderManager.ReconcileOcoSiblings(ctx, order, fill);
+                ctx.AddWorkingOrders(ContingentOrderManager.CreateContingentOrders(order, fill));
+
                 allFills.Add(fill);
-                acceptedFilledQuantity += fill.FilledQuantity;
                 rollingState.IncrementFills();
+            }
+
+            // All authoritative fills and their contingent exposure are reconciled before the
+            // first callback. A strategy can therefore cancel the parent or all of its children
+            // from any fill callback without later slices in the same fill result recreating them.
+            foreach (var fill in acceptedFills)
+            {
                 strategy.OnOrderFill(fill, ctx);
-
-                foreach (var contingentOrder in ContingentOrderManager.CreateContingentOrders(order, fill))
-                    pendingOrders.Add(contingentOrder);
             }
-
-            if (acceptedFilledQuantity == 0)
-            {
-                // Preserve trigger activation even when all generated fills were rejected.
-                pendingOrders[i] = result.WasTriggered
-                    ? order with { IsTriggered = true }
-                    : order;
-                continue;
-            }
-
-            var updatedOrder = order with
-            {
-                FilledQuantity = order.FilledQuantity + acceptedFilledQuantity,
-                Status = order.RemainingQuantity - Math.Abs(acceptedFilledQuantity) == 0
-                    ? OrderStatus.Filled
-                    : OrderStatus.PartiallyFilled,
-                IsTriggered = result.UpdatedOrder.IsTriggered
-            };
-
-            if (updatedOrder.IsComplete)
-            {
-                filled.Add(order.OrderId);
-                continue;
-            }
-
-            pendingOrders[i] = updatedOrder;
         }
+    }
 
-        pendingOrders.RemoveAll(o =>
-            filled.Contains(o.OrderId) ||
-            o.Status is OrderStatus.Cancelled or OrderStatus.Expired or OrderStatus.Rejected ||
-            (o.Status == OrderStatus.Filled && o.IsComplete));
+    private static Order BuildAuthoritativeOrderState(
+        Order originalOrder,
+        Order modelUpdatedOrder,
+        long acceptedFilledQuantity,
+        int proposedFillCount)
+    {
+        // When the fill model did not propose a fill, its updated state is authoritative for
+        // lifecycle-only transitions such as a stop trigger or an IOC/FOK cancellation.
+        if (proposedFillCount == 0)
+            return modelUpdatedOrder;
+
+        var filledQuantity = originalOrder.FilledQuantity + acceptedFilledQuantity;
+        var remainingQuantity = Math.Max(0L, Math.Abs(modelUpdatedOrder.Quantity) - Math.Abs(filledQuantity));
+        var status = modelUpdatedOrder.Status switch
+        {
+            OrderStatus.Cancelled or OrderStatus.Expired or OrderStatus.Rejected => modelUpdatedOrder.Status,
+            _ when remainingQuantity == 0 => OrderStatus.Filled,
+            _ when filledQuantity != 0 => OrderStatus.PartiallyFilled,
+            _ => originalOrder.Status
+        };
+
+        return modelUpdatedOrder with
+        {
+            FilledQuantity = filledQuantity,
+            Status = status
+        };
+    }
+
+    private static bool ShouldRemoveOrder(
+        Order originalOrder,
+        OrderFillResult result,
+        Order updatedOrder,
+        bool allProposedFillsAccepted)
+    {
+        if (updatedOrder.Status is OrderStatus.Cancelled or OrderStatus.Expired or OrderStatus.Rejected)
+            return true;
+        if (updatedOrder.IsComplete)
+            return true;
+        if (originalOrder.TimeInForce is TimeInForce.ImmediateOrCancel or TimeInForce.FillOrKill)
+            return true;
+        if (!result.RemoveOrder)
+            return false;
+
+        // For ordinary orders, a model's "complete" removal cannot be applied when the portfolio
+        // rejected any proposed fill; the accepted remainder must stay working.
+        return allProposedFillsAccepted;
+    }
+
+    private static Order ApplyTimeInForceTerminalState(Order originalOrder, Order updatedOrder)
+    {
+        if (originalOrder.TimeInForce is not (TimeInForce.ImmediateOrCancel or TimeInForce.FillOrKill))
+            return updatedOrder;
+        if (updatedOrder.IsComplete || updatedOrder.Status is OrderStatus.Rejected or OrderStatus.Expired)
+            return updatedOrder;
+
+        return updatedOrder with { Status = OrderStatus.Cancelled };
     }
 
     private static void ProcessDayEnd(
         DateOnly date,
         SimulatedPortfolio portfolio,
-        List<Order> pendingOrders,
         BacktestContext ctx,
         IBacktestStrategy strategy,
         List<PortfolioSnapshot> snapshots,
@@ -550,17 +676,20 @@ public sealed class BacktestEngine(
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        var ordersAtStartOfDayEnd = ctx.GetWorkingOrdersSnapshot();
         portfolio.AccrueDailyInterest(date);
         ctx.CurrentDate = date;
         strategy.OnDayEnd(date, ctx);
 
         // Delisting sweep runs before the snapshot so forced liquidations are reflected in the
         // day's equity instead of carrying a stale mark forward.
-        delistingMonitor.ProcessDayEnd(date, portfolio, pendingOrders, allFills, logger);
+        delistingMonitor.ProcessDayEnd(date, portfolio, ctx, allFills, logger);
 
-        for (var i = pendingOrders.Count - 1; i >= 0; i--)
+        foreach (var orderAtStart in ordersAtStartOfDayEnd)
         {
-            if (pendingOrders[i].TimeInForce != TimeInForce.Day)
+            if (!ctx.TryGetWorkingOrder(orderAtStart.OrderId, out var order))
+                continue;
+            if (order.TimeInForce != TimeInForce.Day)
                 continue;
 
             // Under next-bar timing a Day order signalled on day N is intended for the next
@@ -569,15 +698,15 @@ public sealed class BacktestEngine(
             if (fillTiming == FillTiming.NextBar)
             {
                 var hadEligibleEventToday =
-                    lastEventTimestamps.TryGetValue(pendingOrders[i].Symbol, out var lastEventAt) &&
+                    lastEventTimestamps.TryGetValue(order.Symbol, out var lastEventAt) &&
                     DateOnly.FromDateTime(lastEventAt.UtcDateTime) == date &&
-                    lastEventAt > pendingOrders[i].SubmittedAt;
+                    lastEventAt > order.SubmittedAt;
 
                 if (!hadEligibleEventToday)
                     continue;
             }
 
-            pendingOrders.RemoveAt(i);
+            ctx.RemoveWorkingOrder(order.OrderId);
         }
 
         var ts = new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
@@ -999,7 +1128,7 @@ internal sealed class RollingMetricsState
             var mean = _sumExcess / n;
             var variance = (_sumSqExcess / n) - (mean * mean);
             var stdDev = variance > 0 ? Math.Sqrt(variance) : 0;
-            sharpe = stdDev > 0 ? mean / stdDev * Math.Sqrt(252) : 0;
+            sharpe = stdDev > 0 ? mean / stdDev * Math.Sqrt(365) : 0;
         }
 
         var drawdownPct = _peakEquity > 0

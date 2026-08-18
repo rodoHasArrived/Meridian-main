@@ -36,7 +36,8 @@ internal sealed class InProcessQuantScriptExecutor(
         var wallClock = Stopwatch.StartNew();
         var compileTime = TimeSpan.Zero;
         var runtimeDiagnostics = new List<ScriptDiagnostic>();
-        var continuationDiagnostics = new List<ScriptDiagnostic>();
+        var compilationErrors = new List<ScriptDiagnostic>();
+        var compilationWarnings = new List<ScriptDiagnostic>();
         string? runtimeError = null;
         var plotQueue = new PlotQueue();
         ScriptState<object>? state = null;
@@ -64,9 +65,13 @@ internal sealed class InProcessQuantScriptExecutor(
 
                     if (!compilation.Success)
                     {
-                        continuationDiagnostics.AddRange(compilation.Diagnostics);
+                        compilationErrors.AddRange(compilation.Diagnostics.Where(IsError));
+                        compilationWarnings.AddRange(compilation.Diagnostics.Where(IsWarning));
                         break;
                     }
+
+                    if (isCurrentCell)
+                        compilationWarnings.AddRange(compilation.Diagnostics.Where(IsWarning));
 
                     var dataProxy = new DataProxy(dataContext, () => ct);
                     var backtestProxy = new BacktestProxy(backtestEngine, options, () => ct);
@@ -79,7 +84,7 @@ internal sealed class InProcessQuantScriptExecutor(
                     if (!options.EnableUnsafeScripts &&
                         RoslynScriptCompiler.TryCreateSafeModeDiagnostic(cell.Source) is { } safeModeDiagnostic)
                     {
-                        continuationDiagnostics.Add(safeModeDiagnostic);
+                        compilationErrors.Add(safeModeDiagnostic);
                         break;
                     }
 
@@ -90,10 +95,21 @@ internal sealed class InProcessQuantScriptExecutor(
                     }
                     catch (CompilationErrorException ex)
                     {
-                        continuationDiagnostics.AddRange(ex.Diagnostics
-                            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-                            .Select(MapDiagnostic));
+                        var diagnostics = ex.Diagnostics
+                            .Where(static diagnostic => diagnostic.Severity is DiagnosticSeverity.Error or DiagnosticSeverity.Warning)
+                            .Select(MapDiagnostic)
+                            .ToList();
+                        compilationErrors.AddRange(diagnostics.Where(IsError));
+                        compilationWarnings.AddRange(diagnostics.Where(IsWarning));
                         break;
+                    }
+
+                    if (isCurrentCell)
+                    {
+                        compilationWarnings.AddRange(state.Script.GetCompilation()
+                            .GetDiagnostics(ct)
+                            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Warning)
+                            .Select(MapDiagnostic));
                     }
                 }
 
@@ -119,18 +135,23 @@ internal sealed class InProcessQuantScriptExecutor(
         var plots = plotQueue.DrainRemaining();
         var metrics = globals?.DrainMetrics() ?? Array.Empty<KeyValuePair<string, string>>();
         var capturedBacktests = globals?.Backtest.DrainCapturedResults() ?? Array.Empty<BacktestResult>();
-        var capturedFills = globals?.Backtest.DrainCapturedFills() ?? [];
-        IReadOnlyList<ScriptTradeResult> trades = capturedFills.Count == 0
+        _ = globals?.Backtest.DrainCapturedFills();
+        IReadOnlyList<ScriptTradeResult> trades = capturedBacktests.Count == 0
             ? Array.Empty<ScriptTradeResult>()
-            : capturedFills
-                .OrderBy(static fill => fill.FilledAt)
-                .Select(static fill => new ScriptTradeResult(
-                    fill.FilledAt,
-                    fill.Symbol,
-                    fill.FilledQuantity >= 0 ? "Buy" : "Sell",
-                    Math.Abs(fill.FilledQuantity),
-                    fill.FillPrice,
-                    fill.Commission))
+            : capturedBacktests
+                .SelectMany(static (backtest, runIndex) => backtest.Fills.Select(fill => (fill, runIndex)))
+                .OrderBy(static item => item.fill.FilledAt)
+                .ThenBy(static item => item.runIndex)
+                .Select(static item => new ScriptTradeResult(
+                    item.fill.FilledAt,
+                    item.fill.Symbol,
+                    item.fill.FilledQuantity >= 0 ? "Buy" : "Sell",
+                    Math.Abs(item.fill.FilledQuantity),
+                    item.fill.FillPrice,
+                    item.fill.Commission,
+                    item.fill.FillId,
+                    item.fill.OrderId,
+                    item.runIndex))
                 .ToList();
 
         var outputItemsCount = metrics.Count + plots.Count + capturedBacktests.Count + trades.Count;
@@ -157,14 +178,14 @@ internal sealed class InProcessQuantScriptExecutor(
 
         var success = state is not null &&
                       runtimeError is null &&
-                      continuationDiagnostics.Count == 0 &&
+                      compilationErrors.Count == 0 &&
                       runtimeDiagnostics.Count == 0;
         return new ScriptRunResult(
             Success: success,
             Elapsed: wallClock.Elapsed,
             CompileTime: replayCells.Count == 0 ? compileTime : TimeSpan.Zero,
             PeakMemoryBytes: 0,
-            CompilationErrors: continuationDiagnostics,
+            CompilationErrors: compilationErrors,
             RuntimeDiagnostics: runtimeDiagnostics,
             RuntimeError: runtimeError,
             ConsoleOutput: globals?.DrainConsoleOutput() ?? string.Empty,
@@ -173,7 +194,8 @@ internal sealed class InProcessQuantScriptExecutor(
             Trades: trades,
             CapturedBacktests: capturedBacktests,
             RuntimeParameters: globals?.SnapshotRuntimeParameters() ?? Array.Empty<ParameterDescriptor>(),
-            Checkpoint: null);
+            Checkpoint: null,
+            CompilationWarnings: compilationWarnings);
     }
 
     private static QuantScriptOptions CreateOptions(WorkerRunOptions options)
@@ -201,9 +223,15 @@ internal sealed class InProcessQuantScriptExecutor(
     {
         var lineSpan = diagnostic.Location.GetLineSpan();
         return new ScriptDiagnostic(
-            "Error",
+            diagnostic.Severity.ToString(),
             diagnostic.GetMessage(),
             lineSpan.StartLinePosition.Line + 1,
             lineSpan.StartLinePosition.Character + 1);
     }
+
+    private static bool IsError(ScriptDiagnostic diagnostic)
+        => string.Equals(diagnostic.Severity, "Error", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsWarning(ScriptDiagnostic diagnostic)
+        => string.Equals(diagnostic.Severity, "Warning", StringComparison.OrdinalIgnoreCase);
 }

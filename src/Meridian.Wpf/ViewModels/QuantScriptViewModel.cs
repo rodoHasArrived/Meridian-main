@@ -96,7 +96,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         _logger = logger;
 
         RunScriptCommand = new AsyncRelayCommand(RunCurrentCellAsync, () => CanRun);
-        RunAllCommand = new AsyncRelayCommand(RunAllAsync, () => !IsRunning && NotebookCells.Count > 0);
+        RunAllCommand = new AsyncRelayCommand(RunAllAsync, () => CanRunAll);
         RunAndAdvanceCommand = new AsyncRelayCommand(RunAndAdvanceAsync, () => CanRun);
         StopCommand = new RelayCommand(StopRunning, () => IsRunning);
         NewScriptCommand = new RelayCommand(NewScript, () => !IsRunning);
@@ -136,6 +136,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(CanDeleteCell));
             NotifyCommandStateChanged();
         };
+        Parameters.CollectionChanged += OnParametersCollectionChanged;
 
         LoadTemplates();
         InitializeDefaultDocument();
@@ -315,6 +316,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             RaisePropertyChanged();
 
             RaisePropertyChanged(nameof(CanRun));
+            RaisePropertyChanged(nameof(CanRunAll));
             RaisePropertyChanged(nameof(CanDeleteCell));
             NotifyCommandStateChanged();
         }
@@ -344,7 +346,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         private set => SetRunStateSectionProperty(RunStateSection.MemoryText, text => RunStateSection.MemoryText = text, value);
     }
 
-    public bool CanRun => !IsRunning && SelectedCell is not null;
+    public bool CanRun => !IsRunning && SelectedCell is not null && Parameters.All(static parameter => parameter.IsValid);
+    public bool CanRunAll => !IsRunning && NotebookCells.Count > 0 && Parameters.All(static parameter => parameter.IsValid);
     public int ActiveResultsTab
     {
         get => RunStateSection.ActiveResultsTab;
@@ -436,7 +439,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     private async Task RunCurrentCellAsync(CancellationToken ct)
     {
-        if (!ValidateToolbarContext())
+        if (!ValidateToolbarContext() || !ValidateParameters())
             return;
 
         if (SelectedCell is null)
@@ -452,7 +455,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     private async Task RunAllAsync(CancellationToken ct)
     {
-        if (!ValidateToolbarContext())
+        if (!ValidateToolbarContext() || !ValidateParameters())
             return;
 
         if (NotebookCells.Count == 0)
@@ -470,7 +473,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     private async Task RunAndAdvanceAsync(CancellationToken ct)
     {
-        if (!ValidateToolbarContext())
+        if (!ValidateToolbarContext() || !ValidateParameters())
             return;
 
         if (SelectedCell is null)
@@ -518,8 +521,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
                     AppendConsole($"# {cell.Title}", ConsoleEntryKind.Separator);
 
                 var result = checkpoint is null
-                    ? await _runner.RunAsync(cell.Source, parameters, ct)
-                    : await _runner.ContinueWithAsync(cell.Source, checkpoint, parameters, ct);
+                    ? await _runner.RunAsync(NormalizeNotebookCellSource(cell.Source), parameters, ct)
+                    : await _runner.ContinueWithAsync(NormalizeNotebookCellSource(cell.Source), checkpoint, parameters, ct);
 
                 ApplyResult(result);
 
@@ -615,6 +618,12 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         foreach (var diagnostic in result.CompilationErrors)
             AppendConsole($"[{diagnostic.Line}:{diagnostic.Column}] {diagnostic.Message}", ConsoleEntryKind.Error);
 
+        foreach (var warning in result.CompilationWarnings ?? Array.Empty<ScriptDiagnostic>())
+        {
+            AppendConsole($"[{warning.Line}:{warning.Column}] {warning.Message}", ConsoleEntryKind.Warning);
+            Diagnostics.Add(new DiagnosticEntry("Compilation warning", warning.Message));
+        }
+
         foreach (var runtimeDiagnostic in result.RuntimeDiagnostics)
         {
             AppendConsole($"[{runtimeDiagnostic.Severity}] {runtimeDiagnostic.Message}", ConsoleEntryKind.Error);
@@ -638,7 +647,10 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
                 trade.Quantity,
                 trade.Price,
                 trade.Commission,
-                trade.Side));
+                trade.Side,
+                trade.FillId,
+                trade.OrderId,
+                trade.BacktestRunIndex));
         }
 
         ActiveResultsTab = ResolvePreferredResultsTab();
@@ -1174,6 +1186,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             }
         }
 
+        foreach (var parameter in Parameters)
+            parameter.PropertyChanged -= OnParameterPropertyChanged;
         Parameters.Clear();
         foreach (var parameter in merged)
             Parameters.Add(parameter);
@@ -1219,6 +1233,9 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     private IReadOnlyDictionary<string, object?> BuildParameterDictionary()
     {
+        if (Parameters.Any(static parameter => !parameter.IsValid))
+            throw new InvalidOperationException("QuantScript cannot run while one or more parameter values are invalid.");
+
         var parameters = Parameters.ToDictionary(
             parameter => parameter.Name,
             parameter => parameter.ParsedValue,
@@ -1232,6 +1249,23 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         parameters["context.interval"] = NormalizeInterval(SelectedInterval);
         return parameters;
     }
+
+    private bool ValidateParameters()
+    {
+        var invalid = Parameters.Where(static parameter => !parameter.IsValid).ToList();
+        if (invalid.Count == 0)
+            return true;
+
+        StatusText = invalid.Count == 1
+            ? $"Invalid parameter: {invalid[0].Label}."
+            : $"{invalid.Count} parameter values are invalid.";
+        Diagnostics.Add(new DiagnosticEntry("Validation", StatusText));
+        ActiveResultsTab = 2;
+        return false;
+    }
+
+    private static string NormalizeNotebookCellSource(string? source)
+        => string.IsNullOrWhiteSpace(source) ? "// Empty notebook cell" : source;
 
     private static string NormalizeInterval(string? interval)
     {
@@ -1452,6 +1486,35 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         MoveCellDownCommand.NotifyCanExecuteChanged();
         DeleteCellCommand.NotifyCanExecuteChanged();
         TemplatesCommand.NotifyCanExecuteChanged();
+    }
+
+    private void OnParametersCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if (e.OldItems is not null)
+        {
+            foreach (ParameterViewModel parameter in e.OldItems)
+                parameter.PropertyChanged -= OnParameterPropertyChanged;
+        }
+
+        if (e.NewItems is not null)
+        {
+            foreach (ParameterViewModel parameter in e.NewItems)
+                parameter.PropertyChanged += OnParameterPropertyChanged;
+        }
+
+        RaisePropertyChanged(nameof(CanRun));
+        RaisePropertyChanged(nameof(CanRunAll));
+        NotifyCommandStateChanged();
+    }
+
+    private void OnParameterPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is not (nameof(ParameterViewModel.IsValid) or nameof(ParameterViewModel.RawValue)))
+            return;
+
+        RaisePropertyChanged(nameof(CanRun));
+        RaisePropertyChanged(nameof(CanRunAll));
+        NotifyCommandStateChanged();
     }
 
     private void NotifyHistoryCommandStateChanged()

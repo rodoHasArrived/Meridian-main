@@ -276,6 +276,7 @@ export function useQuantLabScreenViewModel(
   useEffect(() => {
     if (!source.trim()) {
       setDetectedParams([]);
+      setParamValues({});
       setParameterPhase("idle");
       return;
     }
@@ -284,14 +285,15 @@ export function useQuantLabScreenViewModel(
     let requestStarted = false;
     const isInitialScan = !initialParameterScanScheduledRef.current;
     initialParameterScanScheduledRef.current = true;
+    setDetectedParams([]);
     setParameterPhase("extracting");
     const timer = window.setTimeout(() => {
       requestStarted = true;
       services.extractParameters(source)
         .then((response) => {
           if (cancelled) return;
-          setDetectedParams((prev) => mergeQuantParameters(prev, response.parameters));
-          setParamValues((prev) => initializeNewParameterValues(prev, response.parameters));
+          setDetectedParams(response.parameters);
+          setParamValues((prev) => reconcileQuantParameterValues(prev, response.parameters));
           setParameterPhase(response.parameters.length > 0 ? "ready" : "idle");
         })
         .catch(() => {
@@ -311,11 +313,12 @@ export function useQuantLabScreenViewModel(
 
   useEffect(() => {
     const runtimeParameters = run.result?.runtimeParameters;
-    if (!runtimeParameters || runtimeParameters.length === 0) return;
+    if (!runtimeParameters || runtimeParameters.length === 0 ||
+        run.sourceChangedSinceRun === true || run.submittedSource !== sourceRef.current) return;
     setDetectedParams((prev) => mergeQuantParameters(prev, runtimeParameters));
-    setParamValues((prev) => initializeNewParameterValues(prev, runtimeParameters));
+    setParamValues((values) => initializeNewParameterValues(values, runtimeParameters));
     setParameterPhase("ready");
-  }, [run.result]);
+  }, [run.result, run.sourceChangedSinceRun, run.submittedSource]);
 
   const runScriptCommand = useCallback(async () => {
     const validation = validateQuantSource(source);
@@ -458,6 +461,15 @@ export function initializeNewParameterValues(
   return changed ? next : existing;
 }
 
+export function reconcileQuantParameterValues(
+  existing: Record<string, string>,
+  params: QuantParameter[]
+): Record<string, string> {
+  const names = new Set(params.map((parameter) => parameter.name));
+  const retained = Object.fromEntries(Object.entries(existing).filter(([name]) => names.has(name)));
+  return initializeNewParameterValues(retained, params);
+}
+
 export function buildQuantParameters(
   params: QuantParameter[],
   values: Record<string, string>
@@ -466,20 +478,47 @@ export function buildQuantParameters(
   for (const parameter of params) {
     const raw = values[parameter.name];
     if (raw === undefined || raw === "") {
-      result[parameter.name] = null;
       continue;
     }
     switch (parameter.typeName) {
       case "bool":
+        if (raw !== "true" && raw !== "false") {
+          throw new Error(`${parameter.label} must be true or false.`);
+        }
         result[parameter.name] = raw === "true";
         break;
-      case "int":
-      case "long":
-      case "double":
-      case "float":
-      case "decimal": {
+      case "int": {
+        if (!/^[+-]?\d+$/.test(raw)) {
+          throw new Error(`${parameter.label} must be a whole number.`);
+        }
         const numericValue = Number(raw);
-        result[parameter.name] = Number.isFinite(numericValue) ? numericValue : null;
+        if (!Number.isInteger(numericValue) || numericValue < -2147483648 || numericValue > 2147483647) {
+          throw new Error(`${parameter.label} is outside the Int32 range.`);
+        }
+        assertQuantParameterBounds(parameter, numericValue);
+        result[parameter.name] = numericValue;
+        break;
+      }
+      case "long": {
+        const canonical = canonicalInt64(raw, parameter.label);
+        assertQuantParameterBounds(parameter, Number(canonical));
+        result[parameter.name] = canonical;
+        break;
+      }
+      case "double":
+      case "float": {
+        const numericValue = Number(raw);
+        if (!Number.isFinite(numericValue) || (parameter.typeName === "float" && Math.abs(numericValue) > 3.4028234663852886e38)) {
+          throw new Error(`${parameter.label} must be a finite ${parameter.typeName} value.`);
+        }
+        assertQuantParameterBounds(parameter, numericValue);
+        result[parameter.name] = numericValue;
+        break;
+      }
+      case "decimal": {
+        const canonical = canonicalDecimal(raw, parameter.label);
+        assertQuantParameterBounds(parameter, Number(canonical));
+        result[parameter.name] = canonical;
         break;
       }
       default:
@@ -487,6 +526,54 @@ export function buildQuantParameters(
     }
   }
   return result;
+}
+
+const INT64_MIN = -9223372036854775808n;
+const INT64_MAX = 9223372036854775807n;
+const DECIMAL_MAX_COEFFICIENT = 79228162514264337593543950335n;
+
+function canonicalInt64(raw: string, label: string): string {
+  const trimmed = raw.trim();
+  if (!/^[+-]?\d+$/.test(trimmed)) {
+    throw new Error(`${label} must be a whole number.`);
+  }
+  const value = BigInt(trimmed);
+  if (value < INT64_MIN || value > INT64_MAX) {
+    throw new Error(`${label} is outside the Int64 range.`);
+  }
+  return value.toString();
+}
+
+function canonicalDecimal(raw: string, label: string): string {
+  const trimmed = raw.trim();
+  const match = /^([+-]?)(\d+)(?:\.(\d+))?$/.exec(trimmed);
+  if (!match) {
+    throw new Error(`${label} must be a decimal number without exponent notation.`);
+  }
+
+  const negative = match[1] === "-";
+  const integer = (match[2] ?? "0").replace(/^0+(?=\d)/, "");
+  const fraction = (match[3] ?? "").replace(/0+$/, "");
+  if (fraction.length > 28) {
+    throw new Error(`${label} has more than 28 decimal places.`);
+  }
+
+  const coefficientText = `${integer}${fraction}`.replace(/^0+/, "") || "0";
+  if (BigInt(coefficientText) > DECIMAL_MAX_COEFFICIENT) {
+    throw new Error(`${label} is outside the Decimal range.`);
+  }
+
+  const magnitude = fraction.length > 0 ? `${integer}.${fraction}` : integer;
+  return negative && coefficientText !== "0" ? `-${magnitude}` : magnitude;
+}
+
+function assertQuantParameterBounds(parameter: QuantParameter, value: number): void {
+  if (parameter.min !== null && value < parameter.min) {
+    throw new Error(`${parameter.label} must be at least ${parameter.min.toString()}.`);
+  }
+  if (parameter.max !== null && value > parameter.max) {
+    throw new Error(`${parameter.label} must be at most ${parameter.max.toString()}.`);
+  }
 }
 
 export function validateQuantSource(source: string): string | null {
@@ -755,6 +842,9 @@ export function buildQuantTradeLedgerState(
 }
 
 export function buildQuantTradeRowId(trade: QuantTrade, index: number): string {
+  if (trade.fillId.trim()) {
+    return `quant-trade-${trade.fillId.trim().toLowerCase()}`;
+  }
   const raw = `${trade.timestamp}-${trade.symbol}-${trade.side}-${index}`;
   const stable = raw.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   return `quant-trade-${stable || index.toString()}`;
@@ -779,6 +869,9 @@ function buildQuantTradeDetail(
     statusLabel: row.side.toLowerCase().includes("buy") ? "BUY" : row.side.toLowerCase().includes("sell") ? "SELL" : "TRADE",
     statusTone: row.side.toLowerCase().includes("buy") ? "success" : row.side.toLowerCase().includes("sell") ? "warning" : "default",
     fields: [
+      { label: "Fill ID", value: trade.fillId },
+      { label: "Order ID", value: trade.orderId },
+      { label: "Backtest run", value: (trade.backtestRunIndex + 1).toString() },
       { label: "Symbol", value: trade.symbol },
       { label: "Side", value: row.side },
       { label: "Timestamp", value: row.timestamp },
@@ -985,6 +1078,7 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
   const tradeCount = result.trades.length;
   const diagnosticSections = [
     { id: "compilation", label: "Compilation errors", entries: result.compilationErrors, tone: "danger" as const },
+    { id: "compilation-warnings", label: "Compilation warnings", entries: result.compilationWarnings, tone: "warning" as const },
     { id: "runtime", label: "Runtime diagnostics", entries: result.runtimeDiagnostics, tone: "warning" as const }
   ].filter((section) => section.entries.length > 0);
   const hasEvidence = hasMetrics || hasConsoleOutput || plotCount > 0 || tradeCount > 0 || diagnosticSections.length > 0;

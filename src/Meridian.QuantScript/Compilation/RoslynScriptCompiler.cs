@@ -64,7 +64,7 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
         "Microsoft.Win32"
     ];
 
-    private readonly ConcurrentDictionary<string, Script<object>> _cache = new();
+    private readonly ConcurrentDictionary<string, CachedCompilation> _cache = new();
     // Tracks insertion order so the cache can evict oldest-first once it exceeds the configured
     // bound; each cached Script<object> retains a Roslyn compilation graph.
     private readonly ConcurrentQueue<string> _cacheInsertionOrder = new();
@@ -88,10 +88,10 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
 
         var key = ComputeHash(source);
 
-        if (_cache.ContainsKey(key))
+        if (_cache.TryGetValue(key, out var cached))
         {
             _logger.LogDebug("Script cache hit for hash {Hash}", key[..8]);
-            return new ScriptCompilationResult(true, TimeSpan.Zero, Array.Empty<ScriptDiagnostic>());
+            return new ScriptCompilationResult(true, TimeSpan.Zero, cached.Diagnostics);
         }
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -113,28 +113,31 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
                 var diagnostics = compilation.GetDiagnostics(cts.Token);
                 sw.Stop();
 
-                var errors = diagnostics
-                    .Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error)
+                var mappedDiagnostics = diagnostics
+                    .Where(static diagnostic => diagnostic.Severity is DiagnosticSeverity.Error or DiagnosticSeverity.Warning)
                     .Select(d =>
                     {
                         var loc = d.Location.GetLineSpan();
                         return new ScriptDiagnostic(
-                            "Error",
+                            d.Severity.ToString(),
                             d.GetMessage(),
                             loc.StartLinePosition.Line + 1,
                             loc.StartLinePosition.Character + 1);
                     })
                     .ToList();
+                var errors = mappedDiagnostics
+                    .Where(static diagnostic => string.Equals(diagnostic.Severity, "Error", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
 
                 if (errors.Count > 0)
                 {
                     _logger.LogWarning("Script compilation failed with {Count} error(s)", errors.Count);
-                    return new ScriptCompilationResult(false, sw.Elapsed, errors);
+                    return new ScriptCompilationResult(false, sw.Elapsed, mappedDiagnostics);
                 }
 
-                CacheScript(key, script);
+                CacheScript(key, script, mappedDiagnostics);
                 _logger.LogDebug("Script compiled in {ElapsedMs}ms", sw.ElapsedMilliseconds);
-                return new ScriptCompilationResult(true, sw.Elapsed, Array.Empty<ScriptDiagnostic>());
+                return new ScriptCompilationResult(true, sw.Elapsed, mappedDiagnostics);
             }, cts.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
@@ -151,13 +154,13 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
     /// caching. Bounding is required because each <see cref="Script{TResult}"/> retains a Roslyn
     /// compilation graph, so an unbounded cache leaks memory on long-running hosts.
     /// </summary>
-    private void CacheScript(string key, Script<object> script)
+    private void CacheScript(string key, Script<object> script, IReadOnlyList<ScriptDiagnostic> diagnostics)
     {
         var max = _options.Value.MaxCachedCompilations;
         if (max <= 0)
             return;
 
-        if (!_cache.TryAdd(key, script))
+        if (!_cache.TryAdd(key, new CachedCompilation(script, diagnostics.ToArray())))
             return;
 
         _cacheInsertionOrder.Enqueue(key);
@@ -175,7 +178,7 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
     internal Script<object>? GetCachedScript(string source)
     {
         var key = ComputeHash(source);
-        return _cache.TryGetValue(key, out var script) ? script : null;
+        return _cache.TryGetValue(key, out var cached) ? cached.Script : null;
     }
 
     /// <summary>Builds (but does not cache) a Roslyn Script from source text.</summary>
@@ -666,4 +669,8 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
             _ => raw
         };
     }
+
+    private sealed record CachedCompilation(
+        Script<object> Script,
+        IReadOnlyList<ScriptDiagnostic> Diagnostics);
 }

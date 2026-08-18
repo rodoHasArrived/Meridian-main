@@ -135,7 +135,14 @@ public sealed record TradeEntry(
     decimal FilledQuantity,
     decimal FillPrice,
     decimal Commission,
-    string Side);
+    string Side,
+    Guid FillId,
+    Guid OrderId,
+    int BacktestRunIndex)
+{
+    /// <summary>One-based run number for operator-facing presentation.</summary>
+    public int BacktestRunNumber => BacktestRunIndex + 1;
+}
 
 // ── Diagnostics tab ──────────────────────────────────────────────────────────
 
@@ -376,6 +383,12 @@ public sealed class ParameterViewModel : BindableBase
 
         if (TryParseNumeric(targetType, normalized, out parsedValue))
         {
+            if (!IsWithinNumericRange(parsedValue, out errorMessage))
+            {
+                parsedValue = null;
+                return false;
+            }
+
             errorMessage = null;
             return true;
         }
@@ -395,67 +408,75 @@ public sealed class ParameterViewModel : BindableBase
     }
 
     private static bool TryParseBoolean(string rawValue, out bool value)
-    {
-        if (bool.TryParse(rawValue, out value))
-            return true;
-
-        return rawValue.ToLowerInvariant() switch
-        {
-            "1" or "yes" or "y" or "on" => (value = true) == true,
-            "0" or "no" or "n" or "off" => (value = false) == false,
-            _ => false
-        };
-    }
+        => bool.TryParse(rawValue, out value);
 
     private static bool TryParseNumeric(Type type, string rawValue, out object? value)
     {
-        var styles = NumberStyles.Number;
         var culture = CultureInfo.InvariantCulture;
         if (type == typeof(int))
         {
-            var parsed = int.TryParse(rawValue, styles, culture, out var intValue);
+            var parsed = int.TryParse(rawValue, NumberStyles.Integer, culture, out var intValue);
             value = intValue;
             return parsed;
         }
         if (type == typeof(long))
         {
-            var parsed = long.TryParse(rawValue, styles, culture, out var longValue);
+            var parsed = long.TryParse(rawValue, NumberStyles.Integer, culture, out var longValue);
             value = longValue;
             return parsed;
         }
         if (type == typeof(float))
         {
-            var parsed = float.TryParse(rawValue, styles, culture, out var floatValue);
+            var parsed = float.TryParse(rawValue, NumberStyles.Float, culture, out var floatValue) && float.IsFinite(floatValue);
             value = floatValue;
             return parsed;
         }
         if (type == typeof(double))
         {
-            var parsed = double.TryParse(rawValue, styles, culture, out var doubleValue);
+            var parsed = double.TryParse(rawValue, NumberStyles.Float, culture, out var doubleValue) && double.IsFinite(doubleValue);
             value = doubleValue;
             return parsed;
         }
         if (type == typeof(decimal))
         {
-            var parsed = decimal.TryParse(rawValue, styles, culture, out var decimalValue);
+            var parsed = decimal.TryParse(rawValue, NumberStyles.Float, culture, out var decimalValue);
             value = decimalValue;
             return parsed;
         }
         if (type == typeof(short))
         {
-            var parsed = short.TryParse(rawValue, styles, culture, out var shortValue);
+            var parsed = short.TryParse(rawValue, NumberStyles.Integer, culture, out var shortValue);
             value = shortValue;
             return parsed;
         }
         if (type == typeof(byte))
         {
-            var parsed = byte.TryParse(rawValue, styles, culture, out var byteValue);
+            var parsed = byte.TryParse(rawValue, NumberStyles.Integer, culture, out var byteValue);
             value = byteValue;
             return parsed;
         }
 
         value = null;
         return false;
+    }
+
+    private bool IsWithinNumericRange(object? value, out string? errorMessage)
+    {
+        var numericValue = Convert.ToDouble(value, CultureInfo.InvariantCulture);
+        if (numericValue < Min)
+        {
+            errorMessage = $"Value must be at least {Min.ToString(CultureInfo.InvariantCulture)}";
+            return false;
+        }
+
+        if (numericValue > Max)
+        {
+            errorMessage = $"Value must be at most {Max.ToString(CultureInfo.InvariantCulture)}";
+            return false;
+        }
+
+        errorMessage = null;
+        return true;
     }
 
     private object ConvertNumericFromDecimal(decimal value)

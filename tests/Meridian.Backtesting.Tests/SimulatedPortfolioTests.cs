@@ -68,7 +68,7 @@ public sealed class SimulatedPortfolioTests
         var cashBefore = portfolio.Cash;
         portfolio.AccrueDailyInterest(DateOnly.FromDateTime(DateTime.Today));
 
-        // Interest = -1000 * 0.05 / 252 ≈ -0.198
+        // Interest = -1000 * 0.05 / 365 ≈ -0.137
         portfolio.Cash.Should().BeLessThan(cashBefore);
     }
 

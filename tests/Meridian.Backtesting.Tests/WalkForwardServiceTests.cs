@@ -33,6 +33,33 @@ public sealed class WalkForwardServiceTests
     }
 
     [Fact]
+    public void ComputeStitchedOosMetrics_AnnualizesOnCalendarDay365Basis()
+    {
+        var from = new DateOnly(2024, 1, 1);
+        var request = CreateBaseRequest(from, from.AddDays(1));
+        var result = CreateResult(request, netPnl: 0m, dailyReturns: [0.01, -0.005]);
+        var completed = new[]
+        {
+            new WalkForwardWindowResult
+            {
+                Window = new WalkForwardWindow(0, from, from, from, from.AddDays(1)),
+                TestResult = result,
+            }
+        };
+
+        var metrics = WalkForwardService.ComputeStitchedOosMetrics(completed, annualRiskFreeRate: 0d)!;
+        var cumulative = 1.01d * 0.995d;
+
+        metrics.AnnualizedReturn.Should().BeApproximately(
+            (decimal)(Math.Pow(cumulative, 365d / 2d) - 1d),
+            0.0000001m);
+        var mean = (0.01d - 0.005d) / 2d;
+        var sampleStdDev = Math.Sqrt(
+            (Math.Pow(0.01d - mean, 2d) + Math.Pow(-0.005d - mean, 2d)) / (2d - 1d));
+        metrics.SharpeRatio.Should().BeApproximately(mean / sampleStdDev * Math.Sqrt(365d), 1e-10d);
+    }
+
+    [Fact]
     public void BuildWindows_AnchoredTraining_ExpandsTrainingFromFixedOrigin()
     {
         var windows = WalkForwardService.BuildWindows(

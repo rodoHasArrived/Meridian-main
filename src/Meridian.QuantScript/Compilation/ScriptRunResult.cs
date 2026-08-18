@@ -12,7 +12,10 @@ public sealed record ScriptTradeResult(
     string Side,
     decimal Quantity,
     decimal Price,
-    decimal Commission);
+    decimal Commission,
+    Guid FillId = default,
+    Guid OrderId = default,
+    int BacktestRunIndex = 0);
 
 /// <summary>
 /// The complete result of a single script execution run.
@@ -31,4 +34,5 @@ public sealed record ScriptRunResult(
     IReadOnlyList<ScriptTradeResult> Trades,
     IReadOnlyList<BacktestResult> CapturedBacktests,
     IReadOnlyList<ParameterDescriptor> RuntimeParameters,
-    ScriptExecutionCheckpoint? Checkpoint = null);
+    ScriptExecutionCheckpoint? Checkpoint = null,
+    IReadOnlyList<ScriptDiagnostic>? CompilationWarnings = null);

@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.Json;
 using Meridian.QuantScript.Api;
 
 namespace Meridian.QuantScript.Compilation;
@@ -99,28 +101,33 @@ public sealed class QuantScriptGlobals
     public T Param<T>(string name, T defaultValue = default!, double min = double.MinValue,
         double max = double.MaxValue, string? description = null)
     {
-        var resolved = defaultValue;
-        if (_parameters.TryGetValue(name, out var val))
+        RegisterRuntimeParameter(name, typeof(T), defaultValue, min, max, description);
+        if (!_parameters.TryGetValue(name, out var suppliedValue))
+            return defaultValue;
+
+        if (suppliedValue is null || suppliedValue is JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined })
+            throw InvalidParameter(name, typeof(T), "a null value was supplied");
+
+        object converted;
+        try
         {
-            if (val is T typed)
-            {
-                resolved = typed;
-            }
-            else if (val is not null)
-            {
-                try
-                {
-                    resolved = (T)Convert.ChangeType(val, typeof(T));
-                }
-                catch
-                {
-                    resolved = defaultValue;
-                }
-            }
+            converted = ConvertParameterExactly(suppliedValue, typeof(T));
+        }
+        catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException or JsonException)
+        {
+            throw InvalidParameter(name, typeof(T), "the supplied value is malformed, out of range, or cannot be represented exactly", ex);
         }
 
-        RegisterRuntimeParameter(name, typeof(T), defaultValue, min, max, description);
-        return resolved;
+        if (TryGetNumericValue(converted, out var numericValue) &&
+            (numericValue < min || numericValue > max))
+        {
+            throw InvalidParameter(
+                name,
+                typeof(T),
+                $"the supplied value {numericValue.ToString("R", CultureInfo.InvariantCulture)} is outside the inclusive range {min.ToString("R", CultureInfo.InvariantCulture)}..{max.ToString("R", CultureInfo.InvariantCulture)}");
+        }
+
+        return (T)converted;
     }
 
     /// <summary>Toolbar-selected symbol (normalized uppercase), if supplied by the host UI.</summary>
@@ -227,6 +234,155 @@ public sealed class QuantScriptGlobals
             _ => effectiveType.Name
         };
     }
+
+    private static object ConvertParameterExactly(object suppliedValue, Type requestedType)
+    {
+        var targetType = Nullable.GetUnderlyingType(requestedType) ?? requestedType;
+        var value = suppliedValue is JsonElement json
+            ? ConvertScalarJsonElement(json)
+            : suppliedValue;
+
+        if (value is null)
+            throw new InvalidCastException("Null parameters are not valid overrides.");
+
+        if (value is double doubleValue && !double.IsFinite(doubleValue) ||
+            value is float singleValue && !float.IsFinite(singleValue))
+        {
+            throw new OverflowException("Floating-point parameters must be finite.");
+        }
+
+        if (targetType.IsInstanceOfType(value))
+            return value;
+
+        if (targetType == typeof(string))
+            throw new InvalidCastException("Only string values can be used for string parameters.");
+
+        if (targetType == typeof(char))
+        {
+            if (value is string { Length: 1 } character)
+                return character[0];
+            throw new FormatException("Character parameters require exactly one character.");
+        }
+
+        if (targetType == typeof(bool))
+        {
+            if (value is string text && bool.TryParse(text, out var boolean))
+                return boolean;
+            throw new FormatException("Boolean parameters require true or false.");
+        }
+
+        if (targetType == typeof(DateOnly))
+            return DateOnly.ParseExact(RequireString(value), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        if (targetType == typeof(DateTime))
+            return DateTime.Parse(RequireString(value), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+        if (targetType == typeof(DateTimeOffset))
+            return DateTimeOffset.Parse(RequireString(value), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+        if (targetType == typeof(Guid))
+            return Guid.Parse(RequireString(value));
+
+        if (targetType.IsEnum)
+        {
+            var enumText = RequireString(value);
+            if (Enum.TryParse(targetType, enumText, ignoreCase: true, out var enumValue) &&
+                enumValue is not null && Enum.IsDefined(targetType, enumValue))
+            {
+                return enumValue;
+            }
+            throw new FormatException($"'{enumText}' is not a defined {targetType.Name} value.");
+        }
+
+        var textValue = FormatNumericInput(value);
+        object parsed = targetType == typeof(byte) ? byte.Parse(textValue, NumberStyles.Integer, CultureInfo.InvariantCulture)
+            : targetType == typeof(sbyte) ? sbyte.Parse(textValue, NumberStyles.Integer, CultureInfo.InvariantCulture)
+            : targetType == typeof(short) ? short.Parse(textValue, NumberStyles.Integer, CultureInfo.InvariantCulture)
+            : targetType == typeof(ushort) ? ushort.Parse(textValue, NumberStyles.Integer, CultureInfo.InvariantCulture)
+            : targetType == typeof(int) ? int.Parse(textValue, NumberStyles.Integer, CultureInfo.InvariantCulture)
+            : targetType == typeof(uint) ? uint.Parse(textValue, NumberStyles.Integer, CultureInfo.InvariantCulture)
+            : targetType == typeof(long) ? long.Parse(textValue, NumberStyles.Integer, CultureInfo.InvariantCulture)
+            : targetType == typeof(ulong) ? ulong.Parse(textValue, NumberStyles.Integer, CultureInfo.InvariantCulture)
+            : targetType == typeof(decimal) ? decimal.Parse(textValue, NumberStyles.Float, CultureInfo.InvariantCulture)
+            : targetType == typeof(double) ? ParseFiniteDouble(textValue)
+            : targetType == typeof(float) ? ParseFiniteSingle(textValue)
+            : throw new InvalidCastException($"Parameter type '{targetType.FullName}' is not supported.");
+
+        EnsureNumericConversionIsExact(value, parsed);
+        return parsed;
+    }
+
+    private static object? ConvertScalarJsonElement(JsonElement value) => value.ValueKind switch
+    {
+        JsonValueKind.String => value.GetString(),
+        JsonValueKind.True => true,
+        JsonValueKind.False => false,
+        JsonValueKind.Number => value.GetRawText(),
+        JsonValueKind.Null or JsonValueKind.Undefined => null,
+        _ => throw new JsonException("Script parameters must be scalar JSON values.")
+    };
+
+    private static string RequireString(object value)
+        => value as string ?? throw new InvalidCastException("The parameter requires a string representation.");
+
+    private static string FormatNumericInput(object value) => value switch
+    {
+        string text => text,
+        float number => number.ToString("R", CultureInfo.InvariantCulture),
+        double number => number.ToString("R", CultureInfo.InvariantCulture),
+        decimal number => number.ToString(CultureInfo.InvariantCulture),
+        IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+        _ => throw new InvalidCastException("The parameter requires a numeric scalar value.")
+    };
+
+    private static double ParseFiniteDouble(string value)
+    {
+        var parsed = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+        return double.IsFinite(parsed) ? parsed : throw new OverflowException("Floating-point parameters must be finite.");
+    }
+
+    private static float ParseFiniteSingle(string value)
+    {
+        var parsed = float.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+        return float.IsFinite(parsed) ? parsed : throw new OverflowException("Floating-point parameters must be finite.");
+    }
+
+    private static void EnsureNumericConversionIsExact(object original, object converted)
+    {
+        if (original is string)
+            return;
+
+        // Integral/decimal values converted to a binary floating-point target must round-trip.
+        if (converted is double doubleValue && original is not double)
+        {
+            var roundTripped = Convert.ToDecimal(doubleValue, CultureInfo.InvariantCulture);
+            var originalDecimal = Convert.ToDecimal(original, CultureInfo.InvariantCulture);
+            if (roundTripped != originalDecimal)
+                throw new InvalidCastException("The numeric conversion would lose precision.");
+        }
+        else if (converted is float floatValue && original is not float)
+        {
+            var roundTripped = Convert.ToDecimal(floatValue, CultureInfo.InvariantCulture);
+            var originalDecimal = Convert.ToDecimal(original, CultureInfo.InvariantCulture);
+            if (roundTripped != originalDecimal)
+                throw new InvalidCastException("The numeric conversion would lose precision.");
+        }
+    }
+
+    private static bool TryGetNumericValue(object value, out double numericValue)
+    {
+        if (value is byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal)
+        {
+            numericValue = Convert.ToDouble(value, CultureInfo.InvariantCulture);
+            return double.IsFinite(numericValue);
+        }
+
+        numericValue = default;
+        return false;
+    }
+
+    private static ArgumentException InvalidParameter(string name, Type requestedType, string detail, Exception? inner = null)
+        => new(
+            $"Script parameter '{name}' for {GetFriendlyTypeName(requestedType)} failed validation: {detail}.",
+            nameof(name),
+            inner);
 
     private string? GetStringContextValue(string key)
     {

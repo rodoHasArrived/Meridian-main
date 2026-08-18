@@ -63,6 +63,84 @@ public sealed class MultiSymbolMergeEnumeratorTests
     }
 
     [Fact]
+    public async Task MergeAsync_EventsWithinSameMillisecond_UsesFullUtcTicksBeforeStreamTieBreak()
+    {
+        var timestamp = DateTimeOffset.UnixEpoch.AddMilliseconds(10);
+        var laterFromFirstStream = MakeTradeEvent("AAPL", timestamp.AddTicks(9));
+        var earlierFromSecondStream = MakeTradeEvent("MSFT", timestamp.AddTicks(1));
+
+        var merged = new List<MarketEvent>();
+        await foreach (var evt in MultiSymbolMergeEnumerator.MergeAsync(
+                           [ToAsync([laterFromFirstStream]), ToAsync([earlierFromSecondStream])]))
+        {
+            merged.Add(evt);
+        }
+
+        merged.Should().Equal(earlierFromSecondStream, laterFromFirstStream);
+    }
+
+    [Fact]
+    public async Task MergeAsync_WhenSourceRegresses_FailsClosedWithStreamEvidence()
+    {
+        var later = MakeTradeEvent("SPY", DateTimeOffset.UnixEpoch.AddTicks(2));
+        var earlier = MakeTradeEvent("SPY", DateTimeOffset.UnixEpoch.AddTicks(1));
+
+        var act = async () =>
+        {
+            await foreach (var _ in MultiSymbolMergeEnumerator.MergeAsync([ToAsync([later, earlier])]))
+            {
+            }
+        };
+
+        await act.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*stream 0*chronological*");
+    }
+
+    [Fact]
+    public async Task MergeAsync_WhenPrimingThrows_DisposesEveryEnumeratorCreatedSoFar()
+    {
+        var first = new TrackingAsyncEnumerable(
+            [MakeTradeEvent("SPY", DateTimeOffset.UnixEpoch)]);
+        var second = new ThrowingAsyncEnumerable();
+
+        var act = async () =>
+        {
+            await foreach (var _ in MultiSymbolMergeEnumerator.MergeAsync([first, second]))
+            {
+            }
+        };
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("priming failed");
+        first.DisposeCount.Should().Be(1);
+        second.DisposeCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task MergeAsync_WhenCancelledDuringReplay_ThrowsAndDisposesEveryEnumerator()
+    {
+        var first = new TrackingAsyncEnumerable(
+            [MakeTradeEvent("AAPL", DateTimeOffset.UnixEpoch)]);
+        var second = new TrackingAsyncEnumerable(
+            [MakeTradeEvent("MSFT", DateTimeOffset.UnixEpoch.AddTicks(1))]);
+        using var cts = new CancellationTokenSource();
+
+        await using (var enumerator = MultiSymbolMergeEnumerator
+                         .MergeAsync([first, second], cts.Token)
+                         .GetAsyncEnumerator(cts.Token))
+        {
+            (await enumerator.MoveNextAsync()).Should().BeTrue();
+            cts.Cancel();
+
+            var act = async () => await enumerator.MoveNextAsync();
+            await act.Should().ThrowAsync<OperationCanceledException>();
+        }
+
+        first.DisposeCount.Should().Be(1);
+        second.DisposeCount.Should().Be(1);
+    }
+
+    [Fact]
     public async Task ApplyCorporateActionAdjustmentsAsync_MixedStream_YieldsWithoutBufferingFutureBars()
     {
         var adjustment = new TrackingCorporateActionAdjustmentService();
@@ -162,6 +240,28 @@ public sealed class MultiSymbolMergeEnumeratorTests
                 Current = events[_index];
                 return ValueTask.FromResult(true);
             }
+
+            public ValueTask DisposeAsync()
+            {
+                owner.DisposeCount++;
+                return ValueTask.CompletedTask;
+            }
+        }
+    }
+
+    private sealed class ThrowingAsyncEnumerable : IAsyncEnumerable<MarketEvent>
+    {
+        public int DisposeCount { get; private set; }
+
+        public IAsyncEnumerator<MarketEvent> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
+            new Enumerator(this);
+
+        private sealed class Enumerator(ThrowingAsyncEnumerable owner) : IAsyncEnumerator<MarketEvent>
+        {
+            public MarketEvent Current => null!;
+
+            public ValueTask<bool> MoveNextAsync() =>
+                ValueTask.FromException<bool>(new InvalidOperationException("priming failed"));
 
             public ValueTask DisposeAsync()
             {

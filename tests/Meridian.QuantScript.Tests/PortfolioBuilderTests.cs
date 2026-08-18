@@ -25,6 +25,48 @@ public sealed class PortfolioBuilderTests
         act.Should().Throw<ArgumentException>();
     }
 
+    [Fact]
+    public void Returns_DefaultsToDateIntersection_AndZeroReturnUsesUnion()
+    {
+        var first = TestPriceSeriesBuilder.Build("A", 4, startDate: new DateOnly(2024, 1, 1));
+        var second = TestPriceSeriesBuilder.Build("B", 4, startDate: new DateOnly(2024, 1, 3));
+        var portfolio = PortfolioBuilder.EqualWeight(first, second);
+
+        var intersection = portfolio.Returns();
+        var zeroReturn = portfolio.Returns(ReturnAlignmentMode.ZeroReturn);
+
+        intersection.Points.Select(static point => point.Date).Should().Equal(
+            new DateOnly(2024, 1, 4));
+        zeroReturn.Points.Select(static point => point.Date).Should().Equal(
+            new DateOnly(2024, 1, 2),
+            new DateOnly(2024, 1, 3),
+            new DateOnly(2024, 1, 4),
+            new DateOnly(2024, 1, 5),
+            new DateOnly(2024, 1, 6));
+    }
+
+    [Fact]
+    public void CustomWeight_RequiresExactSymbolCoverageFiniteWeightsAndUnitSum()
+    {
+        var first = TestPriceSeriesBuilder.Build("A", 4);
+        var second = TestPriceSeriesBuilder.Build("B", 4);
+
+        var missing = () => PortfolioBuilder.CustomWeight(
+            new Dictionary<string, double> { ["A"] = 1d }, first, second);
+        var badSum = () => PortfolioBuilder.CustomWeight(
+            new Dictionary<string, double> { ["A"] = 0.4d, ["B"] = 0.5d }, first, second);
+        var nonFinite = () => PortfolioBuilder.CustomWeight(
+            new Dictionary<string, double> { ["A"] = double.NaN, ["B"] = 1d }, first, second);
+        var longShort = PortfolioBuilder.CustomWeight(
+            new Dictionary<string, double> { ["A"] = 1.1d, ["B"] = -0.1d }, first, second);
+
+        missing.Should().Throw<ArgumentException>().WithMessage("*exactly one entry*");
+        badSum.Should().Throw<ArgumentException>().WithMessage("*sum to 1.0*");
+        nonFinite.Should().Throw<ArgumentException>().WithMessage("*finite*");
+        longShort.Weights.Should().Contain(new KeyValuePair<string, double>("A", 1.1d));
+        longShort.Weights.Should().Contain(new KeyValuePair<string, double>("B", -0.1d));
+    }
+
     // ── EfficientFrontier – basic feasibility ────────────────────────────────
 
     [Fact]
@@ -50,6 +92,22 @@ public sealed class PortfolioBuilderTests
 
         var sum = result.Weights.Values.Sum();
         sum.Should().BeApproximately(1.0, 1e-6);
+    }
+
+    [Fact]
+    public void EfficientFrontier_ZeroReturnAlignment_UsesDateUnion()
+    {
+        var first = TestPriceSeriesBuilder.Build("A", 4, startDate: new DateOnly(2024, 1, 1));
+        var second = TestPriceSeriesBuilder.Build("B", 4, startDate: new DateOnly(2024, 2, 1));
+        var constraints = new EfficientFrontierConstraints { TargetReturn = 0.0 };
+
+        var result = PortfolioBuilder.EfficientFrontier(
+            constraints,
+            ReturnAlignmentMode.ZeroReturn,
+            first,
+            second);
+
+        result.Weights.Values.Sum().Should().BeApproximately(1.0, 1e-6);
     }
 
     [Fact]

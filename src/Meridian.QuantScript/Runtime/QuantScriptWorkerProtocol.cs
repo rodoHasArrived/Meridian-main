@@ -327,7 +327,8 @@ internal sealed record WorkerScriptRunResult(
     IReadOnlyList<WorkerPlotRequest> Plots,
     IReadOnlyList<ScriptTradeResult> Trades,
     IReadOnlyList<BacktestResult> CapturedBacktests,
-    IReadOnlyList<WorkerParameterDescriptor> RuntimeParameters)
+    IReadOnlyList<WorkerParameterDescriptor> RuntimeParameters,
+    IReadOnlyList<ScriptDiagnostic>? CompilationWarnings = null)
 {
     public void Validate()
     {
@@ -340,6 +341,7 @@ internal sealed record WorkerScriptRunResult(
             throw new WorkerProtocolException("Worker result omitted one or more required collections.");
         }
         if (CompilationErrors.Any(static item => item is null) ||
+            CompilationWarnings?.Any(static item => item is null) == true ||
             RuntimeDiagnostics.Any(static item => item is null) ||
             Plots.Any(static item => item is null) ||
             Trades.Any(static item => item is null) ||
@@ -349,6 +351,7 @@ internal sealed record WorkerScriptRunResult(
             throw new WorkerProtocolException("Worker result contained a null collection item.");
         }
         if (CompilationErrors.Any(static item => item.Severity is null || item.Message is null) ||
+            CompilationWarnings?.Any(static item => item.Severity is null || item.Message is null) == true ||
             RuntimeDiagnostics.Any(static item => item.Severity is null || item.Message is null) ||
             Metrics.Any(static item => item.Key is null || item.Value is null))
         {
@@ -374,7 +377,8 @@ internal sealed record WorkerScriptRunResult(
             result.Plots.Select(WorkerPlotRequest.From).ToList(),
             result.Trades,
             result.CapturedBacktests,
-            result.RuntimeParameters.Select(WorkerParameterDescriptor.From).ToList());
+            result.RuntimeParameters.Select(WorkerParameterDescriptor.From).ToList(),
+            result.CompilationWarnings ?? Array.Empty<ScriptDiagnostic>());
 
     public ScriptRunResult ToScriptRunResult(long peakMemoryBytes, ScriptExecutionCheckpoint? checkpoint)
         => new(
@@ -391,7 +395,8 @@ internal sealed record WorkerScriptRunResult(
             Trades,
             CapturedBacktests,
             RuntimeParameters.Select(static parameter => parameter.ToParameterDescriptor()).ToList(),
-            checkpoint);
+            checkpoint,
+            CompilationWarnings ?? Array.Empty<ScriptDiagnostic>());
 }
 
 internal sealed record WorkerParameterValue(string Kind, string? Value)

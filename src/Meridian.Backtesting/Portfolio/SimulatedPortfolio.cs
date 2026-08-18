@@ -9,6 +9,7 @@ namespace Meridian.Backtesting.Portfolio;
 internal sealed class SimulatedPortfolio
 {
     private readonly BacktestLedger? _ledger;
+    private readonly ICommissionModel _commission;
     private readonly string _defaultBrokerageAccountId;
     private readonly Dictionary<string, AccountState> _accounts;
     private readonly Dictionary<string, decimal> _lastPrices = new(StringComparer.OrdinalIgnoreCase);
@@ -43,9 +44,11 @@ internal sealed class SimulatedPortfolio
         DateTimeOffset startTimestamp = default)
     {
         ArgumentNullException.ThrowIfNull(accounts);
+        ArgumentNullException.ThrowIfNull(commission);
         ArgumentException.ThrowIfNullOrWhiteSpace(defaultBrokerageAccountId);
 
         _ledger = ledger;
+        _commission = commission;
         _defaultBrokerageAccountId = defaultBrokerageAccountId.Trim();
         _accounts = accounts
             .Select(account => account.Normalize())
@@ -85,18 +88,115 @@ internal sealed class SimulatedPortfolio
 
     // ── Order fill processing ────────────────────────────────────────────────
 
-    public void ProcessFill(FillEvent fill)
+    public FillEvent ProcessFill(FillEvent fill)
     {
+        ArgumentNullException.ThrowIfNull(fill);
+        if (fill.OrderId == Guid.Empty)
+        {
+            // Administrative executions (for example forced delisting liquidations) do not
+            // originate from a brokerage order and must neither incur nor consume order fees.
+            return ProcessFill(fill, commissionQuote: null);
+        }
+
+        var commissionQuote = _commission.Quote(
+            fill.OrderId,
+            fill.Symbol,
+            fill.FilledQuantity,
+            fill.FillPrice);
+        return ProcessFill(fill, commissionQuote);
+    }
+
+    /// <summary>
+    /// Preflights an ordered set of slices for one order, including chained commission quotes,
+    /// before committing any portfolio or fee state. This is the all-or-none execution seam for
+    /// fill-or-kill orders whose liquidity spans multiple book levels.
+    /// </summary>
+    public IReadOnlyList<FillEvent> ProcessFillsAtomically(IReadOnlyList<FillEvent> fills)
+    {
+        ArgumentNullException.ThrowIfNull(fills);
+        if (fills.Count == 0)
+            return [];
+
+        var first = fills[0];
+        ArgumentNullException.ThrowIfNull(first);
+        if (first.OrderId == Guid.Empty)
+            throw new ArgumentException("Atomic fill batches require a brokerage order identifier.", nameof(fills));
+        if (first.FilledQuantity == 0)
+            throw new ArgumentException("Atomic fill batches cannot contain zero-quantity slices.", nameof(fills));
+
+        var account = ResolveBrokerageAccount(first.AccountId);
+        var accountId = account.Account.AccountId;
+        var direction = Math.Sign(first.FilledQuantity);
+        var commissionFills = new CommissionFill[fills.Count];
+        for (var index = 0; index < fills.Count; index++)
+        {
+            var fill = fills[index];
+            ArgumentNullException.ThrowIfNull(fill);
+            if (fill.OrderId != first.OrderId ||
+                !fill.Symbol.Equals(first.Symbol, StringComparison.OrdinalIgnoreCase) ||
+                Math.Sign(fill.FilledQuantity) != direction)
+            {
+                throw new ArgumentException(
+                    "Atomic fill batches must contain one order, symbol, and trade direction.",
+                    nameof(fills));
+            }
+
+            var fillAccount = ResolveBrokerageAccount(fill.AccountId);
+            if (!fillAccount.Account.AccountId.Equals(accountId, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException(
+                    "Atomic fill batches must resolve to one brokerage account.",
+                    nameof(fills));
+            }
+
+            commissionFills[index] = new CommissionFill(
+                fill.Symbol,
+                fill.FilledQuantity,
+                fill.FillPrice);
+        }
+
+        var commissionQuotes = _commission.QuoteBatch(first.OrderId, commissionFills);
+        if (commissionQuotes.Count != fills.Count)
+            throw new InvalidOperationException("Commission model returned an incomplete atomic batch quote.");
+
+        var projectedCash = account.Cash;
+        var projectedQuantity = (decimal)account.Positions.GetValueOrDefault(first.Symbol);
+        for (var index = 0; index < fills.Count; index++)
+        {
+            var fill = fills[index];
+            var quote = commissionQuotes[index];
+            ValidateCommissionQuote(fill, quote);
+
+            projectedQuantity += fill.FilledQuantity;
+            if (fill.FilledQuantity < 0 && projectedQuantity < 0m && !account.Rules.AllowShortSelling)
+                throw new InvalidOperationException($"Account '{accountId}' does not permit short selling.");
+
+            projectedCash -= fill.FilledQuantity * fill.FillPrice + quote.Amount;
+            if (projectedCash < 0m && !account.Rules.AllowMargin)
+                throw new InvalidOperationException($"Account '{accountId}' does not permit margin borrowing.");
+        }
+
+        var accepted = new List<FillEvent>(fills.Count);
+        for (var index = 0; index < fills.Count; index++)
+            accepted.Add(ProcessFill(fills[index], commissionQuotes[index]));
+        return accepted;
+    }
+
+    private FillEvent ProcessFill(FillEvent fill, CommissionQuote? commissionQuote)
+    {
+        if (commissionQuote is not null)
+            ValidateCommissionQuote(fill, commissionQuote);
         var account = ResolveBrokerageAccount(fill.AccountId);
         var accountId = account.Account.AccountId;
         var symbol = fill.Symbol;
         var qty = fill.FilledQuantity;
         var price = fill.FillPrice;
-        var commission = fill.Commission;
+        var commission = commissionQuote?.Amount ?? 0m;
+        var authoritativeFill = fill with { Commission = commission, AccountId = accountId };
 
         account.Positions.TryGetValue(symbol, out var existingQty);
 
-        if (qty < 0 && existingQty <= 0 && !account.Rules.AllowShortSelling)
+        if (qty < 0 && (decimal)existingQty + qty < 0m && !account.Rules.AllowShortSelling)
             throw new InvalidOperationException($"Account '{accountId}' does not permit short selling.");
 
         var cashImpact = -(qty * price) - commission;
@@ -126,14 +226,14 @@ internal sealed class SimulatedPortfolio
 
             var longBuyQty = existingQty >= 0 ? qty : Math.Max(qty + existingQty, 0L);
             if (longBuyQty > 0)
-                lots.AddLast(new OpenLot(Guid.NewGuid(), symbol, longBuyQty, price, fill.FilledAt, fill.FillId, account.Account.AccountId));
+                lots.AddLast(new OpenLot(Guid.NewGuid(), symbol, longBuyQty, price, authoritativeFill.FilledAt, authoritativeFill.FillId, account.Account.AccountId));
 
             account.AvgCost[symbol] = ComputeAvgCost(account, symbol);
         }
         else if (qty < 0 && existingQty > 0)
         {
             var closeQty = Math.Min(-qty, existingQty);
-            realised = RealiseLots(account, symbol, closeQty, price, fill.FilledAt, fill.FillId, fill.TargetLotId);
+            realised = RealiseLots(account, symbol, closeQty, price, authoritativeFill.FilledAt, authoritativeFill.FillId, authoritativeFill.TargetLotId);
             account.RealizedPnl[symbol] = account.RealizedPnl.GetValueOrDefault(symbol) + realised.Value;
             costBasisRemoved = closeQty * price - realised.Value;
         }
@@ -153,13 +253,13 @@ internal sealed class SimulatedPortfolio
                 account.ShortLots[symbol] = shortLots;
             }
 
-            shortLots.AddLast(new OpenLot(Guid.NewGuid(), symbol, shortOpenQty, price, fill.FilledAt, fill.FillId, account.Account.AccountId));
+            shortLots.AddLast(new OpenLot(Guid.NewGuid(), symbol, shortOpenQty, price, authoritativeFill.FilledAt, authoritativeFill.FillId, account.Account.AccountId));
         }
 
         if (qty > 0 && existingQty < 0)
         {
             var coverQty = Math.Min(qty, -existingQty);
-            (shortRealised, shortOriginalProceeds) = RealiseShortLots(account, symbol, coverQty, price, fill.FilledAt, fill.FillId, fill.TargetLotId);
+            (shortRealised, shortOriginalProceeds) = RealiseShortLots(account, symbol, coverQty, price, authoritativeFill.FilledAt, authoritativeFill.FillId, authoritativeFill.TargetLotId);
             account.RealizedPnl[symbol] = account.RealizedPnl.GetValueOrDefault(symbol) + shortRealised.Value;
         }
 
@@ -173,50 +273,76 @@ internal sealed class SimulatedPortfolio
             account.AvgCost[symbol] = ComputeAvgCost(account, symbol);
         }
 
-        _cashFlows.Add(new TradeCashFlow(fill.FilledAt, cashImpact, symbol, qty, price, accountId));
+        var tradeCashImpact = -(qty * price);
+        _cashFlows.Add(new TradeCashFlow(authoritativeFill.FilledAt, tradeCashImpact, symbol, qty, price, accountId));
 
         if (commission > 0)
-            _cashFlows.Add(new CommissionCashFlow(fill.FilledAt, -commission, symbol, fill.OrderId, accountId));
+            _cashFlows.Add(new CommissionCashFlow(authoritativeFill.FilledAt, -commission, symbol, authoritativeFill.OrderId, accountId));
 
         // Post double-entry journal entries to ledger
-        PostFillLedgerEntries(account, fill, qty, price, commission, existingQty, realised, costBasisRemoved, shortOpenQty, shortRealised, shortOriginalProceeds);
+        PostFillLedgerEntries(account, authoritativeFill, qty, price, commission, existingQty, realised, costBasisRemoved, shortOpenQty, shortRealised, shortOriginalProceeds);
         CleanupSymbolIfFlat(account, symbol);
+        if (commissionQuote is not null)
+            _commission.Commit(commissionQuote);
+        return authoritativeFill;
+    }
+
+    private static void ValidateCommissionQuote(FillEvent fill, CommissionQuote quote)
+    {
+        ArgumentNullException.ThrowIfNull(quote);
+        if (quote.OrderId != fill.OrderId ||
+            !quote.Symbol.Equals(fill.Symbol, StringComparison.OrdinalIgnoreCase) ||
+            quote.Quantity != fill.FilledQuantity ||
+            quote.FillPrice != fill.FillPrice ||
+            quote.Amount < 0m)
+        {
+            throw new InvalidOperationException("Commission quote does not match its candidate fill.");
+        }
     }
 
     public void ApplyAssetEvent(AssetEvent assetEvent)
     {
         ArgumentNullException.ThrowIfNull(assetEvent);
 
-        var account = ResolveBrokerageAccount(null);
         var symbol = assetEvent.Symbol;
         var targetSymbol = assetEvent.DestinationSymbol;
-        var existingQty = account.Positions.GetValueOrDefault(symbol);
-        var impactedUnits = existingQty;
-        decimal totalCashImpact = 0m;
-
-        if (assetEvent.HasPositionTransformation && existingQty != 0)
+        foreach (var account in _accounts.Values)
         {
-            totalCashImpact += ApplyPositionTransformation(account, assetEvent, existingQty, targetSymbol);
+            if (account.Account.Kind != FinancialAccountKind.Brokerage)
+                continue;
+
+            var existingQty = account.Positions.GetValueOrDefault(symbol);
+            if (existingQty == 0)
+                continue;
+
+            decimal totalCashImpact = 0m;
+            if (assetEvent.HasPositionTransformation)
+                totalCashImpact += ApplyPositionTransformation(account, assetEvent, existingQty, targetSymbol);
+
+            if (assetEvent.CashPerShare != 0m)
+                totalCashImpact += ApplyPerShareCashAdjustment(account, assetEvent, existingQty);
+
+            account.MarginBalance = account.Cash < 0m ? account.Cash : 0m;
+            _cashFlows.Add(new AssetEventCashFlow(
+                assetEvent.EffectiveAt,
+                totalCashImpact,
+                symbol,
+                assetEvent.EventType,
+                existingQty,
+                assetEvent.CashPerShare,
+                assetEvent.TargetSymbol,
+                assetEvent.PositionFactor,
+                assetEvent.Description)
+            {
+                AccountId = account.Account.AccountId
+            });
         }
 
-        if (assetEvent.CashPerShare != 0m && existingQty != 0)
+        if (assetEvent.HasPositionTransformation &&
+            !targetSymbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
         {
-            totalCashImpact += ApplyPerShareCashAdjustment(account, assetEvent, existingQty);
+            _lastPrices.Remove(symbol);
         }
-
-        if (account.Cash < 0)
-            account.MarginBalance = Math.Min(account.MarginBalance, account.Cash);
-
-        _cashFlows.Add(new AssetEventCashFlow(
-            assetEvent.EffectiveAt,
-            totalCashImpact,
-            symbol,
-            assetEvent.EventType,
-            impactedUnits,
-            assetEvent.CashPerShare,
-            assetEvent.TargetSymbol,
-            assetEvent.PositionFactor,
-            assetEvent.Description));
     }
 
     // ── Day-end accruals ─────────────────────────────────────────────────────
@@ -229,7 +355,7 @@ internal sealed class SimulatedPortfolio
         {
             if (account.MarginBalance < 0)
             {
-                var interest = account.MarginBalance * (decimal)(account.Rules.AnnualMarginRate / 252.0);
+                var interest = account.MarginBalance * (decimal)(account.Rules.AnnualMarginRate / 365.0);
                 account.Cash += interest;
                 account.MarginBalance = account.Cash < 0m ? account.Cash : 0m;
                 _cashFlows.Add(new MarginInterestCashFlow(ts, interest, account.MarginBalance, account.Rules.AnnualMarginRate, account.Account.AccountId));
@@ -247,7 +373,7 @@ internal sealed class SimulatedPortfolio
 
             if (account.Rules.AnnualCashInterestRate > 0 && account.Cash > 0)
             {
-                var cashInterest = account.Cash * (decimal)(account.Rules.AnnualCashInterestRate / 252.0);
+                var cashInterest = account.Cash * (decimal)(account.Rules.AnnualCashInterestRate / 365.0);
                 account.Cash += cashInterest;
                 _cashFlows.Add(new CashInterestCashFlow(ts, cashInterest, account.Rules.AnnualCashInterestRate, account.Account.AccountId));
                 _ledger?.PostLines(
@@ -270,7 +396,7 @@ internal sealed class SimulatedPortfolio
                     continue;
 
                 var shortNotional = Math.Abs(qty) * lastPrice;
-                var rebate = shortNotional * (decimal)(account.Rules.AnnualShortRebateRate / 252.0);
+                var rebate = shortNotional * (decimal)(account.Rules.AnnualShortRebateRate / 365.0);
                 account.Cash += rebate;
                 _cashFlows.Add(new ShortRebateCashFlow(ts, rebate, symbol, Math.Abs(qty), account.Rules.AnnualShortRebateRate, account.Account.AccountId));
 
@@ -317,6 +443,13 @@ internal sealed class SimulatedPortfolio
         foreach (var account in _accounts.Values)
         {
             foreach (var (sym, lots) in account.Lots)
+            {
+                if (symbol != null && !sym.Equals(symbol, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                result.AddRange(lots);
+            }
+
+            foreach (var (sym, lots) in account.ShortLots)
             {
                 if (symbol != null && !sym.Equals(symbol, StringComparison.OrdinalIgnoreCase))
                     continue;
@@ -542,7 +675,6 @@ internal sealed class SimulatedPortfolio
         account.AvgCost.Remove(symbol);
         account.Lots.Remove(symbol);
         account.ShortLots.Remove(symbol);
-        _lastPrices.Remove(symbol);
         account.RealizedPnl.Remove(symbol);
     }
 
@@ -781,7 +913,10 @@ internal sealed class SimulatedPortfolio
                 var shortMv = positions.Values.Where(position => position.Quantity < 0)
                     .Sum(position => position.NotionalValue(_lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
                 var equity = account.Cash + longMv + shortMv;
-                var openLots = account.Lots.Values.SelectMany(static l => l).ToList();
+                var openLots = account.Lots.Values
+                    .Concat(account.ShortLots.Values)
+                    .SelectMany(static lots => lots)
+                    .ToList();
                 return new FinancialAccountSnapshot(
                     account.Account.AccountId,
                     account.Account.DisplayName,
@@ -812,9 +947,13 @@ internal sealed class SimulatedPortfolio
             var lastPrice = _lastPrices.GetValueOrDefault(symbol, avgCost);
             var unrealised = (lastPrice - avgCost) * qty;
             var realised = account.RealizedPnl.GetValueOrDefault(symbol, 0m);
-            var openLots = account.Lots.TryGetValue(symbol, out var lots)
-                ? (IReadOnlyList<OpenLot>)lots.ToList()
-                : Array.Empty<OpenLot>();
+            IReadOnlyList<OpenLot> openLots;
+            if (qty < 0 && account.ShortLots.TryGetValue(symbol, out var shortLots))
+                openLots = shortLots.ToList();
+            else if (account.Lots.TryGetValue(symbol, out var lots))
+                openLots = lots.ToList();
+            else
+                openLots = Array.Empty<OpenLot>();
             result[symbol] = new Position(symbol, qty, avgCost, unrealised, realised, openLots);
         }
 

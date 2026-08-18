@@ -18,10 +18,21 @@ public sealed class BacktestProxy
     private DateOnly _from;
     private DateOnly _to;
     private decimal _initialCash = 100_000m;
-    private string _fillModel = "midpoint";
+    private ExecutionModel _executionModel = ExecutionModel.BarMidpoint;
+    private decimal _slippageBasisPoints = 5m;
+    private BacktestCommissionKind _commissionKind = BacktestCommissionKind.PerShare;
+    private decimal _commissionRate = 0.005m;
+    private decimal _commissionMinimum = 1m;
+    private decimal _commissionMaximum = decimal.MaxValue;
+    private decimal _marketImpactCoefficient = 0.1m;
+    private decimal _maxParticipationRate;
+    private decimal _orderBookQueueAheadFraction;
+    private FillTiming _fillTiming = FillTiming.NextBar;
+    private FillConservatism _fillConservatism = FillConservatism.Conservative;
     private string? _dataRoot;
     private readonly LambdaBacktestStrategy _strategy = new();
     private Func<CancellationToken> _cancellationTokenProvider;
+    private int _runActive;
 
     public BacktestProxy(
         BacktestEngine? engine,
@@ -38,8 +49,42 @@ public sealed class BacktestProxy
     public BacktestProxy To(DateOnly to) { _to = to; return this; }
     public BacktestProxy WithInitialCash(decimal cash) { _initialCash = cash; return this; }
 
-    /// <param name="model">"midpoint" | "orderbook"</param>
-    public BacktestProxy WithFillModel(string model) { _fillModel = model; return this; }
+    /// <param name="model"><c>auto</c>, <c>midpoint</c>, <c>orderbook</c>, or <c>marketimpact</c>.</param>
+    public BacktestProxy WithFillModel(string model)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(model);
+        _executionModel = model.Trim().ToLowerInvariant() switch
+        {
+            "auto" => ExecutionModel.Auto,
+            "midpoint" or "bar-midpoint" or "barmidpoint" => ExecutionModel.BarMidpoint,
+            "orderbook" or "order-book" => ExecutionModel.OrderBook,
+            "marketimpact" or "market-impact" => ExecutionModel.MarketImpact,
+            _ => throw new ArgumentException(
+                $"Unknown fill model '{model}'. Expected auto, midpoint, orderbook, or marketimpact.",
+                nameof(model))
+        };
+        return this;
+    }
+
+    public BacktestProxy WithExecutionModel(ExecutionModel model) { _executionModel = model; return this; }
+    public BacktestProxy WithSlippage(decimal basisPoints) { _slippageBasisPoints = basisPoints; return this; }
+    public BacktestProxy WithCommission(
+        BacktestCommissionKind kind,
+        decimal rate = 0.005m,
+        decimal minimum = 1m,
+        decimal maximum = decimal.MaxValue)
+    {
+        _commissionKind = kind;
+        _commissionRate = rate;
+        _commissionMinimum = minimum;
+        _commissionMaximum = maximum;
+        return this;
+    }
+    public BacktestProxy WithMarketImpactCoefficient(decimal coefficient) { _marketImpactCoefficient = coefficient; return this; }
+    public BacktestProxy WithMaxParticipationRate(decimal rate) { _maxParticipationRate = rate; return this; }
+    public BacktestProxy WithOrderBookQueueAheadFraction(decimal fraction) { _orderBookQueueAheadFraction = fraction; return this; }
+    public BacktestProxy WithFillTiming(FillTiming timing) { _fillTiming = timing; return this; }
+    public BacktestProxy WithFillConservatism(FillConservatism conservatism) { _fillConservatism = conservatism; return this; }
     public BacktestProxy WithDataRoot(string path) { _dataRoot = path; return this; }
 
     public BacktestProxy OnInitialize(Action<IBacktestContext> handler) { _strategy.SetOnInitialize(handler); return this; }
@@ -70,24 +115,53 @@ public sealed class BacktestProxy
     {
         ArgumentNullException.ThrowIfNull(_engine);
 
-        var request = new BacktestRequest(
-            From: _from,
-            To: _to,
-            Symbols: _symbols.Length > 0 ? _symbols : null,
-            InitialCash: _initialCash,
-            DataRoot: _dataRoot ?? _options.DefaultDataRoot);
+        if (Interlocked.CompareExchange(ref _runActive, 1, 0) != 0)
+            throw new InvalidOperationException("This Backtest instance already has a run in progress.");
+
+        var request = BuildRequest();
 
         IProgress<BacktestProgressEvent>? progress = onProgress is null
             ? null
             : new Progress<BacktestProgressEvent>(onProgress);
 
-        var result = await _engine.RunAsync(request, _strategy, progress, _cancellationTokenProvider()).ConfigureAwait(false);
-        _strategy.SetResult(result);
-        _capturedResults.Add(result);
-        _capturedFills.Clear();
-        _capturedFills.AddRange(result.Fills);
-        return result;
+        _strategy.BeginRun();
+        try
+        {
+            var result = await _engine.RunAsync(request, _strategy, progress, _cancellationTokenProvider()).ConfigureAwait(false);
+            _capturedResults.Add(result);
+            _capturedFills.Clear();
+            _capturedFills.AddRange(result.Fills);
+            _strategy.CompleteRun(result);
+            return result;
+        }
+        catch
+        {
+            _strategy.AbortRun();
+            throw;
+        }
+        finally
+        {
+            Volatile.Write(ref _runActive, 0);
+        }
     }
+
+    internal BacktestRequest BuildRequest() => new(
+        From: _from,
+        To: _to,
+        Symbols: _symbols.Length > 0 ? _symbols : null,
+        InitialCash: _initialCash,
+        DataRoot: _dataRoot ?? _options.DefaultDataRoot,
+        DefaultExecutionModel: _executionModel,
+        SlippageBasisPoints: _slippageBasisPoints,
+        CommissionKind: _commissionKind,
+        CommissionRate: _commissionRate,
+        CommissionMinimum: _commissionMinimum,
+        CommissionMaximum: _commissionMaximum,
+        MarketImpactCoefficient: _marketImpactCoefficient,
+        MaxParticipationRate: _maxParticipationRate,
+        OrderBookQueueAheadFraction: _orderBookQueueAheadFraction,
+        FillTiming: _fillTiming,
+        FillConservatism: _fillConservatism);
 
     internal IReadOnlyList<BacktestResult> DrainCapturedResults()
     {

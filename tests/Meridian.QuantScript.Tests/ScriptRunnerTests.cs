@@ -700,6 +700,24 @@ public sealed class ScriptRunnerTests
     }
 
     [Fact]
+    public async Task ContinueWithAsync_CompilerWarning_RemainsSeparateFromErrors()
+    {
+        var runner = BuildRunner();
+        var first = await runner.RunAsync("var x = 41;", NoParams);
+
+        var second = await runner.ContinueWithAsync(
+            "#warning continuation-warning\nx += 1; Print(x);",
+            first.Checkpoint!,
+            NoParams);
+
+        second.Success.Should().BeTrue();
+        second.CompilationErrors.Should().BeEmpty();
+        second.CompilationWarnings.Should().Contain(diagnostic =>
+            diagnostic.Severity == "Warning" &&
+            diagnostic.Message.Contains("continuation-warning", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task ContinueWithAsync_CompileTime_RemainsZeroWhenRuntimeWorkExists()
     {
         var runner = BuildRunner();

@@ -10,7 +10,7 @@ namespace Meridian.Backtesting.Engine;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Determinism contract: if two events have the same timestamp (at millisecond precision), the
+/// Determinism contract: if two events have the same UTC timestamp (at full tick precision), the
 /// event from the lower stream index (earlier position in <paramref name="streams"/>) is always
 /// dequeued first.
 /// </para>
@@ -31,9 +31,13 @@ internal static class MultiSymbolMergeEnumerator
 
         if (streams.Count == 1)
         {
-            await foreach (var evt in streams[0].WithCancellation(ct).ConfigureAwait(false))
+            await using var enumerator = streams[0].GetAsyncEnumerator(ct);
+            long? singlePreviousUtcTicks = null;
+            while (await enumerator.MoveNextAsync().ConfigureAwait(false))
             {
                 ct.ThrowIfCancellationRequested();
+                var evt = ValidateCurrent(enumerator.Current, streamIndex: 0, singlePreviousUtcTicks);
+                singlePreviousUtcTicks = evt.Timestamp.UtcTicks;
                 yield return evt;
             }
 
@@ -41,45 +45,74 @@ internal static class MultiSymbolMergeEnumerator
         }
 
         // Initialise enumerators and prime the heap.
-        // Heap priority is (timestampMs, streamIndex), so equal timestamps are deterministically
+        // Heap priority is (UTC ticks, streamIndex), so equal timestamps are deterministically
         // ordered by stream index.
-        var enumerators = new IAsyncEnumerator<MarketEvent>[streams.Count];
-        var heap = new PriorityQueue<int, (long TimestampMs, int StreamIndex)>(
+        var enumerators = new IAsyncEnumerator<MarketEvent>?[streams.Count];
+        var previousUtcTicksByStream = new long?[streams.Count];
+        var heap = new PriorityQueue<int, (long UtcTicks, int StreamIndex)>(
             streams.Count,
-            Comparer<(long TimestampMs, int StreamIndex)>.Default);
-
-        for (var i = 0; i < streams.Count; i++)
-        {
-            enumerators[i] = streams[i].GetAsyncEnumerator(ct);
-            if (await enumerators[i].MoveNextAsync().ConfigureAwait(false))
-            {
-                heap.Enqueue(
-                    i,
-                    (enumerators[i].Current.Timestamp.ToUnixTimeMilliseconds(), i));
-            }
-        }
+            Comparer<(long UtcTicks, int StreamIndex)>.Default);
 
         try
         {
+            for (var i = 0; i < streams.Count; i++)
+            {
+                ct.ThrowIfCancellationRequested();
+                var enumerator = streams[i].GetAsyncEnumerator(ct);
+                enumerators[i] = enumerator;
+                if (await enumerator.MoveNextAsync().ConfigureAwait(false))
+                {
+                    ct.ThrowIfCancellationRequested();
+                    var evt = ValidateCurrent(enumerator.Current, i, previousUtcTicksByStream[i]);
+                    previousUtcTicksByStream[i] = evt.Timestamp.UtcTicks;
+                    heap.Enqueue(i, (evt.Timestamp.UtcTicks, i));
+                }
+            }
+
             while (heap.Count > 0)
             {
                 ct.ThrowIfCancellationRequested();
 
                 var idx = heap.Dequeue();
-                yield return enumerators[idx].Current;
+                var enumerator = enumerators[idx]!;
+                yield return enumerator.Current;
 
-                if (await enumerators[idx].MoveNextAsync().ConfigureAwait(false))
+                if (await enumerator.MoveNextAsync().ConfigureAwait(false))
                 {
-                    heap.Enqueue(
-                        idx,
-                        (enumerators[idx].Current.Timestamp.ToUnixTimeMilliseconds(), idx));
+                    ct.ThrowIfCancellationRequested();
+                    var evt = ValidateCurrent(enumerator.Current, idx, previousUtcTicksByStream[idx]);
+                    previousUtcTicksByStream[idx] = evt.Timestamp.UtcTicks;
+                    heap.Enqueue(idx, (evt.Timestamp.UtcTicks, idx));
                 }
             }
         }
         finally
         {
             foreach (var e in enumerators)
-                await e.DisposeAsync().ConfigureAwait(false);
+            {
+                if (e is not null)
+                    await e.DisposeAsync().ConfigureAwait(false);
+            }
         }
+    }
+
+    private static MarketEvent ValidateCurrent(
+        MarketEvent? evt,
+        int streamIndex,
+        long? previousUtcTicks)
+    {
+        if (evt is null)
+            throw new InvalidDataException($"Replay stream {streamIndex} yielded a null market event.");
+
+        var utcTicks = evt.Timestamp.UtcTicks;
+        if (previousUtcTicks.HasValue && utcTicks < previousUtcTicks.Value)
+        {
+            var previousTimestamp = new DateTimeOffset(previousUtcTicks.Value, TimeSpan.Zero);
+            throw new InvalidDataException(
+                $"Replay stream {streamIndex} is not chronological: event timestamp " +
+                $"{evt.Timestamp:O} precedes {previousTimestamp:O}.");
+        }
+
+        return evt;
     }
 }

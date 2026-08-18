@@ -835,6 +835,9 @@
                       ItemsSource="{Binding Trades}"
                       RowBackground="{StaticResource ConsoleBackgroundDarkBrush}">
               <DataGrid.Columns>
+                <DataGridTextColumn Width="170" Binding="{Binding FillId}" Header="Fill ID" />
+                <DataGridTextColumn Width="170" Binding="{Binding OrderId}" Header="Order ID" />
+                <DataGridTextColumn Width="70" Binding="{Binding BacktestRunNumber}" Header="Run" />
                 <DataGridTextColumn Width="140" Binding="{Binding FilledAt}" Header="Filled At" />
                 <DataGridTextColumn Width="90" Binding="{Binding Symbol}" Header="Symbol" />
                 <DataGridTextColumn Width="90" Binding="{Binding FilledQuantity}" Header="Qty" />

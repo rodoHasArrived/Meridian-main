@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-08-04
+last_reviewed: 2026-08-18
 ---
 
 # src/Meridian.Storage
@@ -48,7 +48,10 @@ lookup paths, and evidence trails those layers rely on.
 - `Etl/` - ETL staging, audit, reject, and local JSON job-definition stores.
 - `Interfaces/` and `Sinks/` - contracts and implementations that receive data to be saved.
 - `Store/`, `Policies/`, and `Replay/` - JSONL market-data storage, rules for using it, and readers
-  that can play saved data back. `JsonFileIBDataResultStore` requires tenant/company scope on writes
+  that can play saved data back. Replay k-way merges every physical JSONL or compressed JSONL file
+  by full UTC ticks with stable file-order ties, and fails closed with file/line evidence on
+  malformed, null, or per-file time-regressing records rather than silently omitting them.
+  `JsonFileIBDataResultStore` requires tenant/company scope on writes
   and queries, keys matching result identities by that scope, and excludes unscoped legacy rows
   during restart hydration.
 - `Services/CanonicalSymbolRegistry.cs` - storage-backed canonical symbol resolver implementing
@@ -160,6 +163,11 @@ write-ahead log or atomic file helpers so a crash is less likely to leave a half
 Storage sink flush behavior uses the Core-owned `Meridian.Core.Services.IFlushable` contract rather
 than an Application service dependency. Saved records feed replay, packaging, exports, catalog
 lookup, lineage checks, quality scoring, and maintenance jobs.
+
+Replay readers validate each physical stream's monotonic timestamp contract and merge one buffered
+record per file. This preserves deterministic mixed bar, quote, trade, and depth chronology across
+the supported directory and flat layouts without materializing the whole dataset; callers must
+still budget one open stream per physical replay file.
 
 Backfill status and checkpoint sidecars are Storage-owned durable records published under
 `Meridian.Storage.Backfill`. They persist the shared Contracts-owned

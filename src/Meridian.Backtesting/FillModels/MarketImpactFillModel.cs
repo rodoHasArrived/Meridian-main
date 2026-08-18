@@ -113,7 +113,9 @@ internal sealed class MarketImpactFillModel(
             }
 
             var signedQuantity = isBuy ? sliceQty : -sliceQty;
-            var commission = commissionModel.Calculate(order.Symbol, signedQuantity, fillPrice);
+            var commission = commissionModel
+                .Quote(order.OrderId, order.Symbol, signedQuantity, fillPrice)
+                .Amount;
             fills.Add(new FillEvent(
                 Guid.NewGuid(),
                 order.OrderId,

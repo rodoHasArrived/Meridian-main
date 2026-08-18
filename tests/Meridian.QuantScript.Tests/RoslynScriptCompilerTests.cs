@@ -113,6 +113,22 @@ public sealed class RoslynScriptCompilerTests
     }
 
     [Fact]
+    public async Task CompileAsync_WarningsSurviveSuccessfulCacheHits()
+    {
+        var compiler = BuildCompiler();
+        const string source = "#nullable enable\nstring value = null;";
+
+        var first = await compiler.CompileAsync(source);
+        var cached = await compiler.CompileAsync(source);
+
+        first.Success.Should().BeTrue();
+        first.Diagnostics.Should().Contain(static diagnostic => diagnostic.Severity == "Warning");
+        cached.Success.Should().BeTrue();
+        cached.Diagnostics.Should().BeEquivalentTo(first.Diagnostics);
+        cached.CompilationTime.Should().Be(TimeSpan.Zero);
+    }
+
+    [Fact]
     public async Task CompileAsync_DifferentSources_BothCompileIndependently()
     {
         var compiler = BuildCompiler();

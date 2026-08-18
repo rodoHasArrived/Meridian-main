@@ -339,6 +339,34 @@ public sealed class QuantScriptViewModelTests
     }
 
     [Fact]
+    public async Task RunScriptCommand_WhenParameterInvalid_BlocksRunner()
+    {
+        var runner = new FakeScriptRunner();
+        var vm = CreateVm(runner: runner);
+        var parameter = new ParameterViewModel("lookback", 5, typeof(int), min: 1, max: 10);
+        vm.Parameters.Add(parameter);
+        parameter.RawValue = "11";
+
+        vm.CanRun.Should().BeFalse();
+        parameter.ValidationMessage.Should().Contain("at most 10");
+        await vm.RunScriptCommand.ExecuteAsync(null);
+
+        runner.CallCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task RunScriptCommand_EmptyNotebookCell_NormalizesToComment()
+    {
+        var runner = new FakeScriptRunner();
+        var vm = CreateVm(runner: runner);
+        vm.SelectedCell!.Source = "   ";
+
+        await vm.RunScriptCommand.ExecuteAsync(null);
+
+        runner.LastSource.Should().Be("// Empty notebook cell");
+    }
+
+    [Fact]
     public async Task RunAndAdvanceCommand_WhenDateRangeInvalid_BlocksRunAndReportsStatus()
     {
         var runner = new FakeScriptRunner();
@@ -395,7 +423,10 @@ public sealed class QuantScriptViewModelTests
                     Side: "Buy",
                     Quantity: 10m,
                     Price: 523.45m,
-                    Commission: 0.45m)
+                    Commission: 0.45m,
+                    FillId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    OrderId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    BacktestRunIndex: 3)
             ],
             CapturedBacktests: Array.Empty<Meridian.Backtesting.Sdk.BacktestResult>(),
             RuntimeParameters: Array.Empty<ParameterDescriptor>()));
@@ -404,7 +435,39 @@ public sealed class QuantScriptViewModelTests
         await vm.RunScriptCommand.ExecuteAsync(null);
 
         vm.Trades.Should().ContainSingle();
+        vm.Trades[0].FillId.Should().Be(Guid.Parse("11111111-1111-1111-1111-111111111111"));
+        vm.Trades[0].OrderId.Should().Be(Guid.Parse("22222222-2222-2222-2222-222222222222"));
+        vm.Trades[0].BacktestRunIndex.Should().Be(3);
+        vm.Trades[0].BacktestRunNumber.Should().Be(4);
         vm.ActiveResultsTab.Should().Be(4);
+    }
+
+    [Fact]
+    public async Task RunScriptCommand_WithCompilerWarning_RendersWarningSeparately()
+    {
+        var runner = new FakeScriptRunner().SetResult(new ScriptRunResult(
+            Success: true,
+            Elapsed: TimeSpan.FromMilliseconds(50),
+            CompileTime: TimeSpan.FromMilliseconds(10),
+            PeakMemoryBytes: 0,
+            CompilationErrors: [],
+            RuntimeDiagnostics: [],
+            RuntimeError: null,
+            ConsoleOutput: string.Empty,
+            Metrics: [],
+            Plots: [],
+            Trades: [],
+            CapturedBacktests: [],
+            RuntimeParameters: [],
+            CompilationWarnings: [new ScriptDiagnostic("Warning", "Unused variable", 1, 5)]));
+        var vm = CreateVm(runner: runner);
+
+        await vm.RunScriptCommand.ExecuteAsync(null);
+
+        vm.ConsoleOutput.Should().Contain(entry =>
+            entry.Kind == ConsoleEntryKind.Warning && entry.Text.Contains("Unused variable", StringComparison.Ordinal));
+        vm.Diagnostics.Should().Contain(entry =>
+            entry.Key == "Compilation warning" && entry.Value == "Unused variable");
     }
 
     [Fact]

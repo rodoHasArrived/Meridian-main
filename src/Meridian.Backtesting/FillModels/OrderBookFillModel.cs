@@ -52,17 +52,25 @@ internal sealed class OrderBookFillModel(
             : lob.Bids.OrderByDescending(l => l.Price).ToList();
 
         var executableLevels = FilterExecutableLevels(levels, executableType.Value, order, isBuy);
-        if (order.TimeInForce == TimeInForce.FillOrKill &&
-            SumQueueAdjustedQuantity(executableLevels, _queueAheadFraction) < remainingAbsolute)
+        var requiresCompleteFill =
+            order.TimeInForce == TimeInForce.FillOrKill || !order.AllowPartialFills;
+        var hasCompleteFillLiquidity =
+            !requiresCompleteFill ||
+            SumQueueAdjustedQuantity(executableLevels, _queueAheadFraction) >= remainingAbsolute;
+        if (!hasCompleteFillLiquidity)
         {
+            var shouldCancel = order.TimeInForce == TimeInForce.FillOrKill;
             return new OrderFillResult(
-                order with { Status = OrderStatus.Cancelled, IsTriggered = triggered },
+                order with
+                {
+                    Status = shouldCancel ? OrderStatus.Cancelled : order.Status,
+                    IsTriggered = triggered
+                },
                 [],
-                RemoveOrder: true,
+                RemoveOrder: shouldCancel,
                 WasTriggered: triggered && !order.IsTriggered);
         }
 
-        var allowPartial = order.AllowPartialFills && order.TimeInForce != TimeInForce.FillOrKill;
         var fills = new List<FillEvent>();
         foreach (var level in executableLevels)
         {
@@ -73,16 +81,13 @@ internal sealed class OrderBookFillModel(
             if (levelQuantity <= 0)
                 continue;
 
-            var fillQuantity = allowPartial
-                ? Math.Min(remainingAbsolute, levelQuantity)
-                : remainingAbsolute <= levelQuantity ? remainingAbsolute : 0;
-
-            if (fillQuantity == 0)
-                break;
+            var fillQuantity = Math.Min(remainingAbsolute, levelQuantity);
 
             var signedQuantity = isBuy ? fillQuantity : -fillQuantity;
             var fillPrice = SnapToTick(level.Price, order.Symbol);
-            var commission = commissionModel.Calculate(order.Symbol, signedQuantity, fillPrice);
+            var commission = commissionModel
+                .Quote(order.OrderId, order.Symbol, signedQuantity, fillPrice)
+                .Amount;
             fills.Add(new FillEvent(
                 Guid.NewGuid(),
                 order.OrderId,

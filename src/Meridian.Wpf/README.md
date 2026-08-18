@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-27
+last_reviewed: 2026-08-18
 ---
 
 # src/Meridian.Wpf
@@ -659,6 +659,10 @@ RunMat Lab is a Strategy workspace tool; its visible page descriptions and code 
 `Strategy` wording while retaining the existing `RunMat` page tag and automation IDs.
 QuantScript run-history handoffs use `CompareInStrategyCommand` for Strategy Runs comparison
 routing while preserving the existing button automation ID and run-detail navigation targets.
+The QuantScript parameter editor validates supported numeric and Boolean inputs before enabling Run;
+invalid, non-finite, or out-of-range values never become null fallbacks at the worker boundary.
+Successful runs render compiler warnings separately from errors, and result/trade rows retain fill
+id, order id, and multi-backtest run index for exact drill-through.
 `StrategyWorkspaceShellPresentationService` owns Strategy shell briefing, workflow, degraded-state,
 command, and promotion presentation state. Strategy shell page types, state providers, view models,
 page bases, automation IDs, and hero/workflow bindings use canonical `StrategyWorkspace*` and
