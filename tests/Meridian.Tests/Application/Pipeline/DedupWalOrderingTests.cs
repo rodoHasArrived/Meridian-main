@@ -792,16 +792,17 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             failingSink, capacity: 100, enablePeriodicFlush: false, wal: wal2, dedupLedger: ledger);
         pipeline1.RecoveryCommitBatchSize = 10;
 
+        var replayMetricBefore = await ReadReplayedEventMetricAsync();
+
         await Assert.ThrowsAsync<InvalidOperationException>(() => pipeline1.RecoverAsync());
         pipeline1.RecoveredCount.Should().Be(10,
             "the first chunk crossed its durable boundary and must be counted even though a later chunk failed");
 
         // The same reasoning applies to the exported metric: the committed chunk's records are
         // durable and never enumerated again, so a retry could not restore their telemetry.
-        // The series is raised with IncTo (a monotonic maximum, not a sum), so this asserts the
-        // floor this pass must establish rather than a delta; concurrent recoveries in other
-        // tests can only push it higher.
-        (await ReadReplayedEventMetricAsync()).Should().BeGreaterThanOrEqualTo(10,
+        // Deltas rather than absolutes because the series is process-global; concurrent
+        // recoveries in other tests can only add to it.
+        (await ReadReplayedEventMetricAsync() - replayMetricBefore).Should().BeGreaterThanOrEqualTo(10,
             "a committed chunk must publish its replay telemetry before a later chunk fails");
         await pipeline1.DisposeAsync();
 
@@ -817,6 +818,14 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         pipeline2.RecoveredCount.Should().Be(backlog - 10,
             "records committed by the first pass must not replay; everything after the horizon must");
         healthySink.AppendedEvents.Should().HaveCount(backlog - 10);
+
+        // The replay series is a cumulative counter, so a second pass adds to the first rather
+        // than raising the total to its own pass-local maximum: 10 committed here, then 15.
+        // Raising to a maximum would report only 15 and lose the earlier pass entirely.
+        (await ReadReplayedEventMetricAsync() - replayMetricBefore).Should().BeGreaterThanOrEqualTo(
+            backlog,
+            "replay telemetry must accumulate across recovery passes, not restart from zero each pass");
+
         await ledger.DisposeAsync();
     }
 

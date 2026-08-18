@@ -714,17 +714,23 @@ public static class PrometheusMetrics
     }
 
     /// <summary>
-    /// Records the running total of WAL records durably replayed to primary storage during a
-    /// recovery pass. Callers publish as each batch crosses its durability boundary rather than
-    /// at the end of the pass, so a later failure cannot strand the telemetry of records that
-    /// are already durable and will never be enumerated again.
+    /// Adds the WAL records a recovery batch just replayed durably to primary storage. Callers
+    /// publish as each batch crosses its durability boundary rather than at the end of the
+    /// pass, so a later failure cannot strand the telemetry of records that are already durable
+    /// and will never be enumerated again.
     /// </summary>
-    /// <param name="replayedEvents">Cumulative replayed count for the pass so far.</param>
-    public static void RecordWalReplay(long replayedEvents)
+    /// <param name="newlyReplayedEvents">
+    /// Records replayed by this batch alone, not a running total: the series is a cumulative
+    /// counter, so a process that recovers 100 records and later another 10 must report 110.
+    /// Raising it to a per-pass maximum instead would leave the second pass invisible, because
+    /// each pass counts from zero.
+    /// </param>
+    public static void RecordWalReplay(long newlyReplayedEvents)
     {
-        // IncTo raises to a maximum, so passing a running total is idempotent and safe to call
-        // repeatedly within one pass.
-        WalReplayedEventsTotal.IncTo(replayedEvents);
+        if (newlyReplayedEvents <= 0)
+            return;
+
+        WalReplayedEventsTotal.Inc(newlyReplayedEvents);
     }
 
     /// <summary>

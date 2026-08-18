@@ -473,9 +473,9 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                 // Publish the replay metric here too, for the same reason: these records are
                 // durable and will not be enumerated again, so a later chunk failure must not
                 // strand their telemetry — a retry recovers only what remains and could never
-                // restore it. The series takes a running total because IncTo raises to a
-                // maximum rather than adding.
-                PrometheusMetrics.RecordWalReplay(recovered);
+                // restore it. This chunk's own count, not the running total: the series is a
+                // cumulative counter that must keep accumulating across recovery passes.
+                PrometheusMetrics.RecordWalReplay(chunkAppended);
             }
 
             chunkAppended = 0;
@@ -641,14 +641,10 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             throw;
         }
 
-        // Final emission for a pass that committed no chunk, so the series still reflects the
-        // pass. Committed chunks already published their own running total above, which
-        // survives a later chunk failure. This reports records actually replayed to the sink,
-        // never the WAL's scan tally: that tally counts records whose payload proved
-        // undeserializable and were dropped as corruption, so reporting it here would claim
-        // recovery successes that never reached storage. The scan tally and the recovery
-        // duration are published by the WAL itself, for every consumer that replays.
-        PrometheusMetrics.RecordWalReplay(recovered);
+        // No emission here: every committed chunk already added its own count as it crossed the
+        // durability boundary, including the final one, and adding the pass total on top would
+        // count each record twice. A pass that replays nothing has nothing to report — the WAL
+        // scan tally and recovery duration are published by the WAL itself, for every consumer.
     }
 
     /// <summary>
