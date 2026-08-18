@@ -1857,7 +1857,7 @@ public sealed partial class WorkstationEndpointsTests
             },
             mapExecutionApi: true,
             mapPromotionApi: true,
-            currentUserPermissions: UserPermission.ManageStrategies | UserPermission.ExecuteTrades | UserPermission.ManageOrders);
+            currentUserPermissions: UserPermission.ViewTrades | UserPermission.ManageStrategies | UserPermission.ExecuteTrades | UserPermission.ManageOrders);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildRun(

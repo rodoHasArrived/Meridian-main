@@ -1550,7 +1550,7 @@ public sealed class ExecutionWriteEndpointsTests
 
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection>? configureServices = null,
-        UserPermission currentUserPermissions = UserPermission.ExecuteTrades | UserPermission.ManageOrders | UserPermission.ManageStrategies,
+        UserPermission currentUserPermissions = UserPermission.ViewTrades | UserPermission.ExecuteTrades | UserPermission.ManageOrders | UserPermission.ManageStrategies,
         string? currentUser = "ops-user",
         IReadOnlyCollection<Guid>? allowedAccountScopes = null,
         string? currentTenantId = "execution-test-tenant",
