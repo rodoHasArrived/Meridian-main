@@ -90,7 +90,6 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
         // "{}" body cannot bind IReadOnlyList<CollateralInputRow>, so binding answers 400 before
         // any filter runs. The declarative ratchet is the operative guarantee for this route.
         "POST /api/workstation/collateral/ingest",
-        "DELETE /api/packaging/{fileName}",
         "POST /api/alignment/create",
         "POST /api/alignment/preview",
         "POST /api/backfill/checkpoints/{jobId}/resume",
@@ -107,9 +106,6 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
         // the route does not enforce. Stays listed until the guard is expressed in permissions.
         "POST /api/ledger/periods/{periodId:guid}/close",
         "POST /api/options/refresh",
-        "POST /api/packaging/create",
-        "POST /api/packaging/import",
-        "POST /api/packaging/validate",
         // SECURITY FINDING, deliberately left visible rather than allowlisted: unlike the
         // reporting delivery hook two entries above, this route verifies nothing at all -- no
         // Plaid signature, no shared secret, no session -- so any caller who can reach the host
@@ -118,16 +114,7 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
         // story that does not exist.
         "POST /api/plaid/webhook",
         "POST /api/providers/{providerName}/test",
-        "POST /api/quality/anomalies/{anomalyId}/acknowledge",
-        "POST /api/quality/gaps/{symbol}",
-        "POST /api/quality/reports/export",
         "POST /api/reference-data/options/chains/import",
-        "POST /api/replay/start",
-        "POST /api/replay/{sessionId}/pause",
-        "POST /api/replay/{sessionId}/resume",
-        "POST /api/replay/{sessionId}/seek",
-        "POST /api/replay/{sessionId}/speed",
-        "POST /api/replay/{sessionId}/stop",
         "POST /api/sampling/create",
         "POST /api/schedules/cron/next-runs",
         "POST /api/schedules/cron/validate",
