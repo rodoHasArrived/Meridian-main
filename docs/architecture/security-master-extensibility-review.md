@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-14 (verification pass; original review 2026-08-12)
+**Reviewed:** 2026-08-18 (verification pass; earlier passes 2026-08-14, 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -35,8 +35,13 @@ risks that compound as new asset classes land.
 > **Verification pass, 2026-08-14.** Re-read against current source at `4b39e9da8`. The findings
 > below stand as written except where a **Status (2026-08-14)** note says otherwise; four of the ten
 > risk items have since closed or materially narrowed. See
-> [Verification pass — 2026-08-14](#verification-pass--2026-08-14) for the current open list and
-> re-ranked priorities.
+> [Verification pass — 2026-08-14](#verification-pass--2026-08-14) for the then-current open list.
+
+> **Verification pass, 2026-08-18.** Re-read against current source at `c20ab63e`. Every open item
+> below is unchanged — no Security Master architecture work landed in the interval — and the pass
+> adds two findings the earlier passes did not record. See
+> [Verification pass — 2026-08-18](#verification-pass--2026-08-18) for the current open list and
+> priorities.
 
 ---
 
@@ -475,6 +480,109 @@ history; asset-class-scoped projection replay.
 
 ---
 
+## Verification pass — 2026-08-18
+
+Re-read against current source at `c20ab63e`. No code was changed by this pass; no tests were run.
+Every claim cites the file and line it was read from.
+
+### Nothing on the open list moved
+
+Between the 2026-08-14 pass and this one, the Security Master trees
+(`src/Meridian.Application/SecurityMaster`, `src/Meridian.Contracts/SecurityMaster`,
+`src/Meridian.Storage/SecurityMaster`, `src/Meridian.FSharp/Domain/SecurityMaster.fs`) took only
+cross-cutting refactors: `9cae1b44` named schema-version constants, `73247d6e` shared text
+primitives, and the SHA-256 canonicalisation batch (`68ba1ab7`, `00d78e81`, `c2b3fd44`). No
+architectural change landed, and the migration series still ends at
+`028_security_master_revision_values_and_versioned_provenance.sql`.
+
+Re-confirmed against source, item by item:
+
+| # | Item | Evidence re-read 2026-08-18 |
+| --- | --- | --- |
+| 1 | Governed edits do not reach the golden record | The two `ISecurityMasterRevisionPublishedHandler` implementations are `SecurityProjectionRebuildHandler` (rebuilds the cached projection) and `CoverageInvalidationHandler` (evicts a coverage cache). Neither writes an approved override into canonical terms, and `UpdateSecurityFieldAsync`'s contract still states overlay edits are "deliberately NOT appended to the economic event stream" (`SecurityMasterWorkbenchCommandService.cs:15-20`). **No merge path exists.** |
+| 2 | Three modeling routes for MBS/ABS/CLO | Still no canonical-home ruling; `Bond` subclasses, `StructuredCredit`, and `CustomAsset` all remain legitimate. |
+| 3 | `BondCouponStructure` is three cases | `Fixed` / `Floating` / `ZeroCoupon` only (`SecurityMaster.fs:222-225`) against 24 `BondSubclass` members. `StepRate`, `FixedToFloat`, `InflationLinked`, `Vrdn`, and `AuctionRate` remain classifiable but not computable. |
+| 4 | Third factor-schedule shape | `SecurityFactorScheduleEntry` is still declared separately in `Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:89` alongside the domain `FactorScheduleEntry`. |
+| 5 | Corporate actions: wide table | No migration after 028; still 8 typed payload columns for 18 declared event types, no JSONB envelope. |
+| 6 | Projection cache | `SecurityMasterProjectionCache` is 29 lines: one `ConcurrentDictionary`, no eviction, no cross-node invalidation, and `ReplaceAll` still `Clear()`s before repopulating so a concurrent reader sees an empty master. |
+| 7 | Equity bespoke amendment endpoints | `AmendPreferredEquityTermsAsync` / `AmendConvertibleEquityTermsAsync` still sit on `SecurityMasterService` (`:208`, `:229`) with `PATCH` routes at `SecurityMasterEndpoints.cs:506-519`, bypassing the workbench maker-checker gate. No equivalent for a bond call schedule or swap leg. |
+| 8 | Straight-line amortization only | `BondAmortizationMethod.ConstantYield` remains an enum member (`BondReferenceDtos.cs:21`, `SecurityTermModules.fs:426`) with no effective-interest implementation. |
+| 9 | Valid-time term history | `securities` still holds one current row with `effective_from`/`effective_to` (`001_security_master.sql:36-38`), while `security_identifiers` keys on `(security_id, kind, value, valid_from)` (`:56`). Identifiers are effective-dated; terms are not. |
+| 10 | Relational projections | 11 Postgres asset projection stores for 26 classes; the 15 uncovered are still the private/alternative classes. Declared and test-guarded. |
+| — | `SecurityAssetPackRegistry` | Still 802 lines of string lists, referenced only by itself and `SecurityMasterOperationalReadinessService`. Nothing gates admission on it. |
+
+### New this pass
+
+**A. The profile → asset-class resolution map is hand-keyed and already diverges from the profile
+catalog.** `KnownProfileAssetClasses` (`SecurityMasterService.cs:976-984`) is the sole authority that
+resolves a profile-backed record's asset class, and `SecurityAssetProfileDefinitionDto` carries no
+asset-class field (`SecurityAssetProfiles.cs:63-83`) — so approving a new profile in
+`SecurityAssetProfileCatalog` cannot extend the map. The two lists already disagree in both
+directions. The catalog declares `co-invest-spv` (`SecurityAssetProfileCatalog.cs:150`), which the
+map does not carry; that direction is deliberate and documented (`SecurityMasterService.cs:898-901`
+— such a record resolves to `CustomAsset`). The other direction is not: the map keys
+`commitment-guarantee` (`:983`), a string that exists as a **pack id** in `SecurityAssetPackRegistry`
+(`:221`) and is not a profile id any catalog entry emits. Nothing binds the two lists and no test
+locks them.
+
+This is the 2026-08-13 engineering audit's R1 in its current form. Landing
+`SecurityKind.CustomAsset` did not shrink the special case — the seven-string
+`IsProfileBackedCustomAsset` predicate (`:956-967`) is still there, now with a profile-id map and an
+`AssetClassMetadataKeywords` table beside it, all three hand-maintained in the application service
+rather than derived from the reference-data catalog. One part of R1 *is* fixed: a field-level patch
+against a profile-backed record without the pinned envelope now throws rather than silently
+returning the current terms (`:938-947`).
+
+**B. The field-edit schema validator covers one namespace; the browser editor prompts for another.**
+`SecurityAssetTermsFieldEditValidator.TryValidate` returns `true` unconditionally for any path not
+prefixed `assetSpecificTerms.` (`SecurityAssetTermsFieldEditValidator.cs:56-59`). The browser
+passport editor's field-path input is a free-text box whose placeholder is `EconomicDefinition.Coupon`
+(`security-passport-editor.tsx:332`) and whose value box is free text (`:336`) — outside the
+validated prefix, so neither path nor type is checked. The 2026-08-14 pass recorded field paths as
+"now schema-validated"; that holds for `assetSpecificTerms.*` only, which is not what the UI asks
+for. The reserved-namespace guard on the raw override PATCH route
+(`SecurityMasterEndpoints.cs:985-1008`) confirms the boundary: `assetSpecificTerms.*` is pushed to
+the governed route precisely because everything else is not validated.
+
+**C. `InvestmentFund` is still catalog-declared and validator-less.** `AssetClassValidatorRegistry`
+registers 25 asset classes; `InvestmentFund` is not among them, though it is in
+`SecurityAssetClassCatalog` (`:370`) and `SecurityAssetTermsSchema` (`:333`). Every mutual fund, ETF,
+hedge fund, REIT, and closed-end fund record therefore raises `SM_ASSET_CLASS_UNSUPPORTED` at
+**Error** severity (`SecurityValidationService.cs:116-129`). There is a catalog↔projection parity
+guard and a corporate-action↔validator guard
+(`CorporateActionTypeDescriptorCatalogTests.cs:111`), but no catalog↔validator parity guard — which
+is why this has now survived three review passes. Cheapest fix on the list.
+
+### Priorities — 2026-08-18
+
+Unchanged in substance from the 2026-08-14 ranking, with the coverage guard promoted because it is
+hours of work and removes an Error-severity failure for an entire asset class.
+
+1. **Close the merge path from the governed workbench to the golden record.** Still the one
+   institutional gap that matters most: the durable revision lifecycle, independent-reviewer gate,
+   restatement resolution, and provenance lineage are all built and all govern a side table. An
+   approved coupon correction still cannot reach cash flow, amortization, pricing, or NAV.
+2. **Add a catalog↔validator parity guard and register `InvestmentFund`.** Mirrors the existing
+   catalog↔projection guard; closes finding C.
+3. **Derive profile-backed asset-class resolution from the profile catalog.** Give
+   `SecurityAssetProfileDefinitionDto` a declared asset class, resolve from it, and delete
+   `KnownProfileAssetClasses`, `AssetClassMetadataKeywords`, and the seven-string
+   `IsProfileBackedCustomAsset` predicate. Until then, lock the map to the catalog with a test so the
+   `commitment-guarantee` / `co-invest-spv` divergence cannot recur silently (finding A).
+4. **Validate the field paths the UI actually offers, or change what it offers.** Either extend
+   schema validation past `assetSpecificTerms.*` to the common/economic namespaces, or make the
+   passport editor a schema-driven picker over the record's declared terms instead of a free-text box
+   (finding B). Pairs naturally with priority 1.
+5. **Rule on one canonical home per instrument, and deepen `BondCouponStructure`.** The MBS/ABS/CLO
+   partition needs a decision, not an implementation; step-rate and inflation-linked coupon cases are
+   the remaining half of "the taxonomy outruns the term model".
+
+*Deferred but worth tracking:* the third factor-schedule shape, the generic corporate-action payload
+envelope, multi-node projection-cache invalidation, effective-interest amortization, valid-time term
+history, and relational projections for the private/alternative classes.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -488,5 +596,13 @@ The 2026-08-14 verification pass re-read the F# domain and interop, the 47 `Meri
 Security Master contracts, the 58 `Meridian.Application` Security Master services, the 46
 `Meridian.Storage` stores and 28 migrations, the workstation endpoint surfaces, and the codec
 round-trip and asset-class-support test suites.
+
+The 2026-08-18 verification pass re-read the F# domain model, `SecurityMasterService` and its
+profile-backed resolution helpers, `SecurityMasterWorkbenchCommandService` and the published-revision
+handler seam, `AssetClassValidatorRegistry` and `SecurityValidationService`,
+`SecurityAssetTermsFieldEditValidator`, `SecurityAssetProfileCatalog` and `SecurityAssetProfiles`,
+`SecurityMasterProjectionCache`, the `SecurityMasterEndpoints` override and equity-amendment routes,
+the browser passport editor, migration 001 and the 028-entry migration series, and the git history
+for the Security Master trees since the previous pass.
 
 No code was changed. No tests were run — this review makes no behavioral claims requiring execution.
