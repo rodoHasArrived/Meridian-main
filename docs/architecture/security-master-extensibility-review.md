@@ -39,7 +39,7 @@ risks that compound as new asset classes land.
 
 > **Verification pass, 2026-08-18.** Re-read against current source at `c20ab63e`. Every open item
 > below is unchanged — no Security Master architecture work landed in the interval — and the pass
-> adds two findings the earlier passes did not record. See
+> adds three findings the earlier passes did not record. See
 > [Verification pass — 2026-08-18](#verification-pass--2026-08-18) for the current open list and
 > priorities.
 
