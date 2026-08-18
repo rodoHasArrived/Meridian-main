@@ -1,24 +1,10 @@
 {
   "body_clones": {
-    "src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs": 1,
-    "src/Meridian.Application/FundStructure/PostgresFundStructureService.cs": 1,
-    "src/Meridian.Application/ProviderRouting/ProviderSetupService.cs": 1,
-    "src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineProviderCredentialConnectionStore.cs": 1,
-    "src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs": 1,
-    "src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs": 1,
-    "src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs": 1,
-    "src/Meridian.Execution/Services/ExecutionOperatorControlService.cs": 1,
-    "src/Meridian.Execution/Services/ReconciliationSetComparer.cs": 1,
-    "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.Routes.cs": 1,
-    "src/Meridian.FinancialOperations/Reconciliation/StatementRunMatchingService.cs": 1,
     "src/Meridian.Ledger/LedgerAccounts.cs": 1,
     "src/Meridian.Ledger/LedgerLineDimensionSetNormalizer.cs": 1,
     "src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs": 1,
     "src/Meridian.Ledger/ProjectLedgerBook.cs": 1,
-    "src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs": 1,
-    "src/Meridian.Wpf/Services/DesktopLaunchArguments.cs": 1,
-    "src/Meridian.Wpf/Services/WorkspaceService.cs": 1,
-    "src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs": 1
+    "src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs": 1
   },
   "description": "Per-file counts of private declarations of helpers owned by Meridian.Contracts.Text.TextPrimitives. CI fails when a file exceeds its count or a new file appears; migration batches shrink this toward empty. body_clones counts declarations under any other name whose canonical body is one TextPrimitives owns.",
   "files": {
@@ -90,7 +76,7 @@
     "src/Meridian.Wpf/Services/FundLedgerReadService.cs": 1,
     "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.TextHelpers.cs": 1
   },
-  "total": 95,
+  "total": 81,
   "tracked_helpers": [
     "NormalizeOptional",
     "RequireText",

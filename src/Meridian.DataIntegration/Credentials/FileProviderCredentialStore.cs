@@ -6,6 +6,7 @@ using Meridian.Contracts.Configuration;
 using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
 using Serilog;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.DataIntegration.Credentials;
 
@@ -199,7 +200,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
             record.LastVerifiedAt = verifiedAt;
             record.LastError = update.Success ? null : SanitizeError(update.ErrorMessage);
-            record.ExternalAccountId = update.Success ? NullIfBlank(update.ExternalAccountId) : record.ExternalAccountId;
+            record.ExternalAccountId = update.Success ? NormalizeOptional(update.ExternalAccountId) : record.ExternalAccountId;
             if (update.Success)
             {
                 record.LastSuccessfulAt = verifiedAt;
@@ -809,9 +810,6 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
         return message.Trim();
     }
-
-    private static string? NullIfBlank(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed record ProtectedVaultEnvelope(int Version, string Protection, string CipherText);
 

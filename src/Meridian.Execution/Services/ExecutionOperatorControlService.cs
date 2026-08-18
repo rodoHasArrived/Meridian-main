@@ -4,6 +4,7 @@ using Meridian.Execution.Sdk;
 using Meridian.Execution.Serialization;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Execution.Services;
 
@@ -238,7 +239,7 @@ public sealed class ExecutionOperatorControlService
             {
                 ["isOpen"] = isOpen.ToString()
             },
-            NormalizeOptionalToken(correlationId),
+            NormalizeOptional(correlationId),
             null,
             null,
             ct).ConfigureAwait(false);
@@ -363,9 +364,9 @@ public sealed class ExecutionOperatorControlService
             CreatedBy: NormalizeActor(request.CreatedBy),
             CreatedAt: DateTimeOffset.UtcNow,
             ExpiresAt: request.ExpiresAt,
-            Symbol: NormalizeOptionalToken(request.Symbol),
-            StrategyId: NormalizeOptionalToken(request.StrategyId),
-            RunId: NormalizeOptionalToken(request.RunId));
+            Symbol: NormalizeOptional(request.Symbol),
+            StrategyId: NormalizeOptional(request.StrategyId),
+            RunId: NormalizeOptional(request.RunId));
 
         await MutateAndPersistAsync(
             () =>
@@ -389,7 +390,7 @@ public sealed class ExecutionOperatorControlService
                 ["runId"] = overrideEntry.RunId ?? string.Empty,
                 ["expiresAt"] = overrideEntry.ExpiresAt?.ToString("O") ?? string.Empty
             },
-            correlationId: NormalizeOptionalToken(request.CorrelationId),
+            correlationId: NormalizeOptional(request.CorrelationId),
             runId: overrideEntry.RunId,
             symbol: overrideEntry.Symbol,
             ct: ct).ConfigureAwait(false);
@@ -431,7 +432,7 @@ public sealed class ExecutionOperatorControlService
                 ["strategyId"] = removed.StrategyId ?? string.Empty,
                 ["runId"] = removed.RunId ?? string.Empty
             },
-            correlationId: NormalizeOptionalToken(correlationId),
+            correlationId: NormalizeOptional(correlationId),
             runId: removed.RunId,
             symbol: removed.Symbol,
             ct: ct).ConfigureAwait(false);
@@ -989,9 +990,6 @@ public sealed class ExecutionOperatorControlService
 
     private static string NormalizeActor(string? actor) =>
         string.IsNullOrWhiteSpace(actor) ? "operator" : actor.Trim();
-
-    private static string? NormalizeOptionalToken(string? token) =>
-        string.IsNullOrWhiteSpace(token) ? null : token.Trim();
 
     private readonly record struct ManualOverrideTarget(
         string? Symbol,

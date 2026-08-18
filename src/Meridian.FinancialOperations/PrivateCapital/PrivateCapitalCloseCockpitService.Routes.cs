@@ -1,6 +1,7 @@
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.PrivateCapital;
 
@@ -25,7 +26,7 @@ public sealed partial class PrivateCapitalCloseCockpitService
 
     private static void AddQuery(List<string> query, string key, string? value)
     {
-        var normalized = Normalize(value);
+        var normalized = NormalizeOptional(value);
         if (normalized is not null)
         {
             query.Add($"{key}={Uri.EscapeDataString(normalized)}");
@@ -34,9 +35,6 @@ public sealed partial class PrivateCapitalCloseCockpitService
 
     private static string BuildWorkflowRoute(Guid workflowId)
         => UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityById, "workflowId", workflowId.ToString("D"));
-
-    private static string? Normalize(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed record ManagementCompanyEvidenceSignal(string Label, bool IsPresent);
 

@@ -1,5 +1,6 @@
 {
-  "_comment": "No-new-god-file ratchet baseline. Each entry caps a currently oversized source file at its recorded line count. Files may shrink freely; growing one past its cap or adding a new file over the threshold fails CI. Regenerate with `python3 build/scripts/ci/check-file-size.py --update-baseline` and justify the change in review.",
+  "_comment": "No-new-god-file ratchet baseline. Each entry caps a currently oversized source file at its recorded line count. Files may shrink freely; growing one past its cap or adding a new file over the threshold fails CI. Lock in reductions with `python3 build/scripts/ci/check-file-size.py --tighten-baseline`, which only lowers caps; `--update-baseline` regenerates from the tree (and can raise caps), so it needs justification in review. The optional headroom map records lines deliberately left spare by the last tightening, so deliberate slack is not reported as an unlocked reduction.",
+  "threshold_lines": 2000,
   "files": {
     "src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs": 4328,
     "src/Meridian.Execution/OrderManagementSystem.cs": 2098,
@@ -52,5 +53,22 @@
     "src/Meridian.Wpf/ViewModels/MainPageViewModel.cs": 2313,
     "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs": 4408
   },
-  "threshold_lines": 2000
+  "headroom": {
+    "src/Meridian.Execution/OrderManagementSystem.cs": 14,
+    "src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs": 26,
+    "src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs": 7,
+    "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs": 2,
+    "src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs": 2,
+    "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs": 2,
+    "src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs": 3,
+    "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs": 2,
+    "src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs": 3,
+    "src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs": 15,
+    "src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs": 20,
+    "src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs": 14,
+    "src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs": 2,
+    "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx": 6,
+    "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.view-model.ts": 1,
+    "src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs": 2
+  }
 }

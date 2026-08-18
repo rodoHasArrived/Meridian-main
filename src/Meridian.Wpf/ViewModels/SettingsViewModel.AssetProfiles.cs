@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ui.Services;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -277,7 +278,7 @@ public sealed partial class SettingsViewModel
                 NormalizeAssetProfileId(AssetProfileDraftProfileId),
                 AssetProfileDraftName.Trim(),
                 AssetProfileDraftCategory.Trim(),
-                NullIfWhiteSpace(AssetProfileDraftSubType),
+                NormalizeOptional(AssetProfileDraftSubType),
                 starter.Fields,
                 starter.IdentifierPreferences,
                 starter.LifecycleStates,
@@ -855,9 +856,6 @@ public sealed partial class SettingsViewModel
 
     private static string NormalizeCurrency(string? value)
         => string.IsNullOrWhiteSpace(value) ? "USD" : value.Trim().ToUpperInvariant();
-
-    private static string? NullIfWhiteSpace(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string GetRequestedBy()
         => string.IsNullOrWhiteSpace(Environment.UserName) ? "wpf-settings" : Environment.UserName;
