@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.IO.Compression;
 using System.Text.Json;
 using Meridian.Contracts.Api;
@@ -103,7 +104,7 @@ public static class SamplingEndpoints
                 createdAt = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("CreateSample")
+        .WithName("CreateSample").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 

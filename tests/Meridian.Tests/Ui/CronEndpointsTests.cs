@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
@@ -49,6 +50,14 @@ public sealed class CronEndpointsTests
         });
         builder.WebHost.UseTestServer();
         var app = builder.Build();
+        // The cron helpers require AdminMaintenance (W9-GOV-008), matching
+        // /api/maintenance/validate-cron. This host composes the endpoints without the session
+        // middleware, so stamp the permissions snapshot the authorization filter reads.
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.AdminMaintenance;
+            await next();
+        });
         app.MapCronEndpoints(new JsonSerializerOptions(JsonSerializerDefaults.Web));
         await app.StartAsync();
         return app;

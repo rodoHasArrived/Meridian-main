@@ -89,7 +89,9 @@ public sealed class ProviderConnectionHonestyEndpointTests : IDisposable, IClass
         using var diagnostics = JsonDocument.Parse(await diagnosticsResponse.Content.ReadAsStringAsync());
         AssertUnknownConnection(diagnostics.RootElement);
 
-        var healthTestResponse = await _client.PostAsync(
+        // /api/health/providers/{provider}/test returns registry diagnostics and requires
+        // ViewDiagnostics (W9-GOV-008), matching /api/diagnostics/providers/{providerName}/test.
+        var healthTestResponse = await _diagnosticsClient.PostAsync(
             $"/api/health/providers/{Uri.EscapeDataString(providerName!)}/test",
             content: null);
         healthTestResponse.StatusCode.Should().Be(HttpStatusCode.OK);

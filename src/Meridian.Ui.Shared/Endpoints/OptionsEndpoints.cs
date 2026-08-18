@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Domain.Enums;
@@ -239,7 +240,7 @@ public static class OptionsEndpoints
                 jsonOptions,
                 statusCode: StatusCodes.Status400BadRequest);
         })
-        .WithName("RefreshOptionsData")
+        .WithName("RefreshOptionsData").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(400)
         .Produces(503);

@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Ui.Shared.Services;
@@ -249,7 +250,7 @@ public static class CheckpointEndpoints
                 return Results.BadRequest(new { error = $"Resume failed: {ex.Message}" });
             }
         })
-        .WithName("ResumeCheckpoint")
+        .WithName("ResumeCheckpoint").RequirePermission(UserPermission.TriggerBackfill)
         .WithDescription("Resumes a failed or interrupted backfill job from its checkpoint.")
         .Produces(200)
         .Produces(400)

@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.DataIntegration.Historical;
@@ -188,7 +189,7 @@ public static class HistoricalEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("CreateAlignment")
+        .WithName("CreateAlignment").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -209,7 +210,7 @@ public static class HistoricalEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("PreviewAlignment")
+        .WithName("PreviewAlignment").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }

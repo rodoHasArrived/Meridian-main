@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Application.Scheduling;
 using Meridian.Contracts.Api;
@@ -33,7 +34,7 @@ public static class CronEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("ValidateCronExpression")
+        .WithName("ValidateCronExpression").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .Produces(400)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -79,7 +80,7 @@ public static class CronEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetCronNextRuns")
+        .WithName("GetCronNextRuns").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .Produces(400)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
