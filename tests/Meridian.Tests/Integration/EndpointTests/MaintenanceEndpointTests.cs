@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -19,7 +20,8 @@ public sealed class MaintenanceEndpointTests : IClassFixture<EndpointTestFixture
 
     public MaintenanceEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        // Maintenance scheduling and execution require AdminMaintenance (W9-GOV-008).
+        _client = fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
     }
 
     #region GET /api/maintenance/schedules - List Schedules
