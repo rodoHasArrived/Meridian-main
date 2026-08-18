@@ -261,7 +261,7 @@ public static partial class LedgerEndpoints
                 return MapServiceException(ex);
             }
         })
-        .WithName("CloseLedgerPeriod")
+        .WithName("CloseLedgerPeriod").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<LedgerPeriodCloseResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)

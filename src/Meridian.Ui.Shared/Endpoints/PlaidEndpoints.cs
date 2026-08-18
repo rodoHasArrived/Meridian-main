@@ -4,6 +4,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Integrity;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Plaid;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -152,10 +153,40 @@ public static class PlaidEndpoints
         .Produces<PlaidSyncResult>(StatusCodes.Status200OK);
 
         group.MapPost(UiApiRoutes.PlaidWebhook, async (
-            JsonElement body,
             HttpContext context,
-            IPlaidIngestionService service) =>
+            IPlaidIngestionService service,
+            PlaidOptions options) =>
         {
+            // Read the raw bytes rather than a bound JsonElement: the signature covers exactly
+            // what Plaid sent, and re-serializing a parsed document would verify a different
+            // byte sequence than the one that was signed.
+            context.Request.EnableBuffering();
+            using var bodyBuffer = new MemoryStream();
+            await context.Request.Body.CopyToAsync(bodyBuffer, context.RequestAborted).ConfigureAwait(false);
+            var rawBody = bodyBuffer.ToArray();
+
+            var verification = PlaidWebhookVerifier.Verify(
+                options,
+                context.Request.Headers["Plaid-Verification"].ToString(),
+                rawBody,
+                DateTimeOffset.UtcNow);
+            if (verification != PlaidWebhookVerifier.VerificationOutcome.Verified)
+            {
+                // Deliberately uniform and detail-free: telling an unauthenticated caller which
+                // check failed helps it iterate towards a forgery.
+                return ApiProblemDetails.Unauthorized(context, "The webhook signature could not be verified.");
+            }
+
+            JsonElement body;
+            try
+            {
+                body = JsonDocument.Parse(rawBody).RootElement.Clone();
+            }
+            catch (JsonException)
+            {
+                return Results.BadRequest(new { error = "The webhook payload was not valid JSON." });
+            }
+
             var itemId = GetString(body, "item_id") ?? GetString(body, "itemId") ?? "unknown";
             var webhookType = GetString(body, "webhook_type") ?? GetString(body, "webhookType") ?? "unknown";
             var webhookCode = GetString(body, "webhook_code") ?? GetString(body, "webhookCode") ?? "unknown";
