@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Meridian.Contracts.Api;
@@ -153,7 +154,7 @@ public static class SymbolEndpoints
 
             return Results.Json(new { success = true, symbol = upper }, jsonOptions);
         })
-        .WithName("AddSymbols")
+        .WithName("AddSymbols").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)
         .Produces(400)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -173,7 +174,7 @@ public static class SymbolEndpoints
             await store.SaveAsync(next);
             return Results.Json(new { success = true, symbol = upper }, jsonOptions);
         })
-        .WithName("RemoveSymbol")
+        .WithName("RemoveSymbol").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -281,7 +282,7 @@ public static class SymbolEndpoints
 
             return Results.Json(new { results }, jsonOptions);
         })
-        .WithName("ValidateSymbols")
+        .WithName("ValidateSymbols").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)
         .Produces(400);
 
@@ -299,7 +300,7 @@ public static class SymbolEndpoints
             await store.SaveAsync(next);
             return Results.Ok(new { archived = symbol, message = "Symbol removed from monitoring. Historical data is preserved." });
         })
-        .WithName("ArchiveSymbol")
+        .WithName("ArchiveSymbol").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -339,7 +340,7 @@ public static class SymbolEndpoints
             await store.SaveAsync(next);
             return Results.Json(new { added = added.Count, skipped = skipped.Count, errors }, jsonOptions);
         })
-        .WithName("BulkAddSymbols")
+        .WithName("BulkAddSymbols").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)
         .Produces(400)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -360,7 +361,7 @@ public static class SymbolEndpoints
             await store.SaveAsync(next);
             return Results.Json(new { removed, count = removed.Count }, jsonOptions);
         })
-        .WithName("BulkRemoveSymbols")
+        .WithName("BulkRemoveSymbols").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)
         .Produces(400)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -432,7 +433,7 @@ public static class SymbolEndpoints
             await store.SaveAsync(next);
             return Results.Json(new { results }, jsonOptions);
         })
-        .WithName("BatchSymbolOperations")
+        .WithName("BatchSymbolOperations").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)
         .Produces(400)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -472,7 +473,7 @@ public static class SymbolEndpoints
                 Status: "Configured"
             ));
         })
-        .WithName("CreateSymbol")
+        .WithName("CreateSymbol").RequirePermission(UserPermission.ModifyConfig)
         .Produces<SymbolUniverseResponse>(201)
         .Produces(400)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -522,7 +523,7 @@ public static class SymbolEndpoints
                 Status: "Updated"
             ));
         })
-        .WithName("UpdateSymbol")
+        .WithName("UpdateSymbol").RequirePermission(UserPermission.ModifyConfig)
         .Produces<SymbolUniverseResponse>(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -542,7 +543,7 @@ public static class SymbolEndpoints
             await store.SaveAsync(next);
             return Results.Ok(new { deleted = upper, message = "Symbol removed from monitoring" });
         })
-        .WithName("DeleteSymbol")
+        .WithName("DeleteSymbol").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);

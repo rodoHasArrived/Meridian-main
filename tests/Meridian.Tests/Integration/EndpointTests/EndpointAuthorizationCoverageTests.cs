@@ -90,10 +90,7 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
         // "{}" body cannot bind IReadOnlyList<CollateralInputRow>, so binding answers 400 before
         // any filter runs. The declarative ratchet is the operative guarantee for this route.
         "POST /api/workstation/collateral/ingest",
-        "DELETE /api/maintenance/schedules/{id}/delete",
-        "DELETE /api/maintenance/schedules/{scheduleId}",
         "DELETE /api/packaging/{fileName}",
-        "DELETE /api/symbols/{symbol}",
         "POST /api/alignment/create",
         "POST /api/alignment/preview",
         "POST /api/backfill/checkpoints/{jobId}/resume",
@@ -109,15 +106,6 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
         // is no honest declaration for a role gate -- declaring a permission would state a policy
         // the route does not enforce. Stays listed until the guard is expressed in permissions.
         "POST /api/ledger/periods/{periodId:guid}/close",
-        "POST /api/maintenance/execute",
-        "POST /api/maintenance/executions/cleanup",
-        "POST /api/maintenance/executions/{executionId}/cancel",
-        "POST /api/maintenance/schedules",
-        "POST /api/maintenance/schedules/{id}/disable",
-        "POST /api/maintenance/schedules/{id}/enable",
-        "POST /api/maintenance/schedules/{id}/run",
-        "POST /api/maintenance/schedules/{scheduleId}/trigger",
-        "POST /api/maintenance/validate-cron",
         "POST /api/options/refresh",
         "POST /api/packaging/create",
         "POST /api/packaging/import",
@@ -147,17 +135,7 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
         "POST /api/security-master/corporate-actions/ingest",
         "POST /api/subscriptions/subscribe",
         "POST /api/subscriptions/unsubscribe/{symbol}",
-        "POST /api/symbols/add",
-        "POST /api/symbols/batch",
-        "POST /api/symbols/bulk-add",
-        "POST /api/symbols/bulk-remove",
-        "POST /api/symbols/create",
-        "POST /api/symbols/validate",
-        "POST /api/symbols/{symbol}/archive",
-        "POST /api/symbols/{symbol}/remove",
-        "POST /api/symbols/{symbol}/update",
         "POST /hooks/reporting/distribution/{transportId}/deliveries/{jobId}/receipts",
-        "PUT /api/maintenance/schedules/{scheduleId}",
     };
 
     [Fact]

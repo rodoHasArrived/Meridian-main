@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -18,7 +19,9 @@ public sealed class SymbolEndpointTests : IDisposable, IClassFixture<EndpointTes
 
     public SymbolEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.CreateNoRedirectClient();
+        // Symbol mutations edit the platform configuration's watchlist and require ModifyConfig
+        // (W9-GOV-008); the read assertions in this class are unaffected by the header.
+        _client = fixture.CreatePermittedClient(UserPermission.ModifyConfig);
     }
 
     public void Dispose() => _client.Dispose();
