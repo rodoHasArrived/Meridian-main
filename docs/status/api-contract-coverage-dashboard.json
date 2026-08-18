@@ -2831,55 +2831,55 @@
     {
       "method": "GET",
       "path": "/api/providers/modules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:23",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:24",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/providers/modules/catalogue",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:40",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:41",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/providers/modules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:56",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:57",
       "documented": false
     },
     {
       "method": "PUT",
       "path": "/api/providers/modules/{moduleId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:82",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:83",
       "documented": false
     },
     {
       "method": "DELETE",
       "path": "/api/providers/modules/{moduleId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:110",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:111",
       "documented": false
     },
     {
       "method": "PUT",
       "path": "/api/providers/modules/{moduleId}/enabled",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:135",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:136",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/providers/modules/{moduleId}/test",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:158",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:159",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/providers/capability-matrix",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:177",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:178",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/providers/restart",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:192",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:193",
       "documented": false
     },
     {
