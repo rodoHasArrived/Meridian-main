@@ -1178,6 +1178,142 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Recovery_ClockRollbackSegmentOrder_WithholdsCumulativeCommitUntilFullyReplayed()
+    {
+        // A clock rollback across a rotation makes ordinal segment-name order disagree with
+        // sequence order: the newer segment sorts FIRST while holding the HIGHER sequences.
+        // A cumulative commit issued mid-enumeration would then acknowledge those high
+        // sequences before the lower-sequence records are replayed, and a crash would drop
+        // them on the next pass. The horizon must therefore wait for full enumeration.
+        var walDir = Path.Combine(_rootDir, "wal_clock_rollback");
+        Directory.CreateDirectory(walDir);
+
+        // Build two genuine segments by forcing a rotation, so records and checksums are real.
+        var seedWal = new WriteAheadLog(walDir, new WalOptions
+        {
+            SyncMode = WalSyncMode.EveryWrite,
+            MaxWalFileSizeBytes = 512
+        });
+        await seedWal.InitializeAsync();
+        for (var i = 0; i < 40; i++)
+        {
+            await seedWal.AppendAsync(CreateTradeEvent($"ROLL{i:D2}", 1200 + i), "Trade");
+        }
+
+        await seedWal.FlushAsync();
+        await seedWal.DisposeAsync();
+
+        // Segment names embed the sequence base: "wal_{yyyyMMdd_HHmmss}_{sequence:D12}.wal".
+        // Renaming the later segment to a rolled-back stamp leaves its records untouched but
+        // makes it sort FIRST while still carrying the HIGHER base — exactly the state a clock
+        // rollback across a rotation produces.
+        var segments = Directory.GetFiles(walDir, "*.wal").OrderBy(f => f, StringComparer.Ordinal).ToList();
+        segments.Count.Should().BeGreaterThan(1, "the size cap must have forced at least one rotation");
+        var lastSegment = segments[^1];
+        var rolledBackName = Path.Combine(
+            walDir,
+            "wal_20200101_000000_" + Path.GetFileNameWithoutExtension(lastSegment).Split('_')[3] + ".wal");
+        File.Move(lastSegment, rolledBackName);
+
+        var wal = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        wal.RecoveryEnumerationIsSequenceOrdered().Should().BeFalse(
+            "a rolled-back segment name sorts before an older one while embedding a higher sequence base");
+
+        // First pass fails partway. A cumulative commit issued before the failure would
+        // acknowledge the high-sequence segment enumerated first, and the lower-sequence
+        // records still unreplayed behind it would be filtered out of the retry — lost.
+        var firstSink = new FaultSink { FailOnAppendNumber = 6 };
+        await using (var firstPipeline = new EventPipeline(
+            firstSink, capacity: 100, enablePeriodicFlush: false, wal: wal))
+        {
+            // One record per chunk maximises the chance of an intermediate commit landing
+            // before the failure.
+            firstPipeline.RecoveryCommitBatchSize = 1;
+            await Assert.ThrowsAnyAsync<Exception>(() => firstPipeline.RecoverAsync());
+        }
+
+        await wal.DisposeAsync();
+
+        // Second pass over the same WAL: whatever the first pass did not durably replay must
+        // still be replayable.
+        var retryWal = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        var retrySink = new FaultSink();
+        await using (var retryPipeline = new EventPipeline(
+            retrySink, capacity: 100, enablePeriodicFlush: false, wal: retryWal))
+        {
+            await retryPipeline.RecoverAsync();
+        }
+
+        await retryWal.DisposeAsync();
+
+        var replayed = firstSink.AppendedEvents.Concat(retrySink.AppendedEvents)
+            .Select(evt => evt.Symbol)
+            .ToHashSet(StringComparer.Ordinal);
+
+        replayed.Should().HaveCount(40,
+            "no record may be filtered as committed while it was never replayed — a cumulative " +
+            "commit must not run ahead of an enumeration whose order is unproven");
+    }
+
+    [Fact]
+    public async Task Consumer_NoWal_PrefixCommitFailureAfterFlush_RetainsClaimsForCommitOnlyRetry()
+    {
+        // No WAL: a batch appends a prefix, a later append fails, and the abandon path's
+        // promotion flush succeeds but its identity commit fails. The prefix is durable in the
+        // sink with no durable identity, so releasing its claims would let a re-send append it
+        // twice. The batch must be retained for a commit-only retry instead.
+        var innerLedger = await CreateLedgerAsync("ledger_prefix_commit_fail");
+        var commitCalls = 0;
+        var ledger = new ObservingDedupStore(innerLedger)
+        {
+            // Commit #1 belongs to the gate batch; the prefix promotion is #2. Failing exactly
+            // that one leaves the retry (#3) free to succeed.
+            OnCommit = _ => Interlocked.Increment(ref commitCalls) == 2
+                ? throw new InvalidOperationException("Injected prefix promotion commit failure")
+                : 0
+        };
+        var sink = new FaultSink { GateFirstAppend = true };
+
+        // Identity keys hash the event's timestamp, so the prefix event instance itself must be
+        // reused for the post-run identity assertion.
+        var gateEvent = CreateTradeEvent("GATE4", 1100);
+        var eventA = CreateTradeEvent("PCFA", 1101);
+        var eventB = CreateTradeEvent("PCFB", 1102);
+
+        await using (var pipeline = new EventPipeline(
+            sink, capacity: 100, batchSize: 3, enablePeriodicFlush: false, dedupLedger: ledger))
+        {
+            pipeline.TryPublish(gateEvent);
+            await sink.FirstAppendEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            pipeline.TryPublish(eventA);
+            pipeline.TryPublish(eventB);
+
+            // Appends: #1 GATE4 (gated), #2 PCFA (succeeds), #3 PCFB (fails) — so PCFA is the
+            // appended prefix and the batch is abandoned. Its promotion flush then succeeds
+            // while the injected dedup commit failure hits CommitDurableAsync.
+            sink.FailOnAppendNumber = 3;
+            sink.ReleaseGate();
+
+            await WaitUntilAsync(() => ledger.CommitSuccesses >= 2);
+            await WaitUntilAsync(() => sink.AppendedEvents.Count >= 3);
+            await pipeline.FlushAsync(CancellationToken.None);
+
+            sink.AppendedEvents.Select(evt => evt.Symbol).Should().BeEquivalentTo(
+                new[] { "GATE4", "PCFA", "PCFB" },
+                "the retained batch retries only its dedup commit and never re-appends the flushed prefix");
+        }
+
+        // The durable prefix kept its identity, so an upstream re-send is suppressed rather
+        // than appended a second time.
+        (await innerLedger.TryReserveAsync(eventA, DedupLookupScope.WalRecovery, CancellationToken.None))
+            .Status.Should().Be(DedupReservationStatus.Duplicate,
+                "the commit-only retry must durably confirm the identity of the flushed prefix");
+
+        await innerLedger.DisposeAsync();
+    }
+
+    [Fact]
     public async Task Consumer_ForcedCancellationMidBatch_CommitsFlushedPrefixBeforeReleasingClaims()
     {
         var ledger = await CreateLedgerAsync("ledger_cancel_prefix");

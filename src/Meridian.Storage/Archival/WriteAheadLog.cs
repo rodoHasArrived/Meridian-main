@@ -400,8 +400,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
         // First pass: find the last committed sequence across all WAL files
         long lastCommittedSequence = 0;
 
+        // Ordinal, matching TruncateAsync and RecoveryEnumerationIsSequenceOrdered: a
+        // culture-sensitive comparison could order segment names differently than the
+        // ordering those paths prove, and enumeration order is what they reason about.
         var walFiles = Directory.GetFiles(_walDirectory, "*.wal")
-            .OrderBy(f => f)
+            .OrderBy(f => f, StringComparer.Ordinal)
             .ToList();
 
         // Warn if total uncommitted WAL size is large
@@ -582,6 +585,42 @@ public sealed class WriteAheadLog : IAsyncDisposable
         {
             _truncateLock.Release();
         }
+    }
+
+    /// <summary>
+    /// Reports whether segment names prove that <see cref="GetUncommittedRecordsAsync"/> yields
+    /// records in non-decreasing sequence order.
+    /// </summary>
+    /// <remarks>
+    /// Enumeration walks segments in ordinal name order, and names embed the monotonic sequence
+    /// counter's value at creation. Every record in a segment was appended before the next
+    /// segment was created, so when the embedded bases are non-decreasing in name order, no
+    /// later-enumerated record can carry a lower sequence than an earlier one. A clock rollback
+    /// across a rotation (or a foreign <c>*.wal</c> file) breaks that correspondence and is
+    /// reported here as unordered.
+    /// <para>
+    /// Consumers that durably acknowledge a cumulative horizon <em>mid-enumeration</em> must
+    /// check this first: committing through a high sequence while lower-sequence records are
+    /// still unreplayed would let the next pass filter those records as already committed and
+    /// lose them. A single commit issued after the enumeration completes is always safe.
+    /// </para>
+    /// </remarks>
+    public bool RecoveryEnumerationIsSequenceOrdered()
+    {
+        var walFiles = Directory.GetFiles(_walDirectory, "*.wal")
+            .OrderBy(f => f, StringComparer.Ordinal)
+            .ToList();
+
+        var previousBase = -1L;
+        foreach (var walFile in walFiles)
+        {
+            if (!TryParseSegmentBaseSequence(walFile, out var baseSequence) || baseSequence < previousBase)
+                return false;
+
+            previousBase = baseSequence;
+        }
+
+        return true;
     }
 
     /// <summary>

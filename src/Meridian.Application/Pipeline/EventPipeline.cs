@@ -405,11 +405,24 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         var heldReservations = new List<DedupReservation>();
         var chunkClaimKeys = new HashSet<string>(StringComparer.Ordinal);
 
+        // A cumulative WAL commit acknowledges every sequence at or below its horizon, so an
+        // intermediate one is only safe when enumeration cannot yield a lower sequence later.
+        // Segment names prove that (see RecoveryEnumerationIsSequenceOrdered); a clock rollback
+        // across a rotation breaks it, and committing mid-enumeration would then let the next
+        // pass filter still-unreplayed records as committed and lose them. When unproven, the
+        // sink flush and dedup commits still run per chunk — keeping memory bounded — and only
+        // the WAL horizon commit waits for the final, post-enumeration call.
+        var sequenceOrderedEnumeration = _wal.RecoveryEnumerationIsSequenceOrdered();
+        if (!sequenceOrderedEnumeration)
+        {
+            _logger.LogWarning(
+                "WAL segment names do not prove sequence-ordered recovery enumeration; deferring the " +
+                "cumulative WAL commit until every record has been replayed");
+        }
+
         // Drives the current chunk through its durable boundary: sink flush, then dedup commit,
         // then a best-effort cumulative WAL commit through the horizon processed so far.
-        // GetUncommittedRecordsAsync yields records in sequence order, so every record at or
-        // below the horizon has already been flushed, suppressed, or reported unrecoverable.
-        async Task CommitRecoveredChunkAsync()
+        async Task CommitRecoveredChunkAsync(bool finalChunk = false)
         {
             if (chunkAppended > 0)
                 await _sink.FlushAsync(ct).ConfigureAwait(false);
@@ -432,7 +445,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             // still reflects the successfully flushed extent so the next startup does not
             // re-replay already-persisted events.  The commit itself is best-effort: a failure
             // here is non-fatal because sink data is already durable.
-            if (maxRecoveredSequence > _lastCommittedWalSequence)
+            if ((sequenceOrderedEnumeration || finalChunk) && maxRecoveredSequence > _lastCommittedWalSequence)
             {
                 _lastCommittedWalSequence = maxRecoveredSequence;
                 try
@@ -579,7 +592,9 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
 
             if (recovered > 0 || skipped > 0 || unrecoverable > 0)
             {
-                await CommitRecoveredChunkAsync().ConfigureAwait(false);
+                // Enumeration is complete, so the full horizon is durably acknowledgeable even
+                // when segment names could not prove ordering.
+                await CommitRecoveredChunkAsync(finalChunk: true).ConfigureAwait(false);
 
                 try
                 {
@@ -619,9 +634,13 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             throw;
         }
 
-        // Emit WAL recovery metrics to Prometheus
+        // Emit WAL recovery metrics to Prometheus. The count is the number of records actually
+        // replayed to the sink, not the WAL's scan tally: that tally includes records whose
+        // payload proved undeserializable and were dropped as corruption, so reporting it would
+        // claim recovery successes that never reached the sink and contradict both the
+        // corruption counter and RecoveredCount.
         PrometheusMetrics.RecordWalRecovery(
-            _wal.LastRecoveryEventCount,
+            recovered,
             _wal.LastRecoveryDurationMs / 1000.0);
     }
 
@@ -1209,15 +1228,16 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                             ? "the batch will retry from its retained phase before later batches are committed"
                             : "WAL commit withheld and consumer continuing");
 
+                    // Without a WAL, events appended before the failure sit in the sink's
+                    // buffer and can still become durable at the next periodic or final
+                    // flush. Flush them now and durably commit their identity claims so an
+                    // upstream re-send of the persisted prefix is suppressed rather than
+                    // appended twice. If the flush itself fails nothing became durable, so the
+                    // claims are released below — duplicates stay possible, loss does not.
+                    var prefixCommitted = false;
+                    var prefixFlushed = false;
                     if (!retryPendingBatch)
                     {
-                        // Without a WAL, events appended before the failure sit in the sink's
-                        // buffer and can still become durable at the next periodic or final
-                        // flush. Flush them now and durably commit their identity claims so an
-                        // upstream re-send of the persisted prefix is suppressed rather than
-                        // appended twice. If this best-effort promotion fails, fall through to
-                        // releasing every claim — duplicates stay possible, loss does not.
-                        var prefixCommitted = false;
                         if (_dedupLedger != null && nextPendingEventIndex > 0 && !dedupBatchCommitted)
                         {
                             try
@@ -1232,6 +1252,13 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                                 if (reservationScratch.Count > 0)
                                 {
                                     await _sink.FlushAsync(_cts.Token).ConfigureAwait(false);
+                                    // The prefix is durable from here. Its claims must not be
+                                    // released now: releasing them would leave persisted events
+                                    // with no durable identity, so a re-send would append them
+                                    // a second time. Tracked locally rather than through
+                                    // sinkBatchFlushed, which would make a retry skip the flush
+                                    // that events appended after this prefix still need.
+                                    prefixFlushed = true;
                                     await _dedupLedger.CommitDurableAsync(reservationScratch, _cts.Token).ConfigureAwait(false);
                                 }
 
@@ -1240,12 +1267,35 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                             }
                             catch (Exception promoteEx)
                             {
-                                _logger.LogWarning(promoteEx,
-                                    "Failed to flush and commit the appended prefix of an abandoned batch; " +
-                                    "its identity claims will be released and a re-send may append duplicates");
+                                reservationScratch.Clear();
+
+                                if (prefixFlushed)
+                                {
+                                    // The flush succeeded and only the identity commit failed, so
+                                    // the prefix is durable while its identities are not.
+                                    // Releasing those claims would let a re-send append the
+                                    // prefix twice, so retain the batch instead of abandoning
+                                    // it: the retry resumes from the sink-acknowledgement index,
+                                    // never re-appending the prefix, and commits every claim
+                                    // once its events are flushed.
+                                    retryPendingBatch = true;
+                                    Volatile.Write(ref _retainedBatchEventCount, batchBuffer.Count);
+                                    _logger.LogWarning(promoteEx,
+                                        "Failed to commit identity claims for the flushed prefix of a batch; " +
+                                        "the batch is retained and retried so the durable prefix keeps its claims");
+                                }
+                                else
+                                {
+                                    _logger.LogWarning(promoteEx,
+                                        "Failed to flush and commit the appended prefix of an abandoned batch; " +
+                                        "its identity claims will be released and a re-send may append duplicates");
+                                }
                             }
                         }
+                    }
 
+                    if (!retryPendingBatch)
+                    {
                         // The remaining pending identity claims must not outlive the abandoned
                         // batch, otherwise a legitimate upstream re-send of the same event would
                         // be suppressed as an in-flight duplicate forever. Committed prefix
