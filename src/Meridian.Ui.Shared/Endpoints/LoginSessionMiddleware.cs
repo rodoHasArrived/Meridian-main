@@ -12,6 +12,9 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// Middleware that enforces session-based authentication.
 /// <list type="bullet">
 ///   <item>Health probes (/healthz, /readyz, /livez) are always exempt.</item>
+///   <item>The initial-account bootstrap surface (/setup/account, /api/auth/bootstrap) is exempt
+///     while no account exists; those endpoints gate themselves on the loopback-only, one-use
+///     MDC_BOOTSTRAP_TOKEN.</item>
 ///   <item>The login page (/login) and auth API endpoints (/api/auth/*) are exempt when authentication is configured.</item>
 ///   <item>Unauthenticated API requests receive a 401 JSON response.</item>
 ///   <item>Unauthenticated browser (non-/api) requests are redirected to /login.</item>
@@ -99,6 +102,16 @@ public sealed class LoginSessionMiddleware
         if (!sessionService.IsConfigured)
         {
             if (sessionService.AllowAnonymousWhenUnconfigured)
+            {
+                await _next(context);
+                return;
+            }
+
+            // The initial-account bootstrap surface must stay reachable while no account
+            // exists, or a fresh install can never create its first login. The endpoints
+            // fail closed on their own: loopback-only, one-use MDC_BOOTSTRAP_TOKEN, and
+            // refusal once any account exists.
+            if (IsInitialAccountBootstrapRequest(trimmedPath))
             {
                 await _next(context);
                 return;
@@ -197,6 +210,10 @@ public sealed class LoginSessionMiddleware
         await context.Response.WriteAsync(
             "Authentication is required but not configured. Set MDC_USERS with passwordHash values or configure MDC_AUTH_MODE=optional for local development.");
     }
+
+    private static bool IsInitialAccountBootstrapRequest(string trimmedPath)
+        => trimmedPath.Equals("/setup/account", StringComparison.OrdinalIgnoreCase)
+        || trimmedPath.Equals("/api/auth/bootstrap", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsLifecycleTokenRequest(HttpContext context, string trimmedPath)
     {

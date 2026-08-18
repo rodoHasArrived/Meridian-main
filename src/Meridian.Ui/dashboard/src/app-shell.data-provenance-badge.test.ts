@@ -18,7 +18,8 @@ describe("buildDataProvenanceBadgeViewModel", () => {
   it.each([
     ["simulated", "SIMULATED", "Simulated data"],
     ["seeded", "SEEDED", "Seeded demo data"],
-    ["sample", "SAMPLE", "Sample data"]
+    ["sample", "SAMPLE", "Sample data"],
+    ["unknown", "UNKNOWN", "Data source unverified"]
   ] as const)("labels %s data as a persistent, non-dismissable badge", (provenance, label, headline) => {
     const badge = buildDataProvenanceBadgeViewModel({ provenance });
 
@@ -59,6 +60,10 @@ describe("normalizeDataProvenance", () => {
     expect(normalizeDataProvenance("mystery-source")).toBe("simulated");
   });
 
+  it("treats a wire token 'unknown' as a claim to fail closed on, not as the client unknown state", () => {
+    expect(normalizeDataProvenance("unknown")).toBe("simulated");
+  });
+
   it.each([null, undefined, "", "   ", 0, {}, []])(
     "fails closed for missing or malformed wire value %p",
     (token) => {
@@ -94,10 +99,12 @@ describe("resolveWorkstationDataProvenance", () => {
   });
 
   it("claims real data only after the server explicitly reports demo mode disabled", () => {
+    // An unanswered probe is `unknown` — a persistent badge with a retry control —
+    // never a silent real claim and never a confirmed SIMULATED brand.
     expect(resolveWorkstationDataProvenance({
       usingDevelopmentFixtures: false,
       demoMode: null
-    })).toBe("simulated");
+    })).toBe("unknown");
     expect(resolveWorkstationDataProvenance({
       usingDevelopmentFixtures: false,
       demoMode: { enabled: false, provenance: "seeded" }

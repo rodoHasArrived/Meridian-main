@@ -365,6 +365,43 @@ describe("App", () => {
     expect(mockedUseWorkstationData).toHaveBeenCalled();
   });
 
+  it("keeps a failed provenance probe as UNKNOWN with a retry control, never a SIMULATED brand", async () => {
+    let allowDemoMode = false;
+    let demoModeRequests = 0;
+    vi.mocked(apiGetJson).mockImplementation((path) => {
+      if (path === WORKSTATION_API_ENDPOINTS.firstRunStatus) {
+        return resolveSynchronously(completedFirstRunStatus) as ReturnType<typeof apiGetJson>;
+      }
+
+      if (path === WORKSTATION_API_ENDPOINTS.demoMode) {
+        demoModeRequests += 1;
+        return allowDemoMode
+          ? Promise.resolve({ enabled: false, provenance: "real" }) as ReturnType<typeof apiGetJson>
+          : Promise.reject(new Error("Demo-mode endpoint unavailable."));
+      }
+
+      return Promise.reject(new Error(`No test response configured for ${path}`));
+    });
+    mockWorkstationData({ loading: false, usingDevelopmentFixtures: false });
+
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    const provenanceBanner = await screen.findByRole("region", { name: "Data provenance" });
+    expect(within(provenanceBanner).getByTestId("data-provenance-unknown")).toBeInTheDocument();
+    expect(within(provenanceBanner).queryByTestId("data-provenance-simulated")).toBeNull();
+
+    const retry = await within(provenanceBanner).findByRole("button", {
+      name: "Retry live Meridian workspace data"
+    });
+    allowDemoMode = true;
+    await userEvent.click(retry);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("region", { name: "Data provenance" })).not.toBeInTheDocument();
+    });
+    expect(demoModeRequests).toBeGreaterThanOrEqual(2);
+  });
+
   it("surfaces successful seeded demo JSON even without a development-fixture response header", async () => {
     vi.mocked(apiGetJson).mockImplementation((path) => {
       if (path === WORKSTATION_API_ENDPOINTS.firstRunStatus) {

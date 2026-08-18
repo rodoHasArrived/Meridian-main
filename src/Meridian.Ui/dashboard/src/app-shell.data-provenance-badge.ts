@@ -5,7 +5,7 @@
  * operator must see the label. The C# seam is `Meridian.Contracts.Operations.DataProvenance`.
  */
 
-export type DataProvenanceKind = "real" | "simulated" | "seeded" | "sample";
+export type DataProvenanceKind = "real" | "simulated" | "seeded" | "sample" | "unknown";
 
 export interface DataProvenanceBadgeViewModel {
   role: "status";
@@ -42,9 +42,20 @@ const NON_REAL_COPY: Record<
     label: "SAMPLE",
     headline: "Sample data",
     detail: "This is sample placeholder data with no operational meaning."
+  },
+  unknown: {
+    label: "UNKNOWN",
+    headline: "Data source unverified",
+    detail:
+      "The workstation could not confirm whether this session runs on real or simulated data. Retry the live-data check before trusting quotes, fills, valuations, or P&L."
   }
 };
 
+/**
+ * Provenance kinds the server can assert over the wire. `unknown` is deliberately absent: it is a
+ * client-side transport state (the probe never answered), never a server claim, so a wire token
+ * "unknown" still fails closed to `simulated` below.
+ */
 const KNOWN_PROVENANCE: readonly DataProvenanceKind[] = ["real", "simulated", "seeded", "sample"];
 
 /**
@@ -83,7 +94,9 @@ export interface WorkstationDataProvenanceInput {
 /**
  * Resolves the shell-wide trust label. A positive demo-mode response and any development-fixture
  * usage take precedence over a real-data claim. Until the server has explicitly reported that demo
- * mode is disabled, the shell stays fail-closed as simulated instead of silently claiming real data.
+ * mode is disabled, the shell reports `unknown` — a distinct persistent badge with a retry
+ * affordance — rather than branding a real install SIMULATED because one probe failed, and never
+ * silently claiming real data.
  */
 export function resolveWorkstationDataProvenance({
   usingDevelopmentFixtures,
@@ -98,7 +111,7 @@ export function resolveWorkstationDataProvenance({
     return "seeded";
   }
 
-  return demoMode ? "real" : "simulated";
+  return demoMode ? "real" : "unknown";
 }
 
 export function buildDataProvenanceBadgeViewModel({

@@ -50,7 +50,7 @@ export function buildTrustStripState({
   });
   const resolvedProvenance = usingDevelopmentFixtures
     ? "seeded"
-    : dataProvenance ?? "simulated";
+    : dataProvenance ?? "unknown";
   const provenanceBadge = buildDataProvenanceBadgeViewModel({
     provenance: resolvedProvenance
   });
