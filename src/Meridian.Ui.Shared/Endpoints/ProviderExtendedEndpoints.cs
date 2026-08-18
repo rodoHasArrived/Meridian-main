@@ -221,7 +221,7 @@ public static class ProviderExtendedEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("TestProvider")
+        .WithName("TestProvider").RequirePermission(UserPermission.ViewDiagnostics)
         .WithDescription("Returns live provider connection diagnostics when available; reachability is null when no runtime probe exists.")
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);

@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Application.Monitoring;
 using Meridian.Contracts.Api;
@@ -78,7 +79,7 @@ public static class ResilienceEndpoints
             var estimate = estimator.Estimate(costRequest);
             return Results.Json(estimate, jsonOptions);
         })
-        .WithName("EstimateBackfillCost")
+        .WithName("EstimateBackfillCost").RequirePermission(UserPermission.TriggerBackfill)
         .WithDescription("Estimates API calls, wall-clock time, and quota impact for a backfill request.")
         .Produces(200)
         .Produces(503)

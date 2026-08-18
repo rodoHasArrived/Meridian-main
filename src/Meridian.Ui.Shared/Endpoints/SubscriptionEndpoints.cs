@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
@@ -63,7 +64,7 @@ public static class SubscriptionEndpoints
 
             return Results.Json(new { success = true, symbol = req.Symbol, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("Subscribe")
+        .WithName("Subscribe").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)
         .Produces(400)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -83,7 +84,7 @@ public static class SubscriptionEndpoints
 
             return Results.Json(new { success = true, symbol, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("Unsubscribe")
+        .WithName("Unsubscribe").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);

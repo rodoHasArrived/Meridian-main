@@ -69,7 +69,7 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
         // The reporting delivery-receipt hook is an inbound provider callback: it verifies an
         // X-Meridian-Reporting-Signature over the body before recording anything, and no session
         // exists on a provider callback to carry permissions.
-        "POST /hooks/reporting/distribution/{transportId}/deliveries/{jobId}/receipt",
+        "POST /hooks/reporting/distribution/{transportId}/deliveries/{jobId}/receipts",
         // The portal grant exchange is the seam that mints a session for an external report
         // recipient: it authenticates the grant token it is given, so requiring a permission the
         // caller cannot yet hold would make the route unusable for its only purpose.
@@ -90,22 +90,16 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
         // "{}" body cannot bind IReadOnlyList<CollateralInputRow>, so binding answers 400 before
         // any filter runs. The declarative ratchet is the operative guarantee for this route.
         "POST /api/workstation/collateral/ingest",
-        "POST /api/alignment/create",
-        "POST /api/alignment/preview",
-        "POST /api/backfill/checkpoints/{jobId}/resume",
-        "POST /api/backfill/cost-estimate",
         "POST /api/compliance/actions/evaluate",
         "POST /api/execution/orders/submit",
         "POST /api/fund-structure/reporting/distribution/access-grants",
         "POST /api/fund-structure/reporting/distribution/access-grants/{grantId}/revoke",
         "POST /api/fund-structure/reporting/distribution/deliveries",
-        "POST /api/health/providers/{provider}/test",
         // Guarded, but by role rather than permission: TryGetLedgerCloseActor admits only the
         // Admin and Accounting roles. EndpointAuthorizationMetadata carries permissions, so there
         // is no honest declaration for a role gate -- declaring a permission would state a policy
         // the route does not enforce. Stays listed until the guard is expressed in permissions.
         "POST /api/ledger/periods/{periodId:guid}/close",
-        "POST /api/options/refresh",
         // SECURITY FINDING, deliberately left visible rather than allowlisted: unlike the
         // reporting delivery hook two entries above, this route verifies nothing at all -- no
         // Plaid signature, no shared secret, no session -- so any caller who can reach the host
@@ -113,16 +107,9 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
         // until that ingress is authenticated; allowlisting it would assert an authentication
         // story that does not exist.
         "POST /api/plaid/webhook",
-        "POST /api/providers/{providerName}/test",
         "POST /api/reference-data/options/chains/import",
-        "POST /api/sampling/create",
-        "POST /api/schedules/cron/next-runs",
-        "POST /api/schedules/cron/validate",
         "POST /api/security-master/corporate-actions/inbox/apply",
         "POST /api/security-master/corporate-actions/ingest",
-        "POST /api/subscriptions/subscribe",
-        "POST /api/subscriptions/unsubscribe/{symbol}",
-        "POST /hooks/reporting/distribution/{transportId}/deliveries/{jobId}/receipts",
     };
 
     [Fact]
