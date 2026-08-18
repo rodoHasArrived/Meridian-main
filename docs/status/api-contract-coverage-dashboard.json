@@ -2591,49 +2591,49 @@
     {
       "method": "GET",
       "path": "/api/plaid/items",
-      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:18",
+      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:19",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/plaid/accounts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:31",
+      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:32",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/plaid/institutions/search",
-      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:44",
+      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:45",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/plaid/link-token",
-      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:74",
+      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:75",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/plaid/public-token/exchange",
-      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:99",
+      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:100",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/plaid/items/{itemId}/sync",
-      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:124",
+      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:125",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/plaid/webhook",
-      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:154",
+      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:155",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/plaid/transfers/sandbox",
-      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:176",
+      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:207",
       "documented": false
     },
     {
