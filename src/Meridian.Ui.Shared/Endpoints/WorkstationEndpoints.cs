@@ -154,13 +154,13 @@ public static partial class WorkstationEndpoints
                 .ConfigureAwait(false);
             return Results.Json(summary, jsonOptions);
         })
-        .WithName("GetWorkstationWorkflowSummary")
+        .WithName("GetWorkstationWorkflowSummary").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<OperatorWorkflowHomeSummary>(200)
         .Produces(403)
         .Produces(501)
-        // No route-level read permission to defer to, so the ownership gate always evaluates the
-        // fundProfileId query value (SEC-005 slice 3b).
-        .RequireFundProfileTenantScope();
+        // The route now carries a read permission, so the ownership gate takes the same set and
+        // defers to the route's own 403 for callers who cannot read it at all (SEC-005 slice 3b).
+        .RequireFundProfileTenantScope(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowLibrary), (HttpContext context) =>
         {
@@ -405,7 +405,7 @@ public static partial class WorkstationEndpoints
             var inbox = await BuildOperatorInboxAsync(fundAccountId, context).ConfigureAwait(false);
             return Results.Json(inbox, jsonOptions);
         })
-        .WithName("GetWorkstationOperatorInbox")
+        .WithName("GetWorkstationOperatorInbox").RequirePermission(UserPermission.ViewTrades)
         .Produces<OperatorInboxDto>(200)
         .Produces(403)
         .RequireWorkstationTenantCompanyScope();
@@ -417,7 +417,7 @@ public static partial class WorkstationEndpoints
                 ? DataReadServicesUnavailable()
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationDataOperations")
+        .WithName("GetWorkstationDataOperations").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.AdminMaintenance)
         .Produces<WorkstationDataPayload>(200)
         .Produces(503);
 
@@ -428,7 +428,7 @@ public static partial class WorkstationEndpoints
                 ? DataReadServicesUnavailable()
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationData")
+        .WithName("GetWorkstationData").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.AdminMaintenance)
         .Produces<WorkstationDataPayload>(200)
         .Produces(503);
 
@@ -472,7 +472,7 @@ public static partial class WorkstationEndpoints
                     statusCode: StatusCodes.Status503ServiceUnavailable)
                 : Results.Ok(estimate);
         })
-        .WithName("GetWorkstationDataReplacementCost")
+        .WithName("GetWorkstationDataReplacementCost").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
         .Produces<DataReplacementCostEstimate>(200)
         .Produces(503);
 
@@ -483,7 +483,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyReadServiceUnavailable()
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationGovernance")
+        .WithName("GetWorkstationGovernance").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<WorkstationAccountingPayload>(200)
         .Produces(503)
         .RequireWorkstationTenantCompanyScope();
@@ -495,7 +495,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyReadServiceUnavailable()
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationAccounting")
+        .WithName("GetWorkstationAccounting").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<WorkstationAccountingPayload>(200)
         .Produces(503)
         .RequireWorkstationTenantCompanyScope();
@@ -534,7 +534,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(payload, jsonOptions);
         })
-        .WithName("GetWorkstationAssetOperations")
+        .WithName("GetWorkstationAssetOperations").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<AssetOperationsDetailDto>(200)
         .Produces(404);
 

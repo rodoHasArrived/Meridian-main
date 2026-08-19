@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -29,7 +30,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." })
                 : Results.Json(explorer, jsonOptions);
         })
-        .WithName("GetWorkstationFinancialRecordExplorer")
+        .WithName("GetWorkstationFinancialRecordExplorer").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<FinancialRecordExplorerDto>(200)
         .Produces(404);
 
@@ -54,7 +55,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound(new { error = $"Unknown financial record '{recordId}'." })
                 : Results.Json(record, jsonOptions);
         })
-        .WithName("GetWorkstationFinancialRecordExplorerRecord")
+        .WithName("GetWorkstationFinancialRecordExplorerRecord").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<FinancialRecordExplorerSelectedRecordDto>(200)
         .Produces(404);
 

@@ -147,7 +147,7 @@ public sealed partial class WorkstationEndpointsTests
     public async Task MapWorkstationEndpoints_CanonicalWorkspaceRouteConstants_WithoutBackingServices_ShouldReturnServiceUnavailable()
     {
         await using var app = await CreateAppAsync(
-            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting | UserPermission.ViewStrategies | UserPermission.ViewTrades);
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting | UserPermission.ViewStrategies | UserPermission.ViewTrades | UserPermission.ViewHistoricalData);
         var client = app.GetTestClient();
 
         UiApiRoutes.WorkstationStrategy.Should().Be("/api/workstation/strategy");
@@ -260,7 +260,7 @@ public sealed partial class WorkstationEndpointsTests
     public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnServiceUnavailableInsteadOfFabricatedPayloads()
     {
         await using var app = await CreateAppAsync(
-            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting | UserPermission.ViewStrategies | UserPermission.ViewTrades);
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting | UserPermission.ViewStrategies | UserPermission.ViewTrades | UserPermission.ViewHistoricalData);
         var client = app.GetTestClient();
 
         // The session bootstrap payload stays available with honest zeroed workspace counters.
@@ -1057,7 +1057,7 @@ public sealed partial class WorkstationEndpointsTests
         {
             RegisterConfigStores(services, configPath);
         },
-            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ManageCredentials);
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ManageCredentials | UserPermission.ViewHistoricalData);
         var client = app.GetTestClient();
 
         using var dataOperations = await ReadJsonAsync(client, "/api/workstation/data-operations");
@@ -1114,7 +1114,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<ProviderConnectionService>();
             services.AddSingleton<ProviderBindingService>();
         },
-            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ManageCredentials);
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ManageCredentials | UserPermission.ViewHistoricalData);
 
         var connectionService = app.Services.GetRequiredService<ProviderConnectionService>();
         var bindingService = app.Services.GetRequiredService<ProviderBindingService>();
@@ -1205,7 +1205,7 @@ public sealed partial class WorkstationEndpointsTests
 
         // Default test permissions do not include ManageCredentials, so connection summaries
         // must stay hidden even though real provider metrics are available.
-        await using var app = await CreateAppAsync(services => RegisterConfigStores(services, configPath));
+        await using var app = await CreateAppAsync(services => RegisterConfigStores(services, configPath), currentUserPermissions: UserPermission.ViewHistoricalData);
         using var dataOperations = await ReadJsonAsync(app.GetTestClient(), "/api/workstation/data-operations");
         var providers = dataOperations.RootElement.GetProperty("providers").EnumerateArray().ToArray();
 
@@ -1225,7 +1225,7 @@ public sealed partial class WorkstationEndpointsTests
             // endpoints honestly return 503 instead of fabricated fallback payloads.
             RegisterRunReadServices(services);
             services.AddSingleton(observability);
-        });
+        }, currentUserPermissions: UserPermission.ViewHistoricalData | UserPermission.ViewTrades);
 
         var client = app.GetTestClient();
 
@@ -1395,7 +1395,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_WorkflowSummaryWithoutContext_ShouldPrioritizeChooseContextForTradingAndAccounting()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewTrades);
         var client = app.GetTestClient();
 
         var summary = await ReadWorkflowSummaryAsync(client, "/api/workstation/workflow-summary");
@@ -1409,7 +1409,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_WorkflowSummaryWithPaperCandidate_ShouldReflectStrategyToTradingHandoff()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewTrades);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationReadyRun("workflow-backtest-candidate") with
         {
@@ -1436,7 +1436,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_WorkflowSummaryWithActivePaperRunAndNoBreaks_ShouldKeepTradingActiveAndAccountingReady()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewTrades);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildActivePaperRun("workflow-paper-active", withBreaks: false));
 
@@ -1460,7 +1460,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_WorkflowSummaryWithReconciliationBreaks_ShouldEscalateAccountingNextAction()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewTrades);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildActivePaperRun("workflow-paper-breaks", withBreaks: true));
 
@@ -1488,7 +1488,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_WorkflowSummaryWithoutRuns_ShouldReturnStableNonNullContracts()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewTrades);
         var client = app.GetTestClient();
 
         var response = await client.GetAsync("/api/workstation/workflow-summary");
@@ -2600,7 +2600,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_ShouldProjectTradingReadinessWorkItemsWithNavigation()
     {
-        await using var app = await CreateAppAsync();
+        await using var app = await CreateAppAsync(currentUserPermissions: UserPermission.ViewTrades);
 
         var inbox = await app
             .GetTestClient()
@@ -2632,7 +2632,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades | UserPermission.ViewStrategies);
 
         var runId = $"run-inbox-route-resolution-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -2672,7 +2672,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_ShouldReturnDeterministicOrderingAcrossPollingRequests()
     {
-        await using var app = await CreateAppAsync();
+        await using var app = await CreateAppAsync(currentUserPermissions: UserPermission.ViewTrades | UserPermission.ViewStrategies);
         var client = app.GetTestClient();
 
         var first = await client.GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
@@ -2797,7 +2797,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        }, currentUserPermissions: UserPermission.ViewStrategies);
+        }, currentUserPermissions: UserPermission.ViewStrategies | UserPermission.ViewTrades);
 
         var olderRunId = $"run-inbox-review-packet-older-{Guid.NewGuid():N}";
         var newestRunId = $"run-inbox-review-packet-newest-{Guid.NewGuid():N}";
@@ -2849,13 +2849,57 @@ public sealed partial class WorkstationEndpointsTests
             item.Tone == OperatorWorkItemToneDto.Warning);
     }
 
+    /// <summary>
+    /// The inbox aggregates families whose own routes carry different permissions. A caller admitted
+    /// by the route's own permission must still not receive a family they are gated out of, so this
+    /// pins the run-review contribution to ViewStrategies: the same fixture that produces review-packet
+    /// blockers for a strategy-permitted caller must produce none for a trading-only one, while the
+    /// readiness items the route does grant stay present.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_WithoutStrategyPermission_ShouldOmitReviewPacketBlockers()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        }, currentUserPermissions: UserPermission.ViewTrades);
+
+        var newestRunId = $"run-inbox-review-gate-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun(newestRunId) with
+        {
+            StartedAt = new DateTimeOffset(2026, 3, 21, 18, 0, 0, TimeSpan.Zero),
+            EndedAt = new DateTimeOffset(2026, 3, 21, 18, 30, 0, TimeSpan.Zero)
+        });
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>(
+                "/api/workstation/operator/inbox",
+                ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        // The run-scoped work-item id is the discriminator, not the kind: trading readiness emits
+        // PromotionReview items of its own, so asserting on kind alone would fail even with the
+        // contribution correctly withheld.
+        inbox!.Items.Should().NotContain(
+            item => item.WorkItemId == $"promotion-review-{newestRunId.ToLowerInvariant()}",
+            "run-review packets restate strategy-run detail and require ViewStrategies");
+        inbox.Items.Should().NotContain(
+            item => item.RunId == newestRunId && item.TargetRoute != null && item.TargetRoute.Contains("review-packet"),
+            "no run-review contribution may reach a caller without the strategy permission");
+        inbox.Items.Should().Contain(
+            item => item.WorkItemId == "paper-session-missing",
+            "the trading-readiness items the route's own permission grants must still be present");
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeReviewPacketBlockersFromRecentRuns()
     {
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades | UserPermission.ViewStrategies);
 
         var olderRunId = $"run-inbox-review-packet-older-{Guid.NewGuid():N}";
         var newestRunId = $"run-inbox-review-packet-newest-{Guid.NewGuid():N}";
@@ -2922,7 +2966,7 @@ public sealed partial class WorkstationEndpointsTests
             await using var app = await CreateAppAsync(services =>
             {
                 services.AddSingleton(brokerageSync);
-            });
+            }, currentUserPermissions: UserPermission.ViewTrades);
 
             var inbox = await app
                 .GetTestClient()
@@ -2964,7 +3008,7 @@ public sealed partial class WorkstationEndpointsTests
             await brokerageSync.RunSyncAsync(ibkrAccountId, new WorkstationBrokerageSyncRunRequestDto("ibkr", "DU-7788", "ops-review"));
             await brokerageSync.RunSyncAsync(robinhoodAccountId, new WorkstationBrokerageSyncRunRequestDto("robinhood", "RH-404", "ops-review"));
 
-            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync), currentUserPermissions: UserPermission.ViewTrades);
             var client = app.GetTestClient();
 
             foreach (var accountId in new[] { ibkrAccountId, robinhoodAccountId })
@@ -3096,7 +3140,7 @@ public sealed partial class WorkstationEndpointsTests
             await brokerageSync.RunSyncAsync(accountA, new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-404", "ops-review"));
             await brokerageSync.RunSyncAsync(accountB, new WorkstationBrokerageSyncRunRequestDto("ibkr", "DU-7788", "ops-review"));
 
-            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync), currentUserPermissions: UserPermission.ViewTrades);
             var client = app.GetTestClient();
 
             var accountAInbox = await client.GetFromJsonAsync<OperatorInboxDto>(
@@ -3144,7 +3188,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades | UserPermission.ModifySecurityMaster);
 
         var runId = $"run-inbox-break-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -3187,7 +3231,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades | UserPermission.ModifySecurityMaster);
 
         var runId = $"run-inbox-review-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -3232,7 +3276,7 @@ public sealed partial class WorkstationEndpointsTests
                 new FileReconciliationBreakQueueRepository(
                     Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
                     NullLogger<FileReconciliationBreakQueueRepository>.Instance));
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades);
 
         var inbox = await app
             .GetTestClient()
@@ -3265,7 +3309,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades);
 
         var runId = $"run-inbox-break-only-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -3303,7 +3347,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades | UserPermission.ViewStrategies);
 
         var runId = $"run-inbox-mixed-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -3336,7 +3380,7 @@ public sealed partial class WorkstationEndpointsTests
                 new FileReconciliationBreakQueueRepository(
                     Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
                     NullLogger<FileReconciliationBreakQueueRepository>.Instance));
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades);
 
         var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
 
@@ -3355,7 +3399,7 @@ public sealed partial class WorkstationEndpointsTests
         {
             services.AddSingleton<IReconciliationBreakQueueRepository>(
                 new ThrowingReconciliationBreakQueueRepository());
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades);
 
         var inbox = await app
             .GetTestClient()
@@ -4789,7 +4833,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        }, currentUserPermissions: UserPermission.ViewStrategies);
+        }, currentUserPermissions: UserPermission.ViewStrategies | UserPermission.ViewTrades);
 
         var runId = $"run-cross-surface-continuity-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -6697,7 +6741,7 @@ public sealed partial class WorkstationEndpointsTests
                     new DefaultReportingTemplateCatalog(),
                     runStore));
             },
-            currentUserPermissions: UserPermission.ViewReporting);
+            currentUserPermissions: UserPermission.ViewReporting | UserPermission.ViewTrades);
         var client = app.GetTestClient();
 
         using var reportingResponse = await client.GetAsync("/api/workstation/reporting");

@@ -2,6 +2,7 @@ using System.Globalization;
 using Meridian.Application.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
@@ -28,10 +29,23 @@ public static partial class WorkstationEndpoints
             .Select(AttachOperatorNavigation)
             .ToList();
 
-        await AddRunReviewPacketWorkItemsAsync(context, fundAccountId, workItems, asOf).ConfigureAwait(false);
-        await AddReconciliationBreakWorkItemsAsync(context, workItems, asOf).ConfigureAwait(false);
+        // The inbox aggregates four families whose own routes carry different permissions, so each
+        // contribution is gated by the permission its source route requires. Without this, the single
+        // route-level permission would decide the whole payload and a caller admitted for one family
+        // would read another's content -- reconciliation break items, for instance, carry the strategy
+        // name, break reason, status and assignee, not merely a count.
+        if (HasRunReviewInboxPermission(context))
+        {
+            await AddRunReviewPacketWorkItemsAsync(context, fundAccountId, workItems, asOf).ConfigureAwait(false);
+        }
+
+        if (CanViewReconciliationBreakQueue(context))
+        {
+            await AddReconciliationBreakWorkItemsAsync(context, workItems, asOf).ConfigureAwait(false);
+        }
+
         var operatorInbox = context.RequestServices.GetService<IOperatorInboxService>();
-        if (operatorInbox is not null)
+        if (operatorInbox is not null && HasContributedInboxPermission(context))
         {
             var contributedItems = await operatorInbox.GetItemsAsync(context.RequestAborted).ConfigureAwait(false);
             workItems.AddRange(contributedItems.Select(AttachOperatorNavigation));
@@ -66,6 +80,27 @@ public static partial class WorkstationEndpoints
             ReviewCount: reviewCount,
             Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount, readiness.PortfolioLedgerWorkflowStatus));
     }
+
+    /// <summary>
+    /// Run-review packets restate strategy-run detail, so they are contributed only to callers the
+    /// run drill-in routes admit.
+    /// </summary>
+    private static bool HasRunReviewInboxPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ViewStrategies,
+            UserPermission.ManageStrategies);
+
+    /// <summary>
+    /// Items contributed through <see cref="IOperatorInboxService"/> come from the ledger book and
+    /// direct-lending accrual paths, so they are contributed only to callers who can read those.
+    /// </summary>
+    private static bool HasContributedInboxPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ViewDirectLending,
+            UserPermission.ManageDirectLending,
+            UserPermission.AdminMaintenance);
 
     private static void PreferCanonicalReconciliationBreakWorkItems(List<OperatorWorkItemDto> workItems)
     {
