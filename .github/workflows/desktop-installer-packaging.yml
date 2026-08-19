@@ -19,14 +19,6 @@ on:
         required: false
         default: false
         type: boolean
-      allow_first_release:
-        description: >-
-          Certify a release that has no published predecessor. The update and rollback legs are
-          recorded as not-applicable with a reason rather than skipped silently. Required for the
-          very first release, because the N-1 lookup otherwise fails closed.
-        required: false
-        default: false
-        type: boolean
 
 permissions:
   contents: read
@@ -524,13 +516,17 @@ jobs:
           }
           "cert_path=$certPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
+      # First-release mode is derived from repository state, never from an input. A dispatch-only
+      # input cannot help the tag push that needs it (workflow_dispatch inputs are absent on
+      # push), and a manually forced flag could skip real N-1 evidence when a predecessor does
+      # exist. An empty release list is the fact that there is nothing to update from; a failed
+      # query is not, and stays fatal.
       - name: Resolve the N-1 installer
         id: prior
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           CONFIGURED_PRIOR_TAG: ${{ inputs.prior_release_tag }}
-          ALLOW_FIRST_RELEASE: ${{ inputs.allow_first_release || !startsWith(github.ref, 'refs/tags/v') }}
         run: |
           $current = Get-ChildItem artifacts/current -Filter '*.msix' -File -Recurse | Select-Object -First 1
           if ($null -eq $current) { throw "Could not resolve the current ${{ matrix.runtime }} MSIX package." }
@@ -540,13 +536,13 @@ jobs:
           if ([string]::IsNullOrWhiteSpace($priorTag)) {
             $priorTag = gh api 'repos/${{ github.repository }}/releases?per_page=20' `
               --jq '[.[] | select(.draft == false and .tag_name != "${{ github.ref_name }}")][0].tag_name'
+            if ($LASTEXITCODE -ne 0) {
+              throw "Could not query published releases, so whether an N-1 package exists is unknown. Refusing to assume this is a first release."
+            }
           }
 
           if ([string]::IsNullOrWhiteSpace($priorTag) -or $priorTag -eq 'null') {
-            if ($env:ALLOW_FIRST_RELEASE -ne 'true') {
-              throw "No N-1 release is available for update and rollback certification. Re-dispatch with allow_first_release if this really is the first release."
-            }
-            Write-Host "::notice::No published predecessor exists; certifying in first-release mode. The update and rollback legs will be recorded as not-applicable."
+            Write-Host "::notice::No published predecessor exists, so this is a first release. The update and rollback legs will be recorded as not-applicable rather than skipped."
             "first_release=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             exit 0
           }
