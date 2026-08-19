@@ -283,9 +283,15 @@ verify_docs() {
     "$python_cmd" build/scripts/docs/run-docs-automation.py \
       --scripts generate-structure-docs,generate-health-dashboard,generate-workflow-manifest
 
+  # The automation profile runs generate-structure-docs in structure mode only, so the workflows
+  # overview it also owns needs its own invocation.
+  run_step "Regenerate the workflows overview" \
+    "$python_cmd" build/scripts/docs/generate-structure-docs.py --workflows-only
+
   run_step "Verify whole-repo generated documentation is committed" \
     git diff --exit-code -- \
       docs/generated/repository-structure.md \
+      docs/generated/workflows-overview.md \
       docs/status/doc-health-dashboard.json \
       docs/status/doc-health-dashboard.md \
       docs/status/workflow-drift-report.md

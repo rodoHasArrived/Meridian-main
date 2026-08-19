@@ -155,7 +155,11 @@ jobs:
       - name: Reject whole-repo generated documentation drift
         run: |
           python3 build/scripts/docs/run-docs-automation.py --scripts generate-structure-docs,generate-health-dashboard,generate-workflow-manifest
-          git diff --exit-code -- docs/generated/repository-structure.md docs/status/doc-health-dashboard.json docs/status/doc-health-dashboard.md docs/status/workflow-drift-report.md
+          # The automation profile runs generate-structure-docs in structure mode only, so the
+          # workflows overview it also owns needs its own invocation. Adding a workflow file
+          # otherwise merges green here and reds the documentation lane.
+          python3 build/scripts/docs/generate-structure-docs.py --workflows-only
+          git diff --exit-code -- docs/generated/repository-structure.md docs/generated/workflows-overview.md docs/status/doc-health-dashboard.json docs/status/doc-health-dashboard.md docs/status/workflow-drift-report.md
 
       - name: Enforce mode escalation policy
         run: |
