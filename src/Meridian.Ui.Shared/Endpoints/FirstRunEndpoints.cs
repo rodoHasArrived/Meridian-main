@@ -13,7 +13,7 @@ public static class FirstRunEndpoints
     {
         var group = app.MapGroup("/api/workstation/first-run").WithTags("First run");
         group.MapGet("/", async (HttpContext context, FirstRunExperienceService service, CancellationToken ct) =>
-            Results.Ok(await service.GetAsync(CurrentUser(context), ct).ConfigureAwait(false)));
+            Results.Ok(await service.GetAsync(CurrentUser(context), ct).ConfigureAwait(false))).RequireAuthenticatedSession();
         group.MapPost("/complete", async (HttpContext context, CompleteFirstRunRequestDto request, FirstRunExperienceService service, CancellationToken ct) =>
         {
             try

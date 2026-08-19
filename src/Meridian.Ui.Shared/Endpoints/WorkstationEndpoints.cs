@@ -66,7 +66,7 @@ public static partial class WorkstationEndpoints
         {
             return await BuildSessionPayloadAsync(context).ConfigureAwait(false);
         })
-        .WithName("GetWorkstationSession");
+        .WithName("GetWorkstationSession").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationResearch), async (HttpContext context) =>
         {
@@ -173,7 +173,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(service.GetLibrary(), jsonOptions);
         })
-        .WithName("GetWorkstationWorkflowLibrary")
+        .WithName("GetWorkstationWorkflowLibrary").DeclareOpenRead("Static workflow catalog from WorkflowRegistry; carries no deployment, account or tenant state.")
         .Produces<WorkflowLibraryDto>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationCollateralIngest), (
@@ -228,7 +228,7 @@ public static partial class WorkstationEndpoints
             var library = await service.GetLibraryAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(library, jsonOptions);
         })
-        .WithName("GetWorkstationWorkflowPresets")
+        .WithName("GetWorkstationWorkflowPresets").RequireAuthenticatedSession()
         .Produces<WorkflowPresetLibraryDto>(200)
         .Produces(501);
 
@@ -1846,7 +1846,7 @@ public static partial class WorkstationEndpoints
             var items = await GetBreakQueueItemsAsync(repository, queueScope, status, fundAccountId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
         })
-        .WithName("GetReconciliationBreakQueue").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .WithName("GetReconciliationBreakQueue").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200)
         .Produces(501);
 
@@ -1866,7 +1866,7 @@ public static partial class WorkstationEndpoints
             var item = await repository.GetByIdAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
             return item is null ? Results.NotFound() : Results.Json(item, jsonOptions);
         })
-        .WithName("GetReconciliationBreakQueueItem").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .WithName("GetReconciliationBreakQueueItem").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<ReconciliationBreakQueueItem>(200)
         .Produces(404);
 

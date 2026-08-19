@@ -252,7 +252,7 @@ public static class FundAccountEndpoints
             var accounts = await sync.DiscoverAccountsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(accounts, jsonOptions);
         })
-        .WithName("DiscoverBrokerageSyncAccounts").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("DiscoverBrokerageSyncAccounts").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<WorkstationBrokerageAccountDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -268,7 +268,7 @@ public static class FundAccountEndpoints
             var household = await sync.GetHouseholdAsync(provider, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(household, jsonOptions);
         })
-        .WithName("GetBrokerageHouseholdPortfolio").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("GetBrokerageHouseholdPortfolio").RequirePermission(UserPermission.ViewTrades)
         .Produces<BrokerageHouseholdPortfolioDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 

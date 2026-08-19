@@ -24,7 +24,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(service.Get(), jsonOptions);
         })
-        .WithName("GetWorkstationFeatureCapabilities")
+        .WithName("GetWorkstationFeatureCapabilities").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<FeatureCapabilitySettingsResponse>(200)
         .Produces(501);
 
