@@ -141,7 +141,18 @@ public sealed class LoginSessionMiddleware
                     // the anonymous role must not let an unauthenticated caller drive the legacy
                     // mutations that are declared with view-grade permissions ReadOnly holds. The two
                     // postures share one rule so this cannot diverge again.
-                    if (EndpointAuthorization.IsReadOnlyRoleMutation(role, context.Request.Method))
+                    //
+                    // It binds only to requests that will actually be served as this principal. Two
+                    // are not, and both are decided further down the pipeline than this branch runs:
+                    // a request carrying an API key is judged by the key's own role in
+                    // ApiKeyMiddleware, which runs after this middleware, so rejecting it here would
+                    // let a read-only anonymous posture silently disable every key mutation; and the
+                    // initial-account bootstrap is gated by its own loopback and one-use token
+                    // checks, which are stronger than a role and must stay reachable or a fresh
+                    // install with an anonymous role can never create its first account.
+                    if (!ApiKeyMiddleware.IsApiKeyCandidate(context) &&
+                        !IsInitialAccountBootstrapRequest(trimmedPath) &&
+                        EndpointAuthorization.IsReadOnlyRoleMutation(role, context.Request.Method))
                     {
                         await ApiProblemDetails.Forbidden(
                                 context,
