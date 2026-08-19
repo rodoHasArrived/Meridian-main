@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +19,19 @@ public static partial class WorkstationEndpoints
     private static async Task<WorkstationSessionPayload> BuildSessionPayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        if (readService is null)
+
+        // The shell bootstraps from this route unconditionally, so it stays open to any authenticated
+        // session. The strategy-run digest it embeds is not universal, though -- run names, modes,
+        // promotion states and counts belong to the run drill-ins -- so callers without the strategy
+        // permission get the same neutral shell payload as a deployment with no run service at all.
+        // FundAccountant, Controller and Compliance hold no strategy permission, and gating the whole
+        // route would have failed their bootstrap and left them without a shell.
+        var canReadRuns = EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ViewStrategies,
+            UserPermission.ManageStrategies);
+
+        if (readService is null || !canReadRuns)
         {
             return new WorkstationSessionPayload(
                 DisplayName: "Meridian Operator",

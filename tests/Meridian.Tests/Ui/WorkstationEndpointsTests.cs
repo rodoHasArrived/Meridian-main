@@ -2895,6 +2895,31 @@ public sealed partial class WorkstationEndpointsTests
             "the trading-readiness items the route's own permission grants must still be present");
     }
 
+    /// <summary>
+    /// The shell bootstraps from /api/workstation/session unconditionally, so the route must stay
+    /// reachable for every authenticated operator -- FundAccountant, Controller and Compliance hold
+    /// no strategy permission, and a 403 here fails their whole bootstrap. The strategy-run digest
+    /// the payload embeds is still withheld from them.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_Session_WithoutStrategyPermission_ShouldReturnShellPayloadWithoutRunDigest()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterRunReadServices,
+            currentUserPermissions: UserPermission.ViewTrades | UserPermission.ManageDirectLending);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun($"run-session-gate-{Guid.NewGuid():N}"));
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/session");
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "the shell bootstrap must not 403 for a non-strategy operator");
+
+        var session = await response.Content.ReadFromJsonAsync<WorkstationSessionPayload>(ServerJsonOptions);
+        session.Should().NotBeNull();
+        session!.LatestRun.Should().BeNull("the run digest belongs to the strategy permission");
+        session.WorkspaceSummary.TotalRuns.Should().Be(0, "run counts are part of the withheld digest");
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeReviewPacketBlockersFromRecentRuns()
     {
