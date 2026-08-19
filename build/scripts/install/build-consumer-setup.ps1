@@ -73,14 +73,71 @@ foreach ($runtime in $Runtimes) {
 }
 
 $setupPublish = Join-Path $outputRoot "publish"
-Invoke-Checked "publish Meridian.Setup" { dotnet publish (Join-Path $repoRoot "src/Meridian.Setup/Meridian.Setup.csproj") -c $Configuration -r win-x64 --self-contained true -o $setupPublish /p:MeridianPayloadDir=$payloadRoot }
+Invoke-Checked "publish Meridian.Setup" { dotnet publish (Join-Path $repoRoot "src/Meridian.Setup/Meridian.Setup.csproj") -c $Configuration -r win-x64 --self-contained true -o $setupPublish }
 $setup = Join-Path $setupPublish "Meridian-Setup.exe"
 if (-not (Test-Path $setup)) {
     $produced = (Get-ChildItem -LiteralPath $setupPublish -File -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name) -join ', '
     throw "Meridian-Setup.exe was not produced in $setupPublish. Files present: $produced"
 }
+
+# Append the product payload to the finished executable.
+#
+# It is deliberately not an EmbeddedResource: Roslyn serialises resources into the PE image's
+# mapped field data and overflows on a payload this size, so the compile failed outright with
+# ArgumentOutOfRangeException (mappedFieldDataStreamRva). Appending runs BEFORE signing so the
+# payload falls inside the Authenticode hash, which covers everything but the checksum field and
+# the certificate table.
+#
+# Layout, read back by src/Meridian.Setup/PayloadPackage.cs:
+#   [ executable image ][ ZIP archive ][ 138-byte ASCII trailer ]
+# The trailer is `MDNSETUP1\n`, then zero-padded 20-digit `offset=` and `length=` lines, then a
+# `sha256=` line of 64 lowercase hex digits, each line terminated by a single LF.
 $payloadMegabytes = [math]::Round(((Get-ChildItem -LiteralPath $payloadRoot -Recurse -File | Measure-Object -Property Length -Sum).Sum / 1MB), 1)
-Write-Host "[consumer-setup] Embedded payload: $payloadMegabytes MB; Meridian-Setup.exe: $([math]::Round(((Get-Item $setup).Length / 1MB), 1)) MB"
+$archivePath = Join-Path $outputRoot "payload.zip"
+[IO.Compression.ZipFile]::CreateFromDirectory(
+    $payloadRoot,
+    $archivePath,
+    [IO.Compression.CompressionLevel]::Optimal,
+    $false)
+
+$archiveLength = (Get-Item -LiteralPath $archivePath).Length
+$archiveHash = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
+$archiveOffset = (Get-Item -LiteralPath $setup).Length
+
+$target = [IO.File]::Open($setup, [IO.FileMode]::Append, [IO.FileAccess]::Write, [IO.FileShare]::None)
+try {
+    $source = [IO.File]::OpenRead($archivePath)
+    try { $source.CopyTo($target) } finally { $source.Dispose() }
+
+    $trailer = "MDNSETUP1`noffset={0:D20}`nlength={1:D20}`nsha256={2}`n" -f `
+        $archiveOffset, $archiveLength, $archiveHash
+    $trailerBytes = [Text.Encoding]::ASCII.GetBytes($trailer)
+    if ($trailerBytes.Length -ne 138) {
+        throw "The payload trailer must be exactly 138 bytes; built $($trailerBytes.Length)."
+    }
+    $target.Write($trailerBytes, 0, $trailerBytes.Length)
+} finally { $target.Dispose() }
+
+# Neither the staging tree nor the intermediate archive belongs in the artifact, and the SBOM and
+# SHA256SUMS steps downstream enumerate this directory.
+Remove-Item -LiteralPath $archivePath -Force
+Remove-Item -LiteralPath $payloadRoot -Recurse -Force
+
+Write-Host "[consumer-setup] Appended payload: $payloadMegabytes MB uncompressed, $([math]::Round(($archiveLength / 1MB), 1)) MB compressed; Meridian-Setup.exe: $([math]::Round(((Get-Item $setup).Length / 1MB), 1)) MB"
+
+# Prove the packaged executable can find and read the payload that was just appended to it, using
+# the same reader a user's machine will use. This is what keeps the writer above and
+# PayloadPackage from drifting apart.
+$verifyLog = Join-Path $outputRoot "verify-payload.log"
+$verify = Start-Process -FilePath $setup -ArgumentList (@("--verify-payload") + $Runtimes) `
+    -Wait -PassThru -NoNewWindow -RedirectStandardError $verifyLog
+if (Test-Path -LiteralPath $verifyLog) {
+    Get-Content -LiteralPath $verifyLog | ForEach-Object { Write-Host "[consumer-setup] $_" }
+    Remove-Item -LiteralPath $verifyLog -Force
+}
+if ($verify.ExitCode -ne 0) {
+    throw "The packaged Meridian-Setup.exe could not read its own payload (exit code $($verify.ExitCode))."
+}
 
 if (-not [string]::IsNullOrWhiteSpace($SigningCertificate)) {
     # signtool.exe lives in the Windows SDK and is not on PATH on the hosted Windows image.

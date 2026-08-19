@@ -9,9 +9,12 @@
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
   </PropertyGroup>
-  <ItemGroup Condition="'$(MeridianPayloadDir)' != ''">
-    <EmbeddedResource Include="$(MeridianPayloadDir)\**\*" LogicalName="payload/%(RecursiveDir)%(Filename)%(Extension)" />
-  </ItemGroup>
+  <!--
+    The product payload is NOT an EmbeddedResource. Roslyn serialises resources into the PE
+    image's mapped field data and overflows on a payload this size, failing the build with
+    ArgumentOutOfRangeException (mappedFieldDataStreamRva). build-consumer-setup.ps1 appends it
+    to the published executable instead; see PayloadPackage for the format.
+  -->
   <ItemGroup>
     <InternalsVisibleTo Include="Meridian.Setup.Tests" />
   </ItemGroup>
