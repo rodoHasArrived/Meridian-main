@@ -15,6 +15,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
     private readonly CashFinancingReadService _cashFinancingReadService;
     private readonly WorkspaceShellContextService _shellContextService;
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
+    private readonly DesktopAuthenticationSession? _authenticationSession;
     private readonly TradingOperatorReadinessService? _operatorReadinessService;
     private bool _started;
 
@@ -25,7 +26,8 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         CashFinancingReadService cashFinancingReadService,
         WorkspaceShellContextService shellContextService,
         WorkstationWorkflowSummaryService? workflowSummaryService = null,
-        TradingOperatorReadinessService? operatorReadinessService = null)
+        TradingOperatorReadinessService? operatorReadinessService = null,
+        DesktopAuthenticationSession? authenticationSession = null)
     {
         _runService = runService ?? throw new ArgumentNullException(nameof(runService));
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
@@ -33,6 +35,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         _cashFinancingReadService = cashFinancingReadService ?? throw new ArgumentNullException(nameof(cashFinancingReadService));
         _shellContextService = shellContextService ?? throw new ArgumentNullException(nameof(shellContextService));
         _workflowSummaryService = workflowSummaryService;
+        _authenticationSession = authenticationSession;
         _operatorReadinessService = operatorReadinessService;
     }
 
@@ -607,6 +610,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         {
             var summary = await _workflowSummaryService
                 .GetAsync(
+                    DesktopWorkflowReadScopeResolver.Resolve(_authenticationSession),
                     hasOperatingContext: _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null,
                     operatingContextDisplayName: _operatingContextService?.CurrentContext?.DisplayName,
                     fundProfileId: _fundContextService.CurrentFundProfile?.FundProfileId,

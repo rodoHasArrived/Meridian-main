@@ -154,13 +154,13 @@ public static partial class WorkstationEndpoints
                 .ConfigureAwait(false);
             return Results.Json(summary, jsonOptions);
         })
-        .WithName("GetWorkstationWorkflowSummary").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.AdminMaintenance)
+        .WithName("GetWorkstationWorkflowSummary").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .Produces<OperatorWorkflowHomeSummary>(200)
         .Produces(403)
         .Produces(501)
-        // The route now carries a read permission, so the ownership gate takes the same set and
-        // defers to the route's own 403 for callers who cannot read it at all (SEC-005 slice 3b).
-        .RequireFundProfileTenantScope(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.AdminMaintenance);
+        // Admission is the union of the projection's family sets, so every card the response can carry
+        // is reachable. The ownership gate takes that same set (SEC-005 slice 3b).
+        .RequireFundProfileTenantScope(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowLibrary), (HttpContext context) =>
         {

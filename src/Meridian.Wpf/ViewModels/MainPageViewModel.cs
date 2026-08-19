@@ -30,6 +30,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private readonly FixtureModeDetector _fixtureModeDetector;
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
+    private readonly DesktopAuthenticationSession? _authenticationSession;
     private readonly WorkspaceShellContextService? _workspaceShellContextService;
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
     private readonly IWorkstationOperatorInboxApiClient? _operatorInboxApiClient;
@@ -82,13 +83,15 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         CommandPaletteViewModel? commandPalette = null,
         OperatorInboxViewModel? operatorInboxPresentation = null,
         WorkflowSummaryStripViewModel? workflowSummaryStrip = null,
-        ShellRefreshCoordinator? shellRefreshCoordinator = null)
+        ShellRefreshCoordinator? shellRefreshCoordinator = null,
+        DesktopAuthenticationSession? authenticationSession = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _wpfNavigationService = navigationService as NavigationService;
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
         _fundContextService = fundContextService ?? FundContextService.Instance;
         _operatingContextService = operatingContextService;
+        _authenticationSession = authenticationSession;
         _selectOperatingContextAsync = operatingContextService is null
             ? null
             : (contextKey, ct) => operatingContextService.SelectContextAsync(contextKey, ct: ct);
@@ -1755,6 +1758,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
             var summary = await _workflowSummaryService
                 .GetAsync(
+                    DesktopWorkflowReadScopeResolver.Resolve(_authenticationSession),
                     hasOperatingContext: hasOperatingContext,
                     operatingContextDisplayName: operatingContextLabel,
                     fundProfileId: fundProfileId,

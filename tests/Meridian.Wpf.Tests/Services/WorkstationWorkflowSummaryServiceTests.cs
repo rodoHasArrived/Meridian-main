@@ -61,7 +61,7 @@ public sealed class WorkstationWorkflowSummaryServiceTests
                 readService,
                 configStore: new Meridian.Application.UI.ConfigStore(configPath));
 
-            var summary = await summaryService.GetAsync();
+            var summary = await summaryService.GetAsync(WorkstationWorkflowReadScope.All);
             var dataSummary = summary.Workspaces.Single(static workspace => workspace.WorkspaceId == "data");
 
             dataSummary.StatusLabel.Should().Be("Provider degradation detected");

@@ -3078,6 +3078,32 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     /// <summary>
+    /// The route's admission set has to be the union of the projection's family sets in both
+    /// directions. Under-admitting is the failure this pins: a provider operator is granted the Data
+    /// card by the projection, so a 403 at the gate would withhold the only card they can read.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummary_WithProviderPermissionOnly_ShouldReturnTheDataWorkspace()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterRunReadServices,
+            currentUserPermissions: UserPermission.ViewDiagnostics);
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/workflow-summary?hasOperatingContext=true");
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.OK,
+            "the projection grants this caller the data card, so the gate must admit it");
+
+        var summary = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
+        summary.Should().NotBeNull();
+
+        var workspaceIds = summary!.Workspaces.Select(static workspace => workspace.WorkspaceId).ToArray();
+        workspaceIds.Should().Contain("data");
+        workspaceIds.Should().NotContain(new[] { "trading", "accounting", "strategy" });
+    }
+
+    /// <summary>
     /// The shell bootstraps from /api/workstation/session unconditionally, so the route must stay
     /// reachable for every authenticated operator -- FundAccountant, Controller and Compliance hold
     /// no strategy permission, and a 403 here fails their whole bootstrap. The strategy-run digest

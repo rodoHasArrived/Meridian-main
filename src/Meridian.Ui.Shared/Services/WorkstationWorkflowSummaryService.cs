@@ -33,16 +33,22 @@ public sealed class WorkstationWorkflowSummaryService
         _operationsContinuityWorkflowService = operationsContinuityWorkflowService;
     }
 
+    /// <param name="readScope">
+    /// Which workspace families the calling operator may read. Required and first rather than an
+    /// optional trailing argument: a default here is a grant, and the caller that forgets it is
+    /// exactly the caller that hands a restricted operator another family's records.
+    /// </param>
     public async Task<OperatorWorkflowHomeSummary> GetAsync(
+        WorkstationWorkflowReadScope readScope,
         bool hasOperatingContext = false,
         string? operatingContextDisplayName = null,
         string? fundProfileId = null,
         string? fundAccountId = null,
         string? fundDisplayName = null,
-        CancellationToken ct = default,
-        WorkstationWorkflowReadScope? readScope = null)
+        CancellationToken ct = default)
     {
-        var scope = readScope ?? WorkstationWorkflowReadScope.All;
+        ArgumentNullException.ThrowIfNull(readScope);
+        var scope = readScope;
         var contextSelected = hasOperatingContext
             || !string.IsNullOrWhiteSpace(operatingContextDisplayName)
             || !string.IsNullOrWhiteSpace(fundProfileId)
