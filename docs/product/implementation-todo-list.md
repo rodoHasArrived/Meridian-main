@@ -2,7 +2,7 @@
 
 **Status:** active; production certification blocked  
 **Owner:** core-team  
-**Reviewed:** 2026-08-09
+**Reviewed:** 2026-08-19
 **Baseline:** current `main` through `6f687653d` plus repair candidate `b3bd557876523b81a2791f4bfd814647035f389a`; `PRD-018` through `PRD-020` verified and corrected 2026-08-09 against `e7e9528b8`; production readiness remains blocked pending frozen-release evidence, operator review, and required GitHub Actions activation
 **Previous production audit:** `f0ac384a2` on 2026-07-11
 **Sources:** [Meridian Design Document (Version 1.0)](meridian-design-document.md), [Program State](../roadmap/data/program-state.yml), [Roadmap Registry](../roadmap/data/roadmap-items.yml), and the live source, test, workflow, deployment, security, and operator surfaces named below
@@ -39,6 +39,40 @@ Priority meanings:
 | Active roadmap acceptance | 3 in progress | `W8-WPF-PARITY-001`, `W8-UX-CONSOL-001`, and `W9-SAFETY-007` remain active and are not production-certified by this tracker. `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, and the bounded `W6-BTSTUDIO-001` scoped-Vault-to-governed-Paper evidence loop close in this candidate. |
 | Awaiting operator acceptance | 6 implementation-complete | `W9-TRUTH-001`, `W9-DEMO-002`, `W9-PAPER-003`, `W9-ALPACA-004`, `W9-REPORT-005`, and `W9-NAV-006` are `ready_for_acceptance` with `evidence_posture: implementation_complete`. That posture is stronger than `planned_evidence` and weaker than `complete`: the work is built and evidenced but has not been accepted, so none of it is a production claim and none of it closes the P0 gate. |
 | Planned roadmap work | 14 planned | `W5X-OEG-001`, the two still-planned rows of the ranked W9 first-order slate (`W9-GOV-008`, `W9-INGEST-009`), and the eleven rows of the W10 depth slate are planned and outside the v1 production envelope unless the signed support matrix includes them. Every one carries `planned_evidence` posture, so none is a completion claim. Closed bounded roadmap rows do not change the P0 release-certification gate. |
+
+### 2026-08-19 Evidence Refresh
+
+Three release lanes were exercised on current `main` content and on branch
+`claude/installer-lane-p0-blockers-5ttfw5`. This subsection records what that changed; the
+[evidence-chain ledger](../engineering/production-certification-evidence-chain.md) carries the run
+detail.
+
+| Lane | State on 2026-08-19 | Effect on the gate |
+| --- | --- | --- |
+| `Production Certification` | Green: [run #27 / 32266755834](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32266755834) on `25f73ed4`, all four jobs. Baseline [#26 / 32264288888](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32264288888) on `e18c7fb2` had only `dependency-evidence` red. | `PRD-016` automation is proven again after failing on `main` in runs #23, #24 and #25. `PRD-015`'s dated drill artifact and `PRD-017`'s documentation job are minted by the same run. None of the three rows closes: the gate requires the **frozen release commit**, which does not exist yet. |
+| `Publish Smoke` (`web-workstation`/`win-x64`) | Green: [run #17 / 32264273659](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32264273659) on `e18c7fb2`, including installed startup with required authentication. | `PRD-013`'s substantive evidence now exists on current `main` content. Earlier greens did not: #15 sat on an abandoned branch commit, and #16 was `collector` with both installed-startup steps skipped. Still needs the same run on the frozen commit. |
+| `Desktop Installer Release` | Not green. The preflight gate is green on `e18c7fb2`; the packaging and certification jobs behind it had never executed and each failed closed. Root causes are fixed on the branch and re-verification is in progress. | `PRD-014` remains open, and `PRD-000`'s installed update/rollback receipts remain blocked behind the same lane. |
+
+Two `PRD-014` blockers previously recorded as human infrastructure actions are no longer human
+actions:
+
+- The ARM64 lifecycle leg targeted a self-hosted runner that does not exist. This repository is
+  public, so the GitHub-hosted `windows-11-arm` label is available at no cost and the leg now
+  targets it.
+- The N-1 lookup failed closed whenever no predecessor release existed, which is unsatisfiable for
+  a first release in a repository with zero releases and zero tags. First-release mode is now
+  derived from repository state, and records the update and rollback legs as `not-applicable` with
+  a reason rather than omitting them.
+
+What genuinely still requires a person is unchanged and narrow: the `MDC_SIGNING_CERT_PFX_BASE64`
+and `MDC_SIGNING_CERT_PASSWORD` secrets in the protected `desktop-release-signing` environment
+(`PRD-014`), core-team sign-off on ADR-019/ADR-020 (`PRD-000`), operator review of the recovery
+drill receipt (`PRD-015`), and required-check activation (`PRD-016`).
+
+**The true sequencing blocker across all six evidence-gated rows is that no frozen release commit
+exists.** Each lane's evidence currently sits on a different commit, and the release gate requires
+every `P0` row to be complete on one. Freezing a candidate is the next step once the installer lane
+is green, and it is a release-engineering decision rather than an automation gap.
 
 Working detail for the six evidence-gated rows — hosted-run diagnosis, minted evidence, and the
 explicit human action register (ADR sign-off, secrets/runner activation, operator review,

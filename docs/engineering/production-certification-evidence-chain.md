@@ -106,9 +106,15 @@ drain/flush ordering, and lifecycle receipts.
    (base64 PFX) and `MDC_SIGNING_CERT_PASSWORD`. The workflow only releases the password on
    `refs/tags/v*`; store both as repository or environment secrets protected by a tag ruleset
    so only release tags can read them.
-2. Register a native Windows ARM64 self-hosted runner carrying exactly the labels the
-   workflow's ARM64 matrix leg targets: `self-hosted`, `Windows`, `ARM64`.
-3. Ensure the prior (N-1) release artifact is available for the update-from-N-1 receipt lane.
+2. ~~Register a native Windows ARM64 self-hosted runner.~~ **No longer required (2026-08-19).**
+   The repository is public, so the GitHub-hosted `windows-11-arm` label is available at no cost;
+   the ARM64 certification leg now targets it directly.
+3. ~~Ensure the prior (N-1) release artifact is available.~~ **No longer required for the first
+   release (2026-08-19).** The lane derives first-release mode from repository state: when no
+   published predecessor exists, the update and rollback legs are recorded as `not-applicable`
+   with a reason instead of failing closed. A failed release query stays fatal, so this cannot be
+   mistaken for a missing predecessor. From the second release onward the N-1 artifact is required
+   again, and is produced by the first release.
 4. Push the release tag (`v*`) on the frozen release commit and drive
    `desktop-installer-packaging` to green; the tag run's install/launch/update/repair/
    rollback/uninstall receipts for x64 and ARM64 are the PRD-014 evidence. Record the run link
@@ -159,6 +165,44 @@ bash scripts/ci.sh --lane verify-docs
 ## Evidence Log
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
+
+- **2026-08-19** — `Production Certification` **GREEN again after a three-run regression on `main`**
+  ([run #27 / 32266755834](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32266755834),
+  candidate `25f73ed4`): all four jobs passed. This closes the regression that had failed
+  [#23 / 31293316917](https://github.com/rodoHasArrived/Meridian-main/actions/runs/31293316917) (2026-08-09),
+  [#24 / 31482487822](https://github.com/rodoHasArrived/Meridian-main/actions/runs/31482487822) (2026-08-11) and
+  [#25 / 31924550471](https://github.com/rodoHasArrived/Meridian-main/actions/runs/31924550471) (2026-08-16) —
+  none of which this ledger had recorded, in violation of its own Update Discipline.
+  Baseline [#26 / 32264288888](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32264288888)
+  on `e18c7fb2` isolated it: integrations, the recovery drill and documentation were already green;
+  only `dependency-evidence` was red. Cause was entirely upstream — two advisories published after
+  the 2026-08-05 green run, against an unchanged dependency graph: SSH.NET 2025.1.0 via
+  Testcontainers (GHSA-q939-rpr3-3284, fixed in 2026.0.0 per OSV) and nanoid 3.3.16 via postcss
+  (GHSA-2v37-7h3g-55p8, fixed in 3.3.18). The KV-2026-002 react-router acceptance was retired
+  rather than renewed, because 7.18.2 now exists and `validate-npm-audit.py` fails closed on an
+  acceptance that no longer matches a reported advisory. The two dependency gates also ran
+  fail-fast in sequence, so one ecosystem's advisories masked the other's and the evidence artifact
+  was uploaded incomplete; both are now scored and asserted together.
+- **2026-08-19** — `Publish Smoke` `web-workstation`/`win-x64` green on current `main` content
+  ([run #17 / 32264273659](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32264273659),
+  `e18c7fb2`): publish, installed-startup preparation, and start-with-required-authentication all
+  passed. The earlier green (#15, `d64506650`) sat on an abandoned branch commit that is not an
+  ancestor of `main`, and #16 — the only green ever dispatched on the `main` ref — was `collector`,
+  with both installed-startup steps skipped. The lane now names
+  `web-workstation-installed-startup` in its evidence manifest only when those steps actually ran,
+  so a `collector` or `win-arm64` dispatch can no longer be mistaken for `PRD-013` evidence, and
+  release evidence is retained 90 days instead of 14.
+- **2026-08-19** — `Desktop Installer Release` diagnosed end to end; **still not green**. The
+  preflight gate that had blocked every earlier run is green on `e18c7fb2`
+  ([32263751166](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32263751166)) — the two
+  WPF tests were fixed on `main` by `b3d51086`. That exposed the defects behind it, none of which
+  had ever executed: `dotnet publish` failed with its error written to a diagnostic log no job
+  uploaded (now printed and uploaded); crossgen2 aborts ReadyToRun with NETSDK1096 on Sharpino.Lib
+  (ReadyToRun disabled for the package); `package-consumer-setup` was never given the PostgreSQL
+  payload it requires and checked no `dotnet publish` exit codes; the artifact-collection step
+  could not parse; the lifecycle gate launched a non-existent executable name; the ARM64 leg
+  targeted a runner that does not exist; and the N-1 lookup made the first release impossible.
+  See the tracker's `PRD-014` row for what remains.
 
 - **2026-08-05** — `Production Certification` **FIRST ALL-GREEN RUN**
   ([run #19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407),
