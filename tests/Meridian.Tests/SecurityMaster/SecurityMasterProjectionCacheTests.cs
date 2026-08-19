@@ -13,7 +13,7 @@ namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
 /// Guards the shared projection cache against the empty-master window a warm or rebuild used to
-/// expose, and against losing a concurrent upsert to the replacement that follows it.
+/// expose, and against a stale upsert reverting a record a rebuild installed.
 /// <see cref="SecurityMasterProjectionCache"/> is registered as a singleton;
 /// <see cref="SecurityMasterProjectionCache.ReplaceAll"/> runs on startup warms and
 /// publish-triggered rebuilds while <see cref="SecurityMasterProjectionCache.Upsert"/> runs on
@@ -21,32 +21,30 @@ namespace Meridian.Tests.SecurityMaster;
 /// concurrent with both by construction.
 /// </summary>
 /// <remarks>
-/// Each concurrency test drives <c>ReplaceAll</c> with a <see cref="PausingCollection"/> that runs a
-/// callback partway through the fill, so the interleaving under test is forced rather than hoped
-/// for. Two properties are wanted of every test here, and the second is the easier one to lose: it
-/// must pass against the current implementation, and it must <em>fail</em> against the implementation
-/// it exists to reject. A test that only spins a thread and hopes it lands in the window satisfies
-/// the first and not the second.
+/// Two properties are wanted of every test here, and the second is the easier one to lose: it must
+/// pass against the current implementation, and it must <em>fail</em> against the implementation it
+/// exists to reject. A test that spins a thread and hopes it lands in the right window satisfies the
+/// first and not the second.
 /// <para>
-/// <see cref="PausingCollection"/> is an <see cref="IReadOnlyCollection{T}"/> on purpose: that is
-/// what real callers pass, and it is the shape <c>ReplaceAll</c> fills from inside its write gate,
-/// so the pause lands in the window the assertions are about rather than in the defensive
-/// materialization path a bare iterator would take.
+/// <see cref="Snapshot_TakenDuringReplaceAll_NeverObservesAPartialMaster"/> drives <c>ReplaceAll</c>
+/// with a <see cref="PausingCollection"/> that parks partway through being read, which is what makes
+/// the interleaving forced rather than hoped for.
+/// </para>
+/// <para>
+/// <strong>Not covered here, deliberately:</strong> that an upsert arriving while <c>ReplaceAll</c>
+/// holds its write gate lands in the installed map. <c>ReplaceAll</c> copies its argument to an
+/// array <em>before</em> taking the gate — it has to, or a lazily-enumerating source would run under
+/// the gate and deadlock against the very writer this would test — so the only work left inside the
+/// gate is an in-memory fill over an array, with no seam a caller can pause. That window is real but
+/// not externally observable, and a test that cannot force the interleaving would pass whether or
+/// not the gate exists. The neighbouring guarantee that <em>is</em> observable — that a stale upsert
+/// cannot downgrade an installed record — is covered below.
 /// </para>
 /// </remarks>
 [Trait("Category", "Unit")]
 public sealed class SecurityMasterProjectionCacheTests
 {
     private const int RecordCount = 250;
-
-    /// <summary>
-    /// How long a replacement holds its window open waiting to see whether an ungated write slips
-    /// through. Under the current implementation this always expires — the writer cannot proceed
-    /// until the swap releases the gate — so it costs one test roughly a second and never flakes.
-    /// An implementation that lets the write through completes it far inside this budget, since the
-    /// writer thread is already running and has one statement left to execute.
-    /// </summary>
-    private static readonly TimeSpan UngatedWriteGrace = TimeSpan.FromSeconds(1);
 
     [Fact]
     public void ReplaceAll_SwapsTheWholeMaster()
@@ -77,7 +75,8 @@ public sealed class SecurityMasterProjectionCacheTests
         var reader = StartThread("projection-cache-reader", () =>
         {
             replacementAtMidpoint.Wait();
-            // Reads take no lock, so this lands while the replacement is mid-fill.
+            // Reads take no lock, so this lands while ReplaceAll is partway through reading its
+            // replacement set and has not touched the master yet.
             observed = cache.Snapshot().Count;
             snapshotTaken.Set();
         });
@@ -93,47 +92,6 @@ public sealed class SecurityMasterProjectionCacheTests
             "a reader concurrent with ReplaceAll must see a complete master — a Clear()-then-refill "
             + "would have shown zero or a partial count at this exact point");
         cache.Count.Should().Be(RecordCount);
-    }
-
-    [Fact]
-    public void Upsert_DuringReplaceAll_SurvivesTheSwap()
-    {
-        var cache = new SecurityMasterProjectionCache();
-        cache.ReplaceAll(Build("GEN-A"));
-        var late = Record("LATE-ARRIVAL");
-
-        using var replacementAtMidpoint = new ManualResetEventSlim(false);
-        using var writerAboutToUpsert = new ManualResetEventSlim(false);
-        using var upsertReturned = new ManualResetEventSlim(false);
-
-        var writer = StartThread("projection-cache-writer", () =>
-        {
-            replacementAtMidpoint.Wait();
-            writerAboutToUpsert.Set();
-            cache.Upsert(late);
-            upsertReturned.Set();
-        });
-
-        cache.ReplaceAll(new PausingCollection(Build("GEN-B"), () =>
-        {
-            replacementAtMidpoint.Set();
-
-            // The writer's very next statement is the Upsert, so from here on it is either blocked
-            // on the write gate or has already written. An implementation that does not gate the
-            // write lets it complete inside this window and then discards it at the swap — the
-            // regression this test exists to reject. Asserting here rather than only on the final
-            // read is what makes the rejection independent of how the writer is scheduled.
-            writerAboutToUpsert.Wait();
-            upsertReturned.Wait(UngatedWriteGrace).Should().BeFalse(
-                "Upsert must not complete while a replacement holds the write gate — a write that "
-                + "lands in the outgoing map is discarded by the swap");
-        }));
-
-        writer.Join(TimeSpan.FromSeconds(30)).Should().BeTrue("the upsert must not be stuck");
-        cache.Get(late.SecurityId).Should().NotBeNull(
-            "a record persisted by create, amend, or a published rebuild must not be discarded by a "
-            + "replacement that was already in flight when it was written");
-        cache.Count.Should().Be(RecordCount + 1);
     }
 
     [Fact]
@@ -206,9 +164,8 @@ public sealed class SecurityMasterProjectionCacheTests
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    // A dedicated thread rather than Task.Run: the replacement blocks waiting for this thread while
-    // holding the write gate, so borrowing a pool thread would risk waiting on a queue that cannot
-    // drain.
+    // A dedicated thread rather than Task.Run: the replacement blocks waiting for this thread, so
+    // borrowing a pool thread would risk waiting on a queue that cannot drain.
     private static Thread StartThread(string name, ThreadStart body)
     {
         var thread = new Thread(body) { IsBackground = true, Name = name };

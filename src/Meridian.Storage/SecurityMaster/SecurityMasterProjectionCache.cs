@@ -56,9 +56,13 @@ public sealed class SecurityMasterProjectionCache
     /// Replaces the cached master with <paramref name="records"/> as a single reference swap.
     /// </summary>
     /// <remarks>
-    /// <paramref name="records"/> is materialized before the gate is taken, so a lazily-evaluated
-    /// source cannot hold writers off while it does I/O; only the in-memory fill and the swap run
-    /// under the gate.
+    /// <paramref name="records"/> is copied to an array before the gate is taken unless it already
+    /// is one, so only the in-memory fill and the swap run under the gate. The check is for an
+    /// array specifically, not a collection interface: a type can implement
+    /// <see cref="IReadOnlyCollection{T}"/> and still enumerate lazily, and enumerating such a
+    /// source under the gate would both do its work there and deadlock outright if it waits on
+    /// anything that calls <see cref="Upsert"/> — the enumerator would hold the gate the writer
+    /// needs. An array cannot enumerate lazily, so it is the only shape safe to skip the copy for.
     /// <para>
     /// An upsert that lands before this call takes the gate is still overwritten when the record it
     /// touched also appears in <paramref name="records"/> — the caller materialized that set before
@@ -74,7 +78,7 @@ public sealed class SecurityMasterProjectionCache
     /// </remarks>
     public void ReplaceAll(IEnumerable<SecurityProjectionRecord> records)
     {
-        var materialized = records as IReadOnlyCollection<SecurityProjectionRecord> ?? records.ToArray();
+        var materialized = records as SecurityProjectionRecord[] ?? records.ToArray();
 
         lock (_writeGate)
         {

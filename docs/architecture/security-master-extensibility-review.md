@@ -99,12 +99,17 @@ all derived economics so consumers cannot diverge.
 carries per-class identifier, term, evidence, and ledger-depth requirements with hard-blocker flags.
 Few systems at this stage know what "ready" means per asset class.
 
-**The read surface is authorization-gated.** *(Added 2026-08-19.)* Roughly 36 Security Master read
-endpoints carry `RequireAnyPermission(ViewSecurityMaster, ModifySecurityMaster)`
-(`SecurityMasterEndpoints.cs`), so issuer terms, validation reports, and profile catalogs are not
-readable by any authenticated caller. The record-mutating routes — the generic field edits and the
-equity amendments — require `ModifySecurityMaster` and are rate-limited under
-`UiEndpoints.MutationRateLimitPolicy`. That pairing is not universal across the file; see item 11.
+**The read surface is authorization-gated, at the group and now per route.** Every Security Master
+route has been behind `group.AddEndpointFilter(RequireViewSecurityMasterPermission)` since well
+before this review — one filter on the whole group, rejecting a caller without
+`ViewSecurityMaster` or `ModifySecurityMaster` and returning `Unauthorized` when no permissions
+resolve at all. *(Added 2026-08-19.)* Roughly 36 read endpoints have since also been given a fluent
+`RequireAnyPermission(ViewSecurityMaster, ModifySecurityMaster)` declaration. That did not change
+who can call what; it moved an invariant that lived in one group-level line into per-endpoint
+metadata, where OpenAPI can see it and where a refactor that drops the group filter cannot silently
+open 36 routes. The record-mutating routes — the generic field edits and the equity amendments —
+require `ModifySecurityMaster` and are rate-limited under `UiEndpoints.MutationRateLimitPolicy`.
+That pairing is not universal across the file; see item 11.
 
 **Auditability is durable.** Migration 025 moved the conflict store and revision-lifecycle store off
 process-local memory specifically so "a publish only ever runs against a revision that was durably
@@ -519,10 +524,15 @@ other routes. *Cheapest to decide, compounding cost to defer.*
 Add step-schedule and inflation-linked cases. The principal-schedule slice proved the pattern and the
 round-trip guard now covers the codec cost. Ten `BondSubclass` members are still labels.
 
-**4. Retire the third factor-schedule shape and generalize the corporate-action envelope.**
-Collapse `SecurityFactorScheduleEntry` onto the domain `FactorScheduleEntry`. Separately, move
-corporate-action economics to a JSONB payload keyed by event type — eight columns for eighteen types
-means every new type is another nullable column, and six declared types already have none.
+**4. ~~Retire the third factor-schedule shape and~~ generalize the corporate-action envelope.**
+~~Collapse `SecurityFactorScheduleEntry` onto the domain `FactorScheduleEntry`.~~ **The collapse half
+of this priority was withdrawn on 2026-08-19 — do not implement it.** The two types model a factor
+*level* and a factor *transition with provenance*; collapsing them discards the prior/current
+pairing, the asserting source, the evidence link, and the content hash. See the
+**Status (2026-08-19)** note on risk item 8. What remains of this priority is the corporate-action
+envelope: move corporate-action economics to a JSONB payload keyed by event type — eight columns for
+eighteen types means every new type is another nullable column, and six declared types already have
+none.
 
 **5. Make the projection cache multi-node-safe.**
 Per-process with no invalidation, and a clear-then-fill `ReplaceAll` that exposes an empty master to
@@ -551,13 +561,22 @@ interop, and calculations; `src/Meridian.Contracts/SecurityMaster/`;
 `src/Meridian.Strategies/`; the execution gate and reporting lookup; and the workstation endpoint
 surface — the diff is **86 insertions and 86 deletions across 21 files**.
 
-**One of those changes is substantive.** `SecurityMasterEndpoints.cs` accounts for 72 of the 144
-changed lines across three commits (`089aabee`, `95166888`, `862dc32a`), which declare
+**One of those changes is more than cosmetic, though less than it first appears.**
+`SecurityMasterEndpoints.cs` accounts for 72 of the 144 changed lines across three commits
+(`089aabee`, `95166888`, `862dc32a`), which declare
 `RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)` on
-roughly 36 Security Master **read** endpoints that previously carried no explicit permission
-declaration. This is authorization hardening on the reference-data read surface and belongs in
-*What's Solid*, not in a "nothing moved" summary: an institutional Security Master should not
-expose issuer terms, validation reports, or profile catalogs to any authenticated caller.
+roughly 36 Security Master **read** endpoints.
+
+> **Corrected 2026-08-19, after review.** This pass first recorded that as authorization *hardening*
+> on endpoints "that previously carried no explicit permission" — which implied the reads had been
+> open. They had not. At the `4b39e9da8` baseline the file already carried
+> `group.AddEndpointFilter(RequireViewSecurityMasterPermission)` on the whole route group
+> (`:34`), and that filter runs the same `HasAnyPermission(ViewSecurityMaster,
+> ModifySecurityMaster)` check the fluent calls declare. Runtime authorization did not change. What
+> changed is that the requirement is now declared per endpoint rather than inherited from one
+> group-level line — worth having, because it reaches OpenAPI metadata and it removes a single point
+> whose deletion would quietly open every route in the group, but it is a hardening of the
+> *declaration*, not of the enforcement.
 
 The remaining 18 files are genuinely cosmetic — routing inline SHA-256 sites onto `Sha256Digest`,
 and replacing the last literal schema-version writes with named constants.
@@ -665,7 +684,10 @@ is the gate.
 
 ### Priorities — unchanged
 
-The 2026-08-14 re-ranked list stands in full, with one adjustment: effective-interest amortization
+The 2026-08-14 re-ranked list stands except for the factor-schedule collapse in its priority 4,
+which this pass refuted and which is struck there — a priority list is where a later implementer
+looks for work, so a recommendation this review has since concluded is destructive cannot be left
+standing in it. One further adjustment: effective-interest amortization
 moves from *deferred* to a credible near-term slice, on the strength of the primitives above. It
 remains below the top five, because the decision it waits on (GAAP materiality) is still a policy
 question and not an architecture one.
