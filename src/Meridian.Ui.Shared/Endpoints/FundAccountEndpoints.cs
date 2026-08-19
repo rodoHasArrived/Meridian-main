@@ -240,7 +240,14 @@ public static class FundAccountEndpoints
 
         // ── Brokerage read-side sync ──────────────────────────────────────────
 
-        app.MapGet("/api/fund-accounts/brokerage-sync/accounts", async (HttpContext context) =>
+        // Deliberately inside the fund-account group. This returns the deployment's configured
+        // provider accounts -- IBrokerageAccountCatalog is keyed by provider, carries no tenant
+        // dimension, and DiscoverAccountsAsync enumerates every catalog -- so it is provider
+        // configuration rather than trade data, and there is no per-caller filter to apply inside the
+        // service. Hoisting it out of the group to admit ViewTrades callers would hand one tenant's
+        // operator every other tenant's broker account ids, names, statuses and currencies; no
+        // workspace fetches this route, so nothing is unblocked by the wider reach.
+        group.MapGet("/brokerage-sync/accounts", async (HttpContext context) =>
         {
             if (!HasBrokerageSyncAccess(context))
                 return EndpointHelpers.Forbidden();
@@ -253,10 +260,10 @@ public static class FundAccountEndpoints
             return Results.Json(accounts, jsonOptions);
         })
         .WithName("DiscoverBrokerageSyncAccounts")
-        .WithTags("Fund Accounts")
         .RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<WorkstationBrokerageAccountDto>>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope();
 
         app.MapGet("/api/portfolio/household", async (string? provider, HttpContext context) =>
         {

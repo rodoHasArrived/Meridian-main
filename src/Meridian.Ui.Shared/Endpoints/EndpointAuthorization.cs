@@ -284,12 +284,17 @@ public static class EndpointAuthorization
                 Reason: "No role permissions were resolved for the current actor.");
         }
 
-        // A key is a distinct principal kind, not the user whose literal username happens to be
-        // "api-key". Never send that synthetic actor through user-scoped assignment lookup: doing
-        // so would let a key inherit case-insensitive assignments belonging to a real user. Preserve
-        // only the same explicit global overrides the scoped service already recognizes.
-        if (context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey))
+        // The API key and the optional-mode local operator are distinct principal kinds, not the
+        // users whose literal usernames happen to be "api-key" and "local-operator". Never send
+        // either synthetic actor through user-scoped assignment lookup: the store matches
+        // AccessPrincipalKindDto.User assignments by actor name, case-insensitively, so doing so
+        // would let a shared credential -- or any unauthenticated caller -- inherit the account and
+        // fund scopes of a real user who happens to carry that name. Preserve only the same explicit
+        // global overrides the scoped service already recognizes.
+        var isApiKeyPrincipal = context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey);
+        if (isApiKeyPrincipal || context.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey))
         {
+            var principalLabel = isApiKeyPrincipal ? "API-key" : "Anonymous";
             var hasGlobalOverride =
                 (globalPermissions & UserPermission.AdminMaintenance) == UserPermission.AdminMaintenance ||
                 (globalPermissions & UserPermission.ManageUsers) == UserPermission.ManageUsers;
@@ -300,8 +305,8 @@ public static class EndpointAuthorization
                 ScopeKind: scopeKind,
                 ScopeId: scopeId,
                 Reason: hasGlobalOverride
-                    ? "The API-key principal carries a global scoped-access override."
-                    : "API-key principals cannot inherit user-scoped access assignments.");
+                    ? $"The {principalLabel} principal carries a global scoped-access override."
+                    : $"{principalLabel} principals cannot inherit user-scoped access assignments.");
         }
 
         var service = context.RequestServices.GetService(typeof(IScopedAuthorizationService)) as IScopedAuthorizationService;

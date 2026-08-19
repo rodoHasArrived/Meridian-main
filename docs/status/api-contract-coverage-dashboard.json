@@ -6,9 +6,9 @@
   "endpoint_coverage_percent": 32.0,
   "contract_coverage_percent": 3.9,
   "summary": {
-    "endpoint_count": 622,
+    "endpoint_count": 621,
     "documented_endpoint_count": 199,
-    "undocumented_endpoint_count": 423,
+    "undocumented_endpoint_count": 422,
     "workstation_contract_count": 917,
     "documented_workstation_contract_count": 36,
     "undocumented_workstation_contract_count": 881
@@ -1624,14 +1624,8 @@
     },
     {
       "method": "GET",
-      "path": "/api/fund-accounts/brokerage-sync/accounts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:243",
-      "documented": false
-    },
-    {
-      "method": "GET",
       "path": "/api/portfolio/household",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:261",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:268",
       "documented": false
     },
     {

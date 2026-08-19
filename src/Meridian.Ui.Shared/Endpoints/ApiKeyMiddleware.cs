@@ -117,7 +117,7 @@ public sealed class ApiKeyMiddleware
         // A validated key needs an authorization context or it cannot pass any route that declares a
         // permission -- the endpoint filters resolve permissions from the session items, and without
         // these an API-key caller is refused everywhere the surface is actually governed.
-        if (!TryResolveApiKeyRole(out var apiKeyRole, out var isDefaultRole))
+        if (!TryResolveApiKeyRole(out var apiKeyRole))
         {
             await ApiProblemDetails.ServiceUnavailable(
                     context,
@@ -127,19 +127,32 @@ public sealed class ApiKeyMiddleware
             return;
         }
 
-        // An unset MDC_API_KEY_ROLE deliberately means a read-only API client. Permission names
+        // A ReadOnly key is a read-only API client, however it acquired that role. Permission names
         // alone are not enough to enforce that contract because a few legacy POST routes use view
         // permissions while mutating process-local replay, option, or sampling state. Fail closed
         // for every method outside the explicit safe-method allowlist; operators that intentionally
-        // need a command endpoint must name the role that authorizes that client.
-        if (isDefaultRole && !IsSafeMethod(context.Request.Method))
+        // need a command endpoint must name a role that authorizes that client. Keyed on the resolved
+        // role rather than on whether the variable was set, because an operator who writes ReadOnly
+        // out explicitly is asking for the same restriction as one who leaves it to the default --
+        // and reading it the other way would make spelling out the default quietly weaken it.
+        if (apiKeyRole == DefaultApiKeyRole && !IsSafeMethod(context.Request.Method))
         {
             await ApiProblemDetails.Forbidden(
                     context,
-                    $"The default {DefaultApiKeyRole} API-key role allows only GET, HEAD, and OPTIONS requests. Set {ApiKeyRoleEnvVar} to an explicit role for permitted command endpoints.")
+                    $"The {DefaultApiKeyRole} API-key role allows only GET, HEAD, and OPTIONS requests. Set {ApiKeyRoleEnvVar} to a role that authorizes this command endpoint.")
                 .ExecuteAsync(context);
             return;
         }
+
+        // A key authenticates as itself, never as the optional-mode operator this request may have
+        // been given a moment ago. LoginSessionMiddleware runs first and, in a deployment that
+        // configures an anonymous role and tenant, has already stamped that scope; overwriting only
+        // the actor, role and permissions would leave the key holding a tenant nobody granted it and
+        // passing the workstation scope gates on borrowed authority. Authority comes from one posture.
+        context.Items.Remove(LoginSessionMiddleware.AnonymousPrincipalKey);
+        context.Items.Remove(LoginSessionMiddleware.CurrentTenantIdKey);
+        context.Items.Remove(LoginSessionMiddleware.CurrentUserCompanyIdKey);
+        context.Items.Remove(LoginSessionMiddleware.CurrentUserRoleProfileNameKey);
 
         context.Items[LoginSessionMiddleware.CurrentUserKey] = ApiKeyActor;
         context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = apiKeyRole;
@@ -169,17 +182,15 @@ public sealed class ApiKeyMiddleware
     /// quietly applying a different permission set than the operator configured is the kind of
     /// authorization drift the governed surface exists to prevent.
     /// </summary>
-    private static bool TryResolveApiKeyRole(out UserRole role, out bool isDefaultRole)
+    private static bool TryResolveApiKeyRole(out UserRole role)
     {
         var configured = Environment.GetEnvironmentVariable(ApiKeyRoleEnvVar);
         if (string.IsNullOrWhiteSpace(configured))
         {
             role = DefaultApiKeyRole;
-            isDefaultRole = true;
             return true;
         }
 
-        isDefaultRole = false;
         return TryParseRoleName(configured, out role);
     }
 

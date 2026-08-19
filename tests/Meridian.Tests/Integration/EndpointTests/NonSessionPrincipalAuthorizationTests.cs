@@ -160,6 +160,54 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     }
 
     [Fact]
+    public async Task ApiKeyPrincipal_DoesNotInheritTheAnonymousTenantScope()
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalKeyRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        var originalAnonRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        var originalAnonTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "scope-inherit-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.Admin));
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", "anon-tenant");
+        try
+        {
+            var nextCalled = false;
+            var context = new DefaultHttpContext { RequestServices = Fixture.Services };
+            context.Request.Path = DeclaredRoute;
+            context.Request.Headers["X-Api-Key"] = "scope-inherit-key";
+            // The login middleware runs first and, in this configuration, hands the request the
+            // anonymous operator's tenant. Promoting it to a key principal must not leave that scope
+            // behind: authority comes from one posture, and a key was granted no tenant at all.
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = LoginSessionMiddleware.AnonymousLocalActor;
+            context.Items[LoginSessionMiddleware.AnonymousPrincipalKey] = true;
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "anon-tenant";
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "anon-tenant";
+
+            var middleware = new ApiKeyMiddleware(nextContext =>
+            {
+                nextCalled = true;
+                nextContext.Items[LoginSessionMiddleware.CurrentUserKey].Should().Be(ApiKeyMiddleware.ApiKeyActor);
+                nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentTenantIdKey);
+                nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentUserCompanyIdKey);
+                nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.AnonymousPrincipalKey);
+                return Task.CompletedTask;
+            });
+
+            await middleware.InvokeAsync(context);
+
+            nextCalled.Should().BeTrue();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalKeyRole);
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalAnonRole);
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalAnonTenant);
+        }
+    }
+
+    [Fact]
     public async Task SessionPayload_ReportsTheCallersOwnRoleNotTheLatestRunsPosture()
     {
         var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
