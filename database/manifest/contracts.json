@@ -3520,7 +3520,7 @@
       ]
     }
   ],
-  "fingerprint": "a80a3bde0dd1878103b12bc427558fd84d042e9236532076a9ff350bd62e14bf",
+  "fingerprint": "329f3b3176cd4c62c53f6873b68210f68879968253d1ab08bf7e6d13e8b34713",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5171,7 +5171,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "b460f75f4bec7cb7de25c6a8dc77463436ade550deef5116c0302e81f8a6373c",
+      "fingerprint": "e1143092823992e4e3b98f796096b60f15d70e7ca9923a21c32832a235f360a7",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Operations",
       "object_ids": [
@@ -183700,7 +183700,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "65df64cbfb4d5e3d0e44e0bdd4b34107de3d640754ea41dc333282fa9fa478cb",
+      "fingerprint": "1d3ee837f73109e2913aba089ef319f5b39b3d0bd4be664a7731bc458a7a3d0c",
       "full_name": "Meridian.Contracts.Operations.DataProvenanceBadge",
       "id": "Meridian.Contracts.Operations.DataProvenanceBadge",
       "kind": "record",
@@ -183717,7 +183717,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 130,
+          "source_line": 162,
           "type": "string"
         },
         {
@@ -183731,7 +183731,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 129,
+          "source_line": 161,
           "type": "string"
         },
         {
@@ -183745,7 +183745,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DataProvenance",
-          "source_line": 128,
+          "source_line": 160,
           "type": "DataProvenance"
         }
       ],
@@ -183757,12 +183757,12 @@
         "Meridian.Contracts.Operations.DataProvenance"
       ],
       "source": {
-        "line": 127,
+        "line": 159,
         "path": "src/Meridian.Contracts/Operations/DataProvenance.cs"
       },
       "sources": [
         {
-          "line": 127,
+          "line": 159,
           "path": "src/Meridian.Contracts/Operations/DataProvenance.cs"
         }
       ],
