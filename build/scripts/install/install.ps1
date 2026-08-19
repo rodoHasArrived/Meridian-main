@@ -1194,6 +1194,9 @@ function Install-Desktop {
             PackageCertificateKeyFile = $certPfxPath
             PackageCertificatePassword = $certPassword
         }
+        if (-not [string]::IsNullOrWhiteSpace($env:MDC_PACKAGE_VERSION)) {
+            $packageArguments.PackageVersion = $env:MDC_PACKAGE_VERSION
+        }
         & $packageScript @packageArguments | ForEach-Object { Write-Host $_ }
 
         if ($useNotificationModule) {

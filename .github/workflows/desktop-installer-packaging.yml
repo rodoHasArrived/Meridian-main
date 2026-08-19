@@ -182,6 +182,15 @@ jobs:
           MDC_SIGNING_CERT_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.MDC_SIGNING_CERT_PASSWORD || '' }}
         run: |
           $architecture = if ('${{ matrix.runtime }}' -eq 'win-arm64') { 'ARM64' } else { 'x64' }
+
+          # Stamp the tag into the package identity. Without this every release ships the
+          # manifest's literal 1.0.0.0 and Windows refuses to treat the next one as an update.
+          $refName = '${{ github.ref_name }}'
+          if ($refName -match '^v(\d+)\.(\d+)\.(\d+)') {
+            $env:MDC_PACKAGE_VERSION = "$($Matches[1]).$($Matches[2]).$($Matches[3]).0"
+            Write-Host "Stamping package version $env:MDC_PACKAGE_VERSION from tag $refName"
+          }
+
           pwsh ./build/scripts/install/install.ps1 `
             -Mode Desktop `
             -Architecture $architecture `
@@ -308,6 +317,12 @@ jobs:
           cache: npm
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
+      # `Generate consumer release evidence` below shells out to `python`.
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
       - name: Prepare signing certificate for a tag release
         if: startsWith(github.ref, 'refs/tags/v')
         id: signing
@@ -322,12 +337,44 @@ jobs:
           [IO.File]::WriteAllBytes($certPath, [Convert]::FromBase64String($env:MDC_SIGNING_CERT_PFX_BASE64))
           "cert_path=$certPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: Build the x64 and ARM64 consumer package
+      # Meridian-Setup.exe embeds a PostgreSQL server per bundled runtime. The hosted image ships
+      # one under C:\Program Files\PostgreSQL (x64 only) — the same source publish-smoke uses.
+      # PostgreSQL publishes no Windows ARM64 server build, so the one-click consumer setup is
+      # x64-only until an ARM64 payload is supplied out of band. The ARM64 *desktop MSIX* is
+      # unaffected and is still built and certified: it does not embed a database.
+      - name: Materialize the PostgreSQL payload
+        id: pgpayload
+        shell: pwsh
+        run: |
+          # Runner PostgreSQL directories are major-only names like '17', which [version] refuses
+          # to parse; sort on the leading integer instead.
+          $postgres = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction Stop |
+            Where-Object { $_.Name -match '^\d+' } |
+            Sort-Object { [int]($_.Name -replace '^(\d+).*$', '$1') } -Descending | Select-Object -First 1
+          if ($null -eq $postgres) { throw 'The hosted Windows runner has no PostgreSQL runtime to bundle.' }
+
+          $payload = 'artifacts/postgresql-payload/win-x64'
+          New-Item -ItemType Directory -Path $payload -Force | Out-Null
+          Copy-Item -Path (Join-Path $postgres.FullName '*') -Destination $payload -Recurse -Force
+
+          $bundled = @('win-x64')
+          $armPayload = 'artifacts/postgresql-payload/win-arm64/bin/postgres.exe'
+          if (Test-Path -LiteralPath $armPayload) { $bundled += 'win-arm64' }
+
+          $excluded = @('win-x64', 'win-arm64') | Where-Object { $_ -notin $bundled }
+          if ($excluded.Count -gt 0) {
+            Write-Host "::warning::Consumer setup excludes $($excluded -join ', '): no PostgreSQL server payload is available for that runtime on this runner."
+          }
+          "runtimes=$($bundled -join ',')" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Build the consumer package
         shell: pwsh
         env:
           MDC_SIGNING_CERT_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.MDC_SIGNING_CERT_PASSWORD || '' }}
         run: |
           pwsh ./build/scripts/install/build-consumer-setup.ps1 `
+            -PostgreSqlPayloadRoot artifacts/postgresql-payload `
+            -Runtimes ('${{ steps.pgpayload.outputs.runtimes }}'.Split(',')) `
             -SigningCertificate '${{ steps.signing.outputs.cert_path }}' `
             -SigningCertificatePassword $env:MDC_SIGNING_CERT_PASSWORD
 
@@ -382,7 +429,10 @@ jobs:
   certify-installed-desktop:
     name: clean install lifecycle (${{ matrix.runtime }})
     needs: build-msix
-    if: startsWith(github.ref, 'refs/tags/v')
+    # Tag pushes produce release evidence. A non-tag dispatch with certify_lifecycle proves the
+    # same path against a throwaway self-signed certificate, so the lane can be shown working
+    # before any release or protected secret exists.
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.certify_lifecycle
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
     environment:
@@ -396,9 +446,11 @@ jobs:
           - runtime: win-x64
             architecture: x64
             runner: windows-latest
+          # GitHub-hosted Windows 11 ARM64. This repository is public, so the label is available
+          # at no cost and needs no self-hosted machine.
           - runtime: win-arm64
             architecture: ARM64
-            runner: [self-hosted, Windows, ARM64]
+            runner: windows-11-arm
 
     steps:
       - name: Check out repository
@@ -418,54 +470,121 @@ jobs:
         shell: pwsh
         env:
           MDC_SIGNING_CERT_PFX_BASE64: ${{ secrets.MDC_SIGNING_CERT_PFX_BASE64 }}
+          MDC_SIGNING_CERT_PASSWORD: ${{ secrets.MDC_SIGNING_CERT_PASSWORD }}
+          IS_TAG_RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:MDC_SIGNING_CERT_PFX_BASE64)) {
-            throw "Installed lifecycle certification requires MDC_SIGNING_CERT_PFX_BASE64."
-          }
           $certPath = Join-Path $env:RUNNER_TEMP "meridian-release-signing.pfx"
-          [IO.File]::WriteAllBytes($certPath, [Convert]::FromBase64String($env:MDC_SIGNING_CERT_PFX_BASE64))
+          if ($env:IS_TAG_RELEASE -eq 'true') {
+            if ([string]::IsNullOrWhiteSpace($env:MDC_SIGNING_CERT_PFX_BASE64)) {
+              throw "Installed lifecycle certification of a tag release requires MDC_SIGNING_CERT_PFX_BASE64 in the protected desktop-release-signing environment."
+            }
+            [IO.File]::WriteAllBytes($certPath, [Convert]::FromBase64String($env:MDC_SIGNING_CERT_PFX_BASE64))
+            "cert_password=$($env:MDC_SIGNING_CERT_PASSWORD)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "self_signed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
+          else {
+            # Validation only. The package built by a non-tag run is unsigned, so mint a throwaway
+            # certificate whose subject equals the package's own Identity/@Publisher (Windows
+            # rejects a package whose publisher does not match its signature) and sign it here.
+            $package = Get-ChildItem artifacts/current -Filter '*.msix' -File -Recurse | Select-Object -First 1
+            if ($null -eq $package) { throw "No MSIX was found under artifacts/current." }
+
+            Add-Type -AssemblyName System.IO.Compression.FileSystem
+            $archive = [IO.Compression.ZipFile]::OpenRead($package.FullName)
+            try {
+              $entry = $archive.GetEntry('AppxManifest.xml')
+              if ($null -eq $entry) { throw "$($package.Name) has no AppxManifest.xml." }
+              $reader = [IO.StreamReader]::new($entry.Open())
+              try { [xml]$manifest = $reader.ReadToEnd() } finally { $reader.Dispose() }
+            } finally { $archive.Dispose() }
+
+            $namespaceManager = [Xml.XmlNamespaceManager]::new($manifest.NameTable)
+            $namespaceManager.AddNamespace("foundation", "http://schemas.microsoft.com/appx/manifest/foundation/windows10")
+            $publisher = $manifest.SelectSingleNode("/foundation:Package/foundation:Identity", $namespaceManager).GetAttribute("Publisher")
+            if ([string]::IsNullOrWhiteSpace($publisher)) { throw "Package Identity has no Publisher to match." }
+            Write-Host "Minting a validation-only certificate for publisher $publisher"
+
+            $password = [Guid]::NewGuid().ToString("N")
+            $certificate = New-SelfSignedCertificate `
+              -Type Custom `
+              -Subject $publisher `
+              -KeyUsage DigitalSignature `
+              -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}") `
+              -CertStoreLocation "Cert:\CurrentUser\My"
+            Export-PfxCertificate -Cert $certificate -FilePath $certPath -Password (ConvertTo-SecureString $password -AsPlainText -Force) | Out-Null
+            Remove-Item -LiteralPath "Cert:\CurrentUser\My\$($certificate.Thumbprint)" -Force
+
+            . ./build/scripts/install/windows-sdk-tools.ps1
+            $signTool = Resolve-WindowsSdkTool -ToolName "signtool.exe"
+            & $signTool sign /fd SHA256 /f $certPath /p $password $package.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Validation signing failed with exit code $LASTEXITCODE." }
+
+            "cert_password=$password" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "self_signed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
           "cert_path=$certPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: Download N-1 installer
+      - name: Resolve the N-1 installer
         id: prior
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           CONFIGURED_PRIOR_TAG: ${{ inputs.prior_release_tag }}
+          ALLOW_FIRST_RELEASE: ${{ inputs.allow_first_release || !startsWith(github.ref, 'refs/tags/v') }}
         run: |
+          $current = Get-ChildItem artifacts/current -Filter '*.msix' -File -Recurse | Select-Object -First 1
+          if ($null -eq $current) { throw "Could not resolve the current ${{ matrix.runtime }} MSIX package." }
+          "current_path=$($current.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
           $priorTag = $env:CONFIGURED_PRIOR_TAG
           if ([string]::IsNullOrWhiteSpace($priorTag)) {
             $priorTag = gh api 'repos/${{ github.repository }}/releases?per_page=20' `
               --jq '[.[] | select(.draft == false and .tag_name != "${{ github.ref_name }}")][0].tag_name'
           }
+
           if ([string]::IsNullOrWhiteSpace($priorTag) -or $priorTag -eq 'null') {
-            throw "No N-1 release is available for update and rollback certification."
+            if ($env:ALLOW_FIRST_RELEASE -ne 'true') {
+              throw "No N-1 release is available for update and rollback certification. Re-dispatch with allow_first_release if this really is the first release."
+            }
+            Write-Host "::notice::No published predecessor exists; certifying in first-release mode. The update and rollback legs will be recorded as not-applicable."
+            "first_release=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            exit 0
           }
+
           New-Item -ItemType Directory -Path artifacts/prior -Force | Out-Null
           gh release download $priorTag --repo '${{ github.repository }}' --pattern '*.msix' --dir artifacts/prior
           $architecturePattern = if ('${{ matrix.runtime }}' -eq 'win-arm64') { 'arm64' } else { 'x64' }
           $prior = Get-ChildItem artifacts/prior -Filter '*.msix' -File -Recurse |
             Where-Object Name -Match $architecturePattern | Select-Object -First 1
-          $current = Get-ChildItem artifacts/current -Filter '*.msix' -File -Recurse | Select-Object -First 1
-          if ($null -eq $prior -or $null -eq $current) {
-            throw "Could not resolve current and N-1 ${{ matrix.runtime }} MSIX packages."
+          if ($null -eq $prior) {
+            throw "Release $priorTag published no ${{ matrix.runtime }} MSIX to certify the update and rollback legs against."
           }
           "prior_path=$($prior.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          "current_path=$($current.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           "prior_tag=$priorTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "first_release=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Certify install, launch, update, repair, rollback, and uninstall
         shell: pwsh
         env:
-          MDC_SIGNING_CERT_PASSWORD: ${{ secrets.MDC_SIGNING_CERT_PASSWORD }}
+          MDC_CERT_PASSWORD: ${{ steps.signing.outputs.cert_password }}
         run: |
-          pwsh ./build/scripts/install/certify-desktop-install-lifecycle.ps1 `
-            -CurrentPackage '${{ steps.prior.outputs.current_path }}' `
-            -PriorPackage '${{ steps.prior.outputs.prior_path }}' `
-            -SigningCertificatePfx '${{ steps.signing.outputs.cert_path }}' `
-            -SigningCertificatePassword $env:MDC_SIGNING_CERT_PASSWORD `
-            -Architecture '${{ matrix.architecture }}' `
-            -ReceiptPath artifacts/install-certification/${{ matrix.runtime }}/desktop-install-lifecycle.json
+          $arguments = @(
+            '-CurrentPackage', '${{ steps.prior.outputs.current_path }}'
+            '-SigningCertificatePfx', '${{ steps.signing.outputs.cert_path }}'
+            '-SigningCertificatePassword', $env:MDC_CERT_PASSWORD
+            '-Architecture', '${{ matrix.architecture }}'
+            '-ReceiptPath', 'artifacts/install-certification/${{ matrix.runtime }}/desktop-install-lifecycle.json'
+          )
+          if ('${{ steps.prior.outputs.first_release }}' -eq 'true') {
+            $arguments += '-FirstRelease'
+          }
+          else {
+            $arguments += @('-PriorPackage', '${{ steps.prior.outputs.prior_path }}')
+          }
+          if ('${{ steps.signing.outputs.self_signed }}' -eq 'true') {
+            $arguments += '-TrustSelfSignedRoot'
+          }
+          pwsh ./build/scripts/install/certify-desktop-install-lifecycle.ps1 @arguments
 
       - name: Upload clean-machine lifecycle evidence
         if: always()
@@ -486,11 +605,13 @@ jobs:
       contents: write
 
     steps:
+      # No merge-multiple: every runtime ships its own sbom.spdx.json, release-evidence.json and
+      # SHA256SUMS under the same names, so merging them into one directory would silently keep
+      # only the last runtime's copies and publish those as if they covered both.
       - name: Download packaged installer artifacts
         uses: actions/download-artifact@v5.0.0
         with:
           pattern: meridian-desktop-installer-*-${{ github.run_id }}
-          merge-multiple: true
           path: artifacts/release
 
       - name: Download consumer setup artifact

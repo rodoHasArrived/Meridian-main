@@ -3,11 +3,19 @@ param(
     [string]$Configuration = "Release",
     [string]$OutputDirectory = "artifacts/consumer-setup",
     [string]$PostgreSqlPayloadRoot = $env:MDC_POSTGRES_PAYLOAD_ROOT,
+
+    # Each runtime bundled here needs a matching PostgreSQL server payload, and PostgreSQL
+    # publishes no Windows ARM64 server build. Callers therefore declare exactly what they can
+    # supply rather than the script assuming both and failing at the payload check.
+    [ValidateSet("win-x64", "win-arm64")]
+    [string[]]$Runtimes = @("win-x64", "win-arm64"),
+
     [string]$SigningCertificate,
     [string]$SigningCertificatePassword
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "windows-sdk-tools.ps1")
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "../../..")).Path
 $outputRoot = Join-Path $repoRoot $OutputDirectory
 $payloadRoot = Join-Path $outputRoot "payload"
@@ -28,7 +36,8 @@ try {
     npm run build
 } finally { Pop-Location }
 
-foreach ($runtime in @("win-x64", "win-arm64")) {
+Write-Host "[consumer-setup] Bundling runtimes: $($Runtimes -join ', ')"
+foreach ($runtime in $Runtimes) {
     $runtimeRoot = Join-Path $payloadRoot $runtime
     $hostRoot = Join-Path $runtimeRoot "host"
     $desktopRoot = Join-Path $runtimeRoot "desktop"
@@ -58,7 +67,8 @@ $setup = Join-Path $setupPublish "Meridian-Setup.exe"
 if (-not (Test-Path $setup)) { throw "Meridian-Setup.exe was not produced." }
 
 if (-not [string]::IsNullOrWhiteSpace($SigningCertificate)) {
-    $signTool = (Get-Command signtool.exe -ErrorAction Stop).Source
+    # signtool.exe lives in the Windows SDK and is not on PATH on the hosted Windows image.
+    $signTool = Resolve-WindowsSdkTool -ToolName "signtool.exe"
     & $signTool sign /fd SHA256 /td SHA256 /tr http://timestamp.digicert.com /f $SigningCertificate /p $SigningCertificatePassword $setup
     if ($LASTEXITCODE -ne 0) { throw "Authenticode signing failed." }
 }

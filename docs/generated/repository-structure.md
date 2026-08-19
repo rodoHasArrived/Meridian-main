@@ -1204,7 +1204,8 @@ Meridian-main
 │       │   ├── install.ps1
 │       │   ├── install.sh
 │       │   ├── package-desktop-msix.ps1
-│       │   └── smoke-web-workstation-install.ps1
+│       │   ├── smoke-web-workstation-install.ps1
+│       │   └── windows-sdk-tools.ps1
 │       ├── lib
 │       │   ├── ArtifactRetention.psm1
 │       │   └── BuildNotification.psm1
