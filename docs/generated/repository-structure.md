@@ -9927,6 +9927,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.StatementAuthorityTests.cs
 │   │   │   ├── WorkstationEndpointsTests.AccountingConfiguration.cs
 │   │   │   ├── WorkstationEndpointsTests.cs
+│   │   │   ├── WorkstationEndpointsTests.DataReadAuthorization.cs
 │   │   │   ├── WorkstationEndpointsTests.Extensibility.cs
 │   │   │   ├── WorkstationEndpointsTests.IBResults.cs
 │   │   │   ├── WorkstationEndpointsTests.Infrastructure.cs

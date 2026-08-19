@@ -4,6 +4,7 @@ using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Microsoft.AspNetCore.TestHost;
@@ -19,7 +20,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(
             RegisterRunReadServices,
             currentUserCompanyId: "company-a",
-            currentUserTenantId: "tenant-a");
+            currentUserTenantId: "tenant-a", currentUserPermissions: UserPermission.ViewTrades);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         var startedAt = new DateTimeOffset(2026, 8, 3, 12, 0, 0, TimeSpan.Zero);
 

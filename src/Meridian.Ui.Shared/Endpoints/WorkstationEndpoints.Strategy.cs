@@ -31,7 +31,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyDesignerUnavailable(jsonOptions)
                 : Results.Json(service.GetTemplates(), jsonOptions);
         })
-        .WithName("GetStrategyDesignerTemplates")
+        .WithName("GetStrategyDesignerTemplates").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyDesignTemplate>>(200)
         .Produces(501);
 
@@ -42,7 +42,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyDesignerUnavailable(jsonOptions)
                 : Results.Json(service.GetFieldCatalog(), jsonOptions);
         })
-        .WithName("GetStrategyDesignerFieldCatalog")
+        .WithName("GetStrategyDesignerFieldCatalog").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyDesignFieldCatalogItem>>(200)
         .Produces(501);
 
@@ -57,7 +57,7 @@ public static partial class WorkstationEndpoints
             var drafts = await repository.ListDraftsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(drafts, jsonOptions);
         })
-        .WithName("GetStrategyDesignerDrafts")
+        .WithName("GetStrategyDesignerDrafts").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyDesignDraftSummary>>(200)
         .Produces(501);
 
@@ -74,7 +74,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound(new { error = "Strategy design draft was not found." })
                 : Results.Json(document, jsonOptions);
         })
-        .WithName("GetStrategyDesignerDraft")
+        .WithName("GetStrategyDesignerDraft").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyDesignDocument>(200)
         .Produces(404)
         .Produces(501);
@@ -353,7 +353,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyEngineUnavailable(jsonOptions)
                 : Results.Json(registry.GetDefinitions(), jsonOptions);
         })
-        .WithName("GetStrategyEngineDefinitions")
+        .WithName("GetStrategyEngineDefinitions").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyEngineDefinition>>(200)
         .Produces(501);
 

@@ -75,7 +75,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyReadServiceUnavailable()
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationResearch")
+        .WithName("GetWorkstationResearch").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<WorkstationStrategyPayload>(200)
         .Produces(503);
 
@@ -86,7 +86,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyReadServiceUnavailable()
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationStrategy")
+        .WithName("GetWorkstationStrategy").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<WorkstationStrategyPayload>(200)
         .Produces(503);
 
@@ -97,7 +97,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyReadServiceUnavailable()
                 : Results.Json(ToResearchBriefingDto(briefing), jsonOptions);
         })
-        .WithName("GetWorkstationResearchBriefing")
+        .WithName("GetWorkstationResearchBriefing").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<ResearchBriefingDto>(200)
         .Produces(503);
 
@@ -108,7 +108,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyReadServiceUnavailable()
                 : Results.Json(briefing, jsonOptions);
         })
-        .WithName("GetWorkstationStrategyBriefing")
+        .WithName("GetWorkstationStrategyBriefing").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyBriefingDto>(200)
         .Produces(503);
 
@@ -368,7 +368,7 @@ public static partial class WorkstationEndpoints
                     "Trading data is unavailable: no execution portfolio state, order manager, or strategy run read service is registered.")
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationTrading")
+        .WithName("GetWorkstationTrading").RequirePermission(UserPermission.ViewTrades)
         .Produces<WorkstationTradingPayload>(200)
         .Produces(403)
         .Produces(503)
@@ -379,7 +379,7 @@ public static partial class WorkstationEndpoints
             var readiness = await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false);
             return Results.Json(readiness, jsonOptions);
         })
-        .WithName("GetWorkstationTradingReadiness")
+        .WithName("GetWorkstationTradingReadiness").RequirePermission(UserPermission.ViewTrades)
         .Produces<TradingOperatorReadinessDto>(200)
         .Produces(403)
         .RequireWorkstationTenantCompanyScope();
@@ -396,7 +396,7 @@ public static partial class WorkstationEndpoints
             var rows = buffer?.DrainBatch(5_000) ?? [];
             return Results.Json(BuildCollateralExposureSnapshot(service, rows), jsonOptions);
         })
-        .WithName("GetWorkstationCollateralExposure")
+        .WithName("GetWorkstationCollateralExposure").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<ExposureSnapshotDto>(200)
         .Produces(403);
 
@@ -417,7 +417,7 @@ public static partial class WorkstationEndpoints
                 ? DataReadServicesUnavailable()
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationDataOperations")
+        .WithName("GetWorkstationDataOperations").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
         .Produces<WorkstationDataPayload>(200)
         .Produces(503);
 
@@ -428,7 +428,7 @@ public static partial class WorkstationEndpoints
                 ? DataReadServicesUnavailable()
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationData")
+        .WithName("GetWorkstationData").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
         .Produces<WorkstationDataPayload>(200)
         .Produces(503);
 
@@ -472,7 +472,7 @@ public static partial class WorkstationEndpoints
                     statusCode: StatusCodes.Status503ServiceUnavailable)
                 : Results.Ok(estimate);
         })
-        .WithName("GetWorkstationDataReplacementCost")
+        .WithName("GetWorkstationDataReplacementCost").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
         .Produces<DataReplacementCostEstimate>(200)
         .Produces(503);
 
