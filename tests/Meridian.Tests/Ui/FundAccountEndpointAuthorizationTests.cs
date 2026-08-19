@@ -102,6 +102,23 @@ public sealed class FundAccountEndpointAuthorizationTests
     }
 
     [Fact]
+    public async Task BrokerageHouseholdRoute_ShouldRequireTenantAndCompanyScope()
+    {
+        var fundId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(
+            [BuildAccount(accountId, fundId, "HOUSEHOLD-BROKERAGE")],
+            [(AccessScopeKindDto.Account, accountId)],
+            UserPermission.ViewTrades);
+
+        var response = await app.GetTestClient().GetAsync("/api/portfolio/household");
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.Forbidden,
+            "a cross-account projection must not run without server-resolved tenant and company scope");
+    }
+
+    [Fact]
     public async Task OperationalAccountRoutes_ShouldRequireScopedAccountAccess()
     {
         var fundId = Guid.NewGuid();

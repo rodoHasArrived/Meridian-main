@@ -1,6 +1,10 @@
 using System.Net;
 using FluentAssertions;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -122,22 +126,84 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.Admin));
         try
         {
-            // Many handlers read CurrentUserPermissionsKey directly instead of going through the
-            // endpoint filter, and refuse a caller that carries only a role. Admin reaches this
-            // configuration read, so a 401/403 here would mean the snapshot never reached the handler.
-            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/config");
-            request.Headers.Add("X-Api-Key", "snapshot-key");
+            var nextCalled = false;
+            var context = new DefaultHttpContext();
+            context.Request.Path = DeclaredRoute;
+            context.Request.Headers["X-Api-Key"] = "snapshot-key";
+            var middleware = new ApiKeyMiddleware(nextContext =>
+            {
+                nextCalled = true;
+                nextContext.Items[LoginSessionMiddleware.CurrentUserKey].Should().Be(ApiKeyMiddleware.ApiKeyActor);
+                nextContext.Items[LoginSessionMiddleware.CurrentUserRoleKey].Should().Be(UserRole.Admin);
+                nextContext.Items[LoginSessionMiddleware.CurrentUserPermissionsKey]
+                    .Should().Be(RolePermissions.For(UserRole.Admin));
+                return Task.CompletedTask;
+            });
 
-            using var response = await Client.SendAsync(request);
+            await middleware.InvokeAsync(context);
 
-            response.StatusCode.Should().Be(
-                HttpStatusCode.OK,
-                "the key principal must carry the canonical permission snapshot, not merely a role");
+            nextCalled.Should().BeTrue("a valid key should reach the downstream handler");
         }
         finally
         {
             Environment.SetEnvironmentVariable("MDC_API_KEY", original);
             Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
+    [Fact]
+    public async Task AnonymousRolePrincipal_CarriesThePermissionSnapshotHandlersReadDirectly()
+    {
+        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        try
+        {
+            var nextCalled = false;
+            var context = new DefaultHttpContext();
+            context.Request.Path = DeclaredRoute;
+            var middleware = new LoginSessionMiddleware(nextContext =>
+            {
+                nextCalled = true;
+                nextContext.Items[LoginSessionMiddleware.CurrentUserKey]
+                    .Should().Be(LoginSessionMiddleware.AnonymousLocalActor);
+                nextContext.Items[LoginSessionMiddleware.CurrentUserRoleKey].Should().Be(UserRole.Admin);
+                nextContext.Items[LoginSessionMiddleware.CurrentUserPermissionsKey]
+                    .Should().Be(RolePermissions.For(UserRole.Admin));
+                nextContext.Items[LoginSessionMiddleware.AnonymousPrincipalKey].Should().Be(true);
+                return Task.CompletedTask;
+            });
+
+            await middleware.InvokeAsync(
+                context,
+                Fixture.Services.GetRequiredService<LoginSessionService>());
+
+            nextCalled.Should().BeTrue("optional mode should establish the explicitly configured anonymous principal");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+        }
+    }
+
+    [Fact]
+    public async Task AnonymousRolePrincipal_DoesNotBypassConfiguredApiKey()
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "still-required-key");
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        try
+        {
+            using var response = await Client.GetAsync(DeclaredRoute);
+
+            response.StatusCode.Should().Be(
+                HttpStatusCode.Unauthorized,
+                "an optional-mode principal is not a validated login session and must not suppress API-key enforcement");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
         }
     }
 

@@ -265,12 +265,17 @@ public static class FundAccountEndpoints
             if (sync is null)
                 return BrokerageSyncUnavailable();
 
-            var household = await sync.GetHouseholdAsync(provider, context.RequestAborted).ConfigureAwait(false);
+            var household = await sync.GetHouseholdAsync(
+                    provider,
+                    (fundAccountId, _) => CanAccessFundAccountBrokerageSyncAsync(fundAccountId, context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(household, jsonOptions);
         })
         .WithName("GetBrokerageHouseholdPortfolio").RequirePermission(UserPermission.ViewTrades)
         .Produces<BrokerageHouseholdPortfolioDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet("/{accountId:guid}/brokerage-sync/status", async (Guid accountId, HttpContext context) =>
         {
