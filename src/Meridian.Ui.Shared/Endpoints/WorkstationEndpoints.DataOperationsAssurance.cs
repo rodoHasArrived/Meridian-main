@@ -27,7 +27,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Problem("Ingestion operations service is unavailable.", statusCode: StatusCodes.Status503ServiceUnavailable)
                 : Results.Ok(service.GetSnapshot(state, workload, provider, resumableOnly ?? false));
         })
-        .WithName("GetWorkstationIngestionOperations")
+        .WithName("GetWorkstationIngestionOperations").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill)
         .Produces<IngestionOperationsSnapshotDto>()
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status503ServiceUnavailable);
@@ -44,7 +44,7 @@ public static partial class WorkstationEndpoints
             var detail = service.GetDetail(jobId);
             return detail is null ? Results.NotFound() : Results.Ok(detail);
         })
-        .WithName("GetWorkstationIngestionOperation")
+        .WithName("GetWorkstationIngestionOperation").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill)
         .Produces<IngestionOperationDetailDto>()
         .Produces(StatusCodes.Status404NotFound);
 
@@ -109,7 +109,7 @@ public static partial class WorkstationEndpoints
                 EndpointAuthorization.HasPermission(context, UserPermission.ManageStorage) && EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance));
             return Results.Ok(await service.GetSnapshotAsync(permissions, ct).ConfigureAwait(false));
         })
-        .WithName("GetWorkstationStorageAssurance")
+        .WithName("GetWorkstationStorageAssurance").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
         .Produces<StorageAssuranceSnapshotDto>()
         .Produces(StatusCodes.Status403Forbidden);
 

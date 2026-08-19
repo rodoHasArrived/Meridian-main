@@ -23,7 +23,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(
             RegisterRunReadServices,
             currentUserCompanyId: "company-a",
-            currentUserTenantId: "tenant-a");
+            currentUserTenantId: "tenant-a", currentUserPermissions: UserPermission.ViewStrategies);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         var startedAt = new DateTimeOffset(2026, 8, 3, 12, 0, 0, TimeSpan.Zero);
 
