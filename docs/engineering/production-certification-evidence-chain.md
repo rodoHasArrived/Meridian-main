@@ -166,6 +166,30 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-08-19** — **FROZEN COMMIT `65dc0107`: all three evidence lanes green together with the
+  authoritative merge gate**, which no commit in this repository had achieved before.
+  - `Production Certification` [#31 / 32290441637](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32290441637) — all four jobs.
+  - `Publish Smoke` `web-workstation`/`win-x64` [#21 / 32290444712](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32290444712).
+  - `Desktop Installer Release` [#17 / 32287384452](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32287384452) — all seven jobs, now including `Meridian.Setup.Tests`.
+  - `Meridian CI` / `quality-gate` [#2872 / 32287375296](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32287375296).
+
+  This supersedes the `9ae0a3a3` set recorded below, which had the three lanes but no
+  `quality-gate` run: a merge conflict with `main` was suppressing `pull_request` events, so three
+  consecutive pushes were never checked at all. `65dc0107` contains `main` at `7785c566` and is
+  mergeable.
+
+  `verify-dotnet` failed once on this commit on
+  `DedupWalOrderingTests.Consumer_RejectedEvent_DoesNotClaimTheIdentityOfALaterValidEvent`, one of
+  1591 tests, in a file this branch does not touch. It was green on `main` at `7785c566` and on
+  this branch before the merge, and it passed on a single re-run, so it was not treated as a
+  regression and nothing was changed for it. If it recurs it needs a root cause rather than another
+  re-run.
+
+  The limit that still stands: every installed lifecycle receipt so far was anchored by a throwaway
+  self-signed certificate, so they prove the mechanism and not `PRD-014`. A commit also cannot
+  contain the evidence of its own runs, so this entry sits on a descendant of the commit it
+  certifies, and any further branch change requires re-running the three lanes.
+
 - **2026-08-19** — **`Meridian.Setup.Tests` had never executed in CI**, so the installer's
   transaction and payload tests were assurance on paper only. `run-dotnet-ci-tests.py` lists the
   project under `WINDOWS_ONLY_TEST_PROJECTS`, which the ubuntu lane skips and
