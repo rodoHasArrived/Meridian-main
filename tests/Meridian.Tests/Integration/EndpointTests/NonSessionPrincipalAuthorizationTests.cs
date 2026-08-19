@@ -85,6 +85,62 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
     }
 
+    [Theory]
+    [InlineData("0")]
+    [InlineData("3")]
+    public async Task ApiKeyWithANumericRole_FailsClosedRatherThanResolvingByOrdinal(string numericRole)
+    {
+        var original = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "numeric-role-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", numericRole);
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, DeclaredRoute);
+            request.Headers.Add("X-Api-Key", "numeric-role-key");
+
+            using var response = await Client.SendAsync(request);
+
+            response.StatusCode.Should().Be(
+                HttpStatusCode.ServiceUnavailable,
+                "Admin is the zero value of UserRole, so ordinal parsing would silently promote \"0\" to "
+                + "full administrator -- only role names may resolve");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", original);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
+    [Fact]
+    public async Task ApiKeyPrincipal_CarriesThePermissionSnapshotHandlersReadDirectly()
+    {
+        var original = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "snapshot-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.Admin));
+        try
+        {
+            // Many handlers read CurrentUserPermissionsKey directly instead of going through the
+            // endpoint filter, and refuse a caller that carries only a role. Admin reaches this
+            // configuration read, so a 401/403 here would mean the snapshot never reached the handler.
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/config");
+            request.Headers.Add("X-Api-Key", "snapshot-key");
+
+            using var response = await Client.SendAsync(request);
+
+            response.StatusCode.Should().Be(
+                HttpStatusCode.OK,
+                "the key principal must carry the canonical permission snapshot, not merely a role");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", original);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
     [Fact]
     public async Task ApiKeyWithAnUnknownRole_FailsClosed()
     {

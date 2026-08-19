@@ -78,8 +78,11 @@ public sealed class ApiKeyMiddleware
         }
 
         // Requests authenticated via a login session (the browser workstation) are governed
-        // by the session + CSRF layers; the API key protects out-of-band API clients.
-        if (context.Items.ContainsKey(LoginSessionMiddleware.CurrentUserKey))
+        // by the session + CSRF layers; the API key protects out-of-band API clients. An
+        // optional-mode anonymous principal is not a session and must not inherit that exemption,
+        // or configuring MDC_API_KEY alongside MDC_ANONYMOUS_ROLE would stop enforcing the key.
+        if (context.Items.ContainsKey(LoginSessionMiddleware.CurrentUserKey) &&
+            !context.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey))
         {
             await _next(context);
             return;
@@ -117,6 +120,11 @@ public sealed class ApiKeyMiddleware
         context.Items[LoginSessionMiddleware.CurrentUserKey] = ApiKeyActor;
         context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = apiKeyRole;
 
+        // The canonical snapshot as well as the role: the endpoint filters resolve either, but many
+        // handlers read the permissions item directly and refuse a caller that has only a role, which
+        // would admit the request at the route boundary and reject it inside.
+        context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(apiKeyRole);
+
         await _next(context);
     }
 
@@ -146,7 +154,34 @@ public sealed class ApiKeyMiddleware
             return true;
         }
 
-        return Enum.TryParse(configured.Trim(), ignoreCase: true, out role) && Enum.IsDefined(role);
+        return TryParseRoleName(configured, out role);
+    }
+
+    /// <summary>
+    /// Parses a role by name only. <see cref="Enum.TryParse{TEnum}(string, bool, out TEnum)"/> also
+    /// accepts numeric text, and <see cref="UserRole.Admin"/> is the zero value, so a configuration of
+    /// "0" -- or any stray number -- would otherwise resolve to full administrator rather than failing
+    /// closed as an unrecognised value.
+    /// </summary>
+    internal static bool TryParseRoleName(string? configured, out UserRole role)
+    {
+        role = default;
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            return false;
+        }
+
+        var trimmed = configured.Trim();
+        foreach (var name in Enum.GetNames<UserRole>())
+        {
+            if (string.Equals(name, trimmed, StringComparison.OrdinalIgnoreCase))
+            {
+                role = Enum.Parse<UserRole>(name);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

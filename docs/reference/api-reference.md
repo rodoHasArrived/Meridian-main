@@ -130,9 +130,9 @@ therefore carries a role, named by `MDC_API_KEY_ROLE`:
 
 | Value | Effect |
 | --- | --- |
-| unset | The key carries `ReadOnly` — enough to read the open surface, not enough to mutate or to read governed data. |
+| unset | The key carries `ReadOnly`, which holds `ViewMarketData`, `ViewHistoricalData`, `ViewAnalytics` and `ViewStrategies` — so an unscoped key can read live and historical market data, analytics and strategy runs, but cannot mutate anything and cannot reach ledger, reporting, fund, security-master or diagnostic surfaces. |
 | a role name (`Admin`, `TradeDesk`, `Accounting`, …) | The key carries that role's permissions. Match it to what the calling script actually needs. |
-| anything else | Requests are refused with `503` rather than quietly falling back, so a typo surfaces instead of applying a permission set nobody chose. |
+| anything else | Requests are refused with `503` rather than quietly falling back, so a typo surfaces instead of applying a permission set nobody chose. Only role **names** are accepted — a numeric value is rejected, because `Admin` is the zero value and `0` would otherwise resolve to full administrator. |
 
 Scripts that mutate configuration or read governed data need a role that holds the relevant
 permission — for example `POST /api/symbols/add` requires `ModifyConfig` and `POST /api/backfill/run`

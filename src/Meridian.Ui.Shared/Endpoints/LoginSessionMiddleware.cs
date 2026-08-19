@@ -29,6 +29,11 @@ public sealed class LoginSessionMiddleware
     /// <summary>Actor recorded for optional-mode callers so audit trails are attributed.</summary>
     internal const string AnonymousLocalActor = "local-operator";
 
+    /// <summary>
+    /// Marks a request whose principal came from optional mode rather than a validated login session.
+    /// </summary>
+    internal const string AnonymousPrincipalKey = "CurrentUserIsAnonymous";
+
     private const string LocalShutdownTokenHeader = "X-Meridian-Shutdown-Token";
 
     /// <summary>Name of the HTTP-only session cookie set after successful login.</summary>
@@ -124,6 +129,12 @@ public sealed class LoginSessionMiddleware
                 {
                     context.Items[CurrentUserKey] = AnonymousLocalActor;
                     context.Items[CurrentUserRoleKey] = role;
+                    context.Items[CurrentUserPermissionsKey] = RolePermissions.For(role);
+
+                    // Marks this principal as anonymous rather than a validated login session, so a
+                    // deployment that also configures MDC_API_KEY still has its key enforced -- the
+                    // API-key middleware exempts sessions, and an anonymous caller is not one.
+                    context.Items[AnonymousPrincipalKey] = true;
                 }
 
                 await _next(context);
@@ -248,7 +259,7 @@ public sealed class LoginSessionMiddleware
             return true;
         }
 
-        if (Enum.TryParse<UserRole>(configured.Trim(), ignoreCase: true, out var parsed) && Enum.IsDefined(parsed))
+        if (ApiKeyMiddleware.TryParseRoleName(configured, out var parsed))
         {
             role = parsed;
             return true;
