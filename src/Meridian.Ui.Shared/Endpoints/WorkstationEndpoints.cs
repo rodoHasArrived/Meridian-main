@@ -1846,7 +1846,7 @@ public static partial class WorkstationEndpoints
             var items = await GetBreakQueueItemsAsync(repository, queueScope, status, fundAccountId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
         })
-        .WithName("GetReconciliationBreakQueue").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .WithName("GetReconciliationBreakQueue").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200)
         .Produces(501);
 
@@ -1866,7 +1866,7 @@ public static partial class WorkstationEndpoints
             var item = await repository.GetByIdAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
             return item is null ? Results.NotFound() : Results.Json(item, jsonOptions);
         })
-        .WithName("GetReconciliationBreakQueueItem").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .WithName("GetReconciliationBreakQueueItem").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<ReconciliationBreakQueueItem>(200)
         .Produces(404);
 
@@ -4353,13 +4353,14 @@ public static partial class WorkstationEndpoints
         return "operator";
     }
 
+    // Deliberately a superset of HasReconciliationMutationPermission: a profile that can act on
+    // casework must be able to load the queue it acts on, and permission overrides need not match
+    // the bundled roles, so ManageDirectLending cannot be assumed to arrive alongside ViewTrades.
     private static bool CanViewReconciliationBreakQueue(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(
             context,
-            UserPermission.ViewTrades,
-            UserPermission.ViewSecurityMaster,
-            UserPermission.ModifySecurityMaster,
-            UserPermission.AdminMaintenance);
+            UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending,
+            UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
 
     private static bool CanMutateReconciliationBreakQueue(HttpContext context)
         => HasReconciliationMutationPermission(context);
