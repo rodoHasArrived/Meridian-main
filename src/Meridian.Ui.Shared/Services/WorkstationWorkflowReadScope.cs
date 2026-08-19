@@ -16,8 +16,14 @@ namespace Meridian.Ui.Shared.Services;
 ///
 /// <para>Cards backed by no record content — Portfolio, Reporting and Settings, which vary only on
 /// whether an operating context is selected — are not gated here; there is nothing in them to
-/// withhold. <see cref="All"/> is the in-process default for the desktop workstation, which resolves
-/// its operator's authority before it composes the shell rather than per read.</para>
+/// withhold.</para>
+///
+/// <para>There is deliberately no default: every caller of
+/// <see cref="WorkstationWorkflowSummaryService.GetAsync"/> states a scope, because the desktop lane
+/// reaches that service in process with no endpoint filter in between, and an optional argument
+/// there is a grant to whichever caller forgets it. Browser requests resolve theirs through
+/// <see cref="ForRequest"/>; the desktop resolves its operator's through its own authenticated
+/// session.</para>
 /// </summary>
 public sealed record WorkstationWorkflowReadScope(
     bool Trading,
@@ -25,7 +31,10 @@ public sealed record WorkstationWorkflowReadScope(
     bool Strategy,
     bool Data)
 {
-    /// <summary>Every family readable — the default for in-process callers with no request principal.</summary>
+    /// <summary>
+    /// Every family readable. For a caller whose authority is already established to cover all of
+    /// them, and for tests; never a stand-in for a scope that was not resolved.
+    /// </summary>
     public static readonly WorkstationWorkflowReadScope All = new(
         Trading: true,
         Accounting: true,
