@@ -619,6 +619,72 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     }
 
     [Fact]
+    public async Task AnonymousReadOnlyRole_DoesNotRefuseAMutationCarryingAValidApiKey()
+    {
+        var originalAnonRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalKeyRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.ReadOnly));
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "deferred-judgement-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.Admin));
+        try
+        {
+            // LoginSessionMiddleware runs before ApiKeyMiddleware, so judging this request by the
+            // anonymous role would settle it before the key's own role is ever read -- a read-only
+            // anonymous posture would silently disable every API-key mutation in the deployment.
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/replay/start")
+            {
+                Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json")
+            };
+            request.Headers.Add("X-Api-Key", "deferred-judgement-key");
+
+            using var response = await Client.SendAsync(request);
+
+            response.StatusCode.Should().NotBe(
+                HttpStatusCode.Forbidden,
+                "the key carries Admin, and its own role is what decides a request presenting it");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalAnonRole);
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalKeyRole);
+        }
+    }
+
+    [Fact]
+    public async Task AnonymousReadOnlyRole_DoesNotBlockTheInitialAccountBootstrap()
+    {
+        var originalAnonRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.ReadOnly));
+        try
+        {
+            // The bootstrap surface carries its own loopback and one-use token checks, which are
+            // stronger than a role check. Refusing it on method alone would leave a fresh install
+            // that named an anonymous role unable to ever create its first governed account.
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/bootstrap")
+            {
+                Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json")
+            };
+
+            using var response = await Client.SendAsync(request);
+
+            // The endpoint may still refuse on its own terms -- no bootstrap token is configured in
+            // this fixture -- so the status alone cannot tell the two refusals apart. What must not
+            // happen is the middleware answering first, which its message identifies.
+            var body = await response.Content.ReadAsStringAsync();
+            body.Should().NotContain(
+                "allows only GET, HEAD, and OPTIONS",
+                "the bootstrap request must reach its own loopback and one-use token checks rather "
+                + "than be refused by the anonymous role's read-only rule");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalAnonRole);
+        }
+    }
+
+    [Fact]
     public async Task AnonymousReadOnlyPrincipal_CannotReachAViewPermissionMutation()
     {
         var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
