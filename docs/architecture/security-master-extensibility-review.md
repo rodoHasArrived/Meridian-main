@@ -535,9 +535,12 @@ eighteen types means every new type is another nullable column, and six declared
 none.
 
 **5. Make the projection cache multi-node-safe.**
-Per-process with no invalidation, and a clear-then-fill `ReplaceAll` that exposes an empty master to
-concurrent readers. Migration 025 moved the conflict and revision stores off process-local memory
-specifically for scale-out; this cache did not follow.
+~~Per-process with no invalidation, and a clear-then-fill `ReplaceAll` that exposes an empty master
+to concurrent readers.~~ *(Updated 2026-08-19: the clear-then-fill half was fixed on this branch —
+`ReplaceAll` now installs a whole map under a write gate. What remains of this priority is the
+multi-node half.)* The cache is still per-process, with no cross-node invalidation and no eviction.
+Migration 025 moved the conflict and revision stores off process-local memory specifically for
+scale-out; this cache did not follow.
 
 *Deferred but worth tracking:* effective-interest amortization (GAAP materiality question, not an
 architecture question); relational projections for the private/alternative classes; valid-time term
@@ -664,14 +667,36 @@ projection and only reach `Upsert` after several awaits, a record that waits on 
 authoritative as of its snapshot — including about which securities are absent — and merging
 stragglers in by version would resurrect every record it legitimately dropped.
 
-The regression tests were rewritten twice for the same underlying reason. The first versions spun a
-reader thread and hoped it interleaved; the second forced the interleaving for the reader but not
-for the writer, which signalled *before* calling `Upsert` and so still passed when it was
-descheduled at that point. Both could pass against the implementations they existed to reject — the
-recurring error being to check that a test passes under the fix without checking that it fails under
-the bug. The replacement now runs a callback mid-fill, and the upsert test asserts inside that window
-that the write has *not* completed, so the timing dependence runs in the direction that cannot
-produce a false pass.
+The regression tests were rewritten twice and then partly withdrawn, for one underlying reason. The
+first versions spun a reader thread and hoped it interleaved; the second forced the interleaving for
+the reader but not for the writer, which signalled *before* calling `Upsert` and so still passed
+when it was descheduled at that point. Both could pass against the implementations they existed to
+reject — the recurring error being to check that a test passes under the fix without checking that
+it fails under the bug.
+
+The concurrent-upsert test was then **removed rather than rewritten a third time**, because a later
+finding made it unwritable: `ReplaceAll` must copy its argument *before* taking the gate (a
+lazily-enumerating source run under the gate would deadlock against a writer waiting for it), which
+leaves an in-memory fill over an array as the only in-gate work — no seam a caller can pause. The
+interleaving is no longer externally reachable, so no synchronization scheme would let a test prove
+it. **The write gate therefore has no direct regression coverage; it is justified by the lost-update
+finding, not by a test.** What remains covered is the reader never seeing a partial master, and a
+stale upsert not downgrading an installed record, in both directions.
+
+**Left open: the pre-gate materialization window.** Review then pointed out that moving
+materialization outside the gate reopens a narrower version of the lost-update problem — an `Upsert`
+that completes while `ReplaceAll` is still copying its argument writes into the outgoing map and is
+discarded by the swap, so a security created during that copy disappears from the cache until the
+next refresh. That is correct, and it is not fixed here, because the two findings pull against each
+other: enumerate inside the gate and a lazy source deadlocks against the writer; enumerate outside
+and writes made during the copy are lost. Neither is a bug in the other's fix — they are the two
+horns of the same design choice.
+
+The window is currently near-zero in practice: every production caller passes an already-materialized
+list, which the array fast path takes without enumerating at all, so only a lazily-evaluated source
+would widen it. Closing it properly means a decision rather than a patch — constrain the parameter so
+a lazy source cannot be passed, or give the swap a version boundary that can reconcile writes made
+during the copy. That decision is left to a human reviewer rather than taken here.
 
 The remaining open findings were deliberately not attempted. Items 1, 2, 7, and the top priority
 need a decision or a schema change rather than a repair: the canonical home for MBS/ABS/CLO is a
