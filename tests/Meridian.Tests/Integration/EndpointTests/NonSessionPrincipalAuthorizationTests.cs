@@ -736,6 +736,103 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
     }
 
+    [Theory]
+    [InlineData(nameof(UserRole.Analysis))]
+    [InlineData(nameof(UserRole.Executive))]
+    public async Task ReadOnlyApiKeyRoleHoldingExportData_ReachesAnExportRoute(string roleName)
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "export-grant-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", roleName);
+        try
+        {
+            // Analysis and Executive are read-only in the sense the method rule means -- no Manage,
+            // Modify, Execute or Admin permission -- but both are granted ExportData outright, and
+            // the export routes are POSTs because they take a request body rather than because they
+            // mutate governed state. Refusing them by method alone would take away a capability the
+            // configured role names, which is the one thing the rule was never meant to do.
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/export/analysis");
+            request.Headers.Add("X-Api-Key", "export-grant-key");
+            request.Content = JsonContent.Create(new { profileId = "default" });
+
+            using var response = await Client.SendAsync(request);
+
+            // The export service may still decline on its own terms in this fixture, so the status
+            // cannot separate the two refusals. What must not happen is the middleware answering
+            // first, and its message is what identifies it.
+            var body = await response.Content.ReadAsStringAsync();
+            body.Should().NotContain(
+                "allows only GET, HEAD, and OPTIONS",
+                $"{roleName} holds ExportData and this route declares it, so the endpoint's own "
+                + "declaration must decide the request rather than the method rule");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
+    [Theory]
+    [InlineData(nameof(UserRole.Analysis))]
+    [InlineData(nameof(UserRole.Executive))]
+    public async Task ReadOnlyApiKeyRoleHoldingExportData_IsStillRefusedAViewPermissionMutation(string roleName)
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "export-grant-scope-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", roleName);
+        try
+        {
+            // The export exemption is keyed on the permission the endpoint declares, not on the
+            // role, so it must not widen into the legacy view-grade mutations the rule exists for.
+            // /api/replay/start declares ViewHistoricalData, which both roles hold.
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/replay/start")
+            {
+                Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json")
+            };
+            request.Headers.Add("X-Api-Key", "export-grant-scope-key");
+
+            using var response = await Client.SendAsync(request);
+
+            response.StatusCode.Should().Be(
+                HttpStatusCode.Forbidden,
+                $"{roleName} holds no ExportData claim on this route, so the method rule still applies");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
+    [Fact]
+    public async Task AnonymousReadOnlyRoleHoldingExportData_ReachesAnExportRoute()
+    {
+        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Analysis));
+        try
+        {
+            // The two postures share one rule, so the exemption has to reach both. Pinned on the
+            // anonymous side as well rather than assumed equivalent -- that assumption is exactly
+            // how the two paths diverged the first time.
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/export/analysis");
+            request.Content = JsonContent.Create(new { profileId = "default" });
+
+            using var response = await Client.SendAsync(request);
+
+            var body = await response.Content.ReadAsStringAsync();
+            body.Should().NotContain(
+                "allows only GET, HEAD, and OPTIONS",
+                "the anonymous posture must honour the same export grant the key posture does");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+        }
+    }
+
     [Fact]
     public async Task AnonymousRolePrincipal_DoesNotBypassConfiguredApiKey()
     {

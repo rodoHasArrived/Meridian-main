@@ -60,21 +60,52 @@ public static class EndpointAuthorization
 {
     /// <summary>
     /// True when a principal carrying <paramref name="role"/> is attempting to change state and the
-    /// role is not entitled to. <see cref="UserRole.ReadOnly"/> means a read-only client whichever
-    /// posture established it -- an API key with no configured role, an API key configured
-    /// ReadOnly, or an optional-mode anonymous operator -- and permission names alone cannot enforce
-    /// that, because a few legacy mutations are declared with view-grade permissions ReadOnly holds.
-    /// One definition shared by both non-session principals, so the two cannot drift apart: they
-    /// already did once, and the anonymous path silently allowed what the key path refused.
+    /// role is not entitled to. A read-only role means a read-only client whichever posture
+    /// established it -- an API key with no configured role, an API key configured ReadOnly, or an
+    /// optional-mode anonymous operator -- and permission names alone cannot enforce that, because a
+    /// few legacy mutations are declared with view-grade permissions those roles hold. One definition
+    /// shared by both non-session principals, so the two cannot drift apart: they already did once,
+    /// and the anonymous path silently allowed what the key path refused.
     /// </summary>
-    internal static bool IsReadOnlyRoleMutation(UserRole role, string method)
-        => IsReadOnlyRole(role) &&
-           !(HttpMethods.IsGet(method) || HttpMethods.IsHead(method) || HttpMethods.IsOptions(method));
+    internal static bool IsReadOnlyRoleMutation(HttpContext context, UserRole role)
+    {
+        if (!IsReadOnlyRole(role))
+        {
+            return false;
+        }
+
+        var method = context.Request.Method;
+        if (HttpMethods.IsGet(method) || HttpMethods.IsHead(method) || HttpMethods.IsOptions(method))
+        {
+            return false;
+        }
+
+        return !DeclaresReadOnlyRoleActionGrant(context.GetEndpoint());
+    }
 
     /// <summary>
-    /// The built-in roles whose permission sets are entirely view and export grants -- they hold no
-    /// Manage, Modify, Execute or Admin permission at all. Restricting them to safe methods therefore
-    /// takes away nothing they were meant to do; it only closes the legacy routes that mutate while
+    /// True when the selected endpoint declares an action grant a read-only role legitimately holds,
+    /// so the method rule above must stand aside. <see cref="UserPermission.ExportData"/> is that
+    /// grant today: <see cref="UserRole.Analysis"/> and <see cref="UserRole.Executive"/> are granted
+    /// it outright, and the export routes are POSTs because they take a request body, not because
+    /// they mutate governed state. Enumerated rather than inferred from the permission's name -- the
+    /// exemption is a deliberate decision per grant, not a naming convention.
+    ///
+    /// <para>Read from the endpoint's own declaration rather than the request path, so the exemption
+    /// tracks what a route requires instead of what its URL looks like. Routing populates the
+    /// endpoint before this middleware runs; when it has not (no endpoint selected, or an
+    /// unroutable request) there is no declaration to defer to and the method rule applies -- the
+    /// exemption fails closed, never the protection.</para>
+    /// </summary>
+    private static bool DeclaresReadOnlyRoleActionGrant(Endpoint? endpoint)
+        => endpoint?.Metadata.GetMetadata<EndpointAuthorizationMetadata>() is { } metadata &&
+           metadata.Permissions.Contains(UserPermission.ExportData);
+
+    /// <summary>
+    /// The built-in roles whose permission sets carry no Manage, Modify, Execute or Admin permission
+    /// at all -- only view grants plus, for two of them, <see cref="UserPermission.ExportData"/>.
+    /// Restricting them to safe methods therefore takes away nothing they were meant to do once the
+    /// export exemption above is applied; it only closes the legacy routes that mutate while
     /// declaring a view permission. Keyed on the role rather than on its name, so a role that gains a
     /// command permission later stops being covered by this rule rather than being silently
     /// restricted by it.
