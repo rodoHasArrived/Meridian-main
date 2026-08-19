@@ -37,7 +37,7 @@ public static partial class WorkstationEndpoints
                 DisplayName: "Meridian Operator",
                 Role: ResolveRoleLabel(context, latest: null),
                 Environment: "paper",
-                ActiveWorkspace: "strategy",
+                ActiveWorkspace: NeutralWorkspace,
                 CommandCount: 6,
                 LatestRun: null,
                 WorkspaceSummary: new WorkstationSessionWorkspaceSummary(0, 0, 0, 0, 0));
@@ -62,7 +62,7 @@ public static partial class WorkstationEndpoints
             DisplayName: canReadRuns ? BuildDisplayName(latest) : "Meridian Operator",
             Role: ResolveRoleLabel(context, latest),
             Environment: MapEnvironment(latest),
-            ActiveWorkspace: MapWorkspace(latest),
+            ActiveWorkspace: canReadRuns ? MapWorkspace(latest) : NeutralWorkspace,
             CommandCount: canReadRuns ? Math.Max(6, runs.Length + activeRuns + reviewRuns) : 6,
             LatestRun: canReadRuns && latest is not null ? BuildRunDigest(latest, latestDetail) : null,
             WorkspaceSummary: canReadRuns
@@ -116,6 +116,16 @@ public static partial class WorkstationEndpoints
             StrategyRunMode.Backtest => "research",
             _ => "paper"
         };
+
+    /// <summary>
+    /// Landing workspace for a payload carrying no run data. <see cref="MapWorkspace"/> is derived
+    /// from the latest run's promotion state -- LiveManaged reads as accounting, CandidateForLive as
+    /// trading, CandidateForPaper as strategy -- so returning it to a caller without strategy
+    /// permission would hand back the very promotion state the rest of the payload withholds, one
+    /// field over. This is the same value a deployment with no run service returns, so it discloses
+    /// nothing about whether runs exist.
+    /// </summary>
+    private const string NeutralWorkspace = "strategy";
 
     private static string MapWorkspace(StrategyRunSummary? latest)
         => latest?.Promotion?.State switch

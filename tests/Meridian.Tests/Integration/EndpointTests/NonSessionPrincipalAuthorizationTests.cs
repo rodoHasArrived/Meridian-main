@@ -208,6 +208,37 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     }
 
     [Fact]
+    public async Task SessionPayload_WithheldFromAStrategylessCaller_LeaksNoPromotionStateViaTheWorkspace()
+    {
+        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
+        // FundAccountant holds no strategy permission, so the run digest is withheld -- and the
+        // workspace must not hand the same promotion state back one field over. MapWorkspace turns
+        // LiveManaged into accounting and CandidateForLive into trading, which is exactly the
+        // restricted state the rest of the payload is withholding.
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.FundAccountant));
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", "workspace-leak-tenant");
+        try
+        {
+            using var response = await Client.GetAsync("/api/workstation/session");
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var payload = await response.Content.ReadFromJsonAsync<WorkstationSessionPayload>(JsonOptions);
+
+            payload!.LatestRun.Should().BeNull();
+            payload.ActiveWorkspace.Should().Be(
+                "strategy",
+                "the redacted payload returns the same landing workspace a deployment with no run "
+                + "service returns, so it discloses nothing about the latest run");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
+        }
+    }
+
+    [Fact]
     public async Task SessionPayload_ReportsTheCallersOwnRoleNotTheLatestRunsPosture()
     {
         var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
