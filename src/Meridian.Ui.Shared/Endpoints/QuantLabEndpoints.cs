@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
+using Meridian.Execution.Logging;
 using Meridian.Identity.Auth;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
@@ -188,7 +189,10 @@ public static class QuantLabEndpoints
             {
                 services.GetService<ILoggerFactory>()?
                     .CreateLogger("QuantLabEndpoints")
-                    .LogWarning(ex, "Could not record a Quant Lab backtest for strategy {StrategyId}", request.StrategyId);
+                    .LogWarning(
+                        ex,
+                        "Could not record a Quant Lab backtest for strategy {StrategyId}",
+                        LogSanitizer.Sanitize(request.StrategyId));
             }
         }
     }
