@@ -385,23 +385,33 @@ outside both the rate limit and the declarative permission convention every neig
 follows. The risk is the one a reviewer would hit rather than an attacker: a blanket reading of "all
 mutations are permission-gated and rate-limited" treats these as covered when they are not.
 
-Either bring them onto `RequireRateLimiting` and a fluent `RequirePermission`, or record the
-exemption where a reader will find it.
+Two separate remedies, which an earlier draft of this item wrongly merged into one. **All four**
+lack `RequireRateLimiting` — that is the four-route question. **Only `RunSecurityMasterQualityReport`**
+lacks a fluent `RequirePermission`; the three profile routes already declare
+`RequirePermission(UserPermission.AdminMaintenance)` at `:157`, `:198`, and `:239`, so telling an
+implementer to add one there would have them write a redundant declaration. Either apply the missing
+controls on that basis, or record the exemption where a reader will find it.
 
 ## Missing or Incomplete Subsystems Blocking New Asset Classes
 
+*State column refreshed 2026-08-19. Three rows had closed since this table was written and were
+still listed as absent; because the table reads as the live blocker list rather than as dated
+evidence, that would have sent roadmap work at implementation already done. Closed rows are kept
+with their outcome rather than deleted, so the table stays a record of what was raised.*
+
 | Subsystem | State | Blocks |
 | --- | --- | --- |
-| Codec generation from `SecurityAssetTermsSchema` | Table exists; both codec sides hand-written | Every new class needs two hand-edited codec arms that only tests can catch drifting |
-| `SecurityKind.CustomAsset` domain case | Absent — collapses to `OtherSecurity` | Profile-backed classes cannot be amended without losing the profile envelope |
-| Per-field provenance persistence | Type exists, no storage | Multi-vendor golden record, conflict-winner lineage, vendor scorecards |
-| Typed amendment path from the workbench | Overlay only, by documented design | Operator corrections reaching pricing/ledger/NAV |
-| Generic corporate-action payload envelope | Wide table, 8 columns / 18 types | Tender offers, forks, returns of capital, paydowns carrying their own economics |
-| Effective-interest amortization | Enum only | GAAP-compliant premium amortization for material portfolios |
-| Bond principal / step / inflation schedules | Absent | Sinking funds, step-rate, TIPS — already classifiable, not computable |
-| Asset-class-scoped projection replay | Argument ignored | Bounded rebuild cost as class count grows |
-| Distributed projection cache invalidation | Per-process only | Multi-node deployment coherence |
-| Relational projections for 15 of 26 classes | Declared gap, test-guarded | Any query path that needs typed columns for private/alternative assets |
+| Codec generation from `SecurityAssetTermsSchema` | Open — table exists; both codec sides hand-written | Every new class needs two hand-edited codec arms that only tests can catch drifting |
+| `SecurityKind.CustomAsset` domain case | **Closed** — first-class DU case (`SecurityMaster.fs:566`); profile envelope round-trips | — |
+| Per-field provenance persistence | **Closed** — migration 027 creates `security_field_provenance`; 028 adds versioned attribution | — |
+| Typed amendment path from the workbench | Open — overlay only, by documented design | Operator corrections reaching pricing/ledger/NAV |
+| Generic corporate-action payload envelope | Open — wide table, 8 columns / 18 types | Tender offers, forks, returns of capital, paydowns carrying their own economics |
+| Effective-interest amortization | Open — enum only; the constant-yield primitives exist unwired in `SecurityCalculations.fs` | GAAP-compliant premium amortization for material portfolios |
+| Bond principal schedule | **Closed** — `BondTerms.PrincipalSchedule` (`SecurityMaster.fs:261`), read by `StructuredCashFlowTermsResolver` | — |
+| Bond step / inflation coupon structures | Open — `BondCouponStructure` is still `Fixed` / `Floating` / `ZeroCoupon` | Step-rate and TIPS — already classifiable, not computable |
+| Asset-class-scoped projection replay | Open — argument ignored | Bounded rebuild cost as class count grows |
+| Distributed projection cache invalidation | Open — per-process only | Multi-node deployment coherence |
+| Relational projections for 15 of 26 classes | Open — declared gap, test-guarded | Any query path that needs typed columns for private/alternative assets |
 
 ---
 
@@ -692,11 +702,25 @@ other: enumerate inside the gate and a lazy source deadlocks against the writer;
 and writes made during the copy are lost. Neither is a bug in the other's fix — they are the two
 horns of the same design choice.
 
-The window is currently near-zero in practice: every production caller passes an already-materialized
-list, which the array fast path takes without enumerating at all, so only a lazily-evaluated source
-would widen it. Closing it properly means a decision rather than a patch — constrain the parameter so
-a lazy source cannot be passed, or give the swap a version boundary that can reconcile writes made
-during the copy. That decision is left to a human reviewer rather than taken here.
+> **Corrected 2026-08-19, after review.** This section first claimed the window was "near-zero in
+> practice: every production caller passes an already-materialized list, which the array fast path
+> takes without enumerating at all". That was wrong, and it understated the risk in the very note
+> written to hand the decision to a human. `BuildWarmSetAsync` returns a
+> `List<SecurityProjectionRecord>` (`SecurityMasterProjectionService.cs:29,43`), and the fast path
+> tests `records as SecurityProjectionRecord[]` — a `List<T>` is not an array, so the cast fails and
+> `ToArray()` runs. **Both production callers enumerate outside the gate**, so the window spans the
+> copy of the entire warm set rather than being near-zero. Being already materialized is not the
+> same as taking the fast path, and the claim conflated them.
+
+The window is therefore real at production scale: an `Upsert` completing while the warm set is copied
+lands in the outgoing map and is discarded by the swap. Closing it means a decision rather than a
+patch, and there are now three candidates. Widen the fast path to the concrete non-lazy types
+(`List<T>` alongside arrays), which restores the property the wrong claim assumed and is the smallest
+change. Constrain the parameter so a lazy source cannot be passed at all, which removes the deadlock
+horn and lets materialization move back inside the gate. Or give the swap a version boundary that
+reconciles writes made during the copy. The first is cheap but leaves the general hazard for any
+other `IEnumerable`; the second changes the public shape; the third changes the concurrency model.
+That decision is left to a human reviewer rather than taken here.
 
 The remaining open findings were deliberately not attempted. Items 1, 2, 7, and the top priority
 need a decision or a schema change rather than a repair: the canonical home for MBS/ABS/CLO is a
