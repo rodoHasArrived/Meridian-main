@@ -873,7 +873,10 @@ public sealed class BrokeragePortfolioSyncServiceTests
                 status.AccountKind.Should().Be(spec.Kind);
             }
 
-            var household = await service.GetHouseholdAsync("robinhood", cts.Token);
+            var household = await service.GetHouseholdAsync(
+                "robinhood",
+                static (_, _) => Task.FromResult(true),
+                cts.Token);
 
             household.ProviderId.Should().Be("robinhood");
             household.Accounts.Should().HaveCount(3);
@@ -885,6 +888,17 @@ public sealed class BrokeragePortfolioSyncServiceTests
             household.TotalEquity.Should().Be(375000m);
             household.TotalCash.Should().Be(150000m);
             household.Positions.Should().HaveCount(3);
+
+            var allowedAccountId = accountSpecs[0].AccountId;
+            var scopedHousehold = await service.GetHouseholdAsync(
+                "robinhood",
+                (fundAccountId, _) => Task.FromResult(fundAccountId == allowedAccountId),
+                cts.Token);
+
+            scopedHousehold.Accounts.Should().ContainSingle(account => account.FundAccountId == allowedAccountId);
+            scopedHousehold.Positions.Should().OnlyContain(position => position.FundAccountId == allowedAccountId);
+            scopedHousehold.TotalEquity.Should().Be(125000m);
+            scopedHousehold.TotalCash.Should().Be(50000m);
         }
         finally
         {

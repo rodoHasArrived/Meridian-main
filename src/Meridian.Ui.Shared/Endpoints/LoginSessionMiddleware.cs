@@ -1,5 +1,7 @@
+using Meridian.Contracts.Configuration;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System.Net;
@@ -25,6 +27,7 @@ public sealed class LoginSessionMiddleware
 {
     private const string LocalShutdownTokenEnvironmentVariable = "MDC_SHUTDOWN_TOKEN";
     private const string AnonymousRoleEnvironmentVariable = "MDC_ANONYMOUS_ROLE";
+    private const string AnonymousTenantEnvironmentVariable = "MDC_ANONYMOUS_TENANT";
 
     /// <summary>Actor recorded for optional-mode callers so audit trails are attributed.</summary>
     internal const string AnonymousLocalActor = "local-operator";
@@ -130,6 +133,26 @@ public sealed class LoginSessionMiddleware
                     context.Items[CurrentUserKey] = AnonymousLocalActor;
                     context.Items[CurrentUserRoleKey] = role;
                     context.Items[CurrentUserPermissionsKey] = RolePermissions.For(role);
+
+                    // A session takes its tenant from the account's company; an anonymous caller has
+                    // no account to take one from, and the whole /api/workstation group is
+                    // tenant-scoped. The supported demo workspace is seeded under one fixed
+                    // tenant/company pair, so the explicitly marked demo host gets that canonical
+                    // scope and an ordinary optional-auth deployment must not inherit access to
+                    // seeded data. Optional mode is also the plain local-development posture,
+                    // though, so such a deployment names its own tenant instead -- the only way an
+                    // operator with no account can say which book they are working. With neither,
+                    // the caller keeps a role but no scope, and the workstation stays refused.
+                    if (ResolveAnonymousTenant() is { } configuredTenant)
+                    {
+                        context.Items[CurrentUserCompanyIdKey] = configuredTenant;
+                        context.Items[CurrentTenantIdKey] = configuredTenant;
+                    }
+                    else if (DemoWorkspaceLayout.IsDemoModeRequested(Array.Empty<string>()))
+                    {
+                        context.Items[CurrentUserCompanyIdKey] = DemoTenantBlueprint.CompanyId;
+                        context.Items[CurrentTenantIdKey] = DemoTenantBlueprint.TenantId;
+                    }
 
                     // Marks this principal as anonymous rather than a validated login session, so a
                     // deployment that also configures MDC_API_KEY still has its key enforced -- the
@@ -266,6 +289,18 @@ public sealed class LoginSessionMiddleware
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Tenant and company authority an optional-mode caller carries, or null when the deployment has
+    /// named none. Any non-empty value is accepted: unlike the role, this is a deployment-chosen
+    /// identifier matched against stored records rather than a member of a closed set, so there is
+    /// nothing to validate it against here.
+    /// </summary>
+    private static string? ResolveAnonymousTenant()
+    {
+        var configured = Environment.GetEnvironmentVariable(AnonymousTenantEnvironmentVariable);
+        return string.IsNullOrWhiteSpace(configured) ? null : configured.Trim();
     }
 
     private static async Task WriteAnonymousRoleConfigurationErrorAsync(HttpContext context, string path)

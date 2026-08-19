@@ -240,6 +240,13 @@ public static class FundAccountEndpoints
 
         // ── Brokerage read-side sync ──────────────────────────────────────────
 
+        // Deliberately inside the fund-account group. This returns the deployment's configured
+        // provider accounts -- IBrokerageAccountCatalog is keyed by provider, carries no tenant
+        // dimension, and DiscoverAccountsAsync enumerates every catalog -- so it is provider
+        // configuration rather than trade data, and there is no per-caller filter to apply inside the
+        // service. Hoisting it out of the group to admit ViewTrades callers would hand one tenant's
+        // operator every other tenant's broker account ids, names, statuses and currencies; no
+        // workspace fetches this route, so nothing is unblocked by the wider reach.
         group.MapGet("/brokerage-sync/accounts", async (HttpContext context) =>
         {
             if (!HasBrokerageSyncAccess(context))
@@ -252,9 +259,11 @@ public static class FundAccountEndpoints
             var accounts = await sync.DiscoverAccountsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(accounts, jsonOptions);
         })
-        .WithName("DiscoverBrokerageSyncAccounts").RequirePermission(UserPermission.ViewTrades)
+        .WithName("DiscoverBrokerageSyncAccounts")
+        .RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<WorkstationBrokerageAccountDto>>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope();
 
         app.MapGet("/api/portfolio/household", async (string? provider, HttpContext context) =>
         {
@@ -265,12 +274,17 @@ public static class FundAccountEndpoints
             if (sync is null)
                 return BrokerageSyncUnavailable();
 
-            var household = await sync.GetHouseholdAsync(provider, context.RequestAborted).ConfigureAwait(false);
+            var household = await sync.GetHouseholdAsync(
+                    provider,
+                    (fundAccountId, _) => CanAccessFundAccountBrokerageSyncAsync(fundAccountId, context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(household, jsonOptions);
         })
         .WithName("GetBrokerageHouseholdPortfolio").RequirePermission(UserPermission.ViewTrades)
         .Produces<BrokerageHouseholdPortfolioDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet("/{accountId:guid}/brokerage-sync/status", async (Guid accountId, HttpContext context) =>
         {

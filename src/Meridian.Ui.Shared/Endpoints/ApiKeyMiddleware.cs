@@ -24,6 +24,15 @@ public sealed class ApiKeyMiddleware
     private const string ApiKeyRoleEnvVar = "MDC_API_KEY_ROLE";
 
     /// <summary>
+    /// Request-item key whose presence identifies a principal established by a validated API key.
+    /// Kept separate from the secret-bearing rate-limit item so authorization checks depend only
+    /// on principal type, not on the key material itself.
+    /// </summary>
+    internal const string ApiKeyPrincipalKey = "CurrentUserIsApiKey";
+
+    internal const string ApiKeyRateLimitKey = "ApiKey";
+
+    /// <summary>
     /// Actor recorded for API-key requests so audit trails attribute them rather than leaving them
     /// unattributed.
     /// </summary>
@@ -102,7 +111,8 @@ public sealed class ApiKeyMiddleware
         }
 
         // Store the validated API key identifier for downstream rate limiting
-        context.Items["ApiKey"] = providedKey;
+        context.Items[ApiKeyRateLimitKey] = providedKey;
+        context.Items[ApiKeyPrincipalKey] = true;
 
         // A validated key needs an authorization context or it cannot pass any route that declares a
         // permission -- the endpoint filters resolve permissions from the session items, and without
@@ -116,6 +126,33 @@ public sealed class ApiKeyMiddleware
                 .ExecuteAsync(context);
             return;
         }
+
+        // A ReadOnly key is a read-only API client, however it acquired that role. Permission names
+        // alone are not enough to enforce that contract because a few legacy POST routes use view
+        // permissions while mutating process-local replay, option, or sampling state. Fail closed
+        // for every method outside the explicit safe-method allowlist; operators that intentionally
+        // need a command endpoint must name a role that authorizes that client. Keyed on the resolved
+        // role rather than on whether the variable was set, because an operator who writes ReadOnly
+        // out explicitly is asking for the same restriction as one who leaves it to the default --
+        // and reading it the other way would make spelling out the default quietly weaken it.
+        if (apiKeyRole == DefaultApiKeyRole && !IsSafeMethod(context.Request.Method))
+        {
+            await ApiProblemDetails.Forbidden(
+                    context,
+                    $"The {DefaultApiKeyRole} API-key role allows only GET, HEAD, and OPTIONS requests. Set {ApiKeyRoleEnvVar} to a role that authorizes this command endpoint.")
+                .ExecuteAsync(context);
+            return;
+        }
+
+        // A key authenticates as itself, never as the optional-mode operator this request may have
+        // been given a moment ago. LoginSessionMiddleware runs first and, in a deployment that
+        // configures an anonymous role and tenant, has already stamped that scope; overwriting only
+        // the actor, role and permissions would leave the key holding a tenant nobody granted it and
+        // passing the workstation scope gates on borrowed authority. Authority comes from one posture.
+        context.Items.Remove(LoginSessionMiddleware.AnonymousPrincipalKey);
+        context.Items.Remove(LoginSessionMiddleware.CurrentTenantIdKey);
+        context.Items.Remove(LoginSessionMiddleware.CurrentUserCompanyIdKey);
+        context.Items.Remove(LoginSessionMiddleware.CurrentUserRoleProfileNameKey);
 
         context.Items[LoginSessionMiddleware.CurrentUserKey] = ApiKeyActor;
         context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = apiKeyRole;
@@ -156,6 +193,11 @@ public sealed class ApiKeyMiddleware
 
         return TryParseRoleName(configured, out role);
     }
+
+    private static bool IsSafeMethod(string method)
+        => HttpMethods.IsGet(method) ||
+           HttpMethods.IsHead(method) ||
+           HttpMethods.IsOptions(method);
 
     /// <summary>
     /// Parses a role by name only. <see cref="Enum.TryParse{TEnum}(string, bool, out TEnum)"/> also
@@ -240,7 +282,7 @@ public sealed class ApiKeyRateLimitMiddleware
         }
 
         // Partition by API key if present, otherwise by IP
-        var partitionKey = context.Items.TryGetValue("ApiKey", out var apiKey) && apiKey is string key
+        var partitionKey = context.Items.TryGetValue(ApiKeyMiddleware.ApiKeyRateLimitKey, out var apiKey) && apiKey is string key
             ? $"key:{key}"
             : $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
 

@@ -235,7 +235,8 @@ public static class EndpointAuthorization
         where TBuilder : IEndpointConventionBuilder
     {
         builder.AddEndpointFilter((context, next) =>
-            TryGetPermissions(context.HttpContext, out _)
+            TryGetPermissions(context.HttpContext, out _) &&
+            !context.HttpContext.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey)
                 ? next(context)
                 : ValueTask.FromResult<object?>(ApiProblemDetails.Unauthorized(context.HttpContext)));
         builder.WithMetadata(new EndpointAuthorizationMetadata(Array.Empty<UserPermission>(), requireAll: false));
@@ -281,6 +282,31 @@ public static class EndpointAuthorization
                 ScopeKind: scopeKind,
                 ScopeId: scopeId,
                 Reason: "No role permissions were resolved for the current actor.");
+        }
+
+        // The API key and the optional-mode local operator are distinct principal kinds, not the
+        // users whose literal usernames happen to be "api-key" and "local-operator". Never send
+        // either synthetic actor through user-scoped assignment lookup: the store matches
+        // AccessPrincipalKindDto.User assignments by actor name, case-insensitively, so doing so
+        // would let a shared credential -- or any unauthenticated caller -- inherit the account and
+        // fund scopes of a real user who happens to carry that name. Preserve only the same explicit
+        // global overrides the scoped service already recognizes.
+        var isApiKeyPrincipal = context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey);
+        if (isApiKeyPrincipal || context.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey))
+        {
+            var principalLabel = isApiKeyPrincipal ? "API-key" : "Anonymous";
+            var hasGlobalOverride =
+                (globalPermissions & UserPermission.AdminMaintenance) == UserPermission.AdminMaintenance ||
+                (globalPermissions & UserPermission.ManageUsers) == UserPermission.ManageUsers;
+            return new ScopedAuthorizationDecisionDto(
+                IsAllowed: hasGlobalOverride,
+                Actor: actor,
+                RequiredPermission: required,
+                ScopeKind: scopeKind,
+                ScopeId: scopeId,
+                Reason: hasGlobalOverride
+                    ? $"The {principalLabel} principal carries a global scoped-access override."
+                    : $"{principalLabel} principals cannot inherit user-scoped access assignments.");
         }
 
         var service = context.RequestServices.GetService(typeof(IScopedAuthorizationService)) as IScopedAuthorizationService;

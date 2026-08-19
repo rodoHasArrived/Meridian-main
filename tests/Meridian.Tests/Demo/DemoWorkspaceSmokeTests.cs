@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.TestSupport;
@@ -15,7 +16,6 @@ using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -76,11 +76,13 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
         _env.Capture(
             "MDC_AUTH_MODE",
             "MDC_API_KEY",
+            "MDC_ANONYMOUS_ROLE",
             "MDC_USERNAME",
             "MDC_PASSWORD_HASH",
             "MDC_USERS",
             "MDC_DISABLE_RATE_LIMIT",
             "MERIDIAN_USE_INMEMORY_GOVERNANCE",
+            DemoWorkspaceLayout.DemoModeEnvironmentVariable,
             "DOTNET_ENVIRONMENT",
             "ASPNETCORE_ENVIRONMENT",
             "LEAN_PATH",
@@ -94,11 +96,13 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
 
         Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "optional");
         Environment.SetEnvironmentVariable("MDC_API_KEY", null);
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
         Environment.SetEnvironmentVariable("MDC_USERNAME", null);
         Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
         Environment.SetEnvironmentVariable("MDC_USERS", null);
         Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", "true");
         Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
+        Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, "true");
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Test");
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
         Environment.SetEnvironmentVariable("LEAN_PATH", null);
@@ -134,18 +138,19 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
 
         _app = builder.Build();
         _providerCatalogLease = ProviderCatalogTestLease.Capture(_app.Services);
-        _app.Use(async (context, next) =>
-        {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "demo-smoke";
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.AdminMaintenance;
-            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = DemoTenantBlueprint.CompanyId;
-            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = DemoTenantBlueprint.TenantId;
-            await next();
-        });
+        _app.UseLoginSessionAuthentication();
         _app.MapWorkstationEndpoints(ServerJsonOptions);
 
         await _app.StartAsync();
         _client = _app.GetTestClient();
+    }
+
+    [Fact]
+    public async Task WorkstationSession_UsesTheSeededAnonymousTenantScope()
+    {
+        var response = await _client!.GetAsync("/api/workstation/session");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]

@@ -1625,7 +1625,7 @@
     {
       "method": "GET",
       "path": "/api/portfolio/household",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:259",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:268",
       "documented": false
     },
     {

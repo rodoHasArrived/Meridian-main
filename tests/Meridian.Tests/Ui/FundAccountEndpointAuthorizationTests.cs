@@ -102,6 +102,60 @@ public sealed class FundAccountEndpointAuthorizationTests
     }
 
     [Fact]
+    public async Task BrokerageSyncDiscoveryRoute_ShouldRequireFundAccountManagementPermission()
+    {
+        await using var app = await CreateAppAsync(
+            [],
+            [],
+            UserPermission.ViewTrades);
+
+        var response = await app.GetTestClient()
+            .GetAsync("/api/fund-accounts/brokerage-sync/accounts");
+
+        // Discovery returns the deployment's configured provider accounts, not the caller's trades:
+        // IBrokerageAccountCatalog is keyed by provider and carries no tenant, so a ViewTrades-only
+        // caller admitted here would read every tenant's broker account ids, names and currencies.
+        // No workspace fetches this route, so the fund-account group gate costs no operator flow.
+        response.StatusCode.Should().Be(
+            HttpStatusCode.Forbidden,
+            "provider configuration is gated by fund-account management, not by trade-view access");
+    }
+
+    [Fact]
+    public async Task BrokerageSyncDiscoveryRoute_ShouldReachTheHandlerForAManagingCaller()
+    {
+        await using var app = await CreateAppAsync(
+            [],
+            [],
+            UserPermission.ViewTrades | UserPermission.ManageDirectLending,
+            tenantScope: "fund-ops-tenant");
+
+        var response = await app.GetTestClient()
+            .GetAsync("/api/fund-accounts/brokerage-sync/accounts");
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.NotImplemented,
+            "a managing caller still reaches the handler, which reports the sync service is unavailable");
+    }
+
+    [Fact]
+    public async Task BrokerageHouseholdRoute_ShouldRequireTenantAndCompanyScope()
+    {
+        var fundId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(
+            [BuildAccount(accountId, fundId, "HOUSEHOLD-BROKERAGE")],
+            [(AccessScopeKindDto.Account, accountId)],
+            UserPermission.ViewTrades);
+
+        var response = await app.GetTestClient().GetAsync("/api/portfolio/household");
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.Forbidden,
+            "a cross-account projection must not run without server-resolved tenant and company scope");
+    }
+
+    [Fact]
     public async Task OperationalAccountRoutes_ShouldRequireScopedAccountAccess()
     {
         var fundId = Guid.NewGuid();
@@ -224,7 +278,8 @@ public sealed class FundAccountEndpointAuthorizationTests
     private static async Task<WebApplication> CreateAppAsync(
         IReadOnlyList<CreateAccountRequest> accounts,
         IReadOnlyCollection<(AccessScopeKindDto Kind, Guid Id)> allowedScopes,
-        UserPermission permissions = UserPermission.ManageDirectLending)
+        UserPermission permissions = UserPermission.ManageDirectLending,
+        string? tenantScope = null)
     {
         var accountService = new InMemoryFundAccountService();
         foreach (var account in accounts)
@@ -248,6 +303,14 @@ public sealed class FundAccountEndpointAuthorizationTests
         {
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "fund-ops-user";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            // Left unset by default so the routes carrying a tenant/company gate keep proving they
+            // refuse a scopeless caller; supplied only where a test needs to reach past that gate.
+            if (tenantScope is not null)
+            {
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = tenantScope;
+                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = tenantScope;
+            }
+
             await next();
         });
         app.MapFundAccountEndpoints(JsonOptions);

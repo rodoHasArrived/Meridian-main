@@ -73,6 +73,81 @@ public sealed class EndpointGuardTests
     }
 
     [Fact]
+    public async Task AuthorizeScopedAsync_ApiKeyCannotInheritUserScopedAssignments()
+    {
+        var scopedAuthorization = new RecordingScopedAuthorizationService(isAllowed: true);
+        var services = new ServiceCollection()
+            .AddSingleton<IScopedAuthorizationService>(scopedAuthorization)
+            .BuildServiceProvider();
+        var context = new DefaultHttpContext
+        {
+            RequestServices = services
+        };
+        context.Items[LoginSessionMiddleware.CurrentUserKey] = ApiKeyMiddleware.ApiKeyActor;
+        context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewTrades;
+        context.Items[ApiKeyMiddleware.ApiKeyPrincipalKey] = true;
+
+        var decision = await EndpointAuthorization.AuthorizeScopedAsync(
+            context,
+            UserPermission.ViewTrades,
+            AccessScopeKindDto.Account,
+            Guid.NewGuid());
+
+        decision.IsAllowed.Should().BeFalse();
+        decision.Reason.Should().Contain("API-key principals");
+        scopedAuthorization.Calls.Should().Be(0, "a key must never be resolved as a User principal");
+    }
+
+    [Fact]
+    public async Task AuthorizeScopedAsync_ApiKeyWithGlobalOverrideDoesNotNeedUserAssignment()
+    {
+        var scopedAuthorization = new RecordingScopedAuthorizationService(isAllowed: false);
+        var services = new ServiceCollection()
+            .AddSingleton<IScopedAuthorizationService>(scopedAuthorization)
+            .BuildServiceProvider();
+        var context = new DefaultHttpContext
+        {
+            RequestServices = services
+        };
+        context.Items[LoginSessionMiddleware.CurrentUserKey] = ApiKeyMiddleware.ApiKeyActor;
+        context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.AdminMaintenance;
+        context.Items[ApiKeyMiddleware.ApiKeyPrincipalKey] = true;
+
+        var decision = await EndpointAuthorization.AuthorizeScopedAsync(
+            context,
+            UserPermission.ViewTrades,
+            AccessScopeKindDto.Account,
+            Guid.NewGuid());
+
+        decision.IsAllowed.Should().BeTrue();
+        scopedAuthorization.Calls.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task AuthorizeScopedAsync_HumanNamedApiKeyUsesUserScopedAssignments()
+    {
+        var scopedAuthorization = new RecordingScopedAuthorizationService(isAllowed: true);
+        var services = new ServiceCollection()
+            .AddSingleton<IScopedAuthorizationService>(scopedAuthorization)
+            .BuildServiceProvider();
+        var context = new DefaultHttpContext
+        {
+            RequestServices = services
+        };
+        context.Items[LoginSessionMiddleware.CurrentUserKey] = ApiKeyMiddleware.ApiKeyActor;
+        context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewTrades;
+
+        var decision = await EndpointAuthorization.AuthorizeScopedAsync(
+            context,
+            UserPermission.ViewTrades,
+            AccessScopeKindDto.Account,
+            Guid.NewGuid());
+
+        decision.IsAllowed.Should().BeTrue();
+        scopedAuthorization.Calls.Should().Be(1);
+    }
+
+    [Fact]
     public async Task GuardAsync_PropagatesCancellation()
     {
         var act = () => EndpointHelpers.GuardAsync(
@@ -165,6 +240,29 @@ public sealed class EndpointGuardTests
 
         await act.Should().ThrowAsync<OperationCanceledException>(
             "a disconnected caller must not receive a synthetic endpoint failure");
+    }
+
+    private sealed class RecordingScopedAuthorizationService(bool isAllowed) : IScopedAuthorizationService
+    {
+        public int Calls { get; private set; }
+
+        public Task<ScopedAuthorizationDecisionDto> AuthorizeAsync(
+            string actor,
+            UserPermission requiredPermission,
+            AccessScopeKindDto scopeKind,
+            Guid? scopeId,
+            UserPermission globalPermissions,
+            CancellationToken ct = default)
+        {
+            Calls++;
+            return Task.FromResult(new ScopedAuthorizationDecisionDto(
+                isAllowed,
+                actor,
+                requiredPermission,
+                scopeKind,
+                scopeId,
+                isAllowed ? "Test scope grants access." : "Test scope denies access."));
+        }
     }
 
     private sealed class CapturingLogger : ILogger

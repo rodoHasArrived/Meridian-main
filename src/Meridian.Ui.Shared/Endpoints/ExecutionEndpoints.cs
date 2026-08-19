@@ -1642,20 +1642,11 @@ public static class ExecutionEndpoints
             return null;
         }
 
-        var scopedAuthorization = context.RequestServices.GetService<IScopedAuthorizationService>();
-        if (scopedAuthorization is null ||
-            !EndpointAuthorization.TryResolveActor(context, out var actor) ||
-            !EndpointAuthorization.TryGetPermissions(context, out var permissions))
-        {
-            return EndpointHelpers.Forbidden();
-        }
-
-        var decision = await scopedAuthorization.AuthorizeAsync(
-                actor,
+        var decision = await EndpointAuthorization.AuthorizeScopedAsync(
+                context,
                 requiredPermission,
                 AccessScopeKindDto.Account,
                 fundAccountId.Value,
-                permissions,
                 context.RequestAborted)
             .ConfigureAwait(false);
 

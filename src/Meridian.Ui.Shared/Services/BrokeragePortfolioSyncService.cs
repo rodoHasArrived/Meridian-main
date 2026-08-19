@@ -484,9 +484,11 @@ public sealed class BrokeragePortfolioSyncService
     }
 
     public async Task<BrokerageHouseholdPortfolioDto> GetHouseholdAsync(
-        string? providerId = null,
+        string? providerId,
+        Func<Guid, CancellationToken, Task<bool>> canAccessFundAccount,
         CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(canAccessFundAccount);
         ct.ThrowIfCancellationRequested();
 
         var providerFilter = NormalizeProviderId(providerId);
@@ -497,8 +499,16 @@ public sealed class BrokeragePortfolioSyncService
             foreach (var path in Directory.EnumerateFiles(projectionRoot, "current.json", SearchOption.AllDirectories))
             {
                 ct.ThrowIfCancellationRequested();
+                var accountDirectory = Path.GetFileName(Path.GetDirectoryName(path));
+                if (!Guid.TryParseExact(accountDirectory, "N", out var fundAccountId) ||
+                    !await canAccessFundAccount(fundAccountId, ct).ConfigureAwait(false))
+                {
+                    continue;
+                }
+
                 var projection = await ReadProjectionFileAsync(path, ct).ConfigureAwait(false);
                 if (projection is not null
+                    && projection.FundAccountId == fundAccountId
                     && (providerFilter is null || string.Equals(projection.Link.ProviderId, providerFilter, StringComparison.OrdinalIgnoreCase)))
                 {
                     projections.Add(projection);
