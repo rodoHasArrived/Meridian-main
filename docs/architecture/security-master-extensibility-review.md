@@ -297,9 +297,13 @@ event, but the resolved field's provenance is not written back onto the record.
 ### 7. Corporate actions use one wide table with per-event-type columns
 
 `corporate_actions` (migration 003, extended by 021) has `dividend_per_share`, `split_ratio`,
-`distribution_ratio`, `acquirer_security_id`, `exchange_ratio`, `subscription_price_per_share`,
-`rights_per_share`, `redemption_price_percent_of_par` — eight typed payload columns for eighteen
-declared event types (`CorporateActionEventTypes.cs`). `TenderOffer`, `CryptoFork`,
+`new_security_id`, `distribution_ratio`, `acquirer_security_id`, `exchange_ratio`,
+`subscription_price_per_share`, `rights_per_share`, `redemption_price_percent_of_par` — **nine**
+typed payload columns for eighteen declared event types (`CorporateActionEventTypes.cs`).
+*(Corrected 2026-08-19: earlier revisions said eight and omitted `new_security_id` (`003:14`), which
+carries the resulting security for spin-offs and mergers, is required by
+`CorporateActionTypeDescriptorCatalog`, and is read and written by `PostgresSecurityMasterEventStore`.
+Undercounting it made the wide-table problem look marginally smaller than it is.)* `TenderOffer`, `CryptoFork`,
 `ReturnOfCapital`, `PrincipalPaydown`, `OptionContractAdjustment`, and `Delisting` have no columns
 of their own; `CorporateActionDto` mirrors the same shape as a 18-parameter positional record with
 nullable one-off fields.
@@ -356,8 +360,10 @@ for: a per-asset workaround on a surface that is otherwise generic.
 ### 10. Smaller items
 
 - **`SecurityMasterProjectionCache` is a per-process `ConcurrentDictionary`** with no eviction and a
-  `Snapshot()` that materializes every record. Publishing on node A does not invalidate node B, and
-  `ReplaceAll` clears before repopulating (a reader between the two sees an empty master). Migration
+  `Snapshot()` that materializes every record. Publishing on node A does not invalidate node B.
+  ~~`ReplaceAll` clears before repopulating (a reader between the two sees an empty master).~~
+  *(Fixed 2026-08-19: `ReplaceAll` now builds the replacement and installs it under a write gate, so
+  no reader observes an empty master. The per-process and eviction halves stand.)* Migration
   025's own rationale cites "horizontal scale-out"; this cache has not followed.
 - **`IUflProjectionRebuilder` ignores its `assetClass` argument** and does a full shared replay
   (`UflProjectionRebuilder.cs:34`). Documented as Phase-0 and accepted in the plan, but the
@@ -418,7 +424,7 @@ with their outcome rather than deleted, so the table stays a record of what was 
 | `SecurityKind.CustomAsset` domain case | **Closed** — first-class DU case (`SecurityMaster.fs:566`); profile envelope round-trips | — |
 | Per-field provenance persistence | **Closed** — migration 027 creates `security_field_provenance`; 028 adds versioned attribution | — |
 | Typed amendment path from the workbench | Open — overlay only, by documented design | Operator corrections reaching pricing/ledger/NAV |
-| Generic corporate-action payload envelope | Open — wide table, 8 columns / 18 types | Tender offers, forks, returns of capital, paydowns carrying their own economics |
+| Generic corporate-action payload envelope | Open — wide table, 9 payload columns / 18 types | Tender offers, forks, returns of capital, paydowns carrying their own economics |
 | Effective-interest amortization | Open — enum only; the constant-yield primitives exist unwired in `SecurityCalculations.fs` | GAAP-compliant premium amortization for material portfolios |
 | Bond principal schedule | **Closed** — `BondTerms.PrincipalSchedule` (`SecurityMaster.fs:261`), read by `StructuredCashFlowTermsResolver` | — |
 | Bond step / inflation coupon structures | Open — `BondCouponStructure` is still `Fixed` / `Floating` / `ZeroCoupon` | Step-rate and TIPS — already classifiable, not computable |
@@ -480,7 +486,10 @@ instead of an annotation workflow.
 Extend `BondCouponStructure` with a step schedule and an inflation-linked case, and add a principal
 schedule to `BondTerms` (reuse `PrincipalPaymentEntry`, already proven on `DirectLoanTerms`).
 Promote `StructuredCreditTerms.FactorSchedule` from `string option` to
-`StructuredFactorScheduleEntry list`, retiring the duplicate `SecurityFactorScheduleEntry`. Then
+`StructuredFactorScheduleEntry list`, ~~retiring the duplicate `SecurityFactorScheduleEntry`~~
+(**that half withdrawn 2026-08-19 — do not implement it**; `SecurityFactorScheduleEntry` is a factor
+*transition* carrying prior/current factors and evidence lineage that the two-field *level* type
+cannot hold. See the **Status (2026-08-19)** note on risk item 8). Then
 document one canonical modeling route for MBS/ABS/CLO and make the validators reject the others, so
 the partition is enforced rather than conventional.
 
@@ -517,10 +526,10 @@ original assessment. No code was changed by this pass; no tests were run.
 | # | Item | Current state |
 | --- | --- | --- |
 | 2 | Three modeling routes for MBS/ABS/CLO | No canonical-home ruling; `Bond` subclasses, `StructuredCredit`, and `CustomAsset` all remain legitimate |
-| 7 | Corporate actions: wide table, per-event-type columns | Migration 021 added four more nullable columns; 8 typed payload columns for 18 declared event types, no JSONB envelope |
+| 7 | Corporate actions: wide table, per-event-type columns | Migration 021 added four more nullable columns; 9 typed payload columns for 18 declared event types, no JSONB envelope |
 | 9 | Equity has bespoke amendment endpoints | `PATCH` on preferred/convertible equity terms routes straight to `ISecurityMasterService.Amend…`, bypassing the workbench Draft→Submitted→Approved→Published gate that every generic field edit goes through. Permission-gated and rate-limited, but no maker-checker. No equivalent exists for a bond call schedule or swap leg |
 | 10 | Straight-line amortization only | `BondAmortizationMethod.ConstantYield` remains an enum member with no implementation |
-| 10 | Per-process projection cache | `SecurityMasterProjectionCache` is still a `ConcurrentDictionary` with no eviction; `ReplaceAll` still clears before repopulating, so a reader between the two sees an empty master |
+| 10 | Per-process projection cache | `SecurityMasterProjectionCache` is still a `ConcurrentDictionary` with no eviction. *(The clear-then-refill half was fixed 2026-08-19; the per-process and eviction halves stand.)* |
 | 10 | Valid-time term history | `securities` still holds one current row; term history is reachable only by event replay. Identifiers are effective-dated, terms are not |
 | — | Relational projections | 11 asset projection stores for 26 classes; the 15 uncovered are the private/alternative classes central to fund operations. Declared and test-guarded via `IntentionallyUnprojectedAssetClasses` |
 
@@ -553,7 +562,7 @@ of this priority was withdrawn on 2026-08-19 — do not implement it.** The two 
 *level* and a factor *transition with provenance*; collapsing them discards the prior/current
 pairing, the asserting source, the evidence link, and the content hash. See the
 **Status (2026-08-19)** note on risk item 8. What remains of this priority is the corporate-action
-envelope: move corporate-action economics to a JSONB payload keyed by event type — eight columns for
+envelope: move corporate-action economics to a JSONB payload keyed by event type — nine columns for
 eighteen types means every new type is another nullable column, and six declared types already have
 none.
 
