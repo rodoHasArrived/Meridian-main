@@ -414,9 +414,6 @@ public static class WorkstationServiceCollectionExtensions
         // symbol-concentration, and order-notional rules fed from the aggregate portfolio.
         // Severities map to real outcomes: Warning flags, Error rejects, Escalate parks the
         // order in the governed-approval queue, Critical also trips the execution circuit breaker.
-        // Shared in-flight exposure for the pre-trade reservation. Singleton by necessity: the
-        // ceiling it protects is portfolio-wide, so every order must consume from one pool.
-        services.TryAddSingleton<Meridian.Risk.ExposureReservationLedger>();
         services.TryAddSingleton<Meridian.Execution.IRiskValidator>(sp =>
         {
             var runtime = sp.GetRequiredService<RiskRuleRuntimeService>();
@@ -459,15 +456,10 @@ public static class WorkstationServiceCollectionExtensions
                 exposureProvider,
                 () => runtime.PriceCollarThresholds,
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.PriceCollarRule>>()));
-            // One ledger for the whole validator, which is a singleton: the in-flight exposure it
-            // holds is only protective if every order measures against the same instance. A
-            // per-rule ledger would make each order the only one it can see, which is the state
-            // this reservation exists to fix.
             rules.Add(new Meridian.Risk.Rules.GrossExposureRule(
                 exposureProvider,
                 () => runtime.MaxGrossExposure,
-                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.GrossExposureRule>>(),
-                sp.GetRequiredService<Meridian.Risk.ExposureReservationLedger>()));
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.GrossExposureRule>>()));
             rules.Add(new Meridian.Risk.Rules.SymbolConcentrationRule(
                 exposureProvider,
                 () => runtime.MaxSymbolConcentrationPercent,

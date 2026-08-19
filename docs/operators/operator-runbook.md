@@ -280,38 +280,6 @@ issues.
 2. `GET /api/sla/metrics` for the trend — a slow decline and a step change have different causes.
 3. Evaluate provider health across all active providers, not just the primary.
 
-## Order Rejected on Gross Exposure
-
-The pre-trade gross-exposure ceiling counts orders that are approved but not yet settled, not just
-filled positions. A rejection can therefore name a projected book larger than any position report
-shows.
-
-**Why in-flight orders count.** Nothing serialises pre-trade validation, so without this orders
-submitted at the same moment each measured against a snapshot none of them appeared in yet, all
-passed, and the book breached a ceiling none of them breached alone. Routed orders cannot be
-recalled, so that breach could only be unwound at whatever the market charged. The check now takes
-the order's exposure in the same atomic step as the measurement.
-
-**Probable causes:** a burst of concurrent submissions against a ceiling with little headroom; a
-legitimately full book; a ceiling lowered while orders were in flight.
-
-**Immediate actions**
-
-1. Compare the rejection against settled positions *and* working orders — a book that looks under
-   the ceiling on positions alone can be at it once in-flight orders are counted.
-2. Check whether submissions are arriving concurrently. Sequential submissions of the same total
-   size behave as before; only overlapping ones consume shared headroom.
-3. Treat a persistent rejection with no working orders as a real breach of the settled book, not a
-   reservation artefact.
-
-**What is not covered.** Exposure is held from evaluation until the order is routed or provably
-was not. Once routed, it is released and stays invisible until the fill reaches the portfolio
-snapshot. Orders submitted inside that window still measure against the pre-fill book, which is
-unchanged from previous behaviour. Per-symbol ceilings — position limits and symbol concentration —
-do not reserve at all yet: they are cross-order capacity like gross exposure, but keyed per symbol
-and, for position limits, denominated in quantity rather than notional, so they need a separate
-ledger dimension rather than this one.
-
 ## Incident Response
 
 **Severity and priority**

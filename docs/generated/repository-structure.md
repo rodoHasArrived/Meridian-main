@@ -5368,7 +5368,6 @@ Meridian-main
 │   │   │   ├── PriceCollarRule.cs
 │   │   │   └── SymbolConcentrationRule.cs
 │   │   ├── CompositeRiskValidator.cs
-│   │   ├── ExposureReservationLedger.cs
 │   │   ├── IRiskRule.cs
 │   │   ├── Meridian.Risk.csproj
 │   │   ├── PortfolioExposure.cs
@@ -9515,7 +9514,6 @@ Meridian-main
 │   │   │   ├── CompositeRiskValidatorTests.cs
 │   │   │   ├── DrawdownCircuitBreakerTests.cs
 │   │   │   ├── EnforcedRiskValidatorCompositionTests.cs
-│   │   │   ├── ExposureReservationTests.cs
 │   │   │   ├── FatFingerRuleTests.cs
 │   │   │   ├── OrderRateThrottleTests.cs
 │   │   │   ├── PortfolioRiskRulesTests.cs
