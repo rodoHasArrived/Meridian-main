@@ -308,9 +308,14 @@ event, but the resolved field's provenance is not written back onto the record.
 `subscription_price_per_share`, `rights_per_share`, `redemption_price_percent_of_par` — **nine**
 typed payload columns for eighteen declared event types (`CorporateActionEventTypes.cs`).
 *(Corrected 2026-08-19: earlier revisions said eight and omitted `new_security_id` (`003:14`), which
-carries the resulting security for spin-offs and mergers, is required by
+carries the resulting security for **spin-offs**, is required by
 `CorporateActionTypeDescriptorCatalog`, and is read and written by `PostgresSecurityMasterEventStore`.
-Undercounting it made the wide-table problem look marginally smaller than it is.)* `TenderOffer`, `CryptoFork`,
+Undercounting it made the wide-table problem look marginally smaller than it is. A first correction
+also said the column serves mergers; it does not. `SpinOff` requires `NewSecurityId` and
+`DistributionRatio` (`CorporateActionTypeDescriptorCatalog.cs:81`), while `MergerAbsorption`
+requires `AcquirerSecurityId` and `ExchangeRatio` (`:93`) — `NewSecurityId` appears in exactly one
+`RequiredFields` list. The two events use separate columns, which is itself the wide-table problem
+rather than an exception to it.)* `TenderOffer`, `CryptoFork`,
 `ReturnOfCapital`, `PrincipalPaydown`, `OptionContractAdjustment`, and `Delisting` have no columns
 of their own; `CorporateActionDto` mirrors the same shape as a 18-parameter positional record with
 nullable one-off fields.
@@ -600,11 +605,35 @@ refuted. No tests were run — this checkout has no .NET SDK.
 interop, and calculations; `src/Meridian.Contracts/SecurityMaster/`;
 `src/Meridian.Application/SecurityMaster/`; `src/Meridian.Storage/SecurityMaster/`;
 `src/Meridian.ReferenceData/`; `src/Meridian.Instruments/`; the Security Master services in
-`src/Meridian.Strategies/`; the execution gate and reporting lookup; and the workstation endpoint
-surface — the diff is **86 insertions and 86 deletions across 21 files**.
+`src/Meridian.Strategies/`; the workstation endpoint and query surface; and the WPF edit view model
+— the diff is **79 insertions and 84 deletions across 15 files**.
+
+> **Corrected 2026-08-19, after review.** This first read "86 insertions and 86 deletions across 21
+> files", against which the "remaining 18 files are cosmetic" sentence below did not reconcile — 21
+> files minus the one non-cosmetic file leaves 20, not 18. Review caught the arithmetic; re-deriving
+> the diff showed the scope figure itself was unreproducible, so both numbers were wrong. The
+> corrected figure comes from an explicit pathspec, recorded here so it can be checked:
+>
+> ```bash
+> git diff --numstat 4b39e9da8 7ed160dc -- \
+>   'src/Meridian.Application/SecurityMaster/' 'src/Meridian.Instruments/' \
+>   'src/Meridian.Strategies/Services/SecurityMaster*' \
+>   'src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs' \
+>   'src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterWorkbench.cs' \
+>   'src/Meridian.Ui.Shared/Endpoints/EdgarReferenceDataEndpoints.cs' \
+>   'src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs' \
+>   'src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs'
+> ```
+>
+> Worth noting what that command returns *nothing* for: `src/Meridian.FSharp/Domain/SecurityMaster.fs`,
+> `src/Meridian.FSharp/Interop/`, `src/Meridian.FSharp/Calculations/`,
+> `src/Meridian.Contracts/SecurityMaster/`, `src/Meridian.Storage/SecurityMaster/`, and
+> `src/Meridian.ReferenceData/` are **unchanged across the entire range**. The domain model, the
+> contracts, the persistence layer and the migrations did not move at all — which is stronger
+> evidence for this pass's conclusion than the file count is.
 
 **One of those changes is more than cosmetic, though less than it first appears.**
-`SecurityMasterEndpoints.cs` accounts for 72 of the 144 changed lines across three commits
+`SecurityMasterEndpoints.cs` accounts for 72 of the 163 changed lines across three commits
 (`089aabee`, `95166888`, `862dc32a`) — 36 insertions and 36 deletions, each rewriting one endpoint's
 terminating line to append a fluent permission call. Those 36 split into **19** reads declaring
 `RequireAnyPermission(ViewSecurityMaster, ModifySecurityMaster)` and **17** mutations declaring
@@ -624,8 +653,11 @@ terminating line to append a fluent permission call. Those 36 split into **19** 
 > whose deletion would quietly open every route in the group, but it is a hardening of the
 > *declaration*, not of the enforcement.
 
-The remaining 18 files are genuinely cosmetic — routing inline SHA-256 sites onto `Sha256Digest`,
-and replacing the last literal schema-version writes with named constants.
+The remaining **14** files are genuinely cosmetic, and account for 43 insertions and 48 deletions
+between them — routing inline SHA-256 sites onto `Sha256Digest`, and replacing the last literal
+schema-version writes with named constants. The largest is
+`SecurityMasterWorkbenchQueryService.cs` at 11/13; nine of the fourteen change four lines or fewer.
+14 + `SecurityMasterEndpoints.cs` = the 15 files above, and 91 + 72 = the 163 changed lines.
 
 No change closes, narrows, or reopens any structural finding.
 
