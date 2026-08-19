@@ -159,6 +159,105 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
     }
 
+    [Fact]
+    public async Task SessionPayload_ReportsTheCallersOwnRoleNotTheLatestRunsPosture()
+    {
+        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Compliance));
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", "role-label-tenant");
+        try
+        {
+            using var response = await Client.GetAsync("/api/workstation/session");
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var payload = await response.Content.ReadFromJsonAsync<WorkstationSessionPayload>(JsonOptions);
+
+            // The browser matches this against the role catalog to name the active authority profile,
+            // and the run-derived labels ("Strategy Lead", "Live Operations") are not role names, so
+            // that match failed for every operator rather than only the redacted ones.
+            payload!.Role.Should().Be(nameof(UserRole.Compliance));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
+        }
+    }
+
+    [Fact]
+    public async Task NonDemoAnonymousPrincipal_CarriesTheTenantTheDeploymentNames()
+    {
+        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
+        var originalDemoMode = Environment.GetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable);
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", "acme-local");
+        // Explicitly not the demo host: optional mode is also the plain local-development posture, and
+        // such a deployment must be able to open the tenant-scoped workstation on its own book rather
+        // than being offered the seeded demo tenant or nothing at all.
+        Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, null);
+        try
+        {
+            var nextCalled = false;
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/api/workstation/session";
+            var middleware = new LoginSessionMiddleware(nextContext =>
+            {
+                nextCalled = true;
+                nextContext.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey].Should().Be("acme-local");
+                nextContext.Items[LoginSessionMiddleware.CurrentTenantIdKey].Should().Be("acme-local");
+                return Task.CompletedTask;
+            });
+
+            await middleware.InvokeAsync(
+                context,
+                Fixture.Services.GetRequiredService<LoginSessionService>());
+
+            nextCalled.Should().BeTrue();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
+            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, originalDemoMode);
+        }
+    }
+
+    [Fact]
+    public async Task UnscopedAnonymousPrincipal_CarriesNoTenantAtAll()
+    {
+        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
+        var originalDemoMode = Environment.GetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable);
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", null);
+        Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, null);
+        try
+        {
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/api/workstation/session";
+            var middleware = new LoginSessionMiddleware(nextContext =>
+            {
+                // Naming a role does not invent a book to work on: the tenant-scoped workstation group
+                // keeps refusing this caller rather than reading whichever tenant's records are on disk.
+                nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentTenantIdKey);
+                nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentUserCompanyIdKey);
+                return Task.CompletedTask;
+            });
+
+            await middleware.InvokeAsync(
+                context,
+                Fixture.Services.GetRequiredService<LoginSessionService>());
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
+            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, originalDemoMode);
+        }
+    }
+
     [Theory]
     [InlineData("POST")]
     [InlineData("PUT")]

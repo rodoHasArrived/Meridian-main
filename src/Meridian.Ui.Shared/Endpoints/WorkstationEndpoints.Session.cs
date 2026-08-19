@@ -35,7 +35,7 @@ public static partial class WorkstationEndpoints
         {
             return new WorkstationSessionPayload(
                 DisplayName: "Meridian Operator",
-                Role: "Strategy Lead",
+                Role: ResolveRoleLabel(context, latest: null),
                 Environment: "paper",
                 ActiveWorkspace: "strategy",
                 CommandCount: 6,
@@ -60,7 +60,7 @@ public static partial class WorkstationEndpoints
         // counts, and the display name, which is built from the latest run's strategy name.
         return new WorkstationSessionPayload(
             DisplayName: canReadRuns ? BuildDisplayName(latest) : "Meridian Operator",
-            Role: BuildRole(latest),
+            Role: ResolveRoleLabel(context, latest),
             Environment: MapEnvironment(latest),
             ActiveWorkspace: MapWorkspace(latest),
             CommandCount: canReadRuns ? Math.Max(6, runs.Length + activeRuns + reviewRuns) : 6,
@@ -77,6 +77,29 @@ public static partial class WorkstationEndpoints
 
     private static string BuildDisplayName(StrategyRunSummary? latest)
         => latest is null ? "Meridian Operator" : $"{latest.StrategyName} Desk";
+
+    /// <summary>
+    /// The caller's own authority, not the latest run's posture. The browser prints this in the
+    /// masthead and matches it against the role catalog to name the active authority profile, and the
+    /// run-derived labels are not role names at all -- so the match failed for every operator, not
+    /// only the ones whose run digest is withheld. The role profile name is preferred when the
+    /// deployment defines one, since that is what a custom profile is called in the catalog.
+    /// The run-derived label survives only where no principal is resolvable, which keeps the payload
+    /// populated for a deployment without an authorization context rather than showing nothing.
+    /// </summary>
+    private static string ResolveRoleLabel(HttpContext context, StrategyRunSummary? latest)
+    {
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleProfileNameKey, out var profile) &&
+            profile is string profileName &&
+            !string.IsNullOrWhiteSpace(profileName))
+        {
+            return profileName;
+        }
+
+        return context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleKey, out var role) && role is UserRole userRole
+            ? userRole.ToString()
+            : BuildRole(latest);
+    }
 
     private static string BuildRole(StrategyRunSummary? latest)
         => latest is null
