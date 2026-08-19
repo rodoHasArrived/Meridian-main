@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.QuantScript.Compilation;
@@ -63,6 +64,7 @@ public static class QuantLabEndpoints
             try
             {
                 var result = await runner.RunAsync(request.Source, parameters, ct).ConfigureAwait(false);
+                await RecordResearchRunsAsync(services, request, result, ct).ConfigureAwait(false);
                 return Results.Json(QuantRunResponse.From(result), jsonOptions);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -131,6 +133,66 @@ public static class QuantLabEndpoints
         .Produces(200);
     }
 
+    /// <summary>
+    /// Records any backtests the script ran into the shared strategy-run store.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Recording happens here rather than inside the script because a script executes in the
+    /// QuantScript worker sandbox, whose only sanctioned route to host state is the typed
+    /// market-data RPC seam. Handing that process a writable path into the run store would widen
+    /// the isolation boundary the worker exists to enforce, so the host records the results the
+    /// worker returned.
+    /// </para>
+    /// <para>
+    /// This is a no-op unless the caller supplies a strategy identity and the host has registered a
+    /// recorder, so existing callers are unaffected. Failures are logged and swallowed: a recording
+    /// problem must not discard a completed run, and an unrecorded run simply carries no lineage.
+    /// </para>
+    /// </remarks>
+    private static async Task RecordResearchRunsAsync(
+        IServiceProvider services,
+        QuantRunRequest request,
+        ScriptRunResult result,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.StrategyId) || result.CapturedBacktests.Count == 0)
+        {
+            return;
+        }
+
+        var recorder = services.GetService<IResearchRunRecorder>();
+        if (recorder is null)
+        {
+            return;
+        }
+
+        var descriptor = new ResearchRunDescriptor(
+            StrategyId: request.StrategyId,
+            StrategyName: string.IsNullOrWhiteSpace(request.StrategyName)
+                ? request.StrategyId
+                : request.StrategyName,
+            CorrelationId: request.CorrelationId);
+
+        foreach (var backtest in result.CapturedBacktests)
+        {
+            try
+            {
+                await recorder.RecordAsync(descriptor, backtest, ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                services.GetService<ILoggerFactory>()?
+                    .CreateLogger("QuantLabEndpoints")
+                    .LogWarning(ex, "Could not record a Quant Lab backtest for strategy {StrategyId}", request.StrategyId);
+            }
+        }
+    }
+
     private static bool HasQuantLabExecutionPermission(HttpContext context)
     {
         if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
@@ -153,9 +215,24 @@ public static class QuantLabEndpoints
 }
 
 /// <summary>Body of a POST to <c>/api/quant/run</c>.</summary>
+/// <param name="Source">Script source to compile and execute.</param>
+/// <param name="Parameters">Parameter overrides bound into the run.</param>
+/// <param name="StrategyId">
+/// Optional stable strategy identity. When supplied together with a recorder registration, any
+/// backtest the script runs is recorded to the shared strategy-run store so the work carries the
+/// same lineage as a Studio run. Omitted, the run executes exactly as before and is not recorded.
+/// </param>
+/// <param name="StrategyName">Optional display name for the recorded run.</param>
+/// <param name="CorrelationId">
+/// Optional pointer back to the artifact that produced the run — for a notebook, the notebook and
+/// cell — so a recorded run can be traced to the work that created it.
+/// </param>
 public sealed record QuantRunRequest(
     string Source,
-    IReadOnlyDictionary<string, object?>? Parameters);
+    IReadOnlyDictionary<string, object?>? Parameters,
+    string? StrategyId = null,
+    string? StrategyName = null,
+    string? CorrelationId = null);
 
 /// <summary>Body of a POST to <c>/api/quant/parameters</c>.</summary>
 public sealed record QuantParametersRequest(string Source);

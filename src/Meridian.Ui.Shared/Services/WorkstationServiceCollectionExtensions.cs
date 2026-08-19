@@ -209,8 +209,12 @@ public static class WorkstationServiceCollectionExtensions
 
         services.TryAddSingleton<IOperationalCaseHistoryStore>(sp =>
             new FileOperationalCaseHistoryStore(ResolveConfigDataRoot(sp)));
-        services.TryAddSingleton<IStrategyRepository>(sp =>
+        // The concrete store is the single instance: StrategyRunStore holds in-memory state, so
+        // registering it separately per interface would split that state between consumers.
+        services.TryAddSingleton(sp =>
             new StrategyRunStore(sp.GetRequiredService<IOperationalCaseHistoryStore>()));
+        services.TryAddSingleton<IStrategyRepository>(sp => sp.GetRequiredService<StrategyRunStore>());
+        services.TryAddSingleton<IResearchRunRecorder, StrategyRunResearchRecorder>();
         services.TryAddSingleton<PromotionRecordStoreOptions>(sp =>
             new PromotionRecordStoreOptions(Path.Combine(ResolveConfigDataRoot(sp), "strategies", "promotions")));
         services.TryAddSingleton<IPromotionRecordStore>(sp =>
