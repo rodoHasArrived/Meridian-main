@@ -215,18 +215,51 @@ public static class RetainedPostingEquivalence
             && ExternalDimensionsMatch(retained.ExternalGlDimensions, candidate.ExternalGlDimensions);
     }
 
+    /// <summary>
+    /// One-to-one comparison of external GL dimensions.
+    /// <para>
+    /// Scanning for the first case-insensitive match would let two case-distinct retained keys —
+    /// <c>Dept</c> and <c>dept</c>, which PostgreSQL preserves as separate JSON keys — both match
+    /// the same candidate key, leaving an unrelated candidate key unexamined while the counts
+    /// still agree. That reports different dimensional scope as a replay.
+    /// </para>
+    /// <para>
+    /// Both sides are folded into case-insensitive maps instead. A side that carries
+    /// case-distinct duplicate keys cannot be compared unambiguously at all, so it is treated as
+    /// a difference rather than resolved by guessing which key was meant.
+    /// </para>
+    /// </summary>
     private static bool ExternalDimensionsMatch(
         IReadOnlyDictionary<string, string> retained,
         IReadOnlyDictionary<string, string> candidate)
     {
         if (retained.Count != candidate.Count)
             return false;
+        if (!TryFoldKeys(retained, out var retainedFolded) || !TryFoldKeys(candidate, out var candidateFolded))
+            return false;
+        if (retainedFolded.Count != candidateFolded.Count)
+            return false;
 
-        foreach (var (key, retainedValue) in retained)
+        foreach (var (key, retainedValue) in retainedFolded)
         {
-            var match = candidate.FirstOrDefault(pair =>
-                string.Equals(pair.Key?.Trim(), key?.Trim(), StringComparison.OrdinalIgnoreCase));
-            if (match.Key is null || !TextMatches(retainedValue, match.Value))
+            if (!candidateFolded.TryGetValue(key, out var candidateValue)
+                || !string.Equals(retainedValue, candidateValue, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool TryFoldKeys(
+        IReadOnlyDictionary<string, string> source,
+        out Dictionary<string, string> folded)
+    {
+        folded = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, value) in source)
+        {
+            if (!folded.TryAdd(key?.Trim() ?? string.Empty, value?.Trim() ?? string.Empty))
                 return false;
         }
 

@@ -1589,6 +1589,19 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         // Approval state is part of that stage alignment, not decoration: the durable normalizer
         // refuses a command that is still pending, which is the state every rebuild starts in.
         var rebuiltCommand = candidateWrite.PostingCommand;
+
+        // The append path requires the rebuilt command to be pending before it will approve and
+        // post it. The stage alignment below overwrites that state, so without this the replay
+        // branch would silently accept a rebuild the append path considers unpostable — the
+        // approval-state gate has to run before it is overwritten, not after.
+        if (rebuiltCommand is not null
+            && rebuiltCommand.ApprovalState != AccountingPostingApprovalStateDto.Pending)
+        {
+            throw new InvalidOperationException(
+                "Generated accounting posting candidates require a pending approval command before append; " +
+                $"current approval state is '{rebuiltCommand.ApprovalState}'.");
+        }
+
         var approvedShape = candidateWrite with
         {
             AggregateId = ledgerBookId,

@@ -269,6 +269,32 @@ public sealed class RetainedPostingEquivalenceTests
         difference.Should().Be("line 0 amount");
     }
 
+    [Fact]
+    public void Matches_CaseDistinctExternalDimensionKeys_IsAConflict()
+    {
+        // Both retained keys fold onto one candidate key under a first-match scan, leaving the
+        // unrelated candidate key unexamined while the counts still agree.
+        var retained = BuildRecord(BuildEntry(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            externalGlDimensions: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["Dept"] = "ops",
+                ["dept"] = "ops"
+            }));
+        var candidate = BuildWrite(BuildEntry(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            externalGlDimensions: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["Dept"] = "ops",
+                ["region"] = "emea"
+            }));
+
+        RetainedPostingEquivalence.Matches(retained, candidate, out var difference).Should().BeFalse();
+        difference.Should().Be("line 0 dimensions");
+    }
+
     private static LedgerEntryCurrency Currency(string transactionCurrency, decimal fxRate, decimal transactionDebit)
         => new(transactionCurrency, "USD", transactionDebit, 0m, fxRate);
 
