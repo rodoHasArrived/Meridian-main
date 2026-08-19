@@ -1,4 +1,5 @@
 using Meridian.Contracts.Api;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Contracts;
 using Meridian.Ui.Shared.Serialization;
 using Meridian.Ui.Shared.Services;
@@ -24,7 +25,7 @@ public static partial class WorkstationEndpoints
             var overview = await service.GetOverviewAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(overview, FamilyOfficeJsonContext.Default.FamilyOfficeOverviewDto);
         })
-        .WithName("GetWorkstationFamilyOfficeOverview")
+        .WithName("GetWorkstationFamilyOfficeOverview").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ManageFundStructure, UserPermission.AdminMaintenance)
         .WithTags("Workstation Family Office")
         .Produces<FamilyOfficeOverviewDto>(200)
         .Produces(501);
@@ -40,7 +41,7 @@ public static partial class WorkstationEndpoints
             var balanceSheet = await service.GetBalanceSheetAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(balanceSheet, FamilyOfficeJsonContext.Default.FamilyOfficeBalanceSheetResponseDto);
         })
-        .WithName("GetWorkstationFamilyOfficeBalanceSheet")
+        .WithName("GetWorkstationFamilyOfficeBalanceSheet").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ManageFundStructure, UserPermission.AdminMaintenance)
         .WithTags("Workstation Family Office")
         .Produces<FamilyOfficeBalanceSheetResponseDto>(200)
         .Produces(501);
@@ -56,7 +57,7 @@ public static partial class WorkstationEndpoints
             var entities = await service.GetEntitiesAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(entities, FamilyOfficeJsonContext.Default.FamilyOfficeEntitiesResponseDto);
         })
-        .WithName("GetWorkstationFamilyOfficeEntities")
+        .WithName("GetWorkstationFamilyOfficeEntities").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ManageFundStructure, UserPermission.AdminMaintenance)
         .WithTags("Workstation Family Office")
         .Produces<FamilyOfficeEntitiesResponseDto>(200)
         .Produces(501);
@@ -72,7 +73,7 @@ public static partial class WorkstationEndpoints
             var ownershipGraph = await service.GetOwnershipGraphAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(ownershipGraph, FamilyOfficeJsonContext.Default.FamilyOfficeOwnershipGraphResponseDto);
         })
-        .WithName("GetWorkstationFamilyOfficeOwnershipGraph")
+        .WithName("GetWorkstationFamilyOfficeOwnershipGraph").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ManageFundStructure, UserPermission.AdminMaintenance)
         .WithTags("Workstation Family Office")
         .Produces<FamilyOfficeOwnershipGraphResponseDto>(200)
         .Produces(501);

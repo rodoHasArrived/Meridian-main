@@ -67,9 +67,14 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_StrategyRunDrillIns_ShouldReturnNotFoundForForeignScopedRun()
     {
+        // The sweep below spans two permission families: the run drill-ins require the strategy set,
+        // while the two reconciliation reads require the reconciliation set (they return the same
+        // ReconciliationRunDetail as GetReconciliationRun). The caller holds both so that a 403 can
+        // never stand in for the 404 this test is actually asserting -- scope isolation, not
+        // authorization.
         await using var app = await CreateAppAsync(
             RegisterRunReadServices,
-            currentUserPermissions: UserPermission.ViewStrategies,
+            currentUserPermissions: UserPermission.ViewStrategies | UserPermission.ModifySecurityMaster,
             currentUserCompanyId: "company-a",
             currentUserTenantId: "tenant-a");
         var store = app.Services.GetRequiredService<IStrategyRepository>();
