@@ -153,6 +153,55 @@ admission, fill acceptance *is* a durability boundary.
   than giving up: those fills exist nowhere else, so replay is delayed, never cancelled. Repeated
   critical log lines about loading retained handoffs mean the backlog is still undelivered.
 
+## Accounting Posting Replay Semantics
+
+A generated posting candidate is posted against a `(ledger book, source event)` pair that is
+uniquely indexed in the journal store, so that pair can hold exactly one journal.
+
+- Re-posting the same candidate is a replay and returns the retained journal unchanged. This is
+  the normal, safe response to a timeout or a retried operator action.
+- A replay is verified, not assumed. The request is rebuilt into its complete posting command,
+  normalized the same way the durable store normalizes an append, and compared against the
+  retained journal on period, policy, rule, lineage, timing, idempotency, the full accounting
+  scope and provenance carried in journal metadata (fund event, capital account, investor,
+  payment intent, settlement reference, project, strategy, institution, symbol, and the rest),
+  the correlation and governance approval attached to the posting, and the ordered lines with
+  their accounts, amounts, dimensions, and transaction-currency detail (currency pair, both
+  transaction-side amounts, and FX rate). Booking the same amounts against a different investor, capital
+  account, or approval is a different posting, not a replay. Accounts are matched on ledger
+  identity, so a line whose account name differs only in casing targets a different balance and
+  is a conflict. Policy, policy version, rule, and rule version are retained verbatim and are
+  matched the same ordinal way the governed posting target resolves its own collisions.
+- Values are compared at the precision the store keeps, not the precision .NET carries.
+  Timestamps resolve to microseconds and amounts, transaction amounts, and FX rates to ten
+  decimal places, so a submitted value comes back rounded; comparing raw values would reject a
+  retry that resubmitted the identical figure.
+- The replay path applies the same ledger-book scope validation the append path applies. A
+  request that could never have been posted — a line carrying no book dimension, for instance —
+  is refused rather than acknowledged as posted because some other path already retains a
+  journal under that identity.
+- Normalization before comparison is deliberate. A posting with no treasury context drafts no
+  idempotency key and is retained carrying the posting command's key, so an un-normalized
+  comparison would reject an ordinary retry over a field the rebuild had not been given yet.
+- Generated journal and line identities are excluded because a rebuild legitimately mints new
+  ones. Journal tags and evidence references are also excluded: both carry approval-time state —
+  approval id, approval state, a fingerprint over the approved command, and evidence merged with
+  a clock stamp at append — that no rebuild can reproduce. Their durable content is largely
+  mirrored by the metadata fields that are compared.
+- A posting that disagrees with the retained journal is refused with a conflict naming the
+  retained journal and the field that differed. It is *not* reported as a replay. Because the
+  identity is already held, such a posting can never be appended, so acknowledging it would
+  confirm accounting content that the books will never contain. Post a correction against the
+  retained journal, or resubmit under the posting's own source event.
+- A request that cannot be rebuilt into a posting — a blocked candidate, or a policy that no
+  longer resolves — is also refused rather than replayed. The retained journal may well be that
+  posting, but nothing at that point can establish it, and an unverifiable replay must not be
+  reported as a completed one. Resolve the candidate, then retry.
+
+Treat a conflict here as a reconciliation signal, not a transient error: two different postings
+have been approved against one source event, and an operator has to decide which one the books
+should carry.
+
 ## Recovery Decision Matrix
 
 1. Detect symptom and scope (single provider, module, or full workflow surface).

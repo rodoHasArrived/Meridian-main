@@ -147,7 +147,7 @@ public sealed partial class WorkstationEndpointsTests
     public async Task MapWorkstationEndpoints_CanonicalWorkspaceRouteConstants_WithoutBackingServices_ShouldReturnServiceUnavailable()
     {
         await using var app = await CreateAppAsync(
-            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting | UserPermission.ViewStrategies | UserPermission.ViewTrades);
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting | UserPermission.ViewStrategies | UserPermission.ViewTrades | UserPermission.ViewHistoricalData);
         var client = app.GetTestClient();
 
         UiApiRoutes.WorkstationStrategy.Should().Be("/api/workstation/strategy");
@@ -260,7 +260,7 @@ public sealed partial class WorkstationEndpointsTests
     public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnServiceUnavailableInsteadOfFabricatedPayloads()
     {
         await using var app = await CreateAppAsync(
-            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting | UserPermission.ViewStrategies | UserPermission.ViewTrades);
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting | UserPermission.ViewStrategies | UserPermission.ViewTrades | UserPermission.ViewHistoricalData);
         var client = app.GetTestClient();
 
         // The session bootstrap payload stays available with honest zeroed workspace counters.
@@ -1057,7 +1057,7 @@ public sealed partial class WorkstationEndpointsTests
         {
             RegisterConfigStores(services, configPath);
         },
-            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ManageCredentials);
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ManageCredentials | UserPermission.ViewHistoricalData);
         var client = app.GetTestClient();
 
         using var dataOperations = await ReadJsonAsync(client, "/api/workstation/data-operations");
@@ -1114,7 +1114,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<ProviderConnectionService>();
             services.AddSingleton<ProviderBindingService>();
         },
-            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ManageCredentials);
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ManageCredentials | UserPermission.ViewHistoricalData);
 
         var connectionService = app.Services.GetRequiredService<ProviderConnectionService>();
         var bindingService = app.Services.GetRequiredService<ProviderBindingService>();
@@ -1205,7 +1205,9 @@ public sealed partial class WorkstationEndpointsTests
 
         // Default test permissions do not include ManageCredentials, so connection summaries
         // must stay hidden even though real provider metrics are available.
-        await using var app = await CreateAppAsync(services => RegisterConfigStores(services, configPath));
+        await using var app = await CreateAppAsync(
+            services => RegisterConfigStores(services, configPath),
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewHistoricalData);
         using var dataOperations = await ReadJsonAsync(app.GetTestClient(), "/api/workstation/data-operations");
         var providers = dataOperations.RootElement.GetProperty("providers").EnumerateArray().ToArray();
 
@@ -1225,7 +1227,7 @@ public sealed partial class WorkstationEndpointsTests
             // endpoints honestly return 503 instead of fabricated fallback payloads.
             RegisterRunReadServices(services);
             services.AddSingleton(observability);
-        });
+        }, currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewHistoricalData);
 
         var client = app.GetTestClient();
 

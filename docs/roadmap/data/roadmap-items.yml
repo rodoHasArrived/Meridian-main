@@ -1181,7 +1181,7 @@ items:
       - SRC-DESIGN-AUDIT
       - SRC-STORAGE
       - SRC-LEDGER
-    last_reviewed: 2026-08-16
+    last_reviewed: 2026-08-19
 
   - id: W9-INGEST-009
     title: Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher

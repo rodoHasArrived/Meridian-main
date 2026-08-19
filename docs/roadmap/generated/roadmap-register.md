@@ -770,7 +770,7 @@ Source-verified 2026-08-10 and substantially further along than the 2026-07-21 p
 | Priority | high |
 | Owner lane | Platform Security and Governance |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-08-16 |
+| Last reviewed | 2026-08-19 |
 
 ### Current Summary
 
