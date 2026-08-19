@@ -9632,6 +9632,7 @@ Meridian-main
 │   │   │   │   ├── ReportingReconciliationEvidenceStoreTests.cs
 │   │   │   │   └── StatementReconciliationReportAuthorityStoreTests.cs
 │   │   │   ├── AccountingConfigurationPostgresStoreTests.cs
+│   │   │   ├── AccountingPostingCommandValidatorCurrencyTests.cs
 │   │   │   ├── AdaptivePartitionPlacementPlannerTests.cs
 │   │   │   ├── AnalysisExportServiceTests.cs
 │   │   │   ├── AnalysisQualityReportCsvTests.cs
