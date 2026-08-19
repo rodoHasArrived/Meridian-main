@@ -102,6 +102,22 @@ public sealed class FundAccountEndpointAuthorizationTests
     }
 
     [Fact]
+    public async Task BrokerageSyncDiscoveryRoute_ShouldAcceptViewTradesWithoutManagementPermission()
+    {
+        await using var app = await CreateAppAsync(
+            [],
+            [],
+            UserPermission.ViewTrades);
+
+        var response = await app.GetTestClient()
+            .GetAsync("/api/fund-accounts/brokerage-sync/accounts");
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.NotImplemented,
+            "the discovery handler should be reached even when the caller has no fund-account management permission");
+    }
+
+    [Fact]
     public async Task BrokerageHouseholdRoute_ShouldRequireTenantAndCompanyScope()
     {
         var fundId = Guid.NewGuid();

@@ -240,7 +240,7 @@ public static class FundAccountEndpoints
 
         // ── Brokerage read-side sync ──────────────────────────────────────────
 
-        group.MapGet("/brokerage-sync/accounts", async (HttpContext context) =>
+        app.MapGet("/api/fund-accounts/brokerage-sync/accounts", async (HttpContext context) =>
         {
             if (!HasBrokerageSyncAccess(context))
                 return EndpointHelpers.Forbidden();
@@ -252,7 +252,9 @@ public static class FundAccountEndpoints
             var accounts = await sync.DiscoverAccountsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(accounts, jsonOptions);
         })
-        .WithName("DiscoverBrokerageSyncAccounts").RequirePermission(UserPermission.ViewTrades)
+        .WithName("DiscoverBrokerageSyncAccounts")
+        .WithTags("Fund Accounts")
+        .RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<WorkstationBrokerageAccountDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 

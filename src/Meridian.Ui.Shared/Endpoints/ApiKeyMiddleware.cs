@@ -117,12 +117,26 @@ public sealed class ApiKeyMiddleware
         // A validated key needs an authorization context or it cannot pass any route that declares a
         // permission -- the endpoint filters resolve permissions from the session items, and without
         // these an API-key caller is refused everywhere the surface is actually governed.
-        if (!TryResolveApiKeyRole(out var apiKeyRole))
+        if (!TryResolveApiKeyRole(out var apiKeyRole, out var isDefaultRole))
         {
             await ApiProblemDetails.ServiceUnavailable(
                     context,
                     "authentication",
                     $"{ApiKeyRoleEnvVar} is set to a value that is not a known role. Set it to a valid role or unset it to use {DefaultApiKeyRole}.")
+                .ExecuteAsync(context);
+            return;
+        }
+
+        // An unset MDC_API_KEY_ROLE deliberately means a read-only API client. Permission names
+        // alone are not enough to enforce that contract because a few legacy POST routes use view
+        // permissions while mutating process-local replay, option, or sampling state. Fail closed
+        // for every method outside the explicit safe-method allowlist; operators that intentionally
+        // need a command endpoint must name the role that authorizes that client.
+        if (isDefaultRole && !IsSafeMethod(context.Request.Method))
+        {
+            await ApiProblemDetails.Forbidden(
+                    context,
+                    $"The default {DefaultApiKeyRole} API-key role allows only GET, HEAD, and OPTIONS requests. Set {ApiKeyRoleEnvVar} to an explicit role for permitted command endpoints.")
                 .ExecuteAsync(context);
             return;
         }
@@ -155,17 +169,24 @@ public sealed class ApiKeyMiddleware
     /// quietly applying a different permission set than the operator configured is the kind of
     /// authorization drift the governed surface exists to prevent.
     /// </summary>
-    private static bool TryResolveApiKeyRole(out UserRole role)
+    private static bool TryResolveApiKeyRole(out UserRole role, out bool isDefaultRole)
     {
         var configured = Environment.GetEnvironmentVariable(ApiKeyRoleEnvVar);
         if (string.IsNullOrWhiteSpace(configured))
         {
             role = DefaultApiKeyRole;
+            isDefaultRole = true;
             return true;
         }
 
+        isDefaultRole = false;
         return TryParseRoleName(configured, out role);
     }
+
+    private static bool IsSafeMethod(string method)
+        => HttpMethods.IsGet(method) ||
+           HttpMethods.IsHead(method) ||
+           HttpMethods.IsOptions(method);
 
     /// <summary>
     /// Parses a role by name only. <see cref="Enum.TryParse{TEnum}(string, bool, out TEnum)"/> also

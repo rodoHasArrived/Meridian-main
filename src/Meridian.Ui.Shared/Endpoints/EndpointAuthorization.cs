@@ -284,6 +284,26 @@ public static class EndpointAuthorization
                 Reason: "No role permissions were resolved for the current actor.");
         }
 
+        // A key is a distinct principal kind, not the user whose literal username happens to be
+        // "api-key". Never send that synthetic actor through user-scoped assignment lookup: doing
+        // so would let a key inherit case-insensitive assignments belonging to a real user. Preserve
+        // only the same explicit global overrides the scoped service already recognizes.
+        if (context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey))
+        {
+            var hasGlobalOverride =
+                (globalPermissions & UserPermission.AdminMaintenance) == UserPermission.AdminMaintenance ||
+                (globalPermissions & UserPermission.ManageUsers) == UserPermission.ManageUsers;
+            return new ScopedAuthorizationDecisionDto(
+                IsAllowed: hasGlobalOverride,
+                Actor: actor,
+                RequiredPermission: required,
+                ScopeKind: scopeKind,
+                ScopeId: scopeId,
+                Reason: hasGlobalOverride
+                    ? "The API-key principal carries a global scoped-access override."
+                    : "API-key principals cannot inherit user-scoped access assignments.");
+        }
+
         var service = context.RequestServices.GetService(typeof(IScopedAuthorizationService)) as IScopedAuthorizationService;
         if (service is null)
         {

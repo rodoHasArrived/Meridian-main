@@ -131,7 +131,10 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         try
         {
             var nextCalled = false;
-            var context = new DefaultHttpContext();
+            var context = new DefaultHttpContext
+            {
+                RequestServices = Fixture.Services
+            };
             context.Request.Path = DeclaredRoute;
             context.Request.Headers["X-Api-Key"] = "snapshot-key";
             var middleware = new ApiKeyMiddleware(nextContext =>
@@ -152,6 +155,104 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         finally
         {
             Environment.SetEnvironmentVariable("MDC_API_KEY", original);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
+    [Theory]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("PATCH")]
+    [InlineData("DELETE")]
+    [InlineData("PROPFIND")]
+    public async Task DefaultApiKeyRole_RejectsEveryMethodOutsideTheSafeAllowlist(string method)
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "default-read-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", null);
+        try
+        {
+            var nextCalled = false;
+            var context = new DefaultHttpContext
+            {
+                RequestServices = Fixture.Services
+            };
+            context.Request.Path = "/api/sampling/create";
+            context.Request.Method = method;
+            context.Request.Headers["X-Api-Key"] = "default-read-key";
+            var middleware = new ApiKeyMiddleware(_ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            });
+
+            await middleware.InvokeAsync(context);
+
+            context.Response.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+            nextCalled.Should().BeFalse();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
+    [Fact]
+    public async Task DefaultApiKeyRole_AllowsGetWithReadOnlyPermissionSnapshot()
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "default-read-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", null);
+        try
+        {
+            var nextCalled = false;
+            var context = new DefaultHttpContext();
+            context.Request.Path = DeclaredRoute;
+            context.Request.Method = HttpMethods.Get;
+            context.Request.Headers["X-Api-Key"] = "default-read-key";
+            var middleware = new ApiKeyMiddleware(nextContext =>
+            {
+                nextCalled = true;
+                nextContext.Items[LoginSessionMiddleware.CurrentUserRoleKey].Should().Be(UserRole.ReadOnly);
+                nextContext.Items[LoginSessionMiddleware.CurrentUserPermissionsKey]
+                    .Should().Be(RolePermissions.For(UserRole.ReadOnly));
+                return Task.CompletedTask;
+            });
+
+            await middleware.InvokeAsync(context);
+
+            nextCalled.Should().BeTrue();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
+    [Fact]
+    public async Task DefaultApiKeyRole_CannotReachAViewPermissionMutation()
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "default-read-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", null);
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/sampling/create");
+            request.Headers.Add("X-Api-Key", "default-read-key");
+            request.Content = JsonContent.Create(new { strategy = "random" });
+
+            using var response = await Client.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
             Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
         }
     }
@@ -230,15 +331,13 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData(nameof(UserRole.Admin))]
-    public async Task ApiKeyPrincipal_DoesNotSatisfySessionOnlyAuthorization(string? apiKeyRole)
+    [Fact]
+    public async Task ApiKeyPrincipal_DoesNotSatisfySessionOnlyAuthorization()
     {
         var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
         var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
         Environment.SetEnvironmentVariable("MDC_API_KEY", "session-only-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", apiKeyRole);
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.Admin));
         try
         {
             using var request = new HttpRequestMessage(
@@ -291,7 +390,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", "NotARole");
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, DeclaredRoute);
+            using var request = new HttpRequestMessage(HttpMethod.Post, DeclaredRoute);
             request.Headers.Add("X-Api-Key", "bad-role-key");
 
             using var response = await Client.SendAsync(request);
