@@ -1032,6 +1032,8 @@ Meridian-main
 │   ├── ci
 │   │   └── lane-manifest.json
 │   ├── config
+│   │   ├── contracts
+│   │   │   └── type-parity-registry.json
 │   │   ├── security
 │   │   │   └── npm-audit-accepted-advisories.json
 │   │   ├── testing
@@ -1096,6 +1098,7 @@ Meridian-main
 │       ├── ci
 │       │   ├── apiclient-caller-baseline.json
 │       │   ├── check-apiclient-callers.py
+│       │   ├── check-contract-type-parity.py
 │       │   ├── check-dashboard-type-barrel.py
 │       │   ├── check-duplicate-helpers.py
 │       │   ├── check-endpoint-cancellation.py
@@ -10300,6 +10303,7 @@ Meridian-main
 │   │   ├── test_check_codex_memory.py
 │   │   ├── test_check_codex_skills.py
 │   │   ├── test_check_contract_compatibility_gate.py
+│   │   ├── test_check_contract_type_parity.py
 │   │   ├── test_check_dashboard_type_barrel.py
 │   │   ├── test_check_duplicate_helpers.py
 │   │   ├── test_check_endpoint_cancellation.py
