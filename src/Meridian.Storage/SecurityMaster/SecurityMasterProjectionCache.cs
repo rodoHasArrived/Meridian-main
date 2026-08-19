@@ -28,10 +28,18 @@ public sealed class SecurityMasterProjectionCache
     /// </summary>
     /// <remarks>
     /// Taken under the write gate, and resolving <see cref="Current"/> only once inside it, so an
-    /// upsert issued while a <see cref="ReplaceAll"/> is assembling its replacement waits and then
-    /// lands in the map that replacement installs. Writing outside the gate would put the record
-    /// into the outgoing map, where the swap would discard it — losing a security that create,
-    /// amend, or a published rebuild had just persisted.
+    /// upsert issued once a <see cref="ReplaceAll"/> holds that gate waits and then lands in the map
+    /// that replacement installs. Writing outside the gate would put the record into the outgoing
+    /// map, where the swap would discard it — losing a security that create, amend, or a published
+    /// rebuild had just persisted.
+    /// <para>
+    /// The guarantee covers the gated phase only, and no more. <see cref="ReplaceAll"/> copies its
+    /// argument before taking the gate (see its remarks for why it has to), and an upsert that
+    /// completes during that copy takes the gate uncontended, writes into the outgoing map, and is
+    /// discarded by the swap that follows. Callers must not treat a returned <c>Upsert</c> as proof
+    /// the record survives a concurrent rebuild; the durable record is the event stream, and a
+    /// subsequent rebuild replays it.
+    /// </para>
     /// <para>
     /// Waiting on the gate is exactly what makes the version check necessary. A caller can produce
     /// its projection and then take a while to get here — <c>SecurityMasterService</c> releases its

@@ -526,7 +526,7 @@ original assessment. No code was changed by this pass; no tests were run.
 | 1 | Taxonomy outruns term model | `BondTerms.PrincipalSchedule` landed; `BondCouponStructure` is still 3 cases — step-rate and inflation-linked remain classifiable but not computable |
 | 4 | ~7 registries per asset class | Drift is now test-caught, not prevented; both codec arms are still hand-written |
 | 5 | Governed edits do not reach the golden record | Field paths and types are now schema-validated; **no merge path exists** — no publish handler writes an approved override into canonical terms |
-| 8 | Factor schedules exist in incompatible shapes | Typed `FactorScheduleEntries` landed and is consumed; the third shape (`SecurityFactorScheduleEntry` in `Meridian.Strategies`) is still duplicated |
+| 8 | Factor schedules exist in incompatible shapes | Typed `FactorScheduleEntries` landed and is consumed; ~~the third shape (`SecurityFactorScheduleEntry` in `Meridian.Strategies`) is still duplicated~~ — **retracted 2026-08-19: that type is not a duplicate.** It models a factor *transition with provenance*, not the *level* the other two carry. Item 8 is closed; only the legacy free-text `StructuredCreditTerms.FactorSchedule` remains, already scoped to legacy rows. See the **Status (2026-08-19)** note on risk item 8 |
 
 ### Unchanged and open
 
