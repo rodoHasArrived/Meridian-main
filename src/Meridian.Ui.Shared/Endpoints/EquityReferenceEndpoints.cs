@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Instruments.Equity;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Equity;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ public static class EquityReferenceEndpoints
             var reference = await service.GetReferenceAsync(securityId, ct).ConfigureAwait(false);
             return reference is null ? Results.NotFound() : Results.Json(reference, jsonOptions);
         })
-        .WithName("GetEquityReference")
+        .WithName("GetEquityReference").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<EquityReferenceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -34,7 +35,7 @@ public static class EquityReferenceEndpoints
             var results = await service.GetByExchangeAsync(exchangeCode, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("GetEquityByExchange")
+        .WithName("GetEquityByExchange").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<EquityReferenceDto>>(StatusCodes.Status200OK);
 
         group.MapGet(UiApiRoutes.ReferenceDataEquityByIssuer, async (
@@ -45,7 +46,7 @@ public static class EquityReferenceEndpoints
             var results = await service.GetByIssuerAsync(issuerName, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("GetEquityByIssuer")
+        .WithName("GetEquityByIssuer").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<EquityReferenceDto>>(StatusCodes.Status200OK);
     }
 }

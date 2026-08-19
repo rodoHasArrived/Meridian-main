@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Instruments.MoneyMarketFunds;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.MoneyMarketFunds;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ public static class MoneyMarketFundReferenceEndpoints
             var reference = await service.GetReferenceAsync(securityId, ct).ConfigureAwait(false);
             return reference is null ? Results.NotFound() : Results.Json(reference, jsonOptions);
         })
-        .WithName("GetMoneyMarketFundReference")
+        .WithName("GetMoneyMarketFundReference").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<MoneyMarketFundReferenceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -34,7 +35,7 @@ public static class MoneyMarketFundReferenceEndpoints
             var results = await service.GetByFundFamilyAsync(fundFamily, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("GetMoneyMarketFundsByFamily")
+        .WithName("GetMoneyMarketFundsByFamily").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<MoneyMarketFundReferenceDto>>(StatusCodes.Status200OK);
 
         group.MapGet(UiApiRoutes.ReferenceDataMoneyMarketFundsBySweepEligibility, async (
@@ -45,7 +46,7 @@ public static class MoneyMarketFundReferenceEndpoints
             var results = await service.GetBySweepEligibilityAsync(sweepEligible, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("GetMoneyMarketFundsBySweepEligibility")
+        .WithName("GetMoneyMarketFundsBySweepEligibility").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<MoneyMarketFundReferenceDto>>(StatusCodes.Status200OK);
     }
 }

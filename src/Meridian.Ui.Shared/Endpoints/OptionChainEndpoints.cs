@@ -56,7 +56,7 @@ public static class OptionChainEndpoints
             var snapshot = await service.GetChainSnapshotAsync(underlyingSymbol, expiryDate, ct).ConfigureAwait(false);
             return snapshot is null ? Results.NotFound() : Results.Json(snapshot, jsonOptions);
         })
-        .WithName("GetOptionChainSnapshot")
+        .WithName("GetOptionChainSnapshot").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<OptionChainSnapshotDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
     }
