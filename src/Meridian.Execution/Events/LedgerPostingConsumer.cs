@@ -52,6 +52,12 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
     private int _disposeStarted;
     private int _cancellationSourceDisposed;
 
+    // Set when the posting loop stops for any reason other than shutdown. Nothing drains the
+    // channel after that, so acceptance must fail closed instead of waiting on capacity that
+    // will never free — a blocked publisher is silent: the ledger simply stops receiving
+    // postings while trading continues.
+    private Exception? _processingFailure;
+
     internal Task ProcessingCompletion => _processingTask;
 
     /// <inheritdoc />
@@ -193,6 +199,10 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
                 $"LedgerPostingConsumer is disposed; fill {tradeEvent.FillId} for {tradeEvent.Symbol} was not accepted.");
         }
 
+        // A stopped posting loop means nothing will drain what is accepted here, so refuse
+        // before taking the fill rather than stranding it behind a reader that is gone.
+        ThrowIfProcessingFailed(tradeEvent);
+
         // The publisher contract intentionally applies storage backpressure here: returning
         // means the executed fill is durably replayable even if this process stops.
         var acceptance = await _postingStore
@@ -216,6 +226,11 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
 
         while (!_channel.Writer.TryWrite(posting))
         {
+            // Re-checked every iteration: the reader can stop while this publisher is already
+            // waiting, and capacity would then never free. The fill is durable either way, so
+            // surfacing the stall beats blocking here indefinitely.
+            ThrowIfProcessingFailed(tradeEvent);
+
             var channelOpen = await _channel.Writer.WaitToWriteAsync().ConfigureAwait(false);
             if (!channelOpen)
             {
@@ -390,9 +405,45 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         }
         catch (Exception ex)
         {
+            // Publish the fault before completing the recovery gate: a publisher released by
+            // that gate must observe the failure rather than proceed into a channel that no
+            // longer has a reader.
+            if (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+            {
+                Volatile.Write(ref _processingFailure, ex);
+
+                // Completing the writer wakes publishers already parked in WaitToWriteAsync;
+                // setting the field alone would leave them waiting on capacity that no reader
+                // will ever free.
+                _channel.Writer.TryComplete(ex);
+
+                _logger.LogCritical(
+                    ex,
+                    "Ledger posting consumer stopped for scope {PostingScope}; accepted fills remain durable and " +
+                    "replay on restart, but no further fills can be accepted until it is restarted",
+                    _postingScope);
+            }
+
             _recoveryLoaded.TrySetException(ex);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Throws when the posting loop has stopped outside shutdown. Acceptance must fail closed
+    /// there: the channel has no reader, so waiting on capacity would block the caller forever
+    /// and hide the fact that the ledger is no longer being posted to.
+    /// </summary>
+    private void ThrowIfProcessingFailed(TradeExecutedEvent tradeEvent)
+    {
+        var failure = Volatile.Read(ref _processingFailure);
+        if (failure is null)
+            return;
+
+        throw new ChannelClosedException(
+            $"LedgerPostingConsumer for scope '{_postingScope}' stopped processing; fill {tradeEvent.FillId} " +
+            $"for {tradeEvent.Symbol} was not accepted.",
+            failure);
     }
 
     private async Task ProcessPostingAsync(PendingTradeFillPosting posting, CancellationToken ct)

@@ -1357,19 +1357,44 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         if (_tradeEventPublisher is null || _tradeFillHandoffFailureStore is null)
             return;
 
+        // Retained handoffs are fills the accounting layer never accepted. Abandoning the load
+        // on the first error would leave them undelivered with nothing scheduled to retry, and
+        // the OMS would keep trading as though the accounting backlog were empty. Retry with
+        // backoff so an unavailable store delays replay rather than cancelling it.
         IReadOnlyList<RetainedTradeFillHandoffFailure> retained;
-        try
+        var loadAttempt = 0;
+        while (true)
         {
-            retained = await _tradeFillHandoffFailureStore.LoadPendingAsync(ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            return;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogCritical(ex, "Could not load retained accounting handoff failures");
-            return;
+            try
+            {
+                retained = await _tradeFillHandoffFailureStore.LoadPendingAsync(ct).ConfigureAwait(false);
+                break;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                loadAttempt++;
+                _logger.LogCritical(
+                    ex,
+                    "Could not load retained accounting handoff failures (attempt {Attempt}); retrying — " +
+                    "retained fills stay undelivered until this succeeds",
+                    loadAttempt);
+
+                // 1s, 2s, 4s ... capped at 30s: fast enough that a transient store blip barely
+                // delays replay, bounded so a durable outage does not spin.
+                var delay = TimeSpan.FromSeconds(Math.Min(30, Math.Pow(2, Math.Min(loadAttempt - 1, 5))));
+                try
+                {
+                    await Task.Delay(delay, ct).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+            }
         }
 
         foreach (var failure in retained)
@@ -1378,7 +1403,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 return;
             try
             {
-                _tradeEventPublisher.Publish(failure.TradeEvent);
+                // Awaited for the same reason as the live fill path: replay runs on a pool
+                // thread and acceptance can wait for the posting consumer to free capacity.
+                await _tradeEventPublisher.PublishAsync(failure.TradeEvent).ConfigureAwait(false);
                 await _tradeFillHandoffFailureStore
                     .MarkReplayedAsync(failure.TradeEvent.FillId, CancellationToken.None)
                     .ConfigureAwait(false);
@@ -1605,7 +1632,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 {
                     try
                     {
-                        _tradeEventPublisher.Publish(progress.TradeEvent!);
+                        // Awaited, never the blocking Publish bridge: acceptance applies storage
+                        // backpressure and can wait unboundedly for the posting consumer to free
+                        // channel capacity. Blocking a pool thread there starves the very
+                        // consumer that has to drain it, so the fill path would stall instead of
+                        // failing closed.
+                        await _tradeEventPublisher.PublishAsync(progress.TradeEvent!).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
