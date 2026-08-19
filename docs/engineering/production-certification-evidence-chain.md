@@ -106,9 +106,15 @@ drain/flush ordering, and lifecycle receipts.
    (base64 PFX) and `MDC_SIGNING_CERT_PASSWORD`. The workflow only releases the password on
    `refs/tags/v*`; store both as repository or environment secrets protected by a tag ruleset
    so only release tags can read them.
-2. Register a native Windows ARM64 self-hosted runner carrying exactly the labels the
-   workflow's ARM64 matrix leg targets: `self-hosted`, `Windows`, `ARM64`.
-3. Ensure the prior (N-1) release artifact is available for the update-from-N-1 receipt lane.
+2. ~~Register a native Windows ARM64 self-hosted runner.~~ **No longer required (2026-08-19).**
+   The repository is public, so the GitHub-hosted `windows-11-arm` label is available at no cost;
+   the ARM64 certification leg now targets it directly.
+3. ~~Ensure the prior (N-1) release artifact is available.~~ **No longer required for the first
+   release (2026-08-19).** The lane derives first-release mode from repository state: when no
+   published predecessor exists, the update and rollback legs are recorded as `not-applicable`
+   with a reason instead of failing closed. A failed release query stays fatal, so this cannot be
+   mistaken for a missing predecessor. From the second release onward the N-1 artifact is required
+   again, and is produced by the first release.
 4. Push the release tag (`v*`) on the frozen release commit and drive
    `desktop-installer-packaging` to green; the tag run's install/launch/update/repair/
    rollback/uninstall receipts for x64 and ARM64 are the PRD-014 evidence. Record the run link
@@ -159,6 +165,146 @@ bash scripts/ci.sh --lane verify-docs
 ## Evidence Log
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
+
+- **2026-08-19** — **FROZEN COMMIT `65dc0107`: all three evidence lanes green together with the
+  authoritative merge gate**, which no commit in this repository had achieved before.
+  - `Production Certification` [#31 / 32290441637](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32290441637) — all four jobs.
+  - `Publish Smoke` `web-workstation`/`win-x64` [#21 / 32290444712](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32290444712).
+  - `Desktop Installer Release` [#17 / 32287384452](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32287384452) — all seven jobs, now including `Meridian.Setup.Tests`.
+  - `Meridian CI` / `quality-gate` [#2872 / 32287375296](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32287375296).
+
+  This supersedes the `9ae0a3a3` set recorded below, which had the three lanes but no
+  `quality-gate` run: a merge conflict with `main` was suppressing `pull_request` events, so three
+  consecutive pushes were never checked at all. `65dc0107` contains `main` at `7785c566` and is
+  mergeable.
+
+  `verify-dotnet` failed once on this commit on
+  `DedupWalOrderingTests.Consumer_RejectedEvent_DoesNotClaimTheIdentityOfALaterValidEvent`, one of
+  1591 tests, in a file this branch does not touch. It was green on `main` at `7785c566` and on
+  this branch before the merge, and it passed on a single re-run, so it was not treated as a
+  regression and nothing was changed for it. If it recurs it needs a root cause rather than another
+  re-run.
+
+  The limit that still stands: every installed lifecycle receipt so far was anchored by a throwaway
+  self-signed certificate, so they prove the mechanism and not `PRD-014`. A commit also cannot
+  contain the evidence of its own runs, so this entry sits on a descendant of the commit it
+  certifies, and any further branch change requires re-running the three lanes.
+
+- **2026-08-19** — **`Meridian.Setup.Tests` had never executed in CI**, so the installer's
+  transaction and payload tests were assurance on paper only. `run-dotnet-ci-tests.py` lists the
+  project under `WINDOWS_ONLY_TEST_PROJECTS`, which the ubuntu lane skips and
+  `verify_test_project_coverage()` accepts as "wired" without checking that any Windows lane runs
+  it — and none did: the project was referenced by no workflow and no script. Its own source
+  comment recorded the cause ("Added with the installer work but never wired to a lane"). It is now
+  run by `verify-desktop-release-preflight`, the Windows job that already gates this lane.
+  `Meridian.Setup` also had `SelfContained` set unconditionally while only ever being built with an
+  explicit runtime identifier by the release script; it is now conditional on one, so the RID-less
+  build a `ProjectReference` performs cannot ask for a self-contained application without a
+  runtime identifier. The same "listed as windows-only, therefore assumed covered" reasoning still
+  applies to `Meridian.LifecycleSupervisor.Tests`, which is at least referenced by
+  `windows-desktop-build.yml` path triggers and `scripts/dev/validate-wpf-dev.ps1`; whether it is
+  genuinely executed was not established here.
+
+- **2026-08-19** — **ALL THREE EVIDENCE LANES GREEN ON ONE FROZEN COMMIT (`9ae0a3a3`)**, which is
+  the first time that has been true in this repository. This was the real sequencing blocker behind
+  every evidence-gated `P0` row: each lane's evidence had always sat on a different commit, and the
+  release gate requires one.
+  - `Production Certification` [#30 / 32283733150](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32283733150) — all four jobs.
+  - `Publish Smoke` `web-workstation`/`win-x64` [#20 / 32283735422](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32283735422).
+  - `Desktop Installer Release` [#15 / 32283738541](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32283738541) — **all seven jobs**: preflight, MSIX for `win-x64` and `win-arm64`, `package-consumer-setup`, and installed lifecycle certification for both architectures, the ARM64 leg on the hosted `windows-11-arm` runner (job 96173225616). `publish-desktop-installer-release` skipped, correctly: this was not a tag run.
+
+  Two limits this set does **not** clear, stated so no later reader mistakes it for release
+  evidence. Both lifecycle legs were anchored by a throwaway self-signed certificate, so they prove
+  the mechanism and not `PRD-014`; that row still needs a tag run with the protected signing
+  secret. And `main` advanced after the freeze and was merged into the branch, so the branch head
+  is no longer `9ae0a3a3` — the evidence is pinned to the tree that produced it, and a real release
+  tag needs these three lanes re-run on whatever commit is finally frozen for it.
+
+- **2026-08-19** — `Desktop Installer Release` **produced `Meridian-Setup.exe` for the first time in
+  the repository's history**
+  ([run #13 / 32281331953](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32281331953),
+  `a6703cdb`): `package-consumer-setup` completed its whole chain — build, release evidence, SPDX
+  SBOM, checksums, and a 1,043,350,783-byte artifact upload. Every prior run had failed in the
+  compile. The payload was a set of `EmbeddedResource` items, and Roslyn serialises resources into
+  the PE image's mapped field data, so `csc` aborted with
+  `ArgumentOutOfRangeException (Parameter 'mappedFieldDataStreamRva')` before emit; two
+  self-contained .NET publishes plus a PostgreSQL server distribution per runtime are far past that
+  ceiling, so this was never a size to trim but a delivery mechanism to replace. The payload is now
+  a ZIP appended to the published executable behind a fixed 138-byte ASCII trailer carrying its
+  offset, length, and SHA-256, appended **before** signing so it falls inside the Authenticode
+  hash, and located by scanning backwards for a magic that is only accepted when its own position
+  equals `offset + length` — the certificate table sits after it, so reading from EOF would not
+  work, and single-file publishing rules out deriving the offset from the PE headers.
+  `InstallationTransaction` is untouched. The build now runs the packaged executable with
+  `--verify-payload`, so the writer and the reader cannot drift apart without this lane going red.
+  The ~1 GB download is a product question this ledger does not settle.
+- **2026-08-19** — `Production Certification` run #28 on `a73d9cb4`
+  ([32278123178](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32278123178))
+  **did not fail on anything in the repository** and produced no usable frozen-commit evidence.
+  Documentation and dependency evidence passed; both PostgreSQL-backed jobs stalled in
+  `Install PostgreSQL 17 client tools`. The recovery drill sat in that step from 16:57 to 17:32
+  before the job was cancelled, and deterministic integrations were still in it 45 minutes in.
+  Run #27 had passed the same step minutes earlier on near-identical content, so the cause was
+  `apt.postgresql.org`, not the diff. None of the step's three network calls was bounded — no
+  `curl --max-time`, no `apt-get` timeout or retry — so an upstream stall consumed the job budget
+  and then reported a cancellation naming no cause. Every call is now bounded, the whole install
+  retries three times, and the step carries its own timeout. The run was cancelled and the frozen
+  commit moved forward to `ab80e297`, which also carries the consumer-setup fix, so the re-freeze
+  gains a fully green installer lane rather than six of seven.
+
+- **2026-08-19** — `Production Certification` **GREEN again after a three-run regression on `main`**
+  ([run #27 / 32266755834](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32266755834),
+  candidate `25f73ed4`): all four jobs passed. This closes the regression that had failed
+  [#23 / 31293316917](https://github.com/rodoHasArrived/Meridian-main/actions/runs/31293316917) (2026-08-09),
+  [#24 / 31482487822](https://github.com/rodoHasArrived/Meridian-main/actions/runs/31482487822) (2026-08-11) and
+  [#25 / 31924550471](https://github.com/rodoHasArrived/Meridian-main/actions/runs/31924550471) (2026-08-16) —
+  none of which this ledger had recorded, in violation of its own Update Discipline.
+  Baseline [#26 / 32264288888](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32264288888)
+  on `e18c7fb2` isolated it: integrations, the recovery drill and documentation were already green;
+  only `dependency-evidence` was red. Cause was entirely upstream — two advisories published after
+  the 2026-08-05 green run, against an unchanged dependency graph: SSH.NET 2025.1.0 via
+  Testcontainers (GHSA-q939-rpr3-3284, fixed in 2026.0.0 per OSV) and nanoid 3.3.16 via postcss
+  (GHSA-2v37-7h3g-55p8, fixed in 3.3.18). The KV-2026-002 react-router acceptance was retired
+  rather than renewed, because 7.18.2 now exists and `validate-npm-audit.py` fails closed on an
+  acceptance that no longer matches a reported advisory. The two dependency gates also ran
+  fail-fast in sequence, so one ecosystem's advisories masked the other's and the evidence artifact
+  was uploaded incomplete; both are now scored and asserted together.
+- **2026-08-19** — `Publish Smoke` `web-workstation`/`win-x64` green on current `main` content
+  ([run #17 / 32264273659](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32264273659),
+  `e18c7fb2`): publish, installed-startup preparation, and start-with-required-authentication all
+  passed. The earlier green (#15, `d64506650`) sat on an abandoned branch commit that is not an
+  ancestor of `main`, and #16 — the only green ever dispatched on the `main` ref — was `collector`,
+  with both installed-startup steps skipped. The lane now names
+  `web-workstation-installed-startup` in its evidence manifest only when those steps actually ran,
+  so a `collector` or `win-arm64` dispatch can no longer be mistaken for `PRD-013` evidence, and
+  release evidence is retained 90 days instead of 14.
+- **2026-08-19** — `Desktop Installer Release` **first green packaging and first installed
+  lifecycle certification in the repository's history**
+  ([run #11 / 32272257476](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32272257476),
+  `963c0288`). Six of seven jobs passed: preflight, `package-desktop-msix` for both `win-x64` and
+  `win-arm64` (MSIX, SPDX SBOM, evidence manifest and SHA-256 checksums produced for the first
+  time), and `clean install lifecycle` for both architectures. The ARM64 leg ran on the
+  GitHub-hosted `windows-11-arm` runner (job 96136145806, `labels: ["windows-11-arm"]`), which is
+  the direct evidence that the self-hosted-runner action in this ledger is obsolete. Both
+  lifecycle legs ran in first-release mode against a throwaway self-signed certificate, so they
+  prove the mechanism, **not** release evidence — `PRD-014` still needs a tag run with the
+  protected secret.
+  The one remaining failure is `package-consumer-setup`: `Meridian.Setup` embeds the whole runtime
+  and PostgreSQL payload as a single assembly resource, and Roslyn's PE writer throws
+  `ArgumentOutOfRangeException (Parameter 'mappedFieldDataStreamRva')` emitting it. That is a
+  payload-delivery design defect rather than a packaging-script bug, and it blocks only the
+  one-click `Meridian-Setup.exe`, not the desktop MSIX.
+- **2026-08-19** — `Desktop Installer Release` diagnosed end to end; **still not green**. The
+  preflight gate that had blocked every earlier run is green on `e18c7fb2`
+  ([32263751166](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32263751166)) — the two
+  WPF tests were fixed on `main` by `b3d51086`. That exposed the defects behind it, none of which
+  had ever executed: `dotnet publish` failed with its error written to a diagnostic log no job
+  uploaded (now printed and uploaded); crossgen2 aborts ReadyToRun with NETSDK1096 on Sharpino.Lib
+  (ReadyToRun disabled for the package); `package-consumer-setup` was never given the PostgreSQL
+  payload it requires and checked no `dotnet publish` exit codes; the artifact-collection step
+  could not parse; the lifecycle gate launched a non-existent executable name; the ARM64 leg
+  targeted a runner that does not exist; and the N-1 lookup made the first release impossible.
+  See the tracker's `PRD-014` row for what remains.
 
 - **2026-08-05** — `Production Certification` **FIRST ALL-GREEN RUN**
   ([run #19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407),

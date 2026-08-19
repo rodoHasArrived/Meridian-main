@@ -72,12 +72,37 @@ jobs:
       # The runner image ships PostgreSQL 16 client tools; pg_dump refuses to dump the
       # newer postgres:17 service, which would void the schema evidence capture.
       - name: Install PostgreSQL 17 client tools to match the service major
+        # postgresql.org and apt.postgresql.org are third-party hosts, and none of these calls
+        # was bounded. When apt.postgresql.org stalled during run #28 the step hung for 35
+        # minutes, the job was cancelled, and the certification reported no cause at all. Bound
+        # every network call and retry the whole install: a transient outage now costs seconds,
+        # and a sustained one fails inside the step timeout naming the host that is unreachable.
+        timeout-minutes: 12
         run: |
-          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor --yes -o /usr/share/keyrings/pgdg.gpg
-          echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
-          sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends postgresql-client-17
-          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+          set -euo pipefail
+
+          install_client_tools() {
+            curl -fsSL --max-time 60 --retry 3 --retry-delay 5 --retry-all-errors \
+              https://www.postgresql.org/media/keys/ACCC4CF8.asc |
+              sudo gpg --dearmor --yes -o /usr/share/keyrings/pgdg.gpg
+            echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" |
+              sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+            sudo apt-get update -o Acquire::http::Timeout=30 -o Acquire::Retries=3
+            sudo apt-get install --yes --no-install-recommends \
+              -o Acquire::http::Timeout=30 -o Acquire::Retries=3 postgresql-client-17
+          }
+
+          for attempt in 1 2 3; do
+            if install_client_tools; then
+              echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+              exit 0
+            fi
+            echo "postgresql-client-17 install attempt ${attempt} failed; retrying" >&2
+            sleep $((attempt * 15))
+          done
+
+          echo "Could not install postgresql-client-17 from apt.postgresql.org after 3 attempts." >&2
+          exit 1
 
       - name: Restore deterministic integration projects
         run: |
@@ -165,7 +190,13 @@ jobs:
       - name: Restore packages
         run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 
+      # Both dependency gates are scored, then asserted together at the end of the job. Without
+      # continue-on-error a red NuGet scan aborts the job before npm runs, so a single run reports
+      # one ecosystem's advisories, hides the other's, and uploads a partial evidence artifact
+      # under a name that claims to cover both.
       - name: Fail on vulnerable NuGet dependencies
+        id: nuget_gate
+        continue-on-error: true
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path artifacts/security -Force | Out-Null
@@ -182,6 +213,8 @@ jobs:
       # high/critical advisory that lacks an unexpired acceptance entry — and on a missing
       # or error-shaped audit report, so `|| true` cannot hide a failed scan.
       - name: Fail on unaccepted high-severity npm advisories
+        id: npm_gate
+        continue-on-error: true
         working-directory: src/Meridian.Ui/dashboard
         run: |
           npm ci
@@ -192,6 +225,19 @@ jobs:
             --accepted ../../../build/config/security/npm-audit-accepted-advisories.json \
             --fail-level high \
             --output ../../../artifacts/security/npm-audit-gate.json
+
+      # The job's real verdict. Both gates above always run so the evidence artifact is complete;
+      # this step is what turns either failure into a red job.
+      - name: Assert both dependency gates passed
+        shell: pwsh
+        run: |
+          $failed = @()
+          if ('${{ steps.nuget_gate.outcome }}' -ne 'success') { $failed += 'NuGet (dotnet list package --vulnerable)' }
+          if ('${{ steps.npm_gate.outcome }}' -ne 'success') { $failed += 'npm (validate-npm-audit.py)' }
+          if ($failed.Count -gt 0) {
+            throw "Dependency evidence failed for: $($failed -join '; '). See the step logs and the uploaded artifacts/security/ evidence."
+          }
+          Write-Host "Both dependency gates passed."
 
       - name: Upload dependency evidence
         if: always()
@@ -234,12 +280,37 @@ jobs:
       # The runner image ships PostgreSQL 16 client tools; pg_dump refuses to dump the
       # newer postgres:17 service, so the drill's backup stage fails at preflight.
       - name: Install PostgreSQL 17 client tools to match the service major
+        # postgresql.org and apt.postgresql.org are third-party hosts, and none of these calls
+        # was bounded. When apt.postgresql.org stalled during run #28 the step hung for 35
+        # minutes, the job was cancelled, and the certification reported no cause at all. Bound
+        # every network call and retry the whole install: a transient outage now costs seconds,
+        # and a sustained one fails inside the step timeout naming the host that is unreachable.
+        timeout-minutes: 12
         run: |
-          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor --yes -o /usr/share/keyrings/pgdg.gpg
-          echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
-          sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends postgresql-client-17
-          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+          set -euo pipefail
+
+          install_client_tools() {
+            curl -fsSL --max-time 60 --retry 3 --retry-delay 5 --retry-all-errors \
+              https://www.postgresql.org/media/keys/ACCC4CF8.asc |
+              sudo gpg --dearmor --yes -o /usr/share/keyrings/pgdg.gpg
+            echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" |
+              sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+            sudo apt-get update -o Acquire::http::Timeout=30 -o Acquire::Retries=3
+            sudo apt-get install --yes --no-install-recommends \
+              -o Acquire::http::Timeout=30 -o Acquire::Retries=3 postgresql-client-17
+          }
+
+          for attempt in 1 2 3; do
+            if install_client_tools; then
+              echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+              exit 0
+            fi
+            echo "postgresql-client-17 install attempt ${attempt} failed; retrying" >&2
+            sleep $((attempt * 15))
+          done
+
+          echo "Could not install postgresql-client-17 from apt.postgresql.org after 3 attempts." >&2
+          exit 1
 
       - name: Seed source and clean recovery targets
         run: |

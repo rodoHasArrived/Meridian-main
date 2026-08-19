@@ -43,7 +43,15 @@
 
     <!-- Windows Desktop Deployment Settings -->
     <EnableMsixTooling>true</EnableMsixTooling>
-    <!-- ReadyToRun is expensive in disk usage during publish, so keep it opt-in for local packaging. -->
+    <!--
+      ReadyToRun is off by default: it is expensive in publish disk usage, and it currently cannot
+      complete at all for this project. crossgen2 fails with ILCompiler.CodeGenerationFailedException
+      on F# async state machines in the third-party Sharpino.Lib assembly (which arrives via
+      Meridian.FSharp.DirectLending.Aggregates -> Meridian.Application), aborting the publish with
+      NETSDK1096. PublishReadyToRunExclude for that assembly was tried and did not take effect, so
+      there is no partial-ReadyToRun configuration available today. ReadyToRun only affects startup
+      time, so packaging proceeds without it; revisit when a later Sharpino or SDK release compiles.
+    -->
     <PublishReadyToRun Condition="'$(PublishReadyToRun)' == ''">false</PublishReadyToRun>
     <SelfContained>false</SelfContained>
     <DebugType>embedded</DebugType>
