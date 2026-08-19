@@ -16,9 +16,12 @@ namespace Meridian.Storage.Ledger;
 /// ordinary operator retry into a hard failure.
 /// </para>
 /// <para>
-/// Approval-derived state is excluded for the same reason: approval id, approval state, and
-/// evidence retention stamps are recorded at append time, so a later replay of the same posting
-/// legitimately carries different values. What must not differ is what the books say.
+/// Approval-derived state is excluded for the same reason: approval id, approval state, the
+/// fingerprint computed over the approved command, and evidence retention stamps are all recorded
+/// at append time, so a later replay of the same posting legitimately carries different values.
+/// That exclusion is deliberately narrow — everything else a tag carries, including the
+/// real-versus-simulated provenance mark and the economic-event and projection lineage, is
+/// compared. What must not differ is what the books say, and what the figures claim to be.
 /// </para>
 /// </summary>
 public static class RetainedPostingEquivalence
@@ -127,13 +130,17 @@ public static class RetainedPostingEquivalence
     /// because a retry that keeps the same lines while changing the fund, investor, capital
     /// account, or payment intent it books against is a different posting, not a replay.
     /// <para>
-    /// <see cref="JournalEntryMetadata.Tags"/> and
-    /// <see cref="JournalEntryMetadata.EvidenceReferences"/> are the two deliberate exclusions.
-    /// Both carry approval-time state that a rebuild cannot reproduce: the tag set records the
-    /// approval state, approval id, and a fingerprint computed over the approved command, and the
-    /// evidence list is merged with a clock stamp as the posting is approved. Comparing them
-    /// would reject ordinary retries. Their durable content is largely mirrored by the scalar
-    /// fields above, which are compared.
+    /// Tags participate too, minus a narrow exclusion set. They are not decoration: typed
+    /// provenance — the data-provenance mark separating real figures from simulated ones, the
+    /// economic event's version, domain, entity, and content hash, the projection lineage, and
+    /// the rule pack — is persisted <i>only</i> as tags and is mirrored by none of the scalars
+    /// above. Excluding them wholesale would let a retry that changes what the figures claim to
+    /// be pass as a replay.
+    /// </para>
+    /// <para>
+    /// <see cref="JournalEntryMetadata.EvidenceReferences"/> remains excluded: approval evidence
+    /// is merged with a clock stamp as the posting is approved, so a rebuild carries neither the
+    /// stamp nor the merged entries and comparing the list would reject ordinary retries.
     /// </para>
     /// </summary>
     private static string? MetadataDifference(JournalEntryMetadata retained, JournalEntryMetadata candidate)
@@ -178,9 +185,62 @@ public static class RetainedPostingEquivalence
             return "investor";
         if (!TextMatches(retained.PaymentIntentId, candidate.PaymentIntentId))
             return "payment intent";
-        return TextMatches(retained.SettlementReference, candidate.SettlementReference)
-            ? null
-            : "settlement reference";
+        if (!TextMatches(retained.SettlementReference, candidate.SettlementReference))
+            return "settlement reference";
+        return TagsDifference(retained.Tags, candidate.Tags);
+    }
+
+    /// <summary>
+    /// Tag keys a rebuild cannot reproduce, and the only ones excluded from comparison. The
+    /// approval state and id are stamped as the posting is approved; the fingerprint is computed
+    /// over the whole approved command including its clock-stamped evidence, so it can never
+    /// match across a rebuild. Line-dimension tags are keyed by generated per-line entry ids.
+    /// </summary>
+    private static bool IsRebuildableTag(string key)
+        => !key.StartsWith("lineDimensions.", StringComparison.OrdinalIgnoreCase)
+           && !string.Equals(key, "approvalState", StringComparison.OrdinalIgnoreCase)
+           && !string.Equals(key, "approvalId", StringComparison.OrdinalIgnoreCase)
+           && !string.Equals(
+               key,
+               AccountingPostingCommandValidator.PostingCommandFingerprintTag,
+               StringComparison.OrdinalIgnoreCase);
+
+    private static string? TagsDifference(
+        IReadOnlyDictionary<string, string>? retained,
+        IReadOnlyDictionary<string, string>? candidate)
+    {
+        var retainedTags = ComparableTags(retained);
+        var candidateTags = ComparableTags(candidate);
+
+        foreach (var (key, retainedValue) in retainedTags)
+        {
+            if (!candidateTags.TryGetValue(key, out var candidateValue) || !TextMatches(retainedValue, candidateValue))
+                return $"tag '{key}'";
+        }
+
+        foreach (var key in candidateTags.Keys)
+        {
+            if (!retainedTags.ContainsKey(key))
+                return $"tag '{key}'";
+        }
+
+        return null;
+    }
+
+    private static Dictionary<string, string> ComparableTags(IReadOnlyDictionary<string, string>? tags)
+    {
+        var comparable = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (tags is null)
+            return comparable;
+
+        foreach (var (key, value) in tags)
+        {
+            if (NormalizeOptional(key) is not { } normalizedKey || !IsRebuildableTag(normalizedKey))
+                continue;
+            comparable[normalizedKey] = NormalizeOptional(value) ?? string.Empty;
+        }
+
+        return comparable;
     }
 
     /// <summary>
