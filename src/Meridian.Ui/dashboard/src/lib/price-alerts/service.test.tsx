@@ -1,7 +1,8 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { ApiError } from "@/lib/api-errors";
 import type { QuotesSnapshotResponse } from "@/types";
-import { usePriceAlertsService } from "./service";
+import { quoteAccessDeniedMessage, usePriceAlertsService } from "./service";
 import type { StorageLike } from "./storage";
 
 class MemoryStorage implements StorageLike {
@@ -228,6 +229,58 @@ describe("usePriceAlertsService", () => {
     await waitFor(() => expect(fetchSnapshot).toHaveBeenCalled());
     const calledWith = fetchSnapshot.mock.calls[0]?.[0];
     expect(calledWith).toEqual(["AAPL"]);
+  });
+
+  it("stops polling once the snapshot refuses the operator", async () => {
+    // The alerts provider is mounted for the whole shell, so an operator without market-data
+    // permission carries it on every screen. Authorization does not change between ticks, and at the
+    // real five-second cadence a retry loop means standing refused traffic and a banner that can
+    // never clear.
+    const fetchSnapshot = vi
+      .fn()
+      .mockRejectedValue(new ApiError({ path: "/api/data/quotes-snapshot", status: 403 }));
+    const storage = new MemoryStorage();
+    const { result } = renderHook(() =>
+      usePriceAlertsService({
+        storage,
+        fetchSnapshot,
+        pollIntervalMs: 10
+      })
+    );
+
+    act(() => {
+      result.current.createAlert({ symbol: "AAPL", condition: "above", field: "last", threshold: 200 });
+    });
+
+    await waitFor(() => expect(result.current.pollErrorMessage).toBe(quoteAccessDeniedMessage));
+    const callsAtRefusal = fetchSnapshot.mock.calls.length;
+
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    expect(fetchSnapshot.mock.calls.length).toBe(callsAtRefusal);
+  });
+
+  it("keeps polling after a transport failure", async () => {
+    // The stand-down is specific to authorization: an outage does change between ticks, so the
+    // fallback has to keep trying or a recovered service never resumes feeding alerts.
+    const fetchSnapshot = vi.fn().mockRejectedValue(new Error("network down"));
+    const storage = new MemoryStorage();
+    const { result } = renderHook(() =>
+      usePriceAlertsService({
+        storage,
+        fetchSnapshot,
+        pollIntervalMs: 10
+      })
+    );
+
+    act(() => {
+      result.current.createAlert({ symbol: "AAPL", condition: "above", field: "last", threshold: 200 });
+    });
+
+    await waitFor(() => expect(fetchSnapshot).toHaveBeenCalled());
+    const callsAtFirstFailure = fetchSnapshot.mock.calls.length;
+
+    await waitFor(() => expect(fetchSnapshot.mock.calls.length).toBeGreaterThan(callsAtFirstFailure));
+    expect(result.current.pollErrorMessage).toBe("network down");
   });
 
   it("does not poll when no alerts are enabled", async () => {
