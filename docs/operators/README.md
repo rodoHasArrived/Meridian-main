@@ -39,6 +39,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Daily operator controls | [Operators](./README.md) | this page |
 | Startup, restart, and shutdown control | [Lifecycle Control Plane](../reference/lifecycle-control-plane.md) | states, supervisor commands, database ownership, and receipts |
 | Failed, blocked, or warning operation | [Verified Outcome Recovery](./verified-outcome-recovery.md) | terminal receipt triage, evidence verification, safe retry, and escalation |
+| Historical journal legs missing their currency | [Ledger Currency Backfill](./ledger-currency-backfill.md) | why legs are currency-blind, what the repair may assert, and the survey/affirm workflow |
 | Statement intake through reconciliation report | [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md) | exact accounting scope, Operations Continuity and canonical-queue handoff, JSON/CSV verification, and recovery |
 | Governed reporting, schedules, and delivery | [Governed Reporting Operations](./governed-reporting-operations.md) | reporting preflight, hard-close evidence, recovery, and secure relay operation |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
@@ -54,6 +55,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 - [Failover and Recovery](./failover-and-recovery.md)
 - [Fund Operations Persistence Cutover](./fund-ops-persistence-cutover.md)
 - [Governed Reporting Operations](./governed-reporting-operations.md)
+- [Ledger Currency Backfill](./ledger-currency-backfill.md)
 - [Operator Preflight Checklist](./preflight-checklist.md)
 - [Operator Runbook](./operator-runbook.md)
 - [Service Level Objectives](./service-level-objectives.md)

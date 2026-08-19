@@ -1,11 +1,11 @@
 {
-  "total_files": 653,
-  "total_lines": 131236,
+  "total_files": 654,
+  "total_lines": 131360,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 239,
-  "average_lines": 201.0,
+  "average_lines": 200.9,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2521,7 +2521,7 @@
     },
     {
       "path": "docs/generated/database/modules/ledger.md",
-      "line_count": 405,
+      "line_count": 427,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2617,7 +2617,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10497,
+      "line_count": 10502,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2768,6 +2768,14 @@
       "stale": false
     },
     {
+      "path": "docs/operators/ledger-currency-backfill.md",
+      "line_count": 95,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/operators/operator-runbook.md",
       "line_count": 333,
       "has_heading": true,
@@ -2825,7 +2833,7 @@
     },
     {
       "path": "docs/operators/README.md",
-      "line_count": 192,
+      "line_count": 194,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

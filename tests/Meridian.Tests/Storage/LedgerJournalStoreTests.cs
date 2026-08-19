@@ -38,6 +38,7 @@ public sealed class LedgerJournalStoreTests
         provider.GetRequiredService<IAccountingConfigurationStore>().Should().BeOfType<PostgresAccountingConfigurationStore>();
         provider.GetRequiredService<IAccountingActionAuditStore>().Should().BeOfType<PostgresAccountingConfigurationStore>();
         provider.GetRequiredService<LedgerMigrationRunner>().Should().NotBeNull();
+        provider.GetRequiredService<PostgresLedgerCurrencyBackfill>().Should().NotBeNull();
         provider.GetRequiredService<ILedgerBookService>().Should().BeOfType<PostgresLedgerBookService>();
     }
 
