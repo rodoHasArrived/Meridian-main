@@ -77,6 +77,7 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
             "MDC_AUTH_MODE",
             "MDC_API_KEY",
             "MDC_ANONYMOUS_ROLE",
+            "MDC_ANONYMOUS_TENANT",
             "MDC_USERNAME",
             "MDC_PASSWORD_HASH",
             "MDC_USERS",
@@ -97,6 +98,7 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
         Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "optional");
         Environment.SetEnvironmentVariable("MDC_API_KEY", null);
         Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", null);
         Environment.SetEnvironmentVariable("MDC_USERNAME", null);
         Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
         Environment.SetEnvironmentVariable("MDC_USERS", null);
@@ -140,15 +142,20 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
         _providerCatalogLease = ProviderCatalogTestLease.Capture(_app.Services);
         _app.UseLoginSessionAuthentication();
         _app.MapWorkstationEndpoints(ServerJsonOptions);
+        _app.MapFirstRunEndpoints();
 
         await _app.StartAsync();
         _client = _app.GetTestClient();
     }
 
-    [Fact]
-    public async Task WorkstationSession_UsesTheSeededAnonymousTenantScope()
+    [Theory]
+    [InlineData("/api/workstation/session")]
+    [InlineData("/api/workstation/workflows/presets")]
+    [InlineData("/api/workstation/settings/feature-capabilities")]
+    [InlineData("/api/workstation/first-run/")]
+    public async Task ReadOnlyDemoBootstrapRoutes_AcceptTheSeededLocalOperator(string route)
     {
-        var response = await _client!.GetAsync("/api/workstation/session");
+        var response = await _client!.GetAsync(route);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }

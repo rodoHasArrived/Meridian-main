@@ -6,9 +6,9 @@
   "endpoint_coverage_percent": 32.0,
   "contract_coverage_percent": 3.9,
   "summary": {
-    "endpoint_count": 621,
+    "endpoint_count": 622,
     "documented_endpoint_count": 199,
-    "undocumented_endpoint_count": 422,
+    "undocumented_endpoint_count": 423,
     "workstation_contract_count": 917,
     "documented_workstation_contract_count": 36,
     "undocumented_workstation_contract_count": 881
@@ -1607,13 +1607,13 @@
     {
       "method": "POST",
       "path": "/api/workstation/desktop/launch",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:29",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:30",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/desktop-launch/{ticket}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:52",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:53",
       "documented": false
     },
     {
@@ -1624,8 +1624,14 @@
     },
     {
       "method": "GET",
+      "path": "/api/fund-accounts/brokerage-sync/accounts",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:243",
+      "documented": false
+    },
+    {
+      "method": "GET",
       "path": "/api/portfolio/household",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:268",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:266",
       "documented": false
     },
     {

@@ -30,6 +30,32 @@ public interface IScopedAuthorizationService
         Guid? scopeId,
         UserPermission globalPermissions,
         CancellationToken ct = default);
+
+    async Task<IReadOnlyDictionary<Guid, ScopedAuthorizationDecisionDto>> AuthorizeManyAsync(
+        string actor,
+        UserPermission requiredPermission,
+        AccessScopeKindDto scopeKind,
+        IReadOnlyCollection<Guid> scopeIds,
+        UserPermission globalPermissions,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scopeIds);
+        var decisions = new Dictionary<Guid, ScopedAuthorizationDecisionDto>();
+        foreach (var scopeId in scopeIds.Distinct())
+        {
+            ct.ThrowIfCancellationRequested();
+            decisions[scopeId] = await AuthorizeAsync(
+                    actor,
+                    requiredPermission,
+                    scopeKind,
+                    scopeId,
+                    globalPermissions,
+                    ct)
+                .ConfigureAwait(false);
+        }
+
+        return decisions;
+    }
 }
 
 public interface IAccessScopeLineageProvider
@@ -38,6 +64,22 @@ public interface IAccessScopeLineageProvider
         AccessScopeKindDto scopeKind,
         Guid scopeId,
         CancellationToken ct = default);
+
+    async Task<IReadOnlyDictionary<Guid, IReadOnlyList<AccessScopeRef>>> ResolveLineagesAsync(
+        AccessScopeKindDto scopeKind,
+        IReadOnlyCollection<Guid> scopeIds,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scopeIds);
+        var lineages = new Dictionary<Guid, IReadOnlyList<AccessScopeRef>>();
+        foreach (var scopeId in scopeIds.Distinct())
+        {
+            ct.ThrowIfCancellationRequested();
+            lineages[scopeId] = await ResolveLineageAsync(scopeKind, scopeId, ct).ConfigureAwait(false);
+        }
+
+        return lineages;
+    }
 }
 
 public sealed record AccessScopeRef(AccessScopeKindDto ScopeKind, Guid? ScopeId);
@@ -212,6 +254,70 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
             match.Version);
     }
 
+    public async Task<IReadOnlyDictionary<Guid, ScopedAuthorizationDecisionDto>> AuthorizeManyAsync(
+        string actor,
+        UserPermission requiredPermission,
+        AccessScopeKindDto scopeKind,
+        IReadOnlyCollection<Guid> scopeIds,
+        UserPermission globalPermissions,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scopeIds);
+        var distinctScopeIds = scopeIds.Distinct().ToArray();
+        if (distinctScopeIds.Length == 0)
+        {
+            return new Dictionary<Guid, ScopedAuthorizationDecisionDto>();
+        }
+
+        var normalizedActor = actor?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(normalizedActor))
+        {
+            return distinctScopeIds.ToDictionary(
+                static scopeId => scopeId,
+                scopeId => Denied(normalizedActor, requiredPermission, scopeKind, scopeId, "No authenticated actor was resolved."));
+        }
+
+        if ((globalPermissions & UserPermission.ManageUsers) == UserPermission.ManageUsers ||
+            (globalPermissions & UserPermission.AdminMaintenance) == UserPermission.AdminMaintenance)
+        {
+            return distinctScopeIds.ToDictionary(
+                static scopeId => scopeId,
+                scopeId => Allowed(normalizedActor, requiredPermission, scopeKind, scopeId, "Global administrator permission granted access."));
+        }
+
+        var candidateScopesById = await ResolveScopeLineagesAsync(scopeKind, distinctScopeIds, ct).ConfigureAwait(false);
+        var now = DateTimeOffset.UtcNow;
+        var assignments = (await _store.ListAsync(ct).ConfigureAwait(false))
+            .Where(assignment => assignment.PrincipalKind == AccessPrincipalKindDto.User)
+            .Where(assignment => string.Equals(assignment.PrincipalId, normalizedActor, StringComparison.OrdinalIgnoreCase))
+            .Where(assignment => assignment.RevokedAtUtc is null && IsEffective(assignment, now))
+            .Where(assignment => (assignment.PermissionMask & (long)requiredPermission) == (long)requiredPermission)
+            .ToArray();
+        var decisions = new Dictionary<Guid, ScopedAuthorizationDecisionDto>(distinctScopeIds.Length);
+        foreach (var scopeId in distinctScopeIds)
+        {
+            ct.ThrowIfCancellationRequested();
+            var candidateScopes = candidateScopesById[scopeId];
+            var match = assignments
+                .Where(assignment => candidateScopes.Any(scope => ScopeMatches(assignment, scope)))
+                .OrderByDescending(assignment => ScopeSpecificity(assignment.ScopeKind))
+                .ThenByDescending(assignment => assignment.EffectiveFrom)
+                .FirstOrDefault();
+            decisions[scopeId] = match is null
+                ? Denied(normalizedActor, requiredPermission, scopeKind, scopeId, "No effective scoped access assignment grants the required permission.")
+                : Allowed(
+                    normalizedActor,
+                    requiredPermission,
+                    scopeKind,
+                    scopeId,
+                    "Scoped access assignment granted access.",
+                    match.AssignmentId,
+                    match.Version);
+        }
+
+        return decisions;
+    }
+
     private async Task<IReadOnlyList<AccessScopeRef>> ResolveScopeLineageAsync(
         AccessScopeKindDto scopeKind,
         Guid? scopeId,
@@ -236,6 +342,37 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
         var lineage = await _scopeLineageProvider.ResolveLineageAsync(scopeKind, scopeId.Value, ct).ConfigureAwait(false);
         scopes.AddRange(lineage.Where(scope => scopes.All(existing => existing != scope)));
         return scopes;
+    }
+
+    private async Task<IReadOnlyDictionary<Guid, IReadOnlyList<AccessScopeRef>>> ResolveScopeLineagesAsync(
+        AccessScopeKindDto scopeKind,
+        IReadOnlyCollection<Guid> scopeIds,
+        CancellationToken ct)
+    {
+        var scopesById = scopeIds.ToDictionary(
+            static scopeId => scopeId,
+            scopeId => scopeKind == AccessScopeKindDto.Global
+                ? (IReadOnlyList<AccessScopeRef>)[new(AccessScopeKindDto.Global, null)]
+                : [new(scopeKind, scopeId), new(AccessScopeKindDto.Global, null)]);
+        if (_scopeLineageProvider is null || scopeKind == AccessScopeKindDto.Global)
+        {
+            return scopesById;
+        }
+
+        var resolved = await _scopeLineageProvider.ResolveLineagesAsync(scopeKind, scopeIds, ct).ConfigureAwait(false);
+        foreach (var scopeId in scopeIds)
+        {
+            if (!resolved.TryGetValue(scopeId, out var lineage) || lineage.Count == 0)
+            {
+                continue;
+            }
+
+            var scopes = scopesById[scopeId].ToList();
+            scopes.AddRange(lineage.Where(scope => scopes.All(existing => existing != scope)));
+            scopesById[scopeId] = scopes;
+        }
+
+        return scopesById;
     }
 
     private static ValidatedCreateRequest ValidateCreate(UserAccessAssignmentCreateRequestDto request, string actor)

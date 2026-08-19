@@ -127,29 +127,25 @@ public sealed class ApiKeyMiddleware
             return;
         }
 
-        // A ReadOnly key is a read-only API client, however it acquired that role. Permission names
-        // alone are not enough to enforce that contract because a few legacy POST routes use view
-        // permissions while mutating process-local replay, option, or sampling state. Fail closed
-        // for every method outside the explicit safe-method allowlist; operators that intentionally
-        // need a command endpoint must name a role that authorizes that client. Keyed on the resolved
-        // role rather than on whether the variable was set, because an operator who writes ReadOnly
-        // out explicitly is asking for the same restriction as one who leaves it to the default --
-        // and reading it the other way would make spelling out the default quietly weaken it.
-        if (apiKeyRole == DefaultApiKeyRole && !IsSafeMethod(context.Request.Method))
+        // ReadOnly deliberately means a read-only API client whether the role was defaulted or
+        // explicitly configured. Permission names alone are not enough to enforce that contract
+        // because a few legacy POST routes use view permissions while mutating process-local replay,
+        // option, or sampling state. Fail closed for every method outside the safe-method allowlist;
+        // operators that intentionally need a command endpoint must name the role that authorizes it.
+        if (apiKeyRole == UserRole.ReadOnly && !IsSafeMethod(context.Request.Method))
         {
             await ApiProblemDetails.Forbidden(
                     context,
-                    $"The {DefaultApiKeyRole} API-key role allows only GET, HEAD, and OPTIONS requests. Set {ApiKeyRoleEnvVar} to a role that authorizes this command endpoint.")
+                    $"The {DefaultApiKeyRole} API-key role allows only GET, HEAD, and OPTIONS requests. Set {ApiKeyRoleEnvVar} to a role that authorizes the required command endpoint.")
                 .ExecuteAsync(context);
             return;
         }
 
-        // A key authenticates as itself, never as the optional-mode operator this request may have
-        // been given a moment ago. LoginSessionMiddleware runs first and, in a deployment that
-        // configures an anonymous role and tenant, has already stamped that scope; overwriting only
-        // the actor, role and permissions would leave the key holding a tenant nobody granted it and
-        // passing the workstation scope gates on borrowed authority. Authority comes from one posture.
+        // LoginSessionMiddleware runs first, so optional mode may already have stamped its anonymous
+        // actor and tenant. A validated key authenticates as its own principal and must not borrow
+        // any of that scope or profile: authority comes from exactly one authentication posture.
         context.Items.Remove(LoginSessionMiddleware.AnonymousPrincipalKey);
+        context.Items.Remove(LoginSessionMiddleware.DemoLocalOperatorPrincipalKey);
         context.Items.Remove(LoginSessionMiddleware.CurrentTenantIdKey);
         context.Items.Remove(LoginSessionMiddleware.CurrentUserCompanyIdKey);
         context.Items.Remove(LoginSessionMiddleware.CurrentUserRoleProfileNameKey);

@@ -7,7 +7,9 @@ using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -176,13 +178,12 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
             var context = new DefaultHttpContext { RequestServices = Fixture.Services };
             context.Request.Path = DeclaredRoute;
             context.Request.Headers["X-Api-Key"] = "scope-inherit-key";
-            // The login middleware runs first and, in this configuration, hands the request the
-            // anonymous operator's tenant. Promoting it to a key principal must not leave that scope
-            // behind: authority comes from one posture, and a key was granted no tenant at all.
             context.Items[LoginSessionMiddleware.CurrentUserKey] = LoginSessionMiddleware.AnonymousLocalActor;
             context.Items[LoginSessionMiddleware.AnonymousPrincipalKey] = true;
+            context.Items[LoginSessionMiddleware.DemoLocalOperatorPrincipalKey] = true;
             context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "anon-tenant";
             context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "anon-tenant";
+            context.Items[LoginSessionMiddleware.CurrentUserRoleProfileNameKey] = "Anonymous profile";
 
             var middleware = new ApiKeyMiddleware(nextContext =>
             {
@@ -191,6 +192,8 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
                 nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentTenantIdKey);
                 nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentUserCompanyIdKey);
                 nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.AnonymousPrincipalKey);
+                nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.DemoLocalOperatorPrincipalKey);
+                nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentUserRoleProfileNameKey);
                 return Task.CompletedTask;
             });
 
@@ -251,11 +254,9 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var payload = await response.Content.ReadFromJsonAsync<WorkstationSessionPayload>(JsonOptions);
-
-            // The browser matches this against the role catalog to name the active authority profile,
-            // and the run-derived labels ("Strategy Lead", "Live Operations") are not role names, so
-            // that match failed for every operator rather than only the redacted ones.
-            payload!.Role.Should().Be(nameof(UserRole.Compliance));
+            payload!.Role.Should().Be(
+                nameof(UserRole.Compliance),
+                "the masthead and role catalog match the caller's authority, not a strategy-run label");
         }
         finally
         {
@@ -272,9 +273,6 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         var originalDemoMode = Environment.GetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable);
         Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
         Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", "acme-local");
-        // Explicitly not the demo host: optional mode is also the plain local-development posture, and
-        // such a deployment must be able to open the tenant-scoped workstation on its own book rather
-        // than being offered the seeded demo tenant or nothing at all.
         Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, null);
         try
         {
@@ -318,8 +316,6 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
             context.Request.Path = "/api/workstation/session";
             var middleware = new LoginSessionMiddleware(nextContext =>
             {
-                // Naming a role does not invent a book to work on: the tenant-scoped workstation group
-                // keeps refusing this caller rather than reading whichever tenant's records are on disk.
                 nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentTenantIdKey);
                 nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentUserCompanyIdKey);
                 return Task.CompletedTask;
@@ -439,8 +435,10 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     public async Task AnonymousRolePrincipal_CarriesThePermissionSnapshotHandlersReadDirectly()
     {
         var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
         var originalDemoMode = Environment.GetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable);
         Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", null);
         Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, null);
         try
         {
@@ -456,6 +454,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
                 nextContext.Items[LoginSessionMiddleware.CurrentUserPermissionsKey]
                     .Should().Be(RolePermissions.For(UserRole.Admin));
                 nextContext.Items[LoginSessionMiddleware.AnonymousPrincipalKey].Should().Be(true);
+                nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.DemoLocalOperatorPrincipalKey);
                 nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentUserCompanyIdKey);
                 nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentTenantIdKey);
                 return Task.CompletedTask;
@@ -470,6 +469,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         finally
         {
             Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
             Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, originalDemoMode);
         }
     }
@@ -478,8 +478,10 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     public async Task DemoAnonymousPrincipal_CarriesTheSeededTenantScope()
     {
         var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
         var originalDemoMode = Environment.GetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable);
         Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", null);
         Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, "true");
         try
         {
@@ -493,6 +495,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
                     .Should().Be(DemoTenantBlueprint.CompanyId);
                 nextContext.Items[LoginSessionMiddleware.CurrentTenantIdKey]
                     .Should().Be(DemoTenantBlueprint.TenantId);
+                nextContext.Items[LoginSessionMiddleware.DemoLocalOperatorPrincipalKey].Should().Be(true);
                 return Task.CompletedTask;
             });
 
@@ -505,6 +508,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         finally
         {
             Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
             Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, originalDemoMode);
         }
     }
@@ -529,6 +533,107 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
             response.StatusCode.Should().Be(
                 HttpStatusCode.Unauthorized,
                 "a validated API key is not a browser login session and must not mutate session-owned state");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AnonymousRolePrincipal_CannotMutateSessionOwnedWorkflowPresets(bool demoMode)
+    {
+        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
+        var originalDemoMode = Environment.GetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable);
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", demoMode ? null : "session-write-test");
+        Environment.SetEnvironmentVariable(
+            DemoWorkspaceLayout.DemoModeEnvironmentVariable,
+            demoMode ? "true" : null);
+        try
+        {
+            var request = new WorkflowPresetSaveRequest(
+                PresetId: null,
+                Name: "Anonymous preset",
+                Description: null,
+                WorkflowId: "data-provider-recovery",
+                ActionId: null,
+                Tags: null,
+                IsPinned: false);
+
+            using var response = await Client.PostAsJsonAsync(
+                "/api/workstation/workflows/presets",
+                request);
+
+            response.StatusCode.Should().Be(
+                HttpStatusCode.Unauthorized,
+                "an optional-auth principal is not a validated login session, including in demo mode");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
+            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, originalDemoMode);
+        }
+    }
+
+    [Fact]
+    public async Task PermissionSnapshotWithoutAnActor_DoesNotSatisfySessionOnlyAuthorization()
+    {
+        using var client = Fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        using var response = await client.PostAsJsonAsync(
+            "/api/workstation/first-run/outcomes/complete",
+            new CompleteActivationOutcomeRequestDto("workspace-opened"));
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.Unauthorized,
+            "permissions alone do not prove that a validated session principal exists");
+    }
+
+    [Fact]
+    public async Task UnscopedNonDemoAnonymousRolePrincipal_CannotUseTheLocalReadException()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = LoginSessionMiddleware.AnonymousLocalActor;
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Admin);
+            context.Items[LoginSessionMiddleware.AnonymousPrincipalKey] = true;
+            await next(context);
+        });
+        app.MapGet("/optional-read", static () => Results.Ok())
+            .RequireAuthenticatedSessionOrScopedLocalOperatorRead();
+        await app.StartAsync();
+
+        using var response = await app.GetTestClient().GetAsync("/optional-read");
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.Unauthorized,
+            "optional mode must name a tenant or use the seeded demo scope before receiving the read-only bootstrap exception");
+    }
+
+    [Fact]
+    public async Task ExplicitReadOnlyApiKeyRole_CannotReachAViewPermissionMutation()
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "explicit-read-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.ReadOnly));
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/sampling/create");
+            request.Headers.Add("X-Api-Key", "explicit-read-key");
+            request.Content = JsonContent.Create(new { strategy = "random" });
+
+            using var response = await Client.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
         finally
         {

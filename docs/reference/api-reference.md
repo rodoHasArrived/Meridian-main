@@ -130,24 +130,31 @@ therefore carries a role, named by `MDC_API_KEY_ROLE`:
 
 | Value | Effect |
 | --- | --- |
-| unset | The key carries `ReadOnly`, which holds `ViewMarketData`, `ViewHistoricalData`, `ViewAnalytics` and `ViewStrategies`. It is restricted to `GET`, `HEAD` and `OPTIONS`, so an unscoped key can read live and historical market data and analytics, but cannot call command-shaped endpoints or reach ledger, reporting, fund, security-master or diagnostic surfaces. Other methods are refused with `403`. `ViewStrategies` buys a key nothing in practice: every strategy-run read sits under the tenant-scoped `/api/workstation` surface described below. |
-| a role name (`Admin`, `TradeDesk`, `Accounting`, …) | The key carries that role's permissions. Match it to what the calling script actually needs. |
+| unset or `ReadOnly` | The key carries `ReadOnly`, which holds `ViewMarketData`, `ViewHistoricalData`, `ViewAnalytics` and `ViewStrategies`. It is restricted to `GET`, `HEAD` and `OPTIONS`, so an unscoped key can read live and historical market data and analytics, but cannot call command-shaped endpoints or reach ledger, reporting, fund, security-master or diagnostic surfaces. Other methods are refused with `403`. `ViewStrategies` buys a key nothing in practice: every strategy-run read sits under the tenant-scoped `/api/workstation` surface described below. |
+| another role name (`Admin`, `TradeDesk`, `Accounting`, …) | The key carries that role's permissions. Match it to what the calling script actually needs. |
 | anything else | Requests are refused with `503` rather than quietly falling back, so a typo surfaces instead of applying a permission set nobody chose. Only role **names** are accepted — a numeric value is rejected, because `Admin` is the zero value and `0` would otherwise resolve to full administrator. |
 
 Scripts that mutate configuration or read governed data need a role that holds the relevant
 permission — for example `POST /api/symbols/add` requires `ModifyConfig` and `POST /api/backfill/run`
 requires `TriggerBackfill`, so a `ReadOnly` key is refused by both.
 
-Two families stay out of reach of a key whatever role it carries, because a role is not an operator
-and a key carries no tenant:
+Two families stay out of reach of a key, because a role is not an operator and a key carries no
+tenant:
 
-- **Per-session state** — workflow presets, saved explorer views, first-run acknowledgements and the
-  desktop launcher. These identify their data by the calling operator, and a key is one shared
-  credential with no operator behind it.
-- **The tenant-scoped workstation surface** (`/api/workstation/*`) — those routes require a tenant
-  scope, which a validated key is never given. Strategy-run reads live here, so a key holding
-  `ViewStrategies` still cannot reach them; read governed data through the API routes outside this
-  surface instead.
+- **Routes declaring an operator session** — workflow presets, saved explorer views, first-run
+  acknowledgements (`GET /api/workstation/first-run`, `POST /api/workstation/first-run/outcomes/complete`)
+  and the desktop launcher. These identify their data by the calling operator, and a key is one
+  shared credential with no operator behind it.
+- **The tenant-scoped `/api/workstation` route group** — those routes require a tenant scope, which a
+  validated key is never given. Strategy-run reads live here, so a key holding `ViewStrategies` still
+  cannot reach them; read governed data through the API routes outside this surface instead.
+
+Neither is a blanket rule about the `/api/workstation` path prefix, and one route in particular is an
+exception worth knowing: **`POST /api/workstation/first-run/complete` is gated by `AdminMaintenance`
+rather than by session or tenant**, so a key configured with a role holding that permission can
+complete first-run setup and provision sample data, recorded against the `api-key` actor. Give a key
+`Admin` only where that is intended. The first-run and desktop-launcher routes are mapped outside the
+tenant-scoped group, so tenant scope does not stand in front of them.
 
 **Example:**
 

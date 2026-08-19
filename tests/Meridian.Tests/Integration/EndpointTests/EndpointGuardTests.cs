@@ -148,6 +148,51 @@ public sealed class EndpointGuardTests
     }
 
     [Fact]
+    public async Task AuthorizeScopedAsync_AnonymousOperatorCannotInheritSameNamedUserAssignments()
+    {
+        var scopedAuthorization = new RecordingScopedAuthorizationService(isAllowed: true);
+        var services = new ServiceCollection()
+            .AddSingleton<IScopedAuthorizationService>(scopedAuthorization)
+            .BuildServiceProvider();
+        var context = new DefaultHttpContext { RequestServices = services };
+        context.Items[LoginSessionMiddleware.CurrentUserKey] = LoginSessionMiddleware.AnonymousLocalActor;
+        context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewTrades;
+        context.Items[LoginSessionMiddleware.AnonymousPrincipalKey] = true;
+
+        var decision = await EndpointAuthorization.AuthorizeScopedAsync(
+            context,
+            UserPermission.ViewTrades,
+            AccessScopeKindDto.Account,
+            Guid.NewGuid());
+
+        decision.IsAllowed.Should().BeFalse();
+        decision.Reason.Should().Contain("Anonymous principals");
+        scopedAuthorization.Calls.Should().Be(0, "an anonymous actor is not a User principal");
+    }
+
+    [Fact]
+    public async Task AuthorizeScopedManyAsync_AnonymousOperatorCannotInheritSameNamedUserAssignments()
+    {
+        var scopedAuthorization = new RecordingScopedAuthorizationService(isAllowed: true);
+        var services = new ServiceCollection()
+            .AddSingleton<IScopedAuthorizationService>(scopedAuthorization)
+            .BuildServiceProvider();
+        var context = new DefaultHttpContext { RequestServices = services };
+        context.Items[LoginSessionMiddleware.CurrentUserKey] = LoginSessionMiddleware.AnonymousLocalActor;
+        context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewTrades;
+        context.Items[LoginSessionMiddleware.AnonymousPrincipalKey] = true;
+
+        var allowed = await EndpointAuthorization.AuthorizeScopedManyAsync(
+            context,
+            UserPermission.ViewTrades,
+            AccessScopeKindDto.Account,
+            [Guid.NewGuid(), Guid.NewGuid()]);
+
+        allowed.Should().BeEmpty();
+        scopedAuthorization.Calls.Should().Be(0, "the batch helper must preserve the same principal-kind boundary");
+    }
+
+    [Fact]
     public async Task GuardAsync_PropagatesCancellation()
     {
         var act = () => EndpointHelpers.GuardAsync(

@@ -79,25 +79,43 @@ public sealed class BrokeragePortfolioSyncService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<IReadOnlyList<WorkstationBrokerageAccountDto>> DiscoverAccountsAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<WorkstationBrokerageAccountDto>> DiscoverAccountsAsync(
+        Func<IReadOnlyCollection<Guid>, CancellationToken, Task<IReadOnlySet<Guid>>> authorizeFundAccounts,
+        bool includeUnlinkedAccounts = false,
+        CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(authorizeFundAccounts);
+        var authorizedExternalAccounts = includeUnlinkedAccounts
+            ? null
+            : await ResolveAuthorizedExternalAccountsAsync(authorizeFundAccounts, ct).ConfigureAwait(false);
+        if (!includeUnlinkedAccounts && authorizedExternalAccounts!.Count == 0)
+        {
+            return [];
+        }
+
         var accounts = new List<WorkstationBrokerageAccountDto>();
 
         foreach (var catalog in _catalogs.Values)
         {
             ct.ThrowIfCancellationRequested();
+            if (!includeUnlinkedAccounts && !authorizedExternalAccounts!.ContainsKey(catalog.ProviderId))
+            {
+                continue;
+            }
 
             try
             {
                 var providerAccounts = await catalog.GetAccountsAsync(ct).ConfigureAwait(false);
-                accounts.AddRange(providerAccounts.Select(static account => new WorkstationBrokerageAccountDto(
-                    ProviderId: account.ProviderId,
-                    AccountId: account.AccountId,
-                    DisplayName: account.DisplayName,
-                    Status: account.Status,
-                    Currency: account.Currency,
-                    RetrievedAt: account.RetrievedAt,
-                    AccountKind: InferAccountKind(account.Metadata, account.DisplayName))));
+                accounts.AddRange(providerAccounts
+                    .Where(account => includeUnlinkedAccounts || IsAuthorizedExternalAccount(account, authorizedExternalAccounts!))
+                    .Select(static account => new WorkstationBrokerageAccountDto(
+                        ProviderId: account.ProviderId,
+                        AccountId: account.AccountId,
+                        DisplayName: account.DisplayName,
+                        Status: account.Status,
+                        Currency: account.Currency,
+                        RetrievedAt: account.RetrievedAt,
+                        AccountKind: InferAccountKind(account.Metadata, account.DisplayName))));
             }
             catch (OperationCanceledException)
             {
@@ -485,10 +503,10 @@ public sealed class BrokeragePortfolioSyncService
 
     public async Task<BrokerageHouseholdPortfolioDto> GetHouseholdAsync(
         string? providerId,
-        Func<Guid, CancellationToken, Task<bool>> canAccessFundAccount,
+        Func<IReadOnlyCollection<Guid>, CancellationToken, Task<IReadOnlySet<Guid>>> authorizeFundAccounts,
         CancellationToken ct = default)
     {
-        ArgumentNullException.ThrowIfNull(canAccessFundAccount);
+        ArgumentNullException.ThrowIfNull(authorizeFundAccounts);
         ct.ThrowIfCancellationRequested();
 
         var providerFilter = NormalizeProviderId(providerId);
@@ -496,19 +514,38 @@ public sealed class BrokeragePortfolioSyncService
         var projections = new List<FundAccountBrokerageSyncActivityDto>();
         if (Directory.Exists(projectionRoot))
         {
-            foreach (var path in Directory.EnumerateFiles(projectionRoot, "current.json", SearchOption.AllDirectories))
+            var candidates = Directory
+                .EnumerateFiles(projectionRoot, "current.json", SearchOption.AllDirectories)
+                .Select(static path => new
+                {
+                    Path = path,
+                    AccountDirectory = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path))
+                })
+                .Where(static candidate => Guid.TryParseExact(candidate.AccountDirectory, "N", out _))
+                .Select(static candidate => new
+                {
+                    candidate.Path,
+                    FundAccountId = Guid.ParseExact(candidate.AccountDirectory!, "N")
+                })
+                .ToArray();
+            IReadOnlySet<Guid> authorizedFundAccounts = candidates.Length == 0
+                ? new HashSet<Guid>()
+                : await authorizeFundAccounts(
+                        candidates.Select(static candidate => candidate.FundAccountId).Distinct().ToArray(),
+                        ct)
+                    .ConfigureAwait(false);
+            ArgumentNullException.ThrowIfNull(authorizedFundAccounts);
+            foreach (var candidate in candidates)
             {
                 ct.ThrowIfCancellationRequested();
-                var accountDirectory = Path.GetFileName(Path.GetDirectoryName(path));
-                if (!Guid.TryParseExact(accountDirectory, "N", out var fundAccountId) ||
-                    !await canAccessFundAccount(fundAccountId, ct).ConfigureAwait(false))
+                if (!authorizedFundAccounts.Contains(candidate.FundAccountId))
                 {
                     continue;
                 }
 
-                var projection = await ReadProjectionFileAsync(path, ct).ConfigureAwait(false);
+                var projection = await ReadProjectionFileAsync(candidate.Path, ct).ConfigureAwait(false);
                 if (projection is not null
-                    && projection.FundAccountId == fundAccountId
+                    && projection.FundAccountId == candidate.FundAccountId
                     && (providerFilter is null || string.Equals(projection.Link.ProviderId, providerFilter, StringComparison.OrdinalIgnoreCase)))
                 {
                     projections.Add(projection);
@@ -566,6 +603,86 @@ public sealed class BrokeragePortfolioSyncService
             Accounts: accounts,
             Positions: positions,
             Warnings: projections.Count == 0 ? ["No brokerage sync projections match the requested provider."] : []);
+    }
+
+    private async Task<IReadOnlyDictionary<string, HashSet<string>>> ResolveAuthorizedExternalAccountsAsync(
+        Func<IReadOnlyCollection<Guid>, CancellationToken, Task<IReadOnlySet<Guid>>> authorizeFundAccounts,
+        CancellationToken ct)
+    {
+        var linkRoot = Path.Combine(_options.RootDirectory, "links");
+        if (!Directory.Exists(linkRoot))
+        {
+            return new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var candidateIds = Directory
+            .EnumerateFiles(linkRoot, "*.json", SearchOption.TopDirectoryOnly)
+            .Select(static path => Path.GetFileNameWithoutExtension(path))
+            .Where(static fileName => Guid.TryParseExact(fileName, "N", out _))
+            .Select(static fileName => Guid.ParseExact(fileName, "N"))
+            .Distinct()
+            .ToArray();
+        if (candidateIds.Length == 0)
+        {
+            return new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var authorizedIds = await authorizeFundAccounts(candidateIds, ct).ConfigureAwait(false);
+        ArgumentNullException.ThrowIfNull(authorizedIds);
+        var externalAccounts = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var fundAccountId in candidateIds)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!authorizedIds.Contains(fundAccountId))
+            {
+                continue;
+            }
+
+            WorkstationBrokerageAccountLinkDto? link;
+            try
+            {
+                link = await LoadLinkAsync(fundAccountId, ct).ConfigureAwait(false);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Skipping unreadable brokerage link for fund account {FundAccountId}", fundAccountId);
+                continue;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "Skipping locked brokerage link for fund account {FundAccountId}", fundAccountId);
+                continue;
+            }
+
+            var providerId = NormalizeProviderId(link?.ProviderId);
+            var externalAccountId = NormalizeOptional(link?.ExternalAccountId);
+            if (link is null || link.FundAccountId != fundAccountId || providerId is null || externalAccountId is null)
+            {
+                continue;
+            }
+
+            if (!externalAccounts.TryGetValue(providerId, out var providerAccounts))
+            {
+                providerAccounts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                externalAccounts[providerId] = providerAccounts;
+            }
+
+            providerAccounts.Add(externalAccountId);
+        }
+
+        return externalAccounts;
+    }
+
+    private static bool IsAuthorizedExternalAccount(
+        BrokerageExternalAccountDto account,
+        IReadOnlyDictionary<string, HashSet<string>> authorizedExternalAccounts)
+    {
+        var providerId = NormalizeProviderId(account.ProviderId);
+        var externalAccountId = NormalizeOptional(account.AccountId);
+        return providerId is not null
+            && externalAccountId is not null
+            && authorizedExternalAccounts.TryGetValue(providerId, out var providerAccounts)
+            && providerAccounts.Contains(externalAccountId);
     }
 
     private async Task<FundAccountBrokerageSyncActivityDto> BuildProjectionAsync(
