@@ -168,7 +168,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [Fact]
     public async Task ProviderLatency_ReturnsJsonResponse()
     {
-        var response = await _client.GetAsync("/api/providers/latency");
+        var response = await _providerClient.GetAsync("/api/providers/latency");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
     }
@@ -372,14 +372,14 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [Fact]
     public async Task GetProviderMetricsById_NonExistent_ReturnsNotFound()
     {
-        var response = await _client.GetAsync("/api/providers/metrics/nonexistent-provider-id");
+        var response = await _providerClient.GetAsync("/api/providers/metrics/nonexistent-provider-id");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task GetProviderCatalogById_NonExistent_ReturnsNotFound()
     {
-        var response = await _client.GetAsync("/api/providers/catalog/nonexistent-provider-id");
+        var response = await _providerClient.GetAsync("/api/providers/catalog/nonexistent-provider-id");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -422,14 +422,14 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [Fact]
     public async Task GetProviderByName_NonExistent_ReturnsNotFound()
     {
-        var response = await _client.GetAsync("/api/providers/nonexistent-provider-xyz");
+        var response = await _providerClient.GetAsync("/api/providers/nonexistent-provider-xyz");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task GetProviderComparison_ReturnsJsonWithProviders()
     {
-        var response = await _client.GetAsync("/api/providers/comparison");
+        var response = await _providerClient.GetAsync("/api/providers/comparison");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
@@ -440,7 +440,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [Fact]
     public async Task GetProviderStatus_ReturnsJsonArray()
     {
-        var response = await _client.GetAsync("/api/providers/status");
+        var response = await _providerClient.GetAsync("/api/providers/status");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
     }
@@ -448,7 +448,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [Fact]
     public async Task GetProviderCatalog_WithTypeFilter_ReturnsOk()
     {
-        var response = await _client.GetAsync("/api/providers/catalog?type=streaming");
+        var response = await _providerClient.GetAsync("/api/providers/catalog?type=streaming");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
@@ -456,7 +456,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     public async Task GetProviderCatalog_WithInvalidTypeFilter_ReturnsOk()
     {
         // Invalid type filter falls through to default (all providers)
-        var response = await _client.GetAsync("/api/providers/catalog?type=invalidtype");
+        var response = await _providerClient.GetAsync("/api/providers/catalog?type=invalidtype");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
@@ -474,9 +474,6 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [InlineData("/api/errors")]
     [InlineData("/api/backpressure")]
     [InlineData("/api/connections")]
-    [InlineData("/api/providers/latency")]
-    [InlineData("/api/providers/status")]
-    [InlineData("/api/providers/comparison")]
     [InlineData("/api/health/summary")]
     [InlineData("/api/health/providers")]
     [InlineData("/api/health/storage")]
@@ -484,6 +481,19 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     public async Task GetEndpoint_ReturnsJsonContentType(string endpoint)
     {
         var response = await _client.GetAsync(endpoint);
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
+    }
+
+    // The provider reads carry the same content-type contract but require a platform permission,
+    // so they are exercised through the permitted client rather than dropped from the sweep.
+    [Theory]
+    [InlineData("/api/providers/latency")]
+    [InlineData("/api/providers/status")]
+    [InlineData("/api/providers/comparison")]
+    public async Task GetProviderEndpoint_ReturnsJsonContentType(string endpoint)
+    {
+        var response = await _providerClient.GetAsync(endpoint);
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
     }

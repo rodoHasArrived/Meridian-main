@@ -1733,19 +1733,19 @@
     {
       "method": "GET",
       "path": "/api/providers/ib/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IBEndpoints.cs:24",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IBEndpoints.cs:25",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/ib/error-codes",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IBEndpoints.cs:91",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IBEndpoints.cs:92",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/ib/limits",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IBEndpoints.cs:113",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IBEndpoints.cs:114",
       "documented": true
     },
     {
@@ -3323,49 +3323,49 @@
     {
       "method": "GET",
       "path": "/api/health",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:41",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:42",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:111",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:112",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/errors",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:122",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:123",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backpressure",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:133",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:134",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/latency",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:144",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:145",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/connections",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:159",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:160",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/health/detailed",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:197",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:198",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/events/stream",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:225",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:226",
       "documented": true
     },
     {
