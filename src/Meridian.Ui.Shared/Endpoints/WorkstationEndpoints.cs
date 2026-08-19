@@ -66,7 +66,7 @@ public static partial class WorkstationEndpoints
         {
             return await BuildSessionPayloadAsync(context).ConfigureAwait(false);
         })
-        .WithName("GetWorkstationSession").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies);
+        .WithName("GetWorkstationSession").RequireAuthenticatedSession();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationResearch), async (HttpContext context) =>
         {
