@@ -9,9 +9,10 @@
     <PublishSingleFile>true</PublishSingleFile>
     <!--
       Self-contained only when a runtime identifier is present. The release build always publishes
-      with `-r win-x64 --self-contained true`, so this changes nothing there; it exists so that a
-      plain RID-less build - which is what a ProjectReference from Meridian.Setup.Tests performs -
-      does not ask for a self-contained application without a runtime identifier.
+      with an explicit win-x64 runtime identifier and an explicit self-contained switch, so this
+      changes nothing there. It exists so that a runtime-identifier-less build, which is what a
+      ProjectReference from Meridian.Setup.Tests performs, does not ask for a self-contained
+      application without a runtime identifier.
     -->
     <SelfContained Condition="'$(RuntimeIdentifier)' != ''">true</SelfContained>
   </PropertyGroup>
