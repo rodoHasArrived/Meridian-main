@@ -600,7 +600,12 @@ public sealed partial class FundOperationsWorkspaceReadService
             report,
             auditActor,
             ct).ConfigureAwait(false);
-        var derivedProvenanceToken = ReportPackProvenanceResolver.ResolveDerivedToken(runs);
+        // Posted valuation entries are consulted alongside the cited runs: a pack can be built
+        // entirely from fabricated marks while citing no simulated run at all, and deriving the mark
+        // from runs alone would report that pack as real.
+        var derivedProvenanceToken = ReportPackProvenanceResolver.ResolveDerivedToken(
+            runs,
+            ledgerBook.ConsolidatedJournalEntries());
         var validationIssues = _reportPackValidationService.Validate(new ReportPackValidationContext(
             ReportId: report.ReportId,
             AsOf: asOf,
