@@ -66,7 +66,7 @@ public static partial class WorkstationEndpoints
         {
             return await BuildSessionPayloadAsync(context).ConfigureAwait(false);
         })
-        .WithName("GetWorkstationSession").RequireAuthenticatedSession();
+        .WithName("GetWorkstationSession").RequireAuthenticatedSessionOrScopedLocalOperatorRead();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationResearch), async (HttpContext context) =>
         {
@@ -228,7 +228,7 @@ public static partial class WorkstationEndpoints
             var library = await service.GetLibraryAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(library, jsonOptions);
         })
-        .WithName("GetWorkstationWorkflowPresets").RequireAuthenticatedSession()
+        .WithName("GetWorkstationWorkflowPresets").RequireAuthenticatedSessionOrScopedLocalOperatorRead()
         .Produces<WorkflowPresetLibraryDto>(200)
         .Produces(501);
 

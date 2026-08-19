@@ -37,6 +37,13 @@ public sealed class LoginSessionMiddleware
     /// </summary>
     internal const string AnonymousPrincipalKey = "CurrentUserIsAnonymous";
 
+    /// <summary>
+    /// Marks the anonymous local operator established only by the isolated, explicitly requested
+    /// demo runtime. Read-only workstation bootstrap routes may opt into this principal without
+    /// treating every optional-auth caller as a validated login session.
+    /// </summary>
+    internal const string DemoLocalOperatorPrincipalKey = "CurrentUserIsDemoLocalOperator";
+
     private const string LocalShutdownTokenHeader = "X-Meridian-Shutdown-Token";
 
     /// <summary>Name of the HTTP-only session cookie set after successful login.</summary>
@@ -135,14 +142,10 @@ public sealed class LoginSessionMiddleware
                     context.Items[CurrentUserPermissionsKey] = RolePermissions.For(role);
 
                     // A session takes its tenant from the account's company; an anonymous caller has
-                    // no account to take one from, and the whole /api/workstation group is
-                    // tenant-scoped. The supported demo workspace is seeded under one fixed
-                    // tenant/company pair, so the explicitly marked demo host gets that canonical
-                    // scope and an ordinary optional-auth deployment must not inherit access to
-                    // seeded data. Optional mode is also the plain local-development posture,
-                    // though, so such a deployment names its own tenant instead -- the only way an
-                    // operator with no account can say which book they are working. With neither,
-                    // the caller keeps a role but no scope, and the workstation stays refused.
+                    // no account to take one from. Optional local development therefore names its own
+                    // tenant explicitly, while the supported demo workspace falls back to its seeded
+                    // tenant/company pair. With neither, the caller keeps a role but no scope and the
+                    // tenant-scoped workstation stays refused.
                     if (ResolveAnonymousTenant() is { } configuredTenant)
                     {
                         context.Items[CurrentUserCompanyIdKey] = configuredTenant;
@@ -152,6 +155,7 @@ public sealed class LoginSessionMiddleware
                     {
                         context.Items[CurrentUserCompanyIdKey] = DemoTenantBlueprint.CompanyId;
                         context.Items[CurrentTenantIdKey] = DemoTenantBlueprint.TenantId;
+                        context.Items[DemoLocalOperatorPrincipalKey] = true;
                     }
 
                     // Marks this principal as anonymous rather than a validated login session, so a
@@ -293,9 +297,8 @@ public sealed class LoginSessionMiddleware
 
     /// <summary>
     /// Tenant and company authority an optional-mode caller carries, or null when the deployment has
-    /// named none. Any non-empty value is accepted: unlike the role, this is a deployment-chosen
-    /// identifier matched against stored records rather than a member of a closed set, so there is
-    /// nothing to validate it against here.
+    /// named none. This is a deployment-chosen identifier matched against stored records rather than
+    /// a member of a closed set, so non-empty values are normalized but not enum-validated here.
     /// </summary>
     private static string? ResolveAnonymousTenant()
     {

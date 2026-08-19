@@ -240,14 +240,7 @@ public static class FundAccountEndpoints
 
         // ── Brokerage read-side sync ──────────────────────────────────────────
 
-        // Deliberately inside the fund-account group. This returns the deployment's configured
-        // provider accounts -- IBrokerageAccountCatalog is keyed by provider, carries no tenant
-        // dimension, and DiscoverAccountsAsync enumerates every catalog -- so it is provider
-        // configuration rather than trade data, and there is no per-caller filter to apply inside the
-        // service. Hoisting it out of the group to admit ViewTrades callers would hand one tenant's
-        // operator every other tenant's broker account ids, names, statuses and currencies; no
-        // workspace fetches this route, so nothing is unblocked by the wider reach.
-        group.MapGet("/brokerage-sync/accounts", async (HttpContext context) =>
+        app.MapGet("/api/fund-accounts/brokerage-sync/accounts", async (HttpContext context) =>
         {
             if (!HasBrokerageSyncAccess(context))
                 return EndpointHelpers.Forbidden();
@@ -256,10 +249,15 @@ public static class FundAccountEndpoints
             if (sync is null)
                 return BrokerageSyncUnavailable();
 
-            var accounts = await sync.DiscoverAccountsAsync(context.RequestAborted).ConfigureAwait(false);
+            var accounts = await sync.DiscoverAccountsAsync(
+                    (fundAccountIds, ct) => ResolveAccessibleBrokerageFundAccountsAsync(fundAccountIds, context, ct),
+                    includeUnlinkedAccounts: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance),
+                    ct: context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(accounts, jsonOptions);
         })
         .WithName("DiscoverBrokerageSyncAccounts")
+        .WithTags("Fund Accounts")
         .RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<WorkstationBrokerageAccountDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented)
@@ -276,8 +274,8 @@ public static class FundAccountEndpoints
 
             var household = await sync.GetHouseholdAsync(
                     provider,
-                    (fundAccountId, _) => CanAccessFundAccountBrokerageSyncAsync(fundAccountId, context),
-                    context.RequestAborted)
+                    (fundAccountIds, ct) => ResolveAccessibleBrokerageFundAccountsAsync(fundAccountIds, context, ct),
+                    ct: context.RequestAborted)
                 .ConfigureAwait(false);
             return Results.Json(household, jsonOptions);
         })
@@ -1036,6 +1034,42 @@ public static class FundAccountEndpoints
 
     private static bool HasBrokerageSyncAccess(HttpContext context)
         => EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades);
+
+    private static async Task<IReadOnlySet<Guid>> ResolveAccessibleBrokerageFundAccountsAsync(
+        IReadOnlyCollection<Guid> candidateIds,
+        HttpContext context,
+        CancellationToken ct)
+    {
+        if (candidateIds.Count == 0 || !HasBrokerageSyncAccess(context))
+        {
+            return new HashSet<Guid>();
+        }
+
+        var queryService = ResolveQueryService(context);
+        if (queryService is null)
+        {
+            return new HashSet<Guid>();
+        }
+
+        var candidateSet = candidateIds.ToHashSet();
+        var existingIds = (await queryService.ListAccountsAsync(null, null, null, ct).ConfigureAwait(false))
+            .Select(static account => account.AccountId)
+            .Where(candidateSet.Contains)
+            .Distinct()
+            .ToArray();
+        if (EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+        {
+            return existingIds.ToHashSet();
+        }
+
+        return await EndpointAuthorization.AuthorizeScopedManyAsync(
+                context,
+                UserPermission.ViewTrades,
+                AccessScopeKindDto.Account,
+                existingIds,
+                ct)
+            .ConfigureAwait(false);
+    }
 
     private static async Task<bool> CanAccessFundAccountBrokerageSyncAsync(
         Guid accountId,

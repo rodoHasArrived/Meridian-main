@@ -220,25 +220,66 @@ public static class EndpointAuthorization
     }
 
     /// <summary>
-    /// Requires an authenticated workstation session without demanding a specific permission, and
-    /// declares that requirement as metadata (an empty permission list with
+    /// Requires a resolved actor and permission snapshot from a validated workstation session,
+    /// without demanding a specific business permission, and declares that requirement as metadata
+    /// (an empty permission list with
     /// <see cref="EndpointAuthorizationMetadata.RequireAll"/> false).
     /// <para>
-    /// For mutations whose whole scope is the caller's own session state — workflow presets,
-    /// saved views, first-run acknowledgements, the local desktop launcher. Demanding a business
-    /// permission for a user's own UI state would be false precision: the real requirement is
-    /// "who are you", and this declaration says exactly that instead of leaving the route
-    /// undeclared. Routes that mutate shared or governed state must declare a real permission.
+    /// For UI-state operations deliberately limited to signed-in workstation operators — workflow
+    /// presets, saved views, first-run acknowledgements, the local desktop launcher. This filter
+    /// rejects API-key and optional-auth anonymous principals. It does not itself prove record
+    /// ownership; routes that mutate shared or governed state must also declare the appropriate
+    /// permission and scope.
     /// </para>
     /// </summary>
     public static TBuilder RequireAuthenticatedSession<TBuilder>(this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder
     {
         builder.AddEndpointFilter((context, next) =>
+            TryResolveActor(context.HttpContext, out _) &&
             TryGetPermissions(context.HttpContext, out _) &&
-            !context.HttpContext.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey)
+            !context.HttpContext.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey) &&
+            !context.HttpContext.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey)
                 ? next(context)
                 : ValueTask.FromResult<object?>(ApiProblemDetails.Unauthorized(context.HttpContext)));
+        builder.WithMetadata(new EndpointAuthorizationMetadata(Array.Empty<UserPermission>(), requireAll: false));
+        return builder;
+    }
+
+    /// <summary>
+    /// Requires a validated workstation session, except that safe reads from an explicitly scoped
+    /// optional-mode local operator are also accepted. This narrow exception keeps local/demo
+    /// workspaces bootstrappable without letting an anonymous principal satisfy session-owned
+    /// mutation filters. API-key principals are always refused.
+    /// </summary>
+    public static TBuilder RequireAuthenticatedSessionOrScopedLocalOperatorRead<TBuilder>(this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.AddEndpointFilter((context, next) =>
+        {
+            var httpContext = context.HttpContext;
+            var isApiKey = httpContext.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey);
+            var isAnonymous = httpContext.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey);
+            var isValidatedSession = !isApiKey && !isAnonymous;
+            var carriesLocalScope =
+                httpContext.Items.TryGetValue(LoginSessionMiddleware.CurrentTenantIdKey, out var rawTenant) &&
+                rawTenant is string tenant &&
+                !string.IsNullOrWhiteSpace(tenant) &&
+                httpContext.Items.TryGetValue(LoginSessionMiddleware.CurrentUserCompanyIdKey, out var rawCompany) &&
+                rawCompany is string company &&
+                !string.IsNullOrWhiteSpace(company);
+            var isScopedLocalOperatorRead =
+                !isApiKey &&
+                isAnonymous &&
+                (httpContext.Items.ContainsKey(LoginSessionMiddleware.DemoLocalOperatorPrincipalKey) || carriesLocalScope) &&
+                (HttpMethods.IsGet(httpContext.Request.Method) || HttpMethods.IsHead(httpContext.Request.Method));
+
+            return TryResolveActor(httpContext, out _) &&
+                   TryGetPermissions(httpContext, out _) &&
+                   (isValidatedSession || isScopedLocalOperatorRead)
+                ? next(context)
+                : ValueTask.FromResult<object?>(ApiProblemDetails.Unauthorized(httpContext));
+        });
         builder.WithMetadata(new EndpointAuthorizationMetadata(Array.Empty<UserPermission>(), requireAll: false));
         return builder;
     }
@@ -284,20 +325,15 @@ public static class EndpointAuthorization
                 Reason: "No role permissions were resolved for the current actor.");
         }
 
-        // The API key and the optional-mode local operator are distinct principal kinds, not the
-        // users whose literal usernames happen to be "api-key" and "local-operator". Never send
-        // either synthetic actor through user-scoped assignment lookup: the store matches
-        // AccessPrincipalKindDto.User assignments by actor name, case-insensitively, so doing so
-        // would let a shared credential -- or any unauthenticated caller -- inherit the account and
-        // fund scopes of a real user who happens to carry that name. Preserve only the same explicit
-        // global overrides the scoped service already recognizes.
+        // API keys and the optional local operator are distinct principal kinds, not users whose
+        // literal names happen to be "api-key" or "local-operator". Never pass either synthetic
+        // actor through case-insensitive User-assignment lookup. Preserve only the explicit global
+        // overrides the scoped service itself recognizes.
         var isApiKeyPrincipal = context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey);
         if (isApiKeyPrincipal || context.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey))
         {
             var principalLabel = isApiKeyPrincipal ? "API-key" : "Anonymous";
-            var hasGlobalOverride =
-                (globalPermissions & UserPermission.AdminMaintenance) == UserPermission.AdminMaintenance ||
-                (globalPermissions & UserPermission.ManageUsers) == UserPermission.ManageUsers;
+            var hasGlobalOverride = HasScopedGlobalOverride(globalPermissions);
             return new ScopedAuthorizationDecisionDto(
                 IsAllowed: hasGlobalOverride,
                 Actor: actor,
@@ -326,6 +362,48 @@ public static class EndpointAuthorization
             .ConfigureAwait(false);
     }
 
+    public static async Task<IReadOnlySet<Guid>> AuthorizeScopedManyAsync(
+        HttpContext context,
+        UserPermission required,
+        AccessScopeKindDto scopeKind,
+        IReadOnlyCollection<Guid> scopeIds,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scopeIds);
+        var requestedScopeIds = scopeIds.ToHashSet();
+        if (requestedScopeIds.Count == 0 ||
+            !TryResolveActor(context, out var actor) ||
+            !TryGetPermissions(context, out var globalPermissions))
+        {
+            return new HashSet<Guid>();
+        }
+
+        // As with the single-scope helper, synthetic non-session principals never inherit User
+        // assignments belonging to a human with the same actor name. Only an explicit global
+        // scoped-access override admits the requested ids.
+        if (context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey) ||
+            context.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey))
+        {
+            return HasScopedGlobalOverride(globalPermissions)
+                ? requestedScopeIds
+                : new HashSet<Guid>();
+        }
+
+        var service = context.RequestServices.GetService(typeof(IScopedAuthorizationService)) as IScopedAuthorizationService;
+        if (service is null)
+        {
+            return new HashSet<Guid>();
+        }
+
+        var decisions = await service
+            .AuthorizeManyAsync(actor, required, scopeKind, requestedScopeIds, globalPermissions, ct)
+            .ConfigureAwait(false);
+        return decisions
+            .Where(pair => pair.Value.IsAllowed && requestedScopeIds.Contains(pair.Key))
+            .Select(pair => pair.Key)
+            .ToHashSet();
+    }
+
     public static async Task<bool> HasScopedPermissionAsync(
         HttpContext context,
         UserPermission required,
@@ -333,4 +411,8 @@ public static class EndpointAuthorization
         Guid? scopeId,
         CancellationToken ct = default)
         => (await AuthorizeScopedAsync(context, required, scopeKind, scopeId, ct).ConfigureAwait(false)).IsAllowed;
+
+    private static bool HasScopedGlobalOverride(UserPermission permissions)
+        => (permissions & UserPermission.AdminMaintenance) == UserPermission.AdminMaintenance ||
+           (permissions & UserPermission.ManageUsers) == UserPermission.ManageUsers;
 }

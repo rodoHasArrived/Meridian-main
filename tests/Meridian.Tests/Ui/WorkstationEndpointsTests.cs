@@ -2862,7 +2862,8 @@ public sealed partial class WorkstationEndpointsTests
     {
         await using var app = await CreateAppAsync(
             RegisterRunReadServices,
-            currentUserPermissions: UserPermission.ViewTrades | UserPermission.ManageDirectLending);
+            currentUserPermissions: RolePermissions.For(UserRole.FundAccountant),
+            currentUserRole: UserRole.FundAccountant);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildContinuityRun($"run-session-gate-{Guid.NewGuid():N}"));
@@ -2875,10 +2876,30 @@ public sealed partial class WorkstationEndpointsTests
         session!.LatestRun.Should().BeNull("the run digest belongs to the strategy permission");
         session.WorkspaceSummary.TotalRuns.Should().Be(0, "run counts are part of the withheld digest");
         session.DisplayName.Should().Be("Meridian Operator", "the display name is built from the latest run's strategy name");
+        session.Role.Should().Be(
+            nameof(UserRole.FundAccountant),
+            "the masthead and Settings role catalog must reflect the authenticated principal, not the latest strategy run");
         session.Environment.Should().Be(
             "research",
             "environment posture is the real run mode, not the redacted default -- the masthead drives its "
             + "live-money warning from this field, and the withheld payload would have reported \"paper\"");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_Session_WithoutRunService_ShouldUseAuthenticatedRole()
+    {
+        await using var app = await CreateAppAsync(
+            currentUserPermissions: RolePermissions.For(UserRole.Controller),
+            currentUserRole: UserRole.Controller);
+
+        var response = await app.GetTestClient().GetAsync(UiApiRoutes.WorkstationSession);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var session = await response.Content.ReadFromJsonAsync<WorkstationSessionPayload>(ServerJsonOptions);
+        session.Should().NotBeNull();
+        session!.Role.Should().Be(
+            nameof(UserRole.Controller),
+            "service availability must not replace authenticated identity with a strategy-derived label");
     }
 
     [Fact]
