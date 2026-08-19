@@ -10,6 +10,23 @@ on:
         description: Optional N-1 release tag used by installed lifecycle certification.
         required: false
         type: string
+      certify_lifecycle:
+        description: >-
+          Run the installed install/launch/repair/uninstall lifecycle certification on this
+          non-tag dispatch using a throwaway self-signed certificate. Proves the lane end to end
+          before a release exists. Never produces release evidence - a tag run with the protected
+          signing secret is the only source of that.
+        required: false
+        default: false
+        type: boolean
+      allow_first_release:
+        description: >-
+          Certify a release that has no published predecessor. The update and rollback legs are
+          recorded as not-applicable with a reason rather than skipped silently. Required for the
+          very first release, because the N-1 lookup otherwise fails closed.
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -123,6 +140,13 @@ jobs:
         with:
           global-json-file: global.json
 
+      # `Generate release evidence manifest` below shells out to `python`; pin it rather than
+      # depending on whatever the runner image happens to expose on PATH.
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
       - name: Cache NuGet packages
         uses: actions/cache@v6.1.0
         with:
@@ -166,6 +190,17 @@ jobs:
             -NoTrustCert `
             -EnableReadyToRun
 
+      # install.ps1 writes its build/publish transcripts under diagnostic-logs/. Without this the
+      # only pointer a failed packaging run leaves is a path inside a discarded runner.
+      - name: Upload desktop packaging diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: desktop-packaging-diagnostics-${{ matrix.runtime }}-${{ github.run_id }}
+          path: diagnostic-logs/
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Collect packaged installer artifacts
         shell: pwsh
         run: |
@@ -188,7 +223,7 @@ jobs:
           try {
             Copy-Item -Path $packageFiles.FullName -Destination $releaseRoot -Force -ErrorAction Stop
           } catch {
-            throw "Failed to copy packaged installer files from $sourceRoot to $releaseRoot: $($_.Exception.Message)"
+            throw "Failed to copy packaged installer files from $sourceRoot to ${releaseRoot}: $($_.Exception.Message)"
           }
 
       - name: Generate installer SBOM

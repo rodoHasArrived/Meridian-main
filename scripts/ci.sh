@@ -276,6 +276,20 @@ verify_docs() {
       --json-output "$handoff_summary_json" \
       --summary-output "$handoff_summary_md"
 
+  # Mirrors the quality-gate step of the same name: regenerate the whole-repo documentation
+  # artifacts and reject drift, so adding a file outside docs/** cannot silently red the weekly
+  # Production Certification documentation job.
+  run_step "Reject whole-repo generated documentation drift" \
+    "$python_cmd" build/scripts/docs/run-docs-automation.py \
+      --scripts generate-structure-docs,generate-health-dashboard,generate-workflow-manifest
+
+  run_step "Verify whole-repo generated documentation is committed" \
+    git diff --exit-code -- \
+      docs/generated/repository-structure.md \
+      docs/status/doc-health-dashboard.json \
+      docs/status/doc-health-dashboard.md \
+      docs/status/workflow-drift-report.md
+
   run_step "Enforce mode escalation policy" \
     "$python_cmd" build/scripts/docs/check-mode-escalation.py \
       --route-json docs/status/prompt-route-lint-report.json \
