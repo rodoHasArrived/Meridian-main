@@ -27,7 +27,7 @@ public static partial class WorkstationEndpoints
         {
             return Results.Json(BuildDataUploadTemplateCatalog(), jsonOptions);
         })
-        .WithName("GetWorkstationDataUploadTemplates").DeclareOpenRead("Static data-upload template catalog; describes accepted file shapes and carries no deployment, account or tenant state.")
+        .WithName("GetWorkstationDataUploadTemplates").DeclareOpenRead("Built-in upload-template schema catalog; carries no tenant or deployment state.")
         .Produces<DataUploadTemplateCatalogDto>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationDataUploadPreview), async (

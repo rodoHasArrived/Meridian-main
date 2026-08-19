@@ -417,7 +417,7 @@ public static partial class WorkstationEndpoints
                 ? DataReadServicesUnavailable()
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationDataOperations").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.AdminMaintenance)
+        .WithName("GetWorkstationDataOperations").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
         .Produces<WorkstationDataPayload>(200)
         .Produces(503);
 
@@ -428,7 +428,7 @@ public static partial class WorkstationEndpoints
                 ? DataReadServicesUnavailable()
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationData").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.AdminMaintenance)
+        .WithName("GetWorkstationData").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
         .Produces<WorkstationDataPayload>(200)
         .Produces(503);
 
@@ -472,7 +472,7 @@ public static partial class WorkstationEndpoints
                     statusCode: StatusCodes.Status503ServiceUnavailable)
                 : Results.Ok(estimate);
         })
-        .WithName("GetWorkstationDataReplacementCost").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
+        .WithName("GetWorkstationDataReplacementCost").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
         .Produces<DataReplacementCostEstimate>(200)
         .Produces(503);
 

@@ -80,7 +80,7 @@ public static partial class WorkstationEndpoints
             var bytes = XlsxWorkbookWriter.CreateWorkbook(worksheets, request.HttpContext.RequestAborted);
             return Results.File(bytes, WorkstationStructuredXlsxContentType, OnboardingWorkbookFileName);
         })
-        .WithName("GetWorkstationOnboardingWorkbook").DeclareOpenRead("Renders the static data-upload template catalog as a workbook; carries no deployment, account or tenant state.")
+        .WithName("GetWorkstationOnboardingWorkbook").DeclareOpenRead("Generated onboarding workbook contains only built-in upload schemas; carries no tenant or deployment state.")
         .Produces(StatusCodes.Status200OK, contentType: WorkstationStructuredXlsxContentType)
         .ProducesValidationProblem();
 

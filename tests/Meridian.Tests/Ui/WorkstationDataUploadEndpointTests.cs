@@ -20,7 +20,9 @@ public sealed partial class WorkstationEndpointsTests
     {
         // The data workspace endpoint requires a backing read service; without one it returns
         // 503 instead of fabricated fallback data.
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewHistoricalData);
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: UserPermission.ViewHistoricalData);
         var client = app.GetTestClient();
 
         var catalog = await client.GetFromJsonAsync<DataUploadTemplateCatalogDto>(

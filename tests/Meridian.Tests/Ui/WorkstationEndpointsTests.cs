@@ -1205,7 +1205,9 @@ public sealed partial class WorkstationEndpointsTests
 
         // Default test permissions do not include ManageCredentials, so connection summaries
         // must stay hidden even though real provider metrics are available.
-        await using var app = await CreateAppAsync(services => RegisterConfigStores(services, configPath), currentUserPermissions: UserPermission.ViewHistoricalData);
+        await using var app = await CreateAppAsync(
+            services => RegisterConfigStores(services, configPath),
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewHistoricalData);
         using var dataOperations = await ReadJsonAsync(app.GetTestClient(), "/api/workstation/data-operations");
         var providers = dataOperations.RootElement.GetProperty("providers").EnumerateArray().ToArray();
 
@@ -1225,7 +1227,7 @@ public sealed partial class WorkstationEndpointsTests
             // endpoints honestly return 503 instead of fabricated fallback payloads.
             RegisterRunReadServices(services);
             services.AddSingleton(observability);
-        }, currentUserPermissions: UserPermission.ViewHistoricalData | UserPermission.ViewTrades);
+        }, currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewHistoricalData);
 
         var client = app.GetTestClient();
 
