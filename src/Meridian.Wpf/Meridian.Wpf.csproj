@@ -56,6 +56,20 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);**\System.Text.Json.SourceGeneration\**</DefaultItemExcludes>
   </PropertyGroup>
 
+  <!--
+    crossgen2 cannot compile two F# async state machines in Sharpino.Lib
+    (Sharpino.CommandHandler.getAggregateStorageFreshStateViewerAsync and .runDeleteAsync, both at
+    <System.__Canon,System.__Canon>), and aborts the whole ReadyToRun step with NETSDK1096. That
+    made every -EnableReadyToRun publish fail, which is the exact configuration the desktop
+    installer lane uses, so the MSIX could never be produced. Excluding this one third-party
+    assembly is the remedy NETSDK1096 itself names; the rest of the app is still pre-compiled, and
+    Sharpino.Lib simply JITs as it would without ReadyToRun. Revisit if a later Sharpino or SDK
+    release compiles cleanly.
+  -->
+  <ItemGroup>
+    <PublishReadyToRunExclude Include="Sharpino.Lib.dll" />
+  </ItemGroup>
+
   <!-- Windows-only package references -->
   <ItemGroup Condition="'$(IsWindows)' == 'true'">
     <!-- F# Core runtime — required so the XAML compiler's MetadataLoadContext can resolve
