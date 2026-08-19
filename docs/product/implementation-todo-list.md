@@ -95,10 +95,25 @@ and `MDC_SIGNING_CERT_PASSWORD` secrets in the protected `desktop-release-signin
 (`PRD-014`), core-team sign-off on ADR-019/ADR-020 (`PRD-000`), operator review of the recovery
 drill receipt (`PRD-015`), and required-check activation (`PRD-016`).
 
-**The true sequencing blocker across all six evidence-gated rows is that no frozen release commit
-exists.** Each lane's evidence currently sits on a different commit, and the release gate requires
-every `P0` row to be complete on one. Freezing a candidate is the next step once the installer lane
-is green, and it is a release-engineering decision rather than an automation gap.
+**A frozen commit with all three lanes green now exists: `9ae0a3a3`.** This was the true sequencing
+blocker across all six evidence-gated rows — each lane's evidence had sat on a different commit,
+while the release gate requires every `P0` row to be complete on one. All three lanes were
+dispatched against that single commit and all three passed:
+
+| Lane | Run | Result |
+| --- | --- | --- |
+| `Production Certification` | [#30 / 32283733150](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32283733150) | All four jobs green |
+| `Publish Smoke` (`web-workstation`/`win-x64`) | [#20 / 32283735422](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32283735422) | Green |
+| `Desktop Installer Release` | [#15 / 32283738541](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32283738541) | All seven jobs green; the tag-only publish job correctly skipped |
+
+Two things this does **not** settle, and neither is an automation gap:
+
+- The installed lifecycle receipts in that run were anchored by a throwaway self-signed
+  certificate. They prove the mechanism; `PRD-014` still requires a tag run with the protected
+  signing secret, and no self-signed receipt can substitute for it.
+- `main` advanced after the freeze and was merged into the branch, so the branch head is no longer
+  `9ae0a3a3`. The evidence above is pinned to the tree it was produced from; an actual release tag
+  needs the three lanes re-run on whatever commit is finally frozen for it.
 
 Working detail for the six evidence-gated rows — hosted-run diagnosis, minted evidence, and the
 explicit human action register (ADR sign-off, secrets/runner activation, operator review,

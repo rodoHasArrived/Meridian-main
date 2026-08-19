@@ -166,6 +166,21 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-08-19** — **ALL THREE EVIDENCE LANES GREEN ON ONE FROZEN COMMIT (`9ae0a3a3`)**, which is
+  the first time that has been true in this repository. This was the real sequencing blocker behind
+  every evidence-gated `P0` row: each lane's evidence had always sat on a different commit, and the
+  release gate requires one.
+  - `Production Certification` [#30 / 32283733150](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32283733150) — all four jobs.
+  - `Publish Smoke` `web-workstation`/`win-x64` [#20 / 32283735422](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32283735422).
+  - `Desktop Installer Release` [#15 / 32283738541](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32283738541) — **all seven jobs**: preflight, MSIX for `win-x64` and `win-arm64`, `package-consumer-setup`, and installed lifecycle certification for both architectures, the ARM64 leg on the hosted `windows-11-arm` runner (job 96173225616). `publish-desktop-installer-release` skipped, correctly: this was not a tag run.
+
+  Two limits this set does **not** clear, stated so no later reader mistakes it for release
+  evidence. Both lifecycle legs were anchored by a throwaway self-signed certificate, so they prove
+  the mechanism and not `PRD-014`; that row still needs a tag run with the protected signing
+  secret. And `main` advanced after the freeze and was merged into the branch, so the branch head
+  is no longer `9ae0a3a3` — the evidence is pinned to the tree that produced it, and a real release
+  tag needs these three lanes re-run on whatever commit is finally frozen for it.
+
 - **2026-08-19** — `Desktop Installer Release` **produced `Meridian-Setup.exe` for the first time in
   the repository's history**
   ([run #13 / 32281331953](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32281331953),
