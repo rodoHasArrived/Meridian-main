@@ -3520,7 +3520,7 @@
       ]
     }
   ],
-  "fingerprint": "329f3b3176cd4c62c53f6873b68210f68879968253d1ab08bf7e6d13e8b34713",
+  "fingerprint": "3a3b21bc1b4804af57dbff4ad1bee2de0a0d6cb693b2d0ce33c030fa5ae5362d",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6603,7 +6603,7 @@
       "contract_sets": [
         "identity-access-contracts"
       ],
-      "fingerprint": "dceb92abd2adb802889df662451bd9df77dcb56c8cec54ad3ee8074282e9a9e6",
+      "fingerprint": "abadd5f19b01520b466fbf1d0fee5381817475b61202c132895e311e1150486c",
       "mapped_schemas": [
         "identity_access"
       ],
@@ -363278,7 +363278,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "4f82cb6eb2496030f63a841cd118c41fc322c6c136ae0b2fc798ca7f6af915f2",
+      "fingerprint": "0cf2dde43d3b036fabeedce5c0b0746685946b4ffaa314ee9da8bddb6e0ded18",
       "full_name": "Meridian.Identity.AccessScopeRef",
       "id": "Meridian.Identity.AccessScopeRef",
       "kind": "record",
@@ -363297,7 +363297,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 43,
+          "source_line": 85,
           "type": "Guid?"
         },
         {
@@ -363311,7 +363311,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccessScopeKindDto",
-          "source_line": 43,
+          "source_line": 85,
           "type": "AccessScopeKindDto"
         }
       ],
@@ -363323,12 +363323,12 @@
         "Meridian.Identity.Auth.AccessScopeKindDto"
       ],
       "source": {
-        "line": 43,
+        "line": 85,
         "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
       },
       "sources": [
         {
-          "line": 43,
+          "line": 85,
           "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
         }
       ],
@@ -367603,7 +367603,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "18c9bb18297737c3cafea00f0d2094e161986ecbfb90dd759639672d47d54551",
+      "fingerprint": "98ced7225865fa5eaaa9f1022d6c66e8e70485f37da2d91bffc9668d7dc25f98",
       "full_name": "Meridian.Identity.IAccessScopeLineageProvider",
       "id": "Meridian.Identity.IAccessScopeLineageProvider",
       "kind": "interface",
@@ -367617,12 +367617,12 @@
       "qualified_name": "Meridian.Identity.IAccessScopeLineageProvider",
       "references": [],
       "source": {
-        "line": 35,
+        "line": 61,
         "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
       },
       "sources": [
         {
-          "line": 35,
+          "line": 61,
           "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
         }
       ],
@@ -368148,7 +368148,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "73c6c52f73cd719015d43933a9550af03dfa9067edced2c70262c59241285755",
+      "fingerprint": "408807d7367234922a1c67c89e2df5328fed6213f765226fe042741dc42c1bb4",
       "full_name": "Meridian.Identity.ScopedAccessService",
       "id": "Meridian.Identity.ScopedAccessService",
       "kind": "class",
@@ -368165,12 +368165,12 @@
         "Meridian.Identity.IScopedAuthorizationService"
       ],
       "source": {
-        "line": 45,
+        "line": 87,
         "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
       },
       "sources": [
         {
-          "line": 45,
+          "line": 87,
           "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs"
         }
       ],
