@@ -165,8 +165,14 @@ uniquely indexed in the journal store, so that pair can hold exactly one journal
   retained journal on period, policy, rule, lineage, timing, idempotency, the full accounting
   scope and provenance carried in journal metadata (fund event, capital account, investor,
   payment intent, settlement reference, project, strategy, institution, symbol, and the rest),
-  and the ordered lines with their accounts, amounts, and dimensions. Booking the same amounts
-  against a different investor or capital account is a different posting, not a replay.
+  the governance approval attached to an adjustment, and the ordered lines with their accounts,
+  amounts, and dimensions. Booking the same amounts against a different investor, capital
+  account, or approval is a different posting, not a replay. Accounts are matched on ledger
+  identity, so a line whose account name differs only in casing targets a different balance and
+  is a conflict.
+- Accounting timestamps are compared at the precision the store keeps. PostgreSQL resolves to
+  microseconds while .NET carries finer ticks, so a submitted timestamp comes back truncated;
+  comparing raw ticks would reject a retry that resubmitted the identical value.
 - Normalization before comparison is deliberate. A posting with no treasury context drafts no
   idempotency key and is retained carrying the posting command's key, so an un-normalized
   comparison would reject an ordinary retry over a field the rebuild had not been given yet.

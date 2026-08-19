@@ -144,6 +144,66 @@ public sealed class RetainedPostingEquivalenceTests
         difference.Should().Be(field);
     }
 
+    [Fact]
+    public void Matches_TimestampTruncatedToStoredPrecision_IsStillAnExactReplay()
+    {
+        // PostgreSQL timestamptz keeps microseconds; a caller-supplied UtcNow carries finer ticks.
+        // The retained value comes back truncated while the retry resubmits the original.
+        var submitted = Timestamp.AddTicks(7);
+        var retained = BuildRecord(BuildEntry(Guid.NewGuid(), Guid.NewGuid(), timestamp: Timestamp));
+        var candidate = BuildWrite(BuildEntry(Guid.NewGuid(), Guid.NewGuid(), timestamp: submitted));
+
+        RetainedPostingEquivalence.Matches(retained, candidate, out var difference).Should().BeTrue();
+        difference.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Matches_TimestampDifferingBeyondStoredPrecision_IsAConflict()
+    {
+        var retained = BuildRecord(BuildEntry(Guid.NewGuid(), Guid.NewGuid(), timestamp: Timestamp));
+        var candidate = BuildWrite(BuildEntry(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            timestamp: Timestamp.AddMilliseconds(1)));
+
+        RetainedPostingEquivalence.Matches(retained, candidate, out var difference).Should().BeFalse();
+        difference.Should().Be("accounting timestamp");
+    }
+
+    [Fact]
+    public void Matches_DifferentAdjustmentApproval_IsAConflict()
+    {
+        var entry = BuildEntry(Guid.NewGuid(), Guid.NewGuid());
+        var retained = BuildRecord(entry) with { AdjustmentApproval = Approval("approval-a", "controller@meridian.local") };
+        var candidate = BuildWrite(entry) with { AdjustmentApproval = Approval("approval-b", "controller@meridian.local") };
+
+        RetainedPostingEquivalence.Matches(retained, candidate, out var difference).Should().BeFalse();
+        difference.Should().Be("adjustment approval");
+    }
+
+    [Fact]
+    public void Matches_AccountNameDifferingOnlyByCase_IsAConflict()
+    {
+        // Balances are keyed by LedgerAccount, whose Name compares ordinally, so this line lands
+        // in a different bucket even though the text reads the same.
+        var retained = BuildRecord(BuildEntry(Guid.NewGuid(), Guid.NewGuid()));
+        var candidate = BuildWrite(BuildEntry(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            accountName: "accrued interest receivable"));
+
+        RetainedPostingEquivalence.Matches(retained, candidate, out var difference).Should().BeFalse();
+        difference.Should().Be("line 0 account");
+    }
+
+    private static LedgerAdjustmentApprovalMetadataDto Approval(string approvalId, string approvedBy)
+        => new(
+            approvalId,
+            LedgerAdjustmentApprovalStatusDto.Approved,
+            approvedBy,
+            Timestamp,
+            "reason-code-restatement");
+
     private const string EntryDescription = "Accrue custodian interest from retained source event";
 
     private static JournalEntry BuildEntry(
@@ -154,17 +214,19 @@ public sealed class RetainedPostingEquivalenceTests
         string fundId = "fund-alpha",
         string idempotencyKey = "custodian-interest:2026-05",
         IReadOnlyDictionary<string, string>? externalGlDimensions = null,
-        Func<JournalEntryMetadata, JournalEntryMetadata>? metadata = null)
+        Func<JournalEntryMetadata, JournalEntryMetadata>? metadata = null,
+        DateTimeOffset? timestamp = null,
+        string accountName = "Accrued Interest Receivable")
         => new(
             journalEntryId,
-            Timestamp,
+            timestamp ?? Timestamp,
             EntryDescription,
             [
                 new LedgerEntry(
                     lineEntryId,
                     journalEntryId,
-                    Timestamp,
-                    new LedgerAccount("Accrued Interest Receivable", LedgerAccountType.Asset),
+                    timestamp ?? Timestamp,
+                    new LedgerAccount(accountName, LedgerAccountType.Asset),
                     swapSides ? 0m : amount,
                     swapSides ? amount : 0m,
                     EntryDescription,
@@ -176,7 +238,7 @@ public sealed class RetainedPostingEquivalenceTests
                 new LedgerEntry(
                     Guid.NewGuid(),
                     journalEntryId,
-                    Timestamp,
+                    timestamp ?? Timestamp,
                     new LedgerAccount("Interest Income", LedgerAccountType.Revenue),
                     swapSides ? amount : 0m,
                     swapSides ? 0m : amount,

@@ -1,6 +1,6 @@
 {
   "total_files": 653,
-  "total_lines": 130644,
+  "total_lines": 130650,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2745,7 +2745,7 @@
     },
     {
       "path": "docs/operators/failover-and-recovery.md",
-      "line_count": 245,
+      "line_count": 251,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

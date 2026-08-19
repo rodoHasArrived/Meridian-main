@@ -58,9 +58,16 @@ public static class RetainedPostingEquivalence
         if (retained.CommandId != candidate.CommandId)
             return Differs("posting command identity", out difference);
 
+        // Governance approval travels with the posting and is retained alongside it, so a retry
+        // carrying a different approval id, approver, or reason code is a different submission
+        // even when the amounts are unchanged. Structural: the metadata is a scalar-only record
+        // persisted as jsonb, so it round-trips without losing precision.
+        if (retained.AdjustmentApproval != candidate.AdjustmentApproval)
+            return Differs("adjustment approval", out difference);
+
         var retainedEntry = retained.Entry;
         var candidateEntry = candidate.Entry;
-        if (retainedEntry.Timestamp != candidateEntry.Timestamp)
+        if (!TimestampMatches(retainedEntry.Timestamp, candidateEntry.Timestamp))
             return Differs("accounting timestamp", out difference);
         if (!string.Equals(retainedEntry.Description, candidateEntry.Description, StringComparison.Ordinal))
             return Differs("journal description", out difference);
@@ -79,13 +86,12 @@ public static class RetainedPostingEquivalence
         {
             var retainedLine = retainedEntry.Lines[index];
             var candidateLine = candidateEntry.Lines[index];
-            if (retainedLine.Account.AccountType != candidateLine.Account.AccountType
-                || !TextMatches(retainedLine.Account.Name, candidateLine.Account.Name)
-                || !TextMatches(retainedLine.Account.Symbol, candidateLine.Account.Symbol)
-                || !TextMatches(retainedLine.Account.FinancialAccountId, candidateLine.Account.FinancialAccountId))
-            {
+            // LedgerAccount defines its own identity and ledger balances are keyed by it, with
+            // Name and Symbol compared ordinally. A line whose account differs only in casing
+            // therefore lands in a different balance bucket, so the type's own equality is the
+            // authority here rather than the trimmed case-insensitive helper used for free text.
+            if (retainedLine.Account != candidateLine.Account)
                 return Differs($"line {index} account", out difference);
-            }
 
             if (retainedLine.Debit != candidateLine.Debit || retainedLine.Credit != candidateLine.Credit)
                 return Differs($"line {index} amount", out difference);
@@ -211,6 +217,19 @@ public static class RetainedPostingEquivalence
 
         return true;
     }
+
+    /// <summary>
+    /// Compares two accounting timestamps at the precision the store actually keeps.
+    /// PostgreSQL <c>timestamptz</c> resolves to microseconds while a .NET tick is 100ns, so a
+    /// caller-supplied timestamp carrying sub-microsecond ticks — anything derived from
+    /// <see cref="DateTimeOffset.UtcNow"/> — is truncated on the way in. Comparing raw ticks would
+    /// reject a retry that submitted the very same value it submitted the first time.
+    /// </summary>
+    private static bool TimestampMatches(DateTimeOffset retained, DateTimeOffset candidate)
+        => TruncateToStoredPrecision(retained) == TruncateToStoredPrecision(candidate);
+
+    private static DateTimeOffset TruncateToStoredPrecision(DateTimeOffset value)
+        => value.AddTicks(-(value.UtcTicks % TimeSpan.TicksPerMicrosecond));
 
     private static bool Differs(string field, out string difference)
     {
