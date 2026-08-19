@@ -45,7 +45,10 @@ public static partial class WorkstationEndpoints
 
         var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
         var latest = runs.FirstOrDefault();
-        var latestDetail = latest is null
+        // Only fetched when it will actually be returned: this route is the shell's bootstrap, and a
+        // slow or failing detail store must not delay or fail it for callers whose payload omits the
+        // detail anyway.
+        var latestDetail = latest is null || !canReadRuns
             ? null
             : await readService.GetRunDetailAsync(latest.RunId, context.RequestAborted).ConfigureAwait(false);
         var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);

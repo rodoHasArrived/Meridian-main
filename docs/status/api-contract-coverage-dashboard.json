@@ -2291,49 +2291,49 @@
     {
       "method": "GET",
       "path": "/api/data/trades/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:25",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:26",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/data/quotes/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:65",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:66",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/data/quotes-snapshot",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:109",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:110",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/data/orderbook/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:127",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:128",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/data/l3-orderbook/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:199",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:200",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/data/bbo/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:269",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:270",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/data/orderflow/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:309",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:310",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/data/health",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:350",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:351",
       "documented": true
     },
     {
