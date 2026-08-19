@@ -139,6 +139,28 @@ public sealed record BacktestRequest(
     int DelistingGraceDays = 5)
 {
     /// <summary>
+    /// Captures every setting on this request that changes what numbers the run produces, so run
+    /// identity can account for execution realism rather than strategy inputs alone.
+    /// </summary>
+    public ExecutionRealismDescriptor ToRealismDescriptor() => new(
+        DefaultExecutionModel,
+        FillTiming,
+        FillConservatism,
+        DelistingPolicy,
+        DelistingHaircutPercent,
+        DelistingGraceDays,
+        CommissionKind,
+        CommissionRate,
+        CommissionMinimum,
+        CommissionMaximum,
+        SlippageBasisPoints,
+        MaxParticipationRate,
+        MarketImpactCoefficient,
+        OrderBookQueueAheadFraction,
+        AdjustForCorporateActions,
+        RiskFreeRate);
+
+    /// <summary>
     /// Returns the normalized account list, falling back to a single default brokerage account for
     /// backward compatibility with older callers.
     /// </summary>
