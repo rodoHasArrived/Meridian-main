@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -20,6 +21,19 @@ public sealed class ApiKeyMiddleware
 {
     private const string ApiKeyHeaderName = "X-Api-Key";
     private const string ApiKeyEnvVar = "MDC_API_KEY";
+    private const string ApiKeyRoleEnvVar = "MDC_API_KEY_ROLE";
+
+    /// <summary>
+    /// Actor recorded for API-key requests so audit trails attribute them rather than leaving them
+    /// unattributed.
+    /// </summary>
+    internal const string ApiKeyActor = "api-key";
+
+    /// <summary>
+    /// Role a validated key carries when <c>MDC_API_KEY_ROLE</c> is unset. Deliberately the weakest
+    /// built-in role: a key that nobody has scoped should not be able to do more than look.
+    /// </summary>
+    private const UserRole DefaultApiKeyRole = UserRole.ReadOnly;
 
     private static readonly HashSet<string> ExemptPaths = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -87,6 +101,22 @@ public sealed class ApiKeyMiddleware
         // Store the validated API key identifier for downstream rate limiting
         context.Items["ApiKey"] = providedKey;
 
+        // A validated key needs an authorization context or it cannot pass any route that declares a
+        // permission -- the endpoint filters resolve permissions from the session items, and without
+        // these an API-key caller is refused everywhere the surface is actually governed.
+        if (!TryResolveApiKeyRole(out var apiKeyRole))
+        {
+            await ApiProblemDetails.ServiceUnavailable(
+                    context,
+                    "authentication",
+                    $"{ApiKeyRoleEnvVar} is set to a value that is not a known role. Set it to a valid role or unset it to use {DefaultApiKeyRole}.")
+                .ExecuteAsync(context);
+            return;
+        }
+
+        context.Items[LoginSessionMiddleware.CurrentUserKey] = ApiKeyActor;
+        context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = apiKeyRole;
+
         await _next(context);
     }
 
@@ -100,6 +130,24 @@ public sealed class ApiKeyMiddleware
         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ApiKeyEnvVar)) &&
         context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase) &&
         context.Request.Headers.ContainsKey(ApiKeyHeaderName);
+
+    /// <summary>
+    /// Resolves the role a validated key carries. Unset means <see cref="DefaultApiKeyRole"/>; a value
+    /// that names no known role fails closed rather than silently granting the default, because
+    /// quietly applying a different permission set than the operator configured is the kind of
+    /// authorization drift the governed surface exists to prevent.
+    /// </summary>
+    private static bool TryResolveApiKeyRole(out UserRole role)
+    {
+        var configured = Environment.GetEnvironmentVariable(ApiKeyRoleEnvVar);
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            role = DefaultApiKeyRole;
+            return true;
+        }
+
+        return Enum.TryParse(configured.Trim(), ignoreCase: true, out role) && Enum.IsDefined(role);
+    }
 
     /// <summary>
     /// Constant-time string comparison to prevent timing attacks on API key validation.

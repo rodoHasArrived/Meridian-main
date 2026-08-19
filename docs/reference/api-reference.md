@@ -122,6 +122,22 @@ Set the `MDC_API_KEY` environment variable to enable API-key authentication for 
 
 Health probes (`/healthz`, `/readyz`, `/livez`) are always exempt.
 
+#### What a key is allowed to do
+
+Authenticating a key is not the same as authorizing it. Most `/api/*` routes declare a permission, and
+a caller that carries no permissions is refused by those routes even with a valid key. A validated key
+therefore carries a role, named by `MDC_API_KEY_ROLE`:
+
+| Value | Effect |
+| --- | --- |
+| unset | The key carries `ReadOnly` — enough to read the open surface, not enough to mutate or to read governed data. |
+| a role name (`Admin`, `TradeDesk`, `Accounting`, …) | The key carries that role's permissions. Match it to what the calling script actually needs. |
+| anything else | Requests are refused with `503` rather than quietly falling back, so a typo surfaces instead of applying a permission set nobody chose. |
+
+Scripts that mutate configuration or read governed data need a role that holds the relevant
+permission — for example `POST /api/symbols/add` requires `ModifyConfig` and `POST /api/backfill/run`
+requires `TriggerBackfill`, so a `ReadOnly` key is refused by both.
+
 **Example:**
 
 ```bash

@@ -2,6 +2,7 @@ using System.Text.Json.Nodes;
 using Meridian.Application.Commands;
 using Meridian.Application.Composition.Startup;
 using Meridian.Contracts.Configuration;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using ConfigStore = Meridian.Application.UI.ConfigStore;
 
@@ -127,6 +128,16 @@ internal static class DemoWorkspaceCli
         if (IsUnset("MDC_AUTH_MODE"))
         {
             Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "optional");
+        }
+
+        // Optional authentication leaves the caller without an authorization context, and the governed
+        // surface refuses a caller it cannot authorize -- correct by default, but it would leave the
+        // demo unable to open its own workstation. The demo is a single-operator local box with no
+        // accounts, so it names the role that operator carries. This is the one place that opts in:
+        // an ordinary optional-auth deployment stays refused unless it makes the same explicit choice.
+        if (IsUnset("MDC_ANONYMOUS_ROLE"))
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
         }
     }
 

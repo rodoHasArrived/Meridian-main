@@ -2918,6 +2918,11 @@ public sealed partial class WorkstationEndpointsTests
         session.Should().NotBeNull();
         session!.LatestRun.Should().BeNull("the run digest belongs to the strategy permission");
         session.WorkspaceSummary.TotalRuns.Should().Be(0, "run counts are part of the withheld digest");
+        session.DisplayName.Should().Be("Meridian Operator", "the display name is built from the latest run's strategy name");
+        session.Environment.Should().Be(
+            "research",
+            "environment posture is the real run mode, not the redacted default -- the masthead drives its "
+            + "live-money warning from this field, and the withheld payload would have reported \"paper\"");
     }
 
     [Fact]

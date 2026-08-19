@@ -31,7 +31,7 @@ public static partial class WorkstationEndpoints
             UserPermission.ViewStrategies,
             UserPermission.ManageStrategies);
 
-        if (readService is null || !canReadRuns)
+        if (readService is null)
         {
             return new WorkstationSessionPayload(
                 DisplayName: "Meridian Operator",
@@ -45,25 +45,34 @@ public static partial class WorkstationEndpoints
 
         var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
         var latest = runs.FirstOrDefault();
-        var latestDetail = latest is null
+        // Only fetched when it will actually be returned: this route is the shell's bootstrap, and a
+        // slow or failing detail store must not delay or fail it for callers whose payload omits the
+        // detail anyway.
+        var latestDetail = latest is null || !canReadRuns
             ? null
             : await readService.GetRunDetailAsync(latest.RunId, context.RequestAborted).ConfigureAwait(false);
         var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
         var reviewRuns = runs.Count(static run => run.Promotion?.RequiresReview == true || run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled);
 
+        // Posture stays truthful for every operator: environment drives the masthead's live-money
+        // warning, and reporting "paper" to a controller working against a live book would remove
+        // that alarm. Only the identifying strategy detail is withheld -- the run digest, the run
+        // counts, and the display name, which is built from the latest run's strategy name.
         return new WorkstationSessionPayload(
-            DisplayName: BuildDisplayName(latest),
+            DisplayName: canReadRuns ? BuildDisplayName(latest) : "Meridian Operator",
             Role: BuildRole(latest),
             Environment: MapEnvironment(latest),
             ActiveWorkspace: MapWorkspace(latest),
-            CommandCount: Math.Max(6, runs.Length + activeRuns + reviewRuns),
-            LatestRun: latest is null ? null : BuildRunDigest(latest, latestDetail),
-            WorkspaceSummary: new WorkstationSessionWorkspaceSummary(
-                TotalRuns: runs.Length,
-                ActiveRuns: activeRuns,
-                ReviewRuns: reviewRuns,
-                LedgerCoverage: runs.Count(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
-                PortfolioCoverage: runs.Count(static run => !string.IsNullOrWhiteSpace(run.PortfolioId))));
+            CommandCount: canReadRuns ? Math.Max(6, runs.Length + activeRuns + reviewRuns) : 6,
+            LatestRun: canReadRuns && latest is not null ? BuildRunDigest(latest, latestDetail) : null,
+            WorkspaceSummary: canReadRuns
+                ? new WorkstationSessionWorkspaceSummary(
+                    TotalRuns: runs.Length,
+                    ActiveRuns: activeRuns,
+                    ReviewRuns: reviewRuns,
+                    LedgerCoverage: runs.Count(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
+                    PortfolioCoverage: runs.Count(static run => !string.IsNullOrWhiteSpace(run.PortfolioId)))
+                : new WorkstationSessionWorkspaceSummary(0, 0, 0, 0, 0));
     }
 
     private static string BuildDisplayName(StrategyRunSummary? latest)

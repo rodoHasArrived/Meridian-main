@@ -24,6 +24,11 @@ namespace Meridian.Ui.Shared.Endpoints;
 public sealed class LoginSessionMiddleware
 {
     private const string LocalShutdownTokenEnvironmentVariable = "MDC_SHUTDOWN_TOKEN";
+    private const string AnonymousRoleEnvironmentVariable = "MDC_ANONYMOUS_ROLE";
+
+    /// <summary>Actor recorded for optional-mode callers so audit trails are attributed.</summary>
+    internal const string AnonymousLocalActor = "local-operator";
+
     private const string LocalShutdownTokenHeader = "X-Meridian-Shutdown-Token";
 
     /// <summary>Name of the HTTP-only session cookie set after successful login.</summary>
@@ -103,6 +108,24 @@ public sealed class LoginSessionMiddleware
         {
             if (sessionService.AllowAnonymousWhenUnconfigured)
             {
+                // Optional mode means this deployment has no accounts at all -- the demo and local
+                // development posture. Such a caller has no authorization context, so every governed
+                // route refuses it, which is correct by default: "authentication is optional" must not
+                // silently become "authorization is absent". A deployment that genuinely wants an
+                // anonymous operator to work the surface -- the demo runtime does -- opts in by naming
+                // the role that operator carries, and nothing is granted without that explicit choice.
+                if (!TryResolveAnonymousRole(out var anonymousRole))
+                {
+                    await WriteAnonymousRoleConfigurationErrorAsync(context, path);
+                    return;
+                }
+
+                if (anonymousRole is { } role)
+                {
+                    context.Items[CurrentUserKey] = AnonymousLocalActor;
+                    context.Items[CurrentUserRoleKey] = role;
+                }
+
                 await _next(context);
                 return;
             }
@@ -209,6 +232,46 @@ public sealed class LoginSessionMiddleware
         context.Response.ContentType = "text/plain; charset=utf-8";
         await context.Response.WriteAsync(
             "Authentication is required but not configured. Set MDC_USERS with passwordHash values or configure MDC_AUTH_MODE=optional for local development.");
+    }
+
+    /// <summary>
+    /// Resolves the role an unauthenticated caller carries in optional mode. Unset yields no role at
+    /// all, so the governed surface keeps refusing anonymous callers; a value naming no known role
+    /// fails closed rather than silently applying a different permission set than was configured.
+    /// </summary>
+    private static bool TryResolveAnonymousRole(out UserRole? role)
+    {
+        role = null;
+        var configured = Environment.GetEnvironmentVariable(AnonymousRoleEnvironmentVariable);
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            return true;
+        }
+
+        if (Enum.TryParse<UserRole>(configured.Trim(), ignoreCase: true, out var parsed) && Enum.IsDefined(parsed))
+        {
+            role = parsed;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static async Task WriteAnonymousRoleConfigurationErrorAsync(HttpContext context, string path)
+    {
+        var detail =
+            $"{AnonymousRoleEnvironmentVariable} is set to a value that is not a known role. "
+            + "Set it to a valid role, or unset it to leave anonymous callers without authorization.";
+
+        if (path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase))
+        {
+            await ApiProblemDetails.ServiceUnavailable(context, "authentication", detail).ExecuteAsync(context);
+            return;
+        }
+
+        context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+        context.Response.ContentType = "text/plain; charset=utf-8";
+        await context.Response.WriteAsync(detail);
     }
 
     private static bool IsInitialAccountBootstrapRequest(string trimmedPath)
