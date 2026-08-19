@@ -58,6 +58,19 @@ public sealed class EndpointOpenReadMetadata
 /// </summary>
 public static class EndpointAuthorization
 {
+    /// <summary>
+    /// True when a principal carrying <paramref name="role"/> is attempting to change state and the
+    /// role is not entitled to. <see cref="UserRole.ReadOnly"/> means a read-only client whichever
+    /// posture established it -- an API key with no configured role, an API key configured
+    /// ReadOnly, or an optional-mode anonymous operator -- and permission names alone cannot enforce
+    /// that, because a few legacy mutations are declared with view-grade permissions ReadOnly holds.
+    /// One definition shared by both non-session principals, so the two cannot drift apart: they
+    /// already did once, and the anonymous path silently allowed what the key path refused.
+    /// </summary>
+    internal static bool IsReadOnlyRoleMutation(UserRole role, string method)
+        => role == UserRole.ReadOnly &&
+           !(HttpMethods.IsGet(method) || HttpMethods.IsHead(method) || HttpMethods.IsOptions(method));
+
     public static bool HasPermission(HttpContext context, UserPermission required)
         => TryGetPermissions(context, out var permissions) &&
            (permissions & required) == required;

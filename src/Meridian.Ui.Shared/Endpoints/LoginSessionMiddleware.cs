@@ -137,6 +137,19 @@ public sealed class LoginSessionMiddleware
 
                 if (anonymousRole is { } role)
                 {
+                    // The same read-only contract the API-key principal carries: naming ReadOnly as
+                    // the anonymous role must not let an unauthenticated caller drive the legacy
+                    // mutations that are declared with view-grade permissions ReadOnly holds. The two
+                    // postures share one rule so this cannot diverge again.
+                    if (EndpointAuthorization.IsReadOnlyRoleMutation(role, context.Request.Method))
+                    {
+                        await ApiProblemDetails.Forbidden(
+                                context,
+                                $"The {UserRole.ReadOnly} anonymous role allows only GET, HEAD, and OPTIONS requests. Set {AnonymousRoleEnvironmentVariable} to a role that authorizes this command endpoint.")
+                            .ExecuteAsync(context);
+                        return;
+                    }
+
                     context.Items[CurrentUserKey] = AnonymousLocalActor;
                     context.Items[CurrentUserRoleKey] = role;
                     context.Items[CurrentUserPermissionsKey] = RolePermissions.For(role);
