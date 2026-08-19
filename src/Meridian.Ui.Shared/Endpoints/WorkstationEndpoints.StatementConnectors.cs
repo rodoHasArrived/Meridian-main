@@ -33,7 +33,7 @@ public static partial class WorkstationEndpoints
             var result = await marginControl.GetAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetMarginControlCenter")
+        .WithName("GetMarginControlCenter").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<MarginControlCenterDto>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationMarginCertifications), async (
@@ -98,7 +98,7 @@ public static partial class WorkstationEndpoints
                 .ToArray();
             return Results.Json(connectors, jsonOptions);
         })
-        .WithName("ListStatementConnectors")
+        .WithName("ListStatementConnectors").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<StatementConnectorDescriptorDto>>(200);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementMappingProfiles), async (
@@ -113,7 +113,7 @@ public static partial class WorkstationEndpoints
             var profiles = await catalog.ListAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(profiles.Select(ToProfileDto).ToArray(), jsonOptions);
         })
-        .WithName("ListStatementMappingProfiles")
+        .WithName("ListStatementMappingProfiles").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<StatementMappingProfileDto>>(200);
 
         group.MapPut(WorkstationSubroute(UiApiRoutes.ReconciliationStatementMappingProfiles), async (
@@ -479,7 +479,7 @@ public static partial class WorkstationEndpoints
                 .ToArray();
             return Results.Json(schedules.Select(ToScheduleDto).ToArray(), jsonOptions);
         })
-        .WithName("ListStatementFetchSchedules")
+        .WithName("ListStatementFetchSchedules").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<StatementFetchScheduleDto>>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementFetchSchedules), async (

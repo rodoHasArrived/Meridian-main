@@ -46,6 +46,21 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
 
 
     /// <summary>
+    /// True when this provider fabricates bars instead of returning real observed market data.
+    /// Mirrors <see cref="Meridian.ProviderSdk.IMarketDataClient.IsSimulated"/> for the historical
+    /// lane, which feeds backfill and daily fair-value valuation. Valuation, ledger, and reporting
+    /// surfaces use it to classify derived figures, so a fabricated price is never presented as an
+    /// observable market input.
+    /// </summary>
+    /// <remarks>
+    /// This is the primary, explicit signal. Consumers should also treat a bar whose own
+    /// <c>Source</c> tag is a structured simulated-origin token as non-real, because an aggregator
+    /// such as <see cref="CompositeHistoricalDataProvider"/> is not itself simulated yet can serve
+    /// a fabricated bar from a constituent provider.
+    /// </remarks>
+    bool IsSimulated => false;
+
+    /// <summary>
     /// Priority for fallback ordering (lower = higher priority, tried first).
     /// Default: 100 for basic providers.
     /// </summary>

@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -30,7 +31,8 @@ public sealed class CheckpointEndpointTests : IClassFixture<EndpointTestFixture>
     public CheckpointEndpointTests(EndpointTestFixture fixture)
     {
         _fixture = fixture;
-        _client = fixture.Client;
+        // Checkpoint resume restarts a backfill job and requires TriggerBackfill (W9-GOV-008).
+        _client = fixture.CreatePermittedClient(UserPermission.TriggerBackfill);
         _dataRoot = fixture.DataRoot;
     }
 

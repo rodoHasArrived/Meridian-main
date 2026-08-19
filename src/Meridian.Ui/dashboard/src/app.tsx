@@ -146,6 +146,14 @@ const StrategyDesignerScreen = lazy(() => import("@/screens/strategy-designer-sc
 const SettingsScreen = lazy(() => import("@/screens/settings-screen").then((module) => ({ default: memo(module.SettingsScreen) })));
 const TradingScreen = lazy(() => import("@/screens/trading-screen").then((module) => ({ default: memo(module.TradingScreen) })));
 
+/**
+ * The demo-mode probe resolves the shell's provenance badge. Transient failures retry
+ * automatically with linear backoff; once the attempts are spent the shell settles on the
+ * `unknown` badge, whose manual retry control re-arms the probe.
+ */
+const DEMO_MODE_PROBE_MAX_AUTO_RETRIES = 2;
+const DEMO_MODE_PROBE_RETRY_DELAY_MS = 2000;
+
 export function App() {
   return (
     <PriceAlertsProvider>
@@ -174,6 +182,8 @@ function AppRoot() {
     enabled?: boolean;
     provenance?: unknown;
   } | null>(null);
+  const [demoModeAttempt, setDemoModeAttempt] = useState(0);
+  const [demoModeProbing, setDemoModeProbing] = useState(true);
   useEffect(() => {
     let active = true;
     setFirstRunState({ phase: "loading", status: null });
@@ -193,6 +203,8 @@ function AppRoot() {
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
+    let retryTimer: number | undefined;
+    setDemoModeProbing(true);
     apiGetJson<{ enabled?: boolean; provenance?: unknown }>(
       WORKSTATION_API_ENDPOINTS.demoMode,
       { signal: controller.signal, allowDevelopmentFallback: false }
@@ -200,16 +212,32 @@ function AppRoot() {
       .then((value) => {
         if (active) {
           setDemoMode(value);
+          setDemoModeProbing(false);
         }
       })
       .catch(() => {
-        // Missing provenance remains null so the shell renders a fail-closed simulated badge.
+        // Unresolved provenance stays null and surfaces as the `unknown` badge with a
+        // retry control — never as a confirmed SIMULATED claim. Transient failures
+        // retry with backoff before the shell settles on unknown.
+        if (!active || controller.signal.aborted) {
+          return;
+        }
+        setDemoModeProbing(false);
+        if (demoModeAttempt < DEMO_MODE_PROBE_MAX_AUTO_RETRIES) {
+          retryTimer = window.setTimeout(
+            () => setDemoModeAttempt((attempt) => attempt + 1),
+            DEMO_MODE_PROBE_RETRY_DELAY_MS * (demoModeAttempt + 1)
+          );
+        }
       });
     return () => {
       active = false;
       controller.abort();
+      if (retryTimer !== undefined) {
+        window.clearTimeout(retryTimer);
+      }
     };
-  }, []);
+  }, [demoModeAttempt]);
 
   if (isCompanionPaneRoute(pathname)) {
     return <CompanionPaneWindow />;
@@ -240,7 +268,14 @@ function AppRoot() {
       />
     );
   }
-  return <AppShell firstRunStatus={firstRun} demoMode={demoMode} />;
+  return (
+    <AppShell
+      firstRunStatus={firstRun}
+      demoMode={demoMode}
+      demoModeProbeBusy={demoModeProbing}
+      onRetryDemoModeProbe={() => setDemoModeAttempt((attempt) => attempt + 1)}
+    />
+  );
 }
 
 function ActivationStatusGate({
@@ -295,10 +330,14 @@ function ActivationStatusGate({
 
 function AppShell({
   firstRunStatus,
-  demoMode
+  demoMode,
+  demoModeProbeBusy,
+  onRetryDemoModeProbe
 }: {
   firstRunStatus?: FirstRunStatus | null;
   demoMode: { enabled?: boolean; provenance?: unknown } | null;
+  demoModeProbeBusy?: boolean;
+  onRetryDemoModeProbe?: () => void;
 }) {
   const [commandOpen, setCommandOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
@@ -684,8 +723,13 @@ function AppShell({
 
       {/* Persistent, non-dismissable simulation label (W9-TRUTH-001): whenever the
           workstation is showing simulated, seeded, or sample data the operator keeps
-          seeing it. Renders nothing for real data. */}
-      <DataProvenanceBanner provenance={dataProvenance} />
+          seeing it. Renders nothing for real data. Unresolved provenance renders the
+          `unknown` badge with a retry control instead of a false SIMULATED claim. */}
+      <DataProvenanceBanner
+        provenance={dataProvenance}
+        onRetryLiveData={onRetryDemoModeProbe}
+        retryBusy={demoModeProbeBusy}
+      />
       <DegradedModeBanner degradedMode={overview?.degradedMode} />
 
       <div className="workstation-shell">

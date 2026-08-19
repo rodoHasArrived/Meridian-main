@@ -5,6 +5,10 @@
 **Reviewed:** 2026-08-11
 **Source:** [Adversarial Program Review (2026-08)](adversarial-program-review-2026-08.md)
 
+> A prioritized ten-item production-readiness ordering of this estate — re-verified against
+> source on 2026-08-18, with corrections for stale claims and one new blocker finding — lives in
+> [Production-Readiness Backlog (2026-08)](production-readiness-backlog-2026-08.md).
+
 This document turns every finding in the 2026-08 adversarial review into a tracked todo with a
 code-ready implementation plan. It is a **working plan**, not a status source: live roadmap truth
 stays in `docs/roadmap/data/*.yml`, and release-gate truth stays in the
@@ -87,6 +91,10 @@ misinformation. Do these first regardless of sequencing; they cost under a day i
 build in seven attempts, so today's supported user count is structurally zero.
 
 - [ ] **AR8-01 — Give source launches a first-account path.** *(P0-adjacent; supports `PRD-000`)*
+  *(2026-08-18: part (a) landed — the middleware now exempts `/setup/account` and
+  `/api/auth/bootstrap` inside the unconfigured fail-closed branch, with integration tests in
+  `tests/Meridian.Tests/Integration/EndpointTests/InitialAccountBootstrapEndpointTests.cs`.
+  Parts (b)–(d) — CLI verbs, `--quickstart` first-admin, README — remain open.)*
   **Evidence:** a fresh clone defaults to `Production`, auth resolves to `Required`
   (`src/Meridian.Identity/Application/AuthenticationMode.cs:42-44`), and every request 503s asking
   for `MDC_USERS` with PBKDF2 hashes (`src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:198`).
@@ -213,6 +221,10 @@ runaway position. `W9-SAFETY-007` names "no dead safety buttons" as its own exit
 still `in_progress`.
 
 - [ ] **AR8-09 — Sweep every safety control in both clients.** *(closes part of `W9-SAFETY-007`)*
+  *(2026-08-18: the WPF half landed — Stop and Cancel All now dispatch through
+  `TradingSafetyCommandService` from `TradingWorkspaceShellViewModel.ExecuteCommandActionAsync`,
+  reporting the service's own verdict; Pause/Flatten/AcknowledgeRisk stay honestly disabled. The
+  browser breaker button and the "also halt routing" affordance on cancel-all remain open.)*
   **Evidence:** `src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs:164-167` —
   Pause, Stop, Flatten, and CancelAll each return a pane-layout change plus a reassuring toast;
   none calls `IOrderManager.CancelAllAsync` or the breaker, and Flatten carries
@@ -424,7 +436,11 @@ still `in_progress`.
   the same host must flip to `Simulated` once failover promotes the synthetic backup.
   **Effort:** M · **Depends on:** AR8-17
 
-- [ ] **AR8-19 — Stop the browser branding real installs SIMULATED.**
+- [x] **AR8-19 — Stop the browser branding real installs SIMULATED.** *(Done 2026-08-18: probe
+  retries with backoff; `DataProvenanceKind` gained a client-only `unknown` state rendered as a
+  warning with a "Retry live data" control; a wire token "unknown" still fails closed to
+  simulated; confirmed simulated keeps the red banner with no controls. Vitest coverage over the
+  badge resolver, the banner, and the app-level probe-failure path.)*
   **Evidence:** `src/Meridian.Ui/dashboard/src/app.tsx:205-207` fetches demo mode once with an empty
   catch and no retry; null provenance renders the non-dismissable red banner
   (`app-shell.data-provenance-badge.ts:101`, `components/meridian/data-provenance-banner.tsx:28-36`).

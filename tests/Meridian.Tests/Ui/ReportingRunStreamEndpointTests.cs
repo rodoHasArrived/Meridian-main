@@ -412,12 +412,14 @@ public sealed class ReportingRunStreamEndpointTests
         app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "reporting-op";
-            if (grantPermission)
-            {
-                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = grantAdminOverride
+            // A snapshot is stamped either way. Omitting it entirely would model an unauthenticated
+            // caller, which the route now answers with 401 before any reporting check runs; the case
+            // under test is a signed-in operator whose permissions simply do not include reporting.
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = grantPermission
+                ? grantAdminOverride
                     ? UserPermission.ViewReporting | UserPermission.AdminMaintenance
-                    : UserPermission.ViewReporting;
-            }
+                    : UserPermission.ViewReporting
+                : UserPermission.ViewAnalytics;
 
             if (includeTenantScope)
             {

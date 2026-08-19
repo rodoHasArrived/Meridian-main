@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Storage.Maintenance;
@@ -40,7 +41,7 @@ public static class MaintenanceScheduleEndpoints
             var created = await schedMgr.CreateScheduleAsync(schedule, ct);
             return Results.Json(created, jsonOptions);
         })
-        .WithName("CreateMaintenanceSchedule")
+        .WithName("CreateMaintenanceSchedule").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -64,7 +65,7 @@ public static class MaintenanceScheduleEndpoints
             var deleted = await schedMgr.DeleteScheduleAsync(id, ct);
             return deleted ? Results.Ok() : Results.NotFound();
         })
-        .WithName("DeleteMaintenanceSchedule")
+        .WithName("DeleteMaintenanceSchedule").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -78,7 +79,7 @@ public static class MaintenanceScheduleEndpoints
             var ok = await schedMgr.SetScheduleEnabledAsync(id, true, ct);
             return ok ? Results.Ok() : Results.NotFound();
         })
-        .WithName("EnableMaintenanceSchedule")
+        .WithName("EnableMaintenanceSchedule").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -92,7 +93,7 @@ public static class MaintenanceScheduleEndpoints
             var ok = await schedMgr.SetScheduleEnabledAsync(id, false, ct);
             return ok ? Results.Ok() : Results.NotFound();
         })
-        .WithName("DisableMaintenanceSchedule")
+        .WithName("DisableMaintenanceSchedule").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -120,7 +121,7 @@ public static class MaintenanceScheduleEndpoints
                 });
             }
         })
-        .WithName("RunMaintenanceScheduleNow")
+        .WithName("RunMaintenanceScheduleNow").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .Produces(404)
         .Produces(503)

@@ -1872,6 +1872,7 @@ Meridian-main
 │   │   ├── meridian-design-document.md
 │   │   ├── portfolio-cash-ladder-blueprint-2026-07.md
 │   │   ├── product-roadmap-priorities-2026-07.md
+│   │   ├── production-readiness-backlog-2026-08.md
 │   │   ├── README.md
 │   │   ├── w10-depth-slate-2026-07.md
 │   │   ├── w9-close-out-delivery-plan-2026-08.md
@@ -3468,6 +3469,7 @@ Meridian-main
 │   │   │   └── StatusWriter.cs
 │   │   ├── Pipeline
 │   │   │   ├── DeadLetterSink.cs
+│   │   │   ├── DedupReservation.cs
 │   │   │   ├── DroppedEventAuditTrail.cs
 │   │   │   ├── DualPathEventPipeline.cs
 │   │   │   ├── EventPipeline.cs
@@ -4399,6 +4401,7 @@ Meridian-main
 │   │   ├── IRiskValidator.cs
 │   │   ├── ISecurityMasterGate.cs
 │   │   ├── Meridian.Execution.csproj
+│   │   ├── OrderManagementSystem.AccountingHandoff.cs
 │   │   ├── OrderManagementSystem.Audit.cs
 │   │   ├── OrderManagementSystem.cs
 │   │   ├── OrderManagementSystem.ExecutionReportSubscriptions.cs
@@ -5538,6 +5541,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.TaxLotDisposalHistory.cs
 │   │   │   ├── PostgresLedgerJournalStore.Validation.cs
 │   │   │   ├── PostgresLedgerJournalStore.WashSale.cs
+│   │   │   ├── RetainedPostingEquivalence.cs
 │   │   │   └── WashSaleDeferralRecord.cs
 │   │   ├── Maintenance
 │   │   │   ├── ArchiveMaintenanceModels.cs
@@ -7108,6 +7112,7 @@ Meridian-main
 │   │   │   ├── OmsIntegrationService.cs
 │   │   │   ├── OperationsContinuityReconciliationBridge.cs
 │   │   │   ├── OperatorInboxPriorityScoringService.cs
+│   │   │   ├── PlaidWebhookVerifier.cs
 │   │   │   ├── PlaidWorkstationService.cs
 │   │   │   ├── PortfolioCashLadderReadService.cs
 │   │   │   ├── PortfolioLedgerCashBalanceProvider.cs
@@ -8852,6 +8857,7 @@ Meridian-main
 │   │   │   │   ├── BackpressureSignalTests.cs
 │   │   │   │   ├── CompositePublisherTests.cs
 │   │   │   │   ├── DeadLetterSinkTests.cs
+│   │   │   │   ├── DedupWalOrderingTests.cs
 │   │   │   │   ├── DroppedEventAuditTrailTests.cs
 │   │   │   │   ├── DualPathEventPipelineTests.cs
 │   │   │   │   ├── EventPipelineMetricsTests.cs
@@ -9098,6 +9104,7 @@ Meridian-main
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
 │   │   │   ├── BrokerageOrderPlacementGateTests.cs
 │   │   │   ├── BrokerageValidationEvaluatorTests.cs
+│   │   │   ├── DurableFillDeliveryBoundaryTests.cs
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
 │   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
@@ -9332,6 +9339,7 @@ Meridian-main
 │   │   │   │   ├── HealthEndpointTests.cs
 │   │   │   │   ├── HistoricalEndpointTests.cs
 │   │   │   │   ├── IBEndpointTests.cs
+│   │   │   │   ├── InitialAccountBootstrapEndpointTests.cs
 │   │   │   │   ├── LeanEndpointTests.cs
 │   │   │   │   ├── LiveDataEndpointTests.cs
 │   │   │   │   ├── MaintenanceEndpointTests.cs
@@ -9609,6 +9617,8 @@ Meridian-main
 │   │   │   │   └── PostgresFundStructureStoreTests.cs
 │   │   │   ├── Integrations
 │   │   │   │   └── FileProviderIntegrationManifestStoreTests.cs
+│   │   │   ├── Ledger
+│   │   │   │   └── RetainedPostingEquivalenceTests.cs
 │   │   │   ├── Maintenance
 │   │   │   │   └── ScheduledArchiveMaintenanceServiceTests.cs
 │   │   │   ├── Operations
@@ -9622,6 +9632,7 @@ Meridian-main
 │   │   │   │   ├── ReportingReconciliationEvidenceStoreTests.cs
 │   │   │   │   └── StatementReconciliationReportAuthorityStoreTests.cs
 │   │   │   ├── AccountingConfigurationPostgresStoreTests.cs
+│   │   │   ├── AccountingPostingCommandValidatorCurrencyTests.cs
 │   │   │   ├── AdaptivePartitionPlacementPlannerTests.cs
 │   │   │   ├── AnalysisExportServiceTests.cs
 │   │   │   ├── AnalysisQualityReportCsvTests.cs
@@ -9841,6 +9852,7 @@ Meridian-main
 │   │   │   ├── OperationsContinuityReconciliationBridgeTests.cs
 │   │   │   ├── OperatorApprovalFlowScenarioTests.cs
 │   │   │   ├── OptionReferenceEndpointsRoundtripTests.cs
+│   │   │   ├── PlaidWebhookVerifierTests.cs
 │   │   │   ├── PlaidWorkstationServiceTests.cs
 │   │   │   ├── PortfolioLedgerWorkflowStatusServiceTests.cs
 │   │   │   ├── PrivateCapitalFundEventCommandCenterServiceTests.cs
@@ -9916,6 +9928,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.StatementAuthorityTests.cs
 │   │   │   ├── WorkstationEndpointsTests.AccountingConfiguration.cs
 │   │   │   ├── WorkstationEndpointsTests.cs
+│   │   │   ├── WorkstationEndpointsTests.DataReadAuthorization.cs
 │   │   │   ├── WorkstationEndpointsTests.Extensibility.cs
 │   │   │   ├── WorkstationEndpointsTests.IBResults.cs
 │   │   │   ├── WorkstationEndpointsTests.Infrastructure.cs

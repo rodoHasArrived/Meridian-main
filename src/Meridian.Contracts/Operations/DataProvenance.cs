@@ -81,6 +81,38 @@ public static class DataProvenanceExtensions
     };
 
     /// <summary>
+    /// Folds many origins into the one a derived figure must carry: the strongest non-real
+    /// provenance among the inputs, or <see cref="DataProvenance.Real"/> only when every input is
+    /// real. A derived figure — a valuation draft, a NAV, a report pack — is never more real than
+    /// its least-real input, so this is the single rule every derivation uses.
+    /// </summary>
+    /// <remarks>
+    /// "Strongest" follows the <see cref="DataProvenance"/> ordering, where a lower value is the
+    /// stronger claim: <see cref="DataProvenance.Simulated"/> outranks
+    /// <see cref="DataProvenance.Seeded"/>, which outranks <see cref="DataProvenance.Sample"/>.
+    /// </remarks>
+    public static DataProvenance Strongest(IEnumerable<DataProvenance> provenances)
+    {
+        ArgumentNullException.ThrowIfNull(provenances);
+
+        var strongest = DataProvenance.Real;
+        foreach (var provenance in provenances)
+        {
+            if (!provenance.IsNonReal())
+            {
+                continue;
+            }
+
+            if (strongest == DataProvenance.Real || provenance < strongest)
+            {
+                strongest = provenance;
+            }
+        }
+
+        return strongest;
+    }
+
+    /// <summary>
     /// Unambiguous, structured simulated-origin markers, matched by exact (trimmed,
     /// case-insensitive) equality — never by substring — so legitimate values like
     /// "Sample Custodian" or "fixture-bank" are not mistaken for a simulated origin. An explicit

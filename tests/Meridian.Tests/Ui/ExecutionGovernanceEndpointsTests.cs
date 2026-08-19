@@ -549,7 +549,7 @@ public sealed class ExecutionGovernanceEndpointsTests
 
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
-        UserPermission permissions = UserPermission.ExecuteTrades | UserPermission.ManageOrders)
+        UserPermission permissions = UserPermission.ViewTrades | UserPermission.ExecuteTrades | UserPermission.ManageOrders)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {

@@ -52,7 +52,7 @@ public static class SecurityMasterEndpoints
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
         })
-        .WithName("GetSecurityMasterById")
+        .WithName("GetSecurityMasterById").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -68,7 +68,7 @@ public static class SecurityMasterEndpoints
             var report = await validationService.ValidateSecurityAsync(securityId, ct).ConfigureAwait(false);
             return Results.Json(report, jsonOptions);
         })
-        .WithName("ValidateSecurityMasterRecord")
+        .WithName("ValidateSecurityMasterRecord").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityValidationReportDto>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -88,7 +88,7 @@ public static class SecurityMasterEndpoints
                 .ToArray();
             return Results.Json(profiles, jsonOptions);
         })
-        .WithName("ListSecurityMasterAssetProfiles")
+        .WithName("ListSecurityMasterAssetProfiles").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecurityAssetProfileDefinitionDto>>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -100,7 +100,7 @@ public static class SecurityMasterEndpoints
             var candidates = governanceService.GetPromotionCandidates();
             return Results.Json(candidates, jsonOptions);
         })
-        .WithName("ListSecurityMasterAssetProfilePromotionCandidates")
+        .WithName("ListSecurityMasterAssetProfilePromotionCandidates").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecurityAssetProfilePromotionCandidateDto>>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -115,7 +115,7 @@ public static class SecurityMasterEndpoints
                 ? Results.NotFound()
                 : Results.Json(lineage, jsonOptions);
         })
-        .WithName("GetSecurityMasterAssetProfileLineage")
+        .WithName("GetSecurityMasterAssetProfileLineage").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityAssetProfileLineageDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -333,7 +333,7 @@ public static class SecurityMasterEndpoints
                 ? Results.NotFound()
                 : Results.Json(history, jsonOptions);
         })
-        .WithName("GetSecurityMasterHistory")
+        .WithName("GetSecurityMasterHistory").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecurityMasterEventEnvelope>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -469,7 +469,7 @@ public static class SecurityMasterEndpoints
                 ? Results.NotFound()
                 : Results.Json(parameters, jsonOptions);
         })
-        .WithName("GetSecurityMasterTradingParameters")
+        .WithName("GetSecurityMasterTradingParameters").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<TradingParametersDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -490,7 +490,7 @@ public static class SecurityMasterEndpoints
                 ? Results.NotFound()
                 : Results.Json(terms, jsonOptions);
         })
-        .WithName("GetSecurityMasterPreferredEquityTerms")
+        .WithName("GetSecurityMasterPreferredEquityTerms").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<PreferredEquityTermsDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -547,7 +547,7 @@ public static class SecurityMasterEndpoints
                 ? Results.NotFound()
                 : Results.Json(terms, jsonOptions);
         })
-        .WithName("GetSecurityMasterConvertibleEquityTerms")
+        .WithName("GetSecurityMasterConvertibleEquityTerms").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<ConvertibleEquityTermsDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -605,7 +605,7 @@ public static class SecurityMasterEndpoints
                 .ConfigureAwait(false);
             return Results.Json(actions, jsonOptions);
         })
-        .WithName("GetSecurityMasterCorporateActions")
+        .WithName("GetSecurityMasterCorporateActions").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<CorporateActionDto>>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -687,7 +687,7 @@ public static class SecurityMasterEndpoints
         group.MapGet(UiApiRoutes.SecurityMasterCorporateActionsInbox, (
             [FromServices] AppSecurityMaster.CorporateActions.CorporateActionInboxState inboxState) =>
             Results.Json(inboxState.GetInbox(), jsonOptions))
-        .WithName("GetSecurityMasterCorporateActionInbox")
+        .WithName("GetSecurityMasterCorporateActionInbox").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<AppSecurityMaster.CorporateActions.CorporateActionInboxDto>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -754,7 +754,7 @@ public static class SecurityMasterEndpoints
             var draft = await draftService.BuildDraftAsync(symbol, ct).ConfigureAwait(false);
             return Results.Json(draft, jsonOptions);
         })
-        .WithName("GetSecurityMasterCoverageDraft")
+        .WithName("GetSecurityMasterCoverageDraft").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<AppSecurityMaster.SecurityMasterDraftProposalDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -766,7 +766,7 @@ public static class SecurityMasterEndpoints
             var conflicts = await conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
             return Results.Json(conflicts, jsonOptions);
         })
-        .WithName("GetSecurityMasterConflicts")
+        .WithName("GetSecurityMasterConflicts").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecurityMasterConflict>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden);
@@ -924,7 +924,7 @@ public static class SecurityMasterEndpoints
             var response = ToIngestStatusResponse(snapshot, openConflicts.Count);
             return Results.Json(response, jsonOptions);
         })
-        .WithName("SecurityMasterIngestStatus")
+        .WithName("SecurityMasterIngestStatus").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityMasterIngestStatusResponse>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -948,7 +948,7 @@ public static class SecurityMasterEndpoints
                 DateTimeOffset.MinValue);
             return Results.Json(overrides, jsonOptions);
         })
-        .WithName("GetSecurityMasterOperatorOverrides")
+        .WithName("GetSecurityMasterOperatorOverrides").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -965,7 +965,7 @@ public static class SecurityMasterEndpoints
             var lineage = await store.GetAsync(securityId, ct).ConfigureAwait(false);
             return Results.Json(lineage, jsonOptions);
         })
-        .WithName("GetSecurityMasterFieldProvenance")
+        .WithName("GetSecurityMasterFieldProvenance").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecurityFieldProvenanceRecord>>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -1590,7 +1590,7 @@ public static class SecurityMasterEndpoints
             var aging = await caseworkService.GetAgingExceptionsAsync(caseworkScope, ct).ConfigureAwait(false);
             return Results.Json(aging, jsonOptions);
         })
-        .WithName("GetSecurityMasterAgingExceptions")
+        .WithName("GetSecurityMasterAgingExceptions").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireWorkstationTenantCompanyScope();

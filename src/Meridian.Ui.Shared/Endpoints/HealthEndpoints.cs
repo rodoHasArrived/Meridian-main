@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
@@ -248,7 +249,7 @@ public static class HealthEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("TestHealthProvider")
+        .WithName("TestHealthProvider").RequirePermission(UserPermission.ViewDiagnostics)
         .WithDescription("Returns current runtime connectivity diagnostics for a specific provider; reachability is null when no probe exists.")
         .Produces(200)
         .Produces(404)

@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `2bf5863b0731`
+- Source fingerprint: `fbad89562b4d`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `97`
 - Open automated tasks: `5`
@@ -157,7 +157,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as TradingShell (TradingWorkspaceShellPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-trading-shell.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs, +21 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs, +22 more.
 
 #### Live data (`LiveData`)
 
@@ -189,7 +189,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as RunRisk (RunRiskPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-risk.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +11 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +12 more.
 
 #### Trading hours (`TradingHours`)
 

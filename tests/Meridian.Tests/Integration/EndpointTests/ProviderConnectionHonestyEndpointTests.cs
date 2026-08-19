@@ -25,7 +25,7 @@ public sealed class ProviderConnectionHonestyEndpointTests : IDisposable, IClass
     [Fact]
     public async Task ProvidersWithoutRuntimeDiagnostics_AreUnknownRatherThanFabricatedConnected()
     {
-        var healthResponse = await _client.GetAsync("/api/providers/health");
+        var healthResponse = await _diagnosticsClient.GetAsync("/api/providers/health");
         healthResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         using var health = JsonDocument.Parse(await healthResponse.Content.ReadAsStringAsync());
 
@@ -40,7 +40,7 @@ public sealed class ProviderConnectionHonestyEndpointTests : IDisposable, IClass
         var providerName = unknown.GetProperty("name").GetString();
         providerName.Should().NotBeNullOrWhiteSpace();
 
-        var dashboardResponse = await _client.GetAsync("/api/providers/dashboard");
+        var dashboardResponse = await _diagnosticsClient.GetAsync("/api/providers/dashboard");
         dashboardResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         using var dashboard = JsonDocument.Parse(await dashboardResponse.Content.ReadAsStringAsync());
         var dashboardProvider = dashboard.RootElement.GetProperty("providers")
@@ -61,7 +61,7 @@ public sealed class ProviderConnectionHonestyEndpointTests : IDisposable, IClass
         test.RootElement.GetProperty("connectionState").GetString().Should().Be("unavailable");
         test.RootElement.GetProperty("reachable").ValueKind.Should().Be(JsonValueKind.Null);
 
-        var statusResponse = await _client.GetAsync("/api/providers/status");
+        var statusResponse = await _diagnosticsClient.GetAsync("/api/providers/status");
         statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         using var status = JsonDocument.Parse(await statusResponse.Content.ReadAsStringAsync());
         var statusProvider = status.RootElement
@@ -89,7 +89,9 @@ public sealed class ProviderConnectionHonestyEndpointTests : IDisposable, IClass
         using var diagnostics = JsonDocument.Parse(await diagnosticsResponse.Content.ReadAsStringAsync());
         AssertUnknownConnection(diagnostics.RootElement);
 
-        var healthTestResponse = await _client.PostAsync(
+        // /api/health/providers/{provider}/test returns registry diagnostics and requires
+        // ViewDiagnostics (W9-GOV-008), matching /api/diagnostics/providers/{providerName}/test.
+        var healthTestResponse = await _diagnosticsClient.PostAsync(
             $"/api/health/providers/{Uri.EscapeDataString(providerName!)}/test",
             content: null);
         healthTestResponse.StatusCode.Should().Be(HttpStatusCode.OK);

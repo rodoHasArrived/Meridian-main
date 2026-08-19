@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using FluentAssertions;
+using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.Storage.Maintenance;
 using Meridian.Storage.Services;
@@ -162,6 +163,14 @@ public sealed class ArchiveMaintenanceEndpointsTests : IDisposable
 
         var app = builder.Build();
         app.UseRateLimiter();
+        // The maintenance routes require AdminMaintenance (W9-GOV-008). This host composes the
+        // endpoints directly without the session middleware, so stamp the permissions snapshot
+        // the authorization filter reads, exactly as the shared endpoint fixture does.
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.AdminMaintenance;
+            await next();
+        });
         app.MapArchiveMaintenanceEndpoints();
         app.MapMaintenanceScheduleEndpoints(new JsonSerializerOptions
         {

@@ -39,7 +39,7 @@ public static class CredentialEndpoints
 
             return Results.Json(rows, jsonOptions);
         })
-        .WithName("GetCredentialCompatibilityStatuses")
+        .WithName("GetCredentialCompatibilityStatuses").RequirePermission(UserPermission.ManageCredentials)
         .Produces(StatusCodes.Status200OK);
 
         group.MapGet(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, async (
@@ -80,7 +80,7 @@ public static class CredentialEndpoints
                 }).ToArray()
             }, jsonOptions);
         })
-        .WithName("GetCredentialCompatibilityStatus")
+        .WithName("GetCredentialCompatibilityStatus").RequirePermission(UserPermission.ManageCredentials)
         .Produces(StatusCodes.Status200OK);
 
         group.MapPost(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, async (

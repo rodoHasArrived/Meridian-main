@@ -260,6 +260,14 @@ public static class PrometheusMetrics
         "mdc_wal_recovery_duration_seconds",
         "Duration of WAL recovery on startup in seconds");
 
+    // Distinct from mdc_wal_recovery_events_total, which counts checksum-valid records the WAL
+    // scan found. This counts records a replay consumer drove all the way to durable primary
+    // storage, so records dropped as unreadable payloads never appear here. Alerting on
+    // recovery success wants this series; the gap between the two is the corruption tail.
+    private static readonly Counter WalReplayedEventsTotal = Prometheus.Metrics.CreateCounter(
+        "mdc_wal_replayed_events_total",
+        "Total number of WAL records durably replayed to primary storage during recovery");
+
     // Provider reconnection metrics (labeled by provider and outcome)
     private static readonly Counter ProviderReconnectionAttemptsTotal = Prometheus.Metrics.CreateCounter(
         "mdc_provider_reconnection_attempts_total",
@@ -703,6 +711,26 @@ public static class PrometheusMetrics
     {
         WalRecoveryEventsTotal.IncTo(recoveredEvents);
         WalRecoveryDurationSeconds.Set(durationSeconds);
+    }
+
+    /// <summary>
+    /// Adds the WAL records a recovery batch just replayed durably to primary storage. Callers
+    /// publish as each batch crosses its durability boundary rather than at the end of the
+    /// pass, so a later failure cannot strand the telemetry of records that are already durable
+    /// and will never be enumerated again.
+    /// </summary>
+    /// <param name="newlyReplayedEvents">
+    /// Records replayed by this batch alone, not a running total: the series is a cumulative
+    /// counter, so a process that recovers 100 records and later another 10 must report 110.
+    /// Raising it to a per-pass maximum instead would leave the second pass invisible, because
+    /// each pass counts from zero.
+    /// </param>
+    public static void RecordWalReplay(long newlyReplayedEvents)
+    {
+        if (newlyReplayedEvents <= 0)
+            return;
+
+        WalReplayedEventsTotal.Inc(newlyReplayedEvents);
     }
 
     /// <summary>

@@ -354,7 +354,7 @@ public static class ProviderEndpoints
                 rankedAlternatives = selection.RankedAlternatives ?? Array.Empty<RoutePreviewCandidateDto>()
             }, jsonOptions);
         })
-        .WithName("GetProviderComparison")
+        .WithName("GetProviderComparison").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns a side-by-side comparison of all provider metrics including latency, quality, and throughput.")
         .Produces<ProviderComparisonResponse>(200);
 
@@ -365,7 +365,7 @@ public static class ProviderEndpoints
             var readiness = await service.GetReadinessAsync(ct).ConfigureAwait(false);
             return Results.Json(readiness, jsonOptions);
         })
-        .WithName("GetProviderReadiness")
+        .WithName("GetProviderReadiness").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.ManageCredentials, UserPermission.AdminMaintenance)
         .WithDescription("Returns the shared provider readiness command-center model across credentials, health, degradation, and evidence.")
         .Produces<ProviderReadinessSummaryDto>(200);
 
@@ -480,7 +480,7 @@ public static class ProviderEndpoints
 
             return Results.Json(status.ToArray(), jsonOptions);
         })
-        .WithName("GetProviderStatus")
+        .WithName("GetProviderStatus").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns connection status for all configured providers.")
         .Produces<ProviderStatusResponse[]>(200);
 
@@ -518,7 +518,7 @@ public static class ProviderEndpoints
 
             return Results.Json(fallbackMetrics, jsonOptions);
         })
-        .WithName("GetProviderMetrics")
+        .WithName("GetProviderMetrics").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns detailed metrics for all providers including throughput, latency, and quality scores.")
         .Produces<ProviderMetricsResponse[]>(200);
 
@@ -561,7 +561,7 @@ public static class ProviderEndpoints
 
             return Results.Json(CreateFallbackMetrics(source), jsonOptions);
         })
-        .WithName("GetProviderMetricsById")
+        .WithName("GetProviderMetricsById").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns detailed metrics for a single provider by ID.")
         .Produces<ProviderMetricsResponse>(200)
         .Produces(404);
@@ -609,7 +609,7 @@ public static class ProviderEndpoints
                         : CreateRegistrationReportDto(dataSourceRegistry.GetRegistrationReport())),
                 jsonOptions);
         })
-        .WithName("GetProviderCatalog")
+        .WithName("GetProviderCatalog").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns the provider catalog with metadata. Filter by type using ?type=streaming or ?type=backfill.")
         .Produces<ProviderCatalogResponse>(200);
 
@@ -626,7 +626,7 @@ public static class ProviderEndpoints
 
             return Results.Json(entry, jsonOptions);
         })
-        .WithName("GetProviderCatalogById")
+        .WithName("GetProviderCatalogById").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns catalog metadata for a single provider by ID.")
         .Produces<ProviderCatalogEntry>(200)
         .Produces(404);

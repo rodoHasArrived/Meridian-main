@@ -52,7 +52,7 @@ public static partial class WorkstationEndpoints
                 workflowService,
                 jsonOptions,
                 legacyStatementToReportContract: false).ConfigureAwait(false))
-        .WithName("GetStatementReconciliationReportWorkflow")
+        .WithName("GetStatementReconciliationReportWorkflow").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<StatementReconciliationReportWorkflowDto>(200)
         .Produces(403)
         .Produces(404)
@@ -87,7 +87,7 @@ public static partial class WorkstationEndpoints
                 artifactId,
                 context,
                 workflowService).ConfigureAwait(false))
-        .WithName("DownloadStatementReconciliationReportArtifact")
+        .WithName("DownloadStatementReconciliationReportArtifact").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces(200)
         .Produces(403)
         .Produces(404)
@@ -126,7 +126,7 @@ public static partial class WorkstationEndpoints
                 workflowService,
                 jsonOptions,
                 legacyStatementToReportContract: true).ConfigureAwait(false))
-        .WithName("GetLegacyStatementToReportWorkflow")
+        .WithName("GetLegacyStatementToReportWorkflow").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<StatementToReportWorkflowDto>(200)
         .Produces(403)
         .Produces(404)
@@ -161,7 +161,7 @@ public static partial class WorkstationEndpoints
                 artifactId,
                 context,
                 workflowService).ConfigureAwait(false))
-        .WithName("DownloadLegacyStatementToReportArtifact")
+        .WithName("DownloadLegacyStatementToReportArtifact").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces(200)
         .Produces(403)
         .Produces(404)

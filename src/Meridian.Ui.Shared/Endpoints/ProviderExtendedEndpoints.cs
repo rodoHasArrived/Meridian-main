@@ -48,7 +48,7 @@ public static class ProviderExtendedEndpoints
                 type = source.Type.ToString()
             }, jsonOptions);
         })
-        .WithName("GetProviderByName")
+        .WithName("GetProviderByName").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns configuration and catalog details for a specific provider by name or ID.")
         .Produces<ProviderCatalogEntry>(200)
         .Produces(404);
@@ -75,7 +75,7 @@ public static class ProviderExtendedEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetProviderFailover")
+        .WithName("GetProviderFailover").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns current failover configuration including priority chain and timeout settings.")
         .Produces(200);
 
@@ -121,7 +121,7 @@ public static class ProviderExtendedEndpoints
                 CreateRateLimitsResponse(registry, dataSources, DateTimeOffset.UtcNow),
                 jsonOptions);
         })
-        .WithName("GetProviderRateLimits")
+        .WithName("GetProviderRateLimits").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns typed rate limit configuration and current runtime state for provider surfaces that expose diagnostics.")
         .Produces<ProviderRateLimitsResponse>(200);
 
@@ -138,7 +138,7 @@ public static class ProviderExtendedEndpoints
                     Message: "Runtime rate-limit history is not retained. Use /api/providers/rate-limits for the current snapshot."),
                 jsonOptions);
         })
-        .WithName("GetProviderRateLimitHistory")
+        .WithName("GetProviderRateLimitHistory").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Legacy route retained for compatibility; rate-limit event history is not retained.")
         .Produces<ProviderRateLimitHistoryResponse>(200);
 
@@ -157,7 +157,7 @@ public static class ProviderExtendedEndpoints
 
             return Results.Json(new { providers = catalog, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetProviderCapabilities")
+        .WithName("GetProviderCapabilities").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns capability declarations for all registered providers.")
         .Produces(200);
 
@@ -221,7 +221,7 @@ public static class ProviderExtendedEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("TestProvider")
+        .WithName("TestProvider").RequirePermission(UserPermission.ViewDiagnostics)
         .WithDescription("Returns live provider connection diagnostics when available; reachability is null when no runtime probe exists.")
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -239,7 +239,7 @@ public static class ProviderExtendedEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetProviderFailoverThresholds")
+        .WithName("GetProviderFailoverThresholds").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns failover threshold values including max failures, cooldown, and health check intervals.")
         .Produces(200);
 
@@ -297,7 +297,7 @@ public static class ProviderExtendedEndpoints
 
             return Results.Json(new { providers, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetProviderHealthStatus")
+        .WithName("GetProviderHealthStatus").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns health status for all registered providers.")
         .Produces(200);
 
@@ -397,7 +397,7 @@ public static class ProviderExtendedEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetProvidersDashboard")
+        .WithName("GetProvidersDashboard").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription(
             "Returns a unified traffic-light health dashboard: green (all healthy), " +
             "yellow (some degraded/failover active), red (primary providers down).")
