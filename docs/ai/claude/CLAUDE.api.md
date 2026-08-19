@@ -218,26 +218,11 @@ Located in `src/Meridian.DataIntegration/Monitoring/DataQuality/`.
 
 ## CI/CD Pipelines
 
-25+ GitHub Actions workflows in `.github/workflows/`:
+This section used to enumerate workflow files by hand, and every entry had gone stale: `benchmark.yml`, `bottleneck-detection.yml`, `build-observability.yml`, `code-quality.yml`, `desktop-builds.yml`, `docker.yml`, `nightly.yml`, `pr-checks.yml`, `release.yml`, `security.yml`, `test-matrix.yml`, `update-diagrams.yml`, `validate-workflows.yml` no longer exist. Use the generated inventory instead, which is produced from
+`.github/workflows/` and gated against drift by `quality-gate`:
 
-| Workflow | Purpose |
-|----------|---------|
-| `benchmark.yml` | Performance benchmarks |
-| `bottleneck-detection.yml` | Performance bottleneck detection |
-| `build-observability.yml` | Build metrics collection |
-| `code-quality.yml` | Code quality checks (formatting, analyzers) |
-| `desktop-builds.yml` | Desktop app builds (WPF) |
-| `docker.yml` | Docker image building and publishing |
-| `documentation.yml` | Documentation generation, AI instruction sync, TODO scanning |
-| `nightly.yml` | Nightly builds |
-| `pr-checks.yml` | PR validation checks |
-| `release.yml` | Release automation |
-| `security.yml` | Security scanning (CodeQL, dependency audit) |
-| `test-matrix.yml` | Multi-platform test matrix (Windows, Linux, macOS) |
-| `update-diagrams.yml` | Architecture diagram and UML generation |
-| `validate-workflows.yml` | Workflow validation |
-
-Full workflow details: `.github/workflows/README.md`
+- [Generated workflow inventory](../../generated/workflows-overview.md) - every workflow file, its name, and its triggers.
+- [Workflow guide](../../../.github/workflows/README.md) - what each lane is for and what it produces.
 
 ---
 
