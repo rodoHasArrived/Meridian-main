@@ -1,8 +1,12 @@
 using System.Net;
+using System.Net.Http.Json;
 using FluentAssertions;
+using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Workstation;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -137,6 +141,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
                 nextContext.Items[LoginSessionMiddleware.CurrentUserRoleKey].Should().Be(UserRole.Admin);
                 nextContext.Items[LoginSessionMiddleware.CurrentUserPermissionsKey]
                     .Should().Be(RolePermissions.For(UserRole.Admin));
+                nextContext.Items[ApiKeyMiddleware.ApiKeyPrincipalKey].Should().Be(true);
                 return Task.CompletedTask;
             });
 
@@ -155,7 +160,9 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     public async Task AnonymousRolePrincipal_CarriesThePermissionSnapshotHandlersReadDirectly()
     {
         var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        var originalDemoMode = Environment.GetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable);
         Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, null);
         try
         {
             var nextCalled = false;
@@ -170,6 +177,8 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
                 nextContext.Items[LoginSessionMiddleware.CurrentUserPermissionsKey]
                     .Should().Be(RolePermissions.For(UserRole.Admin));
                 nextContext.Items[LoginSessionMiddleware.AnonymousPrincipalKey].Should().Be(true);
+                nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentUserCompanyIdKey);
+                nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentTenantIdKey);
                 return Task.CompletedTask;
             });
 
@@ -182,6 +191,72 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         finally
         {
             Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, originalDemoMode);
+        }
+    }
+
+    [Fact]
+    public async Task DemoAnonymousPrincipal_CarriesTheSeededTenantScope()
+    {
+        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        var originalDemoMode = Environment.GetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable);
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, "true");
+        try
+        {
+            var nextCalled = false;
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/api/workstation/session";
+            var middleware = new LoginSessionMiddleware(nextContext =>
+            {
+                nextCalled = true;
+                nextContext.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey]
+                    .Should().Be(DemoTenantBlueprint.CompanyId);
+                nextContext.Items[LoginSessionMiddleware.CurrentTenantIdKey]
+                    .Should().Be(DemoTenantBlueprint.TenantId);
+                return Task.CompletedTask;
+            });
+
+            await middleware.InvokeAsync(
+                context,
+                Fixture.Services.GetRequiredService<LoginSessionService>());
+
+            nextCalled.Should().BeTrue("the configured demo principal should reach the workstation pipeline");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, originalDemoMode);
+        }
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(nameof(UserRole.Admin))]
+    public async Task ApiKeyPrincipal_DoesNotSatisfySessionOnlyAuthorization(string? apiKeyRole)
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "session-only-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", apiKeyRole);
+        try
+        {
+            using var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "/api/workstation/first-run/outcomes/complete");
+            request.Headers.Add("X-Api-Key", "session-only-key");
+            request.Content = JsonContent.Create(new CompleteActivationOutcomeRequestDto("workspace-opened"));
+
+            using var response = await Client.SendAsync(request);
+
+            response.StatusCode.Should().Be(
+                HttpStatusCode.Unauthorized,
+                "a validated API key is not a browser login session and must not mutate session-owned state");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
         }
     }
 

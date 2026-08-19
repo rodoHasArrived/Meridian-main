@@ -235,7 +235,8 @@ public static class EndpointAuthorization
         where TBuilder : IEndpointConventionBuilder
     {
         builder.AddEndpointFilter((context, next) =>
-            TryGetPermissions(context.HttpContext, out _)
+            TryGetPermissions(context.HttpContext, out _) &&
+            !context.HttpContext.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey)
                 ? next(context)
                 : ValueTask.FromResult<object?>(ApiProblemDetails.Unauthorized(context.HttpContext)));
         builder.WithMetadata(new EndpointAuthorizationMetadata(Array.Empty<UserPermission>(), requireAll: false));

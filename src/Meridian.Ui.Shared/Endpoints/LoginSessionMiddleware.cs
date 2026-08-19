@@ -1,5 +1,7 @@
+using Meridian.Contracts.Configuration;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System.Net;
@@ -130,6 +132,15 @@ public sealed class LoginSessionMiddleware
                     context.Items[CurrentUserKey] = AnonymousLocalActor;
                     context.Items[CurrentUserRoleKey] = role;
                     context.Items[CurrentUserPermissionsKey] = RolePermissions.For(role);
+
+                    // The supported demo workspace is seeded under one fixed tenant/company pair.
+                    // Attach that canonical scope only for the explicitly marked demo host; an
+                    // ordinary optional-auth deployment must not inherit access to seeded data.
+                    if (DemoWorkspaceLayout.IsDemoModeRequested(Array.Empty<string>()))
+                    {
+                        context.Items[CurrentUserCompanyIdKey] = DemoTenantBlueprint.CompanyId;
+                        context.Items[CurrentTenantIdKey] = DemoTenantBlueprint.TenantId;
+                    }
 
                     // Marks this principal as anonymous rather than a validated login session, so a
                     // deployment that also configures MDC_API_KEY still has its key enforced -- the

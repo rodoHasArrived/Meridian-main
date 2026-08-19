@@ -24,6 +24,15 @@ public sealed class ApiKeyMiddleware
     private const string ApiKeyRoleEnvVar = "MDC_API_KEY_ROLE";
 
     /// <summary>
+    /// Request-item key whose presence identifies a principal established by a validated API key.
+    /// Kept separate from the secret-bearing rate-limit item so authorization checks depend only
+    /// on principal type, not on the key material itself.
+    /// </summary>
+    internal const string ApiKeyPrincipalKey = "CurrentUserIsApiKey";
+
+    internal const string ApiKeyRateLimitKey = "ApiKey";
+
+    /// <summary>
     /// Actor recorded for API-key requests so audit trails attribute them rather than leaving them
     /// unattributed.
     /// </summary>
@@ -102,7 +111,8 @@ public sealed class ApiKeyMiddleware
         }
 
         // Store the validated API key identifier for downstream rate limiting
-        context.Items["ApiKey"] = providedKey;
+        context.Items[ApiKeyRateLimitKey] = providedKey;
+        context.Items[ApiKeyPrincipalKey] = true;
 
         // A validated key needs an authorization context or it cannot pass any route that declares a
         // permission -- the endpoint filters resolve permissions from the session items, and without
@@ -240,7 +250,7 @@ public sealed class ApiKeyRateLimitMiddleware
         }
 
         // Partition by API key if present, otherwise by IP
-        var partitionKey = context.Items.TryGetValue("ApiKey", out var apiKey) && apiKey is string key
+        var partitionKey = context.Items.TryGetValue(ApiKeyMiddleware.ApiKeyRateLimitKey, out var apiKey) && apiKey is string key
             ? $"key:{key}"
             : $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
 
