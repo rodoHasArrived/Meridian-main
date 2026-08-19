@@ -33,6 +33,7 @@ These variables control auth, mutation safety, runtime mode, and diagnostics beh
 | `MDC_USERS` | Runtime auth bootstrap | JSON array of operator accounts using `passwordHash` values. | Missing hashes leave required auth unconfigured; plaintext `password` values are ignored. |
 | `MDC_DEMO_USERS` | Runtime auth bootstrap | Development/Test-only JSON array of demo accounts using `passwordHash` values. | Must not be used as a production credential source. |
 | `MDC_USERNAME` | Runtime auth bootstrap | Legacy single-user bootstrap username used with `MDC_PASSWORD_HASH`. | Intended only for bootstrap/local use; prefer governed accounts. |
+| `MDC_BOOTSTRAP_TOKEN` | Runtime auth bootstrap | One-time token that authorizes creating the first operator account when no credential exists yet. The lifecycle supervisor generates one and passes it to the host it starts; a from-source launch must set it explicitly, or the login surface has no route to a first credential. | Treat as a credential: anyone holding it can create the initial account. Do not reuse or persist it beyond first-run. |
 | `MDC_PASSWORD_HASH` | Runtime auth bootstrap | Legacy single-user bootstrap password hash. | Unsupported or missing hashes fail closed when auth is required. |
 | `MDC_PACKAGED_BUILD` | Runtime auth/credential policy | Marks packaged installs; auth is required by default and provider env fallback is disabled. | Leaving unset in customer packaging can permit development defaults. |
 | `MERIDIAN_CUSTOMER_BUILD` | Runtime auth/credential policy | Marks customer builds; auth is required by default and provider env fallback is disabled. | Leaving unset in customer packaging can permit development defaults. |
@@ -144,6 +145,7 @@ browser workstation shows a persistent red banner until persistence is configure
 | Variable | Description | Required | Default |
 |----------|-------------|----------|---------|
 | `MERIDIAN_DATABASE_URL` | Unified PostgreSQL connection for **all** store domains. Accepts `postgres://user:pass@host:port/db` URLs or Npgsql keyword form. Propagated at startup into every unset `MERIDIAN_*_CONNECTION_STRING`. | No | — (in-memory stores) |
+| `MERIDIAN_USE_INMEMORY_GOVERNANCE` | Selects file-backed governance stores instead of PostgreSQL. Without it, and without a connection string for the fund-accounts and fund-structure domains, startup fails closed with a diagnostic naming the missing variables (`StorageFeatureRegistration.EnsureGovernancePersistenceProfile`). Rejected when the environment resolves to Production. Local and development scenarios only; `--seed-demo` and `--demo` set it for you. | No | unset (persistence required) |
 | `MERIDIAN_LEDGER_CONNECTION_STRING` | Ledger journal store (per-domain override; wins over `MERIDIAN_DATABASE_URL`). | No | inherits `MERIDIAN_DATABASE_URL` |
 | `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` | Security Master store (also inherited by Direct Lending unless its dedicated variable is set). | No | inherits `MERIDIAN_DATABASE_URL` |
 | `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` | Fund accounts governance store. | No | inherits `MERIDIAN_DATABASE_URL` |

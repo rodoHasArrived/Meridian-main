@@ -2,7 +2,7 @@
 
 **Status:** active; production certification blocked  
 **Owner:** core-team  
-**Reviewed:** 2026-08-09
+**Reviewed:** 2026-08-19
 **Baseline:** current `main` through `6f687653d` plus repair candidate `b3bd557876523b81a2791f4bfd814647035f389a`; `PRD-018` through `PRD-020` verified and corrected 2026-08-09 against `e7e9528b8`; production readiness remains blocked pending frozen-release evidence, operator review, and required GitHub Actions activation
 **Previous production audit:** `f0ac384a2` on 2026-07-11
 **Sources:** [Meridian Design Document (Version 1.0)](meridian-design-document.md), [Program State](../roadmap/data/program-state.yml), [Roadmap Registry](../roadmap/data/roadmap-items.yml), and the live source, test, workflow, deployment, security, and operator surfaces named below
@@ -39,6 +39,86 @@ Priority meanings:
 | Active roadmap acceptance | 3 in progress | `W8-WPF-PARITY-001`, `W8-UX-CONSOL-001`, and `W9-SAFETY-007` remain active and are not production-certified by this tracker. `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, and the bounded `W6-BTSTUDIO-001` scoped-Vault-to-governed-Paper evidence loop close in this candidate. |
 | Awaiting operator acceptance | 6 implementation-complete | `W9-TRUTH-001`, `W9-DEMO-002`, `W9-PAPER-003`, `W9-ALPACA-004`, `W9-REPORT-005`, and `W9-NAV-006` are `ready_for_acceptance` with `evidence_posture: implementation_complete`. That posture is stronger than `planned_evidence` and weaker than `complete`: the work is built and evidenced but has not been accepted, so none of it is a production claim and none of it closes the P0 gate. |
 | Planned roadmap work | 14 planned | `W5X-OEG-001`, the two still-planned rows of the ranked W9 first-order slate (`W9-GOV-008`, `W9-INGEST-009`), and the eleven rows of the W10 depth slate are planned and outside the v1 production envelope unless the signed support matrix includes them. Every one carries `planned_evidence` posture, so none is a completion claim. Closed bounded roadmap rows do not change the P0 release-certification gate. |
+
+### 2026-08-19 P1 Band Survey
+
+Every `P1` row was read against current source. Three moved; the rest are enumerated with what is
+actually missing so the band has a plan rather than a label.
+
+| Row | Change |
+| --- | --- |
+| `PRD-109` | **Closed.** Its own remainder was "representative C#/TypeScript serialization parity beyond one fixture". `build/scripts/ci/check-contract-type-parity.py` now compares an enumerated registry on member sets, nullability and collection shape, wired into the docs lane. Of 136 name-matched record/interface pairs, 98 agree and are enforced; 38 already diverge and are recorded as a ratchet that fails once a listed pair is repaired but not promoted. |
+| `PRD-113` | **Advanced.** The overdue KV-2026-001 DotNetZip acceptance is retired with evidence (the package is absent from the tracked build, and the certification NuGet scan, which ignores suppressions, reports nothing), and the CC8 control source no longer cites a deleted workflow. Remaining: the SOC 2 readiness assessment itself, control owners, and the evidence calendar. |
+| `PRD-103` | **Confirmed closed.** Re-read against source; the tracker's evidence text is accurate. |
+
+The remaining rows and what each genuinely needs:
+
+- `PRD-100` — needs a product scope decision, which the tracker itself reserves to an explicit support-matrix amendment. Not agent-closable.
+- `PRD-101` — four confirmed defects in `Reconciliation.fs`, starting with no dedupe by event identity. Advanceable in slices.
+- `PRD-102` — fully mechanical but large: provider manifests are keyed on id alone, so saving version 2 destroys version 1, `ManifestVersion` is never incremented, and no manifest content hash is attached to raw payloads, so replay cannot reproduce the mapping that ran.
+- `PRD-104`, `PRD-105`, `PRD-106` — not surveyed; the survey lane covering them failed on a connection error.
+- `PRD-107`, `PRD-108`, `PRD-110`, `PRD-111`, `PRD-112` — each has a named agent-closable slice and a remainder needing infrastructure or a decision.
+- `PRD-114` — every clause still has a live defect; the duplicate scan still enumerates the whole checkout rather than starting from `git ls-files`.
+
+One caveat belongs on the record: SSH.NET was raised 2025.1.0 to 2026.0.0 to clear
+GHSA-q939-rpr3-3284, a major-version jump. Its only consumer, the SFTP ETL adapter, sits behind
+`EnableSftp` which defaults false, so no lane compiles against it and a source-breaking change
+there would not surface until someone enables SFTP. That is `PRD-104`'s territory and is the
+strongest argument for deciding that row.
+
+### 2026-08-19 Evidence Refresh
+
+Three release lanes were exercised on current `main` content and on branch
+`claude/installer-lane-p0-blockers-5ttfw5`. This subsection records what that changed; the
+[evidence-chain ledger](../engineering/production-certification-evidence-chain.md) carries the run
+detail.
+
+| Lane | State on 2026-08-19 | Effect on the gate |
+| --- | --- | --- |
+| `Production Certification` | Green: [run #27 / 32266755834](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32266755834) on `25f73ed4`, all four jobs. Baseline [#26 / 32264288888](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32264288888) on `e18c7fb2` had only `dependency-evidence` red. | `PRD-016` automation is proven again after failing on `main` in runs #23, #24 and #25. `PRD-015`'s dated drill artifact and `PRD-017`'s documentation job are minted by the same run. None of the three rows closes: the gate requires the **frozen release commit**, which does not exist yet. |
+| `Publish Smoke` (`web-workstation`/`win-x64`) | Green: [run #17 / 32264273659](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32264273659) on `e18c7fb2`, including installed startup with required authentication. | `PRD-013`'s substantive evidence now exists on current `main` content. Earlier greens did not: #15 sat on an abandoned branch commit, and #16 was `collector` with both installed-startup steps skipped. Still needs the same run on the frozen commit. |
+| `Desktop Installer Release` | **All seven jobs have now run green**, across two runs. [Run #12 / 32278142929](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32278142929) on `a73d9cb4` was six of seven: preflight, MSIX packaging for both architectures, and installed lifecycle certification for both — the ARM64 leg on the GitHub-hosted `windows-11-arm` runner. `package-consumer-setup` was the seventh, and had never once produced an artifact: `Meridian.Setup` embedded its whole payload as assembly resources and overflowed Roslyn's PE writer (`mappedFieldDataStreamRva`). The payload is now appended to the published executable as a ZIP with a digest-bearing trailer, and [run #13 / 32281331953](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32281331953) on `a6703cdb` produced `Meridian-Setup.exe` for the first time in the repository's history (1,043,350,783 bytes with SBOM, release evidence, and checksums). | The lane is mechanically proven end to end. `PRD-014` still needs a tag run with the protected signing secret — every lifecycle receipt so far was anchored by a throwaway self-signed certificate and is **not** release evidence. `PRD-000`'s installed update/rollback receipts are unblocked in mechanism but likewise need the signed tag run. The ~1 GB consumer download is a product decision to revisit: it carries both architectures plus a full PostgreSQL distribution. |
+
+Two `PRD-014` blockers previously recorded as human infrastructure actions are no longer human
+actions:
+
+- The ARM64 lifecycle leg targeted a self-hosted runner that does not exist. This repository is
+  public, so the GitHub-hosted `windows-11-arm` label is available at no cost and the leg now
+  targets it.
+- The N-1 lookup failed closed whenever no predecessor release existed, which is unsatisfiable for
+  a first release in a repository with zero releases and zero tags. First-release mode is now
+  derived from repository state, and records the update and rollback legs as `not-applicable` with
+  a reason rather than omitting them.
+
+What genuinely still requires a person is unchanged and narrow: the `MDC_SIGNING_CERT_PFX_BASE64`
+and `MDC_SIGNING_CERT_PASSWORD` secrets in the protected `desktop-release-signing` environment
+(`PRD-014`), core-team sign-off on ADR-019/ADR-020 (`PRD-000`), operator review of the recovery
+drill receipt (`PRD-015`), and required-check activation (`PRD-016`).
+
+**A frozen commit with all three evidence lanes green now exists: `65dc0107`.** This was the true
+sequencing blocker across all six evidence-gated rows — each lane's evidence had sat on a different
+commit, while the release gate requires every `P0` row to be complete on one:
+
+| Lane | Run | Result |
+| --- | --- | --- |
+| `Production Certification` | [#31 / 32290441637](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32290441637) | All four jobs green |
+| `Publish Smoke` (`web-workstation`/`win-x64`) | [#21 / 32290444712](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32290444712) | Green |
+| `Desktop Installer Release` | [#17 / 32287384452](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32287384452) | All seven jobs green; the tag-only publish job correctly skipped |
+| `Meridian CI` / `quality-gate` | [#2872 / 32287375296](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32287375296) | Green |
+
+`65dc0107` contains `main` at `7785c566`, so it is also mergeable, and it is the first commit on
+this branch to carry both the three release-evidence lanes and the authoritative merge gate green
+together. An earlier set was produced on `9ae0a3a3`, which had the three lanes but never received a
+`quality-gate` run at all: a merge conflict was suppressing `pull_request` events at the time.
+
+Two things this does **not** settle, and neither is an automation gap:
+
+- The installed lifecycle receipts were anchored by a throwaway self-signed certificate. They prove
+  the mechanism; `PRD-014` still requires a tag run with the protected signing secret, and no
+  self-signed receipt can substitute for it.
+- A commit cannot contain the evidence of its own certification runs, so this record necessarily
+  sits on a descendant of `65dc0107`. Any further change to the branch invalidates the set and the
+  three lanes must be re-run on whatever commit is finally frozen for a release tag.
 
 Working detail for the six evidence-gated rows — hosted-run diagnosis, minted evidence, and the
 explicit human action register (ADR sign-off, secrets/runner activation, operator review,

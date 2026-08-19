@@ -4,7 +4,7 @@
 
 This inventory is generated from `.github/workflows/*.yml` and `.github/workflows/*.yaml` on disk.
 
-- Workflow count: `29`
+- Workflow count: `30`
 
 | Workflow File | Name | Triggers |
 |---|---|---|
@@ -14,6 +14,7 @@ This inventory is generated from `.github/workflows/*.yml` and `.github/workflow
 | `.github/workflows/codeql.yml` | CodeQL | pull_request, push, schedule, workflow_dispatch |
 | `.github/workflows/copilot-setup-steps.yml` | Copilot Setup Steps | workflow_dispatch, push, pull_request |
 | `.github/workflows/demo-smoke.yml` | Demo Smoke | pull_request, push, workflow_dispatch |
+| `.github/workflows/desktop-evaluation-prerelease.yml` | Desktop Evaluation Prerelease | workflow_dispatch |
 | `.github/workflows/desktop-installer-packaging.yml` | Desktop Installer Release | push, workflow_dispatch |
 | `.github/workflows/desktop-screenshot-capture.yml` | Desktop Screenshot Capture | workflow_dispatch |
 | `.github/workflows/desktop-standalone-publish.yml` | Desktop Standalone Publish | workflow_dispatch |

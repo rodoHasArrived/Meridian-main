@@ -119,6 +119,7 @@ jobs:
           Copy-Item -LiteralPath $payload -Destination (Join-Path $installSmokeHost 'database') -Recurse -Force
 
       - name: Start the published WebWorkstation artifact with required authentication
+        id: installed_startup
         if: inputs.project == 'web-workstation' && inputs.runtime == 'win-x64'
         shell: pwsh
         run: |
@@ -130,9 +131,18 @@ jobs:
             -SkipDashboardBuild `
             -SkipNpmInstall
 
+      # Only a web-workstation/win-x64 dispatch runs the installed-startup steps. Every other
+      # combination skips them silently, so the lane list has to say which one this run was or the
+      # manifest reads like installed-startup evidence that was never produced.
       - name: Generate release evidence manifest
         shell: pwsh
         run: |
+          $lanes = @('--validation-lane', 'publish-smoke')
+          if ('${{ steps.installed_startup.outcome }}' -eq 'success') {
+            $lanes += @('--validation-lane', 'web-workstation-installed-startup')
+          } else {
+            Write-Host "::notice::This dispatch did not run installed startup; it is publish evidence only, not PRD-013 installed-startup evidence."
+          }
           python build/scripts/ci/generate-release-evidence-manifest.py `
             --project '${{ inputs.project }}' `
             --runtime '${{ inputs.runtime }}' `
@@ -140,7 +150,7 @@ jobs:
             --artifact-root artifacts/publish/publish-smoke `
             --output artifacts/publish/publish-smoke/release-evidence.json `
             --workflow-run-id '${{ github.run_id }}' `
-            --validation-lane publish-smoke
+            @lanes
 
       # always(): a failed smoke must still ship its install.log and receipts,
       # or the failure cannot be diagnosed from the run page.
@@ -151,4 +161,4 @@ jobs:
           name: meridian-${{ inputs.project }}-${{ inputs.runtime }}-${{ github.run_number }}
           path: artifacts/publish/publish-smoke/
           if-no-files-found: warn
-          retention-days: 14
+          retention-days: 90

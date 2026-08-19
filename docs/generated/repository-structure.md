@@ -885,6 +885,7 @@ Meridian-main
 │   │   ├── codeql.yml
 │   │   ├── copilot-setup-steps.yml
 │   │   ├── demo-smoke.yml
+│   │   ├── desktop-evaluation-prerelease.yml
 │   │   ├── desktop-installer-packaging.yml
 │   │   ├── desktop-screenshot-capture.yml
 │   │   ├── desktop-standalone-publish.yml
@@ -1031,6 +1032,8 @@ Meridian-main
 │   ├── ci
 │   │   └── lane-manifest.json
 │   ├── config
+│   │   ├── contracts
+│   │   │   └── type-parity-registry.json
 │   │   ├── security
 │   │   │   └── npm-audit-accepted-advisories.json
 │   │   ├── testing
@@ -1095,6 +1098,7 @@ Meridian-main
 │       ├── ci
 │       │   ├── apiclient-caller-baseline.json
 │       │   ├── check-apiclient-callers.py
+│       │   ├── check-contract-type-parity.py
 │       │   ├── check-dashboard-type-barrel.py
 │       │   ├── check-duplicate-helpers.py
 │       │   ├── check-endpoint-cancellation.py
@@ -1204,7 +1208,8 @@ Meridian-main
 │       │   ├── install.ps1
 │       │   ├── install.sh
 │       │   ├── package-desktop-msix.ps1
-│       │   └── smoke-web-workstation-install.ps1
+│       │   ├── smoke-web-workstation-install.ps1
+│       │   └── windows-sdk-tools.ps1
 │       ├── lib
 │       │   ├── ArtifactRetention.psm1
 │       │   └── BuildNotification.psm1
@@ -4875,6 +4880,7 @@ Meridian-main
 │   │   │   │   ├── SftpCredentialResolver.cs
 │   │   │   │   └── SftpRemoteLocation.cs
 │   │   │   ├── CsvPartnerFileParser.cs
+│   │   │   ├── EtlArchiveNaming.cs
 │   │   │   ├── LocalFileSourceReader.cs
 │   │   │   ├── SftpFilePublisher.cs
 │   │   │   └── SftpFileSourceReader.cs
@@ -5376,6 +5382,7 @@ Meridian-main
 │   ├── Meridian.Setup
 │   │   ├── InstallationTransaction.cs
 │   │   ├── Meridian.Setup.csproj
+│   │   ├── PayloadPackage.cs
 │   │   ├── Program.cs
 │   │   └── README.md
 │   ├── Meridian.Storage
@@ -8729,7 +8736,8 @@ Meridian-main
 │   │   └── StatisticsEngineTests.cs
 │   ├── Meridian.Setup.Tests
 │   │   ├── InstallationTransactionTests.cs
-│   │   └── Meridian.Setup.Tests.csproj
+│   │   ├── Meridian.Setup.Tests.csproj
+│   │   └── PayloadPackageTests.cs
 │   ├── Meridian.Tests
 │   │   ├── Application
 │   │   │   ├── Accounting
@@ -9189,6 +9197,7 @@ Meridian-main
 │   │   │   │   └── CredentialConfigTests.cs
 │   │   │   ├── Etl
 │   │   │   │   ├── CsvPartnerFileParserTests.cs
+│   │   │   │   ├── LocalFileSourceReaderPostProcessingTests.cs
 │   │   │   │   ├── SftpCapabilityServiceTests.cs
 │   │   │   │   └── SftpInfrastructureTests.cs
 │   │   │   ├── Http
@@ -10299,6 +10308,7 @@ Meridian-main
 │   │   ├── test_check_codex_memory.py
 │   │   ├── test_check_codex_skills.py
 │   │   ├── test_check_contract_compatibility_gate.py
+│   │   ├── test_check_contract_type_parity.py
 │   │   ├── test_check_dashboard_type_barrel.py
 │   │   ├── test_check_duplicate_helpers.py
 │   │   ├── test_check_endpoint_cancellation.py

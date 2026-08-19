@@ -115,7 +115,12 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
         Directory.CreateDirectory(_tempRoot);
         var baseDataRoot = Path.Combine(_tempRoot, "data");
 
-        // Seed the isolated demo workspace exactly as `--seed-demo --seed-only` would.
+        // Seed the isolated demo workspace directly. This is NOT what `--seed-demo --seed-only`
+        // does end to end: this test then writes the demo config itself a few lines below, whereas
+        // the CLI has to produce it. Claiming equivalence here is how a real defect stayed hidden —
+        // seed-only returned before writing that config, so `--demo` refused to reopen a workspace
+        // it had just seeded. The clean-environment step in .github/workflows/demo-smoke.yml is
+        // what actually exercises the CLI contract.
         var seeder = new DemoWorkspaceSeeder(baseDataRoot);
         await seeder.SeedAsync();
 
