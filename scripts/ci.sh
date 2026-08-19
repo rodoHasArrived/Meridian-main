@@ -206,6 +206,13 @@ verify_docs() {
   run_step "Validate dashboard type barrel" \
     "$python_cmd" build/scripts/ci/check-dashboard-type-barrel.py --summary
 
+  # The barrel gate proves each TypeScript name is declared once; it cannot tell whether that
+  # declaration still matches the C# record the API serialises. The dashboard casts parsed JSON to
+  # its interface, so a renamed or newly-nullable C# member reaches the browser as a silently
+  # missing field rather than a compile error.
+  run_step "Validate C#/TypeScript contract parity" \
+    "$python_cmd" build/scripts/ci/check-contract-type-parity.py
+
   # An alert whose expr names a series the exporter never emits can never fire, and a
   # runbook link that does not resolve strands the responder. Both used to be invisible.
   run_step "Validate observability contract" \
@@ -275,6 +282,26 @@ verify_docs() {
       --scripts check-ai-handoff-strict,prompt-route-linter,handoff-packet-generator,check-handoff-packet-schema,check-ai-routing-parity \
       --json-output "$handoff_summary_json" \
       --summary-output "$handoff_summary_md"
+
+  # Mirrors the quality-gate step of the same name: regenerate the whole-repo documentation
+  # artifacts and reject drift, so adding a file outside docs/** cannot silently red the weekly
+  # Production Certification documentation job.
+  run_step "Reject whole-repo generated documentation drift" \
+    "$python_cmd" build/scripts/docs/run-docs-automation.py \
+      --scripts generate-structure-docs,generate-health-dashboard,generate-workflow-manifest
+
+  # The automation profile runs generate-structure-docs in structure mode only, so the workflows
+  # overview it also owns needs its own invocation.
+  run_step "Regenerate the workflows overview" \
+    "$python_cmd" build/scripts/docs/generate-structure-docs.py --workflows-only
+
+  run_step "Verify whole-repo generated documentation is committed" \
+    git diff --exit-code -- \
+      docs/generated/repository-structure.md \
+      docs/generated/workflows-overview.md \
+      docs/status/doc-health-dashboard.json \
+      docs/status/doc-health-dashboard.md \
+      docs/status/workflow-drift-report.md
 
   run_step "Enforce mode escalation policy" \
     "$python_cmd" build/scripts/docs/check-mode-escalation.py \

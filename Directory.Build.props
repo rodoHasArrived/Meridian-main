@@ -66,12 +66,4 @@
   <ItemGroup Label="Runtime integrity defaults">
     <RuntimeHostConfigurationOption Include="System.IO.Compression.UseStrictValidation" Value="true" />
   </ItemGroup>
-  <ItemGroup>
-    <MeridianNuGetAuditSuppression Include="https://github.com/advisories/GHSA-xhg6-9j5j-w4vf">
-      <Owner>Core Team</Owner>
-      <Justification>Accepted risk documented in docs/security/known-vulnerabilities.md pending upstream remediation rollout.</Justification>
-      <RatchetPlan>Remove once upgraded transitive dependency chain no longer triggers the advisory.</RatchetPlan>
-    </MeridianNuGetAuditSuppression>
-    <NuGetAuditSuppress Include="@(MeridianNuGetAuditSuppression)" />
-  </ItemGroup>
 </Project>
