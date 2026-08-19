@@ -15,6 +15,21 @@ internal sealed class SimulatedPortfolio
     private readonly List<CashFlowEntry> _cashFlows = [];
     private decimal _prevEquity;
 
+    // Rebuilding the aggregate views walks every account, every position, and every lot. The
+    // engine reads them through IBacktestContext.PortfolioValue / .Positions, so a strategy that
+    // checks its own equity once per bar previously paid a full rebuild per bar.
+    //
+    // Correctness rests on the mutating surface being closed: UpdateLastPrice, ProcessFill,
+    // ApplyAssetEvent, and AccrueDailyInterest are the only members that change the state these
+    // views derive from, and _lastPrices is handed out as IReadOnlyDictionary so callers cannot
+    // mutate it behind the cache. Each of those four bumps _stateVersion; a missed bump would
+    // serve a stale equity, so any new mutating member must bump it too.
+    private int _stateVersion;
+    private IReadOnlyDictionary<string, Position>? _cachedPositions;
+    private int _cachedPositionsVersion = -1;
+    private IReadOnlyDictionary<string, FinancialAccountSnapshot>? _cachedAccountSnapshots;
+    private int _cachedAccountSnapshotsVersion = -1;
+
     public decimal Cash => _accounts.Values.Sum(static account => account.Cash);
     public decimal MarginBalance => _accounts.Values.Sum(static account => account.MarginBalance);
     public IReadOnlyDictionary<string, decimal> LastPrices => _lastPrices;
@@ -81,12 +96,17 @@ internal sealed class SimulatedPortfolio
 
     // ── Price updates ────────────────────────────────────────────────────────
 
-    public void UpdateLastPrice(string symbol, decimal price) => _lastPrices[symbol] = price;
+    public void UpdateLastPrice(string symbol, decimal price)
+    {
+        _lastPrices[symbol] = price;
+        _stateVersion++;
+    }
 
     // ── Order fill processing ────────────────────────────────────────────────
 
     public void ProcessFill(FillEvent fill)
     {
+        _stateVersion++;
         var account = ResolveBrokerageAccount(fill.AccountId);
         var accountId = account.Account.AccountId;
         var symbol = fill.Symbol;
@@ -185,6 +205,7 @@ internal sealed class SimulatedPortfolio
 
     public void ApplyAssetEvent(AssetEvent assetEvent)
     {
+        _stateVersion++;
         ArgumentNullException.ThrowIfNull(assetEvent);
 
         var account = ResolveBrokerageAccount(null);
@@ -223,6 +244,7 @@ internal sealed class SimulatedPortfolio
 
     public void AccrueDailyInterest(DateOnly date)
     {
+        _stateVersion++;
         var ts = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
 
         foreach (var account in _accounts.Values)
@@ -733,6 +755,17 @@ internal sealed class SimulatedPortfolio
 
     private IReadOnlyDictionary<string, Position> BuildAggregatePositions()
     {
+        if (_cachedPositions is not null && _cachedPositionsVersion == _stateVersion)
+            return _cachedPositions;
+
+        var built = BuildAggregatePositionsCore();
+        _cachedPositions = built;
+        _cachedPositionsVersion = _stateVersion;
+        return built;
+    }
+
+    private IReadOnlyDictionary<string, Position> BuildAggregatePositionsCore()
+    {
         var grouped = new Dictionary<string, List<Position>>(StringComparer.OrdinalIgnoreCase);
         foreach (var account in _accounts.Values)
         {
@@ -770,6 +803,17 @@ internal sealed class SimulatedPortfolio
     }
 
     private IReadOnlyDictionary<string, FinancialAccountSnapshot> BuildAccountSnapshots()
+    {
+        if (_cachedAccountSnapshots is not null && _cachedAccountSnapshotsVersion == _stateVersion)
+            return _cachedAccountSnapshots;
+
+        var built = BuildAccountSnapshotsCore();
+        _cachedAccountSnapshots = built;
+        _cachedAccountSnapshotsVersion = _stateVersion;
+        return built;
+    }
+
+    private IReadOnlyDictionary<string, FinancialAccountSnapshot> BuildAccountSnapshotsCore()
     {
         return _accounts.Values.ToDictionary(
             account => account.Account.AccountId,
