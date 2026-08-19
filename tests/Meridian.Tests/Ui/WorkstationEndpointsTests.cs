@@ -2896,6 +2896,54 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     /// <summary>
+    /// The ledger and portfolio explorers project strategy-run detail that the run-ledger routes
+    /// already serve under ViewStrategies, so a strategy reader must reach them or the drill-in links
+    /// between the two break. The other two explorers have no such second door, so the same caller is
+    /// refused those rather than admitted to all four by the widened route declaration.
+    /// </summary>
+    [Theory]
+    [InlineData("ledger", true)]
+    [InlineData("portfolio", true)]
+    [InlineData("security-instrument", false)]
+    [InlineData("report-line-provenance", false)]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorer_AdmitsStrategyReadersToRunBackedExplorersOnly(
+        string explorerId,
+        bool runBacked)
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IFinancialRecordExplorerSavedViewStore>(_ =>
+                new FileFinancialRecordExplorerSavedViewStore(
+                    Path.Combine(Path.GetTempPath(), "meridian-tests", "explorer-views", Guid.NewGuid().ToString("N")),
+                    Microsoft.Extensions.Logging.Abstractions.NullLogger<FileFinancialRecordExplorerSavedViewStore>.Instance));
+            services.AddSingleton(sp => new FinancialRecordExplorerReadService(
+                sp.GetRequiredService<IFinancialRecordExplorerSavedViewStore>(),
+                sp.GetService<StrategyRunReadService>()));
+        }, currentUserPermissions: UserPermission.ViewStrategies);
+
+        var response = await app
+            .GetTestClient()
+            .GetAsync($"/api/workstation/financial-record-explorers/{explorerId}");
+
+        // Asserted on the authorization outcome rather than a success status: this fixture does not
+        // register every service the explorers read, so an admitted request can still fail inside the
+        // handler. What matters here is which side of the gate the caller lands on.
+        if (runBacked)
+        {
+            response.StatusCode.Should().NotBe(
+                HttpStatusCode.Forbidden,
+                "the run-ledger routes already serve this data under ViewStrategies");
+        }
+        else
+        {
+            response.StatusCode.Should().Be(
+                HttpStatusCode.Forbidden,
+                "this explorer is not run-backed, so a strategy permission is not a second door to it");
+        }
+    }
+
+    /// <summary>
     /// The inbox aggregates four families, so gating the route on one family's permission shuts the
     /// other three out of items they may read. Analysis, ReportingAnalyst and ReadOnly all hold
     /// ViewStrategies without ViewTrades; before the route admitted the union they received 403 and

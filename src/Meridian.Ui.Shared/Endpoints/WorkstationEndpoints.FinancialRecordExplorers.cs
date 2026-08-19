@@ -24,13 +24,18 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
+            if (!CanReadFinancialRecordExplorer(context, explorerId))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var query = BuildFinancialRecordExplorerQuery(context);
             var explorer = await service.GetExplorerAsync(explorerId, tenantId, query, context.RequestAborted).ConfigureAwait(false);
             return explorer is null
                 ? Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." })
                 : Results.Json(explorer, jsonOptions);
         })
-        .WithName("GetWorkstationFinancialRecordExplorer").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .WithName("GetWorkstationFinancialRecordExplorer").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.AdminMaintenance)
         .Produces<FinancialRecordExplorerDto>(200)
         .Produces(404);
 
@@ -45,6 +50,11 @@ public static partial class WorkstationEndpoints
                 return Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." });
             }
 
+            if (!CanReadFinancialRecordExplorer(context, explorerId))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             if (!TryResolveRequiredTenantId(context, out var tenantId))
             {
                 return Results.Unauthorized();
@@ -55,7 +65,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound(new { error = $"Unknown financial record '{recordId}'." })
                 : Results.Json(record, jsonOptions);
         })
-        .WithName("GetWorkstationFinancialRecordExplorerRecord").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .WithName("GetWorkstationFinancialRecordExplorerRecord").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.AdminMaintenance)
         .Produces<FinancialRecordExplorerSelectedRecordDto>(200)
         .Produces(404);
 
@@ -127,5 +137,38 @@ public static partial class WorkstationEndpoints
         }
 
         return new FinancialRecordExplorerFilterDto(filterId, filterId, filterValue);
+    }
+
+    /// <summary>
+    /// The route admits strategy readers because the ledger and portfolio explorers are projections
+    /// of strategy-run detail -- the same data the run-ledger, trial-balance and journal routes serve
+    /// under ViewStrategies, so refusing it here while serving it there would break the drill-in
+    /// links between them. The other two explorers have no such second door: security-instrument is
+    /// security-master data and report-line-provenance is reporting data, so a caller holding only a
+    /// strategy permission is refused those rather than admitted to all four by a widened route.
+    /// </summary>
+    private static bool CanReadFinancialRecordExplorer(HttpContext context, string explorerId)
+    {
+        if (EndpointAuthorization.HasAnyPermission(
+                context,
+                UserPermission.ViewDirectLending,
+                UserPermission.ViewSecurityMaster,
+                UserPermission.ManageDirectLending,
+                UserPermission.ModifySecurityMaster,
+                UserPermission.AdminMaintenance))
+        {
+            return true;
+        }
+
+        var normalized = (explorerId ?? string.Empty).Trim();
+        var isRunBacked =
+            normalized.Equals(FinancialRecordExplorerReadService.LedgerExplorerId, StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals(FinancialRecordExplorerReadService.PortfolioExplorerId, StringComparison.OrdinalIgnoreCase);
+
+        return isRunBacked &&
+               EndpointAuthorization.HasAnyPermission(
+                   context,
+                   UserPermission.ViewStrategies,
+                   UserPermission.ManageStrategies);
     }
 }

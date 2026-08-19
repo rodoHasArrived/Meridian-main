@@ -483,7 +483,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyReadServiceUnavailable()
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationGovernance").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .WithName("GetWorkstationGovernance").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<WorkstationAccountingPayload>(200)
         .Produces(503)
         .RequireWorkstationTenantCompanyScope();
@@ -495,7 +495,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyReadServiceUnavailable()
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationAccounting").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .WithName("GetWorkstationAccounting").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<WorkstationAccountingPayload>(200)
         .Produces(503)
         .RequireWorkstationTenantCompanyScope();
