@@ -150,11 +150,19 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             }
             else
             {
-                candidateForReplay = (await BuildCandidateWriteAsync(
+                // A retained journal for this (book, source event) is only a replay of *this*
+                // request if it is the journal this request would produce. The pair is uniquely
+                // indexed in the store, so a posting that disagrees with the retained one can
+                // never be appended: reporting it as a replay would acknowledge an approved
+                // posting that the books will never contain. Build and normalize the complete
+                // posting command, then confirm the retained journal against it.
+                var replayWrite = await BuildCandidateWriteAsync(
                         WithPostingContext(request, actor, ledgerBookId, sourceEventId),
                         assetAuthority,
                         ct)
-                    .ConfigureAwait(false)).Candidate;
+                    .ConfigureAwait(false);
+                candidateForReplay = replayWrite.Candidate;
+                EnsureRetainedJournalIsThisPosting(existing, replayWrite, ledgerBookId, sourceEventId);
             }
             var journalImpact = BuildJournalImpact(existing, ledgerBook.BaseCurrency);
             if (assetAuthority is not null)
@@ -1542,6 +1550,56 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             TenantId = NormalizeOptional(request.TenantId) ?? request.Candidate.TenantId,
             CompanyId = NormalizeOptional(request.CompanyId) ?? request.Candidate.CompanyId
         };
+
+    /// <summary>
+    /// Fails closed unless the retained journal is the one this posting would have written.
+    /// <para>
+    /// <c>(aggregate_id, source_event_id)</c> is uniquely indexed, so at most one journal can
+    /// exist for the pair. That makes "a journal already exists" mean one of exactly two things:
+    /// this posting was already applied, or a different posting is holding the identity. Only the
+    /// first is a replay. Treating the second as one returns success for accounting content that
+    /// was never — and can never be — appended.
+    /// </para>
+    /// </summary>
+    private static void EnsureRetainedJournalIsThisPosting(
+        LedgerJournalEntryRecord existing,
+        AccountingPostingCandidateWriteResult rebuilt,
+        Guid ledgerBookId,
+        Guid sourceEventId)
+    {
+        // No durable write means the rebuild could not produce a posting to compare against —
+        // a blocked candidate, or a policy that no longer resolves. The retained journal may well
+        // be this posting, but nothing here can establish that, and an unverifiable replay must
+        // not be reported as a completed one.
+        if (rebuilt.Write is not { } candidateWrite)
+        {
+            throw new InvalidOperationException(
+                $"Ledger book '{ledgerBookId:D}' already retains journal '{existing.Entry.JournalEntryId:D}' for source event " +
+                $"'{sourceEventId:D}', but this request could not be rebuilt into a posting to verify it against. " +
+                "Resolve the candidate before retrying so the retained journal can be confirmed as the same posting.");
+        }
+
+        // Compare like with like. The rebuilt write is pre-approval, and the append path binds
+        // scope and the posting-command identity onto the write as it approves it, so the
+        // retained record carries values this rebuild has not applied yet. The posting command
+        // id itself is deterministic for a given request, so aligning the stages compares the
+        // same identity rather than discarding it.
+        var approvedShape = candidateWrite with
+        {
+            AggregateId = ledgerBookId,
+            LedgerBookId = ledgerBookId,
+            SourceEventId = sourceEventId,
+            CommandId = candidateWrite.PostingCommand?.CommandId ?? candidateWrite.CommandId
+        };
+        if (RetainedPostingEquivalence.Matches(existing, approvedShape, out var difference))
+            return;
+
+        throw new InvalidOperationException(
+            $"Ledger book '{ledgerBookId:D}' already retains journal '{existing.Entry.JournalEntryId:D}' for source event " +
+            $"'{sourceEventId:D}' with different accounting content ({difference}). The retained journal was left unchanged " +
+            "and this posting was not appended; post a correction against the retained journal, or submit this posting " +
+            "under its own source event.");
+    }
 
     private static async Task<LedgerJournalEntryRecord?> FindExistingPostingAsync(
         ILedgerJournalStore journalStore,

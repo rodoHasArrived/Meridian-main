@@ -5541,6 +5541,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.TaxLotDisposalHistory.cs
 │   │   │   ├── PostgresLedgerJournalStore.Validation.cs
 │   │   │   ├── PostgresLedgerJournalStore.WashSale.cs
+│   │   │   ├── RetainedPostingEquivalence.cs
 │   │   │   └── WashSaleDeferralRecord.cs
 │   │   ├── Maintenance
 │   │   │   ├── ArchiveMaintenanceModels.cs
@@ -9616,6 +9617,8 @@ Meridian-main
 │   │   │   │   └── PostgresFundStructureStoreTests.cs
 │   │   │   ├── Integrations
 │   │   │   │   └── FileProviderIntegrationManifestStoreTests.cs
+│   │   │   ├── Ledger
+│   │   │   │   └── RetainedPostingEquivalenceTests.cs
 │   │   │   ├── Maintenance
 │   │   │   │   └── ScheduledArchiveMaintenanceServiceTests.cs
 │   │   │   ├── Operations

@@ -1069,6 +1069,49 @@ public sealed class AccountingPostingCandidateServiceTests
     }
 
     [Fact]
+    public async Task PostCandidateAsync_DifferentEconomicsUnderRetainedSourceEventFailsClosed()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var candidateService = await CreateSeededCandidateServiceAsync(ledgerBookId: ledgerBookId);
+        var store = new RecordingLedgerJournalStore(
+            BuildLedgerBook(ledgerBookId, AccountingBasisKindDto.Gaap),
+            BuildPeriod(periodId, ledgerBookId));
+        var service = new AccountingPostingCandidatePostService(candidateService, store);
+
+        var firstCandidate = BuildCandidateRequest(
+            ledgerBookId,
+            periodId,
+            sourceEventId,
+            AccountingBasisKindDto.Gaap,
+            "gaap-accrual-v1");
+        var first = await service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            firstCandidate,
+            "reviewer@meridian.local",
+            "approval-generated-interest-202605",
+            EvidenceLinks: [ApprovalEvidence("fund-alpha", ledgerBookId, sourceEventId)]));
+
+        // Same (book, source event); materially different economics. The pair is uniquely
+        // indexed, so this posting can never be appended — it must not be reported as posted.
+        var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            firstCandidate with
+            {
+                EventAmount = 999_999.00m,
+                Description = "Completely different posting under a reused source event"
+            },
+            "reviewer@meridian.local",
+            "approval-generated-interest-202605",
+            EvidenceLinks: [ApprovalEvidence("fund-alpha", ledgerBookId, sourceEventId)]));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*already retains journal*different accounting content*");
+        store.Appended.Should().ContainSingle();
+        store.Appended[0].Entry.Lines.Sum(line => line.Debit).Should().Be(125.44m);
+        first.WasReplay.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task PostCandidateAsync_AggregateMustEqualLedgerBook()
     {
         var ledgerBookId = Guid.NewGuid();

@@ -153,6 +153,33 @@ admission, fill acceptance *is* a durability boundary.
   than giving up: those fills exist nowhere else, so replay is delayed, never cancelled. Repeated
   critical log lines about loading retained handoffs mean the backlog is still undelivered.
 
+## Accounting Posting Replay Semantics
+
+A generated posting candidate is posted against a `(ledger book, source event)` pair that is
+uniquely indexed in the journal store, so that pair can hold exactly one journal.
+
+- Re-posting the same candidate is a replay and returns the retained journal unchanged. This is
+  the normal, safe response to a timeout or a retried operator action.
+- A replay is verified, not assumed. The request is rebuilt into its complete posting command and
+  compared against the retained journal on economic content — period, policy, rule, lineage,
+  timing, idempotency key, and the ordered lines with their accounts, amounts, and dimensions.
+  Generated journal and line identities are excluded because a rebuild legitimately mints new
+  ones; approval identity, approval state, and evidence retention stamps are excluded because
+  they are recorded at append time.
+- A posting that disagrees with the retained journal is refused with a conflict naming the
+  retained journal and the field that differed. It is *not* reported as a replay. Because the
+  identity is already held, such a posting can never be appended, so acknowledging it would
+  confirm accounting content that the books will never contain. Post a correction against the
+  retained journal, or resubmit under the posting's own source event.
+- A request that cannot be rebuilt into a posting — a blocked candidate, or a policy that no
+  longer resolves — is also refused rather than replayed. The retained journal may well be that
+  posting, but nothing at that point can establish it, and an unverifiable replay must not be
+  reported as a completed one. Resolve the candidate, then retry.
+
+Treat a conflict here as a reconciliation signal, not a transient error: two different postings
+have been approved against one source event, and an operator has to decide which one the books
+should carry.
+
 ## Recovery Decision Matrix
 
 1. Detect symptom and scope (single provider, module, or full workflow surface).
