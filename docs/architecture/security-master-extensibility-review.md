@@ -38,9 +38,10 @@ risks that compound as new asset classes land.
 > [Verification pass — 2026-08-14](#verification-pass--2026-08-14) for the open list and
 > re-ranked priorities as of that date.
 >
-> **Verification pass, 2026-08-19.** Re-read against current source at `7ed160dc`. The Security
-> Master surface is materially unchanged since 2026-08-14 — every finding and priority below stands
-> as written, and one new observation was added. See
+> **Verification pass, 2026-08-19.** Re-read against current source at `7ed160dc`. Every structural
+> finding and priority below stands as written. One improvement landed since 2026-08-14 —
+> authorization declared on ~36 Security Master read endpoints — and one new observation was added
+> (a tested calculation library with no production caller). See
 > [Verification pass — 2026-08-19](#verification-pass--2026-08-19).
 
 ---
@@ -95,6 +96,12 @@ all derived economics so consumers cannot diverge.
 **Operational readiness is modeled per asset class.** `SecurityMasterOperationalReadinessService`
 carries per-class identifier, term, evidence, and ledger-depth requirements with hard-blocker flags.
 Few systems at this stage know what "ready" means per asset class.
+
+**The read surface is authorization-gated.** *(Added 2026-08-19.)* Roughly 36 Security Master read
+endpoints carry `RequireAnyPermission(ViewSecurityMaster, ModifySecurityMaster)`
+(`SecurityMasterEndpoints.cs`), so issuer terms, validation reports, and profile catalogs are not
+readable by any authenticated caller. Mutating endpoints require `ModifySecurityMaster` and are
+rate-limited under `UiEndpoints.MutationRateLimitPolicy`.
 
 **Auditability is durable.** Migration 025 moved the conflict store and revision-lifecycle store off
 process-local memory specifically so "a publish only ever runs against a revision that was durably
@@ -485,15 +492,27 @@ history; asset-class-scoped projection replay.
 Re-read against current source at `7ed160dc`, five days after the previous pass. No code was
 changed by this pass; no tests were run.
 
-### Summary: the subsystem did not move
+### Summary: one real change, otherwise cosmetic
 
-493 commits landed repo-wide since `4b39e9da8`. Across the entire Security Master surface —
-`src/Meridian.FSharp/Domain/`, `src/Meridian.Contracts/SecurityMaster/`,
-`src/Meridian.Application/SecurityMaster/`, `src/Meridian.Storage/SecurityMaster/`,
-`src/Meridian.ReferenceData/` — the diff is **15 insertions and 13 deletions across 7 files**, all
-of it cosmetic: routing inline SHA-256 sites onto `Sha256Digest`, and replacing the last literal
-schema-version writes with named constants. No structural change, and nothing that closes,
-narrows, or reopens a finding.
+493 commits landed repo-wide since `4b39e9da8`. Across the Security Master surface — the F# domain,
+interop, and calculations; `src/Meridian.Contracts/SecurityMaster/`;
+`src/Meridian.Application/SecurityMaster/`; `src/Meridian.Storage/SecurityMaster/`;
+`src/Meridian.ReferenceData/`; `src/Meridian.Instruments/`; the Security Master services in
+`src/Meridian.Strategies/`; the execution gate and reporting lookup; and the workstation endpoint
+surface — the diff is **86 insertions and 86 deletions across 21 files**.
+
+**One of those changes is substantive.** `SecurityMasterEndpoints.cs` accounts for 72 of the 144
+changed lines across three commits (`089aabee`, `95166888`, `862dc32a`), which declare
+`RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)` on
+roughly 36 Security Master **read** endpoints that previously carried no explicit permission
+declaration. This is authorization hardening on the reference-data read surface and belongs in
+*What's Solid*, not in a "nothing moved" summary: an institutional Security Master should not
+expose issuer terms, validation reports, or profile catalogs to any authenticated caller.
+
+The remaining 18 files are genuinely cosmetic — routing inline SHA-256 sites onto `Sha256Digest`,
+and replacing the last literal schema-version writes with named constants.
+
+No change closes, narrows, or reopens any structural finding.
 
 **Every open item from the 2026-08-14 pass was re-verified against source and stands verbatim:**
 
@@ -503,11 +522,12 @@ narrows, or reopens a finding.
 | 2 | Three modeling routes for MBS/ABS/CLO | No ruling landed. `SecurityMasterOperationalReadinessService.cs:157` still labels `CustomAsset` "MBS / ABS / CLO / CMBS / private assets"; no ADR exists |
 | 1 | Taxonomy outruns term model | `BondCouponStructure` is still exactly `Fixed` / `Floating` / `ZeroCoupon` (`SecurityMaster.fs:222-225`) |
 | 8 | Third factor-schedule shape | `SecurityFactorScheduleEntry` is still separately declared at `SecurityMasterAccountingEventService.cs:89` and used across `SecurityMasterAccountingEventSourceAdapter` |
-| 7 | Corporate actions: wide table | `corporate_actions` still carries per-event-type nullable columns and no JSONB payload (`003_security_master_corp_actions.sql:5-21`). Migrations still end at 028 |
+| 7 | Corporate actions: wide table | `corporate_actions` still carries per-event-type nullable columns and no JSONB payload. Migration `003` declares 8 typed payload columns (`:5-21`); `021` adds `record_date`, `lifecycle_state`, `supersedes_corp_act_id`, and one more payload column, `redemption_price_percent_of_par` (`:7-17`). Migrations still end at 028 |
 | 10 | Straight-line amortization only | `FaceValueLot.AmortizedBasisAsOf` is still day-count-weighted straight-line (`FaceValueLot.cs:94-113`); `BondAmortizationMethod.ConstantYield` still has no consumer |
 | 10 | Per-process projection cache | `SecurityMasterProjectionCache` is still a bare `ConcurrentDictionary` with no eviction; `ReplaceAll` still calls `_byId.Clear()` before repopulating (`SecurityMasterProjectionCache.cs:18-25`) |
-| 4 | ~7 registries per asset class | Class counts still agree at 26 across the F# DU, `SecurityAssetTermsSchema`, and the catalog; both codec arms are still hand-written |
-| — | Relational projections | Still 11 projection stores for 26 classes; `IntentionallyUnprojectedAssetClasses` still lists the same 15 private/alternative classes (`SecurityAssetTermsSchemaTests.cs:21-38`) |
+| 4 | ~7 registries per asset class | Class counts still agree at 26, name for name: the `SecurityKind` DU has 26 cases; `SecurityAssetClassCatalog.Descriptors` has 26 entries (27 `AssetClass:` literals, of which `Unknown` is the separate `DefaultDescriptor` excluded from `Descriptors`); `SecurityAssetTermsSchema.FieldsByAssetClass` has 26 keys. Both codec arms are still hand-written |
+| 9 | Equity has bespoke amendment endpoints | Still present, and there are **two** routes to `AmendPreferredEquityTermsAsync`, not one: `AmendSecurityMasterPreferredEquityTerms` (`SecurityMasterEndpoints.cs:524`) and `PatchSecurityPreferredTerms` (`:1125`), with the convertible pair alongside. Both are permission-gated and rate-limited; both bypass the workbench Draft→Submitted→Approved→Published gate |
+| — | Relational projections | Still 11 projection stores for 26 classes (11 + the 15 declared gaps = 26); `IntentionallyUnprojectedAssetClasses` still lists the same 15 private/alternative classes (`SecurityAssetTermsSchemaTests.cs:21-38`) |
 
 ### New observation: the missing calculation math already exists, unwired
 
@@ -524,10 +544,14 @@ unit-tested formula library carrying exactly the math two open findings report a
   `fxRemeasurement`, `accruedInterest`, dirty/clean price conversion, and call/put
   in-the-money predicates.
 
-**The module has no production caller.** Grepping `SecurityCalculations` across `src/` returns only
-its own declaration and its `.fsproj` compile entry; the sole consumers are assertions in
-`tests/Meridian.FSharp.Tests/SecurityCalculationsTests.fs`. It predates both prior passes (added
-2026-08-10) and neither caught it.
+**The module has no production caller.** It carries `[<RequireQualifiedAccess>]`
+(`SecurityCalculations.fs:51`), so no consumer can reach these functions unqualified through
+`open Meridian.FSharp.Calculations` — every call site must spell `SecurityCalculations.`. Grepping
+that token across `src/` returns only its own declaration and its `.fsproj` compile entry; the sole
+consumers are assertions in `tests/Meridian.FSharp.Tests/SecurityCalculationsTests.fs`, and the one
+other file that opens the namespace (`tests/.../CalculationTests.fs`) opens `Aggregations`. The
+attribute is what makes the grep conclusive rather than suggestive. The module predates both prior
+passes (added 2026-08-10) and neither caught it.
 
 This is the `SecurityAssetPackRegistry` pattern from item 10 recurring in a second place —
 correct-looking capability that no production path reaches — with one difference that matters: the
@@ -572,9 +596,15 @@ Security Master contracts, the 58 `Meridian.Application` Security Master service
 `Meridian.Storage` stores and 28 migrations, the workstation endpoint surfaces, and the codec
 round-trip and asset-class-support test suites.
 
-The 2026-08-19 verification pass diffed the full Security Master surface against `4b39e9da8`,
-re-verified each open finding against its cited source location, re-counted the asset-class
-surfaces and projection stores, and swept `src/Meridian.FSharp/Calculations/` for calculation
-capability not reachable from a production path.
+The 2026-08-19 verification pass diffed the Security Master surface against `4b39e9da8` across the
+F# domain/interop/calculations, `Meridian.Contracts/SecurityMaster/`,
+`Meridian.Application/SecurityMaster/`, `Meridian.Storage/SecurityMaster/`,
+`Meridian.ReferenceData/`, `Meridian.Instruments/`, the Security Master services in
+`Meridian.Strategies/`, the execution gate, the reporting lookup, and
+`Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs`; re-verified each open finding against
+its cited source location; re-counted the asset-class surfaces and projection stores from their
+actual declarations; and swept `src/Meridian.FSharp/Calculations/` for calculation capability not
+reachable from a production path. The browser workstation screens and the
+`tests/Meridian.Tests/SecurityMaster/` suite were not re-diffed by this pass.
 
 No code was changed. No tests were run — this review makes no behavioral claims requiring execution.
