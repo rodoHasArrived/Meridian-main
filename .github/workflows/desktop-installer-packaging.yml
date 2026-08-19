@@ -536,8 +536,11 @@ jobs:
 
           $priorTag = $env:CONFIGURED_PRIOR_TAG
           if ([string]::IsNullOrWhiteSpace($priorTag)) {
+            # Prereleases are excluded deliberately: the evaluation lane publishes self-signed
+            # prereleases, and certifying a production update against one would prove an upgrade
+            # path from an artifact that carries no publisher identity.
             $priorTag = gh api 'repos/${{ github.repository }}/releases?per_page=20' `
-              --jq '[.[] | select(.draft == false and .tag_name != "${{ github.ref_name }}")][0].tag_name'
+              --jq '[.[] | select(.draft == false and .prerelease == false and .tag_name != "${{ github.ref_name }}")][0].tag_name'
             if ($LASTEXITCODE -ne 0) {
               throw "Could not query published releases, so whether an N-1 package exists is unknown. Refusing to assume this is a first release."
             }

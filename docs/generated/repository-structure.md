@@ -885,6 +885,7 @@ Meridian-main
 │   │   ├── codeql.yml
 │   │   ├── copilot-setup-steps.yml
 │   │   ├── demo-smoke.yml
+│   │   ├── desktop-evaluation-prerelease.yml
 │   │   ├── desktop-installer-packaging.yml
 │   │   ├── desktop-screenshot-capture.yml
 │   │   ├── desktop-standalone-publish.yml
