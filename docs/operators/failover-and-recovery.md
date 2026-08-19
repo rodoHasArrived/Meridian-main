@@ -202,6 +202,31 @@ Treat a conflict here as a reconciliation signal, not a transient error: two dif
 have been approved against one source event, and an operator has to decide which one the books
 should carry.
 
+## ETL Source Retention Semantics
+
+An ETL source's archive and error locations are single directories shared by every run of that
+source, and sources are enumerated by file pattern with no cross-run name dedupe. A scheduled drop
+that always lands the same well-known name resolves to the same retention path forever.
+
+- Retention never overwrites. A free destination name is used as-is, so ordinary runs keep the
+  original file name.
+- A destination already holding **identical** content means the move completed on an earlier
+  attempt. The source is consumed and no second copy is written, so a retried or resumed run
+  converges rather than accumulating duplicates.
+- A destination already holding **different** content is never replaced. The incoming source is
+  retained beside it under a deterministic content-addressed name,
+  `<name>.sha256-<first 16 hex of the content hash><extension>`. Both sources survive, and the
+  same content always resolves to the same name, so replay stays idempotent.
+- If that content-addressed path is somehow occupied by different content, post-processing fails
+  closed and leaves the source in place rather than overwriting. Resolve the retained file before
+  retrying.
+- SFTP verifies destination contents before removing anything, and only pays for the transfer when
+  a name actually collides; the ordinary path costs one existence check.
+
+Expect `positions.sha256-….csv` style names in a retention directory to mean two genuinely
+different sources arrived under one name — normally a re-sent or corrected file. Reconcile which
+one the books should reflect rather than deleting either.
+
 ## Recovery Decision Matrix
 
 1. Detect symptom and scope (single provider, module, or full workflow surface).
