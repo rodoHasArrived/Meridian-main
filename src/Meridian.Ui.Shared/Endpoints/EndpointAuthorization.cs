@@ -68,8 +68,19 @@ public static class EndpointAuthorization
     /// already did once, and the anonymous path silently allowed what the key path refused.
     /// </summary>
     internal static bool IsReadOnlyRoleMutation(UserRole role, string method)
-        => role == UserRole.ReadOnly &&
+        => IsReadOnlyRole(role) &&
            !(HttpMethods.IsGet(method) || HttpMethods.IsHead(method) || HttpMethods.IsOptions(method));
+
+    /// <summary>
+    /// The built-in roles whose permission sets are entirely view and export grants -- they hold no
+    /// Manage, Modify, Execute or Admin permission at all. Restricting them to safe methods therefore
+    /// takes away nothing they were meant to do; it only closes the legacy routes that mutate while
+    /// declaring a view permission. Keyed on the role rather than on its name, so a role that gains a
+    /// command permission later stops being covered by this rule rather than being silently
+    /// restricted by it.
+    /// </summary>
+    private static bool IsReadOnlyRole(UserRole role)
+        => role is UserRole.ReadOnly or UserRole.Analysis or UserRole.Executive;
 
     public static bool HasPermission(HttpContext context, UserPermission required)
         => TryGetPermissions(context, out var permissions) &&

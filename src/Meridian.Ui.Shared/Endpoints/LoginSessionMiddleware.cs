@@ -129,7 +129,12 @@ public sealed class LoginSessionMiddleware
                 // silently become "authorization is absent". A deployment that genuinely wants an
                 // anonymous operator to work the surface -- the demo runtime does -- opts in by naming
                 // the role that operator carries, and nothing is granted without that explicit choice.
-                if (!TryResolveAnonymousRole(out var anonymousRole))
+                // A request carrying an API key is judged by the key's own role downstream, so an
+                // unusable anonymous posture must not decide it: without this, a typo in an
+                // MDC_ANONYMOUS_ROLE nobody is using would disable every independently configured
+                // API-key client with a 503 they cannot act on.
+                if (!TryResolveAnonymousRole(out var anonymousRole) &&
+                    !ApiKeyMiddleware.IsApiKeyCandidate(context))
                 {
                     await WriteAnonymousRoleConfigurationErrorAsync(context, path);
                     return;
