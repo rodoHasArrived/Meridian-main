@@ -247,6 +247,28 @@ public sealed class RetainedPostingEquivalenceTests
 
     // The line validates functional = transaction x rate, so these pairs are chosen to balance
     // against the default 125.44 functional debit.
+    [Fact]
+    public void Matches_AmountRoundedToStoredScale_IsStillAnExactReplay()
+    {
+        // Journal legs are numeric(38,10); a .NET decimal carries more fractional digits, so the
+        // retained value comes back rounded while the retry resubmits the original.
+        var retained = BuildRecord(BuildEntry(Guid.NewGuid(), Guid.NewGuid(), amount: 125.4400000000m));
+        var candidate = BuildWrite(BuildEntry(Guid.NewGuid(), Guid.NewGuid(), amount: 125.44000000001m));
+
+        RetainedPostingEquivalence.Matches(retained, candidate, out var difference).Should().BeTrue();
+        difference.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Matches_AmountDifferingWithinStoredScale_IsAConflict()
+    {
+        var retained = BuildRecord(BuildEntry(Guid.NewGuid(), Guid.NewGuid(), amount: 125.44m));
+        var candidate = BuildWrite(BuildEntry(Guid.NewGuid(), Guid.NewGuid(), amount: 125.4400000001m));
+
+        RetainedPostingEquivalence.Matches(retained, candidate, out var difference).Should().BeFalse();
+        difference.Should().Be("line 0 amount");
+    }
+
     private static LedgerEntryCurrency Currency(string transactionCurrency, decimal fxRate, decimal transactionDebit)
         => new(transactionCurrency, "USD", transactionDebit, 0m, fxRate);
 

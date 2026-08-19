@@ -172,9 +172,14 @@ uniquely indexed in the journal store, so that pair can hold exactly one journal
   identity, so a line whose account name differs only in casing targets a different balance and
   is a conflict. Policy, policy version, rule, and rule version are retained verbatim and are
   matched the same ordinal way the governed posting target resolves its own collisions.
-- Accounting timestamps are compared at the precision the store keeps. PostgreSQL resolves to
-  microseconds while .NET carries finer ticks, so a submitted timestamp comes back truncated;
-  comparing raw ticks would reject a retry that resubmitted the identical value.
+- Values are compared at the precision the store keeps, not the precision .NET carries.
+  Timestamps resolve to microseconds and amounts, transaction amounts, and FX rates to ten
+  decimal places, so a submitted value comes back rounded; comparing raw values would reject a
+  retry that resubmitted the identical figure.
+- The replay path applies the same ledger-book scope validation the append path applies. A
+  request that could never have been posted — a line carrying no book dimension, for instance —
+  is refused rather than acknowledged as posted because some other path already retains a
+  journal under that identity.
 - Normalization before comparison is deliberate. A posting with no treasury context drafts no
   idempotency key and is retained carrying the posting command's key, so an un-normalized
   comparison would reject an ordinary retry over a field the rebuild had not been given yet.

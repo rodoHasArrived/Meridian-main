@@ -1,4 +1,5 @@
 using Meridian.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
@@ -22,6 +23,9 @@ namespace Meridian.Storage.Ledger;
 /// </summary>
 public static class RetainedPostingEquivalence
 {
+    /// <summary>Decimal scale of the ledger's durable numeric columns.</summary>
+    private const int StoredDecimalScale = 10;
+
     /// <summary>
     /// Returns <see langword="true"/> when <paramref name="retained"/> is the journal
     /// <paramref name="candidate"/> would have produced. On <see langword="false"/>,
@@ -95,8 +99,11 @@ public static class RetainedPostingEquivalence
             if (retainedLine.Account != candidateLine.Account)
                 return Differs($"line {index} account", out difference);
 
-            if (retainedLine.Debit != candidateLine.Debit || retainedLine.Credit != candidateLine.Credit)
+            if (!AmountMatches(retainedLine.Debit, candidateLine.Debit)
+                || !AmountMatches(retainedLine.Credit, candidateLine.Credit))
+            {
                 return Differs($"line {index} amount", out difference);
+            }
             if (!string.Equals(retainedLine.Description, candidateLine.Description, StringComparison.Ordinal))
                 return Differs($"line {index} description", out difference);
             if (!DimensionsMatch(retainedLine.Dimensions, candidateLine.Dimensions))
@@ -105,7 +112,7 @@ public static class RetainedPostingEquivalence
             // FX rate are durable per leg. Two legs can agree on functional debits and credits
             // while booking a different transaction currency or rate, which is a different
             // posting. Structural: a scalar-only record, so equality compares by value.
-            if (retainedLine.Currency != candidateLine.Currency)
+            if (!CurrencyMatches(retainedLine.Currency, candidateLine.Currency))
                 return Differs($"line {index} currency", out difference);
         }
 
@@ -227,6 +234,36 @@ public static class RetainedPostingEquivalence
     }
 
     /// <summary>
+    /// Compares two amounts at the scale the store actually keeps. Journal legs are
+    /// <c>numeric(38, 10)</c>, and a .NET decimal carries more fractional digits than that, so a
+    /// submitted amount comes back rounded. Comparing raw decimals would reject a retry that
+    /// resubmitted the identical value — the same failure the timestamp comparison avoids.
+    /// PostgreSQL rounds numeric half away from zero, which is what is mirrored here.
+    /// </summary>
+    private static bool AmountMatches(decimal retained, decimal candidate)
+        => ToStoredScale(retained) == ToStoredScale(candidate);
+
+    private static decimal ToStoredScale(decimal value)
+        => Math.Round(value, StoredDecimalScale, MidpointRounding.AwayFromZero);
+
+    /// <summary>
+    /// Structural comparison of a leg's currency detail at stored scale. The transaction amounts
+    /// and FX rate are <c>numeric(38, 10)</c> as well, so record equality — which compares the
+    /// raw decimals — would report a conflict for an exact replay.
+    /// </summary>
+    private static bool CurrencyMatches(LedgerEntryCurrency? retained, LedgerEntryCurrency? candidate)
+    {
+        if (retained is null || candidate is null)
+            return retained is null && candidate is null;
+
+        return TextMatches(retained.TransactionCurrency, candidate.TransactionCurrency)
+            && TextMatches(retained.FunctionalCurrency, candidate.FunctionalCurrency)
+            && AmountMatches(retained.TransactionDebit, candidate.TransactionDebit)
+            && AmountMatches(retained.TransactionCredit, candidate.TransactionCredit)
+            && AmountMatches(retained.FxRateToFunctional, candidate.FxRateToFunctional);
+    }
+
+    /// <summary>
     /// Compares two accounting timestamps at the precision the store actually keeps.
     /// PostgreSQL <c>timestamptz</c> resolves to microseconds while a .NET tick is 100ns, so a
     /// caller-supplied timestamp carrying sub-microsecond ticks — anything derived from
@@ -253,14 +290,11 @@ public static class RetainedPostingEquivalence
     /// collision semantics on this path than the governed target applies on its own.
     /// </summary>
     private static bool IdentityMatches(string? retained, string? candidate)
-        => string.Equals(TrimToNull(retained), TrimToNull(candidate), StringComparison.Ordinal);
-
-    private static string? TrimToNull(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        => string.Equals(NormalizeOptional(retained), NormalizeOptional(candidate), StringComparison.Ordinal);
 
     private static bool TextMatches(string? retained, string? candidate)
         => string.Equals(
-            string.IsNullOrWhiteSpace(retained) ? null : retained.Trim(),
-            string.IsNullOrWhiteSpace(candidate) ? null : candidate.Trim(),
+            NormalizeOptional(retained),
+            NormalizeOptional(candidate),
             StringComparison.OrdinalIgnoreCase);
 }

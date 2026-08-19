@@ -1633,6 +1633,12 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                 exception);
         }
 
+        // The append path refuses a write whose ledger-book scope does not line up, including a
+        // line with no book dimension. Applying it here too keeps the two paths honest: a request
+        // that could never have been posted must not be acknowledged as posted just because some
+        // other path already retains a journal under this identity.
+        EnsureWriteLedgerBookScope(normalizedShape, ledgerBookId);
+
         if (RetainedPostingEquivalence.Matches(existing, normalizedShape, out var difference))
             return;
 
