@@ -166,6 +166,38 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-08-19** — `Desktop Installer Release` **produced `Meridian-Setup.exe` for the first time in
+  the repository's history**
+  ([run #13 / 32281331953](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32281331953),
+  `a6703cdb`): `package-consumer-setup` completed its whole chain — build, release evidence, SPDX
+  SBOM, checksums, and a 1,043,350,783-byte artifact upload. Every prior run had failed in the
+  compile. The payload was a set of `EmbeddedResource` items, and Roslyn serialises resources into
+  the PE image's mapped field data, so `csc` aborted with
+  `ArgumentOutOfRangeException (Parameter 'mappedFieldDataStreamRva')` before emit; two
+  self-contained .NET publishes plus a PostgreSQL server distribution per runtime are far past that
+  ceiling, so this was never a size to trim but a delivery mechanism to replace. The payload is now
+  a ZIP appended to the published executable behind a fixed 138-byte ASCII trailer carrying its
+  offset, length, and SHA-256, appended **before** signing so it falls inside the Authenticode
+  hash, and located by scanning backwards for a magic that is only accepted when its own position
+  equals `offset + length` — the certificate table sits after it, so reading from EOF would not
+  work, and single-file publishing rules out deriving the offset from the PE headers.
+  `InstallationTransaction` is untouched. The build now runs the packaged executable with
+  `--verify-payload`, so the writer and the reader cannot drift apart without this lane going red.
+  The ~1 GB download is a product question this ledger does not settle.
+- **2026-08-19** — `Production Certification` run #28 on `a73d9cb4`
+  ([32278123178](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32278123178))
+  **did not fail on anything in the repository** and produced no usable frozen-commit evidence.
+  Documentation and dependency evidence passed; both PostgreSQL-backed jobs stalled in
+  `Install PostgreSQL 17 client tools`. The recovery drill sat in that step from 16:57 to 17:32
+  before the job was cancelled, and deterministic integrations were still in it 45 minutes in.
+  Run #27 had passed the same step minutes earlier on near-identical content, so the cause was
+  `apt.postgresql.org`, not the diff. None of the step's three network calls was bounded — no
+  `curl --max-time`, no `apt-get` timeout or retry — so an upstream stall consumed the job budget
+  and then reported a cancellation naming no cause. Every call is now bounded, the whole install
+  retries three times, and the step carries its own timeout. The run was cancelled and the frozen
+  commit moved forward to `ab80e297`, which also carries the consumer-setup fix, so the re-freeze
+  gains a fully green installer lane rather than six of seven.
+
 - **2026-08-19** — `Production Certification` **GREEN again after a three-run regression on `main`**
   ([run #27 / 32266755834](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32266755834),
   candidate `25f73ed4`): all four jobs passed. This closes the regression that had failed

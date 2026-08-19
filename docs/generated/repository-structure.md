@@ -5381,6 +5381,7 @@ Meridian-main
 │   ├── Meridian.Setup
 │   │   ├── InstallationTransaction.cs
 │   │   ├── Meridian.Setup.csproj
+│   │   ├── PayloadPackage.cs
 │   │   ├── Program.cs
 │   │   └── README.md
 │   ├── Meridian.Storage
@@ -8734,7 +8735,8 @@ Meridian-main
 │   │   └── StatisticsEngineTests.cs
 │   ├── Meridian.Setup.Tests
 │   │   ├── InstallationTransactionTests.cs
-│   │   └── Meridian.Setup.Tests.csproj
+│   │   ├── Meridian.Setup.Tests.csproj
+│   │   └── PayloadPackageTests.cs
 │   ├── Meridian.Tests
 │   │   ├── Application
 │   │   │   ├── Accounting
