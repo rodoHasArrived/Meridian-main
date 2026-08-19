@@ -1,4 +1,5 @@
 using Meridian.Contracts.Etl;
+using Meridian.Contracts.Integrity;
 using Meridian.Infrastructure.Etl.Sftp;
 using Meridian.Storage.Etl;
 
@@ -144,6 +145,12 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
         }
     }
 
+    /// <summary>
+    /// Moves a processed remote source into its retention directory, verifying the destination
+    /// contents before anything is removed. A free name is renamed into directly; a name holding
+    /// identical content means the move already ran, so the source is dropped; a name holding
+    /// different content resolves to a deterministic content-addressed sibling so both survive.
+    /// </summary>
     private static void MoveRemoteFile(ISftpClient client, EtlRemoteFile file, string? remoteDirectory)
     {
         if (string.IsNullOrWhiteSpace(remoteDirectory))
@@ -152,7 +159,63 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
         var normalizedDirectory = SftpRemoteLocation.NormalizePath(remoteDirectory.TrimEnd('/'));
         EnsureRemoteDirectory(client, normalizedDirectory);
 
-        client.RenameFile(file.Path, SftpRemoteLocation.Combine(normalizedDirectory, file.Name), canOverwrite: true);
+        var destination = SftpRemoteLocation.Combine(normalizedDirectory, file.Name);
+        if (!client.Exists(destination))
+        {
+            // Existence was just checked, so overwriting is never the intent here.
+            client.RenameFile(file.Path, destination, canOverwrite: false);
+            return;
+        }
+
+        // Only a collision pays for the content comparison; the ordinary path above adds one
+        // existence check and no transfers.
+        var sourceHash = ComputeRemoteHash(client, file.Path);
+        if (string.Equals(sourceHash, ComputeRemoteHash(client, destination), StringComparison.Ordinal))
+        {
+            client.DeleteFile(file.Path);
+            return;
+        }
+
+        var disambiguated = SftpRemoteLocation.Combine(
+            normalizedDirectory,
+            EtlArchiveNaming.BuildCollisionSafeName(file.Name, sourceHash));
+        if (client.Exists(disambiguated))
+        {
+            if (!string.Equals(sourceHash, ComputeRemoteHash(client, disambiguated), StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"ETL retention path '{disambiguated}' already holds different content than source '{file.Path}'. " +
+                    "The source was left in place; resolve the retained file before retrying.");
+            }
+
+            client.DeleteFile(file.Path);
+            return;
+        }
+
+        client.RenameFile(file.Path, disambiguated, canOverwrite: false);
+    }
+
+    /// <summary>
+    /// Hashes a remote file through a temporary spill rather than buffering it in memory, the same
+    /// shape <see cref="StageFileAsync"/> already uses for downloads. Only a name collision pays
+    /// for this.
+    /// </summary>
+    private static string ComputeRemoteHash(ISftpClient client, string path)
+    {
+        var tempPath = Path.Combine(Path.GetTempPath(), "meridian-sftp-hash-" + Guid.NewGuid().ToString("N") + ".tmp");
+        try
+        {
+            using var temp = new FileStream(
+                tempPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.DeleteOnClose);
+            client.DownloadFile(path, temp);
+            temp.Position = 0;
+            return Sha256Digest.Compute(temp);
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+                File.Delete(tempPath);
+        }
     }
 
     private static void EnsureRemoteDirectory(ISftpClient client, string normalizedDirectory)

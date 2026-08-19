@@ -4875,6 +4875,7 @@ Meridian-main
 │   │   │   │   ├── SftpCredentialResolver.cs
 │   │   │   │   └── SftpRemoteLocation.cs
 │   │   │   ├── CsvPartnerFileParser.cs
+│   │   │   ├── EtlArchiveNaming.cs
 │   │   │   ├── LocalFileSourceReader.cs
 │   │   │   ├── SftpFilePublisher.cs
 │   │   │   └── SftpFileSourceReader.cs
@@ -5112,6 +5113,7 @@ Meridian-main
 │   │   ├── ShareClassUnitRegisterProjector.cs
 │   │   ├── StalePricePolicy.cs
 │   │   ├── TaxCharacter.cs
+│   │   ├── ValuationProvenanceTag.cs
 │   │   ├── WashSale.cs
 │   │   └── YearEndClose.cs
 │   ├── Meridian.LifecycleSupervisor
@@ -8733,7 +8735,8 @@ Meridian-main
 │   │   ├── Application
 │   │   │   ├── Accounting
 │   │   │   │   ├── DailyMarkToMarketServiceTests.cs
-│   │   │   │   └── DailyValuationPolicyTests.cs
+│   │   │   │   ├── DailyValuationPolicyTests.cs
+│   │   │   │   └── SyntheticMarkProvenanceTests.cs
 │   │   │   ├── Auth
 │   │   │   │   ├── RolePermissionsTests.cs
 │   │   │   │   └── ScopedAccessServiceTests.cs
@@ -9187,6 +9190,7 @@ Meridian-main
 │   │   │   │   └── CredentialConfigTests.cs
 │   │   │   ├── Etl
 │   │   │   │   ├── CsvPartnerFileParserTests.cs
+│   │   │   │   ├── LocalFileSourceReaderPostProcessingTests.cs
 │   │   │   │   ├── SftpCapabilityServiceTests.cs
 │   │   │   │   └── SftpInfrastructureTests.cs
 │   │   │   ├── Http
@@ -9884,6 +9888,7 @@ Meridian-main
 │   │   │   ├── ReportingRunStoreManifestHashTests.cs
 │   │   │   ├── ReportingRunStreamEndpointTests.cs
 │   │   │   ├── ReportingTenantIsolationTests.cs
+│   │   │   ├── ReportPackProvenanceResolverTests.cs
 │   │   │   ├── ReportPackValidationServiceTests.cs
 │   │   │   ├── ReportPackWorkflowServiceTests.cs
 │   │   │   ├── RiskEndpointsTests.cs

@@ -242,8 +242,49 @@ public sealed class SftpInfrastructureTests : IDisposable
         client.RenameCalls.Should().ContainSingle(call =>
             call.OldPath == "/inbound/positions.csv" &&
             call.NewPath == "/archive/2026/06/positions.csv" &&
-            call.CanOverwrite);
+            !call.CanOverwrite);
         client.DisconnectCalls.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task PostProcessFileAsync_WhenArchiveNameHoldsDifferentContent_RetainsBothRemoteSources()
+    {
+        var client = new RecordingSftpClient { DownloadPayload = "symbol,qty\nMSFT,250\n" };
+        client.SeedRemoteFile("/archive/positions.csv", "symbol,qty\nAAPL,100\n");
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), new RecordingSftpClientFactory(client), new EnvironmentSftpCredentialResolver(), ReadySftp);
+        var source = CreateSource(
+            postProcessingAction: EtlSourcePostProcessingAction.MoveToArchive,
+            archiveLocation: "/archive");
+        var file = new EtlRemoteFile { Path = "/inbound/positions.csv", Name = "positions.csv" };
+
+        await reader.PostProcessFileAsync(source, file, succeeded: true);
+
+        // The occupied name is never renamed over, and the source is not deleted: it is renamed
+        // to a deterministic content-addressed sibling so both remote sources survive.
+        client.RenameCalls.Should().ContainSingle(call =>
+            call.OldPath == "/inbound/positions.csv" &&
+            call.NewPath.StartsWith("/archive/positions.sha256-", StringComparison.Ordinal) &&
+            call.NewPath.EndsWith(".csv", StringComparison.Ordinal) &&
+            !call.CanOverwrite);
+        client.DeletedPaths.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task PostProcessFileAsync_WhenArchiveNameHoldsIdenticalContent_IsAnIdempotentReplay()
+    {
+        var client = new RecordingSftpClient { DownloadPayload = "symbol,qty\nMSFT,250\n" };
+        client.SeedRemoteFile("/archive/positions.csv", "symbol,qty\nMSFT,250\n");
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), new RecordingSftpClientFactory(client), new EnvironmentSftpCredentialResolver(), ReadySftp);
+        var source = CreateSource(
+            postProcessingAction: EtlSourcePostProcessingAction.MoveToArchive,
+            archiveLocation: "/archive");
+        var file = new EtlRemoteFile { Path = "/inbound/positions.csv", Name = "positions.csv" };
+
+        await reader.PostProcessFileAsync(source, file, succeeded: true);
+
+        // The move already happened; finishing it means consuming the source, not renaming again.
+        client.RenameCalls.Should().BeEmpty();
+        client.DeletedPaths.Should().Equal("/inbound/positions.csv");
     }
 
     [Fact]
@@ -266,7 +307,7 @@ public sealed class SftpInfrastructureTests : IDisposable
         client.RenameCalls.Should().ContainSingle(call =>
             call.OldPath == "/inbound/positions.csv" &&
             call.NewPath == "/error/positions.csv" &&
-            call.CanOverwrite);
+            !call.CanOverwrite);
     }
 
     public void Dispose()
@@ -367,6 +408,7 @@ public sealed class SftpInfrastructureTests : IDisposable
 
         public IReadOnlyList<ISftpFileEntry> Entries { get; init; } = [];
         public string DownloadPayload { get; init; } = string.Empty;
+        public Dictionary<string, string> PayloadsByPath { get; } = new(StringComparer.Ordinal);
         public bool ThrowOnUpload { get; init; }
         public bool ThrowOnRename { get; init; }
         public int ConnectCalls { get; private set; }
@@ -390,8 +432,15 @@ public sealed class SftpInfrastructureTests : IDisposable
         public void DownloadFile(string path, Stream output)
         {
             DownloadPaths.Add(path);
-            var bytes = Encoding.UTF8.GetBytes(DownloadPayload);
+            var payload = PayloadsByPath.TryGetValue(path, out var scoped) ? scoped : DownloadPayload;
+            var bytes = Encoding.UTF8.GetBytes(payload);
             output.Write(bytes);
+        }
+
+        public void SeedRemoteFile(string path, string payload)
+        {
+            _remoteFiles.Add(path);
+            PayloadsByPath[path] = payload;
         }
 
         public void UploadFile(Stream input, string path, bool canOverwrite)
