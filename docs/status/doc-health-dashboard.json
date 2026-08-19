@@ -1,11 +1,11 @@
 {
   "total_files": 653,
-  "total_lines": 130648,
+  "total_lines": 130706,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 239,
-  "average_lines": 200.1,
+  "todo_count": 240,
+  "average_lines": 200.2,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -3241,7 +3241,7 @@
     },
     {
       "path": "docs/reference/environment-variables.md",
-      "line_count": 218,
+      "line_count": 220,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5097,9 +5097,9 @@
     },
     {
       "path": "README.md",
-      "line_count": 257,
+      "line_count": 313,
       "has_heading": true,
-      "todo_count": 4,
+      "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
