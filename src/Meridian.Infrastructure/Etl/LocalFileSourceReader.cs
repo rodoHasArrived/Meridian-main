@@ -43,14 +43,14 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
         return await _stagingStore.StageAsync(jobId, file, stream, ct).ConfigureAwait(false);
     }
 
-    public Task PostProcessFileAsync(EtlSourceDefinition source, EtlRemoteFile file, bool succeeded, CancellationToken ct = default)
+    public async Task PostProcessFileAsync(EtlSourceDefinition source, EtlRemoteFile file, bool succeeded, CancellationToken ct = default)
     {
         var action = source.DeleteAfterSuccess ? EtlSourcePostProcessingAction.Delete : source.PostProcessingAction;
         if (action == EtlSourcePostProcessingAction.LeaveInPlace ||
             (succeeded && action == EtlSourcePostProcessingAction.MoveToError) ||
             (!succeeded && action != EtlSourcePostProcessingAction.MoveToError))
         {
-            return Task.CompletedTask;
+            return;
         }
 
         switch (action)
@@ -59,26 +59,64 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
                 File.Delete(file.Path);
                 break;
             case EtlSourcePostProcessingAction.MoveToArchive when !string.IsNullOrWhiteSpace(source.ArchiveLocation):
-                MoveLocalFile(file.Path, source.ArchiveLocation);
+                await MoveLocalFileAsync(file.Path, source.ArchiveLocation, ct).ConfigureAwait(false);
                 break;
             case EtlSourcePostProcessingAction.MoveToError when !string.IsNullOrWhiteSpace(source.ErrorLocation):
-                MoveLocalFile(file.Path, source.ErrorLocation);
+                await MoveLocalFileAsync(file.Path, source.ErrorLocation, ct).ConfigureAwait(false);
                 break;
             case EtlSourcePostProcessingAction.WriteDoneMarker:
-                File.WriteAllText(file.Path + ".done", DateTimeOffset.UtcNow.ToString("O"));
+                await File.WriteAllTextAsync(file.Path + ".done", DateTimeOffset.UtcNow.ToString("O"), ct)
+                    .ConfigureAwait(false);
                 break;
         }
-
-        return Task.CompletedTask;
     }
 
-    private static void MoveLocalFile(string path, string directory)
+    /// <summary>
+    /// Moves a processed source into its retention directory without ever destroying what is
+    /// already there. A free name is used as-is; a name held by identical content means the move
+    /// already ran, so the source is simply dropped; a name held by different content resolves to
+    /// a deterministic content-addressed sibling so both sources survive.
+    /// </summary>
+    private static async Task MoveLocalFileAsync(string path, string directory, CancellationToken ct)
     {
         Directory.CreateDirectory(directory);
         var destination = Path.Combine(directory, Path.GetFileName(path));
-        if (File.Exists(destination))
-            File.Delete(destination);
-        File.Move(path, destination);
+        if (!File.Exists(destination))
+        {
+            File.Move(path, destination);
+            return;
+        }
+
+        var sourceHash = await EtlArchiveNaming.ComputeFileHashAsync(path, ct).ConfigureAwait(false);
+        var retainedHash = await EtlArchiveNaming.ComputeFileHashAsync(destination, ct).ConfigureAwait(false);
+        if (string.Equals(sourceHash, retainedHash, StringComparison.Ordinal))
+        {
+            // Already retained by an earlier attempt; completing the move is the idempotent result.
+            File.Delete(path);
+            return;
+        }
+
+        var disambiguated = Path.Combine(
+            directory,
+            EtlArchiveNaming.BuildCollisionSafeName(Path.GetFileName(path), sourceHash));
+        if (File.Exists(disambiguated))
+        {
+            // The name is derived from this content, so an occupant should carry it. Verify rather
+            // than assume: the name uses a hash prefix, and overwriting on an unverified match is
+            // the very loss this path exists to prevent.
+            var disambiguatedHash = await EtlArchiveNaming.ComputeFileHashAsync(disambiguated, ct).ConfigureAwait(false);
+            if (!string.Equals(sourceHash, disambiguatedHash, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"ETL retention path '{disambiguated}' already holds different content than source '{path}'. " +
+                    "The source was left in place; resolve the retained file before retrying.");
+            }
+
+            File.Delete(path);
+            return;
+        }
+
+        File.Move(path, disambiguated);
     }
 
     private static IEnumerable<string> ExpandPatterns(string pattern)
