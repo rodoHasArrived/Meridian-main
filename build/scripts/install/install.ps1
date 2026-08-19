@@ -1152,6 +1152,21 @@ function Install-Desktop {
         $publishExitCode = $LASTEXITCODE
 
         if ($publishExitCode -ne 0) {
+            # Assigning the teed pipeline to a variable keeps every line out of the console, so a
+            # CI failure previously pointed at a diagnostic log that no job ever uploaded. Echo the
+            # diagnostics that name the failure so the run page alone explains it.
+            $publishDiagnostics = @($publishOutput | Where-Object { "$_" -match '(?i)\berror\b|: error |MSB\d{4}|Unhandled exception' })
+            if ($publishDiagnostics.Count -gt 0) {
+                Write-Host "----- dotnet publish diagnostics (first 40 matching lines) -----"
+                $publishDiagnostics | Select-Object -First 40 | ForEach-Object { Write-Host "$_" }
+                Write-Host "----- end dotnet publish diagnostics -----"
+            }
+            else {
+                Write-Host "----- dotnet publish tail (last 40 lines; no error-shaped line matched) -----"
+                @($publishOutput) | Select-Object -Last 40 | ForEach-Object { Write-Host "$_" }
+                Write-Host "----- end dotnet publish tail -----"
+            }
+
             if ($useNotificationModule) {
                 Complete-BuildStep -Success $false -Message "Publish failed"
                 Show-BuildError -Error "Failed to publish application" `
@@ -1178,6 +1193,9 @@ function Install-Desktop {
             Architecture = $(if ($runtimeId -eq "win-arm64") { "arm64" } else { "x64" })
             PackageCertificateKeyFile = $certPfxPath
             PackageCertificatePassword = $certPassword
+        }
+        if (-not [string]::IsNullOrWhiteSpace($env:MDC_PACKAGE_VERSION)) {
+            $packageArguments.PackageVersion = $env:MDC_PACKAGE_VERSION
         }
         & $packageScript @packageArguments | ForEach-Object { Write-Host $_ }
 

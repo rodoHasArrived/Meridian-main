@@ -96,7 +96,7 @@
   </ItemGroup>
 
   <ItemGroup Label="System Libraries">
-    <PackageVersion Include="SSH.NET" Version="2025.1.0" />
+    <PackageVersion Include="SSH.NET" Version="2026.0.0" />
     <PackageVersion Include="System.Threading.Channels" Version="10.0.5" />
     <PackageVersion Include="System.IO.Pipelines" Version="10.0.7" />
     <PackageVersion Include="System.IO.Compression" Version="4.3.0" />

@@ -15,7 +15,9 @@ def _read_text(element: ET.Element, tag: str) -> str:
     return (child.text or "").strip() if child is not None else ""
 
 
-def _validate_inventory(root: ET.Element, item_name: str) -> tuple[list[str], list[tuple[str, str, str, str]]]:
+def _validate_inventory(
+    root: ET.Element, item_name: str, *, allow_empty: bool = False
+) -> tuple[list[str], list[tuple[str, str, str, str]]]:
     failures: list[str] = []
     rows: list[tuple[str, str, str, str]] = []
 
@@ -34,7 +36,7 @@ def _validate_inventory(root: ET.Element, item_name: str) -> tuple[list[str], li
 
             rows.append((code, fields["Owner"], fields["Justification"], fields["RatchetPlan"]))
 
-    if not rows:
+    if not rows and not allow_empty:
         failures.append(f"No {item_name} entries found.")
 
     return failures, rows
@@ -48,7 +50,12 @@ def main() -> int:
 
     failures: list[str] = []
     warning_failures, warning_rows = _validate_inventory(root, "MeridianGlobalNoWarn")
-    advisory_failures, advisory_rows = _validate_inventory(root, "MeridianNuGetAuditSuppression")
+    #零 advisory suppressions is the state the security policy wants, not a gate failure: an
+    # accepted NuGet risk should be removed the moment its advisory stops applying. Requiring at
+    # least one entry meant retiring the last acceptance failed this check.
+    advisory_failures, advisory_rows = _validate_inventory(
+        root, "MeridianNuGetAuditSuppression", allow_empty=True
+    )
     failures.extend(warning_failures)
     failures.extend(advisory_failures)
 
@@ -57,8 +64,14 @@ def main() -> int:
         failures.append("NoWarn must include the MeridianGlobalNoWarn item list to keep inventory authoritative.")
 
     audit_values = [node.attrib.get("Include", "") for node in root.findall(".//ItemGroup/NuGetAuditSuppress")]
-    if not any("@(MeridianNuGetAuditSuppression)" in value for value in audit_values):
+    if advisory_rows and not any("@(MeridianNuGetAuditSuppression)" in value for value in audit_values):
         failures.append("NuGetAuditSuppress must include @(MeridianNuGetAuditSuppression).")
+    declared_advisories = root.findall("ItemGroup/MeridianNuGetAuditSuppression")
+    if not declared_advisories and audit_values:
+        failures.append(
+            "NuGetAuditSuppress is wired with no MeridianNuGetAuditSuppression entries behind it; "
+            "remove the NuGetAuditSuppress item so suppressions can only arrive through the inventory."
+        )
 
     if failures:
         print("Warning suppression inventory validation failed:", file=sys.stderr)
@@ -67,6 +80,8 @@ def main() -> int:
         return 1
 
     print("Warning suppression inventory:")
+    if not advisory_rows:
+        print("- no NuGet advisory suppressions (nothing is being suppressed)")
     for code, owner, _justification, _plan in warning_rows:
         print(f"- {code} (owner: {owner})")
     for advisory, owner, _justification, _plan in advisory_rows:

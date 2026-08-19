@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 
@@ -14,6 +13,8 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        if (args.Contains("--verify-payload", StringComparer.OrdinalIgnoreCase))
+            return VerifyPayload(args);
         var installRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Meridian");
         if (args.Contains("--uninstall", StringComparer.OrdinalIgnoreCase))
             return Uninstall(installRoot);
@@ -48,7 +49,7 @@ internal static class Program
                 InstallationTransaction.CleanupAbandonedStages(installRoot);
                 StopOwnedRuntime(installRoot);
 
-                var staged = StageEmbeddedPayload(installRoot);
+                var staged = StageAppendedPayload(installRoot);
                 try
                 {
                     InstallationTransaction.Promote(staged, installRoot);
@@ -88,33 +89,70 @@ internal static class Program
         }
     }
 
-    private static StagedInstallation StageEmbeddedPayload(string installRoot)
+    private static StagedInstallation StageAppendedPayload(string installRoot)
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        var resources = assembly.GetManifestResourceNames().Where(name => name.StartsWith("payload/", StringComparison.Ordinal)).ToArray();
-        if (resources.Length == 0)
-            throw new InvalidOperationException("The signed installer does not contain a Meridian product payload.");
+        var processPath = Environment.ProcessPath
+            ?? throw new InvalidOperationException("Setup could not resolve its executable path.");
         var runtime = RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? "win-arm64" : "win-x64";
-        var prefix = $"payload/{runtime}/";
-        var runtimeResources = resources
-            .Where(name => name.StartsWith(prefix, StringComparison.Ordinal))
-            .Select(resource => new PayloadSource(
-                resource[prefix.Length..],
-                () => assembly.GetManifestResourceStream(resource)
-                    ?? throw new InvalidDataException($"Missing package resource {resource}.")))
-            .ToArray();
-        if (runtimeResources.Length == 0)
+
+        using var package = PayloadPackage.Open(processPath);
+        var payload = package.GetRuntimePayload(runtime);
+        if (payload.Count == 0)
         {
             throw new InvalidOperationException($"The signed installer does not contain a {runtime} product payload.");
         }
 
-        return InstallationTransaction.Stage(
-            installRoot,
-            ProductVersion,
-            runtime,
-            runtimeResources,
-            Environment.ProcessPath
-                ?? throw new InvalidOperationException("Setup could not resolve its executable path."));
+        return InstallationTransaction.Stage(installRoot, ProductVersion, runtime, payload, processPath);
+    }
+
+    /// <summary>
+    /// Reports whether this executable carries a readable payload for the requested runtimes.
+    /// </summary>
+    /// <remarks>
+    /// The release build runs this against the executable it has just assembled, so the payload
+    /// writer in <c>build-consumer-setup.ps1</c> is checked against <see cref="PayloadPackage"/> in
+    /// the same job that produces the artifact. It is also the supported way for someone holding a
+    /// download to check it before running it, so it never shows UI and never installs anything.
+    /// </remarks>
+    private static int VerifyPayload(string[] args)
+    {
+        try
+        {
+            var processPath = Environment.ProcessPath
+                ?? throw new InvalidOperationException("Setup could not resolve its executable path.");
+            using var package = PayloadPackage.Open(processPath);
+
+            var expected = args
+                .SkipWhile(argument => !argument.Equals("--verify-payload", StringComparison.OrdinalIgnoreCase))
+                .Skip(1)
+                .TakeWhile(argument => !argument.StartsWith("--", StringComparison.Ordinal))
+                .ToArray();
+            var present = package.GetRuntimes();
+            IReadOnlyList<string> requested = expected.Length > 0 ? expected : present;
+            foreach (var runtime in requested)
+            {
+                var files = package.GetRuntimePayload(runtime);
+                if (files.Count == 0)
+                {
+                    throw new InvalidDataException(
+                        $"The installer carries no {runtime} payload. Runtimes present: {(present.Count == 0 ? "(none)" : string.Join(", ", present))}.");
+                }
+
+                Console.Error.WriteLine($"verify-payload: {runtime}: {files.Count} file(s)");
+            }
+
+            if (present.Count == 0)
+            {
+                throw new InvalidDataException("The installer payload archive is empty.");
+            }
+
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"verify-payload: {ex.Message}");
+            return 2;
+        }
     }
 
     private static bool IsPathWithin(string? candidatePath, string directory)

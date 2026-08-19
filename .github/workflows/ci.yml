@@ -147,6 +147,20 @@ jobs:
         run: |
           python3 build/scripts/docs/run-docs-automation.py --scripts check-ai-handoff-strict,prompt-route-linter,handoff-packet-generator,check-handoff-packet-schema,check-ai-routing-parity --json-output docs/status/docs-automation-summary.json --summary-output docs/status/docs-automation-summary.md
 
+      # docs/generated/repository-structure.md is a function of the whole repo tree, and the
+      # doc-health/workflow-drift artifacts are derived from it. documentation.yml owns the full
+      # drift check but its triggers are path-filtered to the docs subsystem, so a PR that adds a
+      # file anywhere else merges green and then reds the weekly Production Certification run.
+      # These three generators cost ~1.5s combined, so gating them here is close to free.
+      - name: Reject whole-repo generated documentation drift
+        run: |
+          python3 build/scripts/docs/run-docs-automation.py --scripts generate-structure-docs,generate-health-dashboard,generate-workflow-manifest
+          # The automation profile runs generate-structure-docs in structure mode only, so the
+          # workflows overview it also owns needs its own invocation. Adding a workflow file
+          # otherwise merges green here and reds the documentation lane.
+          python3 build/scripts/docs/generate-structure-docs.py --workflows-only
+          git diff --exit-code -- docs/generated/repository-structure.md docs/generated/workflows-overview.md docs/status/doc-health-dashboard.json docs/status/doc-health-dashboard.md docs/status/workflow-drift-report.md
+
       - name: Enforce mode escalation policy
         run: |
           python3 build/scripts/docs/check-mode-escalation.py --route-json docs/status/prompt-route-lint-report.json --summary-json docs/status/docs-automation-summary.json --summary
