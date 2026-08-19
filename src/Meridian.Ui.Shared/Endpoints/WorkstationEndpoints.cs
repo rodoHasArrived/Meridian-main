@@ -154,13 +154,13 @@ public static partial class WorkstationEndpoints
                 .ConfigureAwait(false);
             return Results.Json(summary, jsonOptions);
         })
-        .WithName("GetWorkstationWorkflowSummary").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
+        .WithName("GetWorkstationWorkflowSummary").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.AdminMaintenance)
         .Produces<OperatorWorkflowHomeSummary>(200)
         .Produces(403)
         .Produces(501)
         // The route now carries a read permission, so the ownership gate takes the same set and
         // defers to the route's own 403 for callers who cannot read it at all (SEC-005 slice 3b).
-        .RequireFundProfileTenantScope(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance);
+        .RequireFundProfileTenantScope(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.AdminMaintenance);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowLibrary), (HttpContext context) =>
         {
@@ -405,7 +405,7 @@ public static partial class WorkstationEndpoints
             var inbox = await BuildOperatorInboxAsync(fundAccountId, context).ConfigureAwait(false);
             return Results.Json(inbox, jsonOptions);
         })
-        .WithName("GetWorkstationOperatorInbox").RequirePermission(UserPermission.ViewTrades)
+        .WithName("GetWorkstationOperatorInbox").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<OperatorInboxDto>(200)
         .Produces(403)
         .RequireWorkstationTenantCompanyScope();

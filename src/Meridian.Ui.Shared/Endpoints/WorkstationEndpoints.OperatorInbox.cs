@@ -24,16 +24,23 @@ public static partial class WorkstationEndpoints
     private static async Task<OperatorInboxDto> BuildOperatorInboxAsync(Guid? fundAccountId, HttpContext context)
     {
         var asOf = DateTimeOffset.UtcNow;
-        var readiness = await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false);
-        var workItems = readiness.WorkItems
-            .Select(AttachOperatorNavigation)
-            .ToList();
 
         // The inbox aggregates four families whose own routes carry different permissions, so each
-        // contribution is gated by the permission its source route requires. Without this, the single
-        // route-level permission would decide the whole payload and a caller admitted for one family
-        // would read another's content -- reconciliation break items, for instance, carry the strategy
-        // name, break reason, status and assignee, not merely a count.
+        // contribution is gated by the permission its source route requires -- including the
+        // trading-readiness base, which is a contribution like any other rather than a floor. The
+        // route admits the union of the four, so leaving this one ungated would hand trading
+        // readiness to a caller admitted only for run review, and gating the route on ViewTrades
+        // instead would shut every strategy-permitted role out of the run-review items it may read.
+        // Without per-contribution gating the single route-level permission would decide the whole
+        // payload, and reconciliation break items carry the strategy name, break reason, status and
+        // assignee, not merely a count.
+        var readiness = EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades)
+            ? await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false)
+            : null;
+        var workItems = readiness is null
+            ? new List<OperatorWorkItemDto>()
+            : readiness.WorkItems.Select(AttachOperatorNavigation).ToList();
+
         if (HasRunReviewInboxPermission(context))
         {
             await AddRunReviewPacketWorkItemsAsync(context, fundAccountId, workItems, asOf).ConfigureAwait(false);
@@ -78,7 +85,7 @@ public static partial class WorkstationEndpoints
             CriticalCount: criticalCount,
             WarningCount: warningCount,
             ReviewCount: reviewCount,
-            Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount, readiness.PortfolioLedgerWorkflowStatus));
+            Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount, readiness?.PortfolioLedgerWorkflowStatus));
     }
 
     /// <summary>

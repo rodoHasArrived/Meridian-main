@@ -2896,6 +2896,52 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     /// <summary>
+    /// The inbox aggregates four families, so gating the route on one family's permission shuts the
+    /// other three out of items they may read. Analysis, ReportingAnalyst and ReadOnly all hold
+    /// ViewStrategies without ViewTrades; before the route admitted the union they received 403 and
+    /// lost their run-review notifications entirely, in both workstation clients.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_WithStrategyPermissionOnly_ShouldContributeReviewPacketsWithoutTradingReadiness()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        }, currentUserPermissions: UserPermission.ViewStrategies);
+
+        var newestRunId = $"run-inbox-strategy-only-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun(newestRunId) with
+        {
+            StartedAt = new DateTimeOffset(2026, 3, 21, 20, 0, 0, TimeSpan.Zero),
+            EndedAt = new DateTimeOffset(2026, 3, 21, 20, 30, 0, TimeSpan.Zero)
+        });
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/operator/inbox");
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.OK,
+            "a caller holding a permission for one of the inbox's families must reach the route");
+
+        var inbox = await response.Content.ReadFromJsonAsync<OperatorInboxDto>(ServerJsonOptions);
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(
+            item => item.WorkItemId == $"promotion-review-{newestRunId.ToLowerInvariant()}",
+            "run-review packets are exactly what the strategy permission grants");
+        // Trading readiness is a contribution like any other now, not a floor the route guarantees.
+        inbox.Items.Should().NotContain(
+            item => item.WorkItemId == "paper-session-missing",
+            "trading readiness requires ViewTrades, which this caller does not hold");
+        // The work-item id is the discriminator, not the kind: run-review continuity items carry the
+        // ReconciliationBreak kind and point at the break-queue route while originating from the
+        // strategy contribution this caller is entitled to. Only the canonical
+        // "reconciliation-break-" ids come from the break-queue repository.
+        inbox.Items.Should().NotContain(
+            item => item.WorkItemId.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase),
+            "ViewStrategies is in none of the reconciliation read permissions");
+    }
+
+    /// <summary>
     /// The shell bootstraps from /api/workstation/session unconditionally, so the route must stay
     /// reachable for every authenticated operator -- FundAccountant, Controller and Compliance hold
     /// no strategy permission, and a 403 here fails their whole bootstrap. The strategy-run digest
