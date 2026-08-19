@@ -26,7 +26,9 @@ These variables control auth, mutation safety, runtime mode, and diagnostics beh
 | Variable | Config Path | Description | Risk if misconfigured |
 |----------|-------------|-------------|-----------------------|
 | `MDC_API_KEY` | Runtime auth middleware | Enables API-key enforcement for `/api/*` routes. | Leaving unset in shared/non-local environments can expose mutation endpoints. |
+| `MDC_API_KEY_ROLE` | Runtime auth middleware | Role a validated API key carries; defaults to `ReadOnly`. | Naming a broad role turns a single shared key into that role's full reach; an unknown value fails requests closed. |
 | `MDC_AUTH_MODE` | Runtime auth middleware | Auth mode selector for UI/API auth pipeline. | Incorrect mode can disable expected permission checks. |
+| `MDC_ANONYMOUS_ROLE` | Runtime auth middleware | Role an unauthenticated caller carries when `MDC_AUTH_MODE=optional`; unset means no authorization, so governed routes refuse anonymous callers. | Setting it grants every anonymous caller that role — appropriate for a single-operator local demo, not for a shared host. |
 | `MDC_USERS` | Runtime auth bootstrap | JSON array of operator accounts using `passwordHash` values. | Missing hashes leave required auth unconfigured; plaintext `password` values are ignored. |
 | `MDC_DEMO_USERS` | Runtime auth bootstrap | Development/Test-only JSON array of demo accounts using `passwordHash` values. | Must not be used as a production credential source. |
 | `MDC_USERNAME` | Runtime auth bootstrap | Legacy single-user bootstrap username used with `MDC_PASSWORD_HASH`. | Intended only for bootstrap/local use; prefer governed accounts. |
