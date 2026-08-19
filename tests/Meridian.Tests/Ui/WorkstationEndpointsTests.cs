@@ -2904,7 +2904,7 @@ public sealed partial class WorkstationEndpointsTests
     [Theory]
     [InlineData("ledger", true)]
     [InlineData("portfolio", true)]
-    [InlineData("security-instrument", false)]
+    [InlineData("security-instrument", true)]
     [InlineData("report-line-provenance", false)]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorer_AdmitsStrategyReadersToRunBackedExplorersOnly(
         string explorerId,
@@ -2939,7 +2939,8 @@ public sealed partial class WorkstationEndpointsTests
         {
             response.StatusCode.Should().Be(
                 HttpStatusCode.Forbidden,
-                "this explorer is not run-backed, so a strategy permission is not a second door to it");
+                "report-line provenance is built from the report-pack workflow, so it answers to the "
+                + "reporting permissions rather than to a strategy permission");
         }
     }
 

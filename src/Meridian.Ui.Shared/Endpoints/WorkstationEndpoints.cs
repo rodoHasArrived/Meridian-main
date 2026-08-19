@@ -534,7 +534,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(payload, jsonOptions);
         })
-        .WithName("GetWorkstationAssetOperations").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .WithName("GetWorkstationAssetOperations").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<AssetOperationsDetailDto>(200)
         .Produces(404);
 

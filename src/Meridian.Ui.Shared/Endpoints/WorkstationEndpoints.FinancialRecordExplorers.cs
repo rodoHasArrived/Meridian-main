@@ -35,7 +35,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." })
                 : Results.Json(explorer, jsonOptions);
         })
-        .WithName("GetWorkstationFinancialRecordExplorer").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.AdminMaintenance)
+        .WithName("GetWorkstationFinancialRecordExplorer").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.AdminMaintenance)
         .Produces<FinancialRecordExplorerDto>(200)
         .Produces(404);
 
@@ -65,7 +65,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound(new { error = $"Unknown financial record '{recordId}'." })
                 : Results.Json(record, jsonOptions);
         })
-        .WithName("GetWorkstationFinancialRecordExplorerRecord").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.AdminMaintenance)
+        .WithName("GetWorkstationFinancialRecordExplorerRecord").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.AdminMaintenance)
         .Produces<FinancialRecordExplorerSelectedRecordDto>(200)
         .Produces(404);
 
@@ -140,12 +140,18 @@ public static partial class WorkstationEndpoints
     }
 
     /// <summary>
-    /// The route admits strategy readers because the ledger and portfolio explorers are projections
-    /// of strategy-run detail -- the same data the run-ledger, trial-balance and journal routes serve
-    /// under ViewStrategies, so refusing it here while serving it there would break the drill-in
-    /// links between them. The other two explorers have no such second door: security-instrument is
-    /// security-master data and report-line-provenance is reporting data, so a caller holding only a
-    /// strategy permission is refused those rather than admitted to all four by a widened route.
+    /// Each explorer is authorized by the families its own builder reads, because the route
+    /// declaration has to admit the union of them and the union is wider than any single explorer.
+    /// <para>
+    /// The operations and security-master set admits every explorer: it is the set the route has
+    /// always carried, and narrowing it per explorer would withdraw access this surface already
+    /// grants rather than close a gap. The per-explorer branches below add the families that were
+    /// missing. Ledger, portfolio and security-instrument are projections of strategy-run detail --
+    /// all three read StrategyRunReadService -- which the run-ledger, trial-balance and journal
+    /// routes serve under ViewStrategies, so refusing a strategy reader here would break the
+    /// drill-in between them. Report-line provenance is built from the report-pack workflow instead,
+    /// so it answers to the reporting permissions and a strategy permission is not a door to it.
+    /// </para>
     /// </summary>
     private static bool CanReadFinancialRecordExplorer(HttpContext context, string explorerId)
     {
@@ -161,14 +167,25 @@ public static partial class WorkstationEndpoints
         }
 
         var normalized = (explorerId ?? string.Empty).Trim();
-        var isRunBacked =
-            normalized.Equals(FinancialRecordExplorerReadService.LedgerExplorerId, StringComparison.OrdinalIgnoreCase) ||
-            normalized.Equals(FinancialRecordExplorerReadService.PortfolioExplorerId, StringComparison.OrdinalIgnoreCase);
 
-        return isRunBacked &&
-               EndpointAuthorization.HasAnyPermission(
-                   context,
-                   UserPermission.ViewStrategies,
-                   UserPermission.ManageStrategies);
+        if (normalized.Equals(FinancialRecordExplorerReadService.LedgerExplorerId, StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals(FinancialRecordExplorerReadService.PortfolioExplorerId, StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals(FinancialRecordExplorerReadService.SecurityInstrumentExplorerId, StringComparison.OrdinalIgnoreCase))
+        {
+            return EndpointAuthorization.HasAnyPermission(
+                context,
+                UserPermission.ViewStrategies,
+                UserPermission.ManageStrategies);
+        }
+
+        if (normalized.Equals(FinancialRecordExplorerReadService.ReportLineProvenanceExplorerId, StringComparison.OrdinalIgnoreCase))
+        {
+            return EndpointAuthorization.HasAnyPermission(
+                context,
+                UserPermission.ViewReporting,
+                UserPermission.ManageReporting);
+        }
+
+        return false;
     }
 }
