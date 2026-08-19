@@ -118,11 +118,18 @@ pairing is not universal; see item 11.
 > refactor dropping the group filter "cannot silently open 36 routes". Both halves were wrong. The
 > 36 is the count of *changed lines* in those three commits (36 insertions / 36 deletions), which is
 > every endpoint whose fluent metadata changed — reads and mutations together — not the read count.
-> The read count is 19. And **14 of the 50 endpoints still carry no fluent declaration at all**,
-> among them the pricing hierarchy, price golden-copy and comparison, cash-flow source and
-> projection, vendor-entitlement, and latest-quality-report reads. Dropping the group filter would
-> silently open exactly those 14. The per-route metadata is a partial belt-and-braces, not a
-> replacement for the filter, and the review should not have implied otherwise.
+> The read count is 19. And **14 of the 50 endpoints carry no fluent permission declaration**, among
+> them the pricing hierarchy, price golden-copy and comparison, cash-flow source and projection,
+> vendor-entitlement, and latest-quality-report reads. The per-route metadata is therefore a partial
+> belt-and-braces over the group filter, not a replacement for it, and the review should not have
+> implied otherwise.
+>
+> *Scope of what was checked:* the counts above come from the declarations in
+> `SecurityMasterEndpoints.cs`. This pass did **not** establish how the declaration ratchet treats
+> those 14 — none carries `EndpointOpenReadMetadata` and none appears in the read-declaration frozen
+> baseline, yet the ratchet passes, and that is unexplained here. An earlier revision asserted that
+> dropping the group filter "would silently open exactly those 14"; that consequence does not follow
+> from what was verified and has been withdrawn rather than restated a third time.
 
 **Auditability is durable.** Migration 025 moved the conflict store and revision-lifecycle store off
 process-local memory specifically so "a publish only ever runs against a revision that was durably
@@ -610,7 +617,10 @@ terminating line to append a fluent permission call. Those 36 split into **19** 
 > (`:34`), and that filter runs the same `HasAnyPermission(ViewSecurityMaster,
 > ModifySecurityMaster)` check the fluent calls declare. Runtime authorization did not change. What
 > changed is that the requirement is now declared per endpoint rather than inherited from one
-> group-level line — worth having, because it reaches OpenAPI metadata and it removes a single point
+> group-level line — worth having, because it feeds the authorization declaration ratchet
+> (`EndpointAuthorizationDeclarationTests`, `EndpointReadDeclarationTests`), which fails the build
+> when a mapped route carries neither a declared permission nor a documented open-read decision, and
+> because it removes a single point
 > whose deletion would quietly open every route in the group, but it is a hardening of the
 > *declaration*, not of the enforcement.
 
@@ -679,7 +689,7 @@ that cannot be wrong is not evidence.
 
 | Finding | Outcome |
 | --- | --- |
-| Clear-then-refill in `SecurityMasterProjectionCache.ReplaceAll` | **Fixed.** The replacement map is built and installed with one `Volatile.Write` under a write gate; reads stay lock-free through `Volatile.Read`. A reader concurrent with a warm or rebuild now sees either the whole previous master or the whole new one, and an `Upsert` issued during a replacement waits and lands in the installed map instead of being discarded with the outgoing one. See the correction note below |
+| Clear-then-refill in `SecurityMasterProjectionCache.ReplaceAll` | **Fixed for readers; partly fixed for writers.** The replacement map is built and installed with one `Volatile.Write` under a write gate; reads stay lock-free through `Volatile.Read`, so a reader concurrent with a warm or rebuild sees either the whole previous master or the whole new one. An `Upsert` arriving **after the replacement takes the gate** waits and lands in the installed map. One arriving **while the argument is still being copied** does not wait — the gate is not held yet — so it writes into the outgoing map and the swap discards it. That remaining window is real at production scale and is left open deliberately; see below |
 | `IOperatorOverridesStore` "dead dependency" | **Refuted, finding retracted.** It is read from a sibling partial file. See risk item 5 |
 | Third factor-schedule shape | **Refuted, recommendation withdrawn.** Two distinct concepts, not one in three shapes. See risk item 8 |
 
