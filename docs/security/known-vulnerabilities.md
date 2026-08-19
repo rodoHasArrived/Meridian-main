@@ -12,53 +12,29 @@ This document is the central registry for dependency vulnerabilities that have b
 
 ## Accepted Vulnerabilities
 
-### KV-2026-001 — DotNetZip 1.16.0 - Path Traversal (GHSA-xhg6-9j5j-w4vf)
+None at this commit. Retired acceptances are kept below for traceability.
 
-**CVE:** CVE-2024-48510
-**Severity:** High
-**Advisory:** https://github.com/advisories/GHSA-xhg6-9j5j-w4vf
-**Ecosystem:** NuGet (transitive)
-**Affected Package:** DotNetZip 1.16.0
+### KV-2026-001 retired — DotNetZip 1.16.0 - Path Traversal (GHSA-xhg6-9j5j-w4vf)
 
-**Description:**
-DotNetZip 1.16.0 contains a path traversal vulnerability that allows a remote attacker to potentially execute arbitrary code by crafting malicious paths in zip archives.
+- **Retired:** 2026-08-19, having reached its 2026-08-17 review date.
+- **Basis:** DotNetZip is no longer referenced anywhere in the tracked build. `git grep DotNetZip`
+  outside `docs/` and `archive/` returns nothing, and no `Directory.Packages.props` entry,
+  project file, or props file mentions it. Independently, the `dependency-evidence` job of
+  [Production Certification run 32266755834](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32266755834)
+  ran `dotnet list package --vulnerable --include-transitive` across the whole solution and
+  reported no vulnerable packages. That command does not consult `NuGetAuditSuppress`, so a
+  DotNetZip 1.16.0 still present in the graph would have been reported regardless of the
+  suppression.
+- **Action taken:** the `MeridianNuGetAuditSuppression` entry for this advisory was removed from
+  `Directory.Build.props`, satisfying its own recorded RatchetPlan ("Remove once upgraded
+  transitive dependency chain no longer triggers the advisory"). The
+  `System.IO.Compression.UseStrictValidation` runtime-integrity default is retained on its own
+  merits and is unrelated to this acceptance.
 
-**Source:**
-Transitive dependency from QuantConnect.Lean packages (required for backtesting integration):
-- QuantConnect.Lean 2.5.17414
-- QuantConnect.Lean.Engine 2.5.17414
-- QuantConnect.Common 2.5.17414
-- QuantConnect.Indicators 2.5.17414
+There are no accepted vulnerabilities at this commit;
+`build/config/security/npm-audit-accepted-advisories.json` is likewise empty.
 
-Current NuGet audit surfaces:
-- `src/Meridian/Meridian.csproj`
-- `tests/Meridian.Tests/Meridian.Tests.csproj`
-- `benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj`
-
-**Status:**
-- **No fix available** - DotNetZip is deprecated and no longer maintained
-- **Cannot be upgraded** - Baked into QuantConnect.Lean binary dependencies
-- **Alternative:** ProDotNetZip 1.19.0+ has a fix, but cannot be used as a drop-in replacement for transitive dependencies
-
-**Risk Assessment:**
-**LOW** - Vulnerability requires extracting user-provided zip files, which is not a use case in this application.
-
-**Mitigations:**
-1. Application does not accept or extract user-provided zip files
-2. All zip file operations are internal (data packaging/archival) with trusted sources
-3. No code paths expose zip extraction to external input
-4. QuantConnect integration is isolated and does not process untrusted archives
-
-**Remediation Plan:**
-- Monitor QuantConnect.Lean releases for updated DotNetZip dependency
-- Consider submitting PR to QuantConnect to update their dependency
-- Re-evaluate if application requirements change to include zip extraction from external sources
-
-**NuGet Audit Disposition:** Suppressed by exact advisory URL in `Directory.Build.props`; do not suppress `NU1903` globally or disable NuGet audit.
-**Tracking Reference:** Suppressed for NuGet restore audit in `Directory.Build.props` after the accepted-risk review.
-**Review Date:** 2026-05-17
-**Next Review:** 2026-08-17 (quarterly)
-**Approved By:** Security maintainers / repository owners
+---
 
 ## Fixed Vulnerabilities (2026-08-19)
 
