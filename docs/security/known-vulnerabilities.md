@@ -8,95 +8,57 @@ This document is the central registry for dependency vulnerabilities that have b
 - **Single source of truth:** Security workflow exceptions must point back to this file rather than duplicating rationale inline.
 - **Required fields for accepted risk:** package, advisory/CVE, source, justification, mitigation, review cadence, and named owner/approver.
 - **Review cadence:** Accepted vulnerabilities must be reviewed at least quarterly and removed promptly when an upstream fix becomes available.
-- **Workflow integration:** `.github/workflows/security.yml` may filter or annotate accepted findings only when they are documented here. `Directory.Build.props` may suppress a NuGet audit finding only by exact advisory URL after the same accepted-risk review.
+- **Workflow integration:** the `dependency-evidence` job in `.github/workflows/production-certification.yml` is the enforcing gate. npm findings route through `build/scripts/ci/validate-npm-audit.py` against `build/config/security/npm-audit-accepted-advisories.json`, which fails closed on both unaccepted and stale entries. `Directory.Build.props` may suppress a NuGet restore-audit finding only by exact advisory URL after the same accepted-risk review; note that `NuGetAuditSuppress` does not affect `dotnet list package --vulnerable`, so a suppressed NuGet advisory still reds the gate.
 
 ## Accepted Vulnerabilities
 
-### KV-2026-001 — DotNetZip 1.16.0 - Path Traversal (GHSA-xhg6-9j5j-w4vf)
+None at this commit. Retired acceptances are kept below for traceability.
 
-**CVE:** CVE-2024-48510
-**Severity:** High
-**Advisory:** https://github.com/advisories/GHSA-xhg6-9j5j-w4vf
-**Ecosystem:** NuGet (transitive)
-**Affected Package:** DotNetZip 1.16.0
+### KV-2026-001 retired — DotNetZip 1.16.0 - Path Traversal (GHSA-xhg6-9j5j-w4vf)
 
-**Description:**
-DotNetZip 1.16.0 contains a path traversal vulnerability that allows a remote attacker to potentially execute arbitrary code by crafting malicious paths in zip archives.
+- **Retired:** 2026-08-19, having reached its 2026-08-17 review date.
+- **Basis:** DotNetZip is no longer referenced anywhere in the tracked build. `git grep DotNetZip`
+  outside `docs/` and `archive/` returns nothing, and no `Directory.Packages.props` entry,
+  project file, or props file mentions it. Independently, the `dependency-evidence` job of
+  [Production Certification run 32266755834](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32266755834)
+  ran `dotnet list package --vulnerable --include-transitive` across the whole solution and
+  reported no vulnerable packages. That command does not consult `NuGetAuditSuppress`, so a
+  DotNetZip 1.16.0 still present in the graph would have been reported regardless of the
+  suppression.
+- **Action taken:** the `MeridianNuGetAuditSuppression` entry for this advisory was removed from
+  `Directory.Build.props`, satisfying its own recorded RatchetPlan ("Remove once upgraded
+  transitive dependency chain no longer triggers the advisory"). The
+  `System.IO.Compression.UseStrictValidation` runtime-integrity default is retained on its own
+  merits and is unrelated to this acceptance.
 
-**Source:**
-Transitive dependency from QuantConnect.Lean packages (required for backtesting integration):
-- QuantConnect.Lean 2.5.17414
-- QuantConnect.Lean.Engine 2.5.17414
-- QuantConnect.Common 2.5.17414
-- QuantConnect.Indicators 2.5.17414
+There are no accepted vulnerabilities at this commit;
+`build/config/security/npm-audit-accepted-advisories.json` is likewise empty.
 
-Current NuGet audit surfaces:
-- `src/Meridian/Meridian.csproj`
-- `tests/Meridian.Tests/Meridian.Tests.csproj`
-- `benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj`
+---
 
-**Status:**
-- **No fix available** - DotNetZip is deprecated and no longer maintained
-- **Cannot be upgraded** - Baked into QuantConnect.Lean binary dependencies
-- **Alternative:** ProDotNetZip 1.19.0+ has a fix, but cannot be used as a drop-in replacement for transitive dependencies
+## Fixed Vulnerabilities (2026-08-19)
 
-**Risk Assessment:**
-**LOW** - Vulnerability requires extracting user-provided zip files, which is not a use case in this application.
+The following npm advisories were cleared in `src/Meridian.Ui/dashboard` by upgrading rather than
+by accepting risk. `npm audit --package-lock-only` reports 0 vulnerabilities at this commit.
 
-**Mitigations:**
-1. Application does not accept or extract user-provided zip files
-2. All zip file operations are internal (data packaging/archival) with trusted sources
-3. No code paths expose zip extraction to external input
-4. QuantConnect integration is isolated and does not process untrusted archives
+### react-router / react-router-dom 7.18.1 -> 7.18.2 (GHSA-qwww-vcr4-c8h2)
 
-**Remediation Plan:**
-- Monitor QuantConnect.Lean releases for updated DotNetZip dependency
-- Consider submitting PR to QuantConnect to update their dependency
-- Re-evaluate if application requirements change to include zip extraction from external sources
+- **Severity:** High
+- **Advisory:** https://github.com/advisories/GHSA-qwww-vcr4-c8h2
+- **Fix:** Upgraded `react-router-dom` to 7.18.2. This closed the acceptance recorded as
+  KV-2026-002 on 2026-07-28, whose stated rationale ("no patched 7.x exists") stopped being true
+  when upstream narrowed the advisory range to `>=7.12.0 <7.18.2` and shipped 7.18.2. The
+  acceptance entry was removed from
+  `build/config/security/npm-audit-accepted-advisories.json` in the same change, because
+  `build/scripts/ci/validate-npm-audit.py` fails closed on an acceptance that no longer matches a
+  reported advisory.
 
-**NuGet Audit Disposition:** Suppressed by exact advisory URL in `Directory.Build.props`; do not suppress `NU1903` globally or disable NuGet audit.
-**Tracking Reference:** Filtered in `.github/workflows/security.yml` during the NuGet vulnerability scan and suppressed for NuGet audit in `Directory.Build.props` after the accepted-risk review.
-**Review Date:** 2026-05-17
-**Next Review:** 2026-08-17 (quarterly)
-**Approved By:** Security maintainers / repository owners
+### nanoid 3.3.16 -> 3.3.18 (GHSA-2v37-7h3g-55p8)
 
-### KV-2026-002 — react-router 7.12.0–8.2.0 - RSC Mode CSRF Bypass (GHSA-qwww-vcr4-c8h2)
-
-**CVE:** —
-**Severity:** High
-**Advisory:** https://github.com/advisories/GHSA-qwww-vcr4-c8h2
-**Ecosystem:** npm (transitive)
-**Affected Package:** react-router (via `react-router-dom` 7.18.1 in `src/Meridian.Ui/dashboard`)
-
-**Description:**
-React Router's server-side RSC/framework mode allows a CSRF bypass that can execute route
-actions. The advisory range is `>=7.12.0 <8.3.0` and there is no patched 7.x release.
-
-**Risk Assessment:**
-**LOW** - The dashboard is a client-only Vite SPA with no React Router server runtime, so the
-vulnerable server-side code path is unreachable in the shipped artifact. This assessment was
-recorded in the
-[2026-07-27 production-readiness audit](../engineering/production-readiness-audit-2026-07-27.md)
-(section 4).
-
-**Mitigations:**
-1. No React Router server runtime (RSC/framework mode) is bundled, configured, or reachable.
-2. `react-router-dom` is held at 7.18.1, the last 7.x patch line, so no fixes are dropped.
-3. Do **not** apply `npm audit fix --force`; the suggested downgrade to 7.11.0 would shed seven
-   minors of fixes without addressing the advisory.
-
-**Remediation Plan:**
-- Migrate the dashboard to `react-router` v8 (73 importing files) as its own change, or
-- Adopt a patched 7.x release if one appears, then remove this acceptance.
-
-**npm Audit Disposition:** Accepted in
-`build/config/security/npm-audit-accepted-advisories.json` and enforced fail-closed by
-`build/scripts/ci/validate-npm-audit.py` in the `Production Certification`
-dependency-evidence job. Any other high/critical npm advisory still fails the gate, and this
-acceptance expires at its review date.
-**Review Date:** 2026-07-28
-**Next Review:** 2026-10-28 (quarterly)
-**Approved By:** core-team (per the 2026-07-27 production-readiness audit acceptance)
+- **Severity:** High
+- **Advisory:** https://github.com/advisories/GHSA-2v37-7h3g-55p8
+- **Fix:** Added a `nanoid: ^3.3.18` override. `nanoid` is a dev-only transitive of `postcss`,
+  whose declared range `^3.3.16` already admits the patched version.
 
 ---
 
@@ -169,8 +131,10 @@ The following vulnerabilities were fixed by pinning transitive dependencies in `
 ## Vulnerability Scanning
 
 Automated vulnerability scanning runs:
-- **On every PR:** Quick dependency scan for Critical/High vulnerabilities
-- **Weekly (Monday 5:00 UTC):** Full security suite including CodeQL and SAST
-- **On-demand:** Via workflow_dispatch with optional full scan
+- **Weekly, on tag, and on demand:** the `dependency-evidence` job in
+  `.github/workflows/production-certification.yml` runs `dotnet list package --vulnerable
+  --include-transitive` and the npm audit gate.
+- **On every PR and push:** CodeQL analysis via `.github/workflows/codeql.yml`.
 
-See `.github/workflows/security.yml` for configuration.
+There is no `.github/workflows/security.yml`; the lane it used to describe now lives in the two
+workflows above.

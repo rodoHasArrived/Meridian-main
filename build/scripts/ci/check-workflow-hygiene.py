@@ -113,10 +113,17 @@ def check_local_uses_exist(failures: list[str]) -> None:
 
 
 def check_active_docs_do_not_reference_removed_workflows(failures: list[str]) -> None:
+    # Match whole filenames. A plain substring test reports any workflow whose name merely ends
+    # with a removed one — `desktop-evaluation-prerelease.yml` contains `release.yml` — which
+    # fails the gate for a file that exists and is correctly documented.
+    patterns = {
+        old_name: re.compile(rf"(?<![\w./-]){re.escape(old_name)}(?![\w])")
+        for old_name in OLD_WORKFLOW_FILENAMES
+    }
     for path in iter_text_files(ACTIVE_DOC_ROOTS):
         text = path.read_text(encoding="utf-8", errors="replace")
         for old_name in sorted(OLD_WORKFLOW_FILENAMES):
-            if old_name in text:
+            if patterns[old_name].search(text):
                 fail(f"{path.relative_to(REPO_ROOT)} still references removed workflow {old_name}.", failures)
 
 

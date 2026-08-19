@@ -64,6 +64,7 @@
 - `build/scripts/ai/tests/test_promptfoo_adapter.py`
 - `build/scripts/check-execution-log-sanitization.py`
 - `build/scripts/ci/check-apiclient-callers.py`
+- `build/scripts/ci/check-contract-type-parity.py`
 - `build/scripts/ci/check-dashboard-type-barrel.py`
 - `build/scripts/ci/check-duplicate-helpers.py`
 - `build/scripts/ci/check-endpoint-cancellation.py`
@@ -72,4 +73,3 @@
 - `build/scripts/ci/check-lane-manifest.py`
 - `build/scripts/ci/check-sample-config-datasources.py`
 - `build/scripts/ci/check-test-skip-register.py`
-- `build/scripts/ci/check-warning-suppressions.py`

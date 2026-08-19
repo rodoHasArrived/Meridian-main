@@ -117,13 +117,16 @@ install_python_312() {
         success "  Python $(python3 --version 2>&1) ready"
     fi
 
-    if [ -f requirements.txt ]; then
-        info "  Installing Python requirements.txt dependencies..."
+    # There is no requirements.txt at the repository root, so this used to report "skipping"
+    # on every run and silently install nothing. The real file is the docs-automation one.
+    local python_requirements="build/scripts/docs/requirements.txt"
+    if [ -f "$python_requirements" ]; then
+        info "  Installing Python dependencies from $python_requirements..."
         python3 -m pip install --upgrade pip
-        python3 -m pip install -r requirements.txt
+        python3 -m pip install -r "$python_requirements"
         success "  Python dependencies installed"
     else
-        info "  requirements.txt not found; skipping Python dependency install"
+        error "  Expected $python_requirements is missing; run this from the repository root."
     fi
 }
 
@@ -311,15 +314,15 @@ interactive() {
     info ""
     info "How would you like to install Meridian?"
     info ""
-    info "  1) Docker   — recommended, easiest setup"
-    info "  2) Native   — requires .NET 10 SDK"
+    info "  1) Native   — recommended; requires the .NET SDK pinned by global.json"
+    info "  2) Docker   — experimental, outside the supported envelope (see docs/adr/019)"
     info "  3) Check    — verify prerequisites only"
     info "  q) Quit"
     info ""
     read -r -p "Choice [1/2/3/q]: " choice
     case "$choice" in
-        1|docker)  install_docker  ;;
-        2|native)  install_native  ;;
+        1|native)  install_native  ;;
+        2|docker)  install_docker  ;;
         3|check)   check_prerequisites ;;
         q|Q)       info "Aborted."; exit 0 ;;
         *)         error "Invalid choice: $choice" ;;

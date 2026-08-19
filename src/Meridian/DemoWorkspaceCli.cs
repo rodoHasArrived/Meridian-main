@@ -66,6 +66,12 @@ internal static class DemoWorkspaceCli
 
             if (DemoWorkspaceLayout.HasSeedOnlyFlag(args))
             {
+                // A seeded workspace has to be re-openable with --demo, and --demo gates on the
+                // demo config rather than on the workspace itself. Returning here before writing
+                // it left `--seed-demo --seed-only` followed by `--demo` - the sequence the start
+                // guide documents - telling the operator to seed a workspace that is already
+                // seeded. The serving paths below rewrite this config with their own port.
+                WriteDemoConfig(seeder.DemoRoot, demoPort);
                 return 0;
             }
 
