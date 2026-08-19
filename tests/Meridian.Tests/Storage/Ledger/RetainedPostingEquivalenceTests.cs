@@ -295,6 +295,55 @@ public sealed class RetainedPostingEquivalenceTests
         difference.Should().Be("line 0 dimensions");
     }
 
+    [Theory]
+    [InlineData("dataProvenance", "Simulated")]
+    [InlineData("sourceEventContentHash", "def456")]
+    [InlineData("projectionModelVersion", "2.0.0")]
+    public void Matches_DifferentTypedProvenanceTag_IsAConflict(string tagKey, string changedValue)
+    {
+        // These live only in tags — no scalar mirrors them — and dataProvenance in particular is
+        // the mark separating real figures from simulated ones.
+        var retained = BuildRecord(BuildEntry(Guid.NewGuid(), Guid.NewGuid()));
+        var candidate = BuildWrite(BuildEntry(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["dataProvenance"] = "Real",
+                ["sourceEventContentHash"] = "abc123",
+                ["projectionModelVersion"] = "1.0.0",
+                ["approvalId"] = "approval-original",
+                ["approvalState"] = "Approved",
+                [tagKey] = changedValue
+            }));
+
+        RetainedPostingEquivalence.Matches(retained, candidate, out var difference).Should().BeFalse();
+        difference.Should().Be($"tag '{tagKey}'");
+    }
+
+    [Fact]
+    public void Matches_DifferentApprovalTimeTags_IsStillAnExactReplay()
+    {
+        // Approval id, approval state, and the command fingerprint are stamped at append time and
+        // cannot be reproduced by a rebuild, so they must not turn a retry into a conflict.
+        var retained = BuildRecord(BuildEntry(Guid.NewGuid(), Guid.NewGuid()));
+        var candidate = BuildWrite(BuildEntry(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["dataProvenance"] = "Real",
+                ["sourceEventContentHash"] = "abc123",
+                ["projectionModelVersion"] = "1.0.0",
+                ["approvalId"] = "approval-different",
+                ["approvalState"] = "Pending",
+                ["postingCommandFingerprint"] = "sha256:totally-different"
+            }));
+
+        RetainedPostingEquivalence.Matches(retained, candidate, out var difference).Should().BeTrue();
+        difference.Should().BeEmpty();
+    }
+
     private static LedgerEntryCurrency Currency(string transactionCurrency, decimal fxRate, decimal transactionDebit)
         => new(transactionCurrency, "USD", transactionDebit, 0m, fxRate);
 
@@ -317,6 +366,7 @@ public sealed class RetainedPostingEquivalenceTests
         string idempotencyKey = "custodian-interest:2026-05",
         IReadOnlyDictionary<string, string>? externalGlDimensions = null,
         Func<JournalEntryMetadata, JournalEntryMetadata>? metadata = null,
+        IReadOnlyDictionary<string, string>? tags = null,
         DateTimeOffset? timestamp = null,
         string accountName = "Accrued Interest Receivable",
         LedgerEntryCurrency? currency = null)
@@ -354,6 +404,14 @@ public sealed class RetainedPostingEquivalenceTests
                 ActivityType = "interest-accrual",
                 IdempotencyKey = idempotencyKey,
                 EffectiveDate = new DateOnly(2026, 5, 31),
+                Tags = tags ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["dataProvenance"] = "Real",
+                    ["sourceEventContentHash"] = "abc123",
+                    ["projectionModelVersion"] = "1.0.0",
+                    ["approvalId"] = "approval-original",
+                    ["approvalState"] = "Approved"
+                },
                 Symbol = "AAPL",
                 ProjectId = "project-interest-accrual",
                 StrategyId = "strategy-income",
