@@ -700,7 +700,10 @@ every upsert issued during the replacement, because they all write into the outg
 version's own `<remarks>` claimed the outcome was "the same a concurrent `Clear()` produced" — it
 was not, and the window was strictly wider. `Upsert` and `ReplaceAll` now serialize on a write gate,
 with `Upsert` resolving the live map inside it, so a record persisted by create, amend, or a
-published rebuild cannot be dropped by a replacement already in flight. Reads remain lock-free.
+published rebuild cannot be dropped by a replacement **that already holds the gate**. Reads remain
+lock-free. The qualifier is load-bearing: a replacement still copying its argument has not taken the
+gate yet, and an upsert completing in that phase is still discarded — see **Left open: the pre-gate
+materialization window** below, which is the same production race and is not closed here.
 
 The gate then created a third problem, also caught in review: because a caller can produce its
 projection and only reach `Upsert` after several awaits, a record that waits on the gate may be
