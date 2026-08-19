@@ -192,6 +192,22 @@ Append-only; newest first. Every entry names the commit, the run or decision, an
   `web-workstation-installed-startup` in its evidence manifest only when those steps actually ran,
   so a `collector` or `win-arm64` dispatch can no longer be mistaken for `PRD-013` evidence, and
   release evidence is retained 90 days instead of 14.
+- **2026-08-19** — `Desktop Installer Release` **first green packaging and first installed
+  lifecycle certification in the repository's history**
+  ([run #11 / 32272257476](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32272257476),
+  `963c0288`). Six of seven jobs passed: preflight, `package-desktop-msix` for both `win-x64` and
+  `win-arm64` (MSIX, SPDX SBOM, evidence manifest and SHA-256 checksums produced for the first
+  time), and `clean install lifecycle` for both architectures. The ARM64 leg ran on the
+  GitHub-hosted `windows-11-arm` runner (job 96136145806, `labels: ["windows-11-arm"]`), which is
+  the direct evidence that the self-hosted-runner action in this ledger is obsolete. Both
+  lifecycle legs ran in first-release mode against a throwaway self-signed certificate, so they
+  prove the mechanism, **not** release evidence — `PRD-014` still needs a tag run with the
+  protected secret.
+  The one remaining failure is `package-consumer-setup`: `Meridian.Setup` embeds the whole runtime
+  and PostgreSQL payload as a single assembly resource, and Roslyn's PE writer throws
+  `ArgumentOutOfRangeException (Parameter 'mappedFieldDataStreamRva')` emitting it. That is a
+  payload-delivery design defect rather than a packaging-script bug, and it blocks only the
+  one-click `Meridian-Setup.exe`, not the desktop MSIX.
 - **2026-08-19** — `Desktop Installer Release` diagnosed end to end; **still not green**. The
   preflight gate that had blocked every earlier run is green on `e18c7fb2`
   ([32263751166](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32263751166)) — the two
