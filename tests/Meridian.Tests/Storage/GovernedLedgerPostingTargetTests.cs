@@ -406,6 +406,68 @@ public sealed class GovernedLedgerPostingTargetTests
             .WithMessage("*expected version is required*");
     }
 
+    [Fact]
+    public void JournalLegSchema_KeepsTimingAndAmountsAtAPrecisionBelowTheClr()
+    {
+        var sql = ReadMigration("V_ledger_001__journal_entries.sql");
+
+        // The two facts the replay comparison has to respect: timestamptz is microsecond-resolution
+        // while a CLR tick is 100ns, and numeric(38, 10) is ten fractional digits while a decimal
+        // carries up to 28. Both reductions happen to the retained side and to it only.
+        sql.Should().Contain("occurred_at timestamptz not null");
+        sql.Should().Contain("debit numeric(38, 10) not null");
+        sql.Should().Contain("credit numeric(38, 10) not null");
+    }
+
+    [Fact]
+    public async Task PostAsync_ReplayCarryingSubMicrosecondTiming_IsAReplayNotAConflict()
+    {
+        // Anything derived from DateTimeOffset.UtcNow carries sub-microsecond ticks.
+        var write = WithTiming(BuildWrite(), OccurredAt.AddTicks(7));
+        var retained = new List<LedgerJournalEntryRecord> { ToStoredRecord(write) };
+        var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
+        using var target = new DurableLedgerPostingTarget(store.Object);
+
+        var result = await target.PostAsync(write);
+
+        result.WasAppended.Should().BeFalse();
+        result.JournalEntryId.Should().Be(write.Entry.JournalEntryId);
+    }
+
+    [Fact]
+    public async Task PostAsync_ReplayCarryingAmountBeyondStoredScale_IsAReplayNotAConflict()
+    {
+        var write = WithLineAmount(BuildWrite(), 100.00000000004m);
+        var retained = new List<LedgerJournalEntryRecord> { ToStoredRecord(write) };
+        var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
+        using var target = new DurableLedgerPostingTarget(store.Object);
+
+        var result = await target.PostAsync(write);
+
+        result.WasAppended.Should().BeFalse();
+        result.JournalEntryId.Should().Be(write.Entry.JournalEntryId);
+    }
+
+    [Fact]
+    public async Task PostAsync_RetryDeclaringDifferentTransactionCurrency_FailsClosed()
+    {
+        // Same functional USD 100 on both sides; the transaction currency, the amount in it, and
+        // the rate that ties them together all differ. The books can only hold one of these.
+        var original = WithLegCurrency(BuildWrite(), "EUR", 92m, 1.0869565217m);
+        var retained = new List<LedgerJournalEntryRecord> { ToStoredRecord(original) };
+        var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
+        using var target = new DurableLedgerPostingTarget(store.Object);
+        var divergent = WithLegCurrency(BuildWrite(), "GBP", 80m, 1.25m);
+
+        Func<Task> retry = async () => await target.PostAsync(divergent);
+
+        await retry.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*already retained with different accounting content*");
+        store.Verify(
+            candidate => candidate.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
     private static Mock<ILedgerJournalStore> BuildStore(
         List<LedgerJournalEntryRecord> retained,
         Action<LedgerJournalEntryWrite> append)
@@ -584,6 +646,127 @@ public sealed class GovernedLedgerPostingTargetTests
             write.SourceJournalEntryId,
             write.PostingKind,
             write.AdjustmentApproval);
+
+    /// <summary>
+    /// Builds the record the durable store would hand back, rather than one built straight from the
+    /// in-memory write. Journal and leg timing lands in <c>timestamptz</c> and every leg amount
+    /// lands in <c>numeric(38, 10)</c>, so a replay always compares a full-precision candidate
+    /// against a value the store has already reduced. <see cref="ToRecord"/> skips that reduction
+    /// and so cannot show what a real retry is compared against.
+    /// </summary>
+    private static LedgerJournalEntryRecord ToStoredRecord(
+        LedgerJournalEntryWrite write,
+        long globalSequence = 1)
+    {
+        var lines = write.Entry.Lines
+            .Select(line => new LedgerEntry(
+                line.EntryId,
+                line.JournalEntryId,
+                ToStoredTimestamp(line.Timestamp),
+                line.Account,
+                ToStoredAmount(line.Debit),
+                ToStoredAmount(line.Credit),
+                line.Description,
+                line.Dimensions,
+                line.Currency is null
+                    ? null
+                    : new LedgerEntryCurrency(
+                        line.Currency.TransactionCurrency,
+                        line.Currency.FunctionalCurrency,
+                        ToStoredAmount(line.Currency.TransactionDebit),
+                        ToStoredAmount(line.Currency.TransactionCredit),
+                        ToStoredAmount(line.Currency.FxRateToFunctional))))
+            .ToArray();
+        var entry = new JournalEntry(
+            write.Entry.JournalEntryId,
+            ToStoredTimestamp(write.Entry.Timestamp),
+            write.Entry.Description,
+            lines,
+            write.Entry.Metadata);
+        return ToRecord(write with { Entry = entry }, globalSequence);
+    }
+
+    /// <summary>
+    /// Npgsql converts CLR ticks to PostgreSQL microseconds by integer division, so sub-microsecond
+    /// ticks are truncated on the way in rather than rounded.
+    /// </summary>
+    private static DateTimeOffset ToStoredTimestamp(DateTimeOffset value)
+        => value.AddTicks(-(value.UtcTicks % TimeSpan.TicksPerMicrosecond));
+
+    /// <summary>PostgreSQL rounds <c>numeric</c> half away from zero.</summary>
+    private static decimal ToStoredAmount(decimal value)
+        => Math.Round(value, 10, MidpointRounding.AwayFromZero);
+
+    private static LedgerJournalEntryWrite WithTiming(
+        LedgerJournalEntryWrite write,
+        DateTimeOffset timestamp)
+        => WithLines(
+            write,
+            line => new LedgerEntry(
+                line.EntryId,
+                line.JournalEntryId,
+                timestamp,
+                line.Account,
+                line.Debit,
+                line.Credit,
+                line.Description,
+                line.Dimensions,
+                line.Currency),
+            timestamp);
+
+    private static LedgerJournalEntryWrite WithLineAmount(LedgerJournalEntryWrite write, decimal amount)
+        => WithLines(
+            write,
+            line => new LedgerEntry(
+                line.EntryId,
+                line.JournalEntryId,
+                line.Timestamp,
+                line.Account,
+                line.Debit > 0m ? amount : 0m,
+                line.Credit > 0m ? amount : 0m,
+                line.Description,
+                line.Dimensions,
+                line.Currency));
+
+    private static LedgerJournalEntryWrite WithLegCurrency(
+        LedgerJournalEntryWrite write,
+        string transactionCurrency,
+        decimal transactionAmount,
+        decimal fxRateToFunctional)
+        => WithLines(
+            write,
+            line => new LedgerEntry(
+                line.EntryId,
+                line.JournalEntryId,
+                line.Timestamp,
+                line.Account,
+                line.Debit,
+                line.Credit,
+                line.Description,
+                line.Dimensions,
+                new LedgerEntryCurrency(
+                    transactionCurrency,
+                    "USD",
+                    line.Debit > 0m ? transactionAmount : 0m,
+                    line.Credit > 0m ? transactionAmount : 0m,
+                    fxRateToFunctional)));
+
+    private static LedgerJournalEntryWrite WithLines(
+        LedgerJournalEntryWrite write,
+        Func<LedgerEntry, LedgerEntry> project,
+        DateTimeOffset? timestamp = null)
+    {
+        var entry = write.Entry;
+        return write with
+        {
+            Entry = new JournalEntry(
+                entry.JournalEntryId,
+                timestamp ?? entry.Timestamp,
+                entry.Description,
+                entry.Lines.Select(project).ToArray(),
+                entry.Metadata)
+        };
+    }
 
     private static JournalEntry RegenerateEntryIds(JournalEntry entry)
     {

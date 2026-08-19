@@ -1,6 +1,7 @@
 using Meridian.Ledger;
 using Npgsql;
 using static Meridian.Contracts.Text.TextPrimitives;
+using static Meridian.Storage.Ledger.LedgerRetainedValueComparison;
 
 namespace Meridian.Storage.Ledger;
 
@@ -118,7 +119,7 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
             && existing.SourceJournalEntryId == requested.SourceJournalEntryId
             && existing.PostingKind == requested.PostingKind
             && existing.AdjustmentApproval == requested.AdjustmentApproval
-            && retained.Timestamp == candidate.Timestamp
+            && TimestampsMatch(retained.Timestamp, candidate.Timestamp)
             && string.Equals(retained.Description, candidate.Description, StringComparison.Ordinal)
             && MetadataEquivalent(retained.Metadata, candidate.Metadata)
             && JournalLinesEquivalent(retained.Lines, candidate.Lines);
@@ -160,7 +161,7 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
     }
 
     private static bool LinesEquivalent(LedgerEntry retained, LedgerEntry candidate)
-        => retained.Timestamp == candidate.Timestamp
+        => TimestampsMatch(retained.Timestamp, candidate.Timestamp)
            && retained.Account.AccountType == candidate.Account.AccountType
            && string.Equals(retained.Account.Name, candidate.Account.Name, StringComparison.Ordinal)
            && string.Equals(retained.Account.Symbol, candidate.Account.Symbol, StringComparison.OrdinalIgnoreCase)
@@ -168,10 +169,39 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
                retained.Account.FinancialAccountId,
                candidate.Account.FinancialAccountId,
                StringComparison.OrdinalIgnoreCase)
-           && retained.Debit == candidate.Debit
-           && retained.Credit == candidate.Credit
+           && AmountsMatch(retained.Debit, candidate.Debit)
+           && AmountsMatch(retained.Credit, candidate.Credit)
            && string.Equals(retained.Description, candidate.Description, StringComparison.Ordinal)
-           && DimensionsEquivalent(retained.Dimensions, candidate.Dimensions);
+           && DimensionsEquivalent(retained.Dimensions, candidate.Dimensions)
+           && CurrencyEquivalent(retained.Currency, candidate.Currency);
+
+    /// <summary>
+    /// Compares a leg's transaction-currency detail, which is durable per leg and was previously
+    /// left out of this comparison entirely.
+    /// <para>
+    /// Debit and credit are the functional amounts, so two legs can agree on every one of them
+    /// while booking a different transaction currency, a different amount in it, or a different FX
+    /// rate. Leaving the detail unexamined reported that as a replay and returned the retained
+    /// journal's id, so the caller was told its posting had been applied while the books held
+    /// different currency evidence that no later attempt could correct.
+    /// </para>
+    /// <para>
+    /// A retained leg with no currency detail is only equivalent to a candidate with none. Legs
+    /// written before the append path stopped discarding currency are the ambiguous case, and
+    /// reporting the difference surfaces them for backfill rather than absorbing them.
+    /// </para>
+    /// </summary>
+    private static bool CurrencyEquivalent(LedgerEntryCurrency? retained, LedgerEntryCurrency? candidate)
+    {
+        if (retained is null || candidate is null)
+            return retained is null && candidate is null;
+
+        return TextEquals(retained.TransactionCurrency, candidate.TransactionCurrency)
+            && TextEquals(retained.FunctionalCurrency, candidate.FunctionalCurrency)
+            && AmountsMatch(retained.TransactionDebit, candidate.TransactionDebit)
+            && AmountsMatch(retained.TransactionCredit, candidate.TransactionCredit)
+            && AmountsMatch(retained.FxRateToFunctional, candidate.FxRateToFunctional);
+    }
 
     private static LedgerJournalEntryWrite NormalizeWrite(LedgerJournalEntryWrite write)
     {
@@ -334,25 +364,9 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
             && TextEquals(retained.CustomerId, candidate.CustomerId)
             && TextEquals(retained.VendorId, candidate.VendorId)
             && TextEquals(retained.ProjectId, candidate.ProjectId)
-            && StringDictionaryEquivalent(retained.ExternalGlDimensions, candidate.ExternalGlDimensions);
-    }
-
-    private static bool StringDictionaryEquivalent(
-        IReadOnlyDictionary<string, string> retained,
-        IReadOnlyDictionary<string, string> candidate)
-    {
-        if (retained.Count != candidate.Count)
-            return false;
-
-        foreach (var (key, retainedValue) in retained)
-        {
-            var candidatePair = candidate.FirstOrDefault(pair =>
-                string.Equals(pair.Key?.Trim(), key?.Trim(), StringComparison.OrdinalIgnoreCase));
-            if (candidatePair.Key is null || !TextEquals(retainedValue?.Trim(), candidatePair.Value?.Trim()))
-                return false;
-        }
-
-        return true;
+            // Was a first-match scan whose one-to-one pairing held only because the store
+            // canonicalizes these keys on read. Nothing at this seam said so or checked it.
+            && ExternalDimensionsMatch(retained.ExternalGlDimensions, candidate.ExternalGlDimensions);
     }
 
     private static bool TextEquals(string? retained, string? candidate)

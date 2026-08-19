@@ -1,5 +1,6 @@
 using Meridian.Ledger;
 using static Meridian.Contracts.Text.TextPrimitives;
+using static Meridian.Storage.Ledger.LedgerRetainedValueComparison;
 
 namespace Meridian.Storage.Ledger;
 
@@ -26,9 +27,6 @@ namespace Meridian.Storage.Ledger;
 /// </summary>
 public static class RetainedPostingEquivalence
 {
-    /// <summary>Decimal scale of the ledger's durable numeric columns.</summary>
-    private const int StoredDecimalScale = 10;
-
     /// <summary>
     /// Returns <see langword="true"/> when <paramref name="retained"/> is the journal
     /// <paramref name="candidate"/> would have produced. On <see langword="false"/>,
@@ -76,7 +74,7 @@ public static class RetainedPostingEquivalence
 
         var retainedEntry = retained.Entry;
         var candidateEntry = candidate.Entry;
-        if (!TimestampMatches(retainedEntry.Timestamp, candidateEntry.Timestamp))
+        if (!TimestampsMatch(retainedEntry.Timestamp, candidateEntry.Timestamp))
             return Differs("accounting timestamp", out difference);
         if (!string.Equals(retainedEntry.Description, candidateEntry.Description, StringComparison.Ordinal))
             return Differs("journal description", out difference);
@@ -102,8 +100,8 @@ public static class RetainedPostingEquivalence
             if (retainedLine.Account != candidateLine.Account)
                 return Differs($"line {index} account", out difference);
 
-            if (!AmountMatches(retainedLine.Debit, candidateLine.Debit)
-                || !AmountMatches(retainedLine.Credit, candidateLine.Credit))
+            if (!AmountsMatch(retainedLine.Debit, candidateLine.Debit)
+                || !AmountsMatch(retainedLine.Credit, candidateLine.Credit))
             {
                 return Differs($"line {index} amount", out difference);
             }
@@ -276,70 +274,6 @@ public static class RetainedPostingEquivalence
     }
 
     /// <summary>
-    /// One-to-one comparison of external GL dimensions.
-    /// <para>
-    /// Scanning for the first case-insensitive match would let two case-distinct retained keys —
-    /// <c>Dept</c> and <c>dept</c>, which PostgreSQL preserves as separate JSON keys — both match
-    /// the same candidate key, leaving an unrelated candidate key unexamined while the counts
-    /// still agree. That reports different dimensional scope as a replay.
-    /// </para>
-    /// <para>
-    /// Both sides are folded into case-insensitive maps instead. A side that carries
-    /// case-distinct duplicate keys cannot be compared unambiguously at all, so it is treated as
-    /// a difference rather than resolved by guessing which key was meant.
-    /// </para>
-    /// </summary>
-    private static bool ExternalDimensionsMatch(
-        IReadOnlyDictionary<string, string> retained,
-        IReadOnlyDictionary<string, string> candidate)
-    {
-        if (retained.Count != candidate.Count)
-            return false;
-        if (!TryFoldKeys(retained, out var retainedFolded) || !TryFoldKeys(candidate, out var candidateFolded))
-            return false;
-        if (retainedFolded.Count != candidateFolded.Count)
-            return false;
-
-        foreach (var (key, retainedValue) in retainedFolded)
-        {
-            if (!candidateFolded.TryGetValue(key, out var candidateValue)
-                || !string.Equals(retainedValue, candidateValue, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static bool TryFoldKeys(
-        IReadOnlyDictionary<string, string> source,
-        out Dictionary<string, string> folded)
-    {
-        folded = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (key, value) in source)
-        {
-            if (!folded.TryAdd(key?.Trim() ?? string.Empty, value?.Trim() ?? string.Empty))
-                return false;
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// Compares two amounts at the scale the store actually keeps. Journal legs are
-    /// <c>numeric(38, 10)</c>, and a .NET decimal carries more fractional digits than that, so a
-    /// submitted amount comes back rounded. Comparing raw decimals would reject a retry that
-    /// resubmitted the identical value — the same failure the timestamp comparison avoids.
-    /// PostgreSQL rounds numeric half away from zero, which is what is mirrored here.
-    /// </summary>
-    private static bool AmountMatches(decimal retained, decimal candidate)
-        => ToStoredScale(retained) == ToStoredScale(candidate);
-
-    private static decimal ToStoredScale(decimal value)
-        => Math.Round(value, StoredDecimalScale, MidpointRounding.AwayFromZero);
-
-    /// <summary>
     /// Structural comparison of a leg's currency detail at stored scale. The transaction amounts
     /// and FX rate are <c>numeric(38, 10)</c> as well, so record equality — which compares the
     /// raw decimals — would report a conflict for an exact replay.
@@ -351,23 +285,10 @@ public static class RetainedPostingEquivalence
 
         return TextMatches(retained.TransactionCurrency, candidate.TransactionCurrency)
             && TextMatches(retained.FunctionalCurrency, candidate.FunctionalCurrency)
-            && AmountMatches(retained.TransactionDebit, candidate.TransactionDebit)
-            && AmountMatches(retained.TransactionCredit, candidate.TransactionCredit)
-            && AmountMatches(retained.FxRateToFunctional, candidate.FxRateToFunctional);
+            && AmountsMatch(retained.TransactionDebit, candidate.TransactionDebit)
+            && AmountsMatch(retained.TransactionCredit, candidate.TransactionCredit)
+            && AmountsMatch(retained.FxRateToFunctional, candidate.FxRateToFunctional);
     }
-
-    /// <summary>
-    /// Compares two accounting timestamps at the precision the store actually keeps.
-    /// PostgreSQL <c>timestamptz</c> resolves to microseconds while a .NET tick is 100ns, so a
-    /// caller-supplied timestamp carrying sub-microsecond ticks — anything derived from
-    /// <see cref="DateTimeOffset.UtcNow"/> — is truncated on the way in. Comparing raw ticks would
-    /// reject a retry that submitted the very same value it submitted the first time.
-    /// </summary>
-    private static bool TimestampMatches(DateTimeOffset retained, DateTimeOffset candidate)
-        => TruncateToStoredPrecision(retained) == TruncateToStoredPrecision(candidate);
-
-    private static DateTimeOffset TruncateToStoredPrecision(DateTimeOffset value)
-        => value.AddTicks(-(value.UtcTicks % TimeSpan.TicksPerMicrosecond));
 
     private static bool Differs(string field, out string difference)
     {

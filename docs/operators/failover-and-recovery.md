@@ -202,6 +202,22 @@ Treat a conflict here as a reconciliation signal, not a transient error: two dif
 have been approved against one source event, and an operator has to decide which one the books
 should carry.
 
+The durable append seam resolves its own posting-identity collisions and now applies the same two
+rules about what a retained value is:
+
+- Timing and amounts are compared at the precision the store keeps. A retry that resubmitted the
+  identical write used to be refused as a conflicting posting whenever its timestamp carried
+  sub-microsecond ticks — which anything derived from the current clock does — or an amount
+  carried more than ten decimal places. That failure was permanent, not transient: the retained
+  journal already holds the identity, so no later attempt could have succeeded either.
+- A leg's transaction-currency detail participates. Debit and credit are the functional amounts,
+  so two legs can agree on every one of them while booking a different transaction currency,
+  amount, or FX rate; that is now a conflict rather than an acknowledged replay.
+- A retained leg carrying no currency detail is equivalent only to a candidate carrying none.
+  Legs written before the append path stopped discarding currency detail will therefore report a
+  conflict against a modern replay. That is the intended fail-closed answer for ambiguous legacy
+  state: back the affected journals' currency detail in rather than re-posting over them.
+
 ## ETL Source Retention Semantics
 
 An ETL source's archive and error locations are single directories shared by every run of that
