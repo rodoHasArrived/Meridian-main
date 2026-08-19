@@ -4401,6 +4401,7 @@ Meridian-main
 │   │   ├── IRiskValidator.cs
 │   │   ├── ISecurityMasterGate.cs
 │   │   ├── Meridian.Execution.csproj
+│   │   ├── OrderManagementSystem.AccountingHandoff.cs
 │   │   ├── OrderManagementSystem.Audit.cs
 │   │   ├── OrderManagementSystem.cs
 │   │   ├── OrderManagementSystem.ExecutionReportSubscriptions.cs
@@ -9102,6 +9103,7 @@ Meridian-main
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
 │   │   │   ├── BrokerageOrderPlacementGateTests.cs
 │   │   │   ├── BrokerageValidationEvaluatorTests.cs
+│   │   │   ├── DurableFillDeliveryBoundaryTests.cs
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
 │   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
