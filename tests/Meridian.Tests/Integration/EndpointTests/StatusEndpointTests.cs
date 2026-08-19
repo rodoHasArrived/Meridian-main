@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Identity.Auth;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -14,10 +15,13 @@ namespace Meridian.Tests.Integration.EndpointTests;
 public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
+    // W9-GOV-008: /api/providers/latency is a platform read and now requires a permission.
+    private readonly HttpClient _providerReadClient;
 
     public StatusEndpointTests(EndpointTestFixture fixture)
     {
         _client = fixture.Client;
+        _providerReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
     }
 
     #region Health Endpoints
@@ -155,7 +159,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task ProviderLatency_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/providers/latency");
+        var response = await _providerReadClient.GetAsync("/api/providers/latency");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");

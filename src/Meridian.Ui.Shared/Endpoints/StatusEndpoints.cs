@@ -4,6 +4,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.UI;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Lifecycle;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -150,7 +151,7 @@ public static class StatusEndpoints
             }
             return Results.Json(summary, jsonOptions);
         })
-        .WithName("GetProviderLatency")
+        .WithName("GetProviderLatency").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithTags("Monitoring")
         .WithDescription("Returns latency statistics for all providers including average, min, max, and percentiles.")
         .Produces<ProviderLatencySummaryDto>(200);

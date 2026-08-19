@@ -1,6 +1,7 @@
 using System.Net;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Identity.Auth;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -29,7 +30,8 @@ public sealed class EndpointTestFixtureProviderCatalogLifetimeTests
         {
             await fixture.InitializeAsync().WaitAsync(timeout.Token);
 
-            using var response = await fixture.Client.GetAsync(
+            using var providerReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
+            using var response = await providerReadClient.GetAsync(
                 "/api/providers/comparison",
                 timeout.Token);
 
@@ -74,7 +76,8 @@ public sealed class EndpointTestFixtureProviderCatalogLifetimeTests
             ProviderCatalog.RuntimeCatalogProvider.Should().BeSameAs(outerCatalogProvider);
             ProviderCatalog.RuntimeCatalogEntryProvider.Should().BeSameAs(outerCatalogEntryProvider);
 
-            using var response = await outer.Client.GetAsync(
+            using var providerReadClient = outer.CreatePermittedClient(UserPermission.ViewDiagnostics);
+            using var response = await providerReadClient.GetAsync(
                 "/api/providers/comparison",
                 timeout.Token);
 
@@ -184,7 +187,8 @@ public sealed class EndpointTestFixtureProviderCatalogLifetimeTests
             ProviderCatalog.RuntimeCatalogProvider.Should().BeSameAs(outerCatalogProvider);
             ProviderCatalog.RuntimeCatalogEntryProvider.Should().BeSameAs(outerCatalogEntryProvider);
 
-            using var response = await outer.Client.GetAsync(
+            using var providerReadClient = outer.CreatePermittedClient(UserPermission.ViewDiagnostics);
+            using var response = await providerReadClient.GetAsync(
                 "/api/providers/comparison",
                 timeout.Token);
 

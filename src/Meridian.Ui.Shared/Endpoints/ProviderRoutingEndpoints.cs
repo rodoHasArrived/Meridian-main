@@ -29,7 +29,7 @@ public static class ProviderRoutingEndpoints
             var result = await service.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetProviderRoutingConnections")
+        .WithName("GetProviderRoutingConnections").RequirePermission(UserPermission.ManageCredentials)
         .WithDescription("Returns configured provider-routing connections.")
         .Produces<ProviderConnectionDto[]>(StatusCodes.Status200OK);
 
@@ -45,7 +45,7 @@ public static class ProviderRoutingEndpoints
             var result = await service.GetBindingsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetProviderRoutingBindings")
+        .WithName("GetProviderRoutingBindings").RequirePermission(UserPermission.ManageCredentials)
         .WithDescription("Returns configured provider-routing capability bindings.")
         .Produces<ProviderBindingDto[]>(StatusCodes.Status200OK);
 
@@ -61,7 +61,7 @@ public static class ProviderRoutingEndpoints
             var result = await service.GetTrustSnapshotsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetProviderRoutingTrustSnapshots")
+        .WithName("GetProviderRoutingTrustSnapshots").RequirePermission(UserPermission.ManageCredentials)
         .WithDescription("Returns provider trust snapshots for configured routing connections.")
         .Produces<ProviderTrustSnapshotDto[]>(StatusCodes.Status200OK);
 

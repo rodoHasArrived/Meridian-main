@@ -18,15 +18,22 @@ public sealed class ResponseSchemaValidationTests : IDisposable, IClassFixture<E
     private readonly HttpClient _client;
     // SEC-001: /api/config reads now require a configuration permission.
     private readonly HttpClient _configClient;
+    // W9-GOV-008: /api/providers reads now require a platform permission.
+    private readonly HttpClient _providerReadClient;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public ResponseSchemaValidationTests(EndpointTestFixture fixture)
     {
         _client = fixture.Client;
         _configClient = fixture.CreatePermittedClient(UserPermission.ViewConfig, UserPermission.ModifyConfig);
+        _providerReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
     }
 
-    public void Dispose() => _configClient.Dispose();
+    public void Dispose()
+    {
+        _configClient.Dispose();
+        _providerReadClient.Dispose();
+    }
 
     #region /api/status schema
 
@@ -244,7 +251,10 @@ public sealed class ResponseSchemaValidationTests : IDisposable, IClassFixture<E
     private async Task<Dictionary<string, JsonElement>> GetJsonAsync(string url)
     {
         // SEC-001: configuration reads require ViewConfig/ModifyConfig — use the authorized client.
-        var client = url.StartsWith("/api/config", StringComparison.OrdinalIgnoreCase) ? _configClient : _client;
+        // W9-GOV-008: provider reads require a platform permission — likewise.
+        var client = url.StartsWith("/api/config", StringComparison.OrdinalIgnoreCase) ? _configClient
+            : url.StartsWith("/api/providers", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
+            : _client;
         var response = await client.GetAsync(url);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         return await DeserializeResponseAsync(response);

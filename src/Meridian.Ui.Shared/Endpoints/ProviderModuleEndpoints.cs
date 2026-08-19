@@ -32,7 +32,7 @@ public static class ProviderModuleEndpoints
             var modules = await setupService.GetConfiguredModulesAsync(ct).ConfigureAwait(false);
             return Results.Json(modules, jsonOptions);
         })
-        .WithName("GetProviderModules")
+        .WithName("GetProviderModules").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Returns all configured provider modules with credential status (no credential values).")
         .Produces<IReadOnlyList<ProviderModuleStatusDto>>(200)
         .Produces(StatusCodes.Status403Forbidden);
@@ -48,7 +48,7 @@ public static class ProviderModuleEndpoints
             var catalogue = setupService.GetDiscoveredModuleCatalogue();
             return Results.Json(catalogue, jsonOptions);
         })
-        .WithName("GetProviderModuleCatalogue")
+        .WithName("GetProviderModuleCatalogue").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Returns all discoverable provider module types with capability and credential metadata.")
         .Produces<IReadOnlyList<ProviderModuleCatalogueEntry>>(200)
         .Produces(StatusCodes.Status403Forbidden);
@@ -184,7 +184,7 @@ public static class ProviderModuleEndpoints
 
             return Results.Json(matrixService.GetMatrix(), jsonOptions);
         })
-        .WithName("GetProviderCapabilityMatrix")
+        .WithName("GetProviderCapabilityMatrix").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Returns the provider × instrument-type capability matrix with data-source discovery failures.")
         .Produces<ProviderInstrumentCapabilityMatrixDto>(200)
         .Produces(StatusCodes.Status403Forbidden);
