@@ -138,16 +138,23 @@ Scripts that mutate configuration or read governed data need a role that holds t
 permission — for example `POST /api/symbols/add` requires `ModifyConfig` and `POST /api/backfill/run`
 requires `TriggerBackfill`, so a `ReadOnly` key is refused by both.
 
-Two families stay out of reach of a key whatever role it carries, because a role is not an operator
-and a key carries no tenant:
+Two families stay out of reach of a key, because a role is not an operator and a key carries no
+tenant:
 
-- **Per-session state** — workflow presets, saved explorer views, first-run acknowledgements and the
-  desktop launcher. These identify their data by the calling operator, and a key is one shared
-  credential with no operator behind it.
-- **The tenant-scoped workstation surface** (`/api/workstation/*`) — those routes require a tenant
-  scope, which a validated key is never given. Strategy-run reads live here, so a key holding
-  `ViewStrategies` still cannot reach them; read governed data through the API routes outside this
-  surface instead.
+- **Routes declaring an operator session** — workflow presets, saved explorer views, first-run
+  acknowledgements (`GET /api/workstation/first-run`, `POST /api/workstation/first-run/outcomes/complete`)
+  and the desktop launcher. These identify their data by the calling operator, and a key is one
+  shared credential with no operator behind it.
+- **The tenant-scoped `/api/workstation` route group** — those routes require a tenant scope, which a
+  validated key is never given. Strategy-run reads live here, so a key holding `ViewStrategies` still
+  cannot reach them; read governed data through the API routes outside this surface instead.
+
+Neither is a blanket rule about the `/api/workstation` path prefix, and one route in particular is an
+exception worth knowing: **`POST /api/workstation/first-run/complete` is gated by `AdminMaintenance`
+rather than by session or tenant**, so a key configured with a role holding that permission can
+complete first-run setup and provision sample data, recorded against the `api-key` actor. Give a key
+`Admin` only where that is intended. The first-run and desktop-launcher routes are mapped outside the
+tenant-scoped group, so tenant scope does not stand in front of them.
 
 **Example:**
 
