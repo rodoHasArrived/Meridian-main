@@ -130,6 +130,29 @@ loss.
 - Producer acceptance (`TryPublish`/`PublishAsync`) is admission into the in-memory queue only —
   never treat it as a durable acknowledgement when reasoning about loss windows.
 
+## Executed Fill Delivery Semantics
+
+Executed fills reach double-entry accounting through a separate durable handoff. Unlike ingest
+admission, fill acceptance *is* a durability boundary.
+
+- Accepting a fill is durable before it is queued. `LedgerPostingConsumer.PublishAsync` returns
+  only after the posting store retained the fill on at least one of its two independent paths
+  (atomic snapshot, WAL). If both fail the publisher raises and the order path fails closed.
+  A returned acceptance therefore means the fill replays after a restart even if it was never
+  posted.
+- The ledger is posted before the fill is acknowledged. A crash between the authoritative
+  journal write and the acknowledgement leaves the fill pending, and replay detects the existing
+  journals — expect a re-examined fill, never a lost one.
+- A stopped posting consumer refuses new fills rather than blocking. If its loop stops outside
+  shutdown, publishers fail fast with a `ChannelClosedException` naming the posting scope instead
+  of waiting on a channel with no reader. Fills already accepted stay durable and replay on
+  restart; the process needs restarting to resume posting. Treat the critical log line naming the
+  scope as the signal — a silently blocked publisher would otherwise look like a quiet desk.
+- Fills the accounting publisher rejected are retained separately and replayed at startup. If
+  that retained-failure store cannot be loaded, the load retries with backoff (1s to 30s) rather
+  than giving up: those fills exist nowhere else, so replay is delayed, never cancelled. Repeated
+  critical log lines about loading retained handoffs mean the backlog is still undelivered.
+
 ## Recovery Decision Matrix
 
 1. Detect symptom and scope (single provider, module, or full workflow surface).

@@ -1352,91 +1352,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         }
     }
 
-    private async Task ReplayRetainedAccountingHandoffsAsync(CancellationToken ct)
-    {
-        if (_tradeEventPublisher is null || _tradeFillHandoffFailureStore is null)
-            return;
-
-        IReadOnlyList<RetainedTradeFillHandoffFailure> retained;
-        try
-        {
-            retained = await _tradeFillHandoffFailureStore.LoadPendingAsync(ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            return;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogCritical(ex, "Could not load retained accounting handoff failures");
-            return;
-        }
-
-        foreach (var failure in retained)
-        {
-            if (ct.IsCancellationRequested)
-                return;
-            try
-            {
-                _tradeEventPublisher.Publish(failure.TradeEvent);
-                await _tradeFillHandoffFailureStore
-                    .MarkReplayedAsync(failure.TradeEvent.FillId, CancellationToken.None)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogCritical(
-                    ex,
-                    "Retained accounting handoff replay failed for fill {FillId}; the durable failure record remains pending",
-                    failure.TradeEvent.FillId);
-                try
-                {
-                    await _tradeFillHandoffFailureStore
-                        .RetainAsync(failure.TradeEvent, ex.Message, CancellationToken.None)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception retentionException)
-                {
-                    _logger.LogCritical(
-                        retentionException,
-                        "Could not update retained accounting handoff failure for fill {FillId}",
-                        failure.TradeEvent.FillId);
-                }
-            }
-        }
-    }
-
-    private async Task<bool> RetainAccountingHandoffFailureAsync(
-        TradeExecutedEvent tradeEvent,
-        Exception publisherFailure,
-        CancellationToken ct)
-    {
-        if (_tradeFillHandoffFailureStore is null)
-        {
-            _logger.LogCritical(
-                publisherFailure,
-                "Accounting publisher rejected fill {FillId} and no durable OMS handoff-failure store is configured",
-                tradeEvent.FillId);
-            return false;
-        }
-
-        try
-        {
-            await _tradeFillHandoffFailureStore
-                .RetainAsync(tradeEvent, publisherFailure.Message, ct)
-                .ConfigureAwait(false);
-            return true;
-        }
-        catch (Exception retentionFailure)
-        {
-            _logger.LogCritical(
-                retentionFailure,
-                "Accounting publisher and OMS failure-store retention both failed for fill {FillId}; the order path will fail closed",
-                tradeEvent.FillId);
-            return false;
-        }
-    }
-
     private async Task ProcessGatewayReportAsync(ExecutionReport report, CancellationToken ct)
     {
         var orderId = report.ClientOrderId ?? report.OrderId;
@@ -1605,7 +1520,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 {
                     try
                     {
-                        _tradeEventPublisher.Publish(progress.TradeEvent!);
+                        // Awaited, never the blocking Publish bridge: acceptance applies storage
+                        // backpressure and can wait unboundedly for the posting consumer to free
+                        // channel capacity. Blocking a pool thread there starves the very
+                        // consumer that has to drain it, so the fill path would stall instead of
+                        // failing closed.
+                        await _tradeEventPublisher.PublishAsync(progress.TradeEvent!).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
