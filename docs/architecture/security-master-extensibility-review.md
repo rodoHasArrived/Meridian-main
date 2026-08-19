@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-14 (verification pass; original review 2026-08-12)
+**Reviewed:** 2026-08-19 (verification pass; prior passes 2026-08-14, 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -35,8 +35,13 @@ risks that compound as new asset classes land.
 > **Verification pass, 2026-08-14.** Re-read against current source at `4b39e9da8`. The findings
 > below stand as written except where a **Status (2026-08-14)** note says otherwise; four of the ten
 > risk items have since closed or materially narrowed. See
-> [Verification pass — 2026-08-14](#verification-pass--2026-08-14) for the current open list and
-> re-ranked priorities.
+> [Verification pass — 2026-08-14](#verification-pass--2026-08-14) for the open list and
+> re-ranked priorities as of that date.
+>
+> **Verification pass, 2026-08-19.** Re-read against current source at `7ed160dc`. The Security
+> Master surface is materially unchanged since 2026-08-14 — every finding and priority below stands
+> as written, and one new observation was added. See
+> [Verification pass — 2026-08-19](#verification-pass--2026-08-19).
 
 ---
 
@@ -475,6 +480,84 @@ history; asset-class-scoped projection replay.
 
 ---
 
+## Verification pass — 2026-08-19
+
+Re-read against current source at `7ed160dc`, five days after the previous pass. No code was
+changed by this pass; no tests were run.
+
+### Summary: the subsystem did not move
+
+493 commits landed repo-wide since `4b39e9da8`. Across the entire Security Master surface —
+`src/Meridian.FSharp/Domain/`, `src/Meridian.Contracts/SecurityMaster/`,
+`src/Meridian.Application/SecurityMaster/`, `src/Meridian.Storage/SecurityMaster/`,
+`src/Meridian.ReferenceData/` — the diff is **15 insertions and 13 deletions across 7 files**, all
+of it cosmetic: routing inline SHA-256 sites onto `Sha256Digest`, and replacing the last literal
+schema-version writes with named constants. No structural change, and nothing that closes,
+narrows, or reopens a finding.
+
+**Every open item from the 2026-08-14 pass was re-verified against source and stands verbatim:**
+
+| # | Item | Re-verified evidence (2026-08-19) |
+| --- | --- | --- |
+| 5 | Governed edits do not reach the golden record | The only two `ISecurityMasterRevisionPublishedHandler` registrations are still `SecurityProjectionRebuildHandler` (Order=10) and `CoverageInvalidationHandler` (Order=20) (`WorkstationServiceCollectionExtensions.cs:525-530`). `OperatorOverridesDto.Values` is still `IReadOnlyDictionary<string, string>` and its docstring still reads "*without amending the canonical security terms*" (`OperatorOverrides.cs:27-33`). `ProviderLedgerReconciliationService` still assigns `_operatorOverridesStore` at `:77` and never reads it |
+| 2 | Three modeling routes for MBS/ABS/CLO | No ruling landed. `SecurityMasterOperationalReadinessService.cs:157` still labels `CustomAsset` "MBS / ABS / CLO / CMBS / private assets"; no ADR exists |
+| 1 | Taxonomy outruns term model | `BondCouponStructure` is still exactly `Fixed` / `Floating` / `ZeroCoupon` (`SecurityMaster.fs:222-225`) |
+| 8 | Third factor-schedule shape | `SecurityFactorScheduleEntry` is still separately declared at `SecurityMasterAccountingEventService.cs:89` and used across `SecurityMasterAccountingEventSourceAdapter` |
+| 7 | Corporate actions: wide table | `corporate_actions` still carries per-event-type nullable columns and no JSONB payload (`003_security_master_corp_actions.sql:5-21`). Migrations still end at 028 |
+| 10 | Straight-line amortization only | `FaceValueLot.AmortizedBasisAsOf` is still day-count-weighted straight-line (`FaceValueLot.cs:94-113`); `BondAmortizationMethod.ConstantYield` still has no consumer |
+| 10 | Per-process projection cache | `SecurityMasterProjectionCache` is still a bare `ConcurrentDictionary` with no eviction; `ReplaceAll` still calls `_byId.Clear()` before repopulating (`SecurityMasterProjectionCache.cs:18-25`) |
+| 4 | ~7 registries per asset class | Class counts still agree at 26 across the F# DU, `SecurityAssetTermsSchema`, and the catalog; both codec arms are still hand-written |
+| — | Relational projections | Still 11 projection stores for 26 classes; `IntentionallyUnprojectedAssetClasses` still lists the same 15 private/alternative classes (`SecurityAssetTermsSchemaTests.cs:21-38`) |
+
+### New observation: the missing calculation math already exists, unwired
+
+`src/Meridian.FSharp/Calculations/SecurityCalculations.fs` (295 lines) is a documented,
+unit-tested formula library carrying exactly the math two open findings report as absent:
+
+- `constantYieldIncome` and `amortizationAccretion` — the effective-interest pair that item 10
+  records as "an enum member with no implementation" — plus `pciDailyAmortization` for
+  purchased-credit-impaired instruments.
+- `inflationAdjustedPrincipal` and `inflationLinkedMarketValue` — the TIPS math item 1 needs for an
+  inflation-linked `BondCouponStructure` case.
+- `weightedAverageLife` — WAL for prepaying structured securities.
+- Newton-Raphson `purchaseYield` / `bookYield` solvers, `repoInterest`, `shortTermDailyAccretion`,
+  `fxRemeasurement`, `accruedInterest`, dirty/clean price conversion, and call/put
+  in-the-money predicates.
+
+**The module has no production caller.** Grepping `SecurityCalculations` across `src/` returns only
+its own declaration and its `.fsproj` compile entry; the sole consumers are assertions in
+`tests/Meridian.FSharp.Tests/SecurityCalculationsTests.fs`. It predates both prior passes (added
+2026-08-10) and neither caught it.
+
+This is the `SecurityAssetPackRegistry` pattern from item 10 recurring in a second place —
+correct-looking capability that no production path reaches — with one difference that matters: the
+`DayCount` module in the same file *does* delegate to the canonical
+`Meridian.Contracts.SecurityMaster.DayCountConventions` engine so the C# and F# lanes cannot
+diverge. The calculation module below it has no such tie to a consumer.
+
+The practical consequence is favorable: it **lowers the cost** of two deferred priorities.
+Effective-interest amortization and inflation-linked bond support are not greenfield — the
+primitives are written and tested, and the remaining work is a term model to feed them and a
+wiring path from `FaceValueLot` / the ledger amortization engine. It also raises a risk the prior
+passes did not name: a tested-but-uncalled financial formula library invites a future contributor
+to assume the platform computes constant-yield amortization when it does not.
+
+### Priorities — unchanged
+
+The 2026-08-14 re-ranked list stands in full, with one adjustment: effective-interest amortization
+moves from *deferred* to a credible near-term slice, on the strength of the primitives above. It
+remains below the top five, because the decision it waits on (GAAP materiality) is still a policy
+question and not an architecture one.
+
+The top priority is unchanged and now five days older: **the merge path from the governed
+workbench to the golden record.** Every part of that workflow is built except the publish handler
+that writes an approved correction into canonical terms. Until it lands, the durable revision
+lifecycle, the independent-reviewer gate, the schema-validated field paths, and the provenance
+lineage all govern a side table, and an approved coupon correction still cannot reach cash-flow
+projection, amortization, pricing, or NAV.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -488,5 +571,10 @@ The 2026-08-14 verification pass re-read the F# domain and interop, the 47 `Meri
 Security Master contracts, the 58 `Meridian.Application` Security Master services, the 46
 `Meridian.Storage` stores and 28 migrations, the workstation endpoint surfaces, and the codec
 round-trip and asset-class-support test suites.
+
+The 2026-08-19 verification pass diffed the full Security Master surface against `4b39e9da8`,
+re-verified each open finding against its cited source location, re-counted the asset-class
+surfaces and projection stores, and swept `src/Meridian.FSharp/Calculations/` for calculation
+capability not reachable from a production path.
 
 No code was changed. No tests were run — this review makes no behavioral claims requiring execution.
