@@ -9589,6 +9589,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterPostgresRoundTripTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterPricingServiceTests.cs
+│   │   │   ├── SecurityMasterProjectionCacheTests.cs
 │   │   │   ├── SecurityMasterProjectionCodecTests.cs
 │   │   │   ├── SecurityMasterProjectionServiceSnapshotTests.cs
 │   │   │   ├── SecurityMasterQueryServiceAsOfTests.cs
