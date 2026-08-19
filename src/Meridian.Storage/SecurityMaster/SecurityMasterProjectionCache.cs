@@ -23,7 +23,8 @@ public sealed class SecurityMasterProjectionCache
         => Current.TryGetValue(securityId, out var record) ? record : null;
 
     /// <summary>
-    /// Adds or updates one record in the live master.
+    /// Adds one record to the live master, or updates the installed one when
+    /// <paramref name="record"/> is not older than it.
     /// </summary>
     /// <remarks>
     /// Taken under the write gate, and resolving <see cref="Current"/> only once inside it, so an
@@ -31,12 +32,23 @@ public sealed class SecurityMasterProjectionCache
     /// lands in the map that replacement installs. Writing outside the gate would put the record
     /// into the outgoing map, where the swap would discard it — losing a security that create,
     /// amend, or a published rebuild had just persisted.
+    /// <para>
+    /// Waiting on the gate is exactly what makes the version check necessary. A caller can produce
+    /// its projection and then take a while to get here — <c>SecurityMasterService</c> releases its
+    /// per-security amendment gate and awaits several times before it calls — so the record in hand
+    /// may be older than one a rebuild installed in the meantime. An unconditional assignment would
+    /// then downgrade that key. Equal versions take the incoming record, which is a no-op in
+    /// content.
+    /// </para>
     /// </remarks>
     public void Upsert(SecurityProjectionRecord record)
     {
         lock (_writeGate)
         {
-            Current[record.SecurityId] = record;
+            Current.AddOrUpdate(
+                record.SecurityId,
+                record,
+                (_, installed) => record.Version >= installed.Version ? record : installed);
         }
     }
 
@@ -52,6 +64,12 @@ public sealed class SecurityMasterProjectionCache
     /// touched also appears in <paramref name="records"/> — the caller materialized that set before
     /// calling, so it may already be stale. That staleness is the caller's to resolve; it is not
     /// something the cache can see.
+    /// </para>
+    /// <para>
+    /// This substitutes rather than merging by version, which is the deliberate asymmetry with
+    /// <see cref="Upsert"/>: a rebuild replays the whole master from the event stream, so its set is
+    /// authoritative as of its own snapshot, including about which securities are absent. Merging a
+    /// newer straggler in would also resurrect every record the rebuild legitimately dropped.
     /// </para>
     /// </remarks>
     public void ReplaceAll(IEnumerable<SecurityProjectionRecord> records)

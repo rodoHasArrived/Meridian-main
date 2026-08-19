@@ -102,8 +102,9 @@ Few systems at this stage know what "ready" means per asset class.
 **The read surface is authorization-gated.** *(Added 2026-08-19.)* Roughly 36 Security Master read
 endpoints carry `RequireAnyPermission(ViewSecurityMaster, ModifySecurityMaster)`
 (`SecurityMasterEndpoints.cs`), so issuer terms, validation reports, and profile catalogs are not
-readable by any authenticated caller. Mutating endpoints require `ModifySecurityMaster` and are
-rate-limited under `UiEndpoints.MutationRateLimitPolicy`.
+readable by any authenticated caller. The record-mutating routes — the generic field edits and the
+equity amendments — require `ModifySecurityMaster` and are rate-limited under
+`UiEndpoints.MutationRateLimitPolicy`. That pairing is not universal across the file; see item 11.
 
 **Auditability is durable.** Migration 025 moved the conflict store and revision-lifecycle store off
 process-local memory specifically so "a publish only ever runs against a revision that was durably
@@ -359,6 +360,29 @@ for: a per-asset workaround on a surface that is otherwise generic.
 
 ---
 
+### 11. Four governance mutations sit outside the mutation controls
+
+*(Added 2026-08-19, from review of this document's own over-broad claim.)* The endpoint file applies
+`RequirePermission(ModifySecurityMaster)` plus `RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)`
+to the record-mutating routes, but four mutations do not carry that pairing:
+
+| Route | Permission | Rate-limited |
+| --- | --- | --- |
+| `DraftSecurityMasterAssetProfile` (`:157`) | `AdminMaintenance` | no |
+| `ApproveSecurityMasterAssetProfile` (`:198`) | `AdminMaintenance` | no |
+| `RollbackSecurityMasterAssetProfile` (`:239`) | `AdminMaintenance` | no |
+| `RunSecurityMasterQualityReport` (`:1558`) | `AdminMaintenance` (handler check only, no fluent declaration) | no |
+
+`AdminMaintenance` is a defensible — arguably stronger — permission for profile governance, so the
+gap is not that these are open. It is that they are the routes defining and approving the custom-asset
+profiles the extension point depends on (item 3), plus a report run that does real work, and they sit
+outside both the rate limit and the declarative permission convention every neighbouring mutation
+follows. The risk is the one a reviewer would hit rather than an attacker: a blanket reading of "all
+mutations are permission-gated and rate-limited" treats these as covered when they are not.
+
+Either bring them onto `RequireRateLimiting` and a fluent `RequirePermission`, or record the
+exemption where a reader will find it.
+
 ## Missing or Incomplete Subsystems Blocking New Asset Classes
 
 | Subsystem | State | Blocks |
@@ -613,10 +637,22 @@ was not, and the window was strictly wider. `Upsert` and `ReplaceAll` now serial
 with `Upsert` resolving the live map inside it, so a record persisted by create, amend, or a
 published rebuild cannot be dropped by a replacement already in flight. Reads remain lock-free.
 
-The regression tests were rewritten for the same reason: the first versions spun a reader thread and
-hoped it interleaved, which meant they could pass against the implementations they existed to
-reject. They now drive `ReplaceAll` with a collection that parks mid-fill until the other thread has
-acted, so the interleaving is forced.
+The gate then created a third problem, also caught in review: because a caller can produce its
+projection and only reach `Upsert` after several awaits, a record that waits on the gate may be
+*older* than one a rebuild installed meanwhile, and an unconditional assignment downgraded that key.
+`Upsert` now compares `Version` and keeps the installed record when the incoming one is older.
+`ReplaceAll` deliberately does not do the same: a rebuild replays the whole master, so its set is
+authoritative as of its snapshot — including about which securities are absent — and merging
+stragglers in by version would resurrect every record it legitimately dropped.
+
+The regression tests were rewritten twice for the same underlying reason. The first versions spun a
+reader thread and hoped it interleaved; the second forced the interleaving for the reader but not
+for the writer, which signalled *before* calling `Upsert` and so still passed when it was
+descheduled at that point. Both could pass against the implementations they existed to reject — the
+recurring error being to check that a test passes under the fix without checking that it fails under
+the bug. The replacement now runs a callback mid-fill, and the upsert test asserts inside that window
+that the write has *not* completed, so the timing dependence runs in the direction that cannot
+produce a false pass.
 
 The remaining open findings were deliberately not attempted. Items 1, 2, 7, and the top priority
 need a decision or a schema change rather than a repair: the canonical home for MBS/ABS/CLO is a

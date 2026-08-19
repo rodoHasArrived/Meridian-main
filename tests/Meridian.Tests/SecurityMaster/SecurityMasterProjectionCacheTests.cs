@@ -137,6 +137,35 @@ public sealed class SecurityMasterProjectionCacheTests
     }
 
     [Fact]
+    public void Upsert_WithAnOlderVersion_DoesNotDowngradeTheInstalledRecord()
+    {
+        var cache = new SecurityMasterProjectionCache();
+        var securityId = Guid.NewGuid();
+        var rebuilt = Record("SEC-1", securityId, version: 7);
+        var stale = Record("SEC-1", securityId, version: 6);
+
+        cache.ReplaceAll([rebuilt]);
+        cache.Upsert(stale);
+
+        cache.Get(securityId)!.Version.Should().Be(7,
+            "a caller can produce its projection and then wait on the write gate, so the record it "
+            + "holds may be older than one a rebuild installed meanwhile");
+    }
+
+    [Fact]
+    public void Upsert_WithANewerVersion_ReplacesTheInstalledRecord()
+    {
+        var cache = new SecurityMasterProjectionCache();
+        var securityId = Guid.NewGuid();
+
+        cache.ReplaceAll([Record("SEC-1", securityId, version: 7)]);
+        cache.Upsert(Record("SEC-1", securityId, version: 8));
+
+        cache.Get(securityId)!.Version.Should().Be(8,
+            "the version check must not turn Upsert into a no-op for genuinely newer records");
+    }
+
+    [Fact]
     public void Upsert_AfterReplaceAll_LandsInTheCurrentMaster()
     {
         var cache = new SecurityMasterProjectionCache();
@@ -190,9 +219,12 @@ public sealed class SecurityMasterProjectionCacheTests
     private static IReadOnlyList<SecurityProjectionRecord> Build(string prefix)
         => Enumerable.Range(0, RecordCount).Select(i => Record($"{prefix}-{i}")).ToArray();
 
-    private static SecurityProjectionRecord Record(string internalCode)
+    private static SecurityProjectionRecord Record(
+        string internalCode,
+        Guid? securityId = null,
+        long version = 1)
         => new(
-            Guid.NewGuid(),
+            securityId ?? Guid.NewGuid(),
             "Equity",
             SecurityStatusDto.Active,
             internalCode,
@@ -207,7 +239,7 @@ public sealed class SecurityMasterProjectionCacheTests
                 asOf = "2026-01-01T00:00:00+00:00",
                 updatedBy = "projection-cache-tests"
             }),
-            1,
+            version,
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
             null,
             Array.Empty<SecurityIdentifierDto>(),
