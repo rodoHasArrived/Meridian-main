@@ -600,9 +600,23 @@ that cannot be wrong is not evidence.
 
 | Finding | Outcome |
 | --- | --- |
-| Clear-then-refill in `SecurityMasterProjectionCache.ReplaceAll` | **Fixed.** The replacement map is built off to the side and installed with one `Volatile.Write`; reads go through `Volatile.Read`. A reader concurrent with a warm or rebuild now sees either the whole previous master or the whole new one. `SecurityMasterProjectionCacheTests` covers the swap, the concurrent-reader window, and post-swap `Upsert` |
+| Clear-then-refill in `SecurityMasterProjectionCache.ReplaceAll` | **Fixed.** The replacement map is built and installed with one `Volatile.Write` under a write gate; reads stay lock-free through `Volatile.Read`. A reader concurrent with a warm or rebuild now sees either the whole previous master or the whole new one, and an `Upsert` issued during a replacement waits and lands in the installed map instead of being discarded with the outgoing one. See the correction note below |
 | `IOperatorOverridesStore` "dead dependency" | **Refuted, finding retracted.** It is read from a sibling partial file. See risk item 5 |
 | Third factor-schedule shape | **Refuted, recommendation withdrawn.** Two distinct concepts, not one in three shapes. See risk item 8 |
+
+**Correction to the first cut of the cache fix.** The initial swap-only version traded one race for
+another, and automated review caught it. Under the old `Clear()`-then-refill, an `Upsert` that
+landed *after* the refill loop had already copied its key survived; a plain reference swap discards
+every upsert issued during the replacement, because they all write into the outgoing map. The first
+version's own `<remarks>` claimed the outcome was "the same a concurrent `Clear()` produced" — it
+was not, and the window was strictly wider. `Upsert` and `ReplaceAll` now serialize on a write gate,
+with `Upsert` resolving the live map inside it, so a record persisted by create, amend, or a
+published rebuild cannot be dropped by a replacement already in flight. Reads remain lock-free.
+
+The regression tests were rewritten for the same reason: the first versions spun a reader thread and
+hoped it interleaved, which meant they could pass against the implementations they existed to
+reject. They now drive `ReplaceAll` with a collection that parks mid-fill until the other thread has
+acted, so the interleaving is forced.
 
 The remaining open findings were deliberately not attempted. Items 1, 2, 7, and the top priority
 need a decision or a schema change rather than a repair: the canonical home for MBS/ABS/CLO is a

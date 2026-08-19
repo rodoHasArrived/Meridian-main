@@ -1,5 +1,6 @@
 using System;
-using System.Collections.Concurrent;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -13,14 +14,27 @@ namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
 /// Guards the shared projection cache against the empty-master window a warm or rebuild used to
-/// expose. <see cref="SecurityMasterProjectionCache"/> is registered as a singleton and
-/// <c>ReplaceAll</c> runs on publish-triggered rebuilds and startup warms, so query readers are
-/// concurrent with it by construction: a reader that lands mid-replace must still see a complete
-/// master, not zero rows or a partially rebuilt set.
+/// expose, and against losing a concurrent upsert to the replacement that follows it.
+/// <see cref="SecurityMasterProjectionCache"/> is registered as a singleton;
+/// <see cref="SecurityMasterProjectionCache.ReplaceAll"/> runs on startup warms and
+/// publish-triggered rebuilds while <see cref="SecurityMasterProjectionCache.Upsert"/> runs on
+/// create, amend, and published-revision paths, and no caller serializes the two. Readers are
+/// concurrent with both by construction.
 /// </summary>
+/// <remarks>
+/// The concurrency tests are deterministic rather than timing-dependent. Each drives
+/// <c>ReplaceAll</c> with <see cref="PausingCollection"/>, which parks mid-enumeration until the
+/// other thread has done its work, so the interleaving under test is forced instead of hoped for —
+/// a scheduling-dependent version would pass against the very implementations these tests exist to
+/// reject. <see cref="PausingCollection"/> is an <see cref="IReadOnlyCollection{T}"/> on purpose:
+/// that is the shape real callers pass, and it is the shape <c>ReplaceAll</c> fills from inside its
+/// write gate, so the pause lands in the window the assertions are about.
+/// </remarks>
 [Trait("Category", "Unit")]
 public sealed class SecurityMasterProjectionCacheTests
 {
+    private const int RecordCount = 250;
+
     [Fact]
     public void ReplaceAll_SwapsTheWholeMaster()
     {
@@ -40,41 +54,55 @@ public sealed class SecurityMasterProjectionCacheTests
     [Fact]
     public void Snapshot_TakenDuringReplaceAll_NeverObservesAPartialMaster()
     {
-        const int recordCount = 250;
-        const int replacements = 40;
-
         var cache = new SecurityMasterProjectionCache();
-        var generationA = Enumerable.Range(0, recordCount).Select(i => Record($"GEN-A-{i}")).ToArray();
-        var generationB = Enumerable.Range(0, recordCount).Select(i => Record($"GEN-B-{i}")).ToArray();
-        cache.ReplaceAll(generationA);
+        cache.ReplaceAll(Build("GEN-A"));
 
-        var observedCounts = new ConcurrentBag<int>();
-        using var stop = new CancellationTokenSource();
+        using var midpointReached = new ManualResetEventSlim(false);
+        using var snapshotTaken = new ManualResetEventSlim(false);
+        var observed = -1;
 
         var reader = Task.Run(() =>
         {
-            while (!stop.IsCancellationRequested)
-            {
-                observedCounts.Add(cache.Snapshot().Count);
-            }
-
-            // One final read after the last replacement has certainly landed.
-            observedCounts.Add(cache.Snapshot().Count);
+            midpointReached.Wait();
+            // Reads take no lock, so this lands while the replacement is mid-fill.
+            observed = cache.Snapshot().Count;
+            snapshotTaken.Set();
         });
 
-        for (var i = 0; i < replacements; i++)
-        {
-            cache.ReplaceAll(i % 2 == 0 ? generationB : generationA);
-        }
-
-        stop.Cancel();
+        cache.ReplaceAll(new PausingCollection(Build("GEN-B"), midpointReached, snapshotTaken));
         reader.GetAwaiter().GetResult();
 
-        // Under the previous Clear()-then-refill implementation a reader routinely caught counts
-        // between 0 and recordCount. With a reference swap every observation is a complete master.
-        observedCounts.Should().NotBeEmpty();
-        observedCounts.Should().OnlyContain(count => count == recordCount,
-            "a reader concurrent with ReplaceAll must see a complete master, never an empty or partly filled one");
+        observed.Should().Be(RecordCount,
+            "a reader concurrent with ReplaceAll must see a complete master — a Clear()-then-refill "
+            + "would have shown zero or a partial count at this exact point");
+        cache.Count.Should().Be(RecordCount);
+    }
+
+    [Fact]
+    public void Upsert_DuringReplaceAll_SurvivesTheSwap()
+    {
+        var cache = new SecurityMasterProjectionCache();
+        cache.ReplaceAll(Build("GEN-A"));
+        var late = Record("LATE-ARRIVAL");
+
+        using var midpointReached = new ManualResetEventSlim(false);
+        using var upsertIssued = new ManualResetEventSlim(false);
+
+        var writer = Task.Run(() =>
+        {
+            midpointReached.Wait();
+            upsertIssued.Set();
+            // Blocks on the write gate the replacement holds, then resolves the map after the swap.
+            cache.Upsert(late);
+        });
+
+        cache.ReplaceAll(new PausingCollection(Build("GEN-B"), midpointReached, upsertIssued));
+        writer.GetAwaiter().GetResult();
+
+        cache.Get(late.SecurityId).Should().NotBeNull(
+            "a record persisted by create, amend, or a published rebuild must not be discarded by a "
+            + "replacement that was already in flight when it was written");
+        cache.Count.Should().Be(RecordCount + 1);
     }
 
     [Fact]
@@ -91,6 +119,38 @@ public sealed class SecurityMasterProjectionCacheTests
         cache.Get(added.SecurityId).Should().NotBeNull(
             "Upsert must write into the map the swap installed, not a stale reference");
     }
+
+    /// <summary>
+    /// A replacement set that releases <paramref name="midpointReached"/> halfway through being
+    /// enumerated and then blocks on <paramref name="resume"/>, forcing the other thread's work to
+    /// interleave with the replacement instead of racing it.
+    /// </summary>
+    private sealed class PausingCollection(
+        IReadOnlyList<SecurityProjectionRecord> records,
+        ManualResetEventSlim midpointReached,
+        ManualResetEventSlim resume) : IReadOnlyCollection<SecurityProjectionRecord>
+    {
+        public int Count => records.Count;
+
+        public IEnumerator<SecurityProjectionRecord> GetEnumerator()
+        {
+            for (var i = 0; i < records.Count; i++)
+            {
+                if (i == records.Count / 2)
+                {
+                    midpointReached.Set();
+                    resume.Wait();
+                }
+
+                yield return records[i];
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    private static IReadOnlyList<SecurityProjectionRecord> Build(string prefix)
+        => Enumerable.Range(0, RecordCount).Select(i => Record($"{prefix}-{i}")).ToArray();
 
     private static SecurityProjectionRecord Record(string internalCode)
         => new(
