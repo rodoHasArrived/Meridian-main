@@ -507,7 +507,7 @@ public static partial class WorkstationEndpoints
             var payload = await BuildPortfolioPayloadAsync(context).ConfigureAwait(false);
             return Results.Json(payload, jsonOptions);
         })
-        .WithName("GetWorkstationPortfolio")
+        .WithName("GetWorkstationPortfolio").RequirePermission(UserPermission.ViewTrades)
         .Produces<WorkstationPortfolioPayload>(200);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationPortfolioSummary), async (string? fundAccountId, string? strategyId, string? entity, HttpContext context) =>
@@ -515,7 +515,7 @@ public static partial class WorkstationEndpoints
             var payload = await BuildPortfolioSummaryPayloadAsync(context, fundAccountId, strategyId, entity).ConfigureAwait(false);
             return Results.Json(payload, jsonOptions);
         })
-        .WithName("GetWorkstationPortfolioSummary")
+        .WithName("GetWorkstationPortfolioSummary").RequirePermission(UserPermission.ViewTrades)
         .Produces<WorkstationPortfolioSummaryPayload>(200);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationPortfolioMultiAssetCoverage), async (string? fundAccountId, string? entity, string? assetClass, HttpContext context) =>
@@ -523,7 +523,7 @@ public static partial class WorkstationEndpoints
             var payload = await BuildMultiAssetCoveragePayloadAsync(context, fundAccountId, entity, assetClass).ConfigureAwait(false);
             return Results.Json(payload, jsonOptions);
         })
-        .WithName("GetWorkstationPortfolioMultiAssetCoverage")
+        .WithName("GetWorkstationPortfolioMultiAssetCoverage").RequirePermission(UserPermission.ViewTrades)
         .Produces<MultiAssetCoverageSummaryDto>(200)
         .RequireWorkstationTenantCompanyScope();
 
@@ -1547,7 +1547,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
         })
-        .WithName("GetLatestRunReconciliation")
+        .WithName("GetLatestRunReconciliation").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<ReconciliationRunDetail>(200)
         .Produces(404)
         .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
@@ -1565,7 +1565,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(history, jsonOptions);
         })
-        .WithName("GetRunReconciliationHistory")
+        .WithName("GetRunReconciliationHistory").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
         .Produces(404)
         .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
@@ -2228,7 +2228,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(summary, jsonOptions);
         })
-        .WithName("GetRunLedger")
+        .WithName("GetRunLedger").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<LedgerSummary>(200)
         .Produces(404)
         .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
@@ -2255,7 +2255,7 @@ public static partial class WorkstationEndpoints
                     detail.Reconciliation,
                     detail.ContinuityStatus), jsonOptions);
         })
-        .WithName("GetRunContinuity")
+        .WithName("GetRunContinuity").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyRunContinuityDto>(200)
         .Produces(404)
         .Produces(501)
@@ -2304,7 +2304,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(curve, jsonOptions);
         })
-        .WithName("GetRunEquityCurve")
+        .WithName("GetRunEquityCurve").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<EquityCurveSummary>(200)
         .Produces(404)
         .Produces(501)
@@ -2343,7 +2343,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(summary, jsonOptions);
         })
-        .WithName("GetRunFills")
+        .WithName("GetRunFills").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<RunFillSummary>(200)
         .Produces(404)
         .Produces(501)
@@ -2366,7 +2366,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(attribution, jsonOptions);
         })
-        .WithName("GetRunAttribution")
+        .WithName("GetRunAttribution").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<RunAttributionSummary>(200)
         .Produces(404)
         .Produces(501)
@@ -2441,7 +2441,7 @@ public static partial class WorkstationEndpoints
                 .ToArray();
             return Results.Json(lines, jsonOptions);
         })
-        .WithName("GetRunLedgerTrialBalance")
+        .WithName("GetRunLedgerTrialBalance").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<LedgerTrialBalanceLine>>(200)
         .Produces(404)
         .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
@@ -2521,7 +2521,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(entries.ToArray(), jsonOptions);
         })
-        .WithName("GetRunLedgerJournal")
+        .WithName("GetRunLedgerJournal").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<LedgerJournalLine>>(200)
         .Produces(404)
         .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
@@ -2851,7 +2851,7 @@ public static partial class WorkstationEndpoints
                 .ConfigureAwait(false);
             return Results.Json(runs, jsonOptions);
         })
-        .WithName("GetWorkstationRunHistory")
+        .WithName("GetWorkstationRunHistory").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyRunSummary>>(200)
         .Produces(501);
 
@@ -2882,7 +2882,7 @@ public static partial class WorkstationEndpoints
                 .ConfigureAwait(false);
             return Results.Json(timeline, jsonOptions);
         })
-        .WithName("GetWorkstationMergedRunTimeline")
+        .WithName("GetWorkstationMergedRunTimeline").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyRunTimelineEntry>>(200)
         .Produces(501);
 
@@ -2915,7 +2915,7 @@ public static partial class WorkstationEndpoints
                 timeline.Where(static entry => entry.EventType != StrategyRunLineageEventType.ReplayVerified).ToArray(),
                 jsonOptions);
         })
-        .WithName("GetWorkstationRunLineageTimeline")
+        .WithName("GetWorkstationRunLineageTimeline").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyRunLineageTimelineEntry>>(200)
         .Produces(501);
 
@@ -2934,7 +2934,7 @@ public static partial class WorkstationEndpoints
                 .ConfigureAwait(false);
             return Results.Json(sweeps, jsonOptions);
         })
-        .WithName("GetWorkstationSweepResults")
+        .WithName("GetWorkstationSweepResults").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategySweepResultGroup>>(200)
         .Produces(501);
 

@@ -4742,7 +4742,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        });
+        }, currentUserPermissions: UserPermission.ViewStrategies);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildContinuityRun("run-continuity"));
@@ -4831,7 +4831,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        });
+        }, currentUserPermissions: UserPermission.ViewStrategies);
 
         var client = app.GetTestClient();
         var response = await client.GetAsync("/api/workstation/runs/no-such-run/continuity");
@@ -4842,7 +4842,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_ContinuityDrillInsAcrossSurfaces_ShouldUseCanonicalRouteAndSharedSchema()
     {
-        await using var app = await CreateAppAsync(RegisterRunReadServices);
+        await using var app = await CreateAppAsync(RegisterRunReadServices, currentUserPermissions: UserPermission.ViewStrategies | UserPermission.ViewTrades);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
         await store.RecordRunAsync(BuildContinuityRun("run-continuity-shared"));
@@ -6106,7 +6106,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewStrategies);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildRun(
@@ -6146,7 +6146,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewStrategies);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildRun(
@@ -6264,7 +6264,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildRun(
@@ -6337,7 +6337,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_PortfolioWorkspace_WithoutRunReadService_ShouldReturnEmptyRunsAndStableShape()
     {
-        await using var app = await CreateAppAsync();
+        await using var app = await CreateAppAsync(currentUserPermissions: UserPermission.ViewTrades);
         var client = app.GetTestClient();
 
         using var portfolio = await ReadJsonAsync(client, "/api/workstation/portfolio");
@@ -7124,7 +7124,7 @@ public sealed partial class WorkstationEndpointsTests
             RegisterRunReadServices(services);
             services.AddSingleton<Meridian.Execution.Models.IPortfolioState>(new LiveMarkTestPortfolioState(position));
             services.AddSingleton(quotes);
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades);
 
         var client = app.GetTestClient();
         using var portfolio = await ReadJsonAsync(client, "/api/workstation/portfolio");
@@ -8643,7 +8643,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_EquityCurveRoute_ShouldReturnCurveForRunWithSnapshots()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewStrategies);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         var run = StrategyRunDrillInTests_BuildRunWithMultipleSnapshots("drillcurve-1", 50_000m);
         await store.RecordRunAsync(run);
@@ -8661,7 +8661,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_EquityCurveRoute_ShouldReturn404ForMissingRun()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewStrategies);
         var client = app.GetTestClient();
         var response = await client.GetAsync("/api/workstation/runs/no-such-run/equity-curve");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -8670,7 +8670,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FillsRoute_ShouldReturnAllFills()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewStrategies);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         var run = StrategyRunDrillInTests_BuildRunWithFills("drillfills-1", 3);
         await store.RecordRunAsync(run);
@@ -8689,7 +8689,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FillsRoute_ShouldFilterBySymbol()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewStrategies);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         var run = StrategyRunDrillInTests_BuildRunWithFills("drillfills-2", 4);
         await store.RecordRunAsync(run);
@@ -8707,7 +8707,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_AttributionRoute_ShouldReturnSymbolBreakdown()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewStrategies);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         var run = StrategyRunDrillInTests_BuildRunWithAttribution("drillattr-1");
         await store.RecordRunAsync(run);
@@ -8725,7 +8725,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_LedgerTrialBalanceRoute_ShouldReturnAllLines()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewStrategies);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationReadyRun("drilltb-1"));
 
@@ -8740,7 +8740,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_LedgerTrialBalanceRoute_ShouldFilterByAccountType()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewStrategies);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationReadyRun("drilltb-2"));
 
@@ -8759,7 +8759,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_LedgerTrialBalanceRoute_ShouldFilterByCanonicalDimensions()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewStrategies);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationReadyRun("drilltb-dim") with
         {
@@ -8834,7 +8834,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_LedgerJournalRoute_ShouldReturnAllEntries()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewStrategies);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationReadyRun("drillj-1"));
 
@@ -8849,7 +8849,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_LedgerJournalRoute_ShouldFilterByCanonicalDimensions()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewStrategies);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationReadyRun("drillj-dim") with
         {
@@ -8924,7 +8924,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_LedgerJournalRoute_ShouldFilterByFromDate()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewStrategies);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationReadyRun("drillj-2"));
 
