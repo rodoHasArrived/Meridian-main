@@ -72,6 +72,7 @@ public sealed class StrategyRunResearchRecorder(
         try
         {
             await store.RecordRunAsync(entry.Complete(result), ct).ConfigureAwait(false);
+            // Preserve raw lineage in storage; sanitize caller-controlled metadata only at the log boundary.
             logger.LogInformation(
                 "Recorded research backtest {RunId} for strategy {StrategyId} (correlation {CorrelationId})",
                 runId,
