@@ -39,14 +39,20 @@ public sealed class WorkstationWorkflowSummaryService
         string? fundProfileId = null,
         string? fundAccountId = null,
         string? fundDisplayName = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        WorkstationWorkflowReadScope? readScope = null)
     {
+        var scope = readScope ?? WorkstationWorkflowReadScope.All;
         var contextSelected = hasOperatingContext
             || !string.IsNullOrWhiteSpace(operatingContextDisplayName)
             || !string.IsNullOrWhiteSpace(fundProfileId)
             || !string.IsNullOrWhiteSpace(fundDisplayName);
 
-        var runs = await _runReadService.GetRunsAsync(ct: ct).ConfigureAwait(false);
+        // Not loaded at all for a caller who reads none of the run-backed families: the projection
+        // below would drop every card built from them, and a read refused is not a read to perform.
+        var runs = scope.NeedsStrategyRuns
+            ? await _runReadService.GetRunsAsync(ct: ct).ConfigureAwait(false)
+            : Array.Empty<StrategyRunSummary>();
         var scopedRuns = string.IsNullOrWhiteSpace(fundProfileId)
             ? runs
             : runs.Where(run => string.Equals(run.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)).ToArray();
@@ -72,7 +78,11 @@ public sealed class WorkstationWorkflowSummaryService
         var strategyCandidateSnapshotTask = LoadRunSnapshotAsync(candidateForPaper, ct);
         var tradingActiveSnapshotTask = LoadRunSnapshotAsync(activeTradingRun, ct);
         var accountingCandidateSnapshotTask = LoadRunSnapshotAsync(candidateForLive ?? activeTradingRun ?? latestGovernedRun, ct);
-        var financialOperationsSnapshotTask = LoadFinancialOperationsSnapshotAsync(contextSelected, fundAccountId, fundProfileId, ct);
+        var financialOperationsSnapshotTask = LoadFinancialOperationsSnapshotAsync(
+            contextSelected && scope.Accounting,
+            fundAccountId,
+            fundProfileId,
+            ct);
 
         await Task.WhenAll(strategyCandidateSnapshotTask, tradingActiveSnapshotTask, accountingCandidateSnapshotTask, financialOperationsSnapshotTask)
             .ConfigureAwait(false);
@@ -82,23 +92,43 @@ public sealed class WorkstationWorkflowSummaryService
         var accountingSnapshot = await accountingCandidateSnapshotTask.ConfigureAwait(false);
         var financialOperationsSnapshot = await financialOperationsSnapshotTask.ConfigureAwait(false);
 
-        var workspaces = new WorkspaceWorkflowSummary[]
+        // One card per readable family. The unreadable ones are omitted rather than neutralised: both
+        // shells look their card up by workspace id and already render the absent case (the browser
+        // screens coalesce to null, WPF's section builder shows "no source summary"), whereas a
+        // placeholder card would assert a posture the caller was never shown the evidence for.
+        var workspaces = new List<WorkspaceWorkflowSummary>(7);
+        if (scope.Trading)
         {
-            BuildTradingSummary(
+            workspaces.Add(BuildTradingSummary(
                 contextSelected,
                 candidateForPaper,
                 activeTradingRun,
                 candidateForLive,
                 tradingActiveSnapshot,
                 strategyCandidateSnapshot,
-                relevantRuns),
-            BuildPortfolioSummary(contextSelected),
-            BuildAccountingSummary(contextSelected, candidateForLive, latestGovernedRun, accountingSnapshot, governedRuns, financialOperationsSnapshot),
-            BuildReportingSummary(contextSelected),
-            BuildStrategySummary(candidateForPaper, activeStrategyRun, strategyCandidateSnapshot, strategyRuns),
-            BuildDataSummary(),
-            BuildSettingsSummary()
-        };
+                relevantRuns));
+        }
+
+        workspaces.Add(BuildPortfolioSummary(contextSelected));
+
+        if (scope.Accounting)
+        {
+            workspaces.Add(BuildAccountingSummary(contextSelected, candidateForLive, latestGovernedRun, accountingSnapshot, governedRuns, financialOperationsSnapshot));
+        }
+
+        workspaces.Add(BuildReportingSummary(contextSelected));
+
+        if (scope.Strategy)
+        {
+            workspaces.Add(BuildStrategySummary(candidateForPaper, activeStrategyRun, strategyCandidateSnapshot, strategyRuns));
+        }
+
+        if (scope.Data)
+        {
+            workspaces.Add(BuildDataSummary());
+        }
+
+        workspaces.Add(BuildSettingsSummary());
 
         return new OperatorWorkflowHomeSummary(
             GeneratedAt: DateTimeOffset.UtcNow,

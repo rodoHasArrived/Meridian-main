@@ -150,7 +150,7 @@ public static partial class WorkstationEndpoints
                     fundProfileId: fundProfileId,
                     fundAccountId: fundAccountId,
                     fundDisplayName: fundDisplayName,
-                    ct: context.RequestAborted)
+                    ct: context.RequestAborted, readScope: WorkstationWorkflowReadScope.ForRequest(context))
                 .ConfigureAwait(false);
             return Results.Json(summary, jsonOptions);
         })

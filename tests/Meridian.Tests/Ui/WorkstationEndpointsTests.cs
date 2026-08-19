@@ -1411,7 +1411,12 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_WorkflowSummaryWithPaperCandidate_ShouldReflectStrategyToTradingHandoff()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewTrades);
+        // Both ends of the handoff, so the caller needs both families: the summary now emits only the
+        // workspace cards the caller can read, and ViewTrades alone would omit the strategy card this
+        // test is about. Which caller sees which card is pinned by the projection tests below.
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: RolePermissions.For(UserRole.Admin));
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationReadyRun("workflow-backtest-candidate") with
         {
@@ -1490,7 +1495,12 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_WorkflowSummaryWithoutRuns_ShouldReturnStableNonNullContracts()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewTrades);
+        // The full seven-card contract, so the caller must be able to read all seven: the summary now
+        // emits only the workspace cards the caller can read. A narrower caller is the subject of the
+        // projection tests below, not of this shape check.
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: RolePermissions.For(UserRole.Admin));
         var client = app.GetTestClient();
 
         var response = await client.GetAsync("/api/workstation/workflow-summary");
@@ -2988,6 +2998,83 @@ public sealed partial class WorkstationEndpointsTests
         inbox.Items.Should().NotContain(
             item => item.WorkItemId.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase),
             "ViewStrategies is in none of the reconciliation read permissions");
+    }
+
+    /// <summary>
+    /// The workflow summary composes one card per canonical workspace, so its route admits the union
+    /// of the per-workspace read permissions -- otherwise a reporting or strategy reader loses the
+    /// whole shell strip. Admission is not authorization: the strategy card carries candidate names,
+    /// promotion state and promotion reasons, and FundAccountant reaches the route through ViewTrades
+    /// while holding no strategy permission at all.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummary_WithoutStrategyPermission_ShouldOmitTheStrategyWorkspace()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterRunReadServices,
+            currentUserPermissions: RolePermissions.For(UserRole.FundAccountant),
+            currentUserRole: UserRole.FundAccountant);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun($"run-workflow-scope-{Guid.NewGuid():N}"));
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/workflow-summary?hasOperatingContext=true");
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.OK,
+            "FundAccountant holds ViewTrades, which this route declares");
+
+        var summary = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
+        summary.Should().NotBeNull();
+
+        var workspaceIds = summary!.Workspaces.Select(static workspace => workspace.WorkspaceId).ToArray();
+        workspaceIds.Should().NotContain(
+            "strategy",
+            "the strategy card is built from the backtest queue, which ViewStrategies governs");
+        workspaceIds.Should().NotContain(
+            "data",
+            "the data card reports provider connectivity and backfill failures, which the provider-metrics permissions govern");
+        workspaceIds.Should().Contain(
+            "trading",
+            "ViewTrades is what admitted this caller and is exactly the trading card's own permission");
+        workspaceIds.Should().Contain(
+            "accounting",
+            "FundAccountant holds the direct-lending permissions the accounting card is drawn from");
+        // Portfolio, Reporting and Settings vary only on whether a context is selected -- they carry
+        // no record content, so there is nothing in them to withhold from an admitted caller.
+        workspaceIds.Should().Contain(new[] { "portfolio", "reporting", "settings" });
+    }
+
+    /// <summary>
+    /// The other direction of the same projection: a strategy reader keeps the card its permission
+    /// names and loses the trading and accounting cards, so the gate is a projection rather than a
+    /// second admission test that happens to pass for one role.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummary_WithStrategyPermissionOnly_ShouldOmitTradingAndAccounting()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterRunReadServices,
+            currentUserPermissions: UserPermission.ViewStrategies);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun($"run-workflow-strategy-{Guid.NewGuid():N}"));
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/workflow-summary?hasOperatingContext=true");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var summary = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
+        summary.Should().NotBeNull();
+
+        var workspaceIds = summary!.Workspaces.Select(static workspace => workspace.WorkspaceId).ToArray();
+        workspaceIds.Should().Contain("strategy");
+        workspaceIds.Should().NotContain(
+            "trading",
+            "the trading card reports governed run posture, which ViewTrades governs");
+        workspaceIds.Should().NotContain(
+            "accounting",
+            "ViewStrategies is in none of the reconciliation read permissions the accounting card draws on");
     }
 
     /// <summary>
