@@ -106,12 +106,15 @@ internal static class DemoWorkspaceCli
     /// </summary>
     private static void PrepareDemoRuntimeEnvironment()
     {
-        // Mark this process as the demo serving host so composition (W9-TRUTH-001) pins the
-        // seeded provenance label without re-parsing CLI verbs.
-        if (IsUnset(DemoWorkspaceLayout.DemoModeEnvironmentVariable))
-        {
-            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, "true");
-        }
+        // Mark this process as the demo serving host so composition (W9-TRUTH-001) pins the seeded
+        // provenance label without re-parsing CLI verbs. Set unconditionally rather than only when
+        // unset: this method runs on the demo serve paths and nowhere else, so the process is the
+        // demo host as a matter of fact. An inherited MERIDIAN_DEMO=false would otherwise outrank an
+        // explicit --demo or --seed-demo, and readers that consult the marker without the argument
+        // vector -- the provenance label, and the login middleware's seeded tenant fallback -- would
+        // conclude the demo is not running while it is, leaving the workstation refused for want of
+        // a tenant.
+        Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, "true");
 
         if (IsUnset("MERIDIAN_DATABASE_URL") && IsUnset("MERIDIAN_USE_INMEMORY_GOVERNANCE"))
         {

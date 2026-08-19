@@ -619,6 +619,34 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     }
 
     [Fact]
+    public async Task AnonymousReadOnlyPrincipal_CannotReachAViewPermissionMutation()
+    {
+        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.ReadOnly));
+        try
+        {
+            // /api/replay/start declares ViewHistoricalData, which ReadOnly holds, so the route would
+            // admit this caller and let an unauthenticated request drive replay session state. The
+            // API-key principal has been refused this since the read-only rule landed; the anonymous
+            // principal must be refused for the same reason and by the same shared rule.
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/replay/start")
+            {
+                Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json")
+            };
+
+            using var response = await Client.SendAsync(request);
+
+            response.StatusCode.Should().Be(
+                HttpStatusCode.Forbidden,
+                "ReadOnly means read-only whichever posture established the principal");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+        }
+    }
+
+    [Fact]
     public async Task ExplicitReadOnlyApiKeyRole_CannotReachAViewPermissionMutation()
     {
         var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");

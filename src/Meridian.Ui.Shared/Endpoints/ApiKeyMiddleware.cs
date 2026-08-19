@@ -132,7 +132,7 @@ public sealed class ApiKeyMiddleware
         // because a few legacy POST routes use view permissions while mutating process-local replay,
         // option, or sampling state. Fail closed for every method outside the safe-method allowlist;
         // operators that intentionally need a command endpoint must name the role that authorizes it.
-        if (apiKeyRole == UserRole.ReadOnly && !IsSafeMethod(context.Request.Method))
+        if (EndpointAuthorization.IsReadOnlyRoleMutation(apiKeyRole, context.Request.Method))
         {
             await ApiProblemDetails.Forbidden(
                     context,
@@ -190,10 +190,6 @@ public sealed class ApiKeyMiddleware
         return TryParseRoleName(configured, out role);
     }
 
-    private static bool IsSafeMethod(string method)
-        => HttpMethods.IsGet(method) ||
-           HttpMethods.IsHead(method) ||
-           HttpMethods.IsOptions(method);
 
     /// <summary>
     /// Parses a role by name only. <see cref="Enum.TryParse{TEnum}(string, bool, out TEnum)"/> also
