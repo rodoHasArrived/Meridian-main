@@ -557,7 +557,7 @@ public static partial class FundStructureEndpoints
             var result = await service.GetOrganizationStructureAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetOrganizationStructureGraph")
+        .WithName("GetOrganizationStructureGraph").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<OrganizationStructureGraphDto>(StatusCodes.Status200OK);
 
         group.MapGet("/legacy-graph", async (HttpContext context) =>
@@ -583,7 +583,7 @@ public static partial class FundStructureEndpoints
             var result = await service.GetFundStructureGraphAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetLegacyFundStructureGraph")
+        .WithName("GetLegacyFundStructureGraph").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<FundStructureGraphDto>(StatusCodes.Status200OK);
 
         group.MapGet("/businesses/{businessId:guid}/advisory-view", async (Guid businessId, HttpContext context) =>
@@ -615,7 +615,7 @@ public static partial class FundStructureEndpoints
             var result = await service.GetAdvisoryViewAsync(query, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
-        .WithName("GetAdvisoryStructureView")
+        .WithName("GetAdvisoryStructureView").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<AdvisoryStructureViewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -652,7 +652,7 @@ public static partial class FundStructureEndpoints
             var result = await service.GetFundOperatingViewAsync(query, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
-        .WithName("GetFundOperatingStructureView")
+        .WithName("GetFundOperatingStructureView").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<FundOperatingViewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -684,7 +684,7 @@ public static partial class FundStructureEndpoints
             var result = await service.GetAccountingViewAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetAccountingStructureView")
+        .WithName("GetAccountingStructureView").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<AccountingStructureViewDto>(StatusCodes.Status200OK);
 
         group.MapGet("/ledger-mapping-view", async (HttpContext context) =>
@@ -717,7 +717,7 @@ public static partial class FundStructureEndpoints
             var result = LedgerMappingWorkbenchService.Build(accountingView, asOf);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetLedgerMappingWorkbench")
+        .WithName("GetLedgerMappingWorkbench").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<LedgerMappingWorkbenchDto>(StatusCodes.Status200OK);
 
         group.MapGet("/cash-flow-view", async (HttpContext context) =>
@@ -780,7 +780,7 @@ public static partial class FundStructureEndpoints
             var result = await service.GetCashFlowViewAsync(query, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
-        .WithName("GetGovernanceCashFlowView")
+        .WithName("GetGovernanceCashFlowView").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<GovernanceCashFlowViewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
@@ -815,7 +815,7 @@ public static partial class FundStructureEndpoints
                 .ToArray();
             return Results.Json(records, jsonOptions);
         })
-        .WithName("ListReportTemplates")
+        .WithName("ListReportTemplates").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReportTemplateGovernanceRecordDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden);
 
@@ -1167,7 +1167,7 @@ public static partial class FundStructureEndpoints
                 context,
                 "/api/fund-structure/reporting/distribution/packages/{runId}/deliveries",
                 "Legacy delivery history embedded deterministic query-token routes and synthetic delivery state."))
-        .WithName("GetReportingPackDeliveryHistory")
+        .WithName("GetReportingPackDeliveryHistory").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .ProducesProblem(StatusCodes.Status410Gone);
 
         reportingGroup.MapGet("/packs/{reportId:guid}/deliveries/{attemptId:guid}/package", (HttpContext context) =>
@@ -1175,7 +1175,7 @@ public static partial class FundStructureEndpoints
                 context,
                 "/portal/reporting/access-grants/{grantId}/exchange",
                 "Query-string package tokens are retired; exchange an opaque, scoped grant in a POST body."))
-        .WithName("GetReportingPackDeliveryPackage")
+        .WithName("GetReportingPackDeliveryPackage").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .ProducesProblem(StatusCodes.Status410Gone);
 
         reportingGroup.MapGet("/packs/{reportId:guid}/deliveries/{attemptId:guid}/artifacts/{artifactName}", (HttpContext context) =>
@@ -1183,7 +1183,7 @@ public static partial class FundStructureEndpoints
                 context,
                 "/api/fund-structure/reporting/distribution/packages/{runId}/artifacts/{artifactId}",
                 "Query-string artifact tokens are retired; authenticated downloads now use the immutable artifact vault."))
-        .WithName("GetReportingPackDeliveryArtifact")
+        .WithName("GetReportingPackDeliveryArtifact").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .ProducesProblem(StatusCodes.Status410Gone);
 
         app.MapGet(UiApiRoutes.ReportingPackDeliveryPortalPackage, (HttpContext context) =>
@@ -1258,7 +1258,7 @@ public static partial class FundStructureEndpoints
                     statusCode: StatusCodes.Status503ServiceUnavailable);
             }
         })
-        .WithName("ListCanonicalReportingRuns")
+        .WithName("ListCanonicalReportingRuns").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<WorkstationReportingHistoryPayload>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1474,7 +1474,7 @@ public static partial class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
-        .WithName("GetReportingRunAuditTrail")
+        .WithName("GetReportingRunAuditTrail").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<ReportingRunAuditTrailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1521,7 +1521,7 @@ public static partial class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
-        .WithName("GetReportingRunReportWriterGrid")
+        .WithName("GetReportingRunReportWriterGrid").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<ReportWriterGridRenderDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status200OK, contentType: "application/json")
         .Produces(StatusCodes.Status200OK, contentType: "text/csv")
@@ -1541,7 +1541,7 @@ public static partial class FundStructureEndpoints
             var svc = context.RequestServices.GetService<ReportingStarterKitService>();
             return svc is null ? WorkspaceServiceUnavailable() : Results.Json(svc.ListKits(), jsonOptions);
         })
-        .WithName("ListReportingStarterKits")
+        .WithName("ListReportingStarterKits").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReportingStarterKitDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden);
 
@@ -1608,7 +1608,7 @@ public static partial class FundStructureEndpoints
                 ? WorkspaceServiceUnavailable()
                 : Results.Json(svc.ListSchedules(BuildReportAccessQueryContext(context)), jsonOptions);
         })
-        .WithName("ListReportingSchedules")
+        .WithName("ListReportingSchedules").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReportingScheduleRecordDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden);
 
@@ -1756,7 +1756,7 @@ public static partial class FundStructureEndpoints
                 .Where(record => IsTenantSafeLegacyReportingPackRead(record, accessContext))
                 .ToArray();
             return Results.Json(history, jsonOptions);
-        })
+        }).RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReportPackWorkflowRecordDto>>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status410Gone);
         legacyReportingGroup.MapGet("/report-packs/{reportId:guid}", async (Guid reportId, HttpContext context) =>
@@ -1793,7 +1793,7 @@ public static partial class FundStructureEndpoints
 
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetFundReportPack")
+        .WithName("GetFundReportPack").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<FundReportPackSnapshotDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .ProducesProblem(StatusCodes.Status410Gone);
@@ -1803,7 +1803,7 @@ public static partial class FundStructureEndpoints
                 context,
                 "/api/fund-structure/reporting/distribution/packages/{runId}/artifacts/{artifactId}",
                 "Legacy evidence export regenerated a mutable bundle instead of returning verified bytes from the immutable artifact vault."))
-        .WithName("ExportFundReportPackEvidenceBundle")
+        .WithName("ExportFundReportPackEvidenceBundle").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .ProducesProblem(StatusCodes.Status410Gone);
 
         legacyReportingGroup.MapGet("/report-packs/{reportId:guid}/ledger-provenance", async (Guid reportId, string scopeKey, HttpContext context) =>
@@ -1848,7 +1848,7 @@ public static partial class FundStructureEndpoints
                 .ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
-        .WithName("GetFundReportPackLedgerProvenance")
+        .WithName("GetFundReportPackLedgerProvenance").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<LedgerAmountProvenanceDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)

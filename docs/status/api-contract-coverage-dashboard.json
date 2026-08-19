@@ -803,19 +803,19 @@
     {
       "method": "GET",
       "path": "/api/reference-data/certificates-of-deposit/{securityId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:17",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:18",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/certificates-of-deposit/by-issuer",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:29",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:30",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/certificates-of-deposit/maturing-before",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:40",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:41",
       "documented": false
     },
     {
@@ -857,19 +857,19 @@
     {
       "method": "GET",
       "path": "/api/reference-data/commodities/{securityId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CommodityReferenceEndpoints.cs:17",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CommodityReferenceEndpoints.cs:18",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/commodities/by-type",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CommodityReferenceEndpoints.cs:29",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CommodityReferenceEndpoints.cs:30",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/commodities/by-exchange",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CommodityReferenceEndpoints.cs:40",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CommodityReferenceEndpoints.cs:41",
       "documented": false
     },
     {
@@ -1511,19 +1511,19 @@
     {
       "method": "GET",
       "path": "/api/reference-data/equities/{securityId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/EquityReferenceEndpoints.cs:17",
+      "source": "src/Meridian.Ui.Shared/Endpoints/EquityReferenceEndpoints.cs:18",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/equities/by-exchange",
-      "source": "src/Meridian.Ui.Shared/Endpoints/EquityReferenceEndpoints.cs:29",
+      "source": "src/Meridian.Ui.Shared/Endpoints/EquityReferenceEndpoints.cs:30",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/equities/by-issuer",
-      "source": "src/Meridian.Ui.Shared/Endpoints/EquityReferenceEndpoints.cs:40",
+      "source": "src/Meridian.Ui.Shared/Endpoints/EquityReferenceEndpoints.cs:41",
       "documented": false
     },
     {
@@ -1655,19 +1655,19 @@
     {
       "method": "GET",
       "path": "/api/reference-data/fxspot/{securityId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FxSpotReferenceEndpoints.cs:17",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FxSpotReferenceEndpoints.cs:18",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/fxspot/pairs/{pairCode}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FxSpotReferenceEndpoints.cs:29",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FxSpotReferenceEndpoints.cs:30",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/fxspot/by-currency",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FxSpotReferenceEndpoints.cs:41",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FxSpotReferenceEndpoints.cs:42",
       "documented": false
     },
     {
@@ -2453,19 +2453,19 @@
     {
       "method": "GET",
       "path": "/api/reference-data/money-market-funds/{securityId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs:17",
+      "source": "src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs:18",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/money-market-funds/by-family",
-      "source": "src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs:29",
+      "source": "src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs:30",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/money-market-funds/by-sweep-eligibility",
-      "source": "src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs:40",
+      "source": "src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs:41",
       "documented": false
     },
     {
@@ -2483,25 +2483,25 @@
     {
       "method": "GET",
       "path": "/api/reference-data/options/contracts/{contractSymbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OptionReferenceEndpoints.cs:17",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OptionReferenceEndpoints.cs:18",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/options/series/{optionChainId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OptionReferenceEndpoints.cs:29",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OptionReferenceEndpoints.cs:30",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/options/contracts/{contractSymbol}/underlying-linkage",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OptionReferenceEndpoints.cs:42",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OptionReferenceEndpoints.cs:43",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/options/expiry-ladder",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OptionReferenceEndpoints.cs:54",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OptionReferenceEndpoints.cs:55",
       "documented": false
     },
     {
@@ -3581,19 +3581,19 @@
     {
       "method": "GET",
       "path": "/api/reference-data/swaps/{securityId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs:17",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs:18",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/swaps/by-type",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs:29",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs:30",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/swaps/maturing-before",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs:40",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs:41",
       "documented": false
     },
     {

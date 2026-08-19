@@ -374,7 +374,8 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
     {
         var seed = await SeedFundWorkspaceAsync();
 
-        var response = await _client.GetAsync(
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync(
             $"/api/fund-structure/workspace-view?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&currency=USD");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -396,7 +397,8 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
     {
         var seed = await SeedFundWorkspaceAsync();
 
-        var response = await _client.GetAsync(
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync(
             $"/api/fund-structure/workspace-view?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&scopeKind=Entity&scopeId=entity-alpha");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -414,7 +416,8 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
     {
         var seed = await SeedFundWorkspaceAsync();
 
-        var response = await _client.GetAsync(
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync(
             $"/api/fund-structure/workspace-view?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&scopeKind=invalid-value&scopeId=entity-alpha");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -428,7 +431,8 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
     [Fact]
     public async Task GetWorkspaceView_WithoutFundProfileId_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/fund-structure/workspace-view");
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync("/api/fund-structure/workspace-view");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -438,7 +442,8 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
     {
         var seed = await SeedFundWorkspaceAsync(["run-selected-001", "run-selected-002", "run-selected-003"]);
 
-        var response = await _client.GetAsync(
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync(
             $"/api/fund-structure/workspace-view?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&selectedLedgerIds=run-selected-001&selectedLedgerIds=run-selected-003");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -579,7 +584,8 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
     [Fact]
     public async Task GetCashFlowView_WithBlankLedgerGroupId_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=%20%20%20");
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=%20%20%20");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -587,7 +593,8 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
     [Fact]
     public async Task GetCashFlowView_WithInvalidLedgerGroupId_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=BAD/GROUP");
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=BAD/GROUP");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }

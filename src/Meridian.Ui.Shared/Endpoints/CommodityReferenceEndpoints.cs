@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Commodities;
+using Meridian.Identity.Auth;
 using Meridian.Instruments.Commodities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -22,7 +23,7 @@ public static class CommodityReferenceEndpoints
             var reference = await service.GetReferenceAsync(securityId, ct).ConfigureAwait(false);
             return reference is null ? Results.NotFound() : Results.Json(reference, jsonOptions);
         })
-        .WithName("GetCommodityReference")
+        .WithName("GetCommodityReference").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<CommodityReferenceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -34,7 +35,7 @@ public static class CommodityReferenceEndpoints
             var results = await service.GetByCommodityTypeAsync(commodityType, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("GetCommoditiesByType")
+        .WithName("GetCommoditiesByType").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<CommodityReferenceDto>>(StatusCodes.Status200OK);
 
         group.MapGet(UiApiRoutes.ReferenceDataCommoditiesByExchange, async (
@@ -45,7 +46,7 @@ public static class CommodityReferenceEndpoints
             var results = await service.GetByExchangeAsync(exchangeCode, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("GetCommoditiesByExchange")
+        .WithName("GetCommoditiesByExchange").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<CommodityReferenceDto>>(StatusCodes.Status200OK);
     }
 }
