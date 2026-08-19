@@ -1,4 +1,5 @@
 using Meridian.Contracts.Etl;
+using Meridian.Contracts.Integrity;
 using Meridian.Infrastructure.Etl.Sftp;
 using Meridian.Storage.Etl;
 
@@ -194,8 +195,28 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
         client.RenameFile(file.Path, disambiguated, canOverwrite: false);
     }
 
+    /// <summary>
+    /// Hashes a remote file through a temporary spill rather than buffering it in memory, the same
+    /// shape <see cref="StageFileAsync"/> already uses for downloads. Only a name collision pays
+    /// for this.
+    /// </summary>
     private static string ComputeRemoteHash(ISftpClient client, string path)
-        => EtlArchiveNaming.ComputeStreamedHash(sink => client.DownloadFile(path, sink));
+    {
+        var tempPath = Path.Combine(Path.GetTempPath(), "meridian-sftp-hash-" + Guid.NewGuid().ToString("N") + ".tmp");
+        try
+        {
+            using var temp = new FileStream(
+                tempPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.DeleteOnClose);
+            client.DownloadFile(path, temp);
+            temp.Position = 0;
+            return Sha256Digest.Compute(temp);
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+                File.Delete(tempPath);
+        }
+    }
 
     private static void EnsureRemoteDirectory(ISftpClient client, string normalizedDirectory)
     {

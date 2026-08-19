@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-
 namespace Meridian.Infrastructure.Etl;
 
 /// <summary>
@@ -29,29 +27,5 @@ internal static class EtlArchiveNaming
         var stem = Path.GetFileNameWithoutExtension(fileName);
         var extension = Path.GetExtension(fileName);
         return $"{stem}.sha256-{contentHashSha256[..16]}{extension}";
-    }
-
-    public static async Task<string> ComputeFileHashAsync(string path, CancellationToken ct = default)
-    {
-        await using var stream = new FileStream(
-            path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
-        return Convert.ToHexStringLower(await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false));
-    }
-
-    /// <summary>
-    /// Hashes what <paramref name="download"/> writes without buffering it. The transform is the
-    /// sink, so a remote file is verified as it streams rather than being materialized first.
-    /// </summary>
-    public static string ComputeStreamedHash(Action<Stream> download)
-    {
-        ArgumentNullException.ThrowIfNull(download);
-
-        using var sha = SHA256.Create();
-        using (var hashing = new CryptoStream(Stream.Null, sha, CryptoStreamMode.Write, leaveOpen: true))
-        {
-            download(hashing);
-        }
-
-        return Convert.ToHexStringLower(sha.Hash!);
     }
 }

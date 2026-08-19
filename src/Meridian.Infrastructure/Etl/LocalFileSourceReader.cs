@@ -1,4 +1,5 @@
 using Meridian.Contracts.Etl;
+using Meridian.Contracts.Integrity;
 using Meridian.Storage.Etl;
 
 namespace Meridian.Infrastructure.Etl;
@@ -87,8 +88,8 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
             return;
         }
 
-        var sourceHash = await EtlArchiveNaming.ComputeFileHashAsync(path, ct).ConfigureAwait(false);
-        var retainedHash = await EtlArchiveNaming.ComputeFileHashAsync(destination, ct).ConfigureAwait(false);
+        var sourceHash = await ComputeFileHashAsync(path, ct).ConfigureAwait(false);
+        var retainedHash = await ComputeFileHashAsync(destination, ct).ConfigureAwait(false);
         if (string.Equals(sourceHash, retainedHash, StringComparison.Ordinal))
         {
             // Already retained by an earlier attempt; completing the move is the idempotent result.
@@ -104,7 +105,7 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
             // The name is derived from this content, so an occupant should carry it. Verify rather
             // than assume: the name uses a hash prefix, and overwriting on an unverified match is
             // the very loss this path exists to prevent.
-            var disambiguatedHash = await EtlArchiveNaming.ComputeFileHashAsync(disambiguated, ct).ConfigureAwait(false);
+            var disambiguatedHash = await ComputeFileHashAsync(disambiguated, ct).ConfigureAwait(false);
             if (!string.Equals(sourceHash, disambiguatedHash, StringComparison.Ordinal))
             {
                 throw new InvalidOperationException(
@@ -117,6 +118,13 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
         }
 
         File.Move(path, disambiguated);
+    }
+
+    private static async Task<string> ComputeFileHashAsync(string path, CancellationToken ct)
+    {
+        await using var stream = new FileStream(
+            path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
+        return await Sha256Digest.ComputeAsync(stream, ct).ConfigureAwait(false);
     }
 
     private static IEnumerable<string> ExpandPatterns(string pattern)
