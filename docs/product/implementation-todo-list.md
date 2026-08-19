@@ -40,6 +40,32 @@ Priority meanings:
 | Awaiting operator acceptance | 6 implementation-complete | `W9-TRUTH-001`, `W9-DEMO-002`, `W9-PAPER-003`, `W9-ALPACA-004`, `W9-REPORT-005`, and `W9-NAV-006` are `ready_for_acceptance` with `evidence_posture: implementation_complete`. That posture is stronger than `planned_evidence` and weaker than `complete`: the work is built and evidenced but has not been accepted, so none of it is a production claim and none of it closes the P0 gate. |
 | Planned roadmap work | 14 planned | `W5X-OEG-001`, the two still-planned rows of the ranked W9 first-order slate (`W9-GOV-008`, `W9-INGEST-009`), and the eleven rows of the W10 depth slate are planned and outside the v1 production envelope unless the signed support matrix includes them. Every one carries `planned_evidence` posture, so none is a completion claim. Closed bounded roadmap rows do not change the P0 release-certification gate. |
 
+### 2026-08-19 P1 Band Survey
+
+Every `P1` row was read against current source. Three moved; the rest are enumerated with what is
+actually missing so the band has a plan rather than a label.
+
+| Row | Change |
+| --- | --- |
+| `PRD-109` | **Closed.** Its own remainder was "representative C#/TypeScript serialization parity beyond one fixture". `build/scripts/ci/check-contract-type-parity.py` now compares an enumerated registry on member sets, nullability and collection shape, wired into the docs lane. Of 136 name-matched record/interface pairs, 98 agree and are enforced; 38 already diverge and are recorded as a ratchet that fails once a listed pair is repaired but not promoted. |
+| `PRD-113` | **Advanced.** The overdue KV-2026-001 DotNetZip acceptance is retired with evidence (the package is absent from the tracked build, and the certification NuGet scan, which ignores suppressions, reports nothing), and the CC8 control source no longer cites a deleted workflow. Remaining: the SOC 2 readiness assessment itself, control owners, and the evidence calendar. |
+| `PRD-103` | **Confirmed closed.** Re-read against source; the tracker's evidence text is accurate. |
+
+The remaining rows and what each genuinely needs:
+
+- `PRD-100` — needs a product scope decision, which the tracker itself reserves to an explicit support-matrix amendment. Not agent-closable.
+- `PRD-101` — four confirmed defects in `Reconciliation.fs`, starting with no dedupe by event identity. Advanceable in slices.
+- `PRD-102` — fully mechanical but large: provider manifests are keyed on id alone, so saving version 2 destroys version 1, `ManifestVersion` is never incremented, and no manifest content hash is attached to raw payloads, so replay cannot reproduce the mapping that ran.
+- `PRD-104`, `PRD-105`, `PRD-106` — not surveyed; the survey lane covering them failed on a connection error.
+- `PRD-107`, `PRD-108`, `PRD-110`, `PRD-111`, `PRD-112` — each has a named agent-closable slice and a remainder needing infrastructure or a decision.
+- `PRD-114` — every clause still has a live defect; the duplicate scan still enumerates the whole checkout rather than starting from `git ls-files`.
+
+One caveat belongs on the record: SSH.NET was raised 2025.1.0 to 2026.0.0 to clear
+GHSA-q939-rpr3-3284, a major-version jump. Its only consumer, the SFTP ETL adapter, sits behind
+`EnableSftp` which defaults false, so no lane compiles against it and a source-breaking change
+there would not surface until someone enables SFTP. That is `PRD-104`'s territory and is the
+strongest argument for deciding that row.
+
 ### 2026-08-19 Evidence Refresh
 
 Three release lanes were exercised on current `main` content and on branch
