@@ -39,7 +39,8 @@ risks that compound as new asset classes land.
 > re-ranked priorities as of that date.
 >
 > **Verification pass, 2026-08-19.** Re-read against current source at `7ed160dc`. One improvement
-> landed since 2026-08-14 — authorization declared on ~36 Security Master read endpoints — and one
+> landed since 2026-08-14 — permission declarations added to 36 Security Master endpoints, 19 of
+> them reads, hardening the *declaration* rather than the enforcement — and one
 > new observation was added (a tested calculation library with no production caller). This pass also
 > attempted repairs: one finding was fixed, and **two were refuted and retracted** (the
 > `IOperatorOverridesStore` "dead dependency" in item 5, and the factor-schedule collapse
@@ -99,17 +100,29 @@ all derived economics so consumers cannot diverge.
 carries per-class identifier, term, evidence, and ledger-depth requirements with hard-blocker flags.
 Few systems at this stage know what "ready" means per asset class.
 
-**The read surface is authorization-gated, at the group and now per route.** Every Security Master
-route has been behind `group.AddEndpointFilter(RequireViewSecurityMasterPermission)` since well
-before this review — one filter on the whole group, rejecting a caller without
+**The read surface is authorization-gated at the group, and partly per route.** Every Security
+Master route has been behind `group.AddEndpointFilter(RequireViewSecurityMasterPermission)` since
+well before this review — one filter on the whole group, rejecting a caller without
 `ViewSecurityMaster` or `ModifySecurityMaster` and returning `Unauthorized` when no permissions
-resolve at all. *(Added 2026-08-19.)* Roughly 36 read endpoints have since also been given a fluent
-`RequireAnyPermission(ViewSecurityMaster, ModifySecurityMaster)` declaration. That did not change
-who can call what; it moved an invariant that lived in one group-level line into per-endpoint
-metadata, where OpenAPI can see it and where a refactor that drops the group filter cannot silently
-open 36 routes. The record-mutating routes — the generic field edits and the equity amendments —
-require `ModifySecurityMaster` and are rate-limited under `UiEndpoints.MutationRateLimitPolicy`.
-That pairing is not universal across the file; see item 11.
+resolve at all. That filter, not the per-route metadata, is what actually enforces read
+authorization today.
+
+*(Added 2026-08-19; counts corrected after review.)* Of 50 mapped endpoints, 36 now carry a fluent
+permission declaration: **19** reads declare
+`RequireAnyPermission(ViewSecurityMaster, ModifySecurityMaster)` and **17** mutations declare
+`RequirePermission(...)`. The record-mutating routes — the generic field edits and the equity
+amendments — also carry `RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)`, though that
+pairing is not universal; see item 11.
+
+> **Corrected 2026-08-19.** An earlier revision said "roughly 36 read endpoints" and claimed a
+> refactor dropping the group filter "cannot silently open 36 routes". Both halves were wrong. The
+> 36 is the count of *changed lines* in those three commits (36 insertions / 36 deletions), which is
+> every endpoint whose fluent metadata changed — reads and mutations together — not the read count.
+> The read count is 19. And **14 of the 50 endpoints still carry no fluent declaration at all**,
+> among them the pricing hierarchy, price golden-copy and comparison, cash-flow source and
+> projection, vendor-entitlement, and latest-quality-report reads. Dropping the group filter would
+> silently open exactly those 14. The per-route metadata is a partial belt-and-braces, not a
+> replacement for the filter, and the review should not have implied otherwise.
 
 **Auditability is durable.** Migration 025 moved the conflict store and revision-lifecycle store off
 process-local memory specifically so "a publish only ever runs against a revision that was durably
@@ -576,9 +589,10 @@ surface — the diff is **86 insertions and 86 deletions across 21 files**.
 
 **One of those changes is more than cosmetic, though less than it first appears.**
 `SecurityMasterEndpoints.cs` accounts for 72 of the 144 changed lines across three commits
-(`089aabee`, `95166888`, `862dc32a`), which declare
-`RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)` on
-roughly 36 Security Master **read** endpoints.
+(`089aabee`, `95166888`, `862dc32a`) — 36 insertions and 36 deletions, each rewriting one endpoint's
+terminating line to append a fluent permission call. Those 36 split into **19** reads declaring
+`RequireAnyPermission(ViewSecurityMaster, ModifySecurityMaster)` and **17** mutations declaring
+`RequirePermission(...)`; 14 of the file's 50 endpoints were left without a fluent declaration.
 
 > **Corrected 2026-08-19, after review.** This pass first recorded that as authorization *hardening*
 > on endpoints "that previously carried no explicit permission" — which implied the reads had been
