@@ -183,13 +183,15 @@ jobs:
             Write-Host "Stamping package version $env:MDC_PACKAGE_VERSION from tag $refName"
           }
 
+          # No -EnableReadyToRun: crossgen2 cannot compile Sharpino.Lib and aborts the publish
+          # with NETSDK1096 (see the PublishReadyToRun comment in Meridian.Wpf.csproj). ReadyToRun
+          # is a startup optimization, so the package ships without it rather than not at all.
           pwsh ./build/scripts/install/install.ps1 `
             -Mode Desktop `
             -Architecture $architecture `
             -SkipInstall `
             -NoNotify `
-            -NoTrustCert `
-            -EnableReadyToRun
+            -NoTrustCert
 
       # install.ps1 writes its build/publish transcripts under diagnostic-logs/. Without this the
       # only pointer a failed packaging run leaves is a path inside a discarded runner.

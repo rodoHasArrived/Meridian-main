@@ -43,7 +43,15 @@
 
     <!-- Windows Desktop Deployment Settings -->
     <EnableMsixTooling>true</EnableMsixTooling>
-    <!-- ReadyToRun is expensive in disk usage during publish, so keep it opt-in for local packaging. -->
+    <!--
+      ReadyToRun is off by default: it is expensive in publish disk usage, and it currently cannot
+      complete at all for this project. crossgen2 fails with ILCompiler.CodeGenerationFailedException
+      on F# async state machines in the third-party Sharpino.Lib assembly (which arrives via
+      Meridian.FSharp.DirectLending.Aggregates -> Meridian.Application), aborting the publish with
+      NETSDK1096. PublishReadyToRunExclude for that assembly was tried and did not take effect, so
+      there is no partial-ReadyToRun configuration available today. ReadyToRun only affects startup
+      time, so packaging proceeds without it; revisit when a later Sharpino or SDK release compiles.
+    -->
     <PublishReadyToRun Condition="'$(PublishReadyToRun)' == ''">false</PublishReadyToRun>
     <SelfContained>false</SelfContained>
     <DebugType>embedded</DebugType>
@@ -55,20 +63,6 @@
     <!-- Avoid duplicate Json source-generator compilation in temporary WPF markup projects -->
     <DefaultItemExcludes>$(DefaultItemExcludes);**\System.Text.Json.SourceGeneration\**</DefaultItemExcludes>
   </PropertyGroup>
-
-  <!--
-    crossgen2 cannot compile two F# async state machines in Sharpino.Lib
-    (Sharpino.CommandHandler.getAggregateStorageFreshStateViewerAsync and .runDeleteAsync, both at
-    <System.__Canon,System.__Canon>), and aborts the whole ReadyToRun step with NETSDK1096. That
-    made every -EnableReadyToRun publish fail, which is the exact configuration the desktop
-    installer lane uses, so the MSIX could never be produced. Excluding this one third-party
-    assembly is the remedy NETSDK1096 itself names; the rest of the app is still pre-compiled, and
-    Sharpino.Lib simply JITs as it would without ReadyToRun. Revisit if a later Sharpino or SDK
-    release compiles cleanly.
-  -->
-  <ItemGroup>
-    <PublishReadyToRunExclude Include="Sharpino.Lib.dll" />
-  </ItemGroup>
 
   <!-- Windows-only package references -->
   <ItemGroup Condition="'$(IsWindows)' == 'true'">
