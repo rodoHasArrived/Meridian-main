@@ -1,5 +1,4 @@
 using Meridian.Backtesting.Sdk;
-using Meridian.Execution.Logging;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Storage;
 using Microsoft.Extensions.Logging;
@@ -76,8 +75,8 @@ public sealed class StrategyRunResearchRecorder(
             logger.LogInformation(
                 "Recorded research backtest {RunId} for strategy {StrategyId} (correlation {CorrelationId})",
                 runId,
-                LogSanitizer.Sanitize(descriptor.StrategyId),
-                LogSanitizer.Sanitize(descriptor.CorrelationId));
+                Meridian.Execution.Logging.LogSanitizer.Sanitize(descriptor.StrategyId),
+                Meridian.Execution.Logging.LogSanitizer.Sanitize(descriptor.CorrelationId));
             return runId;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -89,7 +88,7 @@ public sealed class StrategyRunResearchRecorder(
             logger.LogWarning(
                 ex,
                 "Could not record research backtest for strategy {StrategyId}; the run completed but has no lineage",
-                LogSanitizer.Sanitize(descriptor.StrategyId));
+                Meridian.Execution.Logging.LogSanitizer.Sanitize(descriptor.StrategyId));
             return null;
         }
     }
