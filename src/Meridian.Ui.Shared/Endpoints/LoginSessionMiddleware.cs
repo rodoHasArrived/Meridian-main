@@ -157,11 +157,11 @@ public sealed class LoginSessionMiddleware
                     // install with an anonymous role can never create its first account.
                     if (!ApiKeyMiddleware.IsApiKeyCandidate(context) &&
                         !IsInitialAccountBootstrapRequest(trimmedPath) &&
-                        EndpointAuthorization.IsReadOnlyRoleMutation(role, context.Request.Method))
+                        EndpointAuthorization.IsReadOnlyRoleMutation(context, role))
                     {
                         await ApiProblemDetails.Forbidden(
                                 context,
-                                $"The {UserRole.ReadOnly} anonymous role allows only GET, HEAD, and OPTIONS requests. Set {AnonymousRoleEnvironmentVariable} to a role that authorizes this command endpoint.")
+                                $"The {role} anonymous role allows only GET, HEAD, and OPTIONS requests, plus routes requiring {UserPermission.ExportData}. Set {AnonymousRoleEnvironmentVariable} to a role that authorizes this command endpoint.")
                             .ExecuteAsync(context);
                         return;
                     }

@@ -127,16 +127,17 @@ public sealed class ApiKeyMiddleware
             return;
         }
 
-        // ReadOnly deliberately means a read-only API client whether the role was defaulted or
+        // A read-only role deliberately means a read-only API client whether the role was defaulted or
         // explicitly configured. Permission names alone are not enough to enforce that contract
         // because a few legacy POST routes use view permissions while mutating process-local replay,
-        // option, or sampling state. Fail closed for every method outside the safe-method allowlist;
-        // operators that intentionally need a command endpoint must name the role that authorizes it.
-        if (EndpointAuthorization.IsReadOnlyRoleMutation(apiKeyRole, context.Request.Method))
+        // option, or sampling state. Fail closed for every method outside the safe-method allowlist,
+        // except where the endpoint itself declares an action grant the role holds; operators that
+        // intentionally need a command endpoint must name the role that authorizes it.
+        if (EndpointAuthorization.IsReadOnlyRoleMutation(context, apiKeyRole))
         {
             await ApiProblemDetails.Forbidden(
                     context,
-                    $"The {DefaultApiKeyRole} API-key role allows only GET, HEAD, and OPTIONS requests. Set {ApiKeyRoleEnvVar} to a role that authorizes the required command endpoint.")
+                    $"The {apiKeyRole} API-key role allows only GET, HEAD, and OPTIONS requests, plus routes requiring {UserPermission.ExportData}. Set {ApiKeyRoleEnvVar} to a role that authorizes the required command endpoint.")
                 .ExecuteAsync(context);
             return;
         }
