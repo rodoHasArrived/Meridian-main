@@ -38,10 +38,12 @@ risks that compound as new asset classes land.
 > [Verification pass — 2026-08-14](#verification-pass--2026-08-14) for the open list and
 > re-ranked priorities as of that date.
 >
-> **Verification pass, 2026-08-19.** Re-read against current source at `7ed160dc`. Every structural
-> finding and priority below stands as written. One improvement landed since 2026-08-14 —
-> authorization declared on ~36 Security Master read endpoints — and one new observation was added
-> (a tested calculation library with no production caller). See
+> **Verification pass, 2026-08-19.** Re-read against current source at `7ed160dc`. One improvement
+> landed since 2026-08-14 — authorization declared on ~36 Security Master read endpoints — and one
+> new observation was added (a tested calculation library with no production caller). This pass also
+> attempted repairs: one finding was fixed, and **two were refuted and retracted** (the
+> `IOperatorOverridesStore` "dead dependency" in item 5, and the factor-schedule collapse
+> recommended by item 8). Every other structural finding stands as written. See
 > [Verification pass — 2026-08-19](#verification-pass--2026-08-19).
 
 ---
@@ -239,9 +241,18 @@ built alongside it, so the workbench remains an annotation surface rather than a
 > writes an approved override back into the canonical terms. An approved coupon correction still has
 > no effect on cash-flow projection, amortization, pricing, or NAV.
 >
-> Related: `ProviderLedgerReconciliationService` injects `IOperatorOverridesStore` and never reads it
-> (`ProviderLedgerReconciliationService.cs:48,63,76`) — a dead dependency that reads as an
-> override-aware reconciliation path but is not one.
+> ~~Related: `ProviderLedgerReconciliationService` injects `IOperatorOverridesStore` and never reads
+> it (`ProviderLedgerReconciliationService.cs:48,63,76`) — a dead dependency that reads as an
+> override-aware reconciliation path but is not one.~~
+>
+> **Retracted 2026-08-19.** This was wrong. The dependency is read — in a sibling partial, by
+> `GetSecurityMasterOverrideHistoryAsync`
+> (`ProviderLedgerReconciliationService.SecurityCoverage.cs:448-469`), which surfaces the ten most
+> recent override audit-trail entries (event type, approval status, actor, reviewer, reason,
+> comment) into reconciliation break context. `ProviderLedgerReconciliationService` is a `partial`
+> class across four files; the 2026-08-14 and 2026-08-19 passes both grepped only the file carrying
+> the constructor. Override *governance history* does reach reconciliation. What still does not
+> reach anything is an approved override's *value*, which is the substance of item 5 and stands.
 
 ### 6. Provenance is record-level; field-level attribution is synthesized
 
@@ -292,6 +303,19 @@ The typed contract's own docstring says it "replaces the free-text 'factor sched
 free-text term is still what the domain model and terms schema declare, so the replacement is
 half-landed.
 
+> **Status (2026-08-19): closed; the recommendation below was withdrawn.** Attempting the
+> recommended collapse showed the three "shapes" are not three shapes of one concept. The F#
+> `FactorScheduleEntry { AsOfDate; Factor }` and the C# `StructuredFactorScheduleEntry(AsOfDate,
+> Factor)` are a dated factor *level*, mirrored across the interop boundary exactly as every other
+> terms type in this codebase is — the normal domain/DTO pattern, not drift.
+> `SecurityFactorScheduleEntry(SecurityId, AsOfDate, PriorFactor, CurrentFactor, Source,
+> EvidenceLink, SourceContentHash)` is a different thing: a factor *transition* carrying the
+> evidence lineage an accounting paydown event has to post
+> (`SecurityMasterAccountingEventSourceAdapter.cs:493-501`). Collapsing it onto the two-field type
+> would discard the prior/current pairing, the asserting source, and the content hash. Only the
+> legacy free-text `StructuredCreditTerms.FactorSchedule: string option` remains, and its own
+> docstring already scopes it to legacy rows.
+>
 > **Status (2026-08-14): narrowed.** `StructuredCreditTerms` now carries
 > `FactorScheduleEntries: FactorScheduleEntry list` alongside the retained free-text
 > `FactorSchedule: string option`, declared as `factorScheduleEntries` in the terms schema and
@@ -489,8 +513,10 @@ history; asset-class-scoped projection replay.
 
 ## Verification pass — 2026-08-19
 
-Re-read against current source at `7ed160dc`, five days after the previous pass. No code was
-changed by this pass; no tests were run.
+Re-read against current source at `7ed160dc`, five days after the previous pass. Unlike the two
+prior passes this one also attempted repairs; see
+[Remediation attempted](#remediation-attempted--2026-08-19) for what was changed and what was
+refuted. No tests were run — this checkout has no .NET SDK.
 
 ### Summary: one real change, otherwise cosmetic
 
@@ -518,13 +544,13 @@ No change closes, narrows, or reopens any structural finding.
 
 | # | Item | Re-verified evidence (2026-08-19) |
 | --- | --- | --- |
-| 5 | Governed edits do not reach the golden record | The only two `ISecurityMasterRevisionPublishedHandler` registrations are still `SecurityProjectionRebuildHandler` (Order=10) and `CoverageInvalidationHandler` (Order=20) (`WorkstationServiceCollectionExtensions.cs:525-530`). `OperatorOverridesDto.Values` is still `IReadOnlyDictionary<string, string>` and its docstring still reads "*without amending the canonical security terms*" (`OperatorOverrides.cs:27-33`). `ProviderLedgerReconciliationService` still assigns `_operatorOverridesStore` at `:77` and never reads it |
+| 5 | Governed edits do not reach the golden record | The only two `ISecurityMasterRevisionPublishedHandler` registrations are still `SecurityProjectionRebuildHandler` (Order=10) and `CoverageInvalidationHandler` (Order=20) (`WorkstationServiceCollectionExtensions.cs:525-530`). `OperatorOverridesDto.Values` is still `IReadOnlyDictionary<string, string>` and its docstring still reads "*without amending the canonical security terms*" (`OperatorOverrides.cs:27-33`). The item's "dead dependency" rider is **retracted** — see the correction under risk item 5 |
 | 2 | Three modeling routes for MBS/ABS/CLO | No ruling landed. `SecurityMasterOperationalReadinessService.cs:157` still labels `CustomAsset` "MBS / ABS / CLO / CMBS / private assets"; no ADR exists |
 | 1 | Taxonomy outruns term model | `BondCouponStructure` is still exactly `Fixed` / `Floating` / `ZeroCoupon` (`SecurityMaster.fs:222-225`) |
-| 8 | Third factor-schedule shape | `SecurityFactorScheduleEntry` is still separately declared at `SecurityMasterAccountingEventService.cs:89` and used across `SecurityMasterAccountingEventSourceAdapter` |
+| 8 | Third factor-schedule shape | **Closed, and the recommendation withdrawn.** The types model a factor *level* and a factor *transition with provenance*, not one concept in three shapes — see the correction under risk item 8 |
 | 7 | Corporate actions: wide table | `corporate_actions` still carries per-event-type nullable columns and no JSONB payload. Migration `003` declares 8 typed payload columns (`:5-21`); `021` adds `record_date`, `lifecycle_state`, `supersedes_corp_act_id`, and one more payload column, `redemption_price_percent_of_par` (`:7-17`). Migrations still end at 028 |
 | 10 | Straight-line amortization only | `FaceValueLot.AmortizedBasisAsOf` is still day-count-weighted straight-line (`FaceValueLot.cs:94-113`); `BondAmortizationMethod.ConstantYield` still has no consumer |
-| 10 | Per-process projection cache | `SecurityMasterProjectionCache` is still a bare `ConcurrentDictionary` with no eviction; `ReplaceAll` still calls `_byId.Clear()` before repopulating (`SecurityMasterProjectionCache.cs:18-25`) |
+| 10 | Per-process projection cache | Still per-process with no eviction and no cross-node invalidation. The clear-then-refill half was **fixed on 2026-08-19** — `ReplaceAll` now builds the replacement map and installs it with a single `Volatile.Write`, so a concurrent reader never sees an empty or partly filled master |
 | 4 | ~7 registries per asset class | Class counts still agree at 26, name for name: the `SecurityKind` DU has 26 cases; `SecurityAssetClassCatalog.Descriptors` has 26 entries (27 `AssetClass:` literals, of which `Unknown` is the separate `DefaultDescriptor` excluded from `Descriptors`); `SecurityAssetTermsSchema.FieldsByAssetClass` has 26 keys. Both codec arms are still hand-written |
 | 9 | Equity has bespoke amendment endpoints | Still present, and there are **two** routes to `AmendPreferredEquityTermsAsync`, not one: `AmendSecurityMasterPreferredEquityTerms` (`SecurityMasterEndpoints.cs:524`) and `PatchSecurityPreferredTerms` (`:1125`), with the convertible pair alongside. Both are permission-gated and rate-limited; both bypass the workbench Draft→Submitted→Approved→Published gate |
 | — | Relational projections | Still 11 projection stores for 26 classes (11 + the 15 declared gaps = 26); `IntentionallyUnprojectedAssetClasses` still lists the same 15 private/alternative classes (`SecurityAssetTermsSchemaTests.cs:21-38`) |
@@ -565,6 +591,27 @@ primitives are written and tested, and the remaining work is a term model to fee
 wiring path from `FaceValueLot` / the ledger amortization engine. It also raises a risk the prior
 passes did not name: a tested-but-uncalled financial formula library invites a future contributor
 to assume the platform computes constant-yield amortization when it does not.
+
+### Remediation attempted — 2026-08-19
+
+Three findings were picked up for repair because they looked small, local, and safe. Attempting
+them refuted two of the three. That is recorded here rather than quietly dropped, because a review
+that cannot be wrong is not evidence.
+
+| Finding | Outcome |
+| --- | --- |
+| Clear-then-refill in `SecurityMasterProjectionCache.ReplaceAll` | **Fixed.** The replacement map is built off to the side and installed with one `Volatile.Write`; reads go through `Volatile.Read`. A reader concurrent with a warm or rebuild now sees either the whole previous master or the whole new one. `SecurityMasterProjectionCacheTests` covers the swap, the concurrent-reader window, and post-swap `Upsert` |
+| `IOperatorOverridesStore` "dead dependency" | **Refuted, finding retracted.** It is read from a sibling partial file. See risk item 5 |
+| Third factor-schedule shape | **Refuted, recommendation withdrawn.** Two distinct concepts, not one in three shapes. See risk item 8 |
+
+The remaining open findings were deliberately not attempted. Items 1, 2, 7, and the top priority
+need a decision or a schema change rather than a repair: the canonical home for MBS/ABS/CLO is a
+product ruling, the corporate-action envelope is a migration, `BondCouponStructure` is a codec
+change across both hand-written arms, and the workbench merge path is a feature with replay
+semantics to design. None of them is a cleanup, and none should be slipped in as one.
+
+The fix above was not compiled or tested locally — this checkout has no .NET SDK. `quality-gate`
+is the gate.
 
 ### Priorities — unchanged
 
@@ -607,4 +654,7 @@ actual declarations; and swept `src/Meridian.FSharp/Calculations/` for calculati
 reachable from a production path. The browser workstation screens and the
 `tests/Meridian.Tests/SecurityMaster/` suite were not re-diffed by this pass.
 
-No code was changed. No tests were run — this review makes no behavioral claims requiring execution.
+The 2026-08-12 and 2026-08-14 passes changed no code. The 2026-08-19 pass changed one file
+(`SecurityMasterProjectionCache.ReplaceAll`) and added one test file; no tests were run locally,
+because this checkout has no .NET SDK. Every other claim in this review is a reading of source and
+makes no behavioral assertion requiring execution.
