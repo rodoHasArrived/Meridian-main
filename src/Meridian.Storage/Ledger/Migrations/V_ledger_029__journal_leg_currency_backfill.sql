@@ -114,6 +114,11 @@ create table if not exists __SCHEMA__.journal_leg_currency_affirmations (
 create index if not exists ix_journal_leg_currency_affirmations_book
     on __SCHEMA__.journal_leg_currency_affirmations (ledger_book_id, affirmed_at desc);
 
+comment on table __SCHEMA__.journal_leg_currency_affirmations is
+    'Operator assertions that a ledger book with no retained currency evidence transacted only in '
+    'its base currency, and the currency-blind journal legs each assertion completed. Append-only: '
+    'this is the authority for a repair the data alone could not determine.';
+
 -- The repair. Guarded by transaction_currency is null, so re-running it is a no-op, and scoped to
 -- the legs the view judged Repairable. debit/credit are read, never written.
 update __SCHEMA__.journal_legs l

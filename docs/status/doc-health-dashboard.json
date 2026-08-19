@@ -1,11 +1,11 @@
 {
   "total_files": 654,
-  "total_lines": 131024,
+  "total_lines": 131047,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 238,
-  "average_lines": 200.3,
+  "todo_count": 239,
+  "average_lines": 200.4,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2521,7 +2521,7 @@
     },
     {
       "path": "docs/generated/database/modules/ledger.md",
-      "line_count": 405,
+      "line_count": 427,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2617,9 +2617,9 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10500,
+      "line_count": 10501,
       "has_heading": true,
-      "todo_count": 7,
+      "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

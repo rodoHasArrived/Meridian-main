@@ -1,6 +1,7 @@
 using System.Data;
 using Meridian.Ledger;
 using Npgsql;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
@@ -127,8 +128,8 @@ public sealed class PostgresLedgerCurrencyBackfill
         }
 
         var asserted = NormalizeCurrency(currency, nameof(currency));
-        var affirmedBy = RequireText(actor, nameof(actor));
-        var reason = RequireText(rationale, nameof(rationale));
+        var affirmedBy = RequireText(actor);
+        var reason = RequireText(rationale);
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection
@@ -329,17 +330,6 @@ public sealed class PostgresLedgerCurrencyBackfill
         {
             throw new LedgerValidationException(
                 $"{parameterName} must be a three-letter ISO-style currency code.");
-        }
-
-        return normalized;
-    }
-
-    private static string RequireText(string? value, string parameterName)
-    {
-        var normalized = value?.Trim();
-        if (string.IsNullOrWhiteSpace(normalized))
-        {
-            throw new ArgumentException($"{parameterName} is required.", parameterName);
         }
 
         return normalized;
