@@ -166,6 +166,21 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-08-19** — **`Meridian.Setup.Tests` had never executed in CI**, so the installer's
+  transaction and payload tests were assurance on paper only. `run-dotnet-ci-tests.py` lists the
+  project under `WINDOWS_ONLY_TEST_PROJECTS`, which the ubuntu lane skips and
+  `verify_test_project_coverage()` accepts as "wired" without checking that any Windows lane runs
+  it — and none did: the project was referenced by no workflow and no script. Its own source
+  comment recorded the cause ("Added with the installer work but never wired to a lane"). It is now
+  run by `verify-desktop-release-preflight`, the Windows job that already gates this lane.
+  `Meridian.Setup` also had `SelfContained` set unconditionally while only ever being built with an
+  explicit runtime identifier by the release script; it is now conditional on one, so the RID-less
+  build a `ProjectReference` performs cannot ask for a self-contained application without a
+  runtime identifier. The same "listed as windows-only, therefore assumed covered" reasoning still
+  applies to `Meridian.LifecycleSupervisor.Tests`, which is at least referenced by
+  `windows-desktop-build.yml` path triggers and `scripts/dev/validate-wpf-dev.ps1`; whether it is
+  genuinely executed was not established here.
+
 - **2026-08-19** — **ALL THREE EVIDENCE LANES GREEN ON ONE FROZEN COMMIT (`9ae0a3a3`)**, which is
   the first time that has been true in this repository. This was the real sequencing blocker behind
   every evidence-gated `P0` row: each lane's evidence had always sat on a different commit, and the

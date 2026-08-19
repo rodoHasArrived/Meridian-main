@@ -66,12 +66,13 @@ jobs:
             ${{ runner.os }}-nuget-desktop-release-preflight-
             ${{ runner.os }}-nuget-
 
-      - name: Restore WPF tests
+      - name: Restore preflight test projects
         shell: pwsh
-        run: >
-          dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj
-          /p:EnableWindowsTargeting=true
-          /p:EnableFullWpfBuild=true
+        run: |
+          dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj `
+            /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
+          dotnet restore tests/Meridian.Setup.Tests/Meridian.Setup.Tests.csproj `
+            /p:EnableWindowsTargeting=true
 
       - name: Build WPF app
         shell: pwsh
@@ -94,6 +95,21 @@ jobs:
           --results-directory artifacts/test-results/desktop-release-preflight
           /p:EnableWindowsTargeting=true
           /p:EnableFullWpfBuild=true
+
+      # Meridian.Setup.Tests targets net10.0-windows, so run-dotnet-ci-tests.py lists it under
+      # WINDOWS_ONLY_TEST_PROJECTS and the ubuntu lane skips it. That list is accepted as "wired"
+      # without checking that a Windows lane actually runs it, and nothing did: neither these
+      # tests nor InstallationTransactionTests had ever executed in CI. They gate the installer,
+      # so this is their lane.
+      - name: Run installer setup tests
+        shell: pwsh
+        run: >
+          dotnet test tests/Meridian.Setup.Tests/Meridian.Setup.Tests.csproj
+          -c Release
+          --no-restore
+          --logger "trx;LogFilePrefix=desktop-release-preflight-setup"
+          --results-directory artifacts/test-results/desktop-release-preflight
+          /p:EnableWindowsTargeting=true
 
       - name: Upload release preflight test results
         if: failure()
