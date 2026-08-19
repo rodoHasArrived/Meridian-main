@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Operations;
 
 namespace Meridian.Ledger;
 
@@ -124,6 +125,9 @@ public static class DailyPortfolioPricingDraftBuilder
                 .OrderBy(static level => level)
                 .Select(static level => level.ToString()));
         var stalePricedCount = pricingLines.Count(static line => line.IsStalePriced);
+        // A draft that mixes real and fabricated marks is never reported as entirely real.
+        var draftProvenance = DataProvenanceExtensions.Strongest(
+            pricingLines.Select(static line => line.Provenance));
 
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -143,6 +147,7 @@ public static class DailyPortfolioPricingDraftBuilder
             ["valuation.markAdjustment"] = Format(markAdjustment),
             ["valuation.markFingerprintSha256"] = fingerprint,
             ["valuation.fairValueLevels"] = fairValueLevels,
+            [ValuationProvenanceTag.Key] = draftProvenance.Token(),
             ["valuation.stalePricedCount"] = stalePricedCount.ToString(CultureInfo.InvariantCulture),
             ["valuation.carryingValueSources"] = string.Join(",", pricingLines
                 .Select(static line => line.CarryingValueSource)
@@ -184,7 +189,7 @@ public static class DailyPortfolioPricingDraftBuilder
                 RetainedBy: input.Policy.ApprovedBy,
                 SubjectId: scope.SecurityId?.ToString("D") ?? line.Symbol,
                 Description: FormattableString.Invariant(
-                    $"{line.Symbol} marked at {Format(line.MarkPrice)} via {line.PriceSource}; observed {(line.PriceObservedOn.HasValue ? line.PriceObservedOn.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "unknown")}; confidence {line.Confidence}")).Normalize());
+                    $"{line.Symbol} marked at {Format(line.MarkPrice)} via {line.PriceSource}; observed {(line.PriceObservedOn.HasValue ? line.PriceObservedOn.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "unknown")}; confidence {line.Confidence}; origin {line.Provenance.Token()}")).Normalize());
 
             if (!string.IsNullOrWhiteSpace(line.CarryingValueEvidenceReference))
             {
@@ -240,7 +245,10 @@ public static class DailyPortfolioPricingDraftBuilder
                 .Append('|').Append(line.FairValueLevel)
                 .Append('|').Append(line.IsStalePriced ? "stale" : "current")
                 .Append('|').Append(line.CarryingValueSource ?? "unknown")
-                .Append('|').Append(line.CarryingValueEvidenceReference ?? "none");
+                .Append('|').Append(line.CarryingValueEvidenceReference ?? "none")
+                // Origin participates in the fingerprint so a simulated valuation run can never
+                // share an idempotency key with the real run for the same scope and period.
+                .Append('|').Append(line.Provenance.Token());
         }
 
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())))
