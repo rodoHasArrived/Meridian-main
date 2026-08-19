@@ -162,7 +162,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                         ct)
                     .ConfigureAwait(false);
                 candidateForReplay = replayWrite.Candidate;
-                EnsureRetainedJournalIsThisPosting(existing, replayWrite, ledgerBookId, sourceEventId, approvalId);
+                EnsureRetainedJournalIsThisPosting(existing, replayWrite, ledgerBookId, sourceEventId, approvalId, request);
             }
             var journalImpact = BuildJournalImpact(existing, ledgerBook.BaseCurrency);
             if (assetAuthority is not null)
@@ -1566,7 +1566,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         AccountingPostingCandidateWriteResult rebuilt,
         Guid ledgerBookId,
         Guid sourceEventId,
-        string approvalId)
+        string approvalId,
+        PostPostingRuleJournalCandidateRequestDto request)
     {
         // No durable write means the rebuild could not produce a posting to compare against —
         // a blocked candidate, or a policy that no longer resolves. The retained journal may well
@@ -1594,6 +1595,13 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             LedgerBookId = ledgerBookId,
             SourceEventId = sourceEventId,
             CommandId = rebuiltCommand?.CommandId ?? candidateWrite.CommandId,
+            // Resolved exactly as the append path resolves it, including the command fallback
+            // between the request and the candidate, so an identical resubmission can never
+            // disagree with the retained journal on correlation alone.
+            CorrelationId = ResolveCorrelationId(
+                request.CorrelationId,
+                rebuiltCommand?.CorrelationId,
+                request.Candidate.CorrelationId),
             PostingCommand = rebuiltCommand is null
                 ? null
                 : rebuiltCommand with

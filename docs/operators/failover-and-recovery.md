@@ -165,11 +165,13 @@ uniquely indexed in the journal store, so that pair can hold exactly one journal
   retained journal on period, policy, rule, lineage, timing, idempotency, the full accounting
   scope and provenance carried in journal metadata (fund event, capital account, investor,
   payment intent, settlement reference, project, strategy, institution, symbol, and the rest),
-  the governance approval attached to an adjustment, and the ordered lines with their accounts,
-  amounts, and dimensions. Booking the same amounts against a different investor, capital
+  the correlation and governance approval attached to the posting, and the ordered lines with
+  their accounts, amounts, dimensions, and transaction-currency detail (currency pair, both
+  transaction-side amounts, and FX rate). Booking the same amounts against a different investor, capital
   account, or approval is a different posting, not a replay. Accounts are matched on ledger
   identity, so a line whose account name differs only in casing targets a different balance and
-  is a conflict.
+  is a conflict. Policy, policy version, rule, and rule version are retained verbatim and are
+  matched the same ordinal way the governed posting target resolves its own collisions.
 - Accounting timestamps are compared at the precision the store keeps. PostgreSQL resolves to
   microseconds while .NET carries finer ticks, so a submitted timestamp comes back truncated;
   comparing raw ticks would reject a retry that resubmitted the identical value.

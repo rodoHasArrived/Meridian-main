@@ -41,13 +41,13 @@ public static class RetainedPostingEquivalence
             return Differs("accounting period", out difference);
         if (retained.AccountingBasis != candidate.AccountingBasis)
             return Differs("accounting basis", out difference);
-        if (!TextMatches(retained.AccountingPolicyId, candidate.AccountingPolicyId))
+        if (!IdentityMatches(retained.AccountingPolicyId, candidate.AccountingPolicyId))
             return Differs("accounting policy", out difference);
-        if (!TextMatches(retained.AccountingPolicyVersion, candidate.AccountingPolicyVersion))
+        if (!IdentityMatches(retained.AccountingPolicyVersion, candidate.AccountingPolicyVersion))
             return Differs("accounting policy version", out difference);
-        if (!TextMatches(retained.RuleId, candidate.RuleId))
+        if (!IdentityMatches(retained.RuleId, candidate.RuleId))
             return Differs("posting rule", out difference);
-        if (!TextMatches(retained.RuleVersion, candidate.RuleVersion))
+        if (!IdentityMatches(retained.RuleVersion, candidate.RuleVersion))
             return Differs("posting rule version", out difference);
         if (retained.SourceEventId != candidate.SourceEventId)
             return Differs("source event", out difference);
@@ -57,6 +57,8 @@ public static class RetainedPostingEquivalence
             return Differs("posting kind", out difference);
         if (retained.CommandId != candidate.CommandId)
             return Differs("posting command identity", out difference);
+        if (retained.CorrelationId != candidate.CorrelationId)
+            return Differs("correlation identity", out difference);
 
         // Governance approval travels with the posting and is retained alongside it, so a retry
         // carrying a different approval id, approver, or reason code is a different submission
@@ -99,6 +101,12 @@ public static class RetainedPostingEquivalence
                 return Differs($"line {index} description", out difference);
             if (!DimensionsMatch(retainedLine.Dimensions, candidateLine.Dimensions))
                 return Differs($"line {index} dimensions", out difference);
+            // Transaction currency, functional currency, both transaction-side amounts, and the
+            // FX rate are durable per leg. Two legs can agree on functional debits and credits
+            // while booking a different transaction currency or rate, which is a different
+            // posting. Structural: a scalar-only record, so equality compares by value.
+            if (retainedLine.Currency != candidateLine.Currency)
+                return Differs($"line {index} currency", out difference);
         }
 
         difference = string.Empty;
@@ -236,6 +244,19 @@ public static class RetainedPostingEquivalence
         difference = field;
         return false;
     }
+
+    /// <summary>
+    /// Ordinal comparison for durable lineage identifiers, after the same null/whitespace
+    /// normalization the store applies on write. Policy, policy version, rule, and rule version
+    /// are retained verbatim and <see cref="DurableLedgerPostingTarget"/> already resolves
+    /// collisions on them ordinally, so matching them case-insensitively here would apply looser
+    /// collision semantics on this path than the governed target applies on its own.
+    /// </summary>
+    private static bool IdentityMatches(string? retained, string? candidate)
+        => string.Equals(TrimToNull(retained), TrimToNull(candidate), StringComparison.Ordinal);
+
+    private static string? TrimToNull(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static bool TextMatches(string? retained, string? candidate)
         => string.Equals(

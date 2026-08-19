@@ -196,6 +196,60 @@ public sealed class RetainedPostingEquivalenceTests
         difference.Should().Be("line 0 account");
     }
 
+    [Fact]
+    public void Matches_DifferentLineCurrency_IsAConflict()
+    {
+        // Same functional debits and credits, different transaction currency and rate.
+        var retained = BuildRecord(BuildEntry(Guid.NewGuid(), Guid.NewGuid(), currency: Currency("EUR", 1.0m, 125.44m)));
+        var candidate = BuildWrite(BuildEntry(Guid.NewGuid(), Guid.NewGuid(), currency: Currency("GBP", 2.0m, 62.72m)));
+
+        RetainedPostingEquivalence.Matches(retained, candidate, out var difference).Should().BeFalse();
+        difference.Should().Be("line 0 currency");
+    }
+
+    [Fact]
+    public void Matches_RetainedCurrencyAgainstAbsentCurrency_IsAConflict()
+    {
+        var retained = BuildRecord(BuildEntry(Guid.NewGuid(), Guid.NewGuid(), currency: Currency("EUR", 1.0m, 125.44m)));
+        var candidate = BuildWrite(BuildEntry(Guid.NewGuid(), Guid.NewGuid()));
+
+        RetainedPostingEquivalence.Matches(retained, candidate, out var difference).Should().BeFalse();
+        difference.Should().Be("line 0 currency");
+    }
+
+    [Fact]
+    public void Matches_LineageIdentifierDifferingOnlyByCase_IsAConflict()
+    {
+        // Retained verbatim, and the governed posting target resolves collisions on these
+        // ordinally, so a casing change is distinct lineage rather than the same policy.
+        var retained = BuildRecord(BuildEntry(Guid.NewGuid(), Guid.NewGuid()));
+        var candidate = BuildWrite(BuildEntry(Guid.NewGuid(), Guid.NewGuid())) with
+        {
+            AccountingPolicyId = "GAAP-Accrual-V1"
+        };
+
+        RetainedPostingEquivalence.Matches(retained, candidate, out var difference).Should().BeFalse();
+        difference.Should().Be("accounting policy");
+    }
+
+    [Fact]
+    public void Matches_DifferentCorrelationIdentity_IsAConflict()
+    {
+        var retained = BuildRecord(BuildEntry(Guid.NewGuid(), Guid.NewGuid()));
+        var candidate = BuildWrite(BuildEntry(Guid.NewGuid(), Guid.NewGuid())) with
+        {
+            CorrelationId = Guid.Parse("66666666-6666-6666-6666-666666666666")
+        };
+
+        RetainedPostingEquivalence.Matches(retained, candidate, out var difference).Should().BeFalse();
+        difference.Should().Be("correlation identity");
+    }
+
+    // The line validates functional = transaction x rate, so these pairs are chosen to balance
+    // against the default 125.44 functional debit.
+    private static LedgerEntryCurrency Currency(string transactionCurrency, decimal fxRate, decimal transactionDebit)
+        => new(transactionCurrency, "USD", transactionDebit, 0m, fxRate);
+
     private static LedgerAdjustmentApprovalMetadataDto Approval(string approvalId, string approvedBy)
         => new(
             approvalId,
@@ -216,7 +270,8 @@ public sealed class RetainedPostingEquivalenceTests
         IReadOnlyDictionary<string, string>? externalGlDimensions = null,
         Func<JournalEntryMetadata, JournalEntryMetadata>? metadata = null,
         DateTimeOffset? timestamp = null,
-        string accountName = "Accrued Interest Receivable")
+        string accountName = "Accrued Interest Receivable",
+        LedgerEntryCurrency? currency = null)
         => new(
             journalEntryId,
             timestamp ?? Timestamp,
@@ -234,7 +289,8 @@ public sealed class RetainedPostingEquivalenceTests
                         FundId: fundId,
                         EntityId: "entity-master",
                         ExternalGlDimensions: externalGlDimensions
-                            ?? new Dictionary<string, string> { ["costCentre"] = "cc-001" })),
+                            ?? new Dictionary<string, string> { ["costCentre"] = "cc-001" }),
+                    currency),
                 new LedgerEntry(
                     Guid.NewGuid(),
                     journalEntryId,
