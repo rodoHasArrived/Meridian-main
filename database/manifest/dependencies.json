@@ -38561,6 +38561,18 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_journal_leg_currency_affirmations_currency on ledger.journal_leg_currency_affirmations",
+      "target": "database:ledger.journal_leg_currency_affirmations.affirmed_currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_journal_leg_currency_affirmations_legs on ledger.journal_leg_currency_affirmations",
+      "target": "database:ledger.journal_leg_currency_affirmations.legs_repaired"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_journal_legs_adjustment_approval_metadata on ledger.journal_legs",
       "target": "database:ledger.journal_legs.adjustment_approval_metadata"
     },
@@ -38839,6 +38851,43 @@
       "label": "",
       "source": "database:ledger.ck_wash_sale_deferrals_window on ledger.wash_sale_deferrals",
       "target": "database:ledger.wash_sale_deferrals.window_days"
+    },
+    {
+      "constraint": "journal_leg_currency_affirmations_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.journal_leg_currency_affirmations",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "view_reference",
+      "label": "",
+      "source": "database:ledger.journal_leg_currency_backfill_status",
+      "target": "database:ledger.accounting_periods"
+    },
+    {
+      "kind": "view_reference",
+      "label": "",
+      "source": "database:ledger.journal_leg_currency_backfill_status",
+      "target": "database:ledger.journal_legs"
+    },
+    {
+      "kind": "view_reference",
+      "label": "",
+      "source": "database:ledger.journal_leg_currency_backfill_status",
+      "target": "database:ledger.ledger_books"
     },
     {
       "constraint": "journal_legs_journal_entry_id_fkey",
@@ -41918,6 +41967,18 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.journal_leg_currency_affirmations"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.journal_leg_currency_backfill_status"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.journal_legs"
     },
     {
@@ -42610,7 +42671,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "eddf0d1735cdf0117c8081f01011a55dfd533183042cac61e44e649b04bd6519",
+  "fingerprint": "9a80355212315d21eb3deecfcdba8b0116960951518ef6c93f9949baf4e2c06b",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -58898,6 +58959,16 @@
       "label": "ledger.ck_journal_entries_posting_kind on ledger.journal_entries"
     },
     {
+      "id": "database:ledger.ck_journal_leg_currency_affirmations_currency on ledger.journal_leg_currency_affirmations",
+      "kind": "database-object",
+      "label": "ledger.ck_journal_leg_currency_affirmations_currency on ledger.journal_leg_currency_affirmations"
+    },
+    {
+      "id": "database:ledger.ck_journal_leg_currency_affirmations_legs on ledger.journal_leg_currency_affirmations",
+      "kind": "database-object",
+      "label": "ledger.ck_journal_leg_currency_affirmations_legs on ledger.journal_leg_currency_affirmations"
+    },
+    {
       "id": "database:ledger.ck_journal_legs_adjustment_approval_metadata on ledger.journal_legs",
       "kind": "database-object",
       "label": "ledger.ck_journal_legs_adjustment_approval_metadata on ledger.journal_legs"
@@ -59074,6 +59145,33 @@
       "id": "database:ledger.journal_entries_journal_entry_id_key",
       "kind": "database-object",
       "label": "ledger.journal_entries_journal_entry_id_key"
+    },
+    {
+      "id": "database:ledger.journal_leg_currency_affirmations",
+      "kind": "database-table",
+      "label": "ledger.journal_leg_currency_affirmations",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.journal_leg_currency_affirmations.affirmed_currency",
+      "kind": "database-object",
+      "label": "ledger.journal_leg_currency_affirmations.affirmed_currency"
+    },
+    {
+      "id": "database:ledger.journal_leg_currency_affirmations.legs_repaired",
+      "kind": "database-object",
+      "label": "ledger.journal_leg_currency_affirmations.legs_repaired"
+    },
+    {
+      "id": "database:ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations",
+      "kind": "database-object",
+      "label": "ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations"
+    },
+    {
+      "id": "database:ledger.journal_leg_currency_backfill_status",
+      "kind": "database-view",
+      "label": "ledger.journal_leg_currency_backfill_status",
+      "schema": "ledger"
     },
     {
       "id": "database:ledger.journal_legs",
@@ -62154,9 +62252,9 @@
   "summary": {
     "contract_references": 2932,
     "contract_set_memberships": 3358,
-    "edges": 7083,
-    "foreign_keys": 95,
+    "edges": 7093,
+    "foreign_keys": 96,
     "logical_references": 6,
-    "nodes": 3364
+    "nodes": 3371
   }
 }
