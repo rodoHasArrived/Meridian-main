@@ -49,16 +49,20 @@ public static class DailyPortfolioPricingProjector
             input.Policy.ValuationMethod,
             mark.FinancialAccountId,
             mark.InstrumentType,
-            FairValueLevel: mark.FairValueLevel == FairValueLevel.Unclassified
-                ? input.Policy.DefaultFairValueLevel
-                : mark.FairValueLevel,
+            // Clamped against the mark's origin: the fund's default level may classify an
+            // unclassified real mark, but can never raise a fabricated one to an observable tier.
+            FairValueLevel: FairValueLevelPolicy.Resolve(
+                mark.FairValueLevel,
+                input.Policy.DefaultFairValueLevel,
+                mark.Provenance),
             IsStalePriced: mark.IsStalePriced,
             PriceObservedOn: mark.PriceObservedOn,
             Confidence: mark.Confidence,
             SecurityId: mark.SecurityId,
             CarryingValueSource: mark.CarryingValueSource,
             CarryingValueCapturedAtUtc: mark.CarryingValueCapturedAtUtc,
-            CarryingValueEvidenceReference: mark.CarryingValueEvidenceReference);
+            CarryingValueEvidenceReference: mark.CarryingValueEvidenceReference,
+            Provenance: mark.Provenance);
     }
 
     private static IReadOnlyList<DailyPortfolioPricingJournalLine> BuildJournalLines(

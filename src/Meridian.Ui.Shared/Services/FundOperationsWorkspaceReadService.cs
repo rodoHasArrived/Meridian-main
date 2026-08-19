@@ -600,7 +600,7 @@ public sealed partial class FundOperationsWorkspaceReadService
             report,
             auditActor,
             ct).ConfigureAwait(false);
-        var derivedProvenanceToken = ReportPackProvenanceResolver.ResolveDerivedToken(runs);
+        var derivedProvenanceToken = ReportPackProvenanceResolver.ResolveDerivedToken(runs, ledgerBook.ConsolidatedJournalEntries());
         var validationIssues = _reportPackValidationService.Validate(new ReportPackValidationContext(
             ReportId: report.ReportId,
             AsOf: asOf,

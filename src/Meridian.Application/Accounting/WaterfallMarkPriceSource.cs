@@ -1,4 +1,5 @@
 using System.Threading;
+using Meridian.Contracts.Operations;
 using Meridian.Core.Logging;
 using Meridian.Ledger;
 using Serilog;
@@ -48,10 +49,12 @@ public sealed class WaterfallMarkPriceSource : IMarkPriceSource
             if (quote is null)
                 continue;
 
-            var level = quote.Level == FairValueLevel.Unclassified ? tier.Level : quote.Level;
+            // The tier's level classifies an unclassified quote, but never raises a fabricated one:
+            // a tier labelled "exchange-close" must not lend Level 1 standing to a simulated price.
+            var level = FairValueLevelPolicy.Resolve(quote.Level, tier.Level, quote.Provenance);
             _log.Debug(
-                "Priced {Symbol} as of {AsOf} from tier {Tier} at fair-value {Level}",
-                symbol, asOf, tier.Label, level);
+                "Priced {Symbol} as of {AsOf} from tier {Tier} at fair-value {Level} (origin {Provenance})",
+                symbol, asOf, tier.Label, level, quote.Provenance.Token());
             return quote with { Level = level };
         }
 
