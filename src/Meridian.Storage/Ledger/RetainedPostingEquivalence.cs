@@ -65,24 +65,11 @@ public static class RetainedPostingEquivalence
         if (!string.Equals(retainedEntry.Description, candidateEntry.Description, StringComparison.Ordinal))
             return Differs("journal description", out difference);
 
-        var retainedMetadata = retainedEntry.Metadata.Normalize();
-        var candidateMetadata = candidateEntry.Metadata.Normalize();
-        if (retainedMetadata.EffectiveDate != candidateMetadata.EffectiveDate)
-            return Differs("effective date", out difference);
-        if (!TextMatches(retainedMetadata.IdempotencyKey, candidateMetadata.IdempotencyKey))
-            return Differs("idempotency key", out difference);
-        if (!TextMatches(retainedMetadata.ActivityType, candidateMetadata.ActivityType))
-            return Differs("activity type", out difference);
-        if (!TextMatches(retainedMetadata.LedgerBook, candidateMetadata.LedgerBook))
-            return Differs("ledger book", out difference);
-        if (!TextMatches(retainedMetadata.FinancialAccountId, candidateMetadata.FinancialAccountId))
-            return Differs("financial account", out difference);
-        if (!TextMatches(retainedMetadata.CounterpartyAccountId, candidateMetadata.CounterpartyAccountId))
-            return Differs("counterparty account", out difference);
-        if (!TextMatches(retainedMetadata.FundEventId, candidateMetadata.FundEventId))
-            return Differs("fund event", out difference);
-        if (!TextMatches(retainedMetadata.SettlementReference, candidateMetadata.SettlementReference))
-            return Differs("settlement reference", out difference);
+        if (MetadataDifference(retainedEntry.Metadata.Normalize(), candidateEntry.Metadata.Normalize())
+            is { } metadataDifference)
+        {
+            return Differs(metadataDifference, out difference);
+        }
 
         // Ordered, not set-based: two lines that swap sides are a different journal even though
         // the multiset of amounts is unchanged.
@@ -110,6 +97,69 @@ public static class RetainedPostingEquivalence
 
         difference = string.Empty;
         return true;
+    }
+
+    /// <summary>
+    /// Names the first durable metadata field that disagrees, or <see langword="null"/> when every
+    /// one matches. Every field on <see cref="JournalEntryMetadata"/> that describes what the
+    /// posting <i>is</i> — its scope, provenance, lineage, and settlement context — participates,
+    /// because a retry that keeps the same lines while changing the fund, investor, capital
+    /// account, or payment intent it books against is a different posting, not a replay.
+    /// <para>
+    /// <see cref="JournalEntryMetadata.Tags"/> and
+    /// <see cref="JournalEntryMetadata.EvidenceReferences"/> are the two deliberate exclusions.
+    /// Both carry approval-time state that a rebuild cannot reproduce: the tag set records the
+    /// approval state, approval id, and a fingerprint computed over the approved command, and the
+    /// evidence list is merged with a clock stamp as the posting is approved. Comparing them
+    /// would reject ordinary retries. Their durable content is largely mirrored by the scalar
+    /// fields above, which are compared.
+    /// </para>
+    /// </summary>
+    private static string? MetadataDifference(JournalEntryMetadata retained, JournalEntryMetadata candidate)
+    {
+        if (!TextMatches(retained.ActivityType, candidate.ActivityType))
+            return "activity type";
+        if (!TextMatches(retained.Symbol, candidate.Symbol))
+            return "symbol";
+        if (retained.SecurityId != candidate.SecurityId)
+            return "security";
+        if (retained.OrderId != candidate.OrderId)
+            return "order";
+        if (retained.FillId != candidate.FillId)
+            return "fill";
+        if (!TextMatches(retained.ProjectId, candidate.ProjectId))
+            return "project";
+        if (!TextMatches(retained.LedgerBook, candidate.LedgerBook))
+            return "ledger book";
+        if (retained.LedgerView != candidate.LedgerView)
+            return "ledger view";
+        if (!TextMatches(retained.ScenarioId, candidate.ScenarioId))
+            return "scenario";
+        if (!TextMatches(retained.StrategyId, candidate.StrategyId))
+            return "strategy";
+        if (!TextMatches(retained.FinancialAccountId, candidate.FinancialAccountId))
+            return "financial account";
+        if (!TextMatches(retained.CounterpartyAccountId, candidate.CounterpartyAccountId))
+            return "counterparty account";
+        if (!TextMatches(retained.Institution, candidate.Institution))
+            return "institution";
+        if (retained.EffectiveDate != candidate.EffectiveDate)
+            return "effective date";
+        if (!TextMatches(retained.IdempotencyKey, candidate.IdempotencyKey))
+            return "idempotency key";
+        if (!TextMatches(retained.FundEventId, candidate.FundEventId))
+            return "fund event";
+        if (!TextMatches(retained.FundEventType, candidate.FundEventType))
+            return "fund event type";
+        if (!TextMatches(retained.CapitalAccountId, candidate.CapitalAccountId))
+            return "capital account";
+        if (!TextMatches(retained.InvestorId, candidate.InvestorId))
+            return "investor";
+        if (!TextMatches(retained.PaymentIntentId, candidate.PaymentIntentId))
+            return "payment intent";
+        return TextMatches(retained.SettlementReference, candidate.SettlementReference)
+            ? null
+            : "settlement reference";
     }
 
     /// <summary>

@@ -1112,6 +1112,42 @@ public sealed class AccountingPostingCandidateServiceTests
     }
 
     [Fact]
+    public async Task PostCandidateAsync_ReplayedNonTreasurySourceEventReturnsExistingJournal()
+    {
+        // Without a treasury context the drafted metadata carries no idempotency key; the append
+        // path stamps the posting command's key into the retained journal. A replay must still be
+        // recognised as one rather than conflicting on a key the rebuild has not been given yet.
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var candidateService = await CreateSeededCandidateServiceAsync(ledgerBookId: ledgerBookId);
+        var store = new RecordingLedgerJournalStore(
+            BuildLedgerBook(ledgerBookId, AccountingBasisKindDto.Gaap),
+            BuildPeriod(periodId, ledgerBookId));
+        var service = new AccountingPostingCandidatePostService(candidateService, store);
+        var request = new PostPostingRuleJournalCandidateRequestDto(
+            BuildCandidateRequest(
+                ledgerBookId,
+                periodId,
+                sourceEventId,
+                AccountingBasisKindDto.Gaap,
+                "gaap-accrual-v1") with
+            {
+                TreasuryContext = null
+            },
+            "reviewer@meridian.local",
+            "approval-generated-interest-202605",
+            EvidenceLinks: [ApprovalEvidence("fund-alpha", ledgerBookId, sourceEventId)]);
+
+        var first = await service.PostCandidateAsync(request);
+        var second = await service.PostCandidateAsync(request);
+
+        second.WasReplay.Should().BeTrue();
+        second.PostedJournal.JournalEntryId.Should().Be(first.PostedJournal.JournalEntryId);
+        store.Appended.Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task PostCandidateAsync_AggregateMustEqualLedgerBook()
     {
         var ledgerBookId = Guid.NewGuid();

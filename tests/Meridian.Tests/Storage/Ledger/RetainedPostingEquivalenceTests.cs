@@ -110,6 +110,40 @@ public sealed class RetainedPostingEquivalenceTests
         difference.Should().Be("idempotency key");
     }
 
+    [Theory]
+    [InlineData("capital account")]
+    [InlineData("investor")]
+    [InlineData("payment intent")]
+    [InlineData("fund event type")]
+    [InlineData("project")]
+    [InlineData("strategy")]
+    [InlineData("institution")]
+    [InlineData("symbol")]
+    public void Matches_DifferentDurableScopeOrProvenance_IsAConflict(string field)
+    {
+        // Same book, source event, period, rule, and lines — but a different accounting context.
+        // Booking the same amounts against a different fund or investor is a different posting.
+        var retained = BuildRecord(BuildEntry(Guid.NewGuid(), Guid.NewGuid()));
+        var candidate = BuildWrite(BuildEntry(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            metadata: metadata => field switch
+            {
+                "capital account" => metadata with { CapitalAccountId = "capital:other" },
+                "investor" => metadata with { InvestorId = "investor:other" },
+                "payment intent" => metadata with { PaymentIntentId = "payment:other" },
+                "fund event type" => metadata with { FundEventType = "RedemptionAccrual" },
+                "project" => metadata with { ProjectId = "project:other" },
+                "strategy" => metadata with { StrategyId = "strategy:other" },
+                "institution" => metadata with { Institution = "other-custodian" },
+                "symbol" => metadata with { Symbol = "MSFT" },
+                _ => throw new ArgumentOutOfRangeException(nameof(field), field, null)
+            }));
+
+        RetainedPostingEquivalence.Matches(retained, candidate, out var difference).Should().BeFalse();
+        difference.Should().Be(field);
+    }
+
     private const string EntryDescription = "Accrue custodian interest from retained source event";
 
     private static JournalEntry BuildEntry(
@@ -119,7 +153,8 @@ public sealed class RetainedPostingEquivalenceTests
         bool swapSides = false,
         string fundId = "fund-alpha",
         string idempotencyKey = "custodian-interest:2026-05",
-        IReadOnlyDictionary<string, string>? externalGlDimensions = null)
+        IReadOnlyDictionary<string, string>? externalGlDimensions = null,
+        Func<JournalEntryMetadata, JournalEntryMetadata>? metadata = null)
         => new(
             journalEntryId,
             Timestamp,
@@ -148,12 +183,20 @@ public sealed class RetainedPostingEquivalenceTests
                     EntryDescription,
                     new LedgerLineDimensionSet(FundId: "fund-alpha", EntityId: "entity-master"))
             ],
-            new JournalEntryMetadata
+            (metadata ?? (static value => value))(new JournalEntryMetadata
             {
                 ActivityType = "interest-accrual",
                 IdempotencyKey = idempotencyKey,
-                EffectiveDate = new DateOnly(2026, 5, 31)
-            });
+                EffectiveDate = new DateOnly(2026, 5, 31),
+                Symbol = "AAPL",
+                ProjectId = "project-interest-accrual",
+                StrategyId = "strategy-income",
+                Institution = "custodian-bny",
+                FundEventType = "InterestAccrual",
+                CapitalAccountId = "capital:fund-alpha",
+                InvestorId = "investor:fund-alpha",
+                PaymentIntentId = "payment:fund-alpha"
+            }));
 
     private static LedgerJournalEntryRecord BuildRecord(JournalEntry entry)
         => new(

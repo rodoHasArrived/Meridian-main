@@ -162,7 +162,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                         ct)
                     .ConfigureAwait(false);
                 candidateForReplay = replayWrite.Candidate;
-                EnsureRetainedJournalIsThisPosting(existing, replayWrite, ledgerBookId, sourceEventId);
+                EnsureRetainedJournalIsThisPosting(existing, replayWrite, ledgerBookId, sourceEventId, approvalId);
             }
             var journalImpact = BuildJournalImpact(existing, ledgerBook.BaseCurrency);
             if (assetAuthority is not null)
@@ -1565,7 +1565,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         LedgerJournalEntryRecord existing,
         AccountingPostingCandidateWriteResult rebuilt,
         Guid ledgerBookId,
-        Guid sourceEventId)
+        Guid sourceEventId,
+        string approvalId)
     {
         // No durable write means the rebuild could not produce a posting to compare against —
         // a blocked candidate, or a policy that no longer resolves. The retained journal may well
@@ -1584,14 +1585,47 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         // retained record carries values this rebuild has not applied yet. The posting command
         // id itself is deterministic for a given request, so aligning the stages compares the
         // same identity rather than discarding it.
+        // Approval state is part of that stage alignment, not decoration: the durable normalizer
+        // refuses a command that is still pending, which is the state every rebuild starts in.
+        var rebuiltCommand = candidateWrite.PostingCommand;
         var approvedShape = candidateWrite with
         {
             AggregateId = ledgerBookId,
             LedgerBookId = ledgerBookId,
             SourceEventId = sourceEventId,
-            CommandId = candidateWrite.PostingCommand?.CommandId ?? candidateWrite.CommandId
+            CommandId = rebuiltCommand?.CommandId ?? candidateWrite.CommandId,
+            PostingCommand = rebuiltCommand is null
+                ? null
+                : rebuiltCommand with
+                {
+                    AggregateId = ledgerBookId,
+                    LedgerBookId = ledgerBookId,
+                    SourceEventId = sourceEventId,
+                    ApprovalState = AccountingPostingApprovalStateDto.Approved,
+                    ApprovalId = approvalId
+                }
         };
-        if (RetainedPostingEquivalence.Matches(existing, approvedShape, out var difference))
+
+        // The durable store normalizes on the way in, and normalization is not cosmetic: it
+        // stamps command-derived values the drafted metadata leaves unset. A posting with no
+        // treasury context drafts a null idempotency key and is retained carrying the posting
+        // command's key, so comparing an un-normalized rebuild rejects an exact retry over a
+        // field the rebuild was simply not given yet. Normalize before comparing.
+        LedgerJournalEntryWrite normalizedShape;
+        try
+        {
+            normalizedShape = AccountingPostingCommandValidator.NormalizeAndValidate(approvedShape);
+        }
+        catch (Exception exception) when (exception is LedgerValidationException or ArgumentException)
+        {
+            throw new InvalidOperationException(
+                $"Ledger book '{ledgerBookId:D}' already retains journal '{existing.Entry.JournalEntryId:D}' for source event " +
+                $"'{sourceEventId:D}', but this request could not be normalized into a posting to verify it against: " +
+                $"{exception.Message}",
+                exception);
+        }
+
+        if (RetainedPostingEquivalence.Matches(existing, normalizedShape, out var difference))
             return;
 
         throw new InvalidOperationException(

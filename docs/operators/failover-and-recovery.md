@@ -160,12 +160,21 @@ uniquely indexed in the journal store, so that pair can hold exactly one journal
 
 - Re-posting the same candidate is a replay and returns the retained journal unchanged. This is
   the normal, safe response to a timeout or a retried operator action.
-- A replay is verified, not assumed. The request is rebuilt into its complete posting command and
-  compared against the retained journal on economic content — period, policy, rule, lineage,
-  timing, idempotency key, and the ordered lines with their accounts, amounts, and dimensions.
-  Generated journal and line identities are excluded because a rebuild legitimately mints new
-  ones; approval identity, approval state, and evidence retention stamps are excluded because
-  they are recorded at append time.
+- A replay is verified, not assumed. The request is rebuilt into its complete posting command,
+  normalized the same way the durable store normalizes an append, and compared against the
+  retained journal on period, policy, rule, lineage, timing, idempotency, the full accounting
+  scope and provenance carried in journal metadata (fund event, capital account, investor,
+  payment intent, settlement reference, project, strategy, institution, symbol, and the rest),
+  and the ordered lines with their accounts, amounts, and dimensions. Booking the same amounts
+  against a different investor or capital account is a different posting, not a replay.
+- Normalization before comparison is deliberate. A posting with no treasury context drafts no
+  idempotency key and is retained carrying the posting command's key, so an un-normalized
+  comparison would reject an ordinary retry over a field the rebuild had not been given yet.
+- Generated journal and line identities are excluded because a rebuild legitimately mints new
+  ones. Journal tags and evidence references are also excluded: both carry approval-time state —
+  approval id, approval state, a fingerprint over the approved command, and evidence merged with
+  a clock stamp at append — that no rebuild can reproduce. Their durable content is largely
+  mirrored by the metadata fields that are compared.
 - A posting that disagrees with the retained journal is refused with a conflict naming the
   retained journal and the field that differed. It is *not* reported as a replay. Because the
   identity is already held, such a posting can never be appended, so acknowledging it would
