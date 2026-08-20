@@ -2,13 +2,13 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 21.1,
-  "endpoint_coverage_percent": 32.6,
+  "score_percent": 21.4,
+  "endpoint_coverage_percent": 33.1,
   "contract_coverage_percent": 3.9,
   "summary": {
     "endpoint_count": 622,
-    "documented_endpoint_count": 203,
-    "undocumented_endpoint_count": 419,
+    "documented_endpoint_count": 206,
+    "undocumented_endpoint_count": 416,
     "workstation_contract_count": 917,
     "documented_workstation_contract_count": 36,
     "undocumented_workstation_contract_count": 881
@@ -1002,7 +1002,7 @@
       "method": "POST",
       "path": "/api/strategies/covered-call/chain-preview",
       "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:197",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",
@@ -3084,13 +3084,13 @@
       "method": "POST",
       "path": "/api/security-master/resolve",
       "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:253",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",
       "path": "/api/security-master/search",
       "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:290",
-      "documented": false
+      "documented": true
     },
     {
       "method": "GET",
@@ -3737,13 +3737,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2796",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2793",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2937",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2934",
       "documented": false
     }
   ],

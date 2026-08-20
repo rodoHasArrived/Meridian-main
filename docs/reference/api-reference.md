@@ -150,18 +150,31 @@ body.
 The second is a route that carries an explicit **non-mutating declaration**. Some reads cannot fit
 their query in a URL, so they are `POST` while changing nothing. Each such route states why, per
 route, after its handler was read — the declaration is a claim about that handler, never a
-convention applied to a path prefix. Three routes carry one today:
+convention applied to a path prefix. These routes carry one today:
 
 | Route | Why it is a read | Permission it still enforces |
 | --- | --- | --- |
 | `POST /api/workstation/data/query` | `SqlStatementGuard` admits one `SELECT`-family statement with no embedded semicolon and a blocked-keyword list. | `ViewHistoricalData` |
 | `POST /api/workstation/evidence/vault/search` | Evidence-vault lookup by linkage criteria; the handler only reads, through `IEvidenceArtifactStore.FindByLinkageAsync`. | `ViewReporting`, plus workstation tenant scope |
 | `POST /api/alignment/preview` | Computes and returns an alignment preview from the request body; the sibling `POST /api/alignment/create` route is what persists one. | `ViewHistoricalData` |
+| `POST /api/workstation/runs/compare` | Compares retained strategy runs through `StrategyRunComparisonService`, which holds only the run read service. | `ViewStrategies` or `ManageStrategies` |
+| `POST /api/workstation/runs/diff` | Diffs two retained runs by the same read path. | `ViewStrategies` or `ManageStrategies` |
+| `POST /api/security-master/resolve` | Resolves one record through `ISecurityMasterQueryService.GetByIdentifierAsync`; the body carries the identifier kind, value, provider and as-of. | `ViewSecurityMaster` or `ModifySecurityMaster` |
+| `POST /api/security-master/search` | Search through `ISecurityMasterQueryService.SearchAsync`; the body carries the query because it has several optional filters. | `ViewSecurityMaster` or `ModifySecurityMaster` |
+| `POST /api/workstation/strategy/designer/validate` | Normalizes and validates the posted document in memory; `StrategyDesignService` holds only a field catalog and templates. | `ViewStrategies` or `ManageStrategies` |
+| `POST /api/workstation/strategy/designer/preview` | Previews the posted document in memory. Saving a design is a separate route. | `ViewStrategies` or `ManageStrategies` |
+| `POST /api/workstation/strategy/engine/validate-run` | Validates a posted run request against the engine registry; it does not start or record a run. | `ViewStrategies` or `ManageStrategies` |
+| `POST /api/strategies/covered-call/chain-preview` | Fetches the option chain, filters in memory and returns a projection, never touching the run channel. | `ViewStrategies` or `ManageStrategies` |
 
 The declaration only lifts the method cap; it grants nothing, as the last column shows. A capped
 principal reaches one of these routes only when it also holds that route's permission, so `ReadOnly`
 can run the data query but not the evidence-vault search. An undeclared non-safe route stays refused,
 so the failure mode of a forgotten declaration is a lost capability rather than a reopened mutation.
+
+Query-style `POST` routes whose permission no capped role holds — the `Validate` and `Preview` routes
+declaring `ManageStorage`, `ManageCredentials`, `ModifyConfig`, `AdminMaintenance` or a `Manage`
+permission — deliberately carry no declaration. The cap never reaches them, so declaring one would add
+the risk of a mis-read handler for no capability gained.
 
 The cap exists because a handful of legacy routes mutate process-local state while declaring only a
 view permission — `POST /api/replay/start` declares `ViewHistoricalData` and `POST /api/sampling/create`

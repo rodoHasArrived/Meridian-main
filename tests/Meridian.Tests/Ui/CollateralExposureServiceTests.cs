@@ -32,7 +32,7 @@ public sealed class CollateralExposureServiceTests
 
         for (var index = 0; index < 20_050; index++)
         {
-            buffer.Ingest(Row(index));
+            buffer.IngestBatch([Row(index)]);
         }
 
         // The window is bounded but ingestion never refuses. Exposure is an aggregate of what is
@@ -55,7 +55,7 @@ public sealed class CollateralExposureServiceTests
 
         for (var index = 0; index < 5_010; index++)
         {
-            buffer.Ingest(Row(index));
+            buffer.IngestBatch([Row(index)]);
         }
 
         // The most recent rows, not the first buffered ones. Reading from the head would pin the
@@ -72,11 +72,73 @@ public sealed class CollateralExposureServiceTests
     public void CollateralIngestionBuffer_SnapshotRows_WithNonPositiveLimit_ReadsNothing()
     {
         var buffer = new CollateralIngestionBuffer();
-        buffer.Ingest(Row(1));
+        buffer.IngestBatch([Row(1)]);
 
         buffer.SnapshotRows(0).Should().BeEmpty();
         buffer.SnapshotRows(-1).Should().BeEmpty();
         buffer.BufferedCount.Should().Be(1, "a read that returns nothing still must not discard input");
+    }
+
+    [Fact]
+    public void CollateralIngestionBuffer_RestatingAnExposure_ReplacesItRatherThanAddingToIt()
+    {
+        var buffer = new CollateralIngestionBuffer();
+
+        // A producer posting periodic refreshes for the same exposure. BuildSnapshots sums what it is
+        // handed, so retaining both observations would report twice the exposure, and the figure would
+        // keep climbing for as long as the producer kept refreshing.
+        var observation = new CollateralInputRow(
+            DateTimeOffset.UnixEpoch, "CPTY-A", "repo", 1_000m, 500m, 400m, "cash", 100m, 50m);
+        buffer.IngestBatch([observation]);
+        buffer.IngestBatch([observation with { AsOf = DateTimeOffset.UnixEpoch.AddMinutes(1) }]);
+
+        buffer.BufferedCount.Should().Be(1, "the second delivery restates the first, it does not add to it");
+
+        var snapshots = new CollateralExposureService().BuildSnapshots(buffer.SnapshotRows());
+        snapshots.Should().ContainSingle();
+        snapshots[0].GrossExposure.Should().Be(500m, "exposure is the current reading, not the sum of readings");
+        snapshots[0].CollateralBalance.Should().Be(400m);
+        snapshots[0].RequiredCollateral.Should().Be(150m);
+    }
+
+    [Fact]
+    public void CollateralIngestionBuffer_RestatingOneExposure_LeavesTheOthersStanding()
+    {
+        var buffer = new CollateralIngestionBuffer();
+        buffer.IngestBatch([
+            new CollateralInputRow(DateTimeOffset.UnixEpoch, "CPTY-A", "repo", 1m, 10m, 1m, "cash", 1m, 0m),
+            new CollateralInputRow(DateTimeOffset.UnixEpoch, "CPTY-B", "swap", 1m, 20m, 1m, "cash", 1m, 0m)
+        ]);
+
+        // A delivery is not a full-picture reset: refreshing one counterparty must not erase another
+        // the producer had no reason to resend.
+        buffer.IngestBatch([
+            new CollateralInputRow(DateTimeOffset.UnixEpoch.AddMinutes(1), "CPTY-A", "repo", 1m, 30m, 1m, "cash", 1m, 0m)
+        ]);
+
+        var snapshots = new CollateralExposureService().BuildSnapshots(buffer.SnapshotRows());
+        snapshots.Should().HaveCount(2);
+        snapshots.Single(s => s.Counterparty == "CPTY-A").GrossExposure.Should().Be(30m);
+        snapshots.Single(s => s.Counterparty == "CPTY-B").GrossExposure.Should().Be(20m);
+    }
+
+    [Fact]
+    public void CollateralIngestionBuffer_TwoPositionsSharingAnIdentityInOneDelivery_AreBothKept()
+    {
+        var buffer = new CollateralIngestionBuffer();
+
+        // Within one delivery the rows are simultaneous positions, not restatements of each other.
+        // Collapsing them would under-report exposure -- which is why the API takes a batch rather
+        // than being called once per row.
+        buffer.IngestBatch([
+            new CollateralInputRow(DateTimeOffset.UnixEpoch, "CPTY-A", "repo", 1m, 10m, 1m, "cash", 1m, 0m),
+            new CollateralInputRow(DateTimeOffset.UnixEpoch, "CPTY-A", "repo", 1m, 15m, 1m, "cash", 1m, 0m)
+        ]);
+
+        buffer.BufferedCount.Should().Be(2);
+        var snapshots = new CollateralExposureService().BuildSnapshots(buffer.SnapshotRows());
+        snapshots.Should().ContainSingle();
+        snapshots[0].GrossExposure.Should().Be(25m);
     }
 
     private static CollateralInputRow Row(int index)

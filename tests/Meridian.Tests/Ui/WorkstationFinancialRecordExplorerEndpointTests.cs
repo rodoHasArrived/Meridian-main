@@ -25,15 +25,16 @@ namespace Meridian.Tests.Ui;
 public sealed partial class WorkstationEndpointsTests
 {
     // W9-GOV-008: each explorer is authorized by the family its own builder reads -- the three
-    // run-backed explorers by the operations and security-master set or the strategy permissions,
-    // and report-line provenance by the reporting permissions. These tests cover all four and assert
-    // payload shape, so the caller holds what a fund-operations operator working the whole surface
+    // ledger and portfolio by the strategy permissions alone, security-instrument by those or the
+    // Security Master pair, and report-line provenance by the reporting permissions. These tests cover
+    // all four and assert payload shape, so the caller holds what an operator working the whole surface
     // would rather than only the default ModifySecurityMaster.
     private const UserPermission ExplorerOperatorPermissions =
         UserPermission.ModifySecurityMaster |
         UserPermission.ViewSecurityMaster |
         UserPermission.ViewDirectLending |
-        UserPermission.ViewReporting;
+        UserPermission.ViewReporting |
+        UserPermission.ViewStrategies;
 
     private static readonly Guid FinancialRecordExplorerAaplSecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid FinancialRecordExplorerLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111112");
@@ -439,6 +440,41 @@ public sealed partial class WorkstationEndpointsTests
             SourceEventId: FinancialRecordExplorerEventId));
     }
 
+    [Theory]
+    [InlineData("ledger")]
+    [InlineData("portfolio")]
+    public async Task MapWorkstationEndpoints_RunBackedExplorers_ForSecurityMasterOnlyOperator_ShouldRefuse(string explorerId)
+    {
+        // Ledger and portfolio build entirely from StrategyRunReadService -- trial balances, positions,
+        // run identifiers and proof links. GetRunLedger, GetRunLedgerTrialBalance and
+        // GetRunLedgerJournal serve that data directly and admit only the strategy permissions, so
+        // Security Master access alone is not a claim on strategy-run financial records.
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: UserPermission.ViewSecurityMaster | UserPermission.ModifySecurityMaster);
+
+        var response = await app.GetTestClient()
+            .GetAsync($"/api/workstation/financial-record-explorers/{explorerId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ForSecurityMasterOnlyOperator_ShouldStillRead()
+    {
+        // The same caller keeps security-instrument: that explorer is the Security Master coverage
+        // surface, so a Security Master permission is one of its two bases. Splitting the run-backed
+        // explorers away must not take this one with them.
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: UserPermission.ViewSecurityMaster | UserPermission.ModifySecurityMaster);
+
+        var response = await app.GetTestClient()
+            .GetAsync("/api/workstation/financial-record-explorers/security-instrument");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ForStrategyOnlyOperator_ShouldWithholdOtherFamiliesEnrichments()
     {
@@ -741,9 +777,11 @@ public sealed partial class WorkstationEndpointsTests
 
         await using var alphaApp = await CreateAppAsync(
             services => RegisterFinancialRecordExplorerTestServices(services, savedViewRoot),
+            currentUserPermissions: ExplorerOperatorPermissions,
             currentUserCompanyId: "tenant-alpha");
         await using var betaApp = await CreateAppAsync(
             services => RegisterFinancialRecordExplorerTestServices(services, savedViewRoot),
+            currentUserPermissions: ExplorerOperatorPermissions,
             currentUserCompanyId: "tenant-beta");
 
         var alphaClient = alphaApp.GetTestClient();

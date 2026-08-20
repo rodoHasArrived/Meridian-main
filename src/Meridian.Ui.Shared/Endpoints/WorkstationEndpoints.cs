@@ -197,14 +197,11 @@ public static partial class WorkstationEndpoints
                 return Results.Accepted(value: new { ingested = 0, buffered = false });
             }
 
-            var ingested = 0;
-            foreach (var row in rows)
-            {
-                buffer.Ingest(row);
-                ingested++;
-            }
+            // One call, not a loop: a delivery replaces the exposures it restates, so ingesting row by
+            // row would make the batch overwrite itself and report only its last row per exposure.
+            buffer.IngestBatch(rows);
 
-            return Results.Accepted(value: new { ingested, buffered = true });
+            return Results.Accepted(value: new { ingested = rows.Count, buffered = true });
         })
         .WithName("IngestCollateralRows").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces(202)
@@ -2751,7 +2748,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(comparison, jsonOptions);
         })
-        .WithName("CompareRuns").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .WithName("CompareRuns").DeclareNonMutating("Compares retained strategy runs and returns the comparison; the handler resolves the caller read scope, checks the runs are accessible, and calls StrategyRunComparisonService.CompareRunsAsync, which holds only StrategyRunReadService.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyRunComparison>>(200)
         .Produces(400)
         .Produces(501);
@@ -2788,7 +2785,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(diff, jsonOptions);
         })
-        .WithName("DiffRuns").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .WithName("DiffRuns").DeclareNonMutating("Diffs two retained strategy runs and returns the result; same read path as CompareRuns, through StrategyRunComparisonService.BuildDiffAsync.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyRunDiff>(200)
         .Produces(404)
         .Produces(501);

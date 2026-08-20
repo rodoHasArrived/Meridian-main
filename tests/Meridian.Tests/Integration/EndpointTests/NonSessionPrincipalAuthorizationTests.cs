@@ -867,6 +867,42 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
     }
 
+    [Theory]
+    [InlineData("/api/workstation/runs/compare")]
+    [InlineData("/api/workstation/strategy/designer/validate")]
+    [InlineData("/api/strategies/covered-call/chain-preview")]
+    public async Task ReadOnlyApiKeyRole_ReachesTheQueryStylePostsItHoldsPermissionFor(string route)
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "query-post-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.ReadOnly));
+        try
+        {
+            // Each of these declares ViewStrategies, which ReadOnly holds, and each handler only
+            // queries, compares, validates or previews -- run comparison reads through
+            // StrategyRunComparisonService, the designer validates in memory, and the covered-call
+            // preview filters a fetched chain without touching the run channel. The method rule was
+            // refusing them on the verb alone, which cost a read rather than blocking a command.
+            using var request = new HttpRequestMessage(HttpMethod.Post, route);
+            request.Headers.Add("X-Api-Key", "query-post-key");
+            request.Content = JsonContent.Create(new { });
+
+            using var response = await Client.SendAsync(request);
+
+            var body = await response.Content.ReadAsStringAsync();
+            body.Should().NotContain(
+                "allows only GET, HEAD, and OPTIONS",
+                "the route declares that it changes nothing and ReadOnly holds its permission, so the "
+                + "endpoint decides the request rather than the method rule");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
     [Fact]
     public async Task ReadOnlyApiKeyRole_IsStillRefusedAnUnmarkedViewPermissionPost()
     {

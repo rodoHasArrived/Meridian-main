@@ -123,44 +123,88 @@ public sealed class CollateralExposureService
     }
 }
 
+/// <summary>
+/// Holds the current collateral picture: one row per distinct exposure, replaced when a producer
+/// reports that exposure again.
+///
+/// <para><b>Why current state and not a log.</b> <see cref="CollateralExposureService.BuildSnapshots"/>
+/// sums mark-to-market, collateral balance, and margin across every row it is handed. That is correct
+/// for a set of simultaneous positions and wrong for a history of observations: a producer posting
+/// periodic refreshes for the same exposure would have its numbers added together, so two identical
+/// refreshes reported twice the exposure and the figure kept climbing until eviction happened to
+/// change it. Reads used to drain the buffer, which hid this; once reads stopped consuming, the
+/// retained history became the reported total.</para>
+///
+/// <para><b>Exposure identity</b> is counterparty, product type, and collateral type — the same three
+/// fields <c>BuildSnapshots</c> groups and resolves haircuts by. A delivery replaces every buffered
+/// row whose identity it restates and keeps the rest, so a producer may refresh one counterparty
+/// without erasing the others.</para>
+///
+/// <para><b>Rows within one delivery are never collapsed</b>, only rows from earlier deliveries are.
+/// Two positions sharing an identity in a single batch are two positions and are summed; the same
+/// identity arriving in a later batch is a restatement and supersedes. That is why the API takes a
+/// batch: calling it once per row would make a delivery overwrite itself and silently under-report.</para>
+/// </summary>
 public sealed class CollateralIngestionBuffer
 {
     private const int MaxBufferedRows = 20_000;
-    private readonly ConcurrentQueue<CollateralInputRow> _buffer = new();
+    private readonly Lock _gate = new();
+    private readonly List<CollateralInputRow> _rows = [];
 
-    public int BufferedCount => _buffer.Count;
-
-    /// <summary>
-    /// Buffers a row, evicting the oldest once the window is full. The buffer is a bounded
-    /// most-recent window rather than a queue awaiting a consumer: exposure is an aggregate of what
-    /// is buffered, so the newest rows are the ones that must survive, and refusing new rows to
-    /// preserve old ones would freeze exposure at whatever the deployment happened to see first.
-    /// <para>
-    /// Ingestion therefore never stalls. The previous refusal-past-capacity behaviour paired with a
-    /// consuming read; with a non-consuming read it would have made every ingest fail permanently
-    /// once the window filled.
-    /// </para>
-    /// </summary>
-    public void Ingest(CollateralInputRow row)
+    public int BufferedCount
     {
-        _buffer.Enqueue(row);
-
-        // Count is approximate under concurrency, which is fine: the loop self-corrects on the next
-        // ingest and the window is a bound, not an exact size.
-        while (_buffer.Count > MaxBufferedRows && _buffer.TryDequeue(out _))
+        get
         {
+            lock (_gate)
+            {
+                return _rows.Count;
+            }
         }
     }
 
     /// <summary>
-    /// The most recent buffered rows, without consuming them. Exposure is an aggregate of what is
-    /// buffered, so reading must leave the buffer intact: draining on read made each snapshot cover
-    /// only the rows arriving since the previous reader, so two operators looking at the same moment
-    /// saw different exposure and the second frequently saw none.
+    /// Applies one delivery: rows restating a buffered exposure replace it, the rest are added.
+    /// <para>
+    /// The row cap remains as a backstop against a producer that invents unbounded identities;
+    /// steady state is the number of distinct exposures, not the number of messages. Ingestion never
+    /// refuses — refusing past capacity would freeze exposure at whatever a deployment saw first,
+    /// and with non-consuming reads nothing would ever drain it.
+    /// </para>
+    /// </summary>
+    public void IngestBatch(IReadOnlyList<CollateralInputRow> rows)
+    {
+        ArgumentNullException.ThrowIfNull(rows);
+        if (rows.Count == 0)
+        {
+            return;
+        }
+
+        var restated = new HashSet<string>(rows.Count, StringComparer.Ordinal);
+        foreach (var row in rows)
+        {
+            restated.Add(ExposureKey(row));
+        }
+
+        lock (_gate)
+        {
+            _rows.RemoveAll(existing => restated.Contains(ExposureKey(existing)));
+            _rows.AddRange(rows);
+            if (_rows.Count > MaxBufferedRows)
+            {
+                _rows.RemoveRange(0, _rows.Count - MaxBufferedRows);
+            }
+        }
+    }
+
+    /// <summary>
+    /// The most recent rows of the current picture, without consuming them. Exposure is an aggregate
+    /// of what is buffered, so reading must leave the buffer intact: draining on read made each
+    /// snapshot cover only the rows arriving since the previous reader, so two operators looking at
+    /// the same moment saw different exposure and the second frequently saw none.
     /// <para>
     /// Most recent, not first buffered. Taking from the head would pin the snapshot to the oldest
     /// rows and silently exclude everything after the first <paramref name="maxItems"/>, so exposure
-    /// would stop tracking current collateral the moment the window exceeded the read limit.
+    /// would stop tracking current collateral the moment the buffer exceeded the read limit.
     /// </para>
     /// </summary>
     public IReadOnlyList<CollateralInputRow> SnapshotRows(int maxItems = 500)
@@ -170,8 +214,16 @@ public sealed class CollateralIngestionBuffer
             return [];
         }
 
-        // Point-in-time snapshot, oldest first; the window is bounded, so materializing is cheap.
-        var buffered = _buffer.ToArray();
-        return buffered.Length <= maxItems ? buffered : buffered[^maxItems..];
+        lock (_gate)
+        {
+            return _rows.Count <= maxItems
+                ? _rows.ToArray()
+                : _rows.GetRange(_rows.Count - maxItems, maxItems).ToArray();
+        }
     }
+
+    // Lowercased and delimited the same way the haircut lookup keys are, so identity here and
+    // haircut resolution there cannot drift apart on casing.
+    private static string ExposureKey(CollateralInputRow row)
+        => $"{row.Counterparty}:{row.ProductType}:{row.CollateralType}".ToLowerInvariant();
 }

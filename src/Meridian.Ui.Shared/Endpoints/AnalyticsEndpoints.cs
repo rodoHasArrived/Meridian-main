@@ -30,7 +30,7 @@ public static class AnalyticsEndpoints
             var gaps = qualityService.GapAnalyzer.GetRecentGaps();
             return Results.Json(new { gaps, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsGaps").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
+        .WithName("GetAnalyticsGaps").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Gap repair
@@ -58,7 +58,7 @@ public static class AnalyticsEndpoints
             var stats = qualityService.CrossProvider.GetStatistics();
             return Results.Json(new { comparison = stats, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsCompare").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
+        .WithName("GetAnalyticsCompare").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Latency analysis
@@ -70,7 +70,7 @@ public static class AnalyticsEndpoints
             var distributions = qualityService.LatencyHistogram.GetAllDistributions();
             return Results.Json(new { latency = distributions, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsLatency").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
+        .WithName("GetAnalyticsLatency").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Latency stats
@@ -82,7 +82,7 @@ public static class AnalyticsEndpoints
             var stats = qualityService.LatencyHistogram.GetStatistics();
             return Results.Json(new { stats, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsLatencyStats").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
+        .WithName("GetAnalyticsLatencyStats").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Anomaly detection
@@ -96,7 +96,7 @@ public static class AnalyticsEndpoints
                 : qualityService.AnomalyDetector.GetRecentAnomalies();
             return Results.Json(new { anomalies, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsAnomalies").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
+        .WithName("GetAnalyticsAnomalies").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Quality report
@@ -108,7 +108,7 @@ public static class AnalyticsEndpoints
             var dashboard = qualityService.GetDashboard();
             return Results.Json(new { report = dashboard, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsQualityReport").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
+        .WithName("GetAnalyticsQualityReport").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Completeness
@@ -126,7 +126,7 @@ public static class AnalyticsEndpoints
             var summary = qualityService.Completeness.GetSummary();
             return Results.Json(new { completeness = summary, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsCompleteness").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
+        .WithName("GetAnalyticsCompleteness").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Throughput
@@ -138,7 +138,7 @@ public static class AnalyticsEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetAnalyticsThroughput").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
+        .WithName("GetAnalyticsThroughput").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Rate limits
@@ -155,7 +155,7 @@ public static class AnalyticsEndpoints
 
             return Results.Json(new { providers, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsRateLimits").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ManageProviders)
+        .WithName("GetAnalyticsRateLimits").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ManageProviders)
         .Produces(200);
     }
 

@@ -44,7 +44,7 @@ public sealed partial class WorkstationEndpointsTests
         });
 
         var buffer = app.Services.GetRequiredService<CollateralIngestionBuffer>();
-        buffer.Ingest(new CollateralInputRow(
+        buffer.IngestBatch([new CollateralInputRow(
             AsOf: DateTimeOffset.UtcNow,
             Counterparty: "northwind-bank",
             ProductType: "swap",
@@ -53,7 +53,7 @@ public sealed partial class WorkstationEndpointsTests
             CollateralBalance: 400m,
             CollateralType: "cash",
             InitialMargin: 100m,
-            VariationMargin: 50m));
+            VariationMargin: 50m)]);
 
         var client = app.GetTestClient();
 

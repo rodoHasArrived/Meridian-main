@@ -155,11 +155,11 @@ public static partial class WorkstationEndpoints
     /// Each explorer is authorized by the family its own builder reads. The route declaration admits
     /// the union, which is wider than any single explorer, so the decision has to be made here.
     /// <para>
-    /// Ledger, portfolio and security-instrument are projections of strategy-run detail -- all three
-    /// read StrategyRunReadService -- over fund records, so they answer to the operations and
-    /// security-master set that serves those records directly, or to the strategy permissions the
-    /// run-ledger, trial-balance and journal routes use for the same runs. Report-line provenance is
-    /// built from the report-pack workflow instead and answers only to the reporting permissions.
+    /// Ledger and portfolio are projections of strategy-run detail and answer only to the strategy
+    /// permissions, matching the run-ledger, trial-balance and journal routes that serve the same
+    /// runs directly. Security-instrument is run-derived too but is the Security Master coverage
+    /// surface, so it answers to either basis. Report-line provenance is built from the report-pack
+    /// workflow instead and answers only to the reporting permissions.
     /// </para>
     /// <para>
     /// The operations set was previously applied before the id was examined, which let a caller
@@ -174,17 +174,31 @@ public static partial class WorkstationEndpoints
     {
         var normalized = (explorerId ?? string.Empty).Trim();
 
+        // Ledger and portfolio build entirely from StrategyRunReadService -- trial balances, positions,
+        // run identifiers and proof links. GetRunLedger, GetRunLedgerTrialBalance and
+        // GetRunLedgerJournal serve that same data directly and admit only the strategy permissions,
+        // so an operations or Security Master permission is not a claim on it. Grouping these with
+        // security-instrument was what let ViewSecurityMaster alone read strategy-run financial
+        // records.
         if (normalized.Equals(FinancialRecordExplorerReadService.LedgerExplorerId, StringComparison.OrdinalIgnoreCase) ||
-            normalized.Equals(FinancialRecordExplorerReadService.PortfolioExplorerId, StringComparison.OrdinalIgnoreCase) ||
-            normalized.Equals(FinancialRecordExplorerReadService.SecurityInstrumentExplorerId, StringComparison.OrdinalIgnoreCase))
+            normalized.Equals(FinancialRecordExplorerReadService.PortfolioExplorerId, StringComparison.OrdinalIgnoreCase))
         {
             return EndpointAuthorization.HasAnyPermission(
                 context,
-                UserPermission.ViewDirectLending,
+                UserPermission.ViewStrategies,
+                UserPermission.ManageStrategies);
+        }
+
+        // Security-instrument has two bases and answers to either: its rows are the Security Master
+        // references a strategy run touched, so a strategy permission admits it, and it is the
+        // Security Master coverage surface, so a Security Master permission does too. Everything each
+        // row is decorated with is projected separately by ResolveExplorerReadScope.
+        if (normalized.Equals(FinancialRecordExplorerReadService.SecurityInstrumentExplorerId, StringComparison.OrdinalIgnoreCase))
+        {
+            return EndpointAuthorization.HasAnyPermission(
+                context,
                 UserPermission.ViewSecurityMaster,
-                UserPermission.ManageDirectLending,
                 UserPermission.ModifySecurityMaster,
-                UserPermission.AdminMaintenance,
                 UserPermission.ViewStrategies,
                 UserPermission.ManageStrategies);
         }
