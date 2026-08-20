@@ -17,11 +17,14 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     private readonly HttpClient _client;
     // W9-GOV-008: /api/providers/latency is a platform read and now requires a permission.
     private readonly HttpClient _providerReadClient;
+    // Configuration authority without diagnostics authority, for the error-buffer boundary below.
+    private readonly HttpClient _configOnlyClient;
 
     public StatusEndpointTests(EndpointTestFixture fixture)
     {
         _client = fixture.Client;
         _providerReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
+        _configOnlyClient = fixture.CreatePermittedClient(UserPermission.ViewConfig);
     }
 
     #region Health Endpoints
@@ -181,6 +184,24 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     #endregion
 
     #region Event Stream Endpoint
+
+    [Fact]
+    public async Task ErrorBufferReads_AreRefusedToConfigurationOnlyOperators()
+    {
+        // ViewConfig reads platform configuration; ErrorEntryDto carries exception type, context and
+        // message. The stream republishes GetErrors, so narrowing the route alone would leave the same
+        // detail reachable through it -- the check has to cover both doors.
+        var errors = await _configOnlyClient.GetAsync("/api/errors");
+        errors.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        using var streamRequest = new HttpRequestMessage(HttpMethod.Get, "/api/events/stream");
+        using var stream = await _configOnlyClient.SendAsync(streamRequest, HttpCompletionOption.ResponseHeadersRead);
+        stream.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        // The configuration-bearing reads in the same family stay available to that operator.
+        var status = await _configOnlyClient.GetAsync("/api/status");
+        status.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
 
     [Fact]
     public async Task EventsStream_ReturnsSsePayloadWithStatusData()

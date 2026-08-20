@@ -3347,31 +3347,31 @@
     {
       "method": "GET",
       "path": "/api/backpressure",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:138",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:141",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/latency",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:149",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:152",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/connections",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:164",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:167",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/health/detailed",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:202",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:205",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/events/stream",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:230",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:233",
       "documented": true
     },
     {

@@ -129,7 +129,10 @@ public static class StatusEndpoints
             var response = handlers.GetErrors(count ?? 10, level, symbol);
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetErrors").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
+        // ViewConfig reads platform configuration; ErrorEntryDto carries exception type, context and
+        // message, which is diagnostics. It stays on /api/status and /api/connections, whose payloads
+        // include the configured symbol set and data sources.
+        .WithName("GetErrors").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithTags("Status")
         .WithDescription("Returns recent error entries with optional filtering by count, severity level, and symbol.")
         .Produces<ErrorsResponseDto>(200);
@@ -267,10 +270,11 @@ public static class StatusEndpoints
                 // Client disconnected
             }
         })
-        // The stream publishes the same runtime status and back-pressure the sibling reads serve, so it
-        // answers the same operational permissions rather than being open because it is a stream.
+        // The stream republishes status, back-pressure, provider latency AND the error buffer, so its
+        // admission is the narrowest of what it carries, not the widest. ViewConfig is off it for the
+        // same reason it is off /api/errors: exception type, context and message are diagnostics, and a
+        // stream carrying them is the second door to the route that was just closed.
         .RequireAnyPermission(
-            UserPermission.ViewConfig,
             UserPermission.ViewDiagnostics,
             UserPermission.ManageProviders,
             UserPermission.AdminMaintenance);
