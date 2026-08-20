@@ -1253,25 +1253,25 @@
     {
       "method": "GET",
       "path": "/api/sla/status/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:613",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:614",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/sla/violations",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:622",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:624",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/sla/health",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:638",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:641",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/sla/metrics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:664",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:668",
       "documented": false
     },
     {

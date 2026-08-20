@@ -58,7 +58,7 @@ public static class HistoricalEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("QueryHistoricalData")
+        .WithName("QueryHistoricalData").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(400)
         .Produces(499);
@@ -76,7 +76,7 @@ public static class HistoricalEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("GetAvailableSymbols")
+        .WithName("GetAvailableSymbols").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(400);
 
@@ -98,7 +98,7 @@ public static class HistoricalEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("GetSymbolDateRange")
+        .WithName("GetSymbolDateRange").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(400);
 
@@ -160,7 +160,7 @@ public static class HistoricalEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("GetSymbolBars")
+        .WithName("GetSymbolBars").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(400)
         .Produces(499);
