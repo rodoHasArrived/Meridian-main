@@ -130,13 +130,35 @@ therefore carries a role, named by `MDC_API_KEY_ROLE`:
 
 | Value | Effect |
 | --- | --- |
-| unset or `ReadOnly` | The key carries `ReadOnly`, which holds `ViewMarketData`, `ViewHistoricalData`, `ViewAnalytics` and `ViewStrategies`. It is restricted to `GET`, `HEAD` and `OPTIONS`, so an unscoped key can read live and historical market data and analytics, but cannot call command-shaped endpoints or reach ledger, reporting, fund or security-master surfaces. Other methods are refused with `403`. Note that `ViewHistoricalData` is also accepted by the `/api/storage/*` reads, so a `ReadOnly` key can see storage statistics and on-disk layout, including absolute host paths from `GET /api/storage/symbol/path`; give a key `ReadOnly` only where that is acceptable. `ViewStrategies` buys a key nothing in practice: every strategy-run read sits under the tenant-scoped `/api/workstation` surface described below. |
-| another role name (`Admin`, `TradeDesk`, `Accounting`, …) | The key carries that role's permissions. Match it to what the calling script actually needs. |
+| unset or `ReadOnly` | The key carries `ReadOnly`, which holds `ViewMarketData`, `ViewHistoricalData`, `ViewAnalytics` and `ViewStrategies`. An unscoped key can read live and historical market data and analytics, but cannot reach ledger, reporting, fund or security-master surfaces. It is also method-capped — see below. Note that `ViewHistoricalData` is accepted by the `/api/storage/*` reads, so a `ReadOnly` key can see storage statistics and on-disk layout, including absolute host paths from `GET /api/storage/symbol/path`; give a key `ReadOnly` only where that is acceptable. `ViewStrategies` buys a key nothing in practice: every strategy-run read sits under the tenant-scoped `/api/workstation` surface described below. |
+| `Analysis` or `Executive` | Both hold `ReadOnly`'s four permissions plus `ExportData`, `ViewSecurityMaster`, `ViewDirectLending` and `ViewReporting`; `Executive` adds `ViewTrades`. Neither holds any `Manage`, `Modify`, `Execute` or `Admin` permission, so both are method-capped alongside `ReadOnly` — see below. |
+| another role name (`Admin`, `TradeDesk`, `Accounting`, …) | The key carries that role's permissions, with no method cap. Match it to what the calling script actually needs. |
 | anything else | Requests are refused with `503` rather than quietly falling back, so a typo surfaces instead of applying a permission set nobody chose. Only role **names** are accepted — a numeric value is rejected, because `Admin` is the zero value and `0` would otherwise resolve to full administrator. |
+
+##### The method cap on read-only roles
+
+`ReadOnly`, `Analysis` and `Executive` are the built-in roles whose permission sets carry no `Manage`,
+`Modify`, `Execute` or `Admin` permission at all. A principal carrying any of them — an API key or an
+optional-mode anonymous caller — is restricted to `GET`, `HEAD` and `OPTIONS`, with one exception: a
+route that declares `ExportData` is allowed, because `Analysis` and `Executive` are granted that
+permission outright and the export routes are `POST` only because they accept a request body.
+Anything else outside the safe methods is refused with `403` before the route's own permission check
+runs, and the message names the variable to change.
+
+The cap exists because a handful of legacy routes mutate process-local state while declaring only a
+view permission — `POST /api/replay/start` declares `ViewHistoricalData` and `POST /api/sampling/create`
+declares `ViewAnalytics`, both of which all three roles hold. Without the cap, naming one of these
+roles would hand an unauthenticated or out-of-band caller those commands. It applies to the
+**resolved role**, not to the posture that resolved it, so both non-session principals behave
+identically.
+
+The cap does not apply to a logged-in operator session: a signed-in `Analysis` user is governed by
+route permissions alone.
 
 Scripts that mutate configuration or read governed data need a role that holds the relevant
 permission — for example `POST /api/symbols/add` requires `ModifyConfig` and `POST /api/backfill/run`
-requires `TriggerBackfill`, so a `ReadOnly` key is refused by both.
+requires `TriggerBackfill`, so a `ReadOnly` key is refused by both. A method-capped role is refused
+those regardless of permission.
 
 Two families stay out of reach of a key, because a role is not an operator and a key carries no
 tenant:
