@@ -4053,13 +4053,27 @@ public static partial class WorkstationEndpoints
         return "operator";
     }
 
-    // Deliberately a superset of HasReconciliationMutationPermission: a profile that can act on
-    // casework must be able to load the queue it acts on, and permission overrides need not match
-    // the bundled roles, so ManageDirectLending cannot be assumed to arrive alongside ViewTrades.
+    /// <summary>
+    /// Who may read reconciliation break records, wherever they surface: the break-queue routes, and
+    /// the operator inbox, which contributes the same records as work items.
+    /// <para>
+    /// Deliberately a superset of <see cref="HasReconciliationMutationPermission"/> -- a profile that
+    /// can act on casework must be able to load the queue it acts on, and a permission override need
+    /// not match the bundled roles, so ManageDirectLending cannot be assumed to arrive alongside the
+    /// view grants.
+    /// </para>
+    /// <para>
+    /// ViewTrades is deliberately absent. It cannot act on casework at all, and the records carry
+    /// strategy and run identifiers, variances, reasons, assignees, sign-off history, counterparties
+    /// and resolution notes. Kept here rather than only on the route declarations because the inbox
+    /// reaches these records without passing one: a helper the declarations disagree with is not a
+    /// stricter gate, it is an unreachable check on one path and an open one on the other.
+    /// </para>
+    /// </summary>
     private static bool CanViewReconciliationBreakQueue(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(
             context,
-            UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending,
+            UserPermission.ViewDirectLending, UserPermission.ManageDirectLending,
             UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
 
     private static bool CanMutateReconciliationBreakQueue(HttpContext context)

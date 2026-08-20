@@ -1,7 +1,9 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.TestHost;
@@ -142,5 +144,34 @@ public sealed partial class WorkstationEndpointsTests
             .Should()
             .Be("1");
         root.GetProperty("workspace").GetProperty("openBreaks").GetInt32().Should().Be(1);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_WithTradingReadOnly_ShouldNotContributeBreakRecords()
+    {
+        // The inbox reaches break records without passing the break-queue routes, so aligning only
+        // those declarations would leave this path open. The records surface here as work items
+        // carrying the break reason, status and assignee -- the same casework, in another shape.
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: UserPermission.ViewTrades);
+
+        var repository = app.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+        await repository.CreateIfMissingAsync(
+            TestReconciliationQueueScope,
+            BuildBreakQueueItem("inbox-trading-case", Guid.NewGuid()));
+
+        var inbox = await app.GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+
+        // Asserted on the work-item id, not the kind. Trading readiness contributes a
+        // ReconciliationBreak-kind item for its own reconciliation-policy gate, which is a gate
+        // status rather than a break record and belongs to a ViewTrades caller. The queue-derived
+        // records are the ones keyed "reconciliation-break-{breakId}".
+        inbox!.Items.Should().NotContain(
+            item => item.WorkItemId.StartsWith("reconciliation-break-", StringComparison.Ordinal),
+            "a caller the break-queue routes refuse must not receive the same records through the inbox");
     }
 }

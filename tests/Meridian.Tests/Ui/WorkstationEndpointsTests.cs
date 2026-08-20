@@ -3682,11 +3682,14 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_WhenBreakQueueUnavailable_ShouldReturnTradingReadinessWithWarning()
     {
+        // Two families in one assertion set: trading readiness needs ViewTrades, and the break-queue
+        // unavailability warning is only contributed to a caller the break-queue reads admit -- which
+        // ViewTrades alone is not, since it cannot act on reconciliation casework.
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton<IReconciliationBreakQueueRepository>(
                 new ThrowingReconciliationBreakQueueRepository());
-        }, currentUserPermissions: UserPermission.ViewTrades);
+        }, currentUserPermissions: UserPermission.ViewTrades | UserPermission.ViewDirectLending);
 
         var inbox = await app
             .GetTestClient()
