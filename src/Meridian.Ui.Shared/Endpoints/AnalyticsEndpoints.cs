@@ -155,7 +155,7 @@ public static class AnalyticsEndpoints
 
             return Results.Json(new { providers, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsRateLimits").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ManageProviders)
+        .WithName("GetAnalyticsRateLimits").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageProviders)
         .Produces(200);
     }
 

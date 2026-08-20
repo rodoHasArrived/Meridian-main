@@ -46,7 +46,7 @@ public sealed record CollateralInputRow(
 public sealed class CollateralExposureService
 {
     private readonly ConcurrentDictionary<string, CounterpartyThresholdPolicy> _policies = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ConcurrentDictionary<string, HaircutRule> _haircuts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<(string Counterparty, string CollateralType), HaircutRule> _haircuts = new();
 
     public CollateralExposureService()
     {
@@ -57,8 +57,11 @@ public sealed class CollateralExposureService
     public void UpsertThresholdPolicy(CounterpartyThresholdPolicy policy)
         => _policies[policy.Counterparty] = policy;
 
+    // Keyed by compared fields for the same reason the ingestion buffer is: a counterparty or
+    // collateral type containing the delimiter would otherwise collide with a different pair and
+    // resolve the wrong haircut against real collateral.
     public void UpsertHaircutRule(HaircutRule rule)
-        => _haircuts[$"{rule.Counterparty}:{rule.CollateralType}".ToLowerInvariant()] = rule;
+        => _haircuts[HaircutKey(rule.Counterparty, rule.CollateralType)] = rule;
 
     public IReadOnlyList<ExposureSnapshot> BuildSnapshots(IReadOnlyList<CollateralInputRow> rows)
     {
@@ -112,15 +115,18 @@ public sealed class CollateralExposureService
 
     private decimal ResolveHaircut(string counterparty, string collateralType)
     {
-        var key = $"{counterparty}:{collateralType}".ToLowerInvariant();
-        if (_haircuts.TryGetValue(key, out var specific))
+        if (_haircuts.TryGetValue(HaircutKey(counterparty, collateralType), out var specific))
         {
             return specific.HaircutPercent;
         }
 
-        var fallback = $"default:{collateralType}".ToLowerInvariant();
-        return _haircuts.TryGetValue(fallback, out var @default) ? @default.HaircutPercent : 0m;
+        return _haircuts.TryGetValue(HaircutKey("default", collateralType), out var @default)
+            ? @default.HaircutPercent
+            : 0m;
     }
+
+    private static (string Counterparty, string CollateralType) HaircutKey(string? counterparty, string? collateralType)
+        => ((counterparty ?? string.Empty).ToLowerInvariant(), (collateralType ?? string.Empty).ToLowerInvariant());
 }
 
 /// <summary>
@@ -179,16 +185,59 @@ public sealed class CollateralIngestionBuffer
             return;
         }
 
-        var restated = new HashSet<string>(rows.Count, StringComparer.Ordinal);
+        // Arrival order is not observation order -- a delayed retry can land after a newer refresh --
+        // so the winner is decided by AsOf, not by which delivery arrived last. Without this a stale
+        // redelivery would reinstate old exposure and regress coverage and breach state.
+        var offered = new Dictionary<ExposureIdentity, DateTimeOffset>();
         foreach (var row in rows)
         {
-            restated.Add(ExposureKey(row));
+            var key = ExposureKey(row);
+            if (!offered.TryGetValue(key, out var seen) || row.AsOf > seen)
+            {
+                offered[key] = row.AsOf;
+            }
         }
 
         lock (_gate)
         {
-            _rows.RemoveAll(existing => restated.Contains(ExposureKey(existing)));
-            _rows.AddRange(rows);
+            var held = new Dictionary<ExposureIdentity, DateTimeOffset>();
+            foreach (var existing in _rows)
+            {
+                var key = ExposureKey(existing);
+                if (offered.ContainsKey(key) &&
+                    (!held.TryGetValue(key, out var seen) || existing.AsOf > seen))
+                {
+                    held[key] = existing.AsOf;
+                }
+            }
+
+            // Strictly newer wins; an equal timestamp is a redelivery of the same observation, and
+            // taking the new copy leaves the picture unchanged.
+            var stale = new HashSet<ExposureIdentity>();
+            foreach (var (key, asOf) in offered)
+            {
+                if (held.TryGetValue(key, out var current) && current > asOf)
+                {
+                    stale.Add(key);
+                }
+            }
+
+            _rows.RemoveAll(existing =>
+            {
+                var key = ExposureKey(existing);
+                return offered.ContainsKey(key) && !stale.Contains(key);
+            });
+
+            foreach (var row in rows)
+            {
+                // Per exposure, not per batch: a delivery restating one exposure with a stale reading
+                // and another with a fresh one keeps the fresh half rather than being dropped whole.
+                if (!stale.Contains(ExposureKey(row)))
+                {
+                    _rows.Add(row);
+                }
+            }
+
             if (_rows.Count > MaxBufferedRows)
             {
                 _rows.RemoveRange(0, _rows.Count - MaxBufferedRows);
@@ -219,8 +268,24 @@ public sealed class CollateralIngestionBuffer
         }
     }
 
-    // Lowercased and delimited the same way the haircut lookup keys are, so identity here and
-    // haircut resolution there cannot drift apart on casing.
-    private static string ExposureKey(CollateralInputRow row)
-        => $"{row.Counterparty}:{row.ProductType}:{row.CollateralType}".ToLowerInvariant();
+    private static ExposureIdentity ExposureKey(CollateralInputRow row)
+        => ExposureIdentity.For(row.Counterparty, row.ProductType, row.CollateralType);
+}
+
+/// <summary>
+/// Counterparty, product type, and collateral type as three compared fields rather than one joined
+/// string. Joining with a delimiter is not injective when a component may contain it: the ingest route
+/// accepts these values verbatim, so <c>("A:B", "C", "cash")</c> and <c>("A", "B:C", "cash")</c> would
+/// share a key, and a delivery for either would evict the other — silently understating exposure.
+/// <para>
+/// Case is folded once here because <see cref="CollateralExposureService.BuildSnapshots"/> groups
+/// case-insensitively; comparing the folded fields keeps identity and aggregation in agreement.
+/// </para>
+/// </summary>
+internal readonly record struct ExposureIdentity(string Counterparty, string ProductType, string CollateralType)
+{
+    public static ExposureIdentity For(string? counterparty, string? productType, string? collateralType)
+        => new(Fold(counterparty), Fold(productType), Fold(collateralType));
+
+    private static string Fold(string? value) => (value ?? string.Empty).ToLowerInvariant();
 }

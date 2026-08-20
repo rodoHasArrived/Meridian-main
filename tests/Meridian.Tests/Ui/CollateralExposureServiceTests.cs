@@ -143,6 +143,86 @@ public sealed class CollateralExposureServiceTests
         snapshots[0].GrossExposure.Should().Be(25m);
     }
 
+    [Fact]
+    public void CollateralIngestionBuffer_StaleRestatement_DoesNotDisplaceANewerObservation()
+    {
+        var buffer = new CollateralIngestionBuffer();
+        var identity = new CollateralInputRow(
+            DateTimeOffset.UnixEpoch, "CPTY-A", "repo", 1_000m, 500m, 400m, "cash", 100m, 50m);
+
+        buffer.IngestBatch([identity with { AsOf = DateTimeOffset.UnixEpoch.AddMinutes(5), MarkToMarket = 900m }]);
+
+        // Arrival order is not observation order: a delayed retry can land after a newer refresh.
+        // Taking the last arrival would regress exposure, coverage and breach state to a stale reading.
+        buffer.IngestBatch([identity with { AsOf = DateTimeOffset.UnixEpoch.AddMinutes(1), MarkToMarket = 100m }]);
+
+        buffer.BufferedCount.Should().Be(1);
+        var snapshots = new CollateralExposureService().BuildSnapshots(buffer.SnapshotCurrent());
+        snapshots.Should().ContainSingle();
+        snapshots[0].GrossExposure.Should().Be(900m, "the newer observation stands");
+    }
+
+    [Fact]
+    public void CollateralIngestionBuffer_MixedDelivery_KeepsTheFreshHalfAndDropsTheStaleHalf()
+    {
+        var buffer = new CollateralIngestionBuffer();
+        var later = DateTimeOffset.UnixEpoch.AddMinutes(5);
+        buffer.IngestBatch([
+            new CollateralInputRow(later, "CPTY-A", "repo", 1m, 900m, 1m, "cash", 1m, 0m),
+            new CollateralInputRow(DateTimeOffset.UnixEpoch, "CPTY-B", "swap", 1m, 20m, 1m, "cash", 1m, 0m)
+        ]);
+
+        // Staleness is decided per exposure, not per delivery: a batch restating one exposure with an
+        // old reading and another with a new one keeps the new half rather than being dropped whole.
+        buffer.IngestBatch([
+            new CollateralInputRow(DateTimeOffset.UnixEpoch.AddMinutes(1), "CPTY-A", "repo", 1m, 100m, 1m, "cash", 1m, 0m),
+            new CollateralInputRow(later, "CPTY-B", "swap", 1m, 70m, 1m, "cash", 1m, 0m)
+        ]);
+
+        var snapshots = new CollateralExposureService().BuildSnapshots(buffer.SnapshotCurrent());
+        snapshots.Should().HaveCount(2);
+        snapshots.Single(x => x.Counterparty == "CPTY-A").GrossExposure.Should().Be(900m, "the stale restatement is ignored");
+        snapshots.Single(x => x.Counterparty == "CPTY-B").GrossExposure.Should().Be(70m, "the fresh restatement is applied");
+    }
+
+    [Fact]
+    public void CollateralIngestionBuffer_IdentitiesDifferingOnlyByFieldBoundary_DoNotEvictEachOther()
+    {
+        var buffer = new CollateralIngestionBuffer();
+
+        // Joining the identity fields with a delimiter is not injective when a field may contain it:
+        // ("A:B", "C") and ("A", "B:C") would share a key, and a delivery for either would evict the
+        // other -- silently understating exposure. The ingest route accepts these values verbatim.
+        buffer.IngestBatch([
+            new CollateralInputRow(DateTimeOffset.UnixEpoch, "A:B", "C", 1m, 10m, 1m, "cash", 1m, 0m)
+        ]);
+        buffer.IngestBatch([
+            new CollateralInputRow(DateTimeOffset.UnixEpoch, "A", "B:C", 1m, 20m, 1m, "cash", 1m, 0m)
+        ]);
+
+        buffer.BufferedCount.Should().Be(2, "these are two distinct exposures, not a restatement");
+        var snapshots = new CollateralExposureService().BuildSnapshots(buffer.SnapshotCurrent());
+        snapshots.Should().HaveCount(2);
+        snapshots.Sum(x => x.GrossExposure).Should().Be(30m);
+    }
+
+    [Fact]
+    public void HaircutRules_DifferingOnlyByFieldBoundary_ResolveIndependently()
+    {
+        // The haircut lookup joined its key the same way, two methods apart, so the same collision
+        // would have applied one counterparty's haircut to another's collateral.
+        var service = new CollateralExposureService();
+        service.UpsertHaircutRule(new HaircutRule("CPTY:X", "govt", 0.50m));
+        service.UpsertHaircutRule(new HaircutRule("CPTY", "X:govt", 0m));
+
+        var snapshots = service.BuildSnapshots([
+            new CollateralInputRow(DateTimeOffset.UnixEpoch, "CPTY:X", "repo", 1m, 1m, 100m, "govt", 50m, 0m)
+        ]);
+
+        snapshots.Should().ContainSingle();
+        snapshots[0].HaircutAdjustedCollateral.Should().Be(50m, "the 50% rule for this counterparty applies, not the other pair's 0%");
+    }
+
     private static CollateralInputRow Row(int index)
         => new(DateTimeOffset.UnixEpoch.AddSeconds(index), $"CPTY-{index}", "repo", 1m, 1m, 1m, "cash", 1m, 0m);
 }

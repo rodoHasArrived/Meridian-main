@@ -249,5 +249,12 @@ public static partial class WorkstationEndpoints
                 UserPermission.ManageDirectLending,
                 UserPermission.ViewSecurityMaster,
                 UserPermission.ModifySecurityMaster,
-                UserPermission.AdminMaintenance));
+                UserPermission.AdminMaintenance),
+            // GetRunLedger and the other run routes. This decorates security-instrument rows with the
+            // identity of the run they came from; the explorer admits Security Master callers on their
+            // own basis, and that basis is not a claim on which strategy run touched an instrument.
+            Strategy: EndpointAuthorization.HasAnyPermission(
+                context,
+                UserPermission.ViewStrategies,
+                UserPermission.ManageStrategies));
 }

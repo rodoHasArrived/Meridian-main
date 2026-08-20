@@ -460,6 +460,38 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ForSecurityMasterOnlyOperator_ShouldWithholdRunIdentity()
+    {
+        // The explorer admits Security Master callers on their own basis, and that basis is not a claim
+        // on which strategy run touched an instrument. The run routes serving run id, strategy name and
+        // mode admit only ViewStrategies and ManageStrategies, so those must not arrive as scope items,
+        // as a run-addressed evidence action, or embedded in the description.
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: UserPermission.ViewSecurityMaster | UserPermission.ModifySecurityMaster);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-security-run", withBreaks: false));
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/security-instrument",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        explorer!.Rows.Should().NotBeEmpty("the Security Master references themselves are what this caller is entitled to");
+
+        explorer.ScopeItems.Select(static item => item.Label).Should().NotContain(["Run", "Strategy", "Mode"]);
+        explorer.ScopeItems.Select(static item => item.Label).Should().Contain(["As of", "Source"]);
+        explorer.Description.Should().NotContain("financial-record-explorer-security-run");
+        explorer.ProofActions.Should().NotContain(static action => action.ActionId == "open-evidence");
+        explorer.ProofActions.Should().Contain(static action => action.ActionId == "open-source");
+
+        var row = explorer.Rows[0];
+        row.Detail.UsedIn.Should().NotContain(static relationship =>
+            relationship.RelationshipId == "portfolio-position" || relationship.RelationshipId == "ledger-line");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ForSecurityMasterOnlyOperator_ShouldStillRead()
     {
         // The same caller keeps security-instrument: that explorer is the Security Master coverage

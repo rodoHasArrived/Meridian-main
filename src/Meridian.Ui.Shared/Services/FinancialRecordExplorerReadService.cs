@@ -37,14 +37,21 @@ namespace Meridian.Ui.Shared.Services;
 /// AssetOperations detail, readiness, and the journal proofs derived from them. Mirrors
 /// <c>GetWorkstationAssetOperations</c>, which does not admit strategy permissions.
 /// </param>
+/// <param name="Strategy">
+/// The identity of the run a projection was derived from — its id, strategy name and mode, the
+/// evidence packet for it, and links into the run ledger and portfolio. Mirrors the run routes, which
+/// admit only ViewStrategies and ManageStrategies. The security-instrument explorer admits Security
+/// Master callers on its own basis, and run identity is not part of that basis.
+/// </param>
 public sealed record FinancialRecordExplorerReadScope(
     bool Reporting,
     bool DirectLending,
     bool SecurityMaster,
-    bool AssetOperations)
+    bool AssetOperations,
+    bool Strategy)
 {
     public static readonly FinancialRecordExplorerReadScope All =
-        new(Reporting: true, DirectLending: true, SecurityMaster: true, AssetOperations: true);
+        new(Reporting: true, DirectLending: true, SecurityMaster: true, AssetOperations: true, Strategy: true);
 }
 
 public sealed partial class FinancialRecordExplorerReadService
@@ -387,7 +394,7 @@ public sealed partial class FinancialRecordExplorerReadService
             ct.ThrowIfCancellationRequested();
             var reference = references[index];
             var enrichment = await BuildSecurityInstrumentEnrichmentAsync(reference, reportRecords, directLendingOperations, scope, ct).ConfigureAwait(false);
-            enrichedRows.Add((BuildSecurityRow(run, source, reference, index, enrichment), enrichment));
+            enrichedRows.Add((BuildSecurityRow(run, source, reference, index, enrichment, scope.Strategy), enrichment));
         }
 
         var rows = enrichedRows.Select(static entry => entry.Row).ToArray();
@@ -468,8 +475,14 @@ public sealed partial class FinancialRecordExplorerReadService
             SecurityInstrumentExplorerId,
             "Security & Instrument Explorer",
             "Explore Security Master references used by retained accounting and portfolio records.",
-            $"Source-backed Security Master references from run {run.RunId}.",
-            BuildScope(run, source.Portfolio?.AsOf ?? source.Ledger?.AsOf ?? run.LastUpdatedAt, "Security Master"),
+            scope.Strategy
+                ? $"Source-backed Security Master references from run {run.RunId}."
+                : "Source-backed Security Master references retained by portfolio and ledger records.",
+            BuildScope(
+                run,
+                source.Portfolio?.AsOf ?? source.Ledger?.AsOf ?? run.LastUpdatedAt,
+                "Security Master",
+                scope.Strategy),
             summaryItems,
             BuildSystemViews(SecurityInstrumentExplorerId, "Security references", "Instrument references used by portfolio and ledger records."),
             BuildSecurityFilters(references),
@@ -493,7 +506,7 @@ public sealed partial class FinancialRecordExplorerReadService
                 new("source", "Source", Width: 120)
             ],
             rows,
-            BuildExplorerProofActions(run, UiApiRoutes.WorkstationSecurityMasterSearch),
+            BuildExplorerProofActions(run, UiApiRoutes.WorkstationSecurityMasterSearch, scope.Strategy),
             tenantId,
             query,
             ct).ConfigureAwait(false);
@@ -940,18 +953,28 @@ public sealed partial class FinancialRecordExplorerReadService
             .ToArray()
             ?? [];
 
+    // includeRunIdentity is true for the run-backed explorers, whose callers hold a strategy permission
+    // by construction. The security-instrument explorer also admits Security Master callers, and the
+    // run's id, strategy name and mode are not part of that basis -- the run routes serving them admit
+    // only the strategy permissions.
     private static IReadOnlyList<FinancialRecordExplorerScopeItemDto> BuildScope(
         StrategyRunSummary run,
         DateTimeOffset asOf,
-        string source)
-        =>
-        [
-            new("Run", run.RunId),
-            new("Strategy", run.StrategyName),
-            new("Mode", run.Mode.ToString()),
-            new("As of", asOf.ToString("u", CultureInfo.InvariantCulture)),
-            new("Source", source)
-        ];
+        string source,
+        bool includeRunIdentity = true)
+    {
+        var items = new List<FinancialRecordExplorerScopeItemDto>(5);
+        if (includeRunIdentity)
+        {
+            items.Add(new("Run", run.RunId));
+            items.Add(new("Strategy", run.StrategyName));
+            items.Add(new("Mode", run.Mode.ToString()));
+        }
+
+        items.Add(new("As of", asOf.ToString("u", CultureInfo.InvariantCulture)));
+        items.Add(new("Source", source));
+        return items;
+    }
 
     private static IReadOnlyList<FinancialRecordExplorerSummaryItemDto> BuildLedgerSummary(
         StrategyRunSummary run,
@@ -1240,15 +1263,21 @@ public sealed partial class FinancialRecordExplorerReadService
         StrategyRunDetail detail,
         WorkstationSecurityReference reference,
         int index,
-        SecurityInstrumentEnrichment enrichment)
+        SecurityInstrumentEnrichment enrichment,
+        bool includeRunIdentity)
     {
-        var recordId = reference.SecurityId == Guid.Empty
-            ? $"security:{run.RunId}:{index}"
-            : $"security:{reference.SecurityId:D}";
+        // An unresolved reference has no security id to key on, and the run id is what the fallback
+        // used. That makes the record id itself run identity, so a caller without strategy authority
+        // gets a positional id instead -- stable within the response, which is all the drill-in needs.
+        var recordId = reference.SecurityId != Guid.Empty
+            ? $"security:{reference.SecurityId:D}"
+            : includeRunIdentity
+                ? $"security:{run.RunId}:{index}"
+                : $"security:unresolved:{index}";
         var href = reference.SecurityId == Guid.Empty
             ? UiApiRoutes.WorkstationSecurityMasterSearch
             : UiApiRoutes.WithParam(UiApiRoutes.WorkstationSecurityMasterById, "securityId", reference.SecurityId.ToString("D"));
-        var usedIn = BuildSecurityUsedIn(detail, reference, href, enrichment);
+        var usedIn = BuildSecurityUsedIn(detail, reference, href, enrichment, includeRunIdentity);
         var fields = BuildSecurityFields(reference, enrichment);
         var proofActions = BuildSecurityProofActions(reference, href, enrichment);
         var impacts = BuildSecurityImpacts(reference, href, enrichment);
@@ -2715,15 +2744,23 @@ public sealed partial class FinancialRecordExplorerReadService
         StrategyRunDetail detail,
         WorkstationSecurityReference reference,
         string href,
-        SecurityInstrumentEnrichment enrichment)
+        SecurityInstrumentEnrichment enrichment,
+        bool includeRunIdentity)
     {
         var relationships = new List<FinancialRecordExplorerRelationshipDto>();
-        if (detail.Portfolio?.Positions.Any(position => IsSameSecurity(position.Security, reference)) == true)
+
+        // Both of these say that a particular run's portfolio or ledger touched this security, and the
+        // second addresses the trial balance by run id. That is run identity, and the routes behind
+        // them admit only the strategy permissions, so a Security Master-only caller is not offered a
+        // link it would be refused.
+        if (includeRunIdentity &&
+            detail.Portfolio?.Positions.Any(position => IsSameSecurity(position.Security, reference)) == true)
         {
             relationships.Add(new("portfolio-position", "Portfolio position", "Referenced by retained portfolio position rows.", UiApiRoutes.WorkstationPortfolio));
         }
 
-        if (detail.Ledger?.TrialBalance.Any(line => IsSameSecurity(line.Security, reference)) == true)
+        if (includeRunIdentity &&
+            detail.Ledger?.TrialBalance.Any(line => IsSameSecurity(line.Security, reference)) == true)
         {
             relationships.Add(new("ledger-line", "Ledger trial balance", "Referenced by retained ledger trial-balance rows.", UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerTrialBalance, "runId", detail.Summary.RunId)));
         }
@@ -3186,14 +3223,25 @@ public sealed partial class FinancialRecordExplorerReadService
                 ? line.ReconciliationRunId!.Trim()
                 : EmptyFallback(line.ReconciliationCaseId, "No reconciliation");
 
+    // The evidence action addresses the packet by run id, so it is itself run identity and is withheld
+    // from a caller admitted on the Security Master basis alone rather than offered and refused later.
     private static IReadOnlyList<FinancialRecordExplorerProofActionDto> BuildExplorerProofActions(
         StrategyRunSummary run,
-        string primaryHref)
-        =>
-        [
-            new("open-source", "Open source record", "Open the source-backed projection used by this explorer.", primaryHref),
-            new("open-evidence", "Evidence packet", "Open the retained evidence packet for the source run.", UiApiRoutes.WithParam(UiApiRoutes.WithParam(UiApiRoutes.WorkstationEvidenceSubjectPacket, "subjectKind", "run"), "subjectId", run.RunId), !string.IsNullOrWhiteSpace(run.AuditReference), "Run does not expose an audit reference.", !string.IsNullOrWhiteSpace(run.AuditReference) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning)
-        ];
+        string primaryHref,
+        bool includeRunIdentity = true)
+    {
+        var actions = new List<FinancialRecordExplorerProofActionDto>(2)
+        {
+            new("open-source", "Open source record", "Open the source-backed projection used by this explorer.", primaryHref)
+        };
+
+        if (includeRunIdentity)
+        {
+            actions.Add(new("open-evidence", "Evidence packet", "Open the retained evidence packet for the source run.", UiApiRoutes.WithParam(UiApiRoutes.WithParam(UiApiRoutes.WorkstationEvidenceSubjectPacket, "subjectKind", "run"), "subjectId", run.RunId), !string.IsNullOrWhiteSpace(run.AuditReference), "Run does not expose an audit reference.", !string.IsNullOrWhiteSpace(run.AuditReference) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
+        }
+
+        return actions;
+    }
 
     private static FinancialRecordExplorerRecordGraphDto BuildGraph(IReadOnlyList<FinancialRecordExplorerRowDto> rows)
     {
