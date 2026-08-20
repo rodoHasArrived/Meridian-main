@@ -177,8 +177,8 @@ permission — deliberately carry no declaration. The cap never reaches them, so
 the risk of a mis-read handler for no capability gained.
 
 The cap exists because a handful of legacy routes mutate process-local state while declaring only a
-view permission — `POST /api/replay/start` declares `ViewHistoricalData` and `POST /api/sampling/create`
-declares `ViewAnalytics`, both of which all three roles hold. Without the cap, naming one of these
+view permission — `POST /api/replay/start` and `POST /api/sampling/create` both declare
+`ViewHistoricalData`, which all three roles hold. Without the cap, naming one of these
 roles would hand an unauthenticated or out-of-band caller those commands. It applies to the
 **resolved role**, not to the posture that resolved it, so both non-session principals behave
 identically.

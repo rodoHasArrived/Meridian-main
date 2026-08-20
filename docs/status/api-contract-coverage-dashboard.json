@@ -755,49 +755,49 @@
     {
       "method": "GET",
       "path": "/api/canonicalization/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs:20",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs:21",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/canonicalization/parity",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs:47",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs:48",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/canonicalization/parity/{provider}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs:75",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs:76",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/canonicalization/config",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs:112",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs:113",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/catalog/search",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs:24",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs:25",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/catalog/symbols",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs:128",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs:129",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/catalog/timeline",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs:160",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs:161",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/catalog/coverage",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs:232",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs:233",
       "documented": false
     },
     {
