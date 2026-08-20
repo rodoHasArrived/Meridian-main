@@ -660,13 +660,26 @@ public sealed class BrokeragePortfolioSyncService
                 link = await ResolveLinkAsync(fundAccountId, request: null, ct).ConfigureAwait(false)
                     ?? await LoadLinkAsync(fundAccountId, ct).ConfigureAwait(false);
             }
+            // The identifier in these two warnings is what makes a skipped link actionable: without
+            // it an operator learns that some link was unreadable but not which one to repair. It is
+            // a Meridian-generated Guid surrogate key, not a credential and not a provider-side
+            // account number, and it is already the name of the file being read
+            // (links/{guid}.json), so the warning discloses nothing the storage layout does not.
+            //
+            // Code scanning reads the identifier's name and classifies it as sensitive. LogSanitizer
+            // is not the answer -- its own contract excludes server-generated identifiers, and a
+            // Guid cannot carry the control characters it neutralizes -- so the alerts are suppressed
+            // at the point they are raised rather than by routing the value through a barrier that
+            // would do nothing.
             catch (JsonException ex)
             {
+                // codeql[cs/cleartext-storage-of-sensitive-information]
                 _logger.LogWarning(ex, "Skipping unreadable brokerage link for fund account {FundAccountId}", fundAccountId);
                 continue;
             }
             catch (IOException ex)
             {
+                // codeql[cs/cleartext-storage-of-sensitive-information]
                 _logger.LogWarning(ex, "Skipping locked brokerage link for fund account {FundAccountId}", fundAccountId);
                 continue;
             }
@@ -954,6 +967,9 @@ public sealed class BrokeragePortfolioSyncService
         }
         catch (InvalidOperationException ex)
         {
+            // Same Guid surrogate key, same reason it stays: a sync run whose history could not be
+            // recorded is only actionable if the warning names the account it belonged to.
+            // codeql[cs/cleartext-storage-of-sensitive-information]
             _logger.LogWarning(
                 ex,
                 "Brokerage sync history could not be recorded for fund account {FundAccountId}.",
