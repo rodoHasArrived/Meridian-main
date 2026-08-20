@@ -154,13 +154,18 @@ public static partial class WorkstationEndpoints
                 .ConfigureAwait(false);
             return Results.Json(summary, jsonOptions);
         })
-        .WithName("GetWorkstationWorkflowSummary").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.AdminMaintenance)
+        .WithName("GetWorkstationWorkflowSummary").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.AdminMaintenance, UserPermission.ViewConfig, UserPermission.ModifyConfig)
         .Produces<OperatorWorkflowHomeSummary>(200)
         .Produces(403)
         .Produces(501)
-        // Admission is the union of the projection's family sets, plus the reporting reads whose card is
-        // ungated furniture. The ownership gate takes that same set (SEC-005 slice 3b).
-        .RequireFundProfileTenantScope(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.AdminMaintenance);
+        // Admission is the union of the projection's family sets, plus the permissions of every card the
+        // projection adds unconditionally: reporting, portfolio and settings. Portfolio's ViewTrades and
+        // reporting's pair are already family sets, but the settings card had no representative here, so
+        // a ViewConfig-only operator was refused a summary the desktop lane composed for it in-process.
+        // The ownership gate takes the same set (SEC-005 slice 3b) -- it skips its check for callers
+        // lacking the permissions handed to it, so a wider declaration with a narrower gate would stop
+        // checking fund ownership for exactly the callers the widening admitted.
+        .RequireFundProfileTenantScope(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.AdminMaintenance, UserPermission.ViewConfig, UserPermission.ModifyConfig);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowLibrary), (HttpContext context) =>
         {

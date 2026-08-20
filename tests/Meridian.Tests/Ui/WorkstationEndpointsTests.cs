@@ -1492,6 +1492,30 @@ public sealed partial class WorkstationEndpointsTests
             component.Detail.Contains("Reconciliation breaks require review", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Theory]
+    [InlineData(nameof(UserPermission.ViewConfig))]
+    [InlineData(nameof(UserPermission.ModifyConfig))]
+    public async Task MapWorkstationEndpoints_WorkflowSummary_ForSettingsOnlyOperator_ShouldServeTheSettingsCard(string permissionName)
+    {
+        // The projection adds the Settings card unconditionally, and the Settings-family reads --
+        // GetWorkstationExtensibilityCatalog and the tenant-template list -- admit ViewConfig or
+        // ModifyConfig. A caller holding one of those was refused the summary in the browser while the
+        // desktop lane, which reaches the service in process with no route filter, composed the same
+        // card for it. Admission has to equal what the projection serves, in both directions.
+        var permission = Enum.Parse<UserPermission>(permissionName);
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: permission);
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/workflow-summary");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
+        payload.Should().NotBeNull();
+        payload!.Workspaces.Select(static workspace => workspace.WorkspaceId)
+            .Should().Contain("settings");
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_WorkflowSummaryWithoutRuns_ShouldReturnStableNonNullContracts()
     {
