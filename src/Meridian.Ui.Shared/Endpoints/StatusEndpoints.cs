@@ -32,7 +32,7 @@ public static class StatusEndpoints
             var statusCode = handlers.GetHealthStatusCode(response);
             return Results.Json(response, jsonOptions, statusCode: statusCode);
         })
-        .WithName("GetHealth").DeclareOpenRead("Liveness health check returning 503 when unhealthy; status, uptime and coarse check names only, and the documented probe contract for load balancers.")
+        .WithName("GetHealth").DeclareOpenRead("Liveness health check returning 503 when unhealthy; status, uptime and coarse check names only, so it needs no permission beyond the session a configured deployment already requires. The unauthenticated probe surface is /healthz and its siblings, which the session middleware exempts outright.")
         .WithTags("Health")
         .WithDescription("Returns comprehensive health status including provider connectivity and storage health.")
         .Produces<HealthCheckResponse>(200)
@@ -45,7 +45,7 @@ public static class StatusEndpoints
             var statusCode = handlers.GetHealthStatusCode(response);
             return Results.Json(response, jsonOptions, statusCode: statusCode);
         })
-        .WithName("GetHealthApi").DeclareOpenRead("Documented alias of /health kept for backward compatibility; same liveness payload and probe contract.")
+        .WithName("GetHealthApi").DeclareOpenRead("Documented alias of /health kept for backward compatibility; same coarse liveness payload, and the same reasoning applies.")
         .WithTags("Health")
         .WithDescription("Alias for /health endpoint for backward compatibility.")
         .Produces<HealthCheckResponse>(200)
@@ -107,7 +107,7 @@ public static class StatusEndpoints
             var content = await handlers.GetPrometheusMetricsAsync(cancellationToken).ConfigureAwait(false);
             return Results.Content(content, "text/plain; version=0.0.4");
         })
-        .WithName("GetMetrics").DeclareOpenRead("Prometheus scrape contract in text exposition format; operational counters only, and gating it would break the monitoring systems the endpoint exists to serve.")
+        .WithName("GetMetrics").DeclareOpenRead("Prometheus scrape contract in text exposition format; operational counters only, so no permission is warranted beyond the session or API key a configured deployment already requires of any out-of-band client.")
         .WithTags("Monitoring")
         .WithDescription("Returns Prometheus-format metrics for scraping by monitoring systems.")
         .Produces(200);
