@@ -440,6 +440,41 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ForStrategyOnlyOperator_ShouldWithholdOtherFamiliesEnrichments()
+    {
+        // The rows are the Security Master references a strategy run touched, so ViewStrategies -- the
+        // set the built-in ReadOnly role carries -- admits this explorer. Admission is not a claim on
+        // what decorates each row: the passport answers to ViewSecurityMaster/ModifySecurityMaster and
+        // AssetOperations to the trading, lending, security-master and admin set, neither of which
+        // includes a strategy permission. A caller holding only ViewStrategies must see the references
+        // and nothing sourced from a family it could not fetch head-on.
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: UserPermission.ViewStrategies);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-security-run", withBreaks: false));
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/security-instrument",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        explorer!.Rows.Should().Contain(
+            item => item.RecordId == $"security:{FinancialRecordExplorerAaplSecurityId:D}",
+            "the run-derived references are what a strategy permission does entitle");
+
+        // Each of these summary items is emitted only when its family produced a payload, so their
+        // absence is the assertion that nothing was loaded rather than loaded and blanked.
+        explorer.SummaryItems.Select(static item => item.Label).Should().NotContain(
+            ["Passports", "Operations", "Direct Lending", "Terms", "Cash Flows", "Reconciliations", "Accounting Projections", "Posted Journals", "Reported Usage"]);
+
+        var row = explorer.Rows.Single(item => item.RecordId == $"security:{FinancialRecordExplorerAaplSecurityId:D}");
+        row.Cells.Should().NotContain(static cell => cell.ColumnId == "trust" && cell.DisplayValue == "Trusted");
+        row.Cells.Should().NotContain(static cell => cell.ColumnId == "operations" && cell.DisplayValue == "Ready");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ShouldRemainProjectionOnlyWithoutTypedSpine()
     {
         await using var app = await CreateAppAsync(

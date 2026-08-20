@@ -139,11 +139,29 @@ therefore carries a role, named by `MDC_API_KEY_ROLE`:
 
 `ReadOnly`, `Analysis` and `Executive` are the built-in roles whose permission sets carry no `Manage`,
 `Modify`, `Execute` or `Admin` permission at all. A principal carrying any of them — an API key or an
-optional-mode anonymous caller — is restricted to `GET`, `HEAD` and `OPTIONS`, with one exception: a
-route that declares `ExportData` is allowed, because `Analysis` and `Executive` are granted that
-permission outright and the export routes are `POST` only because they accept a request body.
+optional-mode anonymous caller — is restricted to `GET`, `HEAD` and `OPTIONS`, with two exceptions.
 Anything else outside the safe methods is refused with `403` before the route's own permission check
 runs, and the message names the variable to change.
+
+The first exception is a route that declares `ExportData`, because `Analysis` and `Executive` are
+granted that permission outright and the export routes are `POST` only because they accept a request
+body.
+
+The second is a route that carries an explicit **non-mutating declaration**. Some reads cannot fit
+their query in a URL, so they are `POST` while changing nothing. Each such route states why, per
+route, after its handler was read — the declaration is a claim about that handler, never a
+convention applied to a path prefix. Three routes carry one today:
+
+| Route | Why it is a read | Permission it still enforces |
+| --- | --- | --- |
+| `POST /api/workstation/data/query` | `SqlStatementGuard` admits one `SELECT`-family statement with no embedded semicolon and a blocked-keyword list. | `ViewHistoricalData` |
+| `POST /api/workstation/evidence/vault/search` | Evidence-vault lookup by linkage criteria; the handler only reads, through `IEvidenceArtifactStore.FindByLinkageAsync`. | `ViewReporting`, plus workstation tenant scope |
+| `POST /api/alignment/preview` | Computes and returns an alignment preview from the request body; the sibling `POST /api/alignment/create` route is what persists one. | `ViewHistoricalData` |
+
+The declaration only lifts the method cap; it grants nothing, as the last column shows. A capped
+principal reaches one of these routes only when it also holds that route's permission, so `ReadOnly`
+can run the data query but not the evidence-vault search. An undeclared non-safe route stays refused,
+so the failure mode of a forgotten declaration is a lost capability rather than a reopened mutation.
 
 The cap exists because a handful of legacy routes mutate process-local state while declaring only a
 view permission — `POST /api/replay/start` declares `ViewHistoricalData` and `POST /api/sampling/create`

@@ -13,18 +13,38 @@ namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
 /// Which sibling families the caller may see enriched into a financial-record explorer row. The
-/// security-instrument explorer is a Security Master surface, but it decorates each reference with
-/// report-pack usage and direct-lending operations detail — data from families a caller reaching the
-/// explorer need hold no permission for.
+/// security-instrument explorer's rows are the Security Master references a strategy run touched, so
+/// a strategy permission admits it — but each row is then decorated with the instrument passport,
+/// AssetOperations detail and readiness, posted journal proofs, report-pack usage, and direct-lending
+/// operations detail. None of those is a claim the explorer's own admission establishes.
+/// <para>
+/// Each flag mirrors the permissions of the route that serves that family directly, so a caller sees
+/// through the explorer exactly what it could fetch head-on and nothing more.
+/// </para>
 /// <para>
 /// <see cref="All"/> is for callers whose authority is already established: the legacy in-process
 /// overloads and tests. Request-serving callers resolve the scope from the caller's permissions, and
 /// an unreadable family is not loaded at all rather than loaded and discarded.
 /// </para>
 /// </summary>
-public sealed record FinancialRecordExplorerReadScope(bool Reporting, bool DirectLending)
+/// <param name="Reporting">Report-pack line usage. Mirrors the reporting read routes.</param>
+/// <param name="DirectLending">Direct-lending loan health. Mirrors the direct-lending read routes.</param>
+/// <param name="SecurityMaster">
+/// The instrument passport. Mirrors <c>GetSecurityMasterWorkstationInstrumentPassport</c>, which
+/// admits only ViewSecurityMaster and ModifySecurityMaster.
+/// </param>
+/// <param name="AssetOperations">
+/// AssetOperations detail, readiness, and the journal proofs derived from them. Mirrors
+/// <c>GetWorkstationAssetOperations</c>, which does not admit strategy permissions.
+/// </param>
+public sealed record FinancialRecordExplorerReadScope(
+    bool Reporting,
+    bool DirectLending,
+    bool SecurityMaster,
+    bool AssetOperations)
 {
-    public static readonly FinancialRecordExplorerReadScope All = new(Reporting: true, DirectLending: true);
+    public static readonly FinancialRecordExplorerReadScope All =
+        new(Reporting: true, DirectLending: true, SecurityMaster: true, AssetOperations: true);
 }
 
 public sealed partial class FinancialRecordExplorerReadService
@@ -366,7 +386,7 @@ public sealed partial class FinancialRecordExplorerReadService
         {
             ct.ThrowIfCancellationRequested();
             var reference = references[index];
-            var enrichment = await BuildSecurityInstrumentEnrichmentAsync(reference, reportRecords, directLendingOperations, ct).ConfigureAwait(false);
+            var enrichment = await BuildSecurityInstrumentEnrichmentAsync(reference, reportRecords, directLendingOperations, scope, ct).ConfigureAwait(false);
             enrichedRows.Add((BuildSecurityRow(run, source, reference, index, enrichment), enrichment));
         }
 
@@ -1289,6 +1309,7 @@ public sealed partial class FinancialRecordExplorerReadService
         WorkstationSecurityReference reference,
         IReadOnlyList<ReportPackWorkflowRecordDto> reportRecords,
         DirectLendingOperationsReadModelDto? directLendingOperations,
+        FinancialRecordExplorerReadScope scope,
         CancellationToken ct)
     {
         var reportLineUsages = CollectSecurityReportLineUsages(reference, reportRecords);
@@ -1297,8 +1318,12 @@ public sealed partial class FinancialRecordExplorerReadService
             return new(null, null, null, [], reportLineUsages, []);
         }
 
+        // The rows are the Security Master references a strategy run touched, so a strategy caller is
+        // admitted to the explorer -- but the passport is a Security Master surface and AssetOperations
+        // is an operations one, and neither route admits a strategy permission. Each is loaded only for
+        // a caller who could fetch it head-on; a withheld family is not queried at all.
         InstrumentPassportDto? passport = null;
-        if (_securityMasterWorkbenchQueryService is not null)
+        if (scope.SecurityMaster && _securityMasterWorkbenchQueryService is not null)
         {
             passport = await _securityMasterWorkbenchQueryService
                 .GetInstrumentPassportAsync(reference.SecurityId, fundProfileId: null, ct)
@@ -1307,7 +1332,7 @@ public sealed partial class FinancialRecordExplorerReadService
 
         AssetOperationsDetailDto? operations = null;
         AssetOperationsReadinessDto? readiness = null;
-        if (_assetOperationsQueryService is not null)
+        if (scope.AssetOperations && _assetOperationsQueryService is not null)
         {
             operations = await _assetOperationsQueryService
                 .GetOperationsAsync(reference.SecurityId, ct)

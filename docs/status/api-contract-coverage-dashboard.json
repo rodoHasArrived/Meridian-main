@@ -2,13 +2,13 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 20.9,
-  "endpoint_coverage_percent": 32.3,
+  "score_percent": 21.1,
+  "endpoint_coverage_percent": 32.6,
   "contract_coverage_percent": 3.9,
   "summary": {
     "endpoint_count": 622,
-    "documented_endpoint_count": 201,
-    "undocumented_endpoint_count": 421,
+    "documented_endpoint_count": 203,
+    "undocumented_endpoint_count": 419,
     "workstation_contract_count": 917,
     "documented_workstation_contract_count": 36,
     "undocumented_workstation_contract_count": 881
@@ -677,25 +677,25 @@
     {
       "method": "GET",
       "path": "/api/backfill/validation",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:25",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:26",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/validation/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:110",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:111",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/gaps",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:165",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:166",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/completeness",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:213",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:214",
       "documented": false
     },
     {
@@ -1728,13 +1728,13 @@
       "method": "POST",
       "path": "/api/alignment/create",
       "source": "src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:177",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",
       "path": "/api/alignment/preview",
       "source": "src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:197",
-      "documented": false
+      "documented": true
     },
     {
       "method": "GET",

@@ -16,16 +16,24 @@ namespace Meridian.Tests.Integration.EndpointTests;
 [Collection("Endpoint")]
 public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
-    private readonly HttpClient _client;
+    // The Lean reads expose the deployment's Lean install path, its algorithm source listing, and
+    // auto-export destinations, so they answer the Strategy workspace's own permissions rather than
+    // any signed-in caller. ViewStrategies is the read half of that pair; ManageStrategies drives the
+    // mutations, exactly as the routes declare.
+    private readonly HttpClient _strategyReadClient;
     private readonly HttpClient _strategyMutationClient;
 
     public LeanEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        _strategyReadClient = fixture.CreatePermittedClient(UserPermission.ViewStrategies);
         _strategyMutationClient = fixture.CreatePermittedClient(UserPermission.ManageStrategies);
     }
 
-    public void Dispose() => _strategyMutationClient.Dispose();
+    public void Dispose()
+    {
+        _strategyReadClient.Dispose();
+        _strategyMutationClient.Dispose();
+    }
 
     // -------------------------------------------------------------------------
     // GET /api/lean/status
@@ -34,7 +42,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetLeanStatus_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/lean/status");
+        var response = await _strategyReadClient.GetAsync("/api/lean/status");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -49,7 +57,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     public async Task GetLeanStatus_WhenNoLeanPath_InstalledIsFalse()
     {
         // LEAN_PATH is not set in the test environment
-        var response = await _client.GetAsync("/api/lean/status");
+        var response = await _strategyReadClient.GetAsync("/api/lean/status");
         var content = await response.Content.ReadAsStringAsync();
         var doc = JsonDocument.Parse(content);
 
@@ -63,7 +71,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetLeanConfig_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/lean/config");
+        var response = await _strategyReadClient.GetAsync("/api/lean/config");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -109,7 +117,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetAlgorithms_ReturnsJsonWithTotalField()
     {
-        var response = await _client.GetAsync("/api/lean/algorithms");
+        var response = await _strategyReadClient.GetAsync("/api/lean/algorithms");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -148,7 +156,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetSyncStatus_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/lean/sync/status");
+        var response = await _strategyReadClient.GetAsync("/api/lean/sync/status");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -188,13 +196,13 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
         }
 
         // 2. Get status
-        var statusResp = await _client.GetAsync($"/api/lean/backtest/{backtestId}/status");
+        var statusResp = await _strategyReadClient.GetAsync($"/api/lean/backtest/{backtestId}/status");
         statusResp.StatusCode.Should().Be(HttpStatusCode.OK);
         var statusDoc = JsonDocument.Parse(await statusResp.Content.ReadAsStringAsync());
         statusDoc.RootElement.GetProperty("backtestId").GetString().Should().Be(backtestId);
 
         // 3. Get results (backtest not completed yet — should return info message)
-        var resultsResp = await _client.GetAsync($"/api/lean/backtest/{backtestId}/results");
+        var resultsResp = await _strategyReadClient.GetAsync($"/api/lean/backtest/{backtestId}/results");
         resultsResp.StatusCode.Should().Be(HttpStatusCode.OK);
         var resultsDoc = JsonDocument.Parse(await resultsResp.Content.ReadAsStringAsync());
         resultsDoc.RootElement.GetProperty("backtestId").GetString().Should().Be(backtestId);
@@ -213,7 +221,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetBacktestStatus_UnknownId_Returns404()
     {
-        var response = await _client.GetAsync("/api/lean/backtest/nonexistent-id-xyz/status");
+        var response = await _strategyReadClient.GetAsync("/api/lean/backtest/nonexistent-id-xyz/status");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -221,7 +229,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetBacktestResults_UnknownId_Returns404()
     {
-        var response = await _client.GetAsync("/api/lean/backtest/nonexistent-id-xyz/results");
+        var response = await _strategyReadClient.GetAsync("/api/lean/backtest/nonexistent-id-xyz/results");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -249,7 +257,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetBacktestHistory_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/lean/backtest/history");
+        var response = await _strategyReadClient.GetAsync("/api/lean/backtest/history");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -262,7 +270,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetBacktestHistory_WithLimitParam_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/lean/backtest/history?limit=5");
+        var response = await _strategyReadClient.GetAsync("/api/lean/backtest/history?limit=5");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -274,7 +282,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetAutoExportStatus_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/lean/auto-export");
+        var response = await _strategyReadClient.GetAsync("/api/lean/auto-export");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -401,7 +409,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
             btId.GetString().Should().NotBeNullOrEmpty();
             doc.RootElement.GetProperty("algorithmName").GetString().Should().Be("TestAlgorithm");
 
-            var history = await _client.GetAsync("/api/lean/backtest/history?limit=50");
+            var history = await _strategyReadClient.GetAsync("/api/lean/backtest/history?limit=50");
             history.StatusCode.Should().Be(HttpStatusCode.OK);
             var historyDoc = JsonDocument.Parse(await history.Content.ReadAsStringAsync());
             historyDoc.RootElement
@@ -424,7 +432,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetSymbolMap_NoSymbols_ReturnsMappingsArray()
     {
-        var response = await _client.GetAsync("/api/lean/symbol-map");
+        var response = await _strategyReadClient.GetAsync("/api/lean/symbol-map");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -438,7 +446,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetSymbolMap_WithEquitySymbols_ReturnsMappings()
     {
-        var response = await _client.GetAsync("/api/lean/symbol-map?symbols=SPY,AAPL");
+        var response = await _strategyReadClient.GetAsync("/api/lean/symbol-map?symbols=SPY,AAPL");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 

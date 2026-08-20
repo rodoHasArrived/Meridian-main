@@ -11,10 +11,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 20.9% |
-| Endpoint coverage | 32.3% |
+| Weighted score | 21.1% |
+| Endpoint coverage | 32.6% |
 | Workstation contract coverage | 3.9% |
-| Endpoints documented | 201 / 622 |
+| Endpoints documented | 203 / 622 |
 | Workstation contracts documented | 36 / 917 |
 
 ## Endpoint Coverage
@@ -59,8 +59,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/admin/storage/permissions` | Gap | `src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs:289` |
 | `GET` | `/api/admin/storage/tiers` | Gap | `src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs:101` |
 | `GET` | `/api/admin/storage/usage` | Gap | `src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs:138` |
-| `POST` | `/api/alignment/create` | Gap | `src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:177` |
-| `POST` | `/api/alignment/preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:197` |
+| `POST` | `/api/alignment/create` | Documented | `src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:177` |
+| `POST` | `/api/alignment/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:197` |
 | `GET` | `/api/analytics/anomalies` | Gap | `src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs:89` |
 | `GET` | `/api/analytics/compare` | Gap | `src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs:53` |
 | `GET` | `/api/analytics/completeness` | Gap | `src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs:115` |
@@ -93,11 +93,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/backfill/checkpoints/{jobId}` | Documented | `src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:119` |
 | `GET` | `/api/backfill/checkpoints/{jobId}/pending` | Documented | `src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:145` |
 | `POST` | `/api/backfill/checkpoints/{jobId}/resume` | Documented | `src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:205` |
-| `GET` | `/api/backfill/completeness` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:213` |
+| `GET` | `/api/backfill/completeness` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:214` |
 | `POST` | `/api/backfill/cost-estimate` | Documented | `src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:49` |
 | `GET` | `/api/backfill/executions` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:173` |
 | `POST` | `/api/backfill/gap-fill` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:89` |
-| `GET` | `/api/backfill/gaps` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:165` |
+| `GET` | `/api/backfill/gaps` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:166` |
 | `GET` | `/api/backfill/health` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:31` |
 | `GET` | `/api/backfill/presets` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:157` |
 | `GET` | `/api/backfill/progress` | Documented | `src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:190` |
@@ -121,8 +121,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/backfill/schedules/{id}/run` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:390` |
 | `GET` | `/api/backfill/statistics` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:196` |
 | `GET` | `/api/backfill/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:53` |
-| `GET` | `/api/backfill/validation` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:25` |
-| `GET` | `/api/backfill/validation/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:110` |
+| `GET` | `/api/backfill/validation` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:26` |
+| `GET` | `/api/backfill/validation/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:111` |
 | `GET` | `/api/backpressure` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:138` |
 | `GET` | `/api/calendar/holidays` | Gap | `src/Meridian.Ui.Shared/Endpoints/CalendarEndpoints.cs:64` |
 | `GET` | `/api/calendar/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/CalendarEndpoints.cs:21` |
@@ -1568,7 +1568,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 421 mapped endpoint gap(s).
+- Document or intentionally suppress 419 mapped endpoint gap(s).
 - Document or intentionally suppress 881 workstation contract gap(s).
 
 ---

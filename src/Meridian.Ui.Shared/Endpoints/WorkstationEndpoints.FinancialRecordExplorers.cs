@@ -170,23 +170,6 @@ public static partial class WorkstationEndpoints
     /// of one already taken.
     /// </para>
     /// </summary>
-    /// <summary>
-    /// Which sibling families the caller may see enriched into an explorer row. Admission to the
-    /// explorer is not a claim on the families it decorates rows with: the security-instrument
-    /// explorer is a Security Master surface that also carries report-pack usage and direct-lending
-    /// operations detail, so those are withheld from a caller holding neither.
-    /// </summary>
-    private static FinancialRecordExplorerReadScope ResolveExplorerReadScope(HttpContext context)
-        => new(
-            Reporting: EndpointAuthorization.HasAnyPermission(
-                context,
-                UserPermission.ViewReporting,
-                UserPermission.ManageReporting),
-            DirectLending: EndpointAuthorization.HasAnyPermission(
-                context,
-                UserPermission.ViewDirectLending,
-                UserPermission.ManageDirectLending));
-
     private static bool CanReadFinancialRecordExplorer(HttpContext context, string explorerId)
     {
         var normalized = (explorerId ?? string.Empty).Trim();
@@ -216,4 +199,41 @@ public static partial class WorkstationEndpoints
 
         return false;
     }
+
+    /// <summary>
+    /// Which sibling families the caller may see enriched into an explorer row. Admission to the
+    /// explorer is not a claim on the families it decorates rows with: the security-instrument
+    /// explorer's rows are the Security Master references a strategy run touched, so a strategy
+    /// permission admits it, but the passport, AssetOperations detail and readiness, journal proofs,
+    /// report-pack usage, and direct-lending health each answer to their own family.
+    /// <para>
+    /// Each set is the one its direct route declares, so a caller sees through the explorer exactly
+    /// what it could fetch head-on. Keeping them literally equal is the point: a decoration that
+    /// admits more callers than the route serving the same data is the leak this resolves.
+    /// </para>
+    /// </summary>
+    private static FinancialRecordExplorerReadScope ResolveExplorerReadScope(HttpContext context)
+        => new(
+            Reporting: EndpointAuthorization.HasAnyPermission(
+                context,
+                UserPermission.ViewReporting,
+                UserPermission.ManageReporting),
+            DirectLending: EndpointAuthorization.HasAnyPermission(
+                context,
+                UserPermission.ViewDirectLending,
+                UserPermission.ManageDirectLending),
+            // GetSecurityMasterWorkstationInstrumentPassport.
+            SecurityMaster: EndpointAuthorization.HasAnyPermission(
+                context,
+                UserPermission.ViewSecurityMaster,
+                UserPermission.ModifySecurityMaster),
+            // GetWorkstationAssetOperations.
+            AssetOperations: EndpointAuthorization.HasAnyPermission(
+                context,
+                UserPermission.ViewTrades,
+                UserPermission.ViewDirectLending,
+                UserPermission.ManageDirectLending,
+                UserPermission.ViewSecurityMaster,
+                UserPermission.ModifySecurityMaster,
+                UserPermission.AdminMaintenance));
 }
