@@ -101,7 +101,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task Status_ReturnsJsonWithExpectedFields()
     {
-        var response = await _client.GetAsync("/api/status");
+        var response = await _providerReadClient.GetAsync("/api/status");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -117,7 +117,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task Errors_ReturnsJsonArray()
     {
-        var response = await _client.GetAsync("/api/errors");
+        var response = await _providerReadClient.GetAsync("/api/errors");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -126,7 +126,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task Errors_AcceptsCountParameter()
     {
-        var response = await _client.GetAsync("/api/errors?count=5");
+        var response = await _providerReadClient.GetAsync("/api/errors?count=5");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -134,7 +134,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task Errors_AcceptsLevelFilter()
     {
-        var response = await _client.GetAsync("/api/errors?level=error");
+        var response = await _providerReadClient.GetAsync("/api/errors?level=error");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -146,7 +146,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task Backpressure_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/backpressure");
+        var response = await _providerReadClient.GetAsync("/api/backpressure");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -172,7 +172,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task Connections_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/connections");
+        var response = await _providerReadClient.GetAsync("/api/connections");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -187,7 +187,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var request = new HttpRequestMessage(HttpMethod.Get, "/api/events/stream");
-        using var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+        using var response = await _providerReadClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("text/event-stream");

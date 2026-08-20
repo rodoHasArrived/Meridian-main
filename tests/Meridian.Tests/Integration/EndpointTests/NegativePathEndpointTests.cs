@@ -133,7 +133,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [Fact]
     public async Task Status_ReturnsJsonWithMetricsBlock()
     {
-        var response = await _client.GetAsync("/api/status");
+        var response = await _healthClient.GetAsync("/api/status");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
@@ -144,7 +144,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [Fact]
     public async Task Errors_WithZeroCount_ReturnsOk()
     {
-        var response = await _client.GetAsync("/api/errors?count=0");
+        var response = await _healthClient.GetAsync("/api/errors?count=0");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
@@ -152,21 +152,21 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     public async Task Errors_WithNegativeCount_ReturnsOk()
     {
         // Negative count parameter is tolerated; handler clamps to reasonable value
-        var response = await _client.GetAsync("/api/errors?count=-1");
+        var response = await _healthClient.GetAsync("/api/errors?count=-1");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
     public async Task Errors_WithNonNumericCount_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/errors?count=abc");
+        var response = await _healthClient.GetAsync("/api/errors?count=abc");
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task Connections_ReturnsJsonWithExpectedShape()
     {
-        var response = await _client.GetAsync("/api/connections");
+        var response = await _healthClient.GetAsync("/api/connections");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
     }
@@ -482,7 +482,10 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [InlineData("/api/connections")]
     public async Task GetEndpoint_ReturnsJsonContentType(string endpoint)
     {
-        var response = await _client.GetAsync(endpoint);
+        // Every route in this sweep but /api/health now declares the operational permissions, so the
+        // content-type contract is exercised through a permitted client. /api/health is an open read
+        // and passes on either client.
+        var response = await _healthClient.GetAsync(endpoint);
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
     }
@@ -530,7 +533,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     public async Task PostToGetOnlyEndpoint_ReturnsMethodNotAllowed()
     {
         var content = new StringContent("{}", Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/status", content);
+        var response = await _healthClient.PostAsync("/api/status", content);
         response.StatusCode.Should().Be(HttpStatusCode.MethodNotAllowed);
     }
 

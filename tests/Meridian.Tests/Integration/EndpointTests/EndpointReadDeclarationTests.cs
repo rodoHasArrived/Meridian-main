@@ -28,31 +28,18 @@ public sealed class EndpointReadDeclarationTests : EndpointIntegrationTestBase
     }
 
     /// <summary>
-    /// Frozen 2026-08-16 read-surface inventory: GET routes mapped before the declaration
-    /// requirement existed, pending risk classification. Tracked under W9-GOV-008 with the
-    /// burn-down owned by the remainder-to-zero change. The ratchet only tightens: classify a
-    /// route (permission or open-with-reason) and remove its entry.
+    /// The frozen 2026-08-16 read-surface inventory, now empty: every GET route mapped before the
+    /// declaration requirement existed has been classified, so the ratchet no longer tolerates any
+    /// undeclared read. A newly mapped GET route fails immediately unless it declares a permission or
+    /// declares openness with a stated reason.
+    /// <para>
+    /// Left in place rather than deleted with the assertion: the pair of checks below is what keeps
+    /// the surface at zero, and an empty tolerance list is the strongest form of the ratchet rather
+    /// than a leftover. Re-adding an entry here is a deliberate, reviewable act.
+    /// </para>
     /// </summary>
     private static readonly HashSet<string> UndeclaredReadBaseline = new(StringComparer.OrdinalIgnoreCase)
     {
-        "GET /api/backpressure",
-        "GET /api/compliance/access-reviews",
-        "GET /api/compliance/audit/extract",
-        "GET /api/compliance/controls/attestation",
-        "GET /api/connections",
-        "GET /api/demo/historical/{symbol}",
-        "GET /api/demo/market-data/{symbol}",
-        "GET /api/demo/mode",
-        "GET /api/demo/symbols",
-        "GET /api/errors",
-        "GET /api/events/stream",
-        "GET /api/indices/{indexName}/constituents",
-        "GET /api/packaging/contents",
-        "GET /api/packaging/download/{fileName}",
-        "GET /api/packaging/list",
-        "GET /api/resilience/circuit-breakers",
-        "GET /api/status",
-        "GET /api/subscriptions/active",
     };
 
     [Fact]

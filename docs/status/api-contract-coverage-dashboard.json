@@ -1277,25 +1277,25 @@
     {
       "method": "GET",
       "path": "/api/demo/mode",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:79",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:80",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/demo/symbols",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:102",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:103",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/demo/market-data/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:118",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:119",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/demo/historical/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:139",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:140",
       "documented": false
     },
     {
@@ -2579,19 +2579,19 @@
     {
       "method": "GET",
       "path": "/api/packaging/list",
-      "source": "src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:203",
+      "source": "src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:204",
       "documented": true
     },
     {
       "method": "DELETE",
       "path": "/api/packaging/{fileName}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:247",
+      "source": "src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:249",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/packaging/download/{fileName}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:285",
+      "source": "src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:287",
       "documented": true
     },
     {

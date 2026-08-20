@@ -41,7 +41,7 @@ public static class ResilienceEndpoints
             var dashboard = cbService.GetDashboard();
             return Results.Json(dashboard, jsonOptions);
         })
-        .WithName("GetCircuitBreakerDashboard")
+        .WithName("GetCircuitBreakerDashboard").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns the current state of all circuit breakers in the system.")
         .Produces(200);
 

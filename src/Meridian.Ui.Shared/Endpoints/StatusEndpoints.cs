@@ -118,7 +118,7 @@ public static class StatusEndpoints
             var response = handlers.GetStatus();
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetStatus")
+        .WithName("GetStatus").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithTags("Status")
         .WithDescription("Returns full system status including connection state, metrics, and symbol information.")
         .Produces<StatusResponse>(200);
@@ -129,7 +129,7 @@ public static class StatusEndpoints
             var response = handlers.GetErrors(count ?? 10, level, symbol);
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetErrors")
+        .WithName("GetErrors").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithTags("Status")
         .WithDescription("Returns recent error entries with optional filtering by count, severity level, and symbol.")
         .Produces<ErrorsResponseDto>(200);
@@ -140,7 +140,7 @@ public static class StatusEndpoints
             var response = handlers.GetBackpressure();
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetBackpressure")
+        .WithName("GetBackpressure").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithTags("Status")
         .WithDescription("Returns current backpressure status including queue utilization and drop rates.")
         .Produces<BackpressureStatusDto>(200);
@@ -170,7 +170,7 @@ public static class StatusEndpoints
             }
             return Results.Json(snapshot, jsonOptions);
         })
-        .WithName("GetConnections")
+        .WithName("GetConnections").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithTags("Monitoring")
         .WithDescription("Returns connection health snapshot for all active provider connections.")
         .Produces<ConnectionHealthSnapshotDto>(200);
@@ -266,7 +266,14 @@ public static class StatusEndpoints
             {
                 // Client disconnected
             }
-        });
+        })
+        // The stream publishes the same runtime status and back-pressure the sibling reads serve, so it
+        // answers the same operational permissions rather than being open because it is a stream.
+        .RequireAnyPermission(
+            UserPermission.ViewConfig,
+            UserPermission.ViewDiagnostics,
+            UserPermission.ManageProviders,
+            UserPermission.AdminMaintenance);
     }
 
     private static async Task<IResult> GetReadinessResultAsync(

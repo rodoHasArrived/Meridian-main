@@ -567,7 +567,7 @@ public static class SymbolEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetIndexConstituents")
+        .WithName("GetIndexConstituents").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200);
     }
 }

@@ -37,7 +37,7 @@ public static class SubscriptionEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetActiveSubscriptions")
+        .WithName("GetActiveSubscriptions").RequireAnyPermission(UserPermission.ViewMarketData, UserPermission.ModifyConfig)
         .Produces(200);
 
         // Subscribe to symbol

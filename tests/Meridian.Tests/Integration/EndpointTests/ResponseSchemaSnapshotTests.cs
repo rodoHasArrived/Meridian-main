@@ -401,7 +401,7 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable, IClassFixture<End
     [Fact]
     public async Task Backpressure_Schema_IsJsonObject()
     {
-        var response = await _client.GetAsync("/api/backpressure");
+        var response = await _platformReadClient.GetAsync("/api/backpressure");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
 
@@ -427,8 +427,14 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable, IClassFixture<End
             {
                 _ when url.StartsWith("/api/config", StringComparison.OrdinalIgnoreCase) => _configClient,
                 _ when url.StartsWith("/api/backfill/", StringComparison.OrdinalIgnoreCase) => _backfillReadClient,
-                // W9-GOV-008: provider reads are platform reads and now require a permission.
+                // W9-GOV-008: provider reads are platform reads and now require a permission, as does
+                // the runtime status family -- it carries connection state and the configured symbol
+                // set rather than the counters /metrics exposes.
                 _ when url.StartsWith("/api/providers", StringComparison.OrdinalIgnoreCase) => _platformReadClient,
+                _ when url.StartsWith("/api/status", StringComparison.OrdinalIgnoreCase) => _platformReadClient,
+                _ when url.StartsWith("/api/errors", StringComparison.OrdinalIgnoreCase) => _platformReadClient,
+                _ when url.StartsWith("/api/backpressure", StringComparison.OrdinalIgnoreCase) => _platformReadClient,
+                _ when url.StartsWith("/api/connections", StringComparison.OrdinalIgnoreCase) => _platformReadClient,
                 _ => _client
             };
             response = await client.GetAsync(url);

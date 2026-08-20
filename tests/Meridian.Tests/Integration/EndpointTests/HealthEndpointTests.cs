@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Xunit;
+using Meridian.Identity.Auth;
 
 namespace Meridian.Tests.Integration.EndpointTests;
 
@@ -11,10 +12,26 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class HealthEndpointTests : EndpointIntegrationTestBase
+public sealed class HealthEndpointTests : EndpointIntegrationTestBase, IDisposable
 {
+    // The probes below are open reads, but the runtime status family -- status, errors,
+    // back-pressure -- declares the operational permissions, because it carries connection state and
+    // the configured symbol set rather than the counters /metrics exposes.
+    private readonly HttpClient _operationalReadClient;
+
     public HealthEndpointTests(EndpointTestFixture fixture) : base(fixture)
     {
+        _operationalReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
+    }
+
+    public void Dispose() => _operationalReadClient.Dispose();
+
+    private async Task AssertOperationalReadReturnsJson(string url)
+    {
+        var response = await _operationalReadClient.GetAsync(url);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var contentType = response.Content.Headers.ContentType?.ToString() ?? string.Empty;
+        Assert.Contains("application/json", contentType);
     }
 
     [Theory]
@@ -58,18 +75,18 @@ public sealed class HealthEndpointTests : EndpointIntegrationTestBase
     [Fact]
     public async Task StatusEndpoint_ReturnsJson()
     {
-        await AssertEndpointReturnsJson("/api/status");
+        await AssertOperationalReadReturnsJson("/api/status");
     }
 
     [Fact]
     public async Task ErrorsEndpoint_ReturnsJson()
     {
-        await AssertEndpointReturnsJson("/api/errors");
+        await AssertOperationalReadReturnsJson("/api/errors");
     }
 
     [Fact]
     public async Task BackpressureEndpoint_ReturnsJson()
     {
-        await AssertEndpointReturnsJson("/api/backpressure");
+        await AssertOperationalReadReturnsJson("/api/backpressure");
     }
 }
