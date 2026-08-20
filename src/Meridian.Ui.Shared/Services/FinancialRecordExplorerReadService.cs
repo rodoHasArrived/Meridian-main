@@ -11,6 +11,22 @@ using Meridian.Strategies.Services;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Which sibling families the caller may see enriched into a financial-record explorer row. The
+/// security-instrument explorer is a Security Master surface, but it decorates each reference with
+/// report-pack usage and direct-lending operations detail — data from families a caller reaching the
+/// explorer need hold no permission for.
+/// <para>
+/// <see cref="All"/> is for callers whose authority is already established: the legacy in-process
+/// overloads and tests. Request-serving callers resolve the scope from the caller's permissions, and
+/// an unreadable family is not loaded at all rather than loaded and discarded.
+/// </para>
+/// </summary>
+public sealed record FinancialRecordExplorerReadScope(bool Reporting, bool DirectLending)
+{
+    public static readonly FinancialRecordExplorerReadScope All = new(Reporting: true, DirectLending: true);
+}
+
 public sealed partial class FinancialRecordExplorerReadService
 {
     public const string LedgerExplorerId = "ledger";
@@ -78,14 +94,23 @@ public sealed partial class FinancialRecordExplorerReadService
         string tenantId,
         FinancialRecordExplorerQueryDto? query,
         CancellationToken ct = default)
+        => await GetExplorerAsync(explorerId, tenantId, query, FinancialRecordExplorerReadScope.All, ct).ConfigureAwait(false);
+
+    public async Task<FinancialRecordExplorerDto?> GetExplorerAsync(
+        string explorerId,
+        string tenantId,
+        FinancialRecordExplorerQueryDto? query,
+        FinancialRecordExplorerReadScope scope,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentNullException.ThrowIfNull(scope);
         var normalized = NormalizeExplorerId(explorerId);
         return normalized switch
         {
             LedgerExplorerId => await BuildLedgerExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
             PortfolioExplorerId => await BuildPortfolioExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
-            SecurityInstrumentExplorerId => await BuildSecurityInstrumentExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
+            SecurityInstrumentExplorerId => await BuildSecurityInstrumentExplorerAsync(tenantId, query, scope, ct).ConfigureAwait(false),
             ReportLineProvenanceExplorerId => await BuildReportLineProvenanceExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
             _ => null
         };
@@ -102,10 +127,21 @@ public sealed partial class FinancialRecordExplorerReadService
         string recordId,
         string tenantId,
         CancellationToken ct = default)
+        => await GetRecordAsync(explorerId, recordId, tenantId, FinancialRecordExplorerReadScope.All, ct).ConfigureAwait(false);
+
+    public async Task<FinancialRecordExplorerSelectedRecordDto?> GetRecordAsync(
+        string explorerId,
+        string recordId,
+        string tenantId,
+        FinancialRecordExplorerReadScope scope,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(recordId);
 
-        var explorer = await GetExplorerAsync(explorerId, tenantId, ct).ConfigureAwait(false);
+        // The record view is one row of the same explorer, so it carries the same enrichments and
+        // must be projected the same way; routing it through the unscoped overload would withhold a
+        // family from the list and hand it back on the drill-in.
+        var explorer = await GetExplorerAsync(explorerId, tenantId, query: null, scope, ct).ConfigureAwait(false);
         return explorer?.Rows
             .FirstOrDefault(row => string.Equals(row.RecordId, recordId, StringComparison.OrdinalIgnoreCase))
             ?.Detail;
@@ -285,6 +321,7 @@ public sealed partial class FinancialRecordExplorerReadService
     private async Task<FinancialRecordExplorerDto> BuildSecurityInstrumentExplorerAsync(
         string tenantId,
         FinancialRecordExplorerQueryDto? query,
+        FinancialRecordExplorerReadScope scope,
         CancellationToken ct)
     {
         var readService = _runReadService;
@@ -314,10 +351,16 @@ public sealed partial class FinancialRecordExplorerReadService
 
         var run = source.Summary;
         var references = CollectSecurityReferences(source);
-        var reportRecords = _reportPackWorkflowService?.ListRecords(200) ?? [];
-        var directLendingOperations = _directLendingOperationsReadService is null
-            ? null
-            : await _directLendingOperationsReadService.GetOperationsAsync(ct: ct).ConfigureAwait(false);
+        // Each enrichment is loaded only for a caller entitled to its family. Reaching this explorer
+        // means holding a Security Master, operations or strategy permission; none of those is a claim
+        // on report-pack usage or direct-lending operations, and the enrichment builder already takes
+        // both as arguments, so withholding them is a matter of not fetching them.
+        var reportRecords = scope.Reporting
+            ? _reportPackWorkflowService?.ListRecords(200) ?? []
+            : [];
+        var directLendingOperations = scope.DirectLending && _directLendingOperationsReadService is not null
+            ? await _directLendingOperationsReadService.GetOperationsAsync(ct: ct).ConfigureAwait(false)
+            : null;
         var enrichedRows = new List<(FinancialRecordExplorerRowDto Row, SecurityInstrumentEnrichment Enrichment)>(references.Count);
         for (var index = 0; index < references.Count; index++)
         {

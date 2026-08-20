@@ -33,4 +33,44 @@ public sealed partial class WorkstationEndpointsTests
         payload.Trend.Should().HaveCount(12);
         payload.IngestionMode.Should().Be("micro-batch buffer (empty)");
     }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_CollateralExposure_ShouldNotConsumeTheBufferItReports()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<CollateralExposureService>();
+            services.AddSingleton<CollateralIngestionBuffer>();
+        });
+
+        var buffer = app.Services.GetRequiredService<CollateralIngestionBuffer>();
+        buffer.TryIngest(new CollateralInputRow(
+            AsOf: DateTimeOffset.UtcNow,
+            Counterparty: "northwind-bank",
+            ProductType: "swap",
+            PositionNotional: 5_000m,
+            MarkToMarket: 1_000m,
+            CollateralBalance: 400m,
+            CollateralType: "cash",
+            InitialMargin: 100m,
+            VariationMargin: 50m)).Should().BeTrue();
+
+        var client = app.GetTestClient();
+
+        // Exposure is an aggregate of what is buffered, so reading it must leave the buffer intact.
+        // Draining on read made the snapshot cover only the rows arriving since the previous reader:
+        // two operators looking at the same moment saw different exposure, and the second saw none.
+        var first = await client.GetAsync("/api/workstation/collateral/exposure");
+        first.StatusCode.Should().Be(HttpStatusCode.OK);
+        var firstPayload = await first.Content.ReadFromJsonAsync<ExposureSnapshotDto>(ServerJsonOptions);
+        firstPayload!.Counterparties.Should().ContainSingle();
+
+        var second = await client.GetAsync("/api/workstation/collateral/exposure");
+        second.StatusCode.Should().Be(HttpStatusCode.OK);
+        var secondPayload = await second.Content.ReadFromJsonAsync<ExposureSnapshotDto>(ServerJsonOptions);
+
+        secondPayload!.Counterparties.Should().ContainSingle(
+            "a second reader must see the same exposure as the first, not an emptied buffer");
+        buffer.BufferedCount.Should().Be(1, "reading exposure is not a consumption of collateral input");
+    }
 }

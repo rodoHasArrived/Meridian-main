@@ -38,7 +38,9 @@ public static partial class WorkstationEndpoints
             }
 
             var query = BuildFinancialRecordExplorerQuery(context);
-            var explorer = await service.GetExplorerAsync(explorerId, tenantId, query, context.RequestAborted).ConfigureAwait(false);
+            var explorer = await service
+                .GetExplorerAsync(explorerId, tenantId, query, ResolveExplorerReadScope(context), context.RequestAborted)
+                .ConfigureAwait(false);
             return explorer is null
                 ? Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." })
                 : Results.Json(explorer, jsonOptions);
@@ -68,7 +70,9 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var record = await service.GetRecordAsync(explorerId, recordId, tenantId, context.RequestAborted).ConfigureAwait(false);
+            var record = await service
+                .GetRecordAsync(explorerId, recordId, tenantId, ResolveExplorerReadScope(context), context.RequestAborted)
+                .ConfigureAwait(false);
             return record is null
                 ? Results.NotFound(new { error = $"Unknown financial record '{recordId}'." })
                 : Results.Json(record, jsonOptions);
@@ -166,6 +170,23 @@ public static partial class WorkstationEndpoints
     /// of one already taken.
     /// </para>
     /// </summary>
+    /// <summary>
+    /// Which sibling families the caller may see enriched into an explorer row. Admission to the
+    /// explorer is not a claim on the families it decorates rows with: the security-instrument
+    /// explorer is a Security Master surface that also carries report-pack usage and direct-lending
+    /// operations detail, so those are withheld from a caller holding neither.
+    /// </summary>
+    private static FinancialRecordExplorerReadScope ResolveExplorerReadScope(HttpContext context)
+        => new(
+            Reporting: EndpointAuthorization.HasAnyPermission(
+                context,
+                UserPermission.ViewReporting,
+                UserPermission.ManageReporting),
+            DirectLending: EndpointAuthorization.HasAnyPermission(
+                context,
+                UserPermission.ViewDirectLending,
+                UserPermission.ManageDirectLending));
+
     private static bool CanReadFinancialRecordExplorer(HttpContext context, string explorerId)
     {
         var normalized = (explorerId ?? string.Empty).Trim();

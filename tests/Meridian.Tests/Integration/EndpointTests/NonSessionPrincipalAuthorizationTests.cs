@@ -953,6 +953,29 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     }
 
     [Fact]
+    public async Task AnonymousRolePrincipal_CannotReadTheRoleCatalog()
+    {
+        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Analysis));
+        try
+        {
+            // ResolveCurrentProfile falls back to the items an upstream authenticator populated, so a
+            // null check alone accepts a synthesized anonymous profile -- the catalog names the
+            // deployment's custom roles and the permissions each grants, which is operator-session
+            // material rather than something a configured anonymous role is entitled to.
+            using var response = await Client.GetAsync("/api/auth/roles");
+
+            response.StatusCode.Should().Be(
+                HttpStatusCode.Unauthorized,
+                "a role snapshot with no operator behind it is not the session this route requires");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+        }
+    }
+
+    [Fact]
     public async Task AnonymousRolePrincipal_DoesNotBypassConfiguredApiKey()
     {
         var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");

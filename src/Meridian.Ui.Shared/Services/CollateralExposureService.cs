@@ -141,11 +141,27 @@ public sealed class CollateralIngestionBuffer
         return true;
     }
 
-    public IReadOnlyList<CollateralInputRow> DrainBatch(int maxItems = 500)
+    /// <summary>
+    /// The buffered rows, without consuming them. Exposure is an aggregate of everything buffered,
+    /// so reading it must leave the buffer intact: draining on read made each snapshot cover only
+    /// the rows arriving since the previous reader, so two operators looking at the same moment saw
+    /// different exposure and the second frequently saw none.
+    /// <para>
+    /// Back-pressure stays with the writer, where it is visible: <see cref="TryIngest"/> refuses past
+    /// <c>MaxBufferedRows</c> and the ingest route answers 429, rather than a reader silently
+    /// discarding rows nobody has seen.
+    /// </para>
+    /// </summary>
+    public IReadOnlyList<CollateralInputRow> SnapshotRows(int maxItems = 500)
     {
-        var rows = new List<CollateralInputRow>(maxItems);
-        while (rows.Count < maxItems && _buffer.TryDequeue(out var row))
+        var rows = new List<CollateralInputRow>(Math.Min(maxItems, _buffer.Count));
+        foreach (var row in _buffer)
         {
+            if (rows.Count >= maxItems)
+            {
+                break;
+            }
+
             rows.Add(row);
         }
 

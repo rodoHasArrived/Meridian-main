@@ -196,6 +196,7 @@ public static class AuthEndpoints
                 LoginSessionService sessionService,
                 IRolePermissionProfileStore roleProfileStore,
                 CancellationToken ct) =>
+                EndpointAuthorization.IsNonSessionPrincipal(context) ||
                 ResolveCurrentProfile(context, sessionService) is null
                     ? Results.Json(new { error = "Not authenticated." }, statusCode: StatusCodes.Status401Unauthorized)
                     : Results.Ok(await roleProfileStore.GetCatalogAsync(ct).ConfigureAwait(false)))
