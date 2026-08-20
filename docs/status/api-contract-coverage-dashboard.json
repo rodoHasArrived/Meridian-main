@@ -3653,91 +3653,91 @@
     {
       "method": "POST",
       "path": "/api/symbols/add",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:149",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:156",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/{symbol}/remove",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:173",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:180",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/symbols/{symbol}/trades",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:193",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:200",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/symbols/{symbol}/depth",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:218",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:225",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/symbols/statistics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:243",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:250",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/validate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:281",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:288",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/{symbol}/archive",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:300",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:307",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/bulk-add",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:319",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:326",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/bulk-remove",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:359",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:366",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/symbols/search",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:380",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:387",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/batch",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:404",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:411",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/create",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:452",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:459",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/symbols/{symbol}/update",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:492",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:499",
       "documented": false
     },
     {
       "method": "DELETE",
       "path": "/api/symbols/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:542",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:549",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/indices/{indexName}/constituents",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:570",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:577",
       "documented": false
     },
     {

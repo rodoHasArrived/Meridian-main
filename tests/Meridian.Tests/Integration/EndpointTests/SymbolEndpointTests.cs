@@ -46,18 +46,28 @@ public sealed class SymbolEndpointTests : IDisposable, IClassFixture<EndpointTes
         using var historicalOnly = Fixture.CreatePermittedClient(UserPermission.ViewHistoricalData);
 
         using var marketDataResponse = await marketDataOnly.GetAsync("/api/symbols/AAPL/status");
-        marketDataResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var marketDataPayload = JsonDocument.Parse(await marketDataResponse.Content.ReadAsStringAsync());
-        marketDataPayload.RootElement.GetProperty("config").ValueKind.Should().Be(
-            JsonValueKind.Null, "the subscription configuration answers to ViewConfig");
-        marketDataPayload.RootElement.GetProperty("storage").ValueKind.Should().Be(
-            JsonValueKind.Null, "the storage block answers to ViewHistoricalData");
+        marketDataResponse.StatusCode.Should().Be(
+            HttpStatusCode.Forbidden,
+            "every block this route serves is configuration or historical storage, so a market-data caller would receive an empty envelope");
 
         using var historicalResponse = await historicalOnly.GetAsync("/api/symbols/AAPL/status");
         historicalResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var historicalPayload = JsonDocument.Parse(await historicalResponse.Content.ReadAsStringAsync());
         historicalPayload.RootElement.GetProperty("config").ValueKind.Should().Be(
             JsonValueKind.Null, "a historical reader has no claim on the subscription configuration");
+        historicalPayload.RootElement.GetProperty("configured").ValueKind.Should().Be(
+            JsonValueKind.Null,
+            "the configured flag is the monitored-watchlist membership discriminator, enumerable one probe at a time");
+
+        // A configuration reader sees the membership answer and the configuration itself.
+        using var configOnly = Fixture.CreatePermittedClient(UserPermission.ViewConfig);
+        using var configResponse = await configOnly.GetAsync("/api/symbols/AAPL/status");
+        configResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var configPayload = JsonDocument.Parse(await configResponse.Content.ReadAsStringAsync());
+        configPayload.RootElement.GetProperty("configured").ValueKind.Should().BeOneOf(
+            JsonValueKind.True, JsonValueKind.False);
+        configPayload.RootElement.GetProperty("storage").ValueKind.Should().Be(
+            JsonValueKind.Null, "the storage block answers to ViewHistoricalData");
 
         // The permission-bearing client still sees what it is entitled to.
         using var fullResponse = await _client.GetAsync("/api/symbols/AAPL/status");

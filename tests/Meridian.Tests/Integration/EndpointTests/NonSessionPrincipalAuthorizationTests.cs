@@ -946,6 +946,53 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     }
 
     [Theory]
+    [InlineData("/hooks/reporting/distribution/transport-1/deliveries/job-1/receipts")]
+    [InlineData("/portal/reporting/access-grants/grant-1/exchange")]
+    public async Task ReadOnlyApiKeyRole_DoesNotRefuseARouteThatAuthenticatesItsOwnCaller(string route)
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "independent-auth-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.ReadOnly));
+        try
+        {
+            // Neither caller is the ambient principal: one is a reporting provider proving itself with
+            // HMAC signature headers, the other an external recipient redeeming a one-use grant token.
+            // Judging them by a read-only role's method cap refuses a correctly signed receipt before
+            // the signature is ever examined, which is the failure the API-key and bootstrap
+            // exemptions already avoid for the same reason.
+            using var request = new HttpRequestMessage(HttpMethod.Post, route);
+            request.Headers.Add("X-Api-Key", "independent-auth-key");
+            request.Content = JsonContent.Create(new { });
+
+            var body = string.Empty;
+            try
+            {
+                using var response = await Client.SendAsync(request);
+                body = await response.Content.ReadAsStringAsync();
+            }
+            catch (InvalidOperationException ex) when (
+                ex.Message.Contains("ReportingSecureDistributionApplicationService", StringComparison.Ordinal))
+            {
+                // This host does not compose the reporting distribution services, so the handler throws
+                // when it resolves them -- and that it throws at all is the assertion: the throw is
+                // raised inside the handler, which the method cap would never have let the request
+                // reach. Left as the observed outcome rather than papered over with a stub, because a
+                // stub would prove only that the stub was reachable.
+            }
+
+            body.Should().NotContain(
+                "allows only GET, HEAD, and OPTIONS",
+                "the route's own authentication decides this request, and it runs strictly later than the method cap");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
+    [Theory]
     [InlineData("/api/workstation/runs/compare")]
     [InlineData("/api/workstation/strategy/designer/validate")]
     [InlineData("/api/strategies/covered-call/chain-preview")]

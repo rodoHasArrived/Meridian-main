@@ -9,6 +9,7 @@ using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Strategies.Interfaces;
@@ -44,6 +45,44 @@ public sealed partial class WorkstationEndpointsTests
     private static readonly Guid FinancialRecordExplorerJournalId = Guid.Parse("11111111-1111-1111-1111-111111111120");
     private static readonly Guid FinancialRecordExplorerDebitLineId = Guid.Parse("11111111-1111-1111-1111-111111111123");
     private static readonly Guid FinancialRecordExplorerCreditLineId = Guid.Parse("11111111-1111-1111-1111-111111111124");
+
+    [Theory]
+    [InlineData("ledger")]
+    [InlineData("portfolio")]
+    [InlineData("security-instrument")]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorers_ShouldNotServeAnotherTenantsRun(string explorerId)
+    {
+        // A run's detail is the explorer's entire source -- the trial balance, the positions, the
+        // security references it renders. Selecting the newest qualifying run globally served one
+        // tenant's book to another whenever the other owned the newest run, and the tenant id reaching
+        // only saved-view persistence made that invisible from the call site.
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterFinancialRecordExplorerTestServices(services);
+
+                // Registered before the fixture's own current-scope registry, which resolves every
+                // fund to the calling tenant and so cannot express a foreign owner at all.
+                services.AddSingleton<IFundProfileTenancyRegistry>(
+                    new ForeignOwnerFundProfileTenancyRegistry("northwind-income", "another-tenant"));
+            },
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-foreign-run", withBreaks: false));
+
+        using var response = await app.GetTestClient().GetAsync(
+            $"/api/workstation/financial-record-explorers/{explorerId}");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var explorer = await response.Content.ReadFromJsonAsync<FinancialRecordExplorerDto>(ServerJsonOptions);
+        explorer.Should().NotBeNull();
+        explorer!.Rows.Should().BeEmpty(
+            "the only qualifying run belongs to another tenant, so this tenant has no source-backed projection");
+        explorer.SourceState.Should().Contain(
+            "No source-backed",
+            "an empty explorer must say it has no source rather than imply the tenant's book is empty");
+    }
 
     [Theory]
     [InlineData("ledger")]
@@ -842,6 +881,38 @@ public sealed partial class WorkstationEndpointsTests
         betaPayload.RootElement.GetProperty("savedViews").EnumerateArray().Should().NotContain(view =>
             view.GetProperty("viewId").GetString() == saved!.ViewId ||
             view.GetProperty("label").GetString() == "Alpha-only ledger view");
+    }
+
+    /// <summary>
+    /// Reports one fund profile as owned by a tenant other than the caller's, and every other fund as
+    /// unbound. Enough to prove the explorer refuses a foreign run without standing in for the real
+    /// registry's binding rules.
+    /// </summary>
+    private sealed class ForeignOwnerFundProfileTenancyRegistry(string fundProfileId, string ownerTenantId)
+        : IFundProfileTenancyRegistry
+    {
+        public Task<FundProfileOwnership> BindAsync(
+            string requestedFundProfileId,
+            string requestedTenantId,
+            string? requestedCompanyId = null,
+            CancellationToken ct = default)
+            => Task.FromResult(new FundProfileOwnership(requestedFundProfileId, requestedTenantId, requestedCompanyId));
+
+        public Task<FundProfileOwnership?> ResolveAsync(string requestedFundProfileId, CancellationToken ct = default)
+            => Task.FromResult<FundProfileOwnership?>(
+                string.Equals(requestedFundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)
+                    ? new FundProfileOwnership(fundProfileId, ownerTenantId, ownerTenantId)
+                    : null);
+
+        public async Task<bool> IsAccessibleAsync(
+            string requestedFundProfileId,
+            string requestedTenantId,
+            string? requestedCompanyId = null,
+            CancellationToken ct = default)
+        {
+            var owner = await ResolveAsync(requestedFundProfileId, ct).ConfigureAwait(false);
+            return owner is null || owner.IsHeldBy(requestedTenantId);
+        }
     }
 
     private static void RegisterFinancialRecordExplorerTestServices(IServiceCollection services)

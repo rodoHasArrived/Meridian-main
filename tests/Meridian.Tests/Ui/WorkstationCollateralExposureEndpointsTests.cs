@@ -174,6 +174,21 @@ public sealed partial class WorkstationEndpointsTests
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
+        // The negative extreme is validated, not thrown on. decimal's range is symmetric -- a 96-bit
+        // magnitude with a separate sign bit, unlike the two's-complement integer types -- so
+        // Math.Abs(decimal.MinValue) is representable and the guard answers 400 rather than 500.
+        // Pinned because the opposite is a natural thing to assume from Math.Abs(int.MinValue).
+        var negativeExtreme = await app.GetTestClient().PostAsJsonAsync(
+            "/api/workstation/collateral/ingest",
+            new[]
+            {
+                new CollateralInputRow(
+                    DateTimeOffset.UtcNow, "cpty", "repo", 1m, decimal.MinValue, 1m, "cash", 1m, 0m)
+            },
+            ServerJsonOptions);
+
+        negativeExtreme.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
         var exposure = await app.GetTestClient().GetAsync("/api/workstation/collateral/exposure");
         exposure.StatusCode.Should().Be(HttpStatusCode.OK, "the read stays healthy because nothing was retained");
 

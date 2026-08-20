@@ -75,6 +75,35 @@ public sealed class EndpointNonMutatingMetadata
 }
 
 /// <summary>
+/// Declares that a route authenticates its caller by its own independent mechanism -- a provider
+/// HMAC signature, an opaque one-use grant token -- rather than by the ambient principal. The
+/// read-only-role method cap stands aside for it, because that cap judges commands issued *as* the
+/// ambient principal and this route's caller is never that principal.
+/// <para>
+/// Standing aside grants nothing: the route's own check still decides the request, and it runs
+/// strictly later than the cap. Without this a deployment that names a read-only anonymous role
+/// would refuse a correctly signed delivery receipt before the signature was ever examined -- the
+/// same failure the API-key and bootstrap exemptions in <c>LoginSessionMiddleware</c> already avoid,
+/// for the same reason.
+/// </para>
+/// <para>
+/// Applied per route after reading the handler, never by convention, and never to a route whose only
+/// authentication is the ambient principal.
+/// </para>
+/// </summary>
+public sealed class EndpointIndependentAuthenticationMetadata
+{
+    public EndpointIndependentAuthenticationMetadata(string reason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        Reason = reason;
+    }
+
+    /// <summary>How this route authenticates its caller, e.g. "provider HMAC signature headers".</summary>
+    public string Reason { get; }
+}
+
+/// <summary>
 /// Centralized authorization helpers for workstation endpoints that rely on
 /// LoginSessionMiddleware session data instead of ad hoc caller-supplied fields.
 /// </summary>
@@ -106,13 +135,16 @@ public static class EndpointAuthorization
     }
 
     /// <summary>
-    /// True when the selected endpoint may be called by a read-only role despite its method, for
-    /// either of two distinct reasons: it changes no state (<see cref="EndpointNonMutatingMetadata"/>),
-    /// or it requires the one action grant those roles legitimately hold.
+    /// True when the selected endpoint may be called by a read-only role despite its method, for any
+    /// of three distinct reasons: it changes no state (<see cref="EndpointNonMutatingMetadata"/>); it
+    /// authenticates its caller independently of the ambient principal
+    /// (<see cref="EndpointIndependentAuthenticationMetadata"/>), so the cap is judging the wrong
+    /// caller; or it requires the one action grant those roles legitimately hold.
     /// </summary>
     private static bool AllowsReadOnlyRoleNonSafeMethod(Endpoint? endpoint)
         => endpoint is not null &&
            (endpoint.Metadata.GetMetadata<EndpointNonMutatingMetadata>() is not null ||
+            endpoint.Metadata.GetMetadata<EndpointIndependentAuthenticationMetadata>() is not null ||
             DeclaresReadOnlyRoleActionGrant(endpoint));
 
     /// <summary>
@@ -406,6 +438,17 @@ public static class EndpointAuthorization
         where TBuilder : IEndpointConventionBuilder
     {
         builder.WithMetadata(new EndpointNonMutatingMetadata(reason));
+        return builder;
+    }
+
+    /// <summary>
+    /// Records <see cref="EndpointIndependentAuthenticationMetadata"/> on a route that authenticates
+    /// its own caller, so the read-only-role cap does not refuse it before that check can run.
+    /// </summary>
+    public static TBuilder DeclareIndependentAuthentication<TBuilder>(this TBuilder builder, string reason)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.WithMetadata(new EndpointIndependentAuthenticationMetadata(reason));
         return builder;
     }
 

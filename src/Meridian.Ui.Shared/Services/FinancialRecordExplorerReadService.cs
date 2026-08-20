@@ -4,6 +4,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Storage.Ledger;
@@ -36,6 +37,7 @@ public sealed partial class FinancialRecordExplorerReadService
     private readonly DirectLendingOperationsReadService? _directLendingOperationsReadService;
     private readonly ILedgerJournalStore? _ledgerJournalStore;
     private readonly IAssetAccountingEventSpineService? _assetAccountingEventSpineService;
+    private readonly IFundProfileTenancyRegistry? _tenancyRegistry;
 
     public FinancialRecordExplorerReadService(
         IFinancialRecordExplorerSavedViewStore savedViewStore,
@@ -46,7 +48,8 @@ public sealed partial class FinancialRecordExplorerReadService
         IAssetOperationsQueryService? assetOperationsQueryService = null,
         DirectLendingOperationsReadService? directLendingOperationsReadService = null,
         ILedgerJournalStore? ledgerJournalStore = null,
-        IAssetAccountingEventSpineService? assetAccountingEventSpineService = null)
+        IAssetAccountingEventSpineService? assetAccountingEventSpineService = null,
+        IFundProfileTenancyRegistry? tenancyRegistry = null)
     {
         _savedViewStore = savedViewStore ?? throw new ArgumentNullException(nameof(savedViewStore));
         _runReadService = runReadService;
@@ -57,6 +60,7 @@ public sealed partial class FinancialRecordExplorerReadService
         _directLendingOperationsReadService = directLendingOperationsReadService;
         _ledgerJournalStore = ledgerJournalStore;
         _assetAccountingEventSpineService = assetAccountingEventSpineService;
+        _tenancyRegistry = tenancyRegistry;
     }
 
     public static bool IsKnownExplorerId(string explorerId)
@@ -86,19 +90,40 @@ public sealed partial class FinancialRecordExplorerReadService
         FinancialRecordExplorerQueryDto? query,
         FinancialRecordExplorerReadScope scope,
         CancellationToken ct = default)
+        => await GetExplorerAsync(explorerId, tenantId, companyId: null, query, scope, ct).ConfigureAwait(false);
+
+    /// <summary>
+    /// The explorer for one tenant, with <paramref name="companyId"/> completing the fund-ownership
+    /// scope used to choose which strategy run may be its source. Request-serving callers pass both;
+    /// the in-process overloads above pass no company and fall back to tenant-only ownership.
+    /// </summary>
+    public async Task<FinancialRecordExplorerDto?> GetExplorerAsync(
+        string explorerId,
+        string tenantId,
+        string? companyId,
+        FinancialRecordExplorerQueryDto? query,
+        FinancialRecordExplorerReadScope scope,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         ArgumentNullException.ThrowIfNull(scope);
         var normalized = NormalizeExplorerId(explorerId);
+        var fundScope = new FundOwnershipScope(tenantId, companyId);
         return normalized switch
         {
-            LedgerExplorerId => await BuildLedgerExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
-            PortfolioExplorerId => await BuildPortfolioExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
-            SecurityInstrumentExplorerId => await BuildSecurityInstrumentExplorerAsync(tenantId, query, scope, ct).ConfigureAwait(false),
+            LedgerExplorerId => await BuildLedgerExplorerAsync(tenantId, fundScope, query, ct).ConfigureAwait(false),
+            PortfolioExplorerId => await BuildPortfolioExplorerAsync(tenantId, fundScope, query, ct).ConfigureAwait(false),
+            SecurityInstrumentExplorerId => await BuildSecurityInstrumentExplorerAsync(tenantId, fundScope, query, scope, ct).ConfigureAwait(false),
             ReportLineProvenanceExplorerId => await BuildReportLineProvenanceExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
             _ => null
         };
     }
+
+    /// <summary>
+    /// The tenant/company pair a strategy run's fund profile must be owned by for its detail to be
+    /// used as an explorer source.
+    /// </summary>
+    private readonly record struct FundOwnershipScope(string TenantId, string? CompanyId);
 
     public async Task<FinancialRecordExplorerSelectedRecordDto?> GetRecordAsync(
         string explorerId,
@@ -119,13 +144,23 @@ public sealed partial class FinancialRecordExplorerReadService
         string tenantId,
         FinancialRecordExplorerReadScope scope,
         CancellationToken ct = default)
+        => await GetRecordAsync(explorerId, recordId, tenantId, companyId: null, scope, ct).ConfigureAwait(false);
+
+    public async Task<FinancialRecordExplorerSelectedRecordDto?> GetRecordAsync(
+        string explorerId,
+        string recordId,
+        string tenantId,
+        string? companyId,
+        FinancialRecordExplorerReadScope scope,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(recordId);
 
         // The record view is one row of the same explorer, so it carries the same enrichments and
         // must be projected the same way; routing it through the unscoped overload would withhold a
-        // family from the list and hand it back on the drill-in.
-        var explorer = await GetExplorerAsync(explorerId, tenantId, query: null, scope, ct).ConfigureAwait(false);
+        // family from the list and hand it back on the drill-in -- or serve a foreign tenant's row
+        // that the list itself refused.
+        var explorer = await GetExplorerAsync(explorerId, tenantId, companyId, query: null, scope, ct).ConfigureAwait(false);
         return explorer?.Rows
             .FirstOrDefault(row => string.Equals(row.RecordId, recordId, StringComparison.OrdinalIgnoreCase))
             ?.Detail;
@@ -179,6 +214,7 @@ public sealed partial class FinancialRecordExplorerReadService
 
     private async Task<FinancialRecordExplorerDto> BuildLedgerExplorerAsync(
         string tenantId,
+        FundOwnershipScope fundScope,
         FinancialRecordExplorerQueryDto? query,
         CancellationToken ct)
     {
@@ -194,6 +230,7 @@ public sealed partial class FinancialRecordExplorerReadService
 
         var source = await TryLoadLatestRunDetailAsync(
             readService,
+            fundScope,
             detail => detail.Ledger?.TrialBalance.Count > 0,
             ct).ConfigureAwait(false);
         if (source is null)
@@ -243,6 +280,7 @@ public sealed partial class FinancialRecordExplorerReadService
 
     private async Task<FinancialRecordExplorerDto> BuildPortfolioExplorerAsync(
         string tenantId,
+        FundOwnershipScope fundScope,
         FinancialRecordExplorerQueryDto? query,
         CancellationToken ct)
     {
@@ -258,6 +296,7 @@ public sealed partial class FinancialRecordExplorerReadService
 
         var source = await TryLoadLatestRunDetailAsync(
             readService,
+            fundScope,
             detail => detail.Portfolio?.Positions.Count > 0,
             ct).ConfigureAwait(false);
         if (source is null)
@@ -304,6 +343,7 @@ public sealed partial class FinancialRecordExplorerReadService
 
     private async Task<FinancialRecordExplorerDto> BuildSecurityInstrumentExplorerAsync(
         string tenantId,
+        FundOwnershipScope fundScope,
         FinancialRecordExplorerQueryDto? query,
         FinancialRecordExplorerReadScope scope,
         CancellationToken ct)
@@ -320,6 +360,7 @@ public sealed partial class FinancialRecordExplorerReadService
 
         var source = await TryLoadLatestRunDetailAsync(
             readService,
+            fundScope,
             detail => CollectSecurityReferences(detail).Count > 0,
             ct).ConfigureAwait(false);
         if (source is null)
@@ -561,14 +602,36 @@ public sealed partial class FinancialRecordExplorerReadService
             RecordGraph: BuildReportLineProvenanceGraph(rows));
     }
 
+    /// <summary>
+    /// The most recent run this tenant owns that satisfies <paramref name="predicate"/>, or null.
+    /// <para>
+    /// The tenant filter is the point: a run's detail is the explorer's entire source -- the trial
+    /// balance, the positions, the security references it renders. Selecting the newest qualifying run
+    /// globally served one tenant's book to another whenever the other owned the newest run, and the
+    /// tenant id reaching only saved-view persistence made that invisible from the call site.
+    /// </para>
+    /// <para>
+    /// Ownership is asked of the registry rather than compared here, so this agrees with every other
+    /// fund-scoped read: an unbound fund is accessible (trust-on-first-use, first owner wins), and only
+    /// a fund bound to another tenant is refused. A run with no fund profile is not attributable to any
+    /// tenant, so it is skipped rather than shown to all of them. With no registry in the composition
+    /// there is no tenancy to enforce and every run qualifies, which is the single-company deployment.
+    /// </para>
+    /// </summary>
     private async Task<StrategyRunDetail?> TryLoadLatestRunDetailAsync(
         StrategyRunReadService readService,
+        FundOwnershipScope fundScope,
         Func<StrategyRunDetail, bool> predicate,
         CancellationToken ct)
     {
         var runs = await readService.GetRunsAsync(new StrategyRunHistoryQuery(Limit: 100), ct).ConfigureAwait(false);
         foreach (var run in runs)
         {
+            if (!await IsRunOwnedByScopeAsync(run, fundScope, ct).ConfigureAwait(false))
+            {
+                continue;
+            }
+
             var detail = await readService.GetRunDetailAsync(run.RunId, ct).ConfigureAwait(false);
             if (detail is not null && predicate(detail))
             {
@@ -577,6 +640,57 @@ public sealed partial class FinancialRecordExplorerReadService
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Whether this run may be used as an explorer source for the calling scope. The rule is
+    /// deliberately "refuse what can be proven foreign" rather than "admit only what can be proven
+    /// owned", which is the posture <see cref="IFundProfileTenancyRegistry"/> itself defines: fund
+    /// ownership is established on first authoritative use, so an unbound fund belongs to nobody yet
+    /// and is reachable by anyone, and a run carrying no fund profile is not attributable to a tenant
+    /// at all. Refusing those would empty the explorer for every single-company deployment and every
+    /// in-process caller without withholding anything from anyone.
+    /// <para>
+    /// What it does refuse is the leak: a fund profile bound to a different tenant. With no registry
+    /// in the composition there is no tenancy to enforce and every run qualifies.
+    /// </para>
+    /// </summary>
+    private async Task<bool> IsRunOwnedByScopeAsync(
+        StrategyRunSummary run,
+        FundOwnershipScope fundScope,
+        CancellationToken ct)
+    {
+        if (_tenancyRegistry is null || string.IsNullOrWhiteSpace(run.FundProfileId))
+        {
+            return true;
+        }
+
+        var ownership = await _tenancyRegistry
+            .ResolveAsync(run.FundProfileId.Trim(), ct)
+            .ConfigureAwait(false);
+        if (ownership is null)
+        {
+            return true;
+        }
+
+        if (!ownership.IsHeldBy(fundScope.TenantId))
+        {
+            return false;
+        }
+
+        // Company is compared only when the caller resolved one. An in-process caller has no company
+        // scope to compare, and refusing every run for it would make the legacy overloads useless
+        // without closing anything -- the tenant test above has already refused a foreign owner.
+        if (string.IsNullOrWhiteSpace(fundScope.CompanyId))
+        {
+            return true;
+        }
+
+        return !string.IsNullOrWhiteSpace(ownership.CompanyId) &&
+               string.Equals(
+                   ownership.CompanyId.Trim(),
+                   fundScope.CompanyId.Trim(),
+                   StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<FinancialRecordExplorerDto> CreateExplorerAsync(

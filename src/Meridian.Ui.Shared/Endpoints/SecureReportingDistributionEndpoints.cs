@@ -278,6 +278,7 @@ public static class SecureReportingDistributionEndpoints
                     .ConfigureAwait(false);
                 return Results.Accepted();
             }).ConfigureAwait(false))
+            .DeclareIndependentAuthentication("Provider delivery receipt, authenticated by the X-Meridian-Reporting-Timestamp and X-Meridian-Reporting-Signature HMAC headers the transport was configured with; the caller is the provider, never the ambient operator principal.")
             .AddEndpointFilter(RejectQueryBearerAsync);
 
         app.MapGet("/portal/reporting/access-grants/{grantId}/exchange", (
@@ -305,6 +306,7 @@ public static class SecureReportingDistributionEndpoints
                     download.Artifact.FileName,
                     enableRangeProcessing: false);
             }).ConfigureAwait(false))
+            .DeclareIndependentAuthentication("Grant exchange for an external report recipient, authenticated by the opaque one-use grant token in the request body; the recipient holds no operator principal and cannot be judged as one.")
             .AddEndpointFilter(RejectQueryBearerAsync);
     }
 

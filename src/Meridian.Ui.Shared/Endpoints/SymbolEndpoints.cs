@@ -134,15 +134,22 @@ public static class SymbolEndpoints
                 catch (InvalidOperationException) { /* storage search not critical - service issue */ }
             }
 
+            // "configured" is the membership discriminator for the monitored watchlist, which
+            // GetMonitoredSymbols serves under ViewConfig. Nulling the configuration object while
+            // still answering yes/no left the list enumerable one probe at a time, so the flag is
+            // projected by the same permission as the object it describes.
             return Results.Json(new
             {
                 symbol,
-                configured = symbolCfg is not null,
+                configured = canReadConfiguration ? symbolCfg is not null : (bool?)null,
                 config = canReadConfiguration ? symbolCfg : null,
                 storage = storageInfo
             }, jsonOptions);
         })
-        .WithName("GetSymbolStatus").RequireAnyPermission(UserPermission.ViewMarketData, UserPermission.ViewHistoricalData)
+        // ViewMarketData is not admitted: every block this route serves is configuration or historical
+        // storage, so a market-data caller would receive an envelope with nothing in it. The route is
+        // the symbol's configuration-and-storage overview, and its admission now says so.
+        .WithName("GetSymbolStatus").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ModifyConfig, UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // POST /api/symbols/add — add a single symbol; returns {success, symbol}

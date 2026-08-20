@@ -39,7 +39,13 @@ public static partial class WorkstationEndpoints
 
             var query = BuildFinancialRecordExplorerQuery(context);
             var explorer = await service
-                .GetExplorerAsync(explorerId, tenantId, query, ResolveExplorerReadScope(context), context.RequestAborted)
+                .GetExplorerAsync(
+                    explorerId,
+                    tenantId,
+                    EndpointAuthorization.ResolveCompanyId(context),
+                    query,
+                    ResolveExplorerReadScope(context),
+                    context.RequestAborted)
                 .ConfigureAwait(false);
             return explorer is null
                 ? Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." })
@@ -71,7 +77,13 @@ public static partial class WorkstationEndpoints
             }
 
             var record = await service
-                .GetRecordAsync(explorerId, recordId, tenantId, ResolveExplorerReadScope(context), context.RequestAborted)
+                .GetRecordAsync(
+                    explorerId,
+                    recordId,
+                    tenantId,
+                    EndpointAuthorization.ResolveCompanyId(context),
+                    ResolveExplorerReadScope(context),
+                    context.RequestAborted)
                 .ConfigureAwait(false);
             return record is null
                 ? Results.NotFound(new { error = $"Unknown financial record '{recordId}'." })
