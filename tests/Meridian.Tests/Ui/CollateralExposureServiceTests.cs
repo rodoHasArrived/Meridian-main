@@ -449,6 +449,29 @@ public sealed class CollateralExposureServiceTests
         snapshot.CollateralCoverageRatio.Should().Be(-999m);
     }
 
+    [Fact]
+    public void CollateralIngestionBuffer_UnnamedRetryDifferingOnlyInCasing_DoesNotDoubleCount()
+    {
+        // ExposureKey and BuildSnapshots fold identity casing, so ACME and acme are one counterparty.
+        // Record equality does not, so matching a retry by the raw row would miss it, append the row,
+        // and double that counterparty's exposure, collateral and margin.
+        var buffer = new CollateralIngestionBuffer();
+        var asOf = DateTimeOffset.UnixEpoch;
+
+        buffer.IngestBatch(Scope, [
+            new CollateralInputRow(asOf, "ACME", "repo", 1m, 10m, 1m, "cash", 1m, 0m)
+        ]);
+        buffer.IngestBatch(Scope, [
+            new CollateralInputRow(asOf, "acme", "repo", 1m, 10m, 1m, "cash", 1m, 0m)
+        ]);
+
+        var snapshot = new CollateralExposureService()
+            .BuildSnapshots(buffer.SnapshotCurrent(Scope))
+            .Should().ContainSingle().Subject;
+
+        snapshot.NetExposure.Should().Be(10m, "a retry is the same row whichever casing it arrives in");
+    }
+
     private static readonly CollateralTenantScope Scope = CollateralTenantScope.Unscoped;
 
     private static CollateralInputRow Row(int index)

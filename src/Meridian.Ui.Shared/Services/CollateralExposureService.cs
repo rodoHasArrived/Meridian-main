@@ -385,7 +385,11 @@ public sealed class CollateralIngestionBuffer
                     redeliveredChunks.Contains((ExposureKey(existing), existing.ChunkId.Trim())));
             }
 
-            var alreadyHeld = new Dictionary<CollateralInputRow, int>();
+            // Keyed by the folded identity rather than the raw record. Record equality compares the
+            // identity strings ordinally while ExposureKey and BuildSnapshots fold their case, so a
+            // retry that differs only in casing -- ACME against acme -- would miss the match, be
+            // appended, and double that counterparty's exposure, collateral and margin.
+            var alreadyHeld = new Dictionary<RetainedRowKey, int>();
             if (continued.Count > 0)
             {
                 foreach (var existing in held0)
@@ -395,7 +399,8 @@ public sealed class CollateralIngestionBuffer
                         continue;
                     }
 
-                    alreadyHeld[existing] = alreadyHeld.TryGetValue(existing, out var count) ? count + 1 : 1;
+                    var key = RetainedRowKey.For(existing);
+                    alreadyHeld[key] = alreadyHeld.TryGetValue(key, out var count) ? count + 1 : 1;
                 }
             }
 
@@ -421,11 +426,12 @@ public sealed class CollateralIngestionBuffer
 
                 // A named chunk has already had its held rows dropped above, so nothing of it remains
                 // to match against and every row it carries is added.
+                var retainedKey = RetainedRowKey.For(row);
                 if (string.IsNullOrWhiteSpace(row.ChunkId) &&
-                    alreadyHeld.TryGetValue(row, out var remaining) &&
+                    alreadyHeld.TryGetValue(retainedKey, out var remaining) &&
                     remaining > 0)
                 {
-                    alreadyHeld[row] = remaining - 1;
+                    alreadyHeld[retainedKey] = remaining - 1;
                     continue;
                 }
 
@@ -521,6 +527,32 @@ public sealed class CollateralIngestionBuffer
 /// case-insensitively; comparing the folded fields keeps identity and aggregation in agreement.
 /// </para>
 /// </summary>
+/// <summary>
+/// A retained row compared the way the exposure it belongs to is: identity folded exactly as
+/// <see cref="ExposureIdentity"/> folds it, financial values compared as written. Used to recognise a
+/// redelivered row among what is already held, where raw record equality would compare the identity
+/// strings ordinally and miss a retry that differs only in casing.
+/// </summary>
+internal readonly record struct RetainedRowKey(
+    ExposureIdentity Identity,
+    DateTimeOffset AsOf,
+    decimal PositionNotional,
+    decimal MarkToMarket,
+    decimal CollateralBalance,
+    decimal InitialMargin,
+    decimal VariationMargin)
+{
+    public static RetainedRowKey For(CollateralInputRow row)
+        => new(
+            ExposureIdentity.For(row.Counterparty, row.ProductType, row.CollateralType),
+            row.AsOf,
+            row.PositionNotional,
+            row.MarkToMarket,
+            row.CollateralBalance,
+            row.InitialMargin,
+            row.VariationMargin);
+}
+
 internal readonly record struct ExposureIdentity(string Counterparty, string ProductType, string CollateralType)
 {
     public static ExposureIdentity For(string? counterparty, string? productType, string? collateralType)
