@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "62bdf779df512ac50fa8e96098d2802f0226a6f4dd468c1d7e42e9218b811bd7",
+  "database_fingerprint": "9f14247d13f524070a3bb46e8b02e81029387f20c6e035d259db585f9c3f48e4",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -1274,6 +1274,30 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "45d025e085baf007b0766347546e2fb42da52afbfeea3675b74ca9bfc4e8f76f",
+      "kind": "normal",
+      "source": "ledger.ck_journal_leg_currency_affirmations_currency on ledger.journal_leg_currency_affirmations",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_leg_currency_affirmations.affirmed_currency",
+      "target_kind": "table column",
+      "target_name": "journal_leg_currency_affirmations",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "3c58708c712c3cb5daec653a7ab7c801d957087c7814efa5f10e16271800dd75",
+      "kind": "normal",
+      "source": "ledger.ck_journal_leg_currency_affirmations_legs on ledger.journal_leg_currency_affirmations",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_leg_currency_affirmations.legs_repaired",
+      "target_kind": "table column",
+      "target_name": "journal_leg_currency_affirmations",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "2c8b7f79234360cb4f38ebcd94f86dfc77a73e77ecdddadf042ac7100a1f6f31",
       "kind": "normal",
       "source": "ledger.ck_journal_legs_adjustment_approval_metadata on ledger.journal_legs",
@@ -1835,6 +1859,66 @@
       "target": "ledger.wash_sale_deferrals.window_days",
       "target_kind": "table column",
       "target_name": "wash_sale_deferrals",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "bdd7296f789a0ecc141215a1ecf8bb88a4bef529c4f4c3433da2afef78b45894",
+      "kind": "normal",
+      "source": "ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_books.ledger_book_id",
+      "target_kind": "table column",
+      "target_name": "ledger_books",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "90ac60d394fa238433357d257040b8aee819ec3dbc1fa5b388e84ced2f6c655f",
+      "kind": "normal",
+      "source": "ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_books_pkey",
+      "target_kind": "index",
+      "target_name": "ledger_books_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "6868de278473718513d1b75d0deb07d53725b50c1f4625c257d6e7bb897efff3",
+      "kind": "view_reference",
+      "source": "ledger.journal_leg_currency_backfill_status",
+      "source_kind": "view",
+      "source_name": "journal_leg_currency_backfill_status",
+      "source_schema": "ledger",
+      "target": "ledger.accounting_periods",
+      "target_kind": "relation",
+      "target_name": "accounting_periods",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "a1a347c0b545cc14c9c96dfbb9c0af0a3c4e93c64ce70de590eb4c6e3e5da7ec",
+      "kind": "view_reference",
+      "source": "ledger.journal_leg_currency_backfill_status",
+      "source_kind": "view",
+      "source_name": "journal_leg_currency_backfill_status",
+      "source_schema": "ledger",
+      "target": "ledger.journal_legs",
+      "target_kind": "relation",
+      "target_name": "journal_legs",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "d53922e2642356ba95c82f32f4f4c2081f877746d4cc8ed162f0c4a138d66bc1",
+      "kind": "view_reference",
+      "source": "ledger.journal_leg_currency_backfill_status",
+      "source_kind": "view",
+      "source_name": "journal_leg_currency_backfill_status",
+      "source_schema": "ledger",
+      "target": "ledger.ledger_books",
+      "target_kind": "relation",
+      "target_name": "ledger_books",
       "target_schema": "ledger"
     },
     {
@@ -8733,6 +8817,66 @@
       "object": "column:ledger.journal_entries.source_journal_entry_id"
     },
     {
+      "fingerprint": "7aa5ece95433f5df72896d3e2368e8f832d08b21593f03394fbaa5afd1507fc8",
+      "object": "column:ledger.journal_leg_currency_affirmations.actor"
+    },
+    {
+      "fingerprint": "d379d5a328d24343781dedba7d641332a1570b5cadf577298baaad817876c732",
+      "object": "column:ledger.journal_leg_currency_affirmations.affirmation_id"
+    },
+    {
+      "fingerprint": "065a338571de21941a153304c45a49ae1279e2cfcb64e549c6c4d5256254e0d2",
+      "object": "column:ledger.journal_leg_currency_affirmations.affirmed_at"
+    },
+    {
+      "fingerprint": "f849dbea1442f260008bfe49b065ffe249ffd35a799b8e69c277a79a753fda74",
+      "object": "column:ledger.journal_leg_currency_affirmations.affirmed_currency"
+    },
+    {
+      "fingerprint": "7c4e1cc816bd0597436fcc96eb373f1525f8fdef77ffd899d6165514f55e6fef",
+      "object": "column:ledger.journal_leg_currency_affirmations.ledger_book_id"
+    },
+    {
+      "fingerprint": "a53c82967732ca5a3b731156f867a3a026db34036c804b42c0ba65a2d802ce28",
+      "object": "column:ledger.journal_leg_currency_affirmations.legs_repaired"
+    },
+    {
+      "fingerprint": "27b70b8c9d8e4c76f276070d52ee753be300d8854f4cbac6ebb5dd509f1333ce",
+      "object": "column:ledger.journal_leg_currency_affirmations.rationale"
+    },
+    {
+      "fingerprint": "d487aac378b625245aea5dd9d4da7172d342c34ae22edd9716020bea839a7940",
+      "object": "column:ledger.journal_leg_currency_backfill_status.base_currency"
+    },
+    {
+      "fingerprint": "22eb9227554db122357489b895374f8b6b1dd60ce00720b8d28e91ebdcb3bd8f",
+      "object": "column:ledger.journal_leg_currency_backfill_status.disposition"
+    },
+    {
+      "fingerprint": "a0f5f7fe75d4ea70fc197f4cf78fbe31d4b0c0bf7d34cbc590acbc1a12aab85c",
+      "object": "column:ledger.journal_leg_currency_backfill_status.entry_id"
+    },
+    {
+      "fingerprint": "a9ec310d23daa44b8fb522260c0b678424d5cf88cb823daf98f915aa6c9f4dcb",
+      "object": "column:ledger.journal_leg_currency_backfill_status.journal_entry_id"
+    },
+    {
+      "fingerprint": "ec7d824a33c5e242bb29feebbae751478f0e3e586e11ae64fac9b6b93a5fff2c",
+      "object": "column:ledger.journal_leg_currency_backfill_status.ledger_book_id"
+    },
+    {
+      "fingerprint": "ba4f0d5ef71321ec5844fd658424e4874b565b9e18340d53cb0737cff9e0ce30",
+      "object": "column:ledger.journal_leg_currency_backfill_status.occurred_at"
+    },
+    {
+      "fingerprint": "2090d1a909bda1d641b2e25edf1f7d49b056cde5687c31d89ee3a1cfef2f90dc",
+      "object": "column:ledger.journal_leg_currency_backfill_status.period_id"
+    },
+    {
+      "fingerprint": "53991b9ef2bda9e129b0844af8a7aaade2e47cdfa845b58d21d8c66572474afc",
+      "object": "column:ledger.journal_leg_currency_backfill_status.period_status"
+    },
+    {
       "fingerprint": "79776b93fd87c218ba35579a7e01cae2ce8d4838da7777b6261da5212bbbeef4",
       "object": "column:ledger.journal_legs.account_name"
     },
@@ -13277,6 +13421,10 @@
       "object": "comment:schema:public"
     },
     {
+      "fingerprint": "662387c5ef335ca3a3bb6e0725e799c48edddff894143d6884c1c4ef37b4e94f",
+      "object": "comment:table:ledger.journal_leg_currency_affirmations"
+    },
+    {
       "fingerprint": "33b1c93373aef0e6dd3b2bcf806f13cc8ff582c8be63c110af51f6c7072000e3",
       "object": "constraint:asset_operations.asset_accounting_event_projections.asset_accounting_event_projections_pkey"
     },
@@ -13711,6 +13859,22 @@
     {
       "fingerprint": "254c7c7ae3c72271f48f1b7f7c3337598a872d0a4a82c06ae27fbf81f79088ed",
       "object": "constraint:ledger.journal_entries.journal_entries_pkey"
+    },
+    {
+      "fingerprint": "01a019b7cb455c09ffd9dab45ca9e2fb13abfe92d26d4248825c816ebe44bf84",
+      "object": "constraint:ledger.journal_leg_currency_affirmations.ck_journal_leg_currency_affirmations_currency"
+    },
+    {
+      "fingerprint": "eb1bf066fe8ad3302a472f5c8f4a9933828121b7f4fedbfdc24f7914bbf31266",
+      "object": "constraint:ledger.journal_leg_currency_affirmations.ck_journal_leg_currency_affirmations_legs"
+    },
+    {
+      "fingerprint": "317280f4b22815dafd297c8859d8d1c9b5b2f53d10a0fa19c40d14188278d5a9",
+      "object": "constraint:ledger.journal_leg_currency_affirmations.journal_leg_currency_affirmations_ledger_book_id_fkey"
+    },
+    {
+      "fingerprint": "7032376642774ef5c0f160ec757d26b66814a4b3791fda92a368d21463eb1659",
+      "object": "constraint:ledger.journal_leg_currency_affirmations.journal_leg_currency_affirmations_pkey"
     },
     {
       "fingerprint": "da0762c28c0275b81f861fc1c3c1be0211c349695748255feafa24e1437d1b50",
@@ -15573,6 +15737,14 @@
       "object": "dependency:ledger.ck_journal_entries_posting_kind on ledger.journal_entries->ledger.journal_entries.posting_kind:normal"
     },
     {
+      "fingerprint": "45d025e085baf007b0766347546e2fb42da52afbfeea3675b74ca9bfc4e8f76f",
+      "object": "dependency:ledger.ck_journal_leg_currency_affirmations_currency on ledger.journal_leg_currency_affirmations->ledger.journal_leg_currency_affirmations.affirmed_currency:normal"
+    },
+    {
+      "fingerprint": "3c58708c712c3cb5daec653a7ab7c801d957087c7814efa5f10e16271800dd75",
+      "object": "dependency:ledger.ck_journal_leg_currency_affirmations_legs on ledger.journal_leg_currency_affirmations->ledger.journal_leg_currency_affirmations.legs_repaired:normal"
+    },
+    {
       "fingerprint": "2c8b7f79234360cb4f38ebcd94f86dfc77a73e77ecdddadf042ac7100a1f6f31",
       "object": "dependency:ledger.ck_journal_legs_adjustment_approval_metadata on ledger.journal_legs->ledger.journal_legs.adjustment_approval_metadata:normal"
     },
@@ -15759,6 +15931,26 @@
     {
       "fingerprint": "f782c003c94876bbb7c230dc4a1c7e6510bd7e44ed0d83634e929949c168f9b0",
       "object": "dependency:ledger.ck_wash_sale_deferrals_window on ledger.wash_sale_deferrals->ledger.wash_sale_deferrals.window_days:normal"
+    },
+    {
+      "fingerprint": "bdd7296f789a0ecc141215a1ecf8bb88a4bef529c4f4c3433da2afef78b45894",
+      "object": "dependency:ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations->ledger.ledger_books.ledger_book_id:normal"
+    },
+    {
+      "fingerprint": "90ac60d394fa238433357d257040b8aee819ec3dbc1fa5b388e84ced2f6c655f",
+      "object": "dependency:ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations->ledger.ledger_books_pkey:normal"
+    },
+    {
+      "fingerprint": "6868de278473718513d1b75d0deb07d53725b50c1f4625c257d6e7bb897efff3",
+      "object": "dependency:ledger.journal_leg_currency_backfill_status->ledger.accounting_periods:view_reference"
+    },
+    {
+      "fingerprint": "a1a347c0b545cc14c9c96dfbb9c0af0a3c4e93c64ce70de590eb4c6e3e5da7ec",
+      "object": "dependency:ledger.journal_leg_currency_backfill_status->ledger.journal_legs:view_reference"
+    },
+    {
+      "fingerprint": "d53922e2642356ba95c82f32f4f4c2081f877746d4cc8ed162f0c4a138d66bc1",
+      "object": "dependency:ledger.journal_leg_currency_backfill_status->ledger.ledger_books:view_reference"
     },
     {
       "fingerprint": "5c9f2a1e38660c01967207ced5b8af181659cfa9be81e13429e3968f642a83b4",
@@ -17805,12 +17997,20 @@
       "object": "index:ledger.ix_journal_entries_source_journal"
     },
     {
+      "fingerprint": "5d298e221eba6d9fb838259da05cf649fbdc155f4f32670d2260eca9772b041f",
+      "object": "index:ledger.ix_journal_leg_currency_affirmations_book"
+    },
+    {
       "fingerprint": "a4c77e66d4db2ff249bdb4db32b81331ab7a81d308f604e004ac25363799e6f3",
       "object": "index:ledger.ix_journal_legs_aggregate"
     },
     {
       "fingerprint": "90a6574cf98dbbc41785811fd993ec11c67b6aaa81cf6865a831d47c6acd29cb",
       "object": "index:ledger.ix_journal_legs_basis_account"
+    },
+    {
+      "fingerprint": "10fd099448a791f5db7dcde36491e34433ede0a3a7c82563e4f0bdc0fe0f8222",
+      "object": "index:ledger.ix_journal_legs_currency_blind"
     },
     {
       "fingerprint": "b520102aea9d7062e3eed7ee8db161244ebb563cfd574a09ad52b4de1cf22b43",
@@ -17919,6 +18119,10 @@
     {
       "fingerprint": "9131a78720559f51d9ed8058f038471f34958b506ae41cceac5827c7aa2d6ced",
       "object": "index:ledger.journal_entries_pkey"
+    },
+    {
+      "fingerprint": "c940b9b5af44a712b8dd7516d25b38291d8d8c9616809cb6d0c2861e8d4e3c91",
+      "object": "index:ledger.journal_leg_currency_affirmations_pkey"
     },
     {
       "fingerprint": "e69942a4c5f858c8b0df099ef5e593dd4c3d03c06ed7e3c525e2902db7a5f16b",
@@ -19109,6 +19313,10 @@
       "object": "rls:ledger.journal_entries"
     },
     {
+      "fingerprint": "15bae45986630c738af58cb3f897d54f4799d58b0b1d1ff93983946fc0888d80",
+      "object": "rls:ledger.journal_leg_currency_affirmations"
+    },
+    {
       "fingerprint": "14c180fc7b8c17903d5c2b7b9dadb2f058f9d9f7beb3db2c3efcf17ea75228c3",
       "object": "rls:ledger.journal_legs"
     },
@@ -19529,7 +19737,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "83821809d9ac948d3c74fcb1834712346a1278578c46c9b388c218f80741ea82",
+      "fingerprint": "e24e3b56070d72a913b1a31b89913d51fe4a8dad53a75af5b9957ddf19950505",
       "object": "schema:ledger"
     },
     {
@@ -19801,7 +20009,11 @@
       "object": "table:ledger.journal_entries"
     },
     {
-      "fingerprint": "7bf688add67986e27839bfad91c9b42060bb815b00b9a200d2106f0631d7ae73",
+      "fingerprint": "830e3ef8a63ef4e122e301afb6511bfe7a3f8decc7b7614f14008951cac145d1",
+      "object": "table:ledger.journal_leg_currency_affirmations"
+    },
+    {
+      "fingerprint": "49dbc4129d3d9da2963f617f2e7f65876fa929249708895d9667ffa22aaa92cc",
       "object": "table:ledger.journal_legs"
     },
     {
@@ -20303,6 +20515,10 @@
     {
       "fingerprint": "c7cb35cbc5308126892ed3f8682c4680445965f00404cdb132d0cd4316fea1c3",
       "object": "trigger:security_master.securities.trg_security_search_vector"
+    },
+    {
+      "fingerprint": "402b646c629b7bed3913e77e709369a665e635909584022436ba812d3b25d95e",
+      "object": "view:ledger.journal_leg_currency_backfill_status"
     }
   ],
   "physical_schemas": [
@@ -52174,7 +52390,14 @@
         }
       ],
       "comment": null,
-      "comments": [],
+      "comments": [
+        {
+          "comment": "Operator assertions that a ledger book with no retained currency evidence transacted only in its base currency, and the currency-blind journal legs each assertion completed. Append-only: this is the authority for a repair the data alone could not determine.",
+          "fingerprint": "662387c5ef335ca3a3bb6e0725e799c48edddff894143d6884c1c4ef37b4e94f",
+          "object": "ledger.journal_leg_currency_affirmations",
+          "object_type": "table"
+        }
+      ],
       "composite_types": [],
       "dependencies": [
         {
@@ -52691,6 +52914,30 @@
           "target": "ledger.journal_entries.posting_kind",
           "target_kind": "table column",
           "target_name": "journal_entries",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "45d025e085baf007b0766347546e2fb42da52afbfeea3675b74ca9bfc4e8f76f",
+          "kind": "normal",
+          "source": "ledger.ck_journal_leg_currency_affirmations_currency on ledger.journal_leg_currency_affirmations",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.journal_leg_currency_affirmations.affirmed_currency",
+          "target_kind": "table column",
+          "target_name": "journal_leg_currency_affirmations",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "3c58708c712c3cb5daec653a7ab7c801d957087c7814efa5f10e16271800dd75",
+          "kind": "normal",
+          "source": "ledger.ck_journal_leg_currency_affirmations_legs on ledger.journal_leg_currency_affirmations",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.journal_leg_currency_affirmations.legs_repaired",
+          "target_kind": "table column",
+          "target_name": "journal_leg_currency_affirmations",
           "target_schema": "ledger"
         },
         {
@@ -53258,6 +53505,66 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "bdd7296f789a0ecc141215a1ecf8bb88a4bef529c4f4c3433da2afef78b45894",
+          "kind": "normal",
+          "source": "ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.ledger_books.ledger_book_id",
+          "target_kind": "table column",
+          "target_name": "ledger_books",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "90ac60d394fa238433357d257040b8aee819ec3dbc1fa5b388e84ced2f6c655f",
+          "kind": "normal",
+          "source": "ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.ledger_books_pkey",
+          "target_kind": "index",
+          "target_name": "ledger_books_pkey",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "6868de278473718513d1b75d0deb07d53725b50c1f4625c257d6e7bb897efff3",
+          "kind": "view_reference",
+          "source": "ledger.journal_leg_currency_backfill_status",
+          "source_kind": "view",
+          "source_name": "journal_leg_currency_backfill_status",
+          "source_schema": "ledger",
+          "target": "ledger.accounting_periods",
+          "target_kind": "relation",
+          "target_name": "accounting_periods",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "a1a347c0b545cc14c9c96dfbb9c0af0a3c4e93c64ce70de590eb4c6e3e5da7ec",
+          "kind": "view_reference",
+          "source": "ledger.journal_leg_currency_backfill_status",
+          "source_kind": "view",
+          "source_name": "journal_leg_currency_backfill_status",
+          "source_schema": "ledger",
+          "target": "ledger.journal_legs",
+          "target_kind": "relation",
+          "target_name": "journal_legs",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "d53922e2642356ba95c82f32f4f4c2081f877746d4cc8ed162f0c4a138d66bc1",
+          "kind": "view_reference",
+          "source": "ledger.journal_leg_currency_backfill_status",
+          "source_kind": "view",
+          "source_name": "journal_leg_currency_backfill_status",
+          "source_schema": "ledger",
+          "target": "ledger.ledger_books",
+          "target_kind": "relation",
+          "target_name": "ledger_books",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "5c9f2a1e38660c01967207ced5b8af181659cfa9be81e13429e3968f642a83b4",
           "kind": "normal",
           "source": "ledger.journal_legs_journal_entry_id_fkey on ledger.journal_legs",
@@ -53622,7 +53929,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "83821809d9ac948d3c74fcb1834712346a1278578c46c9b388c218f80741ea82",
+      "fingerprint": "e24e3b56070d72a913b1a31b89913d51fe4a8dad53a75af5b9957ddf19950505",
       "foreign_tables": [],
       "functions": [
         {
@@ -58509,6 +58816,515 @@
               "comment": null,
               "data_type": "uuid",
               "default": null,
+              "fingerprint": "d379d5a328d24343781dedba7d641332a1570b5cadf577298baaad817876c732",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "affirmation_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "7c4e1cc816bd0597436fcc96eb373f1525f8fdef77ffd899d6165514f55e6fef",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f849dbea1442f260008bfe49b065ffe249ffd35a799b8e69c277a79a753fda74",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "affirmed_currency",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7aa5ece95433f5df72896d3e2368e8f832d08b21593f03394fbaa5afd1507fc8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "actor",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "27b70b8c9d8e4c76f276070d52ee753be300d8854f4cbac6ebb5dd509f1333ce",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "rationale",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "065a338571de21941a153304c45a49ae1279e2cfcb64e549c6c4d5256254e0d2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "affirmed_at",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "a53c82967732ca5a3b731156f867a3a026db34036c804b42c0ba65a2d802ce28",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "legs_repaired",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Operator assertions that a ledger book with no retained currency evidence transacted only in its base currency, and the currency-blind journal legs each assertion completed. Append-only: this is the authority for a repair the data alone could not determine.",
+          "constraints": [
+            {
+              "columns": [
+                "affirmed_currency"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (affirmed_currency ~ '^[A-Z]{3}$'::text)",
+              "delete_action": null,
+              "fingerprint": "01a019b7cb455c09ffd9dab45ca9e2fb13abfe92d26d4248825c816ebe44bf84",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_journal_leg_currency_affirmations_currency",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "legs_repaired"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (legs_repaired >= 0)",
+              "delete_action": null,
+              "fingerprint": "eb1bf066fe8ad3302a472f5c8f4a9933828121b7f4fedbfdc24f7914bbf31266",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_journal_leg_currency_affirmations_legs",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "ledger_book_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (ledger_book_id) REFERENCES ledger.ledger_books(ledger_book_id)",
+              "delete_action": "no_action",
+              "fingerprint": "317280f4b22815dafd297c8859d8d1c9b5b2f53d10a0fa19c40d14188278d5a9",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "journal_leg_currency_affirmations_ledger_book_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "ledger_book_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "ledger_books",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "affirmation_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (affirmation_id)",
+              "delete_action": null,
+              "fingerprint": "7032376642774ef5c0f160ec757d26b66814a4b3791fda92a368d21463eb1659",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "journal_leg_currency_affirmations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "830e3ef8a63ef4e122e301afb6511bfe7a3f8decc7b7614f14008951cac145d1",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_journal_leg_currency_affirmations_book ON ledger.journal_leg_currency_affirmations USING btree (ledger_book_id, affirmed_at DESC)",
+              "expression": null,
+              "fingerprint": "5d298e221eba6d9fb838259da05cf649fbdc155f4f32670d2260eca9772b041f",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id",
+                "affirmed_at"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_journal_leg_currency_affirmations_book",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX journal_leg_currency_affirmations_pkey ON ledger.journal_leg_currency_affirmations USING btree (affirmation_id)",
+              "expression": null,
+              "fingerprint": "c940b9b5af44a712b8dd7516d25b38291d8d8c9616809cb6d0c2861e8d4e3c91",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "affirmation_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "journal_leg_currency_affirmations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "journal_leg_currency_affirmations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a0f5f7fe75d4ea70fc197f4cf78fbe31d4b0c0bf7d34cbc590acbc1a12aab85c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "entry_id",
+              "nullable": true,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a9ec310d23daa44b8fb522260c0b678424d5cf88cb823daf98f915aa6c9f4dcb",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "journal_entry_id",
+              "nullable": true,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "2090d1a909bda1d641b2e25edf1f7d49b056cde5687c31d89ee3a1cfef2f90dc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "period_id",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "ec7d824a33c5e242bb29feebbae751478f0e3e586e11ae64fac9b6b93a5fff2c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d487aac378b625245aea5dd9d4da7172d342c34ae22edd9716020bea839a7940",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "base_currency",
+              "nullable": true,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "53991b9ef2bda9e129b0844af8a7aaade2e47cdfa845b58d21d8c66572474afc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "period_status",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "ba4f0d5ef71321ec5844fd658424e4874b565b9e18340d53cb0737cff9e0ce30",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "occurred_at",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "22eb9227554db122357489b895374f8b6b1dd60ce00720b8d28e91ebdcb3bd8f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "disposition",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [],
+          "definition": "WITH book_currency_evidence AS (\n         SELECT b.ledger_book_id,\n                CASE\n                    WHEN upper(TRIM(BOTH FROM b.base_currency)) ~ '^[A-Z]{3}$'::text THEN upper(TRIM(BOTH FROM b.base_currency))\n                    ELSE NULL::text\n                END AS base_currency,\n            count(l_1.entry_id) FILTER (WHERE l_1.transaction_currency IS NOT NULL) AS currency_bearing_legs,\n            count(l_1.entry_id) FILTER (WHERE l_1.transaction_currency IS NOT NULL AND l_1.functional_currency IS DISTINCT FROM upper(TRIM(BOTH FROM b.base_currency))) AS mismatched_functional_legs,\n            count(l_1.entry_id) FILTER (WHERE l_1.transaction_currency IS NOT NULL AND (l_1.transaction_currency IS DISTINCT FROM l_1.functional_currency OR l_1.fx_rate_to_functional <> 1::numeric)) AS foreign_currency_legs\n           FROM ledger.ledger_books b\n             LEFT JOIN ledger.accounting_periods p_1 ON p_1.ledger_book_id = b.ledger_book_id\n             LEFT JOIN ledger.journal_legs l_1 ON l_1.period_id = p_1.period_id\n          GROUP BY b.ledger_book_id, b.base_currency\n        )\n SELECT l.entry_id,\n    l.journal_entry_id,\n    l.period_id,\n    p.ledger_book_id,\n    e.base_currency,\n    COALESCE(p.status, 'Unknown'::text) AS period_status,\n    l.occurred_at,\n        CASE\n            WHEN p.ledger_book_id IS NULL THEN 'UnresolvedLedgerBook'::text\n            WHEN e.base_currency IS NULL THEN 'UnusableBaseCurrency'::text\n            WHEN e.mismatched_functional_legs > 0 THEN 'FunctionalCurrencyMismatch'::text\n            WHEN e.foreign_currency_legs > 0 THEN 'ForeignCurrencyEvidence'::text\n            WHEN e.currency_bearing_legs = 0 THEN 'UnaffirmedSingleCurrency'::text\n            ELSE 'Repairable'::text\n        END AS disposition\n   FROM ledger.journal_legs l\n     LEFT JOIN ledger.accounting_periods p ON p.period_id = l.period_id\n     LEFT JOIN book_currency_evidence e ON e.ledger_book_id = p.ledger_book_id\n  WHERE l.transaction_currency IS NULL;",
+          "definition_hash": "d034a166b11e1b5ed5c07140349e4f5e2c581e8ea4771e43eba168a5a29af675",
+          "fingerprint": "402b646c629b7bed3913e77e709369a665e635909584022436ba812d3b25d95e",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [],
+          "is_partition": false,
+          "kind": "view",
+          "name": "journal_leg_currency_backfill_status",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "nothing",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
               "fingerprint": "bdd07a4e70e22afe91449393e5167c348cec8ce4053d437b306785ffee2ed1af",
               "generated": null,
               "generated_expression": null,
@@ -59160,7 +59976,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "7bf688add67986e27839bfad91c9b42060bb815b00b9a200d2106f0631d7ae73",
+          "fingerprint": "49dbc4129d3d9da2963f617f2e7f65876fa929249708895d9667ffa22aaa92cc",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -59205,6 +60021,28 @@
               "options": [],
               "owner": "meridian",
               "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_journal_legs_currency_blind ON ledger.journal_legs USING btree (period_id) WHERE (transaction_currency IS NULL)",
+              "expression": null,
+              "fingerprint": "10fd099448a791f5db7dcde36491e34433ede0a3a7c82563e4f0bdc0fe0f8222",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "period_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_journal_legs_currency_blind",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "transaction_currency IS NULL",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -64183,6 +65021,14 @@
         },
         {
           "enabled": false,
+          "fingerprint": "15bae45986630c738af58cb3f897d54f4799d58b0b1d1ff93983946fc0888d80",
+          "forced": false,
+          "policies": [],
+          "relation": "journal_leg_currency_affirmations",
+          "schema": "ledger"
+        },
+        {
+          "enabled": false,
           "fingerprint": "14c180fc7b8c17903d5c2b7b9dadb2f058f9d9f7beb3db2c3efcf17ea75228c3",
           "forced": false,
           "policies": [],
@@ -69108,6 +69954,317 @@
               "comment": null,
               "data_type": "uuid",
               "default": null,
+              "fingerprint": "d379d5a328d24343781dedba7d641332a1570b5cadf577298baaad817876c732",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "affirmation_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "7c4e1cc816bd0597436fcc96eb373f1525f8fdef77ffd899d6165514f55e6fef",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f849dbea1442f260008bfe49b065ffe249ffd35a799b8e69c277a79a753fda74",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "affirmed_currency",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7aa5ece95433f5df72896d3e2368e8f832d08b21593f03394fbaa5afd1507fc8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "actor",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "27b70b8c9d8e4c76f276070d52ee753be300d8854f4cbac6ebb5dd509f1333ce",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "rationale",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "065a338571de21941a153304c45a49ae1279e2cfcb64e549c6c4d5256254e0d2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "affirmed_at",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "a53c82967732ca5a3b731156f867a3a026db34036c804b42c0ba65a2d802ce28",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "legs_repaired",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Operator assertions that a ledger book with no retained currency evidence transacted only in its base currency, and the currency-blind journal legs each assertion completed. Append-only: this is the authority for a repair the data alone could not determine.",
+          "constraints": [
+            {
+              "columns": [
+                "affirmed_currency"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (affirmed_currency ~ '^[A-Z]{3}$'::text)",
+              "delete_action": null,
+              "fingerprint": "01a019b7cb455c09ffd9dab45ca9e2fb13abfe92d26d4248825c816ebe44bf84",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_journal_leg_currency_affirmations_currency",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "legs_repaired"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (legs_repaired >= 0)",
+              "delete_action": null,
+              "fingerprint": "eb1bf066fe8ad3302a472f5c8f4a9933828121b7f4fedbfdc24f7914bbf31266",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_journal_leg_currency_affirmations_legs",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "ledger_book_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (ledger_book_id) REFERENCES ledger.ledger_books(ledger_book_id)",
+              "delete_action": "no_action",
+              "fingerprint": "317280f4b22815dafd297c8859d8d1c9b5b2f53d10a0fa19c40d14188278d5a9",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "journal_leg_currency_affirmations_ledger_book_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "ledger_book_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "ledger_books",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "affirmation_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (affirmation_id)",
+              "delete_action": null,
+              "fingerprint": "7032376642774ef5c0f160ec757d26b66814a4b3791fda92a368d21463eb1659",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "journal_leg_currency_affirmations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "830e3ef8a63ef4e122e301afb6511bfe7a3f8decc7b7614f14008951cac145d1",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_journal_leg_currency_affirmations_book ON ledger.journal_leg_currency_affirmations USING btree (ledger_book_id, affirmed_at DESC)",
+              "expression": null,
+              "fingerprint": "5d298e221eba6d9fb838259da05cf649fbdc155f4f32670d2260eca9772b041f",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id",
+                "affirmed_at"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_journal_leg_currency_affirmations_book",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX journal_leg_currency_affirmations_pkey ON ledger.journal_leg_currency_affirmations USING btree (affirmation_id)",
+              "expression": null,
+              "fingerprint": "c940b9b5af44a712b8dd7516d25b38291d8d8c9616809cb6d0c2861e8d4e3c91",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "affirmation_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "journal_leg_currency_affirmations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "journal_leg_currency_affirmations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
               "fingerprint": "bdd07a4e70e22afe91449393e5167c348cec8ce4053d437b306785ffee2ed1af",
               "generated": null,
               "generated_expression": null,
@@ -69759,7 +70916,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "7bf688add67986e27839bfad91c9b42060bb815b00b9a200d2106f0631d7ae73",
+          "fingerprint": "49dbc4129d3d9da2963f617f2e7f65876fa929249708895d9667ffa22aaa92cc",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -69804,6 +70961,28 @@
               "options": [],
               "owner": "meridian",
               "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_journal_legs_currency_blind ON ledger.journal_legs USING btree (period_id) WHERE (transaction_currency IS NULL)",
+              "expression": null,
+              "fingerprint": "10fd099448a791f5db7dcde36491e34433ede0a3a7c82563e4f0bdc0fe0f8222",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "period_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_journal_legs_currency_blind",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "transaction_currency IS NULL",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -74729,7 +75908,206 @@
           "timing": "before"
         }
       ],
-      "views": []
+      "views": [
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a0f5f7fe75d4ea70fc197f4cf78fbe31d4b0c0bf7d34cbc590acbc1a12aab85c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "entry_id",
+              "nullable": true,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a9ec310d23daa44b8fb522260c0b678424d5cf88cb823daf98f915aa6c9f4dcb",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "journal_entry_id",
+              "nullable": true,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "2090d1a909bda1d641b2e25edf1f7d49b056cde5687c31d89ee3a1cfef2f90dc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "period_id",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "ec7d824a33c5e242bb29feebbae751478f0e3e586e11ae64fac9b6b93a5fff2c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d487aac378b625245aea5dd9d4da7172d342c34ae22edd9716020bea839a7940",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "base_currency",
+              "nullable": true,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "53991b9ef2bda9e129b0844af8a7aaade2e47cdfa845b58d21d8c66572474afc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "period_status",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "ba4f0d5ef71321ec5844fd658424e4874b565b9e18340d53cb0737cff9e0ce30",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "occurred_at",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "22eb9227554db122357489b895374f8b6b1dd60ce00720b8d28e91ebdcb3bd8f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "disposition",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [],
+          "definition": "WITH book_currency_evidence AS (\n         SELECT b.ledger_book_id,\n                CASE\n                    WHEN upper(TRIM(BOTH FROM b.base_currency)) ~ '^[A-Z]{3}$'::text THEN upper(TRIM(BOTH FROM b.base_currency))\n                    ELSE NULL::text\n                END AS base_currency,\n            count(l_1.entry_id) FILTER (WHERE l_1.transaction_currency IS NOT NULL) AS currency_bearing_legs,\n            count(l_1.entry_id) FILTER (WHERE l_1.transaction_currency IS NOT NULL AND l_1.functional_currency IS DISTINCT FROM upper(TRIM(BOTH FROM b.base_currency))) AS mismatched_functional_legs,\n            count(l_1.entry_id) FILTER (WHERE l_1.transaction_currency IS NOT NULL AND (l_1.transaction_currency IS DISTINCT FROM l_1.functional_currency OR l_1.fx_rate_to_functional <> 1::numeric)) AS foreign_currency_legs\n           FROM ledger.ledger_books b\n             LEFT JOIN ledger.accounting_periods p_1 ON p_1.ledger_book_id = b.ledger_book_id\n             LEFT JOIN ledger.journal_legs l_1 ON l_1.period_id = p_1.period_id\n          GROUP BY b.ledger_book_id, b.base_currency\n        )\n SELECT l.entry_id,\n    l.journal_entry_id,\n    l.period_id,\n    p.ledger_book_id,\n    e.base_currency,\n    COALESCE(p.status, 'Unknown'::text) AS period_status,\n    l.occurred_at,\n        CASE\n            WHEN p.ledger_book_id IS NULL THEN 'UnresolvedLedgerBook'::text\n            WHEN e.base_currency IS NULL THEN 'UnusableBaseCurrency'::text\n            WHEN e.mismatched_functional_legs > 0 THEN 'FunctionalCurrencyMismatch'::text\n            WHEN e.foreign_currency_legs > 0 THEN 'ForeignCurrencyEvidence'::text\n            WHEN e.currency_bearing_legs = 0 THEN 'UnaffirmedSingleCurrency'::text\n            ELSE 'Repairable'::text\n        END AS disposition\n   FROM ledger.journal_legs l\n     LEFT JOIN ledger.accounting_periods p ON p.period_id = l.period_id\n     LEFT JOIN book_currency_evidence e ON e.ledger_book_id = p.ledger_book_id\n  WHERE l.transaction_currency IS NULL;",
+          "definition_hash": "d034a166b11e1b5ed5c07140349e4f5e2c581e8ea4771e43eba168a5a29af675",
+          "fingerprint": "402b646c629b7bed3913e77e709369a665e635909584022436ba812d3b25d95e",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [],
+          "is_partition": false,
+          "kind": "view",
+          "name": "journal_leg_currency_backfill_status",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "nothing",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        }
+      ]
     },
     {
       "acl": [
