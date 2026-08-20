@@ -72,7 +72,8 @@ public sealed class ProviderConnectionHonestyEndpointTests : IDisposable, IClass
                 StringComparison.OrdinalIgnoreCase));
         AssertUnknownConnection(statusProvider);
 
-        var systemHealthResponse = await _client.GetAsync("/api/health/providers");
+        // W9-GOV-008: the health family declares ViewDiagnostics, which this client already holds.
+        var systemHealthResponse = await _diagnosticsClient.GetAsync("/api/health/providers");
         systemHealthResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         using var systemHealth = JsonDocument.Parse(await systemHealthResponse.Content.ReadAsStringAsync());
         var systemHealthProvider = systemHealth.RootElement.GetProperty("providers")
@@ -83,7 +84,7 @@ public sealed class ProviderConnectionHonestyEndpointTests : IDisposable, IClass
                 StringComparison.OrdinalIgnoreCase));
         AssertUnknownConnection(systemHealthProvider);
 
-        var diagnosticsResponse = await _client.GetAsync(
+        var diagnosticsResponse = await _diagnosticsClient.GetAsync(
             $"/api/health/providers/{Uri.EscapeDataString(providerName!)}/diagnostics");
         diagnosticsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         using var diagnostics = JsonDocument.Parse(await diagnosticsResponse.Content.ReadAsStringAsync());

@@ -24,6 +24,10 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     // paths use an authorized client so the handler (not the authorization gate) produces the
     // asserted 400/200 responses.
     private readonly HttpClient _configClient;
+    // W9-GOV-008: the health and diagnostics reads now declare ViewDiagnostics -- /api/health/storage
+    // returns the absolute storage root path, so the family is not an open read. These negative paths
+    // assert payload shape, so they use an authorized client rather than being reduced to a 401 check.
+    private readonly HttpClient _healthClient;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public NegativePathEndpointTests(EndpointTestFixture fixture)
@@ -34,6 +38,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
             UserPermission.TriggerBackfill);
         _providerClient = fixture.CreatePermittedClient(UserPermission.ManageProviders);
         _configClient = fixture.CreatePermittedClient(UserPermission.ViewConfig, UserPermission.ModifyConfig);
+        _healthClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
     }
 
     public void Dispose()
@@ -42,6 +47,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
         _backfillClient.Dispose();
         _providerClient.Dispose();
         _configClient.Dispose();
+        _healthClient.Dispose();
     }
 
     // ================================================================
@@ -60,7 +66,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [Fact]
     public async Task HealthDetailed_ReturnsExpectedStatusCodes()
     {
-        var response = await _client.GetAsync("/api/health/detailed");
+        var response = await _healthClient.GetAsync("/api/health/detailed");
         // Should return 200, 503, or 501 depending on service availability
         response.StatusCode.Should().BeOneOf(
             HttpStatusCode.OK,
@@ -71,7 +77,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [Fact]
     public async Task HealthSummary_ReturnsJsonWithRequiredFields()
     {
-        var response = await _client.GetAsync("/api/health/summary");
+        var response = await _healthClient.GetAsync("/api/health/summary");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
 
@@ -85,7 +91,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [Fact]
     public async Task HealthProviders_ReturnsJsonWithProvidersArray()
     {
-        var response = await _client.GetAsync("/api/health/providers");
+        var response = await _healthClient.GetAsync("/api/health/providers");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
 
@@ -96,14 +102,14 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [Fact]
     public async Task HealthProviderDiagnostics_NonExistentProvider_ReturnsNotFound()
     {
-        var response = await _client.GetAsync("/api/health/providers/nonexistent-provider-xyz");
+        var response = await _healthClient.GetAsync("/api/health/providers/nonexistent-provider-xyz");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task HealthStorage_ReturnsJsonWithExpectedFields()
     {
-        var response = await _client.GetAsync("/api/health/storage");
+        var response = await _healthClient.GetAsync("/api/health/storage");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
@@ -116,7 +122,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [Fact]
     public async Task HealthEvents_ReturnsJsonWithMetricsFlag()
     {
-        var response = await _client.GetAsync("/api/health/events");
+        var response = await _healthClient.GetAsync("/api/health/events");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
@@ -474,13 +480,24 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     [InlineData("/api/errors")]
     [InlineData("/api/backpressure")]
     [InlineData("/api/connections")]
+    public async Task GetEndpoint_ReturnsJsonContentType(string endpoint)
+    {
+        var response = await _client.GetAsync(endpoint);
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
+    }
+
+    // The health family carries the same content-type contract but declares ViewDiagnostics, so it is
+    // exercised through the permitted client rather than dropped from the sweep. /api/health itself
+    // stays above: it is the liveness alias and declares an open read.
+    [Theory]
     [InlineData("/api/health/summary")]
     [InlineData("/api/health/providers")]
     [InlineData("/api/health/storage")]
     [InlineData("/api/health/events")]
-    public async Task GetEndpoint_ReturnsJsonContentType(string endpoint)
+    public async Task GetHealthEndpoint_ReturnsJsonContentType(string endpoint)
     {
-        var response = await _client.GetAsync(endpoint);
+        var response = await _healthClient.GetAsync(endpoint);
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
     }

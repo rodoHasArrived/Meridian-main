@@ -32,7 +32,7 @@ public static class StatusEndpoints
             var statusCode = handlers.GetHealthStatusCode(response);
             return Results.Json(response, jsonOptions, statusCode: statusCode);
         })
-        .WithName("GetHealth")
+        .WithName("GetHealth").DeclareOpenRead("Liveness health check returning 503 when unhealthy; status, uptime and coarse check names only, and the documented probe contract for load balancers.")
         .WithTags("Health")
         .WithDescription("Returns comprehensive health status including provider connectivity and storage health.")
         .Produces<HealthCheckResponse>(200)
@@ -45,7 +45,7 @@ public static class StatusEndpoints
             var statusCode = handlers.GetHealthStatusCode(response);
             return Results.Json(response, jsonOptions, statusCode: statusCode);
         })
-        .WithName("GetHealthApi")
+        .WithName("GetHealthApi").DeclareOpenRead("Documented alias of /health kept for backward compatibility; same liveness payload and probe contract.")
         .WithTags("Health")
         .WithDescription("Alias for /health endpoint for backward compatibility.")
         .Produces<HealthCheckResponse>(200)
@@ -53,7 +53,7 @@ public static class StatusEndpoints
 
         // Kubernetes-style health endpoints
         app.MapGet("/healthz", () => Results.Ok("healthy"))
-            .WithName("GetHealthz")
+            .WithName("GetHealthz").DeclareOpenRead("Kubernetes liveness probe; exempt from session authentication, so a permission would refuse the orchestrator that must call it.")
             .WithTags("Health")
             .WithDescription("Kubernetes-style liveness probe returning 200 if the process is running.")
             .Produces(200);
@@ -61,7 +61,7 @@ public static class StatusEndpoints
         // Readiness probe
         app.MapGet(UiApiRoutes.Ready, (CancellationToken ct) =>
             GetReadinessResultAsync(app, handlers, jsonOptions, ct))
-        .WithName("GetReady")
+        .WithName("GetReady").DeclareOpenRead("Kubernetes readiness probe; exempt from session authentication, so a permission would refuse the orchestrator that must call it.")
         .WithTags("Health")
         .WithDescription("Readiness probe returning 200 when the service is ready to accept requests, or 503 if not.")
         .Produces(200)
@@ -69,14 +69,14 @@ public static class StatusEndpoints
 
         app.MapGet("/readyz", (CancellationToken ct) =>
             GetReadinessResultAsync(app, handlers, jsonOptions, ct))
-        .WithName("GetReadyz")
+        .WithName("GetReadyz").DeclareOpenRead("Kubernetes readiness probe alias; exempt from session authentication, so a permission would refuse the orchestrator that must call it.")
         .WithTags("Health")
         .Produces(200)
         .Produces(503);
 
         app.MapGet("/startupz", (CancellationToken ct) =>
             GetStartupResultAsync(app, handlers, jsonOptions, ct))
-        .WithName("GetStartupz")
+        .WithName("GetStartupz").DeclareOpenRead("Sanitized pre-login startup progress; reached before any session exists, so a permission would refuse every caller it is for.")
         .WithTags("Health")
         .WithDescription("Sanitized pre-login startup progress for the local workstation.")
         .Produces<RuntimeLifecycleSnapshotDto>(200)
@@ -86,16 +86,20 @@ public static class StatusEndpoints
         app.MapGet("/startup", () => Results.Content(
                 HtmlTemplateGenerator.Startup(),
                 "text/html; charset=utf-8"))
-            .WithName("GetStartupCenter")
+            .WithName("GetStartupCenter").DeclareOpenRead("Pre-login lifecycle progress page; reached before any session exists, so a permission would refuse every caller it is for.")
             .WithTags("Health")
             .WithDescription("Pre-login lifecycle progress and readiness checks.")
             .Produces(StatusCodes.Status200OK, contentType: "text/html");
 
         // Liveness probe
         app.MapGet(UiApiRoutes.Live, () => Results.Ok("alive"))
-            .WithName("GetLive").WithTags("Health").Produces(200);
+            .WithName("GetLive").WithTags("Health")
+            .DeclareOpenRead("Kubernetes liveness probe; exempt from session authentication, so a permission would refuse the orchestrator that must call it.")
+            .Produces(200);
         app.MapGet("/livez", () => Results.Ok("alive"))
-            .WithName("GetLivez").WithTags("Health").Produces(200);
+            .WithName("GetLivez").WithTags("Health")
+            .DeclareOpenRead("Kubernetes liveness probe alias; exempt from session authentication, so a permission would refuse the orchestrator that must call it.")
+            .Produces(200);
 
         // Prometheus metrics
         app.MapGet(UiApiRoutes.Metrics, async (CancellationToken cancellationToken) =>
@@ -103,7 +107,7 @@ public static class StatusEndpoints
             var content = await handlers.GetPrometheusMetricsAsync(cancellationToken).ConfigureAwait(false);
             return Results.Content(content, "text/plain; version=0.0.4");
         })
-        .WithName("GetMetrics")
+        .WithName("GetMetrics").DeclareOpenRead("Prometheus scrape contract in text exposition format; operational counters only, and gating it would break the monitoring systems the endpoint exists to serve.")
         .WithTags("Monitoring")
         .WithDescription("Returns Prometheus-format metrics for scraping by monitoring systems.")
         .Produces(200);
@@ -189,7 +193,7 @@ public static class StatusEndpoints
             };
             return Results.Json(report, jsonOptions, statusCode: statusCode);
         })
-        .WithName("GetDetailedHealth")
+        .WithName("GetDetailedHealth").RequirePermission(UserPermission.ViewDiagnostics)
         .WithTags("Health")
         .Produces(200)
         .Produces(503);
@@ -212,7 +216,7 @@ public static class StatusEndpoints
             };
             return Results.Json(report, jsonOptions, statusCode: statusCode);
         })
-        .WithName("GetDetailedHealthApi")
+        .WithName("GetDetailedHealthApi").RequirePermission(UserPermission.ViewDiagnostics)
         .WithTags("Health")
         .WithDescription("Alias for /health/detailed endpoint for backward compatibility.")
         .Produces(200)

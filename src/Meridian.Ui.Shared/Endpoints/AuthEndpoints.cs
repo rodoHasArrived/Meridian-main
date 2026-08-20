@@ -31,7 +31,9 @@ public static class AuthEndpoints
             var hasError = context.Request.Query.ContainsKey("error");
             var html = HtmlTemplateGenerator.Login(returnUrl, hasError);
             return Results.Content(html, "text/html");
-        }).ExcludeFromDescription();
+        })
+        .DeclareOpenRead("Sign-in page; necessarily reachable before a session exists.")
+        .ExcludeFromDescription();
 
         // POST /api/auth/login – authenticate and issue a session cookie
         app.MapPost(UiApiRoutes.AuthApiLogin, async (HttpContext context, LoginSessionService sessionService) =>

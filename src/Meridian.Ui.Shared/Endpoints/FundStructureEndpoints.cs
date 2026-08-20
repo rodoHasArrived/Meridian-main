@@ -1192,6 +1192,7 @@ public static partial class FundStructureEndpoints
                 "/portal/reporting/access-grants/{grantId}/exchange",
                 "Query-string portal tokens are retired; the opaque grant must be exchanged through a no-store POST body."))
         .WithName("GetReportingPortalDeliveryPackage")
+        .DeclareOpenRead("Retired route that only answers 410 Gone with a pointer to the grant-exchange replacement; it reads nothing.")
         .ProducesProblem(StatusCodes.Status410Gone);
 
         reportingGroup.MapPost("/packs/{reportId:guid}/deliveries", (HttpContext context) =>

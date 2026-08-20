@@ -251,9 +251,11 @@ public sealed class ResponseSchemaValidationTests : IDisposable, IClassFixture<E
     private async Task<Dictionary<string, JsonElement>> GetJsonAsync(string url)
     {
         // SEC-001: configuration reads require ViewConfig/ModifyConfig — use the authorized client.
-        // W9-GOV-008: provider reads require a platform permission — likewise.
+        // W9-GOV-008: provider reads require a platform permission — likewise. The health family
+        // declares ViewDiagnostics; bare /api/health has no trailing slash and stays an open read.
         var client = url.StartsWith("/api/config", StringComparison.OrdinalIgnoreCase) ? _configClient
             : url.StartsWith("/api/providers", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
+            : url.StartsWith("/api/health/", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
             : _client;
         var response = await client.GetAsync(url);
         response.StatusCode.Should().Be(HttpStatusCode.OK);

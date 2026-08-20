@@ -3027,7 +3027,7 @@ public static partial class WorkstationEndpoints
 
         MapCrossStrategyPortfolioRoutes(portfolioGroup, jsonOptions);
         app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
-            .ExcludeFromDescription();
+            .DeclareOpenRead("Browser workstation shell HTML; the client loads it before authenticating and every governed read it then makes is declared on its own route.").ExcludeFromDescription();
 
         app.MapGet("/workstation/{*path}", (string? path, IWebHostEnvironment environment) =>
         {
@@ -3062,7 +3062,7 @@ public static partial class WorkstationEndpoints
                 _ => "application/octet-stream"
             };
             return Results.File(filePath, contentType);
-        }).ExcludeFromDescription();
+        }).DeclareOpenRead("Browser workstation shell fallback and its static assets from wwwroot/workstation; same pre-authentication shell as /workstation.").ExcludeFromDescription();
     }
 
     private static Task<TradingOperatorReadinessDto> GetTradingOperatorReadinessAsync(

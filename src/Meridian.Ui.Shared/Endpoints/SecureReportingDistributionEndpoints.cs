@@ -284,6 +284,7 @@ public static class SecureReportingDistributionEndpoints
                 string grantId,
                 HttpContext context) =>
             ExecuteLandingPage(grantId, context))
+            .DeclareOpenRead("Static token-entry page for an external report recipient; carries no package data and no grant is honoured until the opaque token is exchanged through the sibling POST.")
             .AddEndpointFilter(RejectQueryBearerAsync);
 
         app.MapPost("/portal/reporting/access-grants/{grantId}/exchange", async (
