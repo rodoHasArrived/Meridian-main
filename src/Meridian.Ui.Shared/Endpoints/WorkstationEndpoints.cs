@@ -204,7 +204,9 @@ public static partial class WorkstationEndpoints
 
             // One call, not a loop: a delivery replaces the exposures it restates, so ingesting row by
             // row would make the batch overwrite itself and report only its last row per exposure.
-            buffer.IngestBatch(rows);
+            // Scoped to the tenant resolved from the request, never from the payload -- the buffer is a
+            // singleton, so an unscoped write would land in every tenant's exposure.
+            buffer.IngestBatch(CollateralTenantScope.ForRequest(context), rows);
 
             return Results.Accepted(value: new { ingested = rows.Count, buffered = true });
         })
@@ -391,7 +393,7 @@ public static partial class WorkstationEndpoints
 
             var service = context.RequestServices.GetRequiredService<CollateralExposureService>();
             var buffer = context.RequestServices.GetService<CollateralIngestionBuffer>();
-            var rows = buffer?.SnapshotCurrent() ?? [];
+            var rows = buffer?.SnapshotCurrent(CollateralTenantScope.ForRequest(context)) ?? [];
             return Results.Json(BuildCollateralExposureSnapshot(service, rows), jsonOptions);
         })
         .WithName("GetWorkstationCollateralExposure").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)

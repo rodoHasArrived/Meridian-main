@@ -44,18 +44,28 @@ public sealed partial class WorkstationEndpointsTests
         });
 
         var buffer = app.Services.GetRequiredService<CollateralIngestionBuffer>();
-        buffer.IngestBatch([new CollateralInputRow(
-            AsOf: DateTimeOffset.UtcNow,
-            Counterparty: "northwind-bank",
-            ProductType: "swap",
-            PositionNotional: 5_000m,
-            MarkToMarket: 1_000m,
-            CollateralBalance: 400m,
-            CollateralType: "cash",
-            InitialMargin: 100m,
-            VariationMargin: 50m)]);
-
         var client = app.GetTestClient();
+
+        // Ingested through the route rather than seeded in process, so ingest and read agree on the
+        // tenant scope by construction. Seeding directly would pass only while the two happened to
+        // resolve the same key -- which is the thing worth proving, not assuming.
+        var ingest = await client.PostAsJsonAsync(
+            "/api/workstation/collateral/ingest",
+            new[]
+            {
+                new CollateralInputRow(
+                    AsOf: DateTimeOffset.UtcNow,
+                    Counterparty: "northwind-bank",
+                    ProductType: "swap",
+                    PositionNotional: 5_000m,
+                    MarkToMarket: 1_000m,
+                    CollateralBalance: 400m,
+                    CollateralType: "cash",
+                    InitialMargin: 100m,
+                    VariationMargin: 50m)
+            },
+            ServerJsonOptions);
+        ingest.StatusCode.Should().Be(HttpStatusCode.Accepted);
 
         // Exposure is an aggregate of what is buffered, so reading it must leave the buffer intact.
         // Draining on read made the snapshot cover only the rows arriving since the previous reader:
@@ -71,6 +81,46 @@ public sealed partial class WorkstationEndpointsTests
 
         secondPayload!.Counterparties.Should().ContainSingle(
             "a second reader must see the same exposure as the first, not an emptied buffer");
-        buffer.BufferedCount.Should().Be(1, "reading exposure is not a consumption of collateral input");
+        buffer.BufferedCount(CollateralTenantScope.For("tenant-test", "tenant-test"))
+            .Should().Be(1, "reading exposure is not a consumption of collateral input");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_CollateralExposure_ShouldNotServeAnotherTenantsRows()
+    {
+        // The buffer is a process-wide singleton, so without a server-resolved scope key one tenant's
+        // ingest lands in every tenant's exposure -- and a same-named counterparty restatement from
+        // either overwrites the other's current reading.
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                services.AddSingleton<CollateralExposureService>();
+                services.AddSingleton<CollateralIngestionBuffer>();
+            },
+            currentUserCompanyId: "tenant-alpha");
+
+        var alphaIngest = await app.GetTestClient().PostAsJsonAsync(
+            "/api/workstation/collateral/ingest",
+            new[]
+            {
+                new CollateralInputRow(
+                    AsOf: DateTimeOffset.UtcNow,
+                    Counterparty: "shared-counterparty",
+                    ProductType: "repo",
+                    PositionNotional: 1m,
+                    MarkToMarket: 100m,
+                    CollateralBalance: 1m,
+                    CollateralType: "cash",
+                    InitialMargin: 1m,
+                    VariationMargin: 0m)
+            },
+            ServerJsonOptions);
+        alphaIngest.StatusCode.Should().Be(HttpStatusCode.Accepted);
+
+        var buffer = app.Services.GetRequiredService<CollateralIngestionBuffer>();
+        buffer.BufferedCount(CollateralTenantScope.For("tenant-alpha", "tenant-alpha")).Should().Be(1);
+        buffer.BufferedCount(CollateralTenantScope.For("tenant-beta", "tenant-beta")).Should().Be(0);
+        buffer.SnapshotCurrent(CollateralTenantScope.For("tenant-beta", "tenant-beta")).Should().BeEmpty(
+            "another tenant reads nothing rather than falling back to a shared buffer");
     }
 }

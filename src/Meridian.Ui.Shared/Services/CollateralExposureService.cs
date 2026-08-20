@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -146,25 +148,58 @@ public sealed class CollateralExposureService
 /// row whose identity it restates and keeps the rest, so a producer may refresh one counterparty
 /// without erasing the others.</para>
 ///
-/// <para><b>Rows within one delivery are never collapsed</b>, only rows from earlier deliveries are.
-/// Two positions sharing an identity in a single batch are two positions and are summed; the same
-/// identity arriving in a later batch is a restatement and supersedes. That is why the API takes a
+/// <para><b>Simultaneous positions are never collapsed.</b> Rows sharing an identity <em>and</em> an
+/// <c>AsOf</c> are two positions observed at one moment and are summed. Rows sharing an identity at
+/// different times are a restatement and a straggler, and only the newest observation survives —
+/// whether the straggler arrives in a later delivery or in the same one. That is why the API takes a
 /// batch: calling it once per row would make a delivery overwrite itself and silently under-report.</para>
+///
+/// <para><b>State is partitioned by tenant scope.</b> The buffer is a process-wide singleton, so
+/// without a scope key one tenant's ingest would appear in another's exposure and a same-identity
+/// restatement from either would overwrite the other's current reading. The scope is resolved
+/// server-side from the request, never from the payload. A deployment with no tenancy resolves one
+/// empty scope and behaves exactly as before.</para>
 /// </summary>
+/// <summary>
+/// The tenant partition a collateral reading belongs to, resolved server-side from the request rather
+/// than taken from the payload. An unscoped deployment resolves a single empty scope.
+/// </summary>
+public readonly record struct CollateralTenantScope(string TenantId, string CompanyId)
+{
+    public static readonly CollateralTenantScope Unscoped = new(string.Empty, string.Empty);
+
+    public static CollateralTenantScope For(string? tenantId, string? companyId)
+        => new(Fold(tenantId), Fold(companyId));
+
+    /// <summary>
+    /// Resolves the scope from the request, mirroring <see cref="WorkstationWorkflowReadScope.ForRequest"/>.
+    /// The tenant comes from what the server resolved for the caller, never from the ingest payload --
+    /// a payload-supplied tenant would let a producer write into another tenant's exposure.
+    /// </summary>
+    public static CollateralTenantScope ForRequest(HttpContext context)
+    {
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return For(tenant.TenantId, tenant.CompanyId);
+    }
+
+    private static string Fold(string? value) => (value ?? string.Empty).Trim().ToLowerInvariant();
+}
+
 public sealed class CollateralIngestionBuffer
 {
     private const int MaxBufferedRows = 20_000;
     private readonly Lock _gate = new();
-    private readonly List<CollateralInputRow> _rows = [];
+    private readonly Dictionary<CollateralTenantScope, List<CollateralInputRow>> _byScope = [];
 
-    public int BufferedCount
+    /// <summary>
+    /// Rows currently held for one tenant scope. Scoped rather than global because a count spanning
+    /// tenants would be a number no operator can act on.
+    /// </summary>
+    public int BufferedCount(CollateralTenantScope scope)
     {
-        get
+        lock (_gate)
         {
-            lock (_gate)
-            {
-                return _rows.Count;
-            }
+            return _byScope.TryGetValue(scope, out var rows) ? rows.Count : 0;
         }
     }
 
@@ -177,7 +212,7 @@ public sealed class CollateralIngestionBuffer
     /// and with non-consuming reads nothing would ever drain it.
     /// </para>
     /// </summary>
-    public void IngestBatch(IReadOnlyList<CollateralInputRow> rows)
+    public void IngestBatch(CollateralTenantScope scope, IReadOnlyList<CollateralInputRow> rows)
     {
         ArgumentNullException.ThrowIfNull(rows);
         if (rows.Count == 0)
@@ -200,8 +235,14 @@ public sealed class CollateralIngestionBuffer
 
         lock (_gate)
         {
+            if (!_byScope.TryGetValue(scope, out var held0))
+            {
+                held0 = [];
+                _byScope[scope] = held0;
+            }
+
             var held = new Dictionary<ExposureIdentity, DateTimeOffset>();
-            foreach (var existing in _rows)
+            foreach (var existing in held0)
             {
                 var key = ExposureKey(existing);
                 if (offered.ContainsKey(key) &&
@@ -222,7 +263,7 @@ public sealed class CollateralIngestionBuffer
                 }
             }
 
-            _rows.RemoveAll(existing =>
+            held0.RemoveAll(existing =>
             {
                 var key = ExposureKey(existing);
                 return offered.ContainsKey(key) && !stale.Contains(key);
@@ -230,17 +271,28 @@ public sealed class CollateralIngestionBuffer
 
             foreach (var row in rows)
             {
+                var key = ExposureKey(row);
+
                 // Per exposure, not per batch: a delivery restating one exposure with a stale reading
                 // and another with a fresh one keeps the fresh half rather than being dropped whole.
-                if (!stale.Contains(ExposureKey(row)))
+                if (stale.Contains(key))
                 {
-                    _rows.Add(row);
+                    continue;
+                }
+
+                // And within the winning identity, only the winning observation. A batch carrying rows
+                // for one identity at two different times is not two simultaneous positions -- it is a
+                // restatement plus a straggler, and summing both would fold a superseded position back
+                // into exposure. Rows sharing the winning AsOf are the simultaneous case and all survive.
+                if (row.AsOf == offered[key])
+                {
+                    held0.Add(row);
                 }
             }
 
-            if (_rows.Count > MaxBufferedRows)
+            if (held0.Count > MaxBufferedRows)
             {
-                _rows.RemoveRange(0, _rows.Count - MaxBufferedRows);
+                held0.RemoveRange(0, held0.Count - MaxBufferedRows);
             }
         }
     }
@@ -260,11 +312,11 @@ public sealed class CollateralIngestionBuffer
     /// different exposure and the second frequently saw none.
     /// </para>
     /// </summary>
-    public IReadOnlyList<CollateralInputRow> SnapshotCurrent()
+    public IReadOnlyList<CollateralInputRow> SnapshotCurrent(CollateralTenantScope scope)
     {
         lock (_gate)
         {
-            return _rows.ToArray();
+            return _byScope.TryGetValue(scope, out var rows) ? rows.ToArray() : [];
         }
     }
 
