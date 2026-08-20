@@ -3018,7 +3018,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(summary, jsonOptions);
         })
-        .WithName("GetPortfolioCashFlows")
+        .WithName("GetPortfolioCashFlows").RequirePermission(UserPermission.ViewTrades)
         .Produces<RunCashFlowSummary>(200)
         .Produces(404)
         .Produces(501);

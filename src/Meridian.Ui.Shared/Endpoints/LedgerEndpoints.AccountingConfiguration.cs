@@ -34,7 +34,7 @@ public static partial class LedgerEndpoints
                 .ConfigureAwait(false);
             return Results.Json(workspace, jsonOptions);
         })
-        .WithName("GetAccountingConfiguration")
+        .WithName("GetAccountingConfiguration").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
@@ -669,7 +669,7 @@ public static partial class LedgerEndpoints
                 .ConfigureAwait(false);
             return Results.Json(audit, jsonOptions);
         })
-        .WithName("ListAccountingConfigurationAudit")
+        .WithName("ListAccountingConfigurationAudit").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<IReadOnlyList<AccountingActionAuditEventDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)

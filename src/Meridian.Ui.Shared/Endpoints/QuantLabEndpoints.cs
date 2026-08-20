@@ -127,7 +127,7 @@ public static class QuantLabEndpoints
         {
             return Results.Json(new QuantTemplatesResponse(QuantLabTemplates.All), jsonOptions);
         })
-        .WithName("GetQuantTemplates")
+        .WithName("GetQuantTemplates").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
     }
 

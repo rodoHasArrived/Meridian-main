@@ -89,7 +89,7 @@ public static class RiskEndpoints
         // such, the same way the escalation queue below gates its holdings.
         group.MapGet("/rules", async (HttpContext context) =>
         {
-            if (!EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades))
+            if (!EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewTrades, UserPermission.ManageOrders))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -110,7 +110,7 @@ public static class RiskEndpoints
 
         group.MapGet("/rules/{ruleName}/status", async (string ruleName, HttpContext context) =>
         {
-            if (!EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades))
+            if (!EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewTrades, UserPermission.ManageOrders))
             {
                 return EndpointHelpers.Forbidden();
             }

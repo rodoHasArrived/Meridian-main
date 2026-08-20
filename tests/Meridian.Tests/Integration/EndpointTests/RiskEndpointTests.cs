@@ -31,6 +31,23 @@ public sealed class RiskEndpointTests : EndpointIntegrationTestBase, IDisposable
         Assert.Equal(Path.Combine(Fixture.DataRoot, "risk-rules.json"), options.SnapshotPath);
     }
 
+    [Theory]
+    [InlineData("/api/risk/rules")]
+    [InlineData("/api/risk/rules/DrawdownCircuitBreaker/status")]
+    [InlineData("/api/risk/rules/DrawdownCircuitBreaker/config")]
+    public async Task RiskReads_ForOrderManagerWithoutViewTrades_ShouldBeServed(string route)
+    {
+        // The declaration admits ViewTrades or ManageOrders, and the handlers have to evaluate the same
+        // union or the metadata claims an access path that cannot work: an operator who can change a
+        // risk rule and decide an escalation -- both ManageOrders -- was passing the endpoint filter
+        // and then being refused by the handler's narrower ViewTrades check.
+        using var orderManagerClient = Fixture.CreatePermittedClient(UserPermission.ManageOrders);
+
+        var response = await orderManagerClient.GetAsync(route);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
     [Fact]
     public async Task GetRiskRules_ReturnsKnownRuleSet()
     {
