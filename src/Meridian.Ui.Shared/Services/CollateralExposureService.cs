@@ -191,6 +191,12 @@ public sealed class CollateralExposureService
 /// whether the straggler arrives in a later delivery or in the same one. That is why the API takes a
 /// batch: calling it once per row would make a delivery overwrite itself and silently under-report.</para>
 ///
+/// <para><b>An observation may arrive in pieces.</b> The ingest route caps a single request, so an
+/// observation with more rows than that cap has to be split across requests. A later delivery at the
+/// same <c>AsOf</c> therefore continues the observation already held rather than replacing it, and
+/// incoming rows are matched one-for-one against what is held so a redelivered chunk adds nothing.
+/// Only a strictly newer <c>AsOf</c> replaces.</para>
+///
 /// <para><b>State is partitioned by tenant scope.</b> The buffer is a process-wide singleton, so
 /// without a scope key one tenant's ingest would appear in another's exposure and a same-identity
 /// restatement from either would overwrite the other's current reading. The scope is resolved
@@ -289,22 +295,59 @@ public sealed class CollateralIngestionBuffer
                 }
             }
 
-            // Strictly newer wins; an equal timestamp is a redelivery of the same observation, and
-            // taking the new copy leaves the picture unchanged.
+            // Three outcomes per identity, decided by observation time against what is already held.
+            // Strictly newer is a restatement and replaces; strictly older is a straggler and is
+            // dropped; equal continues the observation already held rather than replacing it.
+            //
+            // Equal used to replace, on the reading that a same-timestamp delivery is a redelivery of
+            // the same rows. That is one of two things it can be, and the other one loses data: an
+            // observation with more rows than the ingest route accepts in one request must be split
+            // across requests, and each later chunk deleted the chunks before it, leaving the snapshot
+            // reporting only the last -- silently short rather than visibly missing. Continuing is
+            // correct for the chunk case and no worse for the redelivery case, because incoming rows
+            // are matched against what is held and only the unmatched remainder is added.
             var stale = new HashSet<ExposureIdentity>();
+            var continued = new HashSet<ExposureIdentity>();
             foreach (var (key, asOf) in offered)
             {
-                if (held.TryGetValue(key, out var current) && current > asOf)
+                if (!held.TryGetValue(key, out var current))
+                {
+                    continue;
+                }
+
+                if (current > asOf)
                 {
                     stale.Add(key);
+                }
+                else if (current == asOf)
+                {
+                    continued.Add(key);
                 }
             }
 
             held0.RemoveAll(existing =>
             {
                 var key = ExposureKey(existing);
-                return offered.ContainsKey(key) && !stale.Contains(key);
+                return offered.ContainsKey(key) && !stale.Contains(key) && !continued.Contains(key);
             });
+
+            // Rows already standing for a continued observation, counted rather than set-tested: a
+            // producer may legitimately report two identical simultaneous positions, so a second copy
+            // within one delivery is a real position while a copy of a row already held is a
+            // redelivered one. Matching by count keeps both cases right.
+            var alreadyHeld = new Dictionary<CollateralInputRow, int>();
+            if (continued.Count > 0)
+            {
+                foreach (var existing in held0)
+                {
+                    if (!continued.Contains(ExposureKey(existing)))
+                    {
+                        continue;
+                    }
+
+                    alreadyHeld[existing] = alreadyHeld.TryGetValue(existing, out var count) ? count + 1 : 1;
+                }
+            }
 
             foreach (var row in rows)
             {
@@ -321,10 +364,18 @@ public sealed class CollateralIngestionBuffer
                 // for one identity at two different times is not two simultaneous positions -- it is a
                 // restatement plus a straggler, and summing both would fold a superseded position back
                 // into exposure. Rows sharing the winning AsOf are the simultaneous case and all survive.
-                if (row.AsOf == offered[key])
+                if (row.AsOf != offered[key])
                 {
-                    held0.Add(row);
+                    continue;
                 }
+
+                if (alreadyHeld.TryGetValue(row, out var remaining) && remaining > 0)
+                {
+                    alreadyHeld[row] = remaining - 1;
+                    continue;
+                }
+
+                held0.Add(row);
             }
 
             EvictWholeObservations(held0);

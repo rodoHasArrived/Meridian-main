@@ -330,6 +330,69 @@ public sealed class CollateralExposureServiceTests
             "coverage above the ceiling classifies the same as the zero-requirement case against thresholds near 1.0");
     }
 
+    [Fact]
+    public void CollateralIngestionBuffer_ObservationSplitAcrossRequests_KeepsEveryChunk()
+    {
+        // The ingest route caps a single request, so an observation with more rows than that cap has
+        // to arrive in pieces. Replacing on an equal AsOf discarded the earlier pieces and left the
+        // snapshot reporting only the last -- silently short, which is worse than visibly missing
+        // because the number still looks like an exposure.
+        var buffer = new CollateralIngestionBuffer();
+        var asOf = DateTimeOffset.UnixEpoch;
+
+        buffer.IngestBatch(Scope, [
+            new CollateralInputRow(asOf, "CPTY-SPLIT", "repo", 1m, 10m, 1m, "cash", 1m, 0m),
+            new CollateralInputRow(asOf, "CPTY-SPLIT", "repo", 1m, 20m, 1m, "cash", 1m, 0m)
+        ]);
+        buffer.IngestBatch(Scope, [
+            new CollateralInputRow(asOf, "CPTY-SPLIT", "repo", 1m, 30m, 1m, "cash", 1m, 0m)
+        ]);
+
+        var snapshot = new CollateralExposureService()
+            .BuildSnapshots(buffer.SnapshotCurrent(Scope))
+            .Should().ContainSingle().Subject;
+
+        snapshot.NetExposure.Should().Be(60m, "every chunk of one observation is part of that observation");
+    }
+
+    [Fact]
+    public void CollateralIngestionBuffer_RedeliveredChunk_DoesNotDoubleCount()
+    {
+        // The other thing a same-AsOf delivery can be. Continuing must not turn an at-least-once
+        // producer's retry into twice the exposure, so incoming rows are matched one-for-one against
+        // what is already held and only the unmatched remainder is added.
+        var buffer = new CollateralIngestionBuffer();
+        var asOf = DateTimeOffset.UnixEpoch;
+        var chunk = new CollateralInputRow(asOf, "CPTY-RETRY", "repo", 1m, 10m, 1m, "cash", 1m, 0m);
+
+        buffer.IngestBatch(Scope, [chunk]);
+        buffer.IngestBatch(Scope, [chunk]);
+
+        var snapshot = new CollateralExposureService()
+            .BuildSnapshots(buffer.SnapshotCurrent(Scope))
+            .Should().ContainSingle().Subject;
+
+        snapshot.NetExposure.Should().Be(10m, "a redelivered chunk restates what is held rather than adding to it");
+    }
+
+    [Fact]
+    public void CollateralIngestionBuffer_IdenticalSimultaneousPositions_AreBothRetained()
+    {
+        // The case the one-for-one match must not swallow: two identical positions reported in a
+        // single delivery are two real positions, not a row and its retry.
+        var buffer = new CollateralIngestionBuffer();
+        var asOf = DateTimeOffset.UnixEpoch;
+        var position = new CollateralInputRow(asOf, "CPTY-TWIN", "repo", 1m, 10m, 1m, "cash", 1m, 0m);
+
+        buffer.IngestBatch(Scope, [position, position]);
+
+        var snapshot = new CollateralExposureService()
+            .BuildSnapshots(buffer.SnapshotCurrent(Scope))
+            .Should().ContainSingle().Subject;
+
+        snapshot.NetExposure.Should().Be(20m);
+    }
+
     private static readonly CollateralTenantScope Scope = CollateralTenantScope.Unscoped;
 
     private static CollateralInputRow Row(int index)
