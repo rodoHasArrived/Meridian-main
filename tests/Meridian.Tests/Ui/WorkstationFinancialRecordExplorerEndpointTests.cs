@@ -5,6 +5,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
@@ -23,6 +24,17 @@ namespace Meridian.Tests.Ui;
 
 public sealed partial class WorkstationEndpointsTests
 {
+    // W9-GOV-008: each explorer is authorized by the family its own builder reads -- the three
+    // run-backed explorers by the operations and security-master set or the strategy permissions,
+    // and report-line provenance by the reporting permissions. These tests cover all four and assert
+    // payload shape, so the caller holds what a fund-operations operator working the whole surface
+    // would rather than only the default ModifySecurityMaster.
+    private const UserPermission ExplorerOperatorPermissions =
+        UserPermission.ModifySecurityMaster |
+        UserPermission.ViewSecurityMaster |
+        UserPermission.ViewDirectLending |
+        UserPermission.ViewReporting;
+
     private static readonly Guid FinancialRecordExplorerAaplSecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid FinancialRecordExplorerLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111112");
     private static readonly Guid FinancialRecordExplorerPositionId = Guid.Parse("11111111-1111-1111-1111-111111111113");
@@ -39,7 +51,9 @@ public sealed partial class WorkstationEndpointsTests
     [InlineData("report-line-provenance")]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorers_ShouldReturnStableSharedShape(string explorerId)
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-run", withBreaks: false));
@@ -73,7 +87,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ShouldExposeCanonicalDimensions()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-ledger-dimensions", withBreaks: false) with
@@ -143,7 +159,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_ReportLineProvenanceExplorer_ShouldExposeEndToEndDrillThroughChain()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var client = app.GetTestClient();
         var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
         var delivery = app.Services.GetRequiredService<ReportPackDeliveryService>();
@@ -265,7 +283,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ShouldExposePassportOperationsAndReportUsage()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var client = app.GetTestClient();
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
@@ -422,7 +442,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ShouldRemainProjectionOnlyWithoutTypedSpine()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         app.Services.GetRequiredService<FinancialRecordExplorerAssetAccountingEventSpineService>().ReturnSpine = false;
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -457,7 +479,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ShouldExcludeNonCanonicalProjectionLineageWithoutTypedSpine()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         app.Services.GetRequiredService<FinancialRecordExplorerAssetOperationsQueryService>().ProjectionEventType =
             "ThirdPartyUnregisteredPnLMark";
         app.Services.GetRequiredService<FinancialRecordExplorerAssetAccountingEventSpineService>().ReturnSpine = false;
@@ -486,7 +510,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_ReportLineProvenanceExplorer_ShouldExcludeApprovedButUnpublishedRecords()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
         var created = workflow.Create(
             "fund-alpha",
@@ -510,7 +536,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorerUnknownId_ShouldReturnNotFound()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var response = await app.GetTestClient().GetAsync("/api/workstation/financial-record-explorers/not-real");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -519,7 +547,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorerSavedViews_ShouldPersistAndReloadForExplorer()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var client = app.GetTestClient();
 
         var saveResponse = await client.PostAsJsonAsync(
@@ -549,7 +579,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorer_ShouldApplySavedViewOnServer()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var client = app.GetTestClient();
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-saved-view-query", withBreaks: false));
@@ -592,7 +624,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorer_ShouldApplyDimensionFilterOnServer()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var client = app.GetTestClient();
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-dimension-query", withBreaks: false) with
@@ -632,7 +666,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorerSavedViews_ShouldNormalizeNullableFiltersAndColumns()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var client = app.GetTestClient();
 
         var saveResponse = await client.PostAsJsonAsync(

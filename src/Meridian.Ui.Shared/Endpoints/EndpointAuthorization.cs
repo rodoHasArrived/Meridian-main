@@ -145,6 +145,21 @@ public static class EndpointAuthorization
     private static bool IsReadOnlyRole(UserRole role)
         => role is UserRole.ReadOnly or UserRole.Analysis or UserRole.Executive;
 
+    /// <summary>
+    /// True when the request is served by a principal that is not an operator session: an API key,
+    /// or the optional-mode anonymous actor. Both carry a role's permission snapshot without a person
+    /// behind it, so a permission check alone cannot tell them apart from a signed-in operator.
+    /// <para>
+    /// Session-owned authority must consult this rather than the snapshot. Naming a broad role in
+    /// <c>MDC_ANONYMOUS_ROLE</c> or <c>MDC_API_KEY_ROLE</c> is a deployment convenience for reaching
+    /// the read surface; it is not a grant of account administration or of another operator's scoped
+    /// assignments, and treating it as one lets an unauthenticated caller administer the deployment.
+    /// </para>
+    /// </summary>
+    internal static bool IsNonSessionPrincipal(HttpContext context)
+        => context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey) ||
+           context.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey);
+
     public static bool HasPermission(HttpContext context, UserPermission required)
         => TryGetPermissions(context, out var permissions) &&
            (permissions & required) == required;
@@ -428,7 +443,7 @@ public static class EndpointAuthorization
         // actor through case-insensitive User-assignment lookup. Preserve only the explicit global
         // overrides the scoped service itself recognizes.
         var isApiKeyPrincipal = context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey);
-        if (isApiKeyPrincipal || context.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey))
+        if (IsNonSessionPrincipal(context))
         {
             var principalLabel = isApiKeyPrincipal ? "API-key" : "Anonymous";
             var hasGlobalOverride = HasScopedGlobalOverride(globalPermissions);

@@ -702,6 +702,14 @@ public static class AuthEndpoints
         LoginSessionService sessionService,
         string requestedBy)
     {
+        // The filter is named for a session and must mean it: an API key or the optional-mode
+        // anonymous actor carries a role snapshot with no operator behind it, so it can satisfy the
+        // ManageUsers check below without anyone having signed in.
+        if (EndpointAuthorization.IsNonSessionPrincipal(context))
+        {
+            return new ManageUsersActor(requestedBy, StatusCodes.Status403Forbidden);
+        }
+
         var currentProfile = ResolveCurrentProfile(context, sessionService);
         UserPermission currentPermissions;
         var actor = currentProfile?.Username;

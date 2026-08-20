@@ -19,6 +19,14 @@ public static partial class WorkstationEndpoints
             [FromServices] FinancialRecordExplorerReadService service,
             HttpContext context) =>
         {
+            // Unknown before unauthorized, matching the record route below: the per-explorer guard
+            // answers false for an id it does not recognise, so without this an unknown id reads as a
+            // permission refusal to a caller who is in fact permitted every explorer that exists.
+            if (!FinancialRecordExplorerReadService.IsKnownExplorerId(explorerId))
+            {
+                return Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." });
+            }
+
             if (!TryResolveRequiredTenantId(context, out var tenantId))
             {
                 return Results.Unauthorized();
@@ -140,32 +148,26 @@ public static partial class WorkstationEndpoints
     }
 
     /// <summary>
-    /// Each explorer is authorized by the families its own builder reads, because the route
-    /// declaration has to admit the union of them and the union is wider than any single explorer.
+    /// Each explorer is authorized by the family its own builder reads. The route declaration admits
+    /// the union, which is wider than any single explorer, so the decision has to be made here.
     /// <para>
-    /// The operations and security-master set admits every explorer: it is the set the route has
-    /// always carried, and narrowing it per explorer would withdraw access this surface already
-    /// grants rather than close a gap. The per-explorer branches below add the families that were
-    /// missing. Ledger, portfolio and security-instrument are projections of strategy-run detail --
-    /// all three read StrategyRunReadService -- which the run-ledger, trial-balance and journal
-    /// routes serve under ViewStrategies, so refusing a strategy reader here would break the
-    /// drill-in between them. Report-line provenance is built from the report-pack workflow instead,
-    /// so it answers to the reporting permissions and a strategy permission is not a door to it.
+    /// Ledger, portfolio and security-instrument are projections of strategy-run detail -- all three
+    /// read StrategyRunReadService -- over fund records, so they answer to the operations and
+    /// security-master set that serves those records directly, or to the strategy permissions the
+    /// run-ledger, trial-balance and journal routes use for the same runs. Report-line provenance is
+    /// built from the report-pack workflow instead and answers only to the reporting permissions.
+    /// </para>
+    /// <para>
+    /// The operations set was previously applied before the id was examined, which let a caller
+    /// holding only ViewSecurityMaster read report-pack lines, approvals and delivery history. That
+    /// was not an access this surface deliberately granted: before this wave the route carried no
+    /// declaration and no guard at all, so every session read all four. Scoping the set to the
+    /// explorers whose records it serves is therefore the first decision made here, not a narrowing
+    /// of one already taken.
     /// </para>
     /// </summary>
     private static bool CanReadFinancialRecordExplorer(HttpContext context, string explorerId)
     {
-        if (EndpointAuthorization.HasAnyPermission(
-                context,
-                UserPermission.ViewDirectLending,
-                UserPermission.ViewSecurityMaster,
-                UserPermission.ManageDirectLending,
-                UserPermission.ModifySecurityMaster,
-                UserPermission.AdminMaintenance))
-        {
-            return true;
-        }
-
         var normalized = (explorerId ?? string.Empty).Trim();
 
         if (normalized.Equals(FinancialRecordExplorerReadService.LedgerExplorerId, StringComparison.OrdinalIgnoreCase) ||
@@ -174,6 +176,11 @@ public static partial class WorkstationEndpoints
         {
             return EndpointAuthorization.HasAnyPermission(
                 context,
+                UserPermission.ViewDirectLending,
+                UserPermission.ViewSecurityMaster,
+                UserPermission.ManageDirectLending,
+                UserPermission.ModifySecurityMaster,
+                UserPermission.AdminMaintenance,
                 UserPermission.ViewStrategies,
                 UserPermission.ManageStrategies);
         }

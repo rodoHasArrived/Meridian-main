@@ -41,6 +41,19 @@ public sealed class AccountAdministrationGuardMiddleware
             return;
         }
 
+        // A non-session principal never administers accounts, whatever role it was configured with.
+        // MDC_ANONYMOUS_ROLE=Admin otherwise hands every unauthenticated request a ManageUsers
+        // snapshot, and there is no session cookie for the CSRF layer to check either, so the
+        // permission check below would pass for a remote caller with no credentials at all.
+        if (EndpointAuthorization.IsNonSessionPrincipal(context))
+        {
+            await ApiProblemDetails.Forbidden(
+                    context,
+                    "Account administration requires a signed-in operator session.")
+                .ExecuteAsync(context);
+            return;
+        }
+
         UserPermission permissions;
         var token = context.Request.Cookies[LoginSessionMiddleware.SessionCookieName];
         var profile = string.IsNullOrWhiteSpace(token) ? null : sessionService.GetSessionProfile(token);

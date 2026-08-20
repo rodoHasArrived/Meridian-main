@@ -21,7 +21,15 @@ public sealed class SymbolEndpointTests : IDisposable, IClassFixture<EndpointTes
     {
         // Symbol mutations edit the platform configuration's watchlist and require ModifyConfig
         // (W9-GOV-008); the read assertions in this class are unaffected by the header.
-        _client = fixture.CreatePermittedClient(UserPermission.ModifyConfig);
+        // W9-GOV-008: the symbol reads now declare the family whose store answers them — live
+        // quote state, subscription configuration, or the storage catalog — while the mutations
+        // keep ModifyConfig. These tests assert payload shape across both, so the client carries
+        // the permissions a symbol operator would actually hold rather than only the write one.
+        _client = fixture.CreatePermittedClient(
+            UserPermission.ModifyConfig,
+            UserPermission.ViewConfig,
+            UserPermission.ViewMarketData,
+            UserPermission.ViewHistoricalData);
     }
 
     public void Dispose() => _client.Dispose();

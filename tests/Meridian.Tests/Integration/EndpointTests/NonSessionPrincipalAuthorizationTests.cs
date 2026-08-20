@@ -897,6 +897,61 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
     }
 
+    [Theory]
+    [InlineData("/api/auth/accounts")]
+    [InlineData("/api/auth/access-assignments")]
+    public async Task AnonymousAdminRole_CannotAdministerAccounts(string route)
+    {
+        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        try
+        {
+            // Naming a broad anonymous role is a convenience for reaching the read surface in a
+            // deployment with no accounts. It is not a grant of account administration: the snapshot
+            // carries ManageUsers, the /api/auth prefix is exempt from session validation, and there
+            // is no session cookie for CSRF to check -- so without an explicit principal-kind check a
+            // remote caller with no credentials could create accounts and revoke sessions.
+            using var request = new HttpRequestMessage(HttpMethod.Post, route);
+            request.Content = JsonContent.Create(new { username = "intruder", password = "pw" });
+
+            using var response = await Client.SendAsync(request);
+
+            response.StatusCode.Should().Be(
+                HttpStatusCode.Forbidden,
+                "account administration is session-owned, and an anonymous principal is not a session");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+        }
+    }
+
+    [Fact]
+    public async Task AdminApiKey_CannotAdministerAccounts()
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "admin-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.Admin));
+        try
+        {
+            // The same rule for the other non-session principal, so the two cannot drift: a shared
+            // static key is not an operator either, and the filter is named RequireManageUsersSession.
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/accounts");
+            request.Headers.Add("X-Api-Key", "admin-key");
+            request.Content = JsonContent.Create(new { username = "intruder", password = "pw" });
+
+            using var response = await Client.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
     [Fact]
     public async Task AnonymousRolePrincipal_DoesNotBypassConfiguredApiKey()
     {

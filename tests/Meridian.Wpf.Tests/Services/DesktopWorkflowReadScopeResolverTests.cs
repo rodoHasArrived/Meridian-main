@@ -14,7 +14,7 @@ namespace Meridian.Wpf.Tests.Services;
 public sealed class DesktopWorkflowReadScopeResolverTests
 {
     [Fact]
-    public void Resolve_ForReadOnlyDesktopOperator_ShouldWithholdEveryRecordBackedFamily()
+    public void Resolve_ForReadOnlyDesktopOperator_ShouldGrantOnlyTheFamiliesItsPermissionsName()
     {
         using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
             .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopReadOnlyUsersJson())
@@ -27,12 +27,14 @@ public sealed class DesktopWorkflowReadScopeResolverTests
 
         var scope = DesktopWorkflowReadScopeResolver.Resolve(session);
 
-        // ReadOnly is ViewMarketData | ViewHistoricalData | ViewAnalytics | ViewStrategies, so the
-        // strategy card is the one it is entitled to and the other three carry records it is not.
+        // ReadOnly is ViewMarketData | ViewHistoricalData | ViewAnalytics | ViewStrategies. Two of
+        // those name a family: ViewStrategies the strategy card, and ViewHistoricalData the data card
+        // once that family was aligned with the Data workspace's own permissions. The trading and
+        // accounting cards carry records this role holds nothing for.
         scope.Strategy.Should().BeTrue();
+        scope.Data.Should().BeTrue();
         scope.Trading.Should().BeFalse();
         scope.Accounting.Should().BeFalse();
-        scope.Data.Should().BeFalse();
     }
 
     [Fact]

@@ -27,7 +27,7 @@ internal static class DesktopWorkflowReadScopeResolver
         }
 
         return new WorkstationWorkflowReadScope(
-            Trading: HasAny(session, UserPermission.ViewTrades, UserPermission.AdminMaintenance),
+            Trading: HasAny(session, UserPermission.ViewTrades),
             Accounting: HasAny(
                 session,
                 UserPermission.ViewTrades,
@@ -39,14 +39,12 @@ internal static class DesktopWorkflowReadScopeResolver
             Strategy: HasAny(
                 session,
                 UserPermission.ViewStrategies,
-                UserPermission.ManageStrategies,
-                UserPermission.AdminMaintenance),
+                UserPermission.ManageStrategies),
             Data: HasAny(
                 session,
                 UserPermission.ViewHistoricalData,
                 UserPermission.ViewDiagnostics,
-                UserPermission.ManageStorage,
-                UserPermission.AdminMaintenance));
+                UserPermission.ManageStorage));
     }
 
     // HasPermission requires every bit of its argument, so a combined flag would mean "all of these"

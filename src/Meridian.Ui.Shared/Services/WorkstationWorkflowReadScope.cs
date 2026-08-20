@@ -63,11 +63,13 @@ public sealed record WorkstationWorkflowReadScope(
     /// same provider metrics the card counts, so nothing reaches the card that the workspace
     /// withholds.</item>
     /// </list>
-    /// <see cref="UserPermission.AdminMaintenance"/> reads every family, matching the route's own
-    /// declaration.
+    /// <see cref="UserPermission.AdminMaintenance"/> is not a universal override: it appears only in
+    /// the accounting set, because the reconciliation break queue accepts it and the trading, strategy
+    /// and data workspaces do not. A profile carrying it alone administers maintenance routines; it is
+    /// not thereby entitled to strategy candidates or trading posture.
     /// </summary>
     public static WorkstationWorkflowReadScope ForRequest(HttpContext context) => new(
-        Trading: EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewTrades, UserPermission.AdminMaintenance),
+        Trading: EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades),
         Accounting: EndpointAuthorization.HasAnyPermission(
             context,
             UserPermission.ViewTrades,
@@ -79,12 +81,10 @@ public sealed record WorkstationWorkflowReadScope(
         Strategy: EndpointAuthorization.HasAnyPermission(
             context,
             UserPermission.ViewStrategies,
-            UserPermission.ManageStrategies,
-            UserPermission.AdminMaintenance),
+            UserPermission.ManageStrategies),
         Data: EndpointAuthorization.HasAnyPermission(
             context,
             UserPermission.ViewHistoricalData,
             UserPermission.ViewDiagnostics,
-            UserPermission.ManageStorage,
-            UserPermission.AdminMaintenance));
+            UserPermission.ManageStorage));
 }

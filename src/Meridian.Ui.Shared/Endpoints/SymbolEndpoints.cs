@@ -50,7 +50,7 @@ public static class SymbolEndpoints
             });
             return Results.Json(records, jsonOptions);
         })
-        .WithName("GetSymbols")
+        .WithName("GetSymbols").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200);
 
         // GET /api/symbols/monitored — symbols configured for monitoring
@@ -73,7 +73,7 @@ public static class SymbolEndpoints
                 })
             }, jsonOptions);
         })
-        .WithName("GetMonitoredSymbols")
+        .WithName("GetMonitoredSymbols").RequirePermission(UserPermission.ViewConfig)
         .Produces(200);
 
         // GET /api/symbols/archived — symbols that have stored data files
@@ -92,7 +92,7 @@ public static class SymbolEndpoints
                 return Results.Json(new { count = symbols.Length, symbols }, jsonOptions);
             }, "Failed to discover archived symbols.", logger);
         })
-        .WithName("GetArchivedSymbols")
+        .WithName("GetArchivedSymbols").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // GET /api/symbols/{symbol}/status — detailed status for one symbol
@@ -132,7 +132,7 @@ public static class SymbolEndpoints
                 storage = storageInfo
             }, jsonOptions);
         })
-        .WithName("GetSymbolStatus")
+        .WithName("GetSymbolStatus").RequireAnyPermission(UserPermission.ViewMarketData, UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // POST /api/symbols/add — add a single symbol; returns {success, symbol}
@@ -201,7 +201,7 @@ public static class SymbolEndpoints
                 files = result.Results?.Select(f => new { f.Path, f.SizeBytes, f.EventCount, f.Date })
             }, jsonOptions);
         })
-        .WithName("GetSymbolTrades")
+        .WithName("GetSymbolTrades").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // GET /api/symbols/{symbol}/depth — recent depth files for a symbol
@@ -226,7 +226,7 @@ public static class SymbolEndpoints
                 files = result.Results?.Select(f => new { f.Path, f.SizeBytes, f.EventCount, f.Date })
             }, jsonOptions);
         })
-        .WithName("GetSymbolDepth")
+        .WithName("GetSymbolDepth").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // GET /api/symbols/statistics — aggregate stats matching SymbolStatistics UI type
@@ -264,7 +264,7 @@ public static class SymbolEndpoints
                 totalEventsLast24h = 0
             }, jsonOptions);
         })
-        .WithName("GetSymbolStatistics")
+        .WithName("GetSymbolStatistics").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // POST /api/symbols/validate — validate symbol identifiers
@@ -387,7 +387,7 @@ public static class SymbolEndpoints
                 results = matches.Select(s => new { s.Symbol, s.Exchange, s.Currency, s.InstrumentType })
             }, jsonOptions);
         })
-        .WithName("SearchSymbols")
+        .WithName("SearchSymbols").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200);
 
         // POST /api/symbols/batch — batch operations (add/remove/update)
