@@ -883,6 +883,38 @@ public sealed partial class WorkstationEndpointsTests
             view.GetProperty("label").GetString() == "Alpha-only ledger view");
     }
 
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorers_ShouldNotServeAnUnattributedRun()
+    {
+        // A run with no fund profile is attributable to no tenant, so under active tenancy it cannot
+        // become the source for all of them -- and it only takes being the newest qualifying run.
+        // Distinct from an unbound fund, which the registry means as "nobody has claimed it yet".
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterFinancialRecordExplorerTestServices(services);
+                services.AddSingleton<IFundProfileTenancyRegistry>(
+                    new ForeignOwnerFundProfileTenancyRegistry("unused-fund", "another-tenant"));
+            },
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(
+            BuildActivePaperRun("financial-record-explorer-unattributed", withBreaks: false) with
+            {
+                FundProfileId = null,
+                FundDisplayName = null
+            });
+
+        using var response = await app.GetTestClient().GetAsync(
+            "/api/workstation/financial-record-explorers/ledger");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var explorer = await response.Content.ReadFromJsonAsync<FinancialRecordExplorerDto>(ServerJsonOptions);
+        explorer.Should().NotBeNull();
+        explorer!.Rows.Should().BeEmpty("an unattributed run is nobody's source while tenancy is enforced");
+    }
+
     /// <summary>
     /// Reports one fund profile as owned by a tenant other than the caller's, and every other fund as
     /// unbound. Enough to prove the explorer refuses a foreign run without standing in for the real

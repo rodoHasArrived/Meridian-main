@@ -648,16 +648,19 @@ public sealed partial class FinancialRecordExplorerReadService
     }
 
     /// <summary>
-    /// Whether this run may be used as an explorer source for the calling scope. The rule is
-    /// deliberately "refuse what can be proven foreign" rather than "admit only what can be proven
-    /// owned", which is the posture <see cref="IFundProfileTenancyRegistry"/> itself defines: fund
-    /// ownership is established on first authoritative use, so an unbound fund belongs to nobody yet
-    /// and is reachable by anyone, and a run carrying no fund profile is not attributable to a tenant
-    /// at all. Refusing those would empty the explorer for every single-company deployment and every
-    /// in-process caller without withholding anything from anyone.
+    /// Whether this run may be used as an explorer source for the calling scope.
     /// <para>
-    /// What it does refuse is the leak: a fund profile bound to a different tenant. With no registry
-    /// in the composition there is no tenancy to enforce and every run qualifies.
+    /// The presence of a registry is what decides the posture. Without one there is no tenancy to
+    /// enforce -- the single-company deployment, and the in-process callers -- so every run qualifies.
+    /// With one, tenancy is being enforced, and two kinds of run are refused: a fund profile bound to
+    /// another tenant, and a run carrying no fund profile at all, which is attributable to nobody and
+    /// so must not become everybody's source.
+    /// </para>
+    /// <para>
+    /// An <em>unbound</em> fund still qualifies, because that is what
+    /// <see cref="IFundProfileTenancyRegistry"/> means by unbound: ownership is established on first
+    /// authoritative use, so a fund nobody has claimed is reachable by the tenant about to claim it.
+    /// That is a different thing from a run with no fund at all, which no claim can ever attach to.
     /// </para>
     /// </summary>
     private async Task<bool> IsRunOwnedByScopeAsync(
@@ -665,9 +668,20 @@ public sealed partial class FinancialRecordExplorerReadService
         FundOwnershipScope fundScope,
         CancellationToken ct)
     {
-        if (_tenancyRegistry is null || string.IsNullOrWhiteSpace(run.FundProfileId))
+        // No registry means no tenancy to enforce -- the single-company deployment and the in-process
+        // callers -- so every run qualifies.
+        if (_tenancyRegistry is null)
         {
             return true;
+        }
+
+        // With a registry present, tenancy is being enforced, and a run carrying no fund profile is
+        // attributable to nobody. Admitting it would hand a legacy run's trial balance, positions and
+        // security references to every tenant on the host -- and it only takes being the newest
+        // qualifying run to become the source for all of them.
+        if (string.IsNullOrWhiteSpace(run.FundProfileId))
+        {
+            return false;
         }
 
         var ownership = await _tenancyRegistry

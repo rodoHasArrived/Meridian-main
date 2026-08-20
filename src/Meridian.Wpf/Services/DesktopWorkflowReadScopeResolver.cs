@@ -79,10 +79,26 @@ internal static class DesktopWorkflowReadScopeResolver
         }
 
         var configured = Environment.GetEnvironmentVariable(AnonymousRoleEnvironmentVariable);
-        if (string.IsNullOrWhiteSpace(configured) ||
-            !Enum.TryParse<UserRole>(configured.Trim(), ignoreCase: true, out var role))
+        if (string.IsNullOrWhiteSpace(configured))
         {
+            // Unset is not misconfigured. The shell's own fail-open decision stands.
             return false;
+        }
+
+        // Named but unrecognised is misconfigured, and the two lanes must agree on what that means.
+        // The browser answers 503 and serves nothing; the desktop cannot return a status code, so it
+        // withholds every record-backed family instead. Falling through to the session here would do
+        // the opposite -- a typo would grant everything, which is the one outcome a misconfigured
+        // security setting must never produce. RolePermissions.TryParseRoleName is the shared
+        // name-only parser: Enum.TryParse would accept "0" and resolve it to Admin.
+        if (!RolePermissions.TryParseRoleName(configured, out var role))
+        {
+            scope = new WorkstationWorkflowReadScope(
+                Trading: false,
+                Accounting: false,
+                Strategy: false,
+                Data: false);
+            return true;
         }
 
         var granted = RolePermissions.For(role);

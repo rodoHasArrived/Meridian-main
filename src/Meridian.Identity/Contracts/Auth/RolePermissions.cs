@@ -157,6 +157,39 @@ public static class RolePermissions
     /// Returns <see langword="true"/> when <paramref name="role"/> has been granted all of the
     /// specified <paramref name="required"/> permissions.
     /// </summary>
+    /// <summary>
+    /// Parses a configured role by name only, for the environment settings that name one --
+    /// <c>MDC_ANONYMOUS_ROLE</c> and <c>MDC_API_KEY_ROLE</c> in the browser host, the same anonymous
+    /// role in the desktop shell.
+    /// <para>
+    /// <see cref="Enum.TryParse{TEnum}(string, bool, out TEnum)"/> also accepts numeric text, and
+    /// <see cref="UserRole.Admin"/> is the zero value, so "0" -- or any stray number -- would
+    /// otherwise resolve to a full administrator rather than failing closed as unrecognised. Shared
+    /// rather than reimplemented per host so the two lanes cannot disagree about what a misconfigured
+    /// role means.
+    /// </para>
+    /// </summary>
+    public static bool TryParseRoleName(string? configured, out UserRole role)
+    {
+        role = default;
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            return false;
+        }
+
+        var trimmed = configured.Trim();
+        foreach (var name in Enum.GetNames<UserRole>())
+        {
+            if (string.Equals(name, trimmed, StringComparison.OrdinalIgnoreCase))
+            {
+                role = Enum.Parse<UserRole>(name);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static bool HasPermission(UserRole role, UserPermission required) =>
         (For(role) & required) == required;
 

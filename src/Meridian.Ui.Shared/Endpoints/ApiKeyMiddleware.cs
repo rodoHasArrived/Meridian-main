@@ -199,25 +199,7 @@ public sealed class ApiKeyMiddleware
     /// closed as an unrecognised value.
     /// </summary>
     internal static bool TryParseRoleName(string? configured, out UserRole role)
-    {
-        role = default;
-        if (string.IsNullOrWhiteSpace(configured))
-        {
-            return false;
-        }
-
-        var trimmed = configured.Trim();
-        foreach (var name in Enum.GetNames<UserRole>())
-        {
-            if (string.Equals(name, trimmed, StringComparison.OrdinalIgnoreCase))
-            {
-                role = Enum.Parse<UserRole>(name);
-                return true;
-            }
-        }
-
-        return false;
-    }
+        => RolePermissions.TryParseRoleName(configured, out role);
 
     /// <summary>
     /// Constant-time string comparison to prevent timing attacks on API key validation.
