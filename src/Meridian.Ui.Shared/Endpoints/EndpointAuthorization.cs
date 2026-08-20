@@ -419,6 +419,50 @@ public static class EndpointAuthorization
     }
 
     /// <summary>
+    /// Requires only that the caller is an established principal -- a validated workstation session,
+    /// a validated API key, or an explicitly scoped optional-mode local operator making a safe read.
+    /// For host-wide status a monitoring client is expected to poll and every operator is expected to
+    /// see, where the payload is an aggregate with no tenant, account, or per-caller content.
+    /// <para>
+    /// Distinct from <see cref="RequireAuthenticatedSessionOrScopedLocalOperatorRead{TBuilder}"/>,
+    /// which refuses API keys on purpose because it guards UI state owned by a signed-in operator.
+    /// Host status is not that: refusing a configured key there breaks the documented monitoring path
+    /// without protecting anything, since the same aggregate is served to every session anyway.
+    /// </para>
+    /// </summary>
+    public static TBuilder RequireEstablishedPrincipalRead<TBuilder>(this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.AddEndpointFilter((context, next) =>
+        {
+            var httpContext = context.HttpContext;
+            var isAnonymous = httpContext.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey);
+            var carriesLocalScope =
+                httpContext.Items.TryGetValue(LoginSessionMiddleware.CurrentTenantIdKey, out var rawTenant) &&
+                rawTenant is string tenant &&
+                !string.IsNullOrWhiteSpace(tenant) &&
+                httpContext.Items.TryGetValue(LoginSessionMiddleware.CurrentUserCompanyIdKey, out var rawCompany) &&
+                rawCompany is string company &&
+                !string.IsNullOrWhiteSpace(company);
+
+            // An anonymous principal still has to be a scoped local operator making a safe read; the
+            // widening here is for API keys, which are validated before they reach any route.
+            var isScopedLocalOperatorRead =
+                isAnonymous &&
+                (httpContext.Items.ContainsKey(LoginSessionMiddleware.DemoLocalOperatorPrincipalKey) || carriesLocalScope) &&
+                (HttpMethods.IsGet(httpContext.Request.Method) || HttpMethods.IsHead(httpContext.Request.Method));
+
+            return TryResolveActor(httpContext, out _) &&
+                   TryGetPermissions(httpContext, out _) &&
+                   (!isAnonymous || isScopedLocalOperatorRead)
+                ? next(context)
+                : ValueTask.FromResult<object?>(ApiProblemDetails.Unauthorized(httpContext));
+        });
+        builder.WithMetadata(new EndpointAuthorizationMetadata(Array.Empty<UserPermission>(), requireAll: false));
+        return builder;
+    }
+
+    /// <summary>
     /// Marks a read route as deliberately open to any authenticated session. See
     /// <see cref="EndpointOpenReadMetadata"/> for when this is the right declaration and when a
     /// permission is required instead.

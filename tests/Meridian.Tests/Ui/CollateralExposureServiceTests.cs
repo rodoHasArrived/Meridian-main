@@ -393,6 +393,62 @@ public sealed class CollateralExposureServiceTests
         snapshot.NetExposure.Should().Be(20m);
     }
 
+    [Fact]
+    public void CollateralIngestionBuffer_NamedChunks_KeepIdenticalPositionsInDifferentChunks()
+    {
+        // The case value-matching alone cannot decide: the same position reported in two chunks of one
+        // observation is two positions, while the same position reported twice under one chunk name is
+        // a retry. Naming the piece is what separates them.
+        var buffer = new CollateralIngestionBuffer();
+        var asOf = DateTimeOffset.UnixEpoch;
+
+        buffer.IngestBatch(Scope, [
+            new CollateralInputRow(asOf, "CPTY-CHUNKED", "repo", 1m, 10m, 1m, "cash", 1m, 0m, ChunkId: "page-1")
+        ]);
+        buffer.IngestBatch(Scope, [
+            new CollateralInputRow(asOf, "CPTY-CHUNKED", "repo", 1m, 10m, 1m, "cash", 1m, 0m, ChunkId: "page-2")
+        ]);
+
+        var service = new CollateralExposureService();
+        service.BuildSnapshots(buffer.SnapshotCurrent(Scope))
+            .Should().ContainSingle().Subject
+            .NetExposure.Should().Be(20m, "different chunks of one observation carry different positions");
+
+        // And the retry of a named chunk replaces itself rather than adding.
+        buffer.IngestBatch(Scope, [
+            new CollateralInputRow(asOf, "CPTY-CHUNKED", "repo", 1m, 10m, 1m, "cash", 1m, 0m, ChunkId: "page-2")
+        ]);
+
+        service.BuildSnapshots(buffer.SnapshotCurrent(Scope))
+            .Should().ContainSingle().Subject
+            .NetExposure.Should().Be(20m, "a chunk redelivered under the same name replaces itself");
+    }
+
+    [Fact]
+    public void BuildSnapshots_NegativeCollateralAgainstNegligibleRequirement_SaturatesInsteadOfOverflowing()
+    {
+        // The other side of the coverage quotient. Collateral posted against the desk is an
+        // operational absurdity, but it must report as a hard breach rather than take the tenant's
+        // exposure read down with an OverflowException.
+        var rows = new[]
+        {
+            new CollateralInputRow(
+                DateTimeOffset.UnixEpoch,
+                "CPTY-NEGATIVE",
+                "repo",
+                PositionNotional: 1m,
+                MarkToMarket: 1m,
+                CollateralBalance: -1_000_000_000_000_000_000_000m,
+                CollateralType: "bond",
+                InitialMargin: 0.0000000001m,
+                VariationMargin: 0m)
+        };
+
+        var snapshot = new CollateralExposureService().BuildSnapshots(rows).Should().ContainSingle().Subject;
+
+        snapshot.CollateralCoverageRatio.Should().Be(-999m);
+    }
+
     private static readonly CollateralTenantScope Scope = CollateralTenantScope.Unscoped;
 
     private static CollateralInputRow Row(int index)

@@ -624,23 +624,52 @@ public sealed partial class FinancialRecordExplorerReadService
         Func<StrategyRunDetail, bool> predicate,
         CancellationToken ct)
     {
-        var runs = await readService.GetRunsAsync(new StrategyRunHistoryQuery(Limit: 100), ct).ConfigureAwait(false);
-        foreach (var run in runs)
+        // Widened rather than fixed, because the ownership filter runs after the query: a fixed page of
+        // the newest runs can be entirely foreign, and this tenant's older but perfectly good source
+        // would never be looked at. Each round only inspects what the previous one did not, and the
+        // scan stops when the store has no more to give or the ceiling is reached.
+        var inspected = 0;
+        var limit = InitialRunScanPageSize;
+        while (true)
         {
-            if (!await IsRunOwnedByScopeAsync(run, fundScope, ct).ConfigureAwait(false))
+            var runs = await readService
+                .GetRunsAsync(new StrategyRunHistoryQuery(Limit: limit), ct)
+                .ConfigureAwait(false);
+
+            for (var index = inspected; index < runs.Count; index++)
             {
-                continue;
+                var run = runs[index];
+                if (!await IsRunOwnedByScopeAsync(run, fundScope, ct).ConfigureAwait(false))
+                {
+                    continue;
+                }
+
+                var detail = await readService.GetRunDetailAsync(run.RunId, ct).ConfigureAwait(false);
+                if (detail is not null && predicate(detail))
+                {
+                    return detail;
+                }
             }
 
-            var detail = await readService.GetRunDetailAsync(run.RunId, ct).ConfigureAwait(false);
-            if (detail is not null && predicate(detail))
+            if (runs.Count < limit || limit >= MaxRunScanPageSize)
             {
-                return detail;
+                return null;
             }
+
+            inspected = runs.Count;
+            limit = Math.Min(limit * 2, MaxRunScanPageSize);
         }
-
-        return null;
     }
+
+    /// <summary>Runs inspected before widening the scan; the common case resolves in one round.</summary>
+    private const int InitialRunScanPageSize = 100;
+
+    /// <summary>
+    /// The point at which the scan gives up and reports no source. A bound is necessary because the
+    /// query has no offset, so widening re-reads what it already saw; stating it here makes the limit
+    /// a decision rather than an accident of the first page size.
+    /// </summary>
+    private const int MaxRunScanPageSize = 1_000;
 
     /// <summary>
     /// Whether this run may be used as an explorer source for the calling scope. The rule is

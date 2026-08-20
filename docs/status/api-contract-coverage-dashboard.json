@@ -1283,19 +1283,19 @@
     {
       "method": "GET",
       "path": "/api/demo/symbols",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:103",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:113",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/demo/market-data/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:119",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:129",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/demo/historical/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:140",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:150",
       "documented": false
     },
     {

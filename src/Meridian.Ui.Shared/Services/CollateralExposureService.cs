@@ -34,6 +34,18 @@ public sealed record ThresholdBreach(string Counterparty, ThresholdSeverity Seve
 
 public sealed record CounterpartyThresholdPolicy(string Counterparty, decimal EarlyWarningCoverageRatio, decimal HardBreachCoverageRatio);
 
+/// <summary>
+/// One position within a collateral observation.
+/// <para>
+/// <paramref name="ChunkId"/> is optional and exists to settle a question the other fields cannot: an
+/// observation with more rows than the ingest route accepts in a single request arrives in pieces, and
+/// a second request at the same <c>AsOf</c> is then either another piece or a retry of one already
+/// sent. Naming the piece makes that decidable -- a chunk redelivered under the same name replaces
+/// itself, a chunk under a new name is added -- so two genuinely identical positions in different
+/// chunks both survive. Producers that do not split observations can leave it null and get the
+/// best-effort matching described on <see cref="CollateralIngestionBuffer"/>.
+/// </para>
+/// </summary>
 public sealed record CollateralInputRow(
     DateTimeOffset AsOf,
     string Counterparty,
@@ -43,7 +55,8 @@ public sealed record CollateralInputRow(
     decimal CollateralBalance,
     string CollateralType,
     decimal InitialMargin,
-    decimal VariationMargin);
+    decimal VariationMargin,
+    string? ChunkId = null);
 
 public sealed class CollateralExposureService
 {
@@ -112,8 +125,19 @@ public sealed class CollateralExposureService
             return MaxReportedCoverageRatio;
         }
 
-        return haircutAdjusted >= required * MaxReportedCoverageRatio
-            ? MaxReportedCoverageRatio
+        // Both directions. Negative haircut-adjusted collateral against a negligible requirement drives
+        // the quotient past decimal's range just as the positive case does, and the sign is not a
+        // reason to leave one half of the guard off: a negative coverage ratio is collateral posted
+        // against the desk, which every threshold already classifies as a hard breach, so the floor
+        // loses no more than the ceiling does.
+        var ceiling = required * MaxReportedCoverageRatio;
+        if (haircutAdjusted >= ceiling)
+        {
+            return MaxReportedCoverageRatio;
+        }
+
+        return haircutAdjusted <= -ceiling
+            ? -MaxReportedCoverageRatio
             : haircutAdjusted / required;
     }
 
@@ -194,8 +218,11 @@ public sealed class CollateralExposureService
 /// <para><b>An observation may arrive in pieces.</b> The ingest route caps a single request, so an
 /// observation with more rows than that cap has to be split across requests. A later delivery at the
 /// same <c>AsOf</c> therefore continues the observation already held rather than replacing it, and
-/// incoming rows are matched one-for-one against what is held so a redelivered chunk adds nothing.
-/// Only a strictly newer <c>AsOf</c> replaces.</para>
+/// a producer that names the piece it is sending (<see cref="CollateralInputRow.ChunkId"/>) has that
+/// chunk replaced exactly, so two identical positions in different chunks both survive. Without a
+/// chunk id the incoming rows are matched by count against what is held, which keeps a redelivered
+/// chunk from double-counting at the cost of reading an identical position in a later chunk as one.
+/// Only a strictly newer <c>AsOf</c> replaces the observation.</para>
 ///
 /// <para><b>State is partitioned by tenant scope.</b> The buffer is a process-wide singleton, so
 /// without a scope key one tenant's ingest would appear in another's exposure and a same-identity
@@ -331,10 +358,33 @@ public sealed class CollateralIngestionBuffer
                 return offered.ContainsKey(key) && !stale.Contains(key) && !continued.Contains(key);
             });
 
-            // Rows already standing for a continued observation, counted rather than set-tested: a
-            // producer may legitimately report two identical simultaneous positions, so a second copy
-            // within one delivery is a real position while a copy of a row already held is a
-            // redelivered one. Matching by count keeps both cases right.
+            // A continued observation is reconciled one of two ways, depending on whether the producer
+            // named the piece it is sending.
+            //
+            // Named: every held row of that chunk is dropped, so the incoming chunk replaces itself
+            // exactly. Two identical positions in different chunks are then both kept, because they
+            // belong to different chunks -- the case value-matching alone cannot get right.
+            //
+            // Unnamed: incoming rows are matched by count against what is held, so a redelivered chunk
+            // adds nothing. The residual is the one the chunk id exists to remove -- an identical
+            // position arriving in a later unnamed chunk reads as a redelivery -- and it is the safer
+            // way to be wrong, since it under-counts a duplicate rather than double-counting a retry.
+            var redeliveredChunks = new HashSet<(ExposureIdentity Identity, string ChunkId)>();
+            foreach (var row in rows)
+            {
+                if (!string.IsNullOrWhiteSpace(row.ChunkId) && continued.Contains(ExposureKey(row)))
+                {
+                    redeliveredChunks.Add((ExposureKey(row), row.ChunkId.Trim()));
+                }
+            }
+
+            if (redeliveredChunks.Count > 0)
+            {
+                held0.RemoveAll(existing =>
+                    !string.IsNullOrWhiteSpace(existing.ChunkId) &&
+                    redeliveredChunks.Contains((ExposureKey(existing), existing.ChunkId.Trim())));
+            }
+
             var alreadyHeld = new Dictionary<CollateralInputRow, int>();
             if (continued.Count > 0)
             {
@@ -369,7 +419,11 @@ public sealed class CollateralIngestionBuffer
                     continue;
                 }
 
-                if (alreadyHeld.TryGetValue(row, out var remaining) && remaining > 0)
+                // A named chunk has already had its held rows dropped above, so nothing of it remains
+                // to match against and every row it carries is added.
+                if (string.IsNullOrWhiteSpace(row.ChunkId) &&
+                    alreadyHeld.TryGetValue(row, out var remaining) &&
+                    remaining > 0)
                 {
                     alreadyHeld[row] = remaining - 1;
                     continue;

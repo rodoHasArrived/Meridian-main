@@ -77,7 +77,7 @@ public static class DemoModeEndpoints
         var group = app.MapGroup("").WithTags("Demo Mode");
 
         // Get demo mode status
-        group.MapGet(UiApiRoutes.DemoMode, (ConfigStore store, IServiceProvider serviceProvider) =>
+        group.MapGet(UiApiRoutes.DemoMode, (ConfigStore store, IServiceProvider serviceProvider, HttpContext context) =>
         {
             var cfg = store.Load();
             var isDemo = cfg.DataSources?.Sources?.Length == 0 ||
@@ -88,14 +88,24 @@ public static class DemoModeEndpoints
             // labeling this host's records; without a pinned declaration fall back to the demo
             // heuristic so legacy behavior is unchanged.
             var pinned = serviceProvider.GetService<Meridian.Application.Composition.MeridianDataProvenanceDeclaration>();
+
+            // The seeded symbol list is market data and stays behind a market-data permission. The
+            // posture flags are not: the browser shell treats provenance as the source of a persistent,
+            // non-dismissable banner on every workspace, so an operator who cannot read it is left
+            // labelling this host UNKNOWN -- which is the one answer the banner exists to prevent.
+            var canReadSeededSymbols = EndpointAuthorization.HasAnyPermission(
+                context,
+                UserPermission.ViewMarketData,
+                UserPermission.ViewHistoricalData);
+
             return Results.Json(new DemoModeConfig(
                 Enabled: isDemo,
-                DemoSymbols: DemoMarketData.Keys.ToArray(),
+                DemoSymbols: canReadSeededSymbols ? DemoMarketData.Keys.ToArray() : [],
                 LastUpdated: DateTime.UtcNow,
                 Provenance: pinned?.Provenance ?? (isDemo ? DataProvenance.Seeded : DataProvenance.Real)
             ), jsonOptions);
         })
-        .WithName("GetDemoMode").RequireAnyPermission(UserPermission.ViewMarketData, UserPermission.ViewHistoricalData)
+        .WithName("GetDemoMode").RequireEstablishedPrincipalRead()
         .WithDescription("Returns current demo mode status and available seeded symbols.")
         .Produces<DemoModeConfig>(200);
 

@@ -125,7 +125,7 @@ public static class StatusEndpoints
         // left the shell in a permanent bootstrap error for everyone else. Worse, degraded mode is the
         // signal that market data is simulated or stores do not persist: withholding it makes the shell
         // quietly mislead exactly the operators who most need to know.
-        .WithName("GetStatus").RequireAuthenticatedSessionOrScopedLocalOperatorRead()
+        .WithName("GetStatus").RequireEstablishedPrincipalRead()
         .WithTags("Status")
         .WithDescription("Returns system status: connection state, aggregate pipeline metrics, uptime, and degraded-mode posture.")
         .Produces<StatusResponse>(200);
