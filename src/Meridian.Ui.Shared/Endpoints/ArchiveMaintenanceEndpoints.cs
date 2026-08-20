@@ -191,7 +191,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get executions",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         app.MapGet("/api/maintenance/executions/{executionId}", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
@@ -206,7 +207,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get execution",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         app.MapGet("/api/maintenance/schedules/{scheduleId}/executions", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
@@ -220,7 +222,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get schedule executions",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         app.MapGet("/api/maintenance/executions/failed", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
@@ -233,7 +236,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get failed executions",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         // ==================== STATISTICS & SUMMARIES ====================
 
@@ -246,7 +250,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get schedule summary",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         app.MapGet("/api/maintenance/schedules/{scheduleId}/summary", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
@@ -260,7 +265,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get schedule summary",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         app.MapGet("/api/maintenance/statistics", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
@@ -285,7 +291,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get statistics",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         // ==================== SERVICE STATUS ====================
 
@@ -298,7 +305,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get service status",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         // ==================== CRON VALIDATION ====================
 
@@ -394,7 +402,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get presets",
             includeExceptionMessage: true);
-        });
+        })
+        .DeclareOpenRead("Hardcoded schedule templates; carries no deployment, account or tenant state.");
 
         // ==================== TASK TYPES ====================
 
@@ -415,7 +424,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get task types",
             includeExceptionMessage: true);
-        });
+        })
+        .DeclareOpenRead("MaintenanceTaskType enumeration with static descriptions; carries no deployment, account or tenant state.");
 
         // ==================== CLEANUP ====================
 

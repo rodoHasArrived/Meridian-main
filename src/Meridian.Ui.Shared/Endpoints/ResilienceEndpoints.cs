@@ -102,7 +102,7 @@ public static class ResilienceEndpoints
             var report = await reporter.GenerateReportAsync(ct);
             return Results.Json(report, jsonOptions);
         })
-        .WithName("GetRetentionComplianceReport")
+        .WithName("GetRetentionComplianceReport").RequirePermission(UserPermission.ManageStorage)
         .WithDescription("Generates a retention compliance report by scanning stored data against configured policies.")
         .Produces(200)
         .Produces(503);
