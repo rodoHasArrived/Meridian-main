@@ -386,7 +386,7 @@ public static partial class WorkstationEndpoints
 
             var service = context.RequestServices.GetRequiredService<CollateralExposureService>();
             var buffer = context.RequestServices.GetService<CollateralIngestionBuffer>();
-            var rows = buffer?.SnapshotRows(5_000) ?? [];
+            var rows = buffer?.SnapshotCurrent() ?? [];
             return Results.Json(BuildCollateralExposureSnapshot(service, rows), jsonOptions);
         })
         .WithName("GetWorkstationCollateralExposure").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)

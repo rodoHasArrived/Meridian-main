@@ -197,28 +197,25 @@ public sealed class CollateralIngestionBuffer
     }
 
     /// <summary>
-    /// The most recent rows of the current picture, without consuming them. Exposure is an aggregate
-    /// of what is buffered, so reading must leave the buffer intact: draining on read made each
-    /// snapshot cover only the rows arriving since the previous reader, so two operators looking at
-    /// the same moment saw different exposure and the second frequently saw none.
+    /// The whole current picture, without consuming it.
     /// <para>
-    /// Most recent, not first buffered. Taking from the head would pin the snapshot to the oldest
-    /// rows and silently exclude everything after the first <paramref name="maxItems"/>, so exposure
-    /// would stop tracking current collateral the moment the buffer exceeded the read limit.
+    /// Every retained row is a live exposure, and <see cref="CollateralExposureService.BuildSnapshots"/>
+    /// treats what it is handed as the complete set, so there is no honest read limit: any subset
+    /// silently drops counterparties out of net exposure, coverage, and breach evaluation with nothing
+    /// to signal it. The window cap is what bounds this — retention and reporting are the same number
+    /// by construction rather than two limits that can drift apart.
+    /// </para>
+    /// <para>
+    /// Reading must also leave the buffer intact. Draining on read made each snapshot cover only the
+    /// rows arriving since the previous reader, so two operators looking at the same moment saw
+    /// different exposure and the second frequently saw none.
     /// </para>
     /// </summary>
-    public IReadOnlyList<CollateralInputRow> SnapshotRows(int maxItems = 500)
+    public IReadOnlyList<CollateralInputRow> SnapshotCurrent()
     {
-        if (maxItems <= 0)
-        {
-            return [];
-        }
-
         lock (_gate)
         {
-            return _rows.Count <= maxItems
-                ? _rows.ToArray()
-                : _rows.GetRange(_rows.Count - maxItems, maxItems).ToArray();
+            return _rows.ToArray();
         }
     }
 

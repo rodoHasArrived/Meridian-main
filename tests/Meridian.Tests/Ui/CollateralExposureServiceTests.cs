@@ -41,7 +41,7 @@ public sealed class CollateralExposureServiceTests
         // first and leave every later collateral movement unreported until a restart.
         buffer.BufferedCount.Should().Be(20_000);
 
-        var counterparties = buffer.SnapshotRows(20_000).Select(row => row.Counterparty).ToArray();
+        var counterparties = buffer.SnapshotCurrent().Select(row => row.Counterparty).ToArray();
         counterparties.Should().HaveCount(20_000);
         counterparties[^1].Should().Be("CPTY-20049", "the newest reading is the one exposure is about");
         counterparties[0].Should().Be("CPTY-50");
@@ -49,7 +49,7 @@ public sealed class CollateralExposureServiceTests
     }
 
     [Fact]
-    public void CollateralIngestionBuffer_SnapshotRows_ReportsArrivalsPastTheReadLimit()
+    public void CollateralIngestionBuffer_SnapshotCurrent_ReportsEveryRetainedExposure()
     {
         var buffer = new CollateralIngestionBuffer();
 
@@ -58,25 +58,27 @@ public sealed class CollateralExposureServiceTests
             buffer.IngestBatch([Row(index)]);
         }
 
-        // The most recent rows, not the first buffered ones. Reading from the head would pin the
-        // snapshot to the oldest 5,000 readings, so exposure would stop tracking current collateral
-        // the moment the buffer exceeded the read limit -- stale from row 5,001, not from the cap.
-        var snapshot = buffer.SnapshotRows(5_000);
+        // Every retained row is a live exposure and BuildSnapshots treats its input as the complete
+        // set, so a read limit below the window is a silent truncation: counterparties past it would
+        // vanish from net exposure, coverage and breach evaluation with nothing to signal it. The read
+        // is bounded by retention and by nothing else.
+        var snapshot = buffer.SnapshotCurrent();
 
-        snapshot.Should().HaveCount(5_000);
+        snapshot.Should().HaveCount(5_010);
         snapshot[^1].Counterparty.Should().Be("CPTY-5009");
-        snapshot[0].Counterparty.Should().Be("CPTY-10");
+        snapshot[0].Counterparty.Should().Be("CPTY-0");
     }
 
     [Fact]
-    public void CollateralIngestionBuffer_SnapshotRows_WithNonPositiveLimit_ReadsNothing()
+    public void CollateralIngestionBuffer_SnapshotCurrent_DoesNotConsumeWhatItReports()
     {
         var buffer = new CollateralIngestionBuffer();
         buffer.IngestBatch([Row(1)]);
 
-        buffer.SnapshotRows(0).Should().BeEmpty();
-        buffer.SnapshotRows(-1).Should().BeEmpty();
-        buffer.BufferedCount.Should().Be(1, "a read that returns nothing still must not discard input");
+        buffer.SnapshotCurrent().Should().ContainSingle();
+        buffer.SnapshotCurrent().Should().ContainSingle(
+            "two operators looking at the same moment must see the same exposure");
+        buffer.BufferedCount.Should().Be(1, "reading exposure is not a consumption of collateral input");
     }
 
     [Fact]
@@ -94,7 +96,7 @@ public sealed class CollateralExposureServiceTests
 
         buffer.BufferedCount.Should().Be(1, "the second delivery restates the first, it does not add to it");
 
-        var snapshots = new CollateralExposureService().BuildSnapshots(buffer.SnapshotRows());
+        var snapshots = new CollateralExposureService().BuildSnapshots(buffer.SnapshotCurrent());
         snapshots.Should().ContainSingle();
         snapshots[0].GrossExposure.Should().Be(500m, "exposure is the current reading, not the sum of readings");
         snapshots[0].CollateralBalance.Should().Be(400m);
@@ -116,7 +118,7 @@ public sealed class CollateralExposureServiceTests
             new CollateralInputRow(DateTimeOffset.UnixEpoch.AddMinutes(1), "CPTY-A", "repo", 1m, 30m, 1m, "cash", 1m, 0m)
         ]);
 
-        var snapshots = new CollateralExposureService().BuildSnapshots(buffer.SnapshotRows());
+        var snapshots = new CollateralExposureService().BuildSnapshots(buffer.SnapshotCurrent());
         snapshots.Should().HaveCount(2);
         snapshots.Single(s => s.Counterparty == "CPTY-A").GrossExposure.Should().Be(30m);
         snapshots.Single(s => s.Counterparty == "CPTY-B").GrossExposure.Should().Be(20m);
@@ -136,7 +138,7 @@ public sealed class CollateralExposureServiceTests
         ]);
 
         buffer.BufferedCount.Should().Be(2);
-        var snapshots = new CollateralExposureService().BuildSnapshots(buffer.SnapshotRows());
+        var snapshots = new CollateralExposureService().BuildSnapshots(buffer.SnapshotCurrent());
         snapshots.Should().ContainSingle();
         snapshots[0].GrossExposure.Should().Be(25m);
     }

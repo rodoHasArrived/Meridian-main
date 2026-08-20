@@ -474,6 +474,84 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
     }
 
+    [Theory]
+    [InlineData("/api/auth/bootstrap")]
+    [InlineData("/setup/account")]
+    public async Task InvalidAnonymousRole_StillLetsTheInitialAccountBootstrapThrough(string path)
+    {
+        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", "Reedonly");
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", null);
+        try
+        {
+            // A misconfigured role must not make a fresh install unrecoverable. The method cap further
+            // down already exempts bootstrap for this reason, but invalid-role resolution runs first,
+            // so without the same exemption a typo in a setting the operator has no UI to fix would
+            // answer 503 to the one request that could fix it. Nothing is granted: the bootstrap
+            // endpoint's own loopback and one-use token checks still decide the request, and a failed
+            // resolve leaves the anonymous principal unset either way.
+            var nextCalled = false;
+            var context = new DefaultHttpContext { RequestServices = Fixture.Services };
+            context.Request.Path = path;
+            context.Request.Method = HttpMethods.Post;
+            var middleware = new LoginSessionMiddleware(nextContext =>
+            {
+                nextCalled = true;
+                nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.AnonymousPrincipalKey);
+                return Task.CompletedTask;
+            });
+
+            await middleware.InvokeAsync(
+                context,
+                Fixture.Services.GetRequiredService<LoginSessionService>());
+
+            nextCalled.Should().BeTrue("the bootstrap request must reach the endpoint that can repair the install");
+            context.Response.StatusCode.Should().NotBe(StatusCodes.Status503ServiceUnavailable);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
+        }
+    }
+
+    [Fact]
+    public async Task InvalidAnonymousRole_StillRefusesEverythingElse()
+    {
+        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", "Reedonly");
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", null);
+        try
+        {
+            // The exemption is for bootstrap alone. A typo must still surface loudly on every other
+            // route rather than quietly resolving to a permission set nobody chose.
+            var nextCalled = false;
+            // The refusal renders a problem document, which resolves a service off the request, so the
+            // context needs a provider for the negative path to be exercised at all.
+            var context = new DefaultHttpContext { RequestServices = Fixture.Services };
+            context.Request.Path = "/api/workstation/session";
+            var middleware = new LoginSessionMiddleware(_ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            });
+
+            await middleware.InvokeAsync(
+                context,
+                Fixture.Services.GetRequiredService<LoginSessionService>());
+
+            nextCalled.Should().BeFalse();
+            context.Response.StatusCode.Should().Be(StatusCodes.Status503ServiceUnavailable);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
+        }
+    }
+
     [Fact]
     public async Task DemoAnonymousPrincipal_CarriesTheSeededTenantScope()
     {

@@ -133,8 +133,17 @@ public sealed class LoginSessionMiddleware
                 // unusable anonymous posture must not decide it: without this, a typo in an
                 // MDC_ANONYMOUS_ROLE nobody is using would disable every independently configured
                 // API-key client with a 503 they cannot act on.
+                //
+                // The initial-account bootstrap is exempt for the same reason the method cap below
+                // exempts it, and it is exempt here too because this branch runs first: a misconfigured
+                // role must not be able to make a fresh install unrecoverable. Refusing bootstrap here
+                // would leave an operator with a typo in a setting they cannot reach a UI to fix, and
+                // nothing is granted by the exemption -- the bootstrap endpoint's own loopback and
+                // one-use token checks still decide the request, and a failed resolve leaves the
+                // anonymous principal unset either way.
                 if (!TryResolveAnonymousRole(out var anonymousRole) &&
-                    !ApiKeyMiddleware.IsApiKeyCandidate(context))
+                    !ApiKeyMiddleware.IsApiKeyCandidate(context) &&
+                    !IsInitialAccountBootstrapRequest(trimmedPath))
                 {
                     await WriteAnonymousRoleConfigurationErrorAsync(context, path);
                     return;
