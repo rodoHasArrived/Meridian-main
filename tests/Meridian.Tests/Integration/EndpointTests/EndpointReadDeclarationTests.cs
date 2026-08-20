@@ -68,9 +68,6 @@ public sealed class EndpointReadDeclarationTests : EndpointIntegrationTestBase
         "GET /api/packaging/contents",
         "GET /api/packaging/download/{fileName}",
         "GET /api/packaging/list",
-        "GET /api/plaid/accounts",
-        "GET /api/plaid/institutions/search",
-        "GET /api/plaid/items",
         "GET /api/portfolio/cash-ladder/",
         "GET /api/portfolio/cash-ladder/scenarios",
         "GET /api/portfolio/{runId}/cash-flows",
@@ -78,10 +75,6 @@ public sealed class EndpointReadDeclarationTests : EndpointIntegrationTestBase
         "GET /api/promotion/history",
         "GET /api/quant/templates",
         "GET /api/resilience/circuit-breakers",
-        "GET /api/risk/escalations",
-        "GET /api/risk/rules",
-        "GET /api/risk/rules/{ruleName}/config",
-        "GET /api/risk/rules/{ruleName}/status",
         "GET /api/sampling/estimate",
         "GET /api/sampling/saved",
         "GET /api/sampling/{sampleId}",
@@ -89,10 +82,6 @@ public sealed class EndpointReadDeclarationTests : EndpointIntegrationTestBase
         "GET /api/strategies/status",
         "GET /api/strategies/{strategyId}/status",
         "GET /api/subscriptions/active",
-        "GET /api/v1/risk/escalations",
-        "GET /api/v1/risk/rules",
-        "GET /api/v1/risk/rules/{ruleName}/config",
-        "GET /api/v1/risk/rules/{ruleName}/status",
     };
 
     [Fact]

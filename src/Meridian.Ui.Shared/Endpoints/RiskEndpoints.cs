@@ -103,6 +103,7 @@ public static class RiskEndpoints
             var statuses = await runtime.GetAllStatusesAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(statuses, jsonOptions);
         })
+        .RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ManageOrders)
         .Produces<IReadOnlyList<RiskRuleStatusDto>>(200)
         .Produces(403)
         .Produces(503);
@@ -123,6 +124,7 @@ public static class RiskEndpoints
             var status = await runtime.GetStatusAsync(ruleName, context.RequestAborted).ConfigureAwait(false);
             return status is null ? Results.NotFound() : Results.Json(status, jsonOptions);
         })
+        .RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ManageOrders)
         .Produces<RiskRuleStatusDto>(200)
         .Produces(403)
         .Produces(404)
@@ -139,7 +141,14 @@ public static class RiskEndpoints
             var config = runtime.GetConfig(ruleName);
             return config is null ? Results.NotFound() : Results.Json(config, jsonOptions);
         })
+        // The only read here that carried no guard, while its siblings check ViewTrades and the PUT on
+        // this same path requires ManageOrders. RiskRuleConfigDto is not just thresholds: its
+        // SymbolPositionLimits dictionary is keyed by symbol, so it names the instruments the desk has
+        // limits configured for -- the disclosure the sibling comment above gates /rules for -- and the
+        // thresholds themselves state exactly how large an order can be before it is refused.
+        .RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ManageOrders)
         .Produces<RiskRuleConfigDto>(200)
+        .Produces(403)
         .Produces(404)
         .Produces(503);
 
@@ -228,6 +237,9 @@ public static class RiskEndpoints
 
             return Results.Json(visible, jsonOptions);
         })
+        // HasRiskConfigPermission in the handler is ManageOrders and nothing else; the escalation queue
+        // carries retained order detail, so listing answers to the same permission as acting on it.
+        .RequirePermission(UserPermission.ManageOrders)
         .Produces<IReadOnlyList<RiskEscalationDto>>(200)
         .Produces(403)
         .Produces(503);
