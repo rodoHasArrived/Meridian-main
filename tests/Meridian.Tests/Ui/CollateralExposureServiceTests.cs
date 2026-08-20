@@ -277,6 +277,31 @@ public sealed class CollateralExposureServiceTests
             "a scope that ingested nothing reads nothing, rather than falling back to another tenant's rows");
     }
 
+    [Fact]
+    public void CollateralIngestionBuffer_AtCapacity_EvictsWholeObservationsRatherThanRows()
+    {
+        var buffer = new CollateralIngestionBuffer();
+
+        // The oldest exposure is two simultaneous positions. BuildSnapshots treats whatever survives as
+        // the complete current exposure, so trimming by row count could leave one of the pair standing
+        // and silently understate that counterparty rather than reporting it as gone.
+        buffer.IngestBatch(Scope, [
+            new CollateralInputRow(DateTimeOffset.UnixEpoch, "CPTY-PAIR", "repo", 1m, 11m, 1m, "cash", 1m, 0m),
+            new CollateralInputRow(DateTimeOffset.UnixEpoch, "CPTY-PAIR", "repo", 1m, 13m, 1m, "cash", 1m, 0m)
+        ]);
+
+        for (var index = 0; index < 20_000; index++)
+        {
+            buffer.IngestBatch(Scope, [Row(index)]);
+        }
+
+        var snapshots = new CollateralExposureService().BuildSnapshots(buffer.SnapshotCurrent(Scope));
+        snapshots.Should().NotContain(
+            x => x.Counterparty == "CPTY-PAIR",
+            "the pair is evicted together, so the counterparty is absent rather than half-reported");
+        buffer.BufferedCount(Scope).Should().BeLessThanOrEqualTo(20_000);
+    }
+
     private static readonly CollateralTenantScope Scope = CollateralTenantScope.Unscoped;
 
     private static CollateralInputRow Row(int index)

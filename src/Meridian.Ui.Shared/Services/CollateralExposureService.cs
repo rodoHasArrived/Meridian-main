@@ -290,10 +290,40 @@ public sealed class CollateralIngestionBuffer
                 }
             }
 
-            if (held0.Count > MaxBufferedRows)
+            EvictWholeObservations(held0);
+        }
+    }
+
+    /// <summary>
+    /// Drops entire observations from the oldest end until the window fits.
+    /// <para>
+    /// Whole observations, not whole rows: an observation may be several simultaneous positions
+    /// sharing an identity and an <c>AsOf</c>, and
+    /// <see cref="CollateralExposureService.BuildSnapshots"/> treats whatever survives as the complete
+    /// current exposure. Trimming by row count could cut through such a set — an overage of one leaves
+    /// one of two positions standing — and the snapshot would silently understate mark-to-market,
+    /// collateral and margin rather than reporting a counterparty as missing.
+    /// </para>
+    /// </summary>
+    private static void EvictWholeObservations(List<CollateralInputRow> rows)
+    {
+        while (rows.Count > MaxBufferedRows)
+        {
+            // Oldest by observation time, not by insertion order. Arrival order is not observation
+            // order here either: a delayed first reading can be inserted after a current one, and
+            // trimming from the head would discard the current exposure and keep the stale arrival.
+            var oldest = rows[0];
+            foreach (var row in rows)
             {
-                held0.RemoveRange(0, held0.Count - MaxBufferedRows);
+                if (row.AsOf < oldest.AsOf)
+                {
+                    oldest = row;
+                }
             }
+
+            var identity = ExposureKey(oldest);
+            var asOf = oldest.AsOf;
+            rows.RemoveAll(row => row.AsOf == asOf && ExposureKey(row).Equals(identity));
         }
     }
 

@@ -3019,7 +3019,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(summary, jsonOptions);
         })
-        .WithName("GetPortfolioCashFlows").RequirePermission(UserPermission.ViewTrades)
+        .WithName("GetPortfolioCashFlows").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<RunCashFlowSummary>(200)
         .Produces(404)
         .Produces(501);
