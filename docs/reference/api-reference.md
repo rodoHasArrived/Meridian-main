@@ -165,6 +165,7 @@ convention applied to a path prefix. These routes carry one today:
 | `POST /api/workstation/strategy/designer/preview` | Previews the posted document in memory. Saving a design is a separate route. | `ViewStrategies` or `ManageStrategies` |
 | `POST /api/workstation/strategy/engine/validate-run` | Validates a posted run request against the engine registry; it does not start or record a run. | `ViewStrategies` or `ManageStrategies` |
 | `POST /api/strategies/covered-call/chain-preview` | Fetches the option chain, filters in memory and returns a projection, never touching the run channel. | `ViewStrategies` or `ManageStrategies` |
+| `POST /api/fund-structure/reporting/templates/render` | Resolves the template, evaluates the grids through `ReportWriterGridEngine` in memory and returns a DTO; `ReportingWorkflowService.Render` persists nothing. The body carries the template id, parameters, grid definitions and dataset rows. | `ViewReporting`, `ManageReporting`, `ApproveReporting`, `DeliverReporting` or `AdminMaintenance` |
 
 The declaration only lifts the method cap; it grants nothing, as the last column shows. A capped
 principal reaches one of these routes only when it also holds that route's permission, so `ReadOnly`

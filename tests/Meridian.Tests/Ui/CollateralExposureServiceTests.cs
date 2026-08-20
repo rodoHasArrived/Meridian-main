@@ -551,6 +551,57 @@ public sealed class CollateralExposureServiceTests
             .NetExposure.Should().Be(25m, "a padded restatement is a restatement of the same exposure");
     }
 
+    [Fact]
+    public void CollateralIngestionBuffer_ObservationLargerThanTheWindow_IsRefusedRatherThanEvicted()
+    {
+        // Observations are evicted whole, so one that cannot fit the window makes itself the eviction
+        // candidate and RemoveAll takes every row it owns. Twenty chunks of a thousand followed by a
+        // single row used to delete all 20,001 -- and every request had been acknowledged, so the
+        // counterparty simply stopped appearing in the exposure read with nothing to say why.
+        var buffer = new CollateralIngestionBuffer();
+        var asOf = DateTimeOffset.UnixEpoch;
+
+        for (var chunk = 0; chunk < 20; chunk++)
+        {
+            var page = Enumerable.Range(0, 1_000)
+                .Select(_ => new CollateralInputRow(asOf, "CPTY-HUGE", "repo", 1m, 1m, 1m, "cash", 1m, 0m, ChunkId: $"page-{chunk}"))
+                .ToArray();
+            buffer.IngestBatch(Scope, page)
+                .Should().Be(CollateralIngestOutcome.Retained, "the window holds exactly {0} rows", CollateralIngestionBuffer.MaxBufferedRows);
+        }
+
+        buffer.BufferedCount(Scope).Should().Be(CollateralIngestionBuffer.MaxBufferedRows);
+
+        var overflow = buffer.IngestBatch(Scope, [
+            new CollateralInputRow(asOf, "CPTY-HUGE", "repo", 1m, 1m, 1m, "cash", 1m, 0m, ChunkId: "page-20")
+        ]);
+
+        overflow.Should().Be(CollateralIngestOutcome.ObservationExceedsWindow);
+        buffer.BufferedCount(Scope).Should().Be(
+            CollateralIngestionBuffer.MaxBufferedRows,
+            "a refused delivery leaves what was already retained exactly as it was");
+        new CollateralExposureService()
+            .BuildSnapshots(buffer.SnapshotCurrent(Scope))
+            .Should().ContainSingle(snapshot => snapshot.Counterparty == "CPTY-HUGE");
+    }
+
+    [Fact]
+    public void CollateralIngestionBuffer_AtCapacityAcrossManyObservations_StillAcceptsAndEvicts()
+    {
+        // The refusal is for one observation outgrowing the window, not for the buffer being full.
+        // Capacity spread across many identities still evicts the oldest and accepts the newest --
+        // refusing there would freeze exposure at whatever the deployment saw first.
+        var buffer = new CollateralIngestionBuffer();
+        for (var index = 0; index < CollateralIngestionBuffer.MaxBufferedRows; index++)
+        {
+            buffer.IngestBatch(Scope, [Row(index)]).Should().Be(CollateralIngestOutcome.Retained);
+        }
+
+        buffer.IngestBatch(Scope, [Row(CollateralIngestionBuffer.MaxBufferedRows)])
+            .Should().Be(CollateralIngestOutcome.Retained, "a full buffer evicts its oldest observation rather than refusing");
+        buffer.BufferedCount(Scope).Should().Be(CollateralIngestionBuffer.MaxBufferedRows);
+    }
+
     private static readonly CollateralTenantScope Scope = CollateralTenantScope.Unscoped;
 
     private static CollateralInputRow Row(int index)

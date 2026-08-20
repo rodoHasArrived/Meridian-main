@@ -946,6 +946,45 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     }
 
     [Theory]
+    [InlineData(nameof(UserRole.Analysis))]
+    [InlineData(nameof(UserRole.Executive))]
+    public async Task ReadOnlyApiKeyRole_ReachesReportTemplateRendering(string roleName)
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "render-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", roleName);
+        try
+        {
+            // Rendering a template resolves it, evaluates the grids in memory and returns a DTO --
+            // ReportingWorkflowService.Render persists nothing. It is a POST because the body carries
+            // the template id, parameters, grid definitions and dataset rows, and the method rule was
+            // refusing it before its own ViewReporting gate could run, so these reporting-read
+            // operators lost a read rather than a command.
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/fund-structure/reporting/templates/render");
+            request.Headers.Add("X-Api-Key", "render-key");
+            request.Content = JsonContent.Create(new
+            {
+                templateId = new { name = "does-not-exist", version = 1 },
+                parameters = new Dictionary<string, string>()
+            });
+
+            using var response = await Client.SendAsync(request);
+
+            var body = await response.Content.ReadAsStringAsync();
+            body.Should().NotContain(
+                "allows only GET, HEAD, and OPTIONS",
+                $"{roleName} holds reporting-read authority and the route declares that it changes "
+                + "nothing, so the endpoint decides the request rather than the method rule");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
+    [Theory]
     [InlineData("/hooks/reporting/distribution/transport-1/deliveries/job-1/receipts")]
     [InlineData("/portal/reporting/access-grants/grant-1/exchange")]
     public async Task ReadOnlyApiKeyRole_DoesNotRefuseARouteThatAuthenticatesItsOwnCaller(string route)

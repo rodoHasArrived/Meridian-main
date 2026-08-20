@@ -270,9 +270,31 @@ public readonly record struct CollateralTenantScope(string TenantId, string Comp
     private static string Fold(string? value) => (value ?? string.Empty).Trim().ToLowerInvariant();
 }
 
+/// <summary>
+/// What the buffer did with one delivery.
+/// </summary>
+public enum CollateralIngestOutcome
+{
+    /// <summary>Every row the delivery carried is retained, and older observations were evicted to fit.</summary>
+    Retained,
+
+    /// <summary>
+    /// The delivery would have left one observation — a single identity at a single <c>AsOf</c> —
+    /// holding more rows than the whole retention window. Nothing from the delivery was retained and
+    /// what was already held is unchanged, because such an observation is evicted whole and would
+    /// take every row it owns with it.
+    /// </summary>
+    ObservationExceedsWindow
+}
+
 public sealed class CollateralIngestionBuffer
 {
-    private const int MaxBufferedRows = 20_000;
+    /// <summary>
+    /// How many rows one tenant's buffer retains. Public because the ingest route quotes it when it
+    /// refuses an observation for exceeding it, and a message naming a different number than the rule
+    /// enforces would send the producer looking for the wrong thing.
+    /// </summary>
+    public const int MaxBufferedRows = 20_000;
     private readonly Lock _gate = new();
     private readonly Dictionary<CollateralTenantScope, List<CollateralInputRow>> _byScope = [];
 
@@ -292,17 +314,27 @@ public sealed class CollateralIngestionBuffer
     /// Applies one delivery: rows restating a buffered exposure replace it, the rest are added.
     /// <para>
     /// The row cap remains as a backstop against a producer that invents unbounded identities;
-    /// steady state is the number of distinct exposures, not the number of messages. Ingestion never
-    /// refuses — refusing past capacity would freeze exposure at whatever a deployment saw first,
-    /// and with non-consuming reads nothing would ever drain it.
+    /// steady state is the number of distinct exposures, not the number of messages. Ingestion does
+    /// not refuse for being at capacity — refusing past capacity would freeze exposure at whatever a
+    /// deployment saw first, and with non-consuming reads nothing would ever drain it. Eviction of
+    /// older observations is what makes room.
+    /// </para>
+    /// <para>
+    /// It does refuse one thing, because eviction cannot absorb it: a single observation larger than
+    /// the whole window. Observations are evicted whole, so one that cannot fit makes itself the
+    /// eviction candidate and takes every row it owns with it — a counterparty disappearing from the
+    /// exposure read while every request that built it was acknowledged. The delivery that would
+    /// cross that line is refused instead, leaving what is already held untouched, so the producer
+    /// learns at the point the observation outgrew the window rather than discovering the
+    /// counterparty missing later.
     /// </para>
     /// </summary>
-    public void IngestBatch(CollateralTenantScope scope, IReadOnlyList<CollateralInputRow> rows)
+    public CollateralIngestOutcome IngestBatch(CollateralTenantScope scope, IReadOnlyList<CollateralInputRow> rows)
     {
         ArgumentNullException.ThrowIfNull(rows);
         if (rows.Count == 0)
         {
-            return;
+            return CollateralIngestOutcome.Retained;
         }
 
         // Arrival order is not observation order -- a delayed retry can land after a newer refresh --
@@ -320,11 +352,18 @@ public sealed class CollateralIngestionBuffer
 
         lock (_gate)
         {
-            if (!_byScope.TryGetValue(scope, out var held0))
+            if (!_byScope.TryGetValue(scope, out var retained))
             {
-                held0 = [];
-                _byScope[scope] = held0;
+                retained = [];
+                _byScope[scope] = retained;
             }
+
+            // Applied to a copy so the delivery is all-or-nothing. Whether an observation outgrows the
+            // window is only knowable after the merge -- a delivery of a thousand rows may add a
+            // thousand, or none at all if every one of them restates a row already held -- and a
+            // refusal that had already half-applied itself would leave the buffer in a state no
+            // producer asked for.
+            var held0 = new List<CollateralInputRow>(retained);
 
             var held = new Dictionary<ExposureIdentity, DateTimeOffset>();
             foreach (var existing in held0)
@@ -463,8 +502,46 @@ public sealed class CollateralIngestionBuffer
                 held0.Add(row);
             }
 
+            // Checked before eviction, because eviction is what would hide it: an observation past the
+            // window is the oldest-or-only candidate, and RemoveAll then takes every row it owns.
+            if (HasObservationLargerThanWindow(held0))
+            {
+                return CollateralIngestOutcome.ObservationExceedsWindow;
+            }
+
             EvictWholeObservations(held0);
+            retained.Clear();
+            retained.AddRange(held0);
+            return CollateralIngestOutcome.Retained;
         }
+    }
+
+    /// <summary>
+    /// Whether any single observation — one identity at one <c>AsOf</c> — now holds more rows than the
+    /// window can retain. Such an observation cannot be buffered at all: it is evicted whole, so it
+    /// would delete itself and report that counterparty as absent.
+    /// </summary>
+    private static bool HasObservationLargerThanWindow(List<CollateralInputRow> rows)
+    {
+        if (rows.Count <= MaxBufferedRows)
+        {
+            return false;
+        }
+
+        var sizes = new Dictionary<(ExposureIdentity Identity, DateTimeOffset AsOf), int>();
+        foreach (var row in rows)
+        {
+            var key = (ExposureKey(row), row.AsOf);
+            var size = sizes.TryGetValue(key, out var count) ? count + 1 : 1;
+            if (size > MaxBufferedRows)
+            {
+                return true;
+            }
+
+            sizes[key] = size;
+        }
+
+        return false;
     }
 
     /// <summary>

@@ -88,7 +88,18 @@ public static partial class WorkstationEndpoints
             // One call, not a loop: a delivery replaces the exposures it restates, so ingesting row by
             // row would make the batch overwrite itself. Scoped to the tenant the server resolved,
             // never the payload -- the buffer is a singleton, so an unscoped write reaches every tenant.
-            buffer.IngestBatch(CollateralTenantScope.ForRequest(context), rows);
+            var outcome = buffer.IngestBatch(CollateralTenantScope.ForRequest(context), rows);
+            if (outcome == CollateralIngestOutcome.ObservationExceedsWindow)
+            {
+                // The one thing the buffer cannot absorb. Observations are evicted whole, so an
+                // observation past the window would delete itself and report that counterparty as
+                // absent -- and answering 202 for the request that crossed the line is what would make
+                // that silent. Refused instead, with what is already held left intact.
+                return Results.BadRequest(new
+                {
+                    error = $"This delivery would leave one exposure holding more than the {CollateralIngestionBuffer.MaxBufferedRows:N0}-row retention window; nothing from it was retained. Narrow the exposure or report it as separate identities."
+                });
+            }
 
             return Results.Accepted(value: new { ingested = rows.Count, buffered = true });
         })

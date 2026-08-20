@@ -117,6 +117,50 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_CollateralIngest_ShouldRefuseAnObservationLargerThanTheWindow()
+    {
+        // The chunking protocol lets one observation arrive across several requests, and the buffer
+        // evicts whole observations -- so one that outgrows the window makes itself the eviction
+        // candidate and takes every chunk with it. That used to happen behind a 202, leaving the
+        // counterparty absent from the exposure read with nothing to say why. The request that crosses
+        // the line is refused, and what was already accepted stays readable.
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<CollateralExposureService>();
+            services.AddSingleton<CollateralIngestionBuffer>();
+        });
+
+        var client = app.GetTestClient();
+        var asOf = DateTimeOffset.UnixEpoch;
+        var chunkSize = 1_000;
+        var chunks = CollateralIngestionBuffer.MaxBufferedRows / chunkSize;
+        for (var chunk = 0; chunk < chunks; chunk++)
+        {
+            var page = Enumerable.Range(0, chunkSize)
+                .Select(_ => new CollateralInputRow(asOf, "CPTY-WINDOW", "repo", 1m, 1m, 1m, "cash", 1m, 0m, ChunkId: $"page-{chunk}"))
+                .ToArray();
+            using var accepted = await client.PostAsJsonAsync("/api/workstation/collateral/ingest", page, ServerJsonOptions);
+            accepted.StatusCode.Should().Be(HttpStatusCode.Accepted);
+        }
+
+        using var refused = await client.PostAsJsonAsync(
+            "/api/workstation/collateral/ingest",
+            new[] { new CollateralInputRow(asOf, "CPTY-WINDOW", "repo", 1m, 1m, 1m, "cash", 1m, 0m, ChunkId: "overflow") },
+            ServerJsonOptions);
+
+        refused.StatusCode.Should().Be(
+            HttpStatusCode.BadRequest,
+            "an observation the window cannot hold must not be acknowledged as buffered");
+
+        using var exposure = await client.GetAsync("/api/workstation/collateral/exposure");
+        exposure.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await exposure.Content.ReadFromJsonAsync<ExposureSnapshotDto>(ServerJsonOptions);
+        payload!.Counterparties.Should().Contain(
+            counterparty => counterparty.Counterparty == "CPTY-WINDOW",
+            "the refusal leaves what was already retained exactly as it was");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_CollateralIngest_ShouldRejectFutureDatedObservations()
     {
         // Restatements resolve newest-AsOf-wins, so a far-future timestamp would make that exposure
