@@ -182,6 +182,7 @@ public static class AuthEndpoints
                 permissionNames = RolePermissions.GetPermissionNames(profile.Permissions).ToArray()
             });
         }).WithName("GetCurrentUser")
+          .DeclareOpenRead("The caller's own profile, role and permissions; it discloses nothing the caller does not already carry, answers 401 without a session, and is how each shell learns its own authority.")
           .WithSummary("Returns the currently authenticated user's profile, role, and permissions.")
           .Produces(StatusCodes.Status200OK)
           .Produces(StatusCodes.Status401Unauthorized);
@@ -189,6 +190,7 @@ public static class AuthEndpoints
         app.MapGet(UiApiRoutes.AuthApiRoles, async (IRolePermissionProfileStore roleProfileStore, CancellationToken ct) =>
                 Results.Ok(await roleProfileStore.GetCatalogAsync(ct).ConfigureAwait(false)))
             .WithName("GetRolePermissionCatalog")
+            .DeclareOpenRead("Role and permission catalog for the deployment; reference data with no account, fund or tenant state, and every authenticated operator needs it to render the authority profile they already hold.")
             .WithSummary("Returns built-in and custom roles, permissions, and permission metadata for role configuration surfaces.")
             .Produces<RolePermissionCatalogDto>(StatusCodes.Status200OK);
 
@@ -209,7 +211,7 @@ public static class AuthEndpoints
                     var result = await accountStore.GetAccountsAsync(ct).ConfigureAwait(false);
                     return Results.Ok(result);
                 })
-            .WithName("ListUserAccounts")
+            .WithName("ListUserAccounts").RequireManageUsersSession()
             .WithSummary("Lists governed user accounts without password hashes.")
             .Produces<IReadOnlyList<UserAccountDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -422,7 +424,7 @@ public static class AuthEndpoints
                     var result = await accountStore.GetAuditEventsAsync(limit, ct).ConfigureAwait(false);
                     return Results.Ok(result);
                 })
-            .WithName("ListUserAccountAuditEvents")
+            .WithName("ListUserAccountAuditEvents").RequireManageUsersSession()
             .WithSummary("Lists user-account, password-reset, disable, and session-revocation audit events.")
             .Produces<IReadOnlyList<UserAccountAuditEventDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -515,7 +517,7 @@ public static class AuthEndpoints
                     var result = await scopedAccess.QueryAsync(query, ct).ConfigureAwait(false);
                     return Results.Ok(result);
                 })
-            .WithName("ListScopedAccessAssignments")
+            .WithName("ListScopedAccessAssignments").RequireManageUsersSession()
             .WithSummary("Lists governed scoped access assignments for identity and access administration.")
             .Produces<IReadOnlyList<UserAccessAssignmentDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)

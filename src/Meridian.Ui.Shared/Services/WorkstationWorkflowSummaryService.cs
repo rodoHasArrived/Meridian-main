@@ -81,9 +81,19 @@ public sealed class WorkstationWorkflowSummaryService
             run.Promotion?.State == StrategyRunPromotionState.CandidateForLive);
         var latestGovernedRun = governedRuns.FirstOrDefault();
 
-        var strategyCandidateSnapshotTask = LoadRunSnapshotAsync(candidateForPaper, ct);
-        var tradingActiveSnapshotTask = LoadRunSnapshotAsync(activeTradingRun, ct);
-        var accountingCandidateSnapshotTask = LoadRunSnapshotAsync(candidateForLive ?? activeTradingRun ?? latestGovernedRun, ct);
+        // Each snapshot is loaded only for the families whose card consumes it. A card that is not
+        // emitted should not put its store in the request's failure or latency path: an authorized
+        // Strategy summary must not slow down or fail on the reconciliation and continuity stores it
+        // is never going to report. The candidate snapshot feeds both the strategy and trading cards.
+        var strategyCandidateSnapshotTask = scope.Strategy || scope.Trading
+            ? LoadRunSnapshotAsync(candidateForPaper, ct)
+            : Task.FromResult<WorkflowRunSnapshot?>(null);
+        var tradingActiveSnapshotTask = scope.Trading
+            ? LoadRunSnapshotAsync(activeTradingRun, ct)
+            : Task.FromResult<WorkflowRunSnapshot?>(null);
+        var accountingCandidateSnapshotTask = scope.Accounting
+            ? LoadRunSnapshotAsync(candidateForLive ?? activeTradingRun ?? latestGovernedRun, ct)
+            : Task.FromResult<WorkflowRunSnapshot?>(null);
         var financialOperationsSnapshotTask = LoadFinancialOperationsSnapshotAsync(
             contextSelected && scope.Accounting,
             fundAccountId,

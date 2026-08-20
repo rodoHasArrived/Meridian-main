@@ -3079,15 +3079,17 @@ public sealed partial class WorkstationEndpointsTests
 
     /// <summary>
     /// The route's admission set has to be the union of the projection's family sets in both
-    /// directions. Under-admitting is the failure this pins: a provider operator is granted the Data
-    /// card by the projection, so a 403 at the gate would withhold the only card they can read.
+    /// directions. Under-admitting is the failure this pins: the Data card is granted to the same
+    /// permissions the Data workspace itself admits, so a 403 at the gate would withhold the only
+    /// card such a caller can read. ViewHistoricalData is the case that names it -- the built-in
+    /// ReadOnly role holds it, and holds no other permission in any family.
     /// </summary>
     [Fact]
-    public async Task MapWorkstationEndpoints_WorkflowSummary_WithProviderPermissionOnly_ShouldReturnTheDataWorkspace()
+    public async Task MapWorkstationEndpoints_WorkflowSummary_WithDataWorkspacePermissionOnly_ShouldReturnTheDataWorkspace()
     {
         await using var app = await CreateAppAsync(
             RegisterRunReadServices,
-            currentUserPermissions: UserPermission.ViewDiagnostics);
+            currentUserPermissions: UserPermission.ViewHistoricalData);
 
         var response = await app.GetTestClient().GetAsync("/api/workstation/workflow-summary?hasOperatingContext=true");
 

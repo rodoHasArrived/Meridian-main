@@ -43,9 +43,9 @@ internal static class DesktopWorkflowReadScopeResolver
                 UserPermission.AdminMaintenance),
             Data: HasAny(
                 session,
-                UserPermission.ViewConfig,
+                UserPermission.ViewHistoricalData,
                 UserPermission.ViewDiagnostics,
-                UserPermission.ManageProviders,
+                UserPermission.ManageStorage,
                 UserPermission.AdminMaintenance));
     }
 

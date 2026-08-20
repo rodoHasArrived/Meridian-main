@@ -58,8 +58,10 @@ public sealed record WorkstationWorkflowReadScope(
     /// and continuity posture is drawn from.</item>
     /// <item>Strategy — the run-ledger routes' <see cref="UserPermission.ViewStrategies"/> and
     /// <see cref="UserPermission.ManageStrategies"/>.</item>
-    /// <item>Data — the provider-metrics route's set, which the degraded-provider and backfill
-    /// evidence comes from.</item>
+    /// <item>Data — the Data workspace's own set. The card summarises that workspace and its
+    /// next action opens it, so the two admit the same callers; the workspace payload reads the
+    /// same provider metrics the card counts, so nothing reaches the card that the workspace
+    /// withholds.</item>
     /// </list>
     /// <see cref="UserPermission.AdminMaintenance"/> reads every family, matching the route's own
     /// declaration.
@@ -81,8 +83,8 @@ public sealed record WorkstationWorkflowReadScope(
             UserPermission.AdminMaintenance),
         Data: EndpointAuthorization.HasAnyPermission(
             context,
-            UserPermission.ViewConfig,
+            UserPermission.ViewHistoricalData,
             UserPermission.ViewDiagnostics,
-            UserPermission.ManageProviders,
+            UserPermission.ManageStorage,
             UserPermission.AdminMaintenance));
 }

@@ -461,67 +461,67 @@
     {
       "method": "GET",
       "path": "/api/auth/roles",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:189",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:190",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/accounts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:195",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:197",
       "documented": false
     },
     {
       "method": "PUT",
       "path": "/api/auth/accounts/{username}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:218",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:220",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/accounts/{username}/password-reset",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:256",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:258",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/accounts/{username}/disable",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:316",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:318",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/sessions/revoke",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:376",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:378",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/audit",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:407",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:409",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/role-profiles",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:431",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:433",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/access-assignments",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:483",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:485",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/access-assignments",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:524",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:526",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/access-assignments/{assignmentId}/revoke",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:564",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:566",
       "documented": false
     },
     {

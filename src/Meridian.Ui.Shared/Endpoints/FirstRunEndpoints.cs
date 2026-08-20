@@ -57,6 +57,7 @@ public static class FirstRunEndpoints
                     var redemption = service.Redeem(context.Connection.RemoteIpAddress, ticket);
                     return redemption is null ? Results.NotFound() : Results.Ok(redemption);
                 })
+            .DeclareOpenRead("One-use desktop launch ticket redeemed by the WPF client before it has a session -- the handoff exists precisely because no session is established yet -- and bound to the redeeming caller's remote address rather than to a permission.")
             .ExcludeFromDescription();
     }
 
