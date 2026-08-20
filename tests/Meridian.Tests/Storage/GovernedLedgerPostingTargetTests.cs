@@ -561,6 +561,25 @@ public sealed class GovernedLedgerPostingTargetTests
             .WithMessage("*already retained with different accounting content*");
     }
 
+    [Fact]
+    public async Task PostAsync_ReplayReorderingOtherwiseIdenticalLegsOfMixedCurrencyDetail_IsAReplayNotAConflict()
+    {
+        // Lines are matched as a multiset. Currency compatibility is deliberately one-directional,
+        // so a first-match scan can spend the blind candidate on the retained leg that carries
+        // detail and then strand the retained blind leg against the detailed candidate that is
+        // left — rejecting a multiset that does pair up perfectly. The pairing has to be complete,
+        // not greedy.
+        var original = WithSplitDebit(BuildWrite());
+        var retained = new List<LedgerJournalEntryRecord> { ToStoredRecord(original) };
+        var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
+        using var target = new DurableLedgerPostingTarget(store.Object);
+        var reordered = SwapFirstTwoLines(original);
+
+        var result = await target.PostAsync(reordered);
+
+        result.WasAppended.Should().BeFalse();
+    }
+
     private static Mock<ILedgerJournalStore> BuildStore(
         List<LedgerJournalEntryRecord> retained,
         Action<LedgerJournalEntryWrite> append)
@@ -860,6 +879,61 @@ public sealed class GovernedLedgerPostingTargetTests
                     line.Debit > 0m ? transactionAmount : 0m,
                     line.Credit > 0m ? transactionAmount : 0m,
                     fxRateToFunctional)));
+
+    /// <summary>
+    /// Splits the debit into two legs on the same account for the same amount, one carrying the
+    /// identity translation and one carrying no currency detail. They are identical in every field
+    /// the comparison looks at except that one, which is what makes the pairing ambiguous.
+    /// </summary>
+    private static LedgerJournalEntryWrite WithSplitDebit(LedgerJournalEntryWrite write)
+    {
+        var entry = write.Entry;
+        var debit = entry.Lines[0];
+        var half = debit.Debit / 2m;
+        LedgerEntry Half(Guid entryId, LedgerEntryCurrency? currency) => new(
+            entryId,
+            debit.JournalEntryId,
+            debit.Timestamp,
+            debit.Account,
+            half,
+            0m,
+            debit.Description,
+            debit.Dimensions,
+            currency);
+
+        var lines = new[]
+        {
+            Half(Guid.Parse("aaaa1111-1111-1111-1111-111111111111"), new LedgerEntryCurrency("USD", "USD", half, 0m, 1m)),
+            Half(Guid.Parse("bbbb2222-2222-2222-2222-222222222222"), null),
+            entry.Lines[1]
+        };
+
+        return write with
+        {
+            Entry = new JournalEntry(
+                entry.JournalEntryId,
+                entry.Timestamp,
+                entry.Description,
+                lines,
+                entry.Metadata)
+        };
+    }
+
+    private static LedgerJournalEntryWrite SwapFirstTwoLines(LedgerJournalEntryWrite write)
+    {
+        var entry = write.Entry;
+        var lines = entry.Lines.ToArray();
+        (lines[0], lines[1]) = (lines[1], lines[0]);
+        return write with
+        {
+            Entry = new JournalEntry(
+                entry.JournalEntryId,
+                entry.Timestamp,
+                entry.Description,
+                lines,
+                entry.Metadata)
+        };
+    }
 
     private static LedgerJournalEntryWrite WithLines(
         LedgerJournalEntryWrite write,

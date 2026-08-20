@@ -131,6 +131,23 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
         }
     }
 
+    /// <summary>
+    /// Pairs every retained line with a distinct candidate line, completely rather than greedily.
+    /// <para>
+    /// Line order is not durable here, so lines are compared as a multiset. Currency compatibility
+    /// is deliberately one-directional — a retained identity translation is equivalent to a
+    /// candidate that declares nothing, but not the reverse — which makes line equivalence a
+    /// non-symmetric relation. Taking the first available match over a non-symmetric relation is
+    /// order-dependent: it can spend a blind candidate on a retained line that carries detail,
+    /// then strand a retained blind line against the detailed candidate left over, and report a
+    /// multiset that pairs up perfectly as different accounting content.
+    /// </para>
+    /// <para>
+    /// Augmenting paths retire the question instead of reordering around it — a pairing is found
+    /// whenever one exists, for this asymmetry and any later one. Journals carry a handful of
+    /// legs, so the cost of being exact here is irrelevant.
+    /// </para>
+    /// </summary>
     private static bool JournalLinesEquivalent(
         IReadOnlyList<LedgerEntry> retained,
         IReadOnlyList<LedgerEntry> candidate)
@@ -138,26 +155,46 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
         if (retained.Count != candidate.Count)
             return false;
 
-        var matched = new bool[candidate.Count];
-        foreach (var retainedLine in retained)
+        // Which retained line currently holds each candidate line; -1 while unclaimed.
+        var claimedBy = new int[candidate.Count];
+        Array.Fill(claimedBy, -1);
+
+        for (var retainedIndex = 0; retainedIndex < retained.Count; retainedIndex++)
         {
-            var matchIndex = -1;
-            for (var index = 0; index < candidate.Count; index++)
-            {
-                if (!matched[index] && LinesEquivalent(retainedLine, candidate[index]))
-                {
-                    matchIndex = index;
-                    break;
-                }
-            }
-
-            if (matchIndex < 0)
+            if (!TryClaimCandidate(retainedIndex, retained, candidate, claimedBy, new bool[candidate.Count]))
                 return false;
-
-            matched[matchIndex] = true;
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Claims a candidate line for <paramref name="retainedIndex"/>, displacing an earlier claim
+    /// when that line can be re-housed elsewhere. <paramref name="visited"/> keeps one search from
+    /// revisiting a candidate and looping.
+    /// </summary>
+    private static bool TryClaimCandidate(
+        int retainedIndex,
+        IReadOnlyList<LedgerEntry> retained,
+        IReadOnlyList<LedgerEntry> candidate,
+        int[] claimedBy,
+        bool[] visited)
+    {
+        for (var index = 0; index < candidate.Count; index++)
+        {
+            if (visited[index] || !LinesEquivalent(retained[retainedIndex], candidate[index]))
+                continue;
+
+            visited[index] = true;
+            if (claimedBy[index] < 0
+                || TryClaimCandidate(claimedBy[index], retained, candidate, claimedBy, visited))
+            {
+                claimedBy[index] = retainedIndex;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool LinesEquivalent(LedgerEntry retained, LedgerEntry candidate)
