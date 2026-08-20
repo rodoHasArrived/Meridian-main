@@ -118,9 +118,16 @@ public static class StatusEndpoints
             var response = handlers.GetStatus();
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetStatus").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
+        // The browser shell treats this as mandatory bootstrap evidence, and StatusResponse is aggregate
+        // counters, uptime, connection state and the degraded-mode posture -- no symbol list, no
+        // credentials, no account data, despite what the description below once implied. Gating it by
+        // the operational permissions locked out every built-in role but Admin and Developer, which
+        // left the shell in a permanent bootstrap error for everyone else. Worse, degraded mode is the
+        // signal that market data is simulated or stores do not persist: withholding it makes the shell
+        // quietly mislead exactly the operators who most need to know.
+        .WithName("GetStatus").RequireAuthenticatedSessionOrScopedLocalOperatorRead()
         .WithTags("Status")
-        .WithDescription("Returns full system status including connection state, metrics, and symbol information.")
+        .WithDescription("Returns system status: connection state, aggregate pipeline metrics, uptime, and degraded-mode posture.")
         .Produces<StatusResponse>(200);
 
         // Errors endpoint with optional filtering

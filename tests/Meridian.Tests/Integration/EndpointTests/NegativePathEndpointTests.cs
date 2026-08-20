@@ -38,7 +38,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
             UserPermission.TriggerBackfill);
         _providerClient = fixture.CreatePermittedClient(UserPermission.ManageProviders);
         _configClient = fixture.CreatePermittedClient(UserPermission.ViewConfig, UserPermission.ModifyConfig);
-        _healthClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
+        _healthClient = fixture.CreateSessionClient(UserPermission.ViewDiagnostics);
     }
 
     public void Dispose()

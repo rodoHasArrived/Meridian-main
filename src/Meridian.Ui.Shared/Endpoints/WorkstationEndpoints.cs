@@ -181,40 +181,7 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationWorkflowLibrary").DeclareOpenRead("Static workflow catalog from WorkflowRegistry; carries no deployment, account or tenant state.")
         .Produces<WorkflowLibraryDto>(200);
 
-        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationCollateralIngest), (
-            IReadOnlyList<CollateralInputRow> rows,
-            HttpContext context) =>
-        {
-            if (!HasOperationsContinuityMutationPermission(context))
-            {
-                return Results.Forbid();
-            }
-
-            const int maxRowsPerRequest = 1_000;
-            if (rows.Count > maxRowsPerRequest)
-            {
-                return Results.BadRequest(new { error = $"A maximum of {maxRowsPerRequest} collateral rows can be ingested per request." });
-            }
-
-            var buffer = context.RequestServices.GetService<CollateralIngestionBuffer>();
-            if (buffer is null)
-            {
-                return Results.Accepted(value: new { ingested = 0, buffered = false });
-            }
-
-            // One call, not a loop: a delivery replaces the exposures it restates, so ingesting row by
-            // row would make the batch overwrite itself. Scoped to the tenant the server resolved,
-            // never the payload -- the buffer is a singleton, so an unscoped write reaches every tenant.
-            buffer.IngestBatch(CollateralTenantScope.ForRequest(context), rows);
-
-            return Results.Accepted(value: new { ingested = rows.Count, buffered = true });
-        })
-        .WithName("IngestCollateralRows").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces(202)
-        .Produces(400)
-        .Produces(403)
-        .Produces(429)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        MapCollateralEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowPresets), async (HttpContext context) =>
         {
@@ -383,21 +350,6 @@ public static partial class WorkstationEndpoints
         .Produces(403)
         .RequireWorkstationTenantCompanyScope();
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationCollateralExposure), (HttpContext context) =>
-        {
-            if (!HasOperationsContinuityReadPermission(context))
-            {
-                return Results.Forbid();
-            }
-
-            var service = context.RequestServices.GetRequiredService<CollateralExposureService>();
-            var buffer = context.RequestServices.GetService<CollateralIngestionBuffer>();
-            var rows = buffer?.SnapshotCurrent(CollateralTenantScope.ForRequest(context)) ?? [];
-            return Results.Json(BuildCollateralExposureSnapshot(service, rows), jsonOptions);
-        })
-        .WithName("GetWorkstationCollateralExposure").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<ExposureSnapshotDto>(200)
-        .Produces(403);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationOperatorInbox), async (Guid? fundAccountId, HttpContext context) =>
         {

@@ -85,6 +85,72 @@ public sealed partial class WorkstationEndpointsTests
             .Should().Be(1, "reading exposure is not a consumption of collateral input");
     }
 
+    [Theory]
+    [InlineData("", "repo", "cash", "missing counterparty")]
+    [InlineData("cpty", "  ", "cash", "missing product type")]
+    [InlineData("cpty", "repo", "", "missing collateral type")]
+    public async Task MapWorkstationEndpoints_CollateralIngest_ShouldRejectRowsItCannotRetainSafely(
+        string counterparty, string productType, string collateralType, string because)
+    {
+        // A non-consuming buffer keeps whatever it accepts, so a malformed row is not one bad response:
+        // BuildSnapshots groups by counterparty and hands the key to ResolvePolicy, whose lookup throws
+        // on null, and the row survives every read until eviction.
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<CollateralExposureService>();
+            services.AddSingleton<CollateralIngestionBuffer>();
+        });
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/workstation/collateral/ingest",
+            new[]
+            {
+                new CollateralInputRow(
+                    DateTimeOffset.UtcNow, counterparty, productType, 1m, 1m, 1m, collateralType, 1m, 0m)
+            },
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest, because);
+
+        var exposure = await app.GetTestClient().GetAsync("/api/workstation/collateral/exposure");
+        exposure.StatusCode.Should().Be(HttpStatusCode.OK, "the read stays healthy because nothing was retained");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_CollateralIngest_ShouldRejectFutureDatedObservations()
+    {
+        // Restatements resolve newest-AsOf-wins, so a far-future timestamp would make that exposure
+        // permanently authoritative and freeze its coverage and breach state against every real update.
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<CollateralExposureService>();
+            services.AddSingleton<CollateralIngestionBuffer>();
+        });
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/workstation/collateral/ingest",
+            new[]
+            {
+                new CollateralInputRow(
+                    DateTimeOffset.UtcNow.AddYears(5), "cpty", "repo", 1m, 1m, 1m, "cash", 1m, 0m)
+            },
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Ordinary producer clock drift is still accepted.
+        var withinSkew = await app.GetTestClient().PostAsJsonAsync(
+            "/api/workstation/collateral/ingest",
+            new[]
+            {
+                new CollateralInputRow(
+                    DateTimeOffset.UtcNow.AddMinutes(2), "cpty", "repo", 1m, 1m, 1m, "cash", 1m, 0m)
+            },
+            ServerJsonOptions);
+
+        withinSkew.StatusCode.Should().Be(HttpStatusCode.Accepted);
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_CollateralExposure_ShouldNotServeAnotherTenantsRows()
     {

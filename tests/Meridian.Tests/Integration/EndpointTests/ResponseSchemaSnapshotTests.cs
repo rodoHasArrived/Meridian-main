@@ -38,7 +38,7 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable, IClassFixture<End
         _client = fixture.Client;
         _configClient = fixture.CreatePermittedClient(UserPermission.ViewConfig, UserPermission.ModifyConfig);
         _backfillReadClient = fixture.CreatePermittedClient(UserPermission.ViewHistoricalData);
-        _platformReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
+        _platformReadClient = fixture.CreateSessionClient(UserPermission.ViewDiagnostics);
     }
 
     public void Dispose()

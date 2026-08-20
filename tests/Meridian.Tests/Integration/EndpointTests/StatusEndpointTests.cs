@@ -23,8 +23,8 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     public StatusEndpointTests(EndpointTestFixture fixture)
     {
         _client = fixture.Client;
-        _providerReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
-        _configOnlyClient = fixture.CreatePermittedClient(UserPermission.ViewConfig);
+        _providerReadClient = fixture.CreateSessionClient(UserPermission.ViewDiagnostics);
+        _configOnlyClient = fixture.CreateSessionClient(UserPermission.ViewConfig);
     }
 
     #region Health Endpoints

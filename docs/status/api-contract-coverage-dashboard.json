@@ -3341,37 +3341,37 @@
     {
       "method": "GET",
       "path": "/api/errors",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:127",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:134",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backpressure",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:141",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:148",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/latency",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:152",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:159",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/connections",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:167",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:174",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/health/detailed",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:205",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:212",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/events/stream",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:233",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:240",
       "documented": true
     },
     {
@@ -3737,13 +3737,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2799",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2751",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2940",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2892",
       "documented": false
     }
   ],

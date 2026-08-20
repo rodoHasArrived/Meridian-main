@@ -26,7 +26,7 @@ public sealed class ResponseSchemaValidationTests : IDisposable, IClassFixture<E
     {
         _client = fixture.Client;
         _configClient = fixture.CreatePermittedClient(UserPermission.ViewConfig, UserPermission.ModifyConfig);
-        _providerReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
+        _providerReadClient = fixture.CreateSessionClient(UserPermission.ViewDiagnostics);
     }
 
     public void Dispose()

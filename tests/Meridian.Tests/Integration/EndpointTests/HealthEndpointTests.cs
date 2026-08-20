@@ -21,7 +21,7 @@ public sealed class HealthEndpointTests : EndpointIntegrationTestBase, IDisposab
 
     public HealthEndpointTests(EndpointTestFixture fixture) : base(fixture)
     {
-        _operationalReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
+        _operationalReadClient = fixture.CreateSessionClient(UserPermission.ViewDiagnostics);
     }
 
     public void Dispose() => _operationalReadClient.Dispose();
