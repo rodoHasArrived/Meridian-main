@@ -130,41 +130,48 @@ public sealed class CollateralIngestionBuffer
 
     public int BufferedCount => _buffer.Count;
 
-    public bool TryIngest(CollateralInputRow row)
+    /// <summary>
+    /// Buffers a row, evicting the oldest once the window is full. The buffer is a bounded
+    /// most-recent window rather than a queue awaiting a consumer: exposure is an aggregate of what
+    /// is buffered, so the newest rows are the ones that must survive, and refusing new rows to
+    /// preserve old ones would freeze exposure at whatever the deployment happened to see first.
+    /// <para>
+    /// Ingestion therefore never stalls. The previous refusal-past-capacity behaviour paired with a
+    /// consuming read; with a non-consuming read it would have made every ingest fail permanently
+    /// once the window filled.
+    /// </para>
+    /// </summary>
+    public void Ingest(CollateralInputRow row)
     {
-        if (_buffer.Count >= MaxBufferedRows)
-        {
-            return false;
-        }
-
         _buffer.Enqueue(row);
-        return true;
+
+        // Count is approximate under concurrency, which is fine: the loop self-corrects on the next
+        // ingest and the window is a bound, not an exact size.
+        while (_buffer.Count > MaxBufferedRows && _buffer.TryDequeue(out _))
+        {
+        }
     }
 
     /// <summary>
-    /// The buffered rows, without consuming them. Exposure is an aggregate of everything buffered,
-    /// so reading it must leave the buffer intact: draining on read made each snapshot cover only
-    /// the rows arriving since the previous reader, so two operators looking at the same moment saw
-    /// different exposure and the second frequently saw none.
+    /// The most recent buffered rows, without consuming them. Exposure is an aggregate of what is
+    /// buffered, so reading must leave the buffer intact: draining on read made each snapshot cover
+    /// only the rows arriving since the previous reader, so two operators looking at the same moment
+    /// saw different exposure and the second frequently saw none.
     /// <para>
-    /// Back-pressure stays with the writer, where it is visible: <see cref="TryIngest"/> refuses past
-    /// <c>MaxBufferedRows</c> and the ingest route answers 429, rather than a reader silently
-    /// discarding rows nobody has seen.
+    /// Most recent, not first buffered. Taking from the head would pin the snapshot to the oldest
+    /// rows and silently exclude everything after the first <paramref name="maxItems"/>, so exposure
+    /// would stop tracking current collateral the moment the window exceeded the read limit.
     /// </para>
     /// </summary>
     public IReadOnlyList<CollateralInputRow> SnapshotRows(int maxItems = 500)
     {
-        var rows = new List<CollateralInputRow>(Math.Min(maxItems, _buffer.Count));
-        foreach (var row in _buffer)
+        if (maxItems <= 0)
         {
-            if (rows.Count >= maxItems)
-            {
-                break;
-            }
-
-            rows.Add(row);
+            return [];
         }
 
-        return rows;
+        // Point-in-time snapshot, oldest first; the window is bounded, so materializing is cheap.
+        var buffered = _buffer.ToArray();
+        return buffered.Length <= maxItems ? buffered : buffered[^maxItems..];
     }
 }

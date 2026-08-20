@@ -200,11 +200,7 @@ public static partial class WorkstationEndpoints
             var ingested = 0;
             foreach (var row in rows)
             {
-                if (!buffer.TryIngest(row))
-                {
-                    return Results.StatusCode(StatusCodes.Status429TooManyRequests);
-                }
-
+                buffer.Ingest(row);
                 ingested++;
             }
 
