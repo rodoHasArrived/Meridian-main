@@ -80,12 +80,49 @@ public sealed class CollateralExposureService
                     .Select(pg => new ProductExposure(pg.Key, pg.Sum(x => x.MarkToMarket), pg.Sum(x => Math.Abs(x.MarkToMarket))))
                     .OrderByDescending(p => p.GrossExposure)
                     .ToArray();
-                var ratio = required <= 0m ? 999m : haircutAdjusted / required;
+                var ratio = ResolveCoverageRatio(haircutAdjusted, required);
                 return new ExposureSnapshot(asOf, group.Key, net, gross, byProduct, collateralBalance, haircutAdjusted, required, ratio);
             })
             .OrderByDescending(x => x.GrossExposure)
             .ToArray();
     }
+
+    /// <summary>
+    /// Collateral coverage, saturating at <see cref="MaxReportedCoverageRatio"/> instead of dividing
+    /// without bound.
+    /// <para>
+    /// The quotient is the one place in <see cref="BuildSnapshots"/> that the ingest value cap cannot
+    /// bound: a requirement small enough relative to posted collateral drives it past
+    /// <see cref="decimal.MaxValue"/> and throws, and because the ingestion buffer is non-consuming
+    /// the row that caused it stays current and takes the tenant's exposure read down with it on
+    /// every later request.
+    /// </para>
+    /// <para>
+    /// Saturating loses nothing: the ratio is only ever compared against coverage thresholds near
+    /// 1.0, so every value above the ceiling classifies identically -- which is why the
+    /// no-requirement case already reports the same number. The comparison is written as a product
+    /// rather than a quotient because the multiplication is bounded by the ingest cap and the
+    /// buffer's row cap, and the division is not.
+    /// </para>
+    /// </summary>
+    private static decimal ResolveCoverageRatio(decimal haircutAdjusted, decimal required)
+    {
+        if (required <= 0m)
+        {
+            return MaxReportedCoverageRatio;
+        }
+
+        return haircutAdjusted >= required * MaxReportedCoverageRatio
+            ? MaxReportedCoverageRatio
+            : haircutAdjusted / required;
+    }
+
+    /// <summary>
+    /// The coverage figure reported for an exposure whose requirement is zero or negligible against
+    /// the collateral posted. Retained at the value the zero-requirement case has always used, so
+    /// the ceiling does not change how any existing threshold classifies.
+    /// </summary>
+    private const decimal MaxReportedCoverageRatio = 999m;
 
     public IReadOnlyList<ThresholdBreach> EvaluateBreaches(IReadOnlyList<ExposureSnapshot> snapshots)
     {

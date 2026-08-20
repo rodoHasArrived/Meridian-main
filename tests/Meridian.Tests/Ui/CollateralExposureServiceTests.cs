@@ -302,6 +302,34 @@ public sealed class CollateralExposureServiceTests
         buffer.BufferedCount(Scope).Should().BeLessThanOrEqualTo(20_000);
     }
 
+    [Fact]
+    public void BuildSnapshots_NegligibleRequirementAgainstLargeCollateral_SaturatesInsteadOfOverflowing()
+    {
+        // The quotient is the one figure the ingest value cap cannot bound. A requirement small
+        // enough against posted collateral drives it past decimal's range, and because the buffer is
+        // non-consuming the row that caused it would stay current and take every later exposure read
+        // for that tenant down with it.
+        var rows = new[]
+        {
+            new CollateralInputRow(
+                DateTimeOffset.UnixEpoch,
+                "CPTY-SATURATE",
+                "repo",
+                PositionNotional: 1m,
+                MarkToMarket: 1m,
+                CollateralBalance: 1_000_000_000_000_000_000_000m,
+                CollateralType: "bond",
+                InitialMargin: 0.0000000001m,
+                VariationMargin: 0m)
+        };
+
+        var snapshot = new CollateralExposureService().BuildSnapshots(rows).Should().ContainSingle().Subject;
+
+        snapshot.CollateralCoverageRatio.Should().Be(
+            999m,
+            "coverage above the ceiling classifies the same as the zero-requirement case against thresholds near 1.0");
+    }
+
     private static readonly CollateralTenantScope Scope = CollateralTenantScope.Unscoped;
 
     private static CollateralInputRow Row(int index)

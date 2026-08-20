@@ -1,0 +1,51 @@
+namespace Meridian.Ui.Shared.Services;
+
+/// <summary>
+/// Which embedded families the caller may see inside the accounting workspace payload, which the
+/// governance workspace serves under a second name from the same builder.
+/// <para>
+/// The workspace admits a deliberately wide set, because it is the screen the reconciliation,
+/// direct-lending, Security Master and trading desks all open to see where the period stands. What
+/// it may not do is treat that admission as authority for everything it aggregates: the payload
+/// carries the break queue, the manual-journal workbench, and the authoritative reporting
+/// projection, each of which is served head-on by a route with a strictly narrower gate. A
+/// composite's admission is the narrowest of what it carries, not the widest.
+/// </para>
+/// <para>
+/// Each flag mirrors the permissions of the route that serves that family directly, so a caller sees
+/// through the workspace exactly what it could fetch on its own and nothing more. An unreadable
+/// family is not loaded at all rather than loaded and discarded, so withholding it also costs
+/// nothing.
+/// </para>
+/// <para>
+/// Headline counters are deliberately outside this scope. <c>Metrics</c> and the workspace summary
+/// are counts - open breaks, timing drift, security gaps, audit-ready runs - and a count is what the
+/// workspace exists to show every desk it admits. Withholding the number as well as the records
+/// would make the screen blank for the operators it was widened for, without withholding anything
+/// the records do not already disclose in far more detail.
+/// </para>
+/// </summary>
+/// <param name="BreakQueue">
+/// Reconciliation break records - strategy and run identifiers, variances, reasons, assignees,
+/// sign-off history, counterparties and resolution notes. Mirrors
+/// <c>GetReconciliationBreakQueue</c>, which admits the direct-lending and Security Master families
+/// and AdminMaintenance, and not ViewTrades.
+/// </param>
+/// <param name="ManualJournal">
+/// The manual-journal workbench. Mirrors <c>GetManualJournalEntryWorkbench</c>, which admits only
+/// AdminMaintenance and ManageDirectLending.
+/// </param>
+/// <param name="Reporting">
+/// The authoritative reporting projection - profiles, templates, recent runs and report-pack
+/// distributions. Mirrors the reporting-authority reads, which admit only ViewReporting and
+/// AdminMaintenance. Distribution-access filtering inside the projection narrows which records a
+/// principal matches; it is not a permission check and does not stand in for one.
+/// </param>
+public sealed record AccountingWorkspaceReadScope(
+    bool BreakQueue,
+    bool ManualJournal,
+    bool Reporting)
+{
+    public static readonly AccountingWorkspaceReadScope All =
+        new(BreakQueue: true, ManualJournal: true, Reporting: true);
+}

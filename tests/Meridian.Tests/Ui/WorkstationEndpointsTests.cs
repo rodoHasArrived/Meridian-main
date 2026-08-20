@@ -3989,6 +3989,10 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_WithGovernanceServices_ShouldExposeGovernanceWorkspacePayload()
     {
+        // ViewReporting alongside the default so the reporting assertions below stay about deployment
+        // readiness. The workspace withholds the reporting projection from a caller the reporting
+        // routes would refuse, and a withheld projection would satisfy "profileCount is 0" for the
+        // wrong reason -- authorization rather than an unavailable deployment.
         await using var app = await CreateAppAsync(services =>
         {
             var lookup = new StubSecurityReferenceLookup();
@@ -4008,7 +4012,8 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        });
+        },
+        currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationReadyRun("run-governance-balanced"));

@@ -150,13 +150,38 @@ public static partial class WorkstationEndpoints
                 rejection = $"Row {index} is dated beyond the permitted {MaxCollateralClockSkew.TotalMinutes:F0}-minute clock skew.";
                 return false;
             }
+
+            if (Exceeds(row.PositionNotional) ||
+                Exceeds(row.MarkToMarket) ||
+                Exceeds(row.CollateralBalance) ||
+                Exceeds(row.InitialMargin) ||
+                Exceeds(row.VariationMargin))
+            {
+                rejection = $"Row {index} carries a financial value beyond the permitted magnitude of {MaxCollateralValueMagnitude:E0}.";
+                return false;
+            }
         }
 
         rejection = string.Empty;
         return true;
+
+        static bool Exceeds(decimal value) => Math.Abs(value) > MaxCollateralValueMagnitude;
     }
 
     // Wide enough for ordinary producer clock drift, narrow enough that a misconfigured clock cannot
     // pin an exposure indefinitely.
     private static readonly TimeSpan MaxCollateralClockSkew = TimeSpan.FromMinutes(15);
+
+    /// <summary>
+    /// The largest magnitude any single financial field on a collateral row may carry.
+    /// <para>
+    /// Chosen so <c>BuildSnapshots</c> cannot overflow rather than to express a business limit -- a
+    /// sextillion is far above any real exposure, so a row past it is a producer defect, and the
+    /// non-consuming buffer would keep it. Its widest aggregate is the coverage comparison
+    /// <c>required * 999</c>, where <c>required</c> sums two magnitudes per row across the buffer's
+    /// 20,000-row cap: 2 x 20,000 x 1e21 x 999 is about 4e28, inside <see cref="decimal.MaxValue"/>
+    /// (about 7.9e28). Every other sum in that method is strictly smaller.
+    /// </para>
+    /// </summary>
+    private const decimal MaxCollateralValueMagnitude = 1_000_000_000_000_000_000_000m;
 }

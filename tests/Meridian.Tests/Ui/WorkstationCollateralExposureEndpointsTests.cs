@@ -152,6 +152,46 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_CollateralIngest_ShouldRejectValuesThatOverflowSnapshotArithmetic()
+    {
+        // BuildSnapshots sums magnitudes across every buffered row, so unbounded values overflow the
+        // aggregate. The retained row would then fail every later exposure read for that tenant, not
+        // just the one that accepted it.
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<CollateralExposureService>();
+            services.AddSingleton<CollateralIngestionBuffer>();
+        });
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/workstation/collateral/ingest",
+            new[]
+            {
+                new CollateralInputRow(
+                    DateTimeOffset.UtcNow, "cpty", "repo", 1m, decimal.MaxValue, 1m, "cash", 1m, 0m)
+            },
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var exposure = await app.GetTestClient().GetAsync("/api/workstation/collateral/exposure");
+        exposure.StatusCode.Should().Be(HttpStatusCode.OK, "the read stays healthy because nothing was retained");
+
+        // A large but plausible exposure is still accepted -- the bound exists to keep the aggregate
+        // representable, not to cap what a desk may report.
+        var accepted = await app.GetTestClient().PostAsJsonAsync(
+            "/api/workstation/collateral/ingest",
+            new[]
+            {
+                new CollateralInputRow(
+                    DateTimeOffset.UtcNow, "cpty", "repo", 1m, 900_000_000_000m, 1m, "cash", 1m, 0m)
+            },
+            ServerJsonOptions);
+
+        accepted.StatusCode.Should().Be(HttpStatusCode.Accepted);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_CollateralExposure_ShouldNotServeAnotherTenantsRows()
     {
         // The buffer is a process-wide singleton, so without a server-resolved scope key one tenant's
