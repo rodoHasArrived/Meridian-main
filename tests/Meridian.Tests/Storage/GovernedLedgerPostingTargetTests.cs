@@ -508,17 +508,41 @@ public sealed class GovernedLedgerPostingTargetTests
     }
 
     [Fact]
-    public async Task PostAsync_ReplayDeclaringAnIdentityTranslationOverABlindLeg_IsAReplayNotAConflict()
+    public async Task PostAsync_RetryDeclaringAnIdentityTranslationOverABlindLeg_FailsClosed()
     {
-        // The same equivalence in the other direction, for a book repaired after the journal was
-        // retained rather than before.
+        // The equivalence does not read in reverse. An identity translation names a currency, so a
+        // candidate declaring EUR against a leg that records no denomination is asserting what the
+        // books say. Nothing on either replay path checks a leg's functional currency against its
+        // book's base currency, so this cannot be corroborated here and must not be acknowledged.
         var retained = new List<LedgerJournalEntryRecord> { ToStoredRecord(BuildWrite()) };
         var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
         using var target = new DurableLedgerPostingTarget(store.Object);
+        // EUR on both sides at rate 1: a well-formed identity translation, and a claim that this
+        // leg is denominated in EUR.
+        var claiming = WithLegCurrency(BuildWrite(), "EUR", 100m, 1m, functionalCurrency: "EUR");
 
-        var result = await target.PostAsync(WithLegCurrency(BuildWrite(), "USD", 100m, 1m));
+        Func<Task> retry = async () => await target.PostAsync(claiming);
 
-        result.WasAppended.Should().BeFalse();
+        await retry.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*already retained with different accounting content*");
+    }
+
+    [Fact]
+    public async Task PostAsync_RetryCarryingTheLargestFiniteTiming_IsNotAReplayOfAnInfiniteOne()
+    {
+        // Npgsql encodes DateTimeOffset.MaxValue as PostgreSQL infinity and the tick below it as a
+        // finite microsecond count, but both land on the same microsecond once reduced. A sentinel
+        // is not a point on that grid, so it is compared exactly.
+        var infinite = WithTiming(BuildWrite(), DateTimeOffset.MaxValue);
+        var retained = new List<LedgerJournalEntryRecord> { ToStoredRecord(infinite) };
+        var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
+        using var target = new DurableLedgerPostingTarget(store.Object);
+        var finite = WithTiming(BuildWrite(), DateTimeOffset.MaxValue.AddTicks(-1));
+
+        Func<Task> retry = async () => await target.PostAsync(finite);
+
+        await retry.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*already retained with different accounting content*");
     }
 
     [Fact]
@@ -762,6 +786,11 @@ public sealed class GovernedLedgerPostingTargetTests
     /// </summary>
     private static DateTimeOffset ToStoredTimestamp(DateTimeOffset value)
     {
+        // MaxValue and MinValue go in as infinity and -infinity and come back unchanged rather
+        // than as a microsecond count.
+        if (value.UtcDateTime == DateTime.MaxValue || value.UtcDateTime == DateTime.MinValue)
+            return value;
+
         var epoch = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var micros = (value.UtcDateTime.Ticks - epoch.Ticks) / TimeSpan.TicksPerMicrosecond;
         return new DateTimeOffset(epoch.AddTicks(micros * TimeSpan.TicksPerMicrosecond), TimeSpan.Zero);
@@ -802,11 +831,18 @@ public sealed class GovernedLedgerPostingTargetTests
                 line.Dimensions,
                 line.Currency));
 
+    /// <summary>
+    /// Attaches transaction-currency detail to every leg. <paramref name="functionalCurrency"/> is
+    /// explicit because it is what separates an identity translation — the shape
+    /// <c>V_ledger_029</c> stamps, and the one the comparison treats as a label rather than a
+    /// claim — from a genuine foreign conversion.
+    /// </summary>
     private static LedgerJournalEntryWrite WithLegCurrency(
         LedgerJournalEntryWrite write,
         string transactionCurrency,
         decimal transactionAmount,
-        decimal fxRateToFunctional)
+        decimal fxRateToFunctional,
+        string functionalCurrency = "USD")
         => WithLines(
             write,
             line => new LedgerEntry(
@@ -820,7 +856,7 @@ public sealed class GovernedLedgerPostingTargetTests
                 line.Dimensions,
                 new LedgerEntryCurrency(
                     transactionCurrency,
-                    "USD",
+                    functionalCurrency,
                     line.Debit > 0m ? transactionAmount : 0m,
                     line.Credit > 0m ? transactionAmount : 0m,
                     fxRateToFunctional)));

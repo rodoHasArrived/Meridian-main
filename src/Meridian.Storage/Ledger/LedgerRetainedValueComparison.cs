@@ -33,7 +33,23 @@ internal static class LedgerRetainedValueComparison
     /// reject a retry that submitted the very same value it submitted the first time.
     /// </summary>
     public static bool TimestampsMatch(DateTimeOffset retained, DateTimeOffset candidate)
-        => ToStoredPrecision(retained) == ToStoredPrecision(candidate);
+        => IsStoredAsInfinity(retained) || IsStoredAsInfinity(candidate)
+            ? retained == candidate
+            : ToStoredPrecision(retained) == ToStoredPrecision(candidate);
+
+    /// <summary>
+    /// The two instants Npgsql encodes as PostgreSQL <c>infinity</c> and <c>-infinity</c> rather
+    /// than as a microsecond count, under the default infinity conversions.
+    /// </summary>
+    /// <remarks>
+    /// A sentinel is not a point on the microsecond grid, so reducing it to one puts it beside the
+    /// largest finite instant the store can hold: <see cref="DateTimeOffset.MaxValue"/> and the
+    /// tick below it — which persists finite — land on the same microsecond and would compare
+    /// equal. Compared exactly instead, so an infinite retained timestamp is a replay only of
+    /// another infinite one.
+    /// </remarks>
+    private static bool IsStoredAsInfinity(DateTimeOffset value)
+        => value.UtcDateTime == DateTime.MaxValue || value.UtcDateTime == DateTime.MinValue;
 
     /// <summary>
     /// Compares two amounts at the scale the store actually keeps. Journal legs are
@@ -82,24 +98,31 @@ internal static class LedgerRetainedValueComparison
     }
 
     /// <summary>
-    /// Compares a leg's transaction-currency detail at stored scale, treating an absent detail as
-    /// the identity translation of the functional amount it accompanies.
+    /// Compares a leg's transaction-currency detail at stored scale. A retained detail that is an
+    /// identity translation of the functional amount is equivalent to a candidate that declares no
+    /// detail at all — but not the reverse.
     /// <para>
-    /// Debit and credit are the functional amounts and are compared separately, so an identity
-    /// translation — same currency on both sides, transaction amounts equal to the functional
-    /// ones, rate 1 — carries no economic content beyond them. It is a label, not a claim. A leg
-    /// that omits the detail entirely makes the same non-claim, so the two are equivalent.
+    /// The asymmetry is the point. The retained side is what the books contain; the candidate side
+    /// is what a caller claims. A candidate that omits the detail claims nothing about
+    /// denomination, so accepting it against a retained identity translation acknowledges only
+    /// what the books already hold. That is what makes replay work after the <c>V_ledger_029</c>
+    /// repair, which stamps the identity translation onto legs written before the append path
+    /// carried currency through, while most posting paths still build legs without it. Comparing
+    /// presence rather than content there would make exactly the legacy postings that repair
+    /// exists to heal permanently unreplayable.
     /// </para>
     /// <para>
-    /// This matters because both sides of a replay acquire that label independently. The
-    /// <c>V_ledger_029</c> repair stamps the identity translation onto legs written before the
-    /// append path carried currency through, and most posting paths still build legs with no
-    /// currency detail at all. Comparing presence rather than content would make exactly the
-    /// legacy postings that repair exists to heal permanently unreplayable.
+    /// Read the other way it would be unsound. An identity translation is not contentless: it
+    /// names a currency. A candidate declaring <c>EUR/EUR</c> at rate 1 against a leg that records
+    /// no denomination is asserting the books say EUR, and nothing on either replay path checks a
+    /// leg's functional currency against its book's base currency — so accepting it would confirm
+    /// accounting content the retained journal does not contain. Corroborating such a claim needs
+    /// the authoritative book base currency, which this comparison is not given, so it fails
+    /// closed instead of guessing.
     /// </para>
     /// <para>
-    /// A detail that is <i>not</i> an identity translation is a claim: a foreign denomination and
-    /// a rate the other side does not record. That remains a difference.
+    /// Two details that are both present are compared field by field: a foreign denomination or a
+    /// rate the other side does not record is a difference.
     /// </para>
     /// </summary>
     public static bool CurrencyMatches(
@@ -110,10 +133,10 @@ internal static class LedgerRetainedValueComparison
     {
         if (retained is null && candidate is null)
             return true;
-        if (retained is null)
-            return IsIdentityTranslation(candidate!, functionalDebit, functionalCredit);
         if (candidate is null)
-            return IsIdentityTranslation(retained, functionalDebit, functionalCredit);
+            return IsIdentityTranslation(retained!, functionalDebit, functionalCredit);
+        if (retained is null)
+            return false;
 
         return CurrencyCodesMatch(retained.TransactionCurrency, candidate.TransactionCurrency)
             && CurrencyCodesMatch(retained.FunctionalCurrency, candidate.FunctionalCurrency)
