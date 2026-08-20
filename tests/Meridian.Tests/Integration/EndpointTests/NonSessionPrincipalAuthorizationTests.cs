@@ -833,6 +833,70 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
     }
 
+    [Theory]
+    [InlineData(nameof(UserRole.ReadOnly))]
+    [InlineData(nameof(UserRole.Analysis))]
+    public async Task ReadOnlyApiKeyRole_ReachesAPostDeclaredNonMutating(string roleName)
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "non-mutating-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", roleName);
+        try
+        {
+            // The method rule uses the verb as a proxy for "changes state", and the proxy is wrong for
+            // a read whose query needs a body. /api/workstation/data/query declares ViewHistoricalData,
+            // which all three read-only roles hold, and SqlStatementGuard admits only a single
+            // SELECT-family statement -- so refusing it took away a read, not a command.
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/workstation/data/query");
+            request.Headers.Add("X-Api-Key", "non-mutating-key");
+            request.Content = JsonContent.Create(new { sql = "SELECT 1" });
+
+            using var response = await Client.SendAsync(request);
+
+            var body = await response.Content.ReadAsStringAsync();
+            body.Should().NotContain(
+                "allows only GET, HEAD, and OPTIONS",
+                $"{roleName} holds this route's permission and the route declares that it changes "
+                + "nothing, so the endpoint decides the request rather than the method rule");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
+    [Fact]
+    public async Task ReadOnlyApiKeyRole_IsStillRefusedAnUnmarkedViewPermissionPost()
+    {
+        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "unmarked-post-key");
+        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.ReadOnly));
+        try
+        {
+            // The marker is applied per route after reading the handler, so absence is the default and
+            // the default is refusal. /api/sampling/create declares the same ViewHistoricalData and is
+            // not marked, because it creates a sample.
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/sampling/create");
+            request.Headers.Add("X-Api-Key", "unmarked-post-key");
+            request.Content = JsonContent.Create(new { strategy = "random" });
+
+            using var response = await Client.SendAsync(request);
+
+            response.StatusCode.Should().Be(
+                HttpStatusCode.Forbidden,
+                "an unmarked non-safe route stays refused, so a forgotten marker costs a capability "
+                + "rather than reopening a legacy mutation");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
+            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+        }
+    }
+
     [Fact]
     public async Task AnonymousRolePrincipal_DoesNotBypassConfiguredApiKey()
     {

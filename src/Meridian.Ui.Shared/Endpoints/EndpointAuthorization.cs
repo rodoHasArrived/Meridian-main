@@ -53,6 +53,28 @@ public sealed class EndpointOpenReadMetadata
 }
 
 /// <summary>
+/// Declares that a route outside the safe methods changes no state -- a read whose query does not
+/// fit in a URL, not a command. Only the read-only-role method cap consults this; it does not
+/// substitute for the route's own permission, which still decides who may call it.
+/// <para>
+/// Applied per route after reading the handler, never by convention: an unmarked non-safe route
+/// stays refused for a read-only principal, so a wrong omission costs a capability while a wrong
+/// marking would reopen the legacy mutations the cap exists to close.
+/// </para>
+/// </summary>
+public sealed class EndpointNonMutatingMetadata
+{
+    public EndpointNonMutatingMetadata(string reason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        Reason = reason;
+    }
+
+    /// <summary>Why this route changes nothing, e.g. "bounded single SELECT-family statement".</summary>
+    public string Reason { get; }
+}
+
+/// <summary>
 /// Centralized authorization helpers for workstation endpoints that rely on
 /// LoginSessionMiddleware session data instead of ad hoc caller-supplied fields.
 /// </summary>
@@ -80,8 +102,18 @@ public static class EndpointAuthorization
             return false;
         }
 
-        return !DeclaresReadOnlyRoleActionGrant(context.GetEndpoint());
+        return !AllowsReadOnlyRoleNonSafeMethod(context.GetEndpoint());
     }
+
+    /// <summary>
+    /// True when the selected endpoint may be called by a read-only role despite its method, for
+    /// either of two distinct reasons: it changes no state (<see cref="EndpointNonMutatingMetadata"/>),
+    /// or it requires the one action grant those roles legitimately hold.
+    /// </summary>
+    private static bool AllowsReadOnlyRoleNonSafeMethod(Endpoint? endpoint)
+        => endpoint is not null &&
+           (endpoint.Metadata.GetMetadata<EndpointNonMutatingMetadata>() is not null ||
+            DeclaresReadOnlyRoleActionGrant(endpoint));
 
     /// <summary>
     /// True when the selected endpoint declares an action grant a read-only role legitimately holds,
@@ -348,6 +380,17 @@ public static class EndpointAuthorization
         where TBuilder : IEndpointConventionBuilder
     {
         builder.WithMetadata(new EndpointOpenReadMetadata(reason));
+        return builder;
+    }
+
+    /// <summary>
+    /// Records <see cref="EndpointNonMutatingMetadata"/> on a route outside the safe methods, so the
+    /// read-only-role cap stands aside for a read that simply needs a request body.
+    /// </summary>
+    public static TBuilder DeclareNonMutating<TBuilder>(this TBuilder builder, string reason)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.WithMetadata(new EndpointNonMutatingMetadata(reason));
         return builder;
     }
 

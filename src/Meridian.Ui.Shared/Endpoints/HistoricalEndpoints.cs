@@ -211,6 +211,7 @@ public static class HistoricalEndpoints
             }, jsonOptions);
         })
         .WithName("PreviewAlignment").RequirePermission(UserPermission.ViewHistoricalData)
+        .DeclareNonMutating("Computes and returns an alignment preview from the request body; the sibling CreateAlignment route is what persists one.")
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }

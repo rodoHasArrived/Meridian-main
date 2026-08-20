@@ -458,7 +458,7 @@ public static partial class WorkstationEndpoints
                 .ConfigureAwait(false);
             return Results.Ok(result);
         })
-        .WithName("PostWorkstationDataQuery").RequirePermission(UserPermission.ViewHistoricalData)
+        .WithName("PostWorkstationDataQuery").RequirePermission(UserPermission.ViewHistoricalData).DeclareNonMutating("SqlStatementGuard admits one SELECT-family statement with no embedded semicolon and a blocked-keyword list, so this is a read whose query does not fit in a URL.")
         .Produces<DataQueryResult>(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);

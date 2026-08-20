@@ -187,10 +187,21 @@ public static class AuthEndpoints
           .Produces(StatusCodes.Status200OK)
           .Produces(StatusCodes.Status401Unauthorized);
 
-        app.MapGet(UiApiRoutes.AuthApiRoles, async (IRolePermissionProfileStore roleProfileStore, CancellationToken ct) =>
-                Results.Ok(await roleProfileStore.GetCatalogAsync(ct).ConfigureAwait(false)))
+        // LoginSessionMiddleware exempts the whole /api/auth prefix before it validates a cookie, so
+        // this route has to establish the session itself the way /api/auth/me does -- a declaration
+        // alone enforces nothing here, and the catalog names the deployment's custom roles and the
+        // permissions each one grants.
+        app.MapGet(UiApiRoutes.AuthApiRoles, async (
+                HttpContext context,
+                LoginSessionService sessionService,
+                IRolePermissionProfileStore roleProfileStore,
+                CancellationToken ct) =>
+                ResolveCurrentProfile(context, sessionService) is null
+                    ? Results.Json(new { error = "Not authenticated." }, statusCode: StatusCodes.Status401Unauthorized)
+                    : Results.Ok(await roleProfileStore.GetCatalogAsync(ct).ConfigureAwait(false)))
             .WithName("GetRolePermissionCatalog")
-            .DeclareOpenRead("Role and permission catalog for the deployment; reference data with no account, fund or tenant state, and every authenticated operator needs it to render the authority profile they already hold.")
+            .DeclareOpenRead("Role and permission catalog for the deployment, open to any authenticated operator because each needs it to render the authority profile they already hold; the handler resolves the session itself and answers 401 without one, since the /api/auth prefix is exempt from the session middleware.")
+            .Produces(StatusCodes.Status401Unauthorized)
             .WithSummary("Returns built-in and custom roles, permissions, and permission metadata for role configuration surfaces.")
             .Produces<RolePermissionCatalogDto>(StatusCodes.Status200OK);
 
