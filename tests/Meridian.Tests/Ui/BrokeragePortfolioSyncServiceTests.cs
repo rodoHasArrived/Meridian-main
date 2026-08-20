@@ -823,6 +823,61 @@ public sealed class BrokeragePortfolioSyncServiceTests
     }
 
     [Fact]
+    public async Task DiscoverAccountsAsync_ShouldIncludeAFundAccountLinkedOnlyByItsMetadata()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            // A link need not be persisted to exist: ResolveLinkAsync falls back to the account's
+            // Institution, or the configured default provider, with its SubAccountNumber, PortfolioId
+            // or AccountCode. Building the candidate list from links/*.json alone made discovery
+            // disagree with the status and sync routes, which treat such an account as linked -- so an
+            // authorized caller saw no matching account at all.
+            var providerId = "alpaca";
+            var inferredExternalAccountId = "AL-INFERRED";
+            var catalog = new FixedAccountCatalog(
+                providerId,
+                [BuildExternalAccount(providerId, inferredExternalAccountId)]);
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter(providerId),
+                new FixedActivityAdapter(providerId),
+                includeSecurityLookup: true,
+                catalogs: [catalog]);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+            var fundAccountId = Guid.NewGuid();
+            await serviceProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    inferredExternalAccountId,
+                    inferredExternalAccountId,
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-1),
+                    "tests"),
+                cts.Token);
+
+            // Deliberately no LinkAccountAsync: the account code is the whole link.
+            IReadOnlyCollection<Guid>? candidates = null;
+            var discovered = await service.DiscoverAccountsAsync(
+                (fundAccountIds, _) =>
+                {
+                    candidates = fundAccountIds.ToArray();
+                    return Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid> { fundAccountId });
+                },
+                ct: cts.Token);
+
+            candidates.Should().Contain(fundAccountId, "an account linked by metadata is still a candidate");
+            discovered.Should().ContainSingle().Which.AccountId.Should().Be(inferredExternalAccountId);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task DiscoverAccountsAsync_ReturnsOnlyAuthorizedLinkedAccountsInOneBatch()
     {
         var root = CreateTempRoot();

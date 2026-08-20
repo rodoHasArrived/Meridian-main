@@ -609,25 +609,39 @@ public sealed class BrokeragePortfolioSyncService
         Func<IReadOnlyCollection<Guid>, CancellationToken, Task<IReadOnlySet<Guid>>> authorizeFundAccounts,
         CancellationToken ct)
     {
+        // Candidates are the fund accounts themselves as well as the persisted link files, because a
+        // link need not be persisted to exist: ResolveLinkAsync falls back to the account's Institution
+        // (or the configured default provider) with its SubAccountNumber, PortfolioId or AccountCode.
+        // Enumerating links/*.json alone made discovery disagree with the status and sync routes, which
+        // treat such an account as linked -- an authorized caller saw no matching account at all.
+        var candidateIds = new HashSet<Guid>();
+        foreach (var account in await ListFundAccountsAsync(ct).ConfigureAwait(false))
+        {
+            candidateIds.Add(account.AccountId);
+        }
+
+        // Kept as a separate source so a link file whose fund account the store no longer lists still
+        // resolves exactly as it did before.
         var linkRoot = Path.Combine(_options.RootDirectory, "links");
-        if (!Directory.Exists(linkRoot))
+        if (Directory.Exists(linkRoot))
+        {
+            foreach (var fileName in Directory
+                .EnumerateFiles(linkRoot, "*.json", SearchOption.TopDirectoryOnly)
+                .Select(static path => Path.GetFileNameWithoutExtension(path)))
+            {
+                if (Guid.TryParseExact(fileName, "N", out var linkedId))
+                {
+                    candidateIds.Add(linkedId);
+                }
+            }
+        }
+
+        if (candidateIds.Count == 0)
         {
             return new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
         }
 
-        var candidateIds = Directory
-            .EnumerateFiles(linkRoot, "*.json", SearchOption.TopDirectoryOnly)
-            .Select(static path => Path.GetFileNameWithoutExtension(path))
-            .Where(static fileName => Guid.TryParseExact(fileName, "N", out _))
-            .Select(static fileName => Guid.ParseExact(fileName, "N"))
-            .Distinct()
-            .ToArray();
-        if (candidateIds.Length == 0)
-        {
-            return new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        var authorizedIds = await authorizeFundAccounts(candidateIds, ct).ConfigureAwait(false);
+        var authorizedIds = await authorizeFundAccounts(candidateIds.ToArray(), ct).ConfigureAwait(false);
         ArgumentNullException.ThrowIfNull(authorizedIds);
         var externalAccounts = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
         foreach (var fundAccountId in candidateIds)
@@ -641,7 +655,10 @@ public sealed class BrokeragePortfolioSyncService
             WorkstationBrokerageAccountLinkDto? link;
             try
             {
-                link = await LoadLinkAsync(fundAccountId, ct).ConfigureAwait(false);
+                // The same resolver the status and sync routes use, so discovery and per-account
+                // resolution agree by construction rather than by two rules kept in step by hand.
+                link = await ResolveLinkAsync(fundAccountId, request: null, ct).ConfigureAwait(false)
+                    ?? await LoadLinkAsync(fundAccountId, ct).ConfigureAwait(false);
             }
             catch (JsonException ex)
             {
@@ -1344,6 +1361,21 @@ public sealed class BrokeragePortfolioSyncService
         {
             await fundAccountService.ReconcileAccountAsync(request, ct).ConfigureAwait(false);
         }
+    }
+
+    private async Task<IReadOnlyList<AccountSummaryDto>> ListFundAccountsAsync(CancellationToken ct)
+    {
+        if (_services.GetService<IAccountQueryService>() is { } query)
+        {
+            return await query.ListAccountsAsync(null, null, null, ct).ConfigureAwait(false);
+        }
+
+        if (_services.GetService<IFundAccountService>() is { } fundAccountService)
+        {
+            return await fundAccountService.QueryAccountsAsync(new AccountStructureQuery(), ct).ConfigureAwait(false);
+        }
+
+        return [];
     }
 
     private async Task<AccountSummaryDto?> ResolveFundAccountAsync(Guid fundAccountId, CancellationToken ct)
