@@ -3996,6 +3996,10 @@ public sealed partial class WorkstationEndpointsTests
         // readiness. The workspace withholds the reporting projection from a caller the reporting
         // routes would refuse, and a withheld projection would satisfy "profileCount is 0" for the
         // wrong reason -- authorization rather than an unavailable deployment.
+        //
+        // ViewStrategies for the same reason: the run cards and the cash-flow balances mirror the run
+        // routes, which admit only the strategy permissions, and this test is about what the payload
+        // reports for runs that exist rather than about who may see them.
         await using var app = await CreateAppAsync(services =>
         {
             var lookup = new StubSecurityReferenceLookup();
@@ -4016,7 +4020,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         },
-        currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting);
+        currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting | UserPermission.ViewStrategies);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationReadyRun("run-governance-balanced"));
@@ -4639,11 +4643,17 @@ public sealed partial class WorkstationEndpointsTests
         tenancy.ResolveAsync("fund-unbound", Arg.Any<CancellationToken>())
             .Returns((FundProfileOwnership?)null);
 
-        await using var app = await CreateAppAsync(services =>
-        {
-            RegisterRunReadServices(services);
-            services.AddSingleton(tenancy);
-        });
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterRunReadServices(services);
+                services.AddSingleton(tenancy);
+            },
+            // The run cards mirror the run routes, which admit only the strategy permissions. This
+            // test is about which tenant's runs are projected, so the caller is given the authority
+            // to see run cards at all -- withholding them would satisfy the assertions below for the
+            // wrong reason. ModifySecurityMaster is what opens the workspace.
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewStrategies);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildRun(

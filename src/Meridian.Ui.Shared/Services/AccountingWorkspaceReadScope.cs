@@ -41,11 +41,24 @@ namespace Meridian.Ui.Shared.Services;
 /// AdminMaintenance. Distribution-access filtering inside the projection narrows which records a
 /// principal matches; it is not a permission check and does not stand in for one.
 /// </param>
+/// <param name="StrategyRuns">
+/// The reconciliation queue's run cards and the cash-flow summary derived from them - strategy name,
+/// run id, mode and status, audit, ledger and portfolio references, governance evidence, security
+/// coverage, the reconciliation detail, and the runs' cash and financing balances. Mirrors the run
+/// routes, which admit only ViewStrategies and ManageStrategies.
+/// <para>
+/// The workspace admits the Security Master and direct-lending desks on the strength of the period
+/// they work, and the runs behind that period are not part of that basis. The counts stay - how many
+/// runs, how many reconciled, how many audit-ready - because a count is what the screen exists to
+/// show every desk it admits; the records and the balances do not.
+/// </para>
+/// </param>
 public sealed record AccountingWorkspaceReadScope(
     bool BreakQueue,
     bool ManualJournal,
-    bool Reporting)
+    bool Reporting,
+    bool StrategyRuns)
 {
     public static readonly AccountingWorkspaceReadScope All =
-        new(BreakQueue: true, ManualJournal: true, Reporting: true);
+        new(BreakQueue: true, ManualJournal: true, Reporting: true, StrategyRuns: true);
 }

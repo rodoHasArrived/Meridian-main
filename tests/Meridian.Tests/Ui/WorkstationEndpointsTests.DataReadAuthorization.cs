@@ -5,6 +5,8 @@ using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
+using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -146,6 +148,78 @@ public sealed partial class WorkstationEndpointsTests
         root.GetProperty("workspace").GetProperty("openBreaks").GetInt32().Should().Be(1);
     }
 
+    [Theory]
+    [InlineData(UiApiRoutes.WorkstationAccounting)]
+    [InlineData(UiApiRoutes.WorkstationGovernance)]
+    public async Task MapWorkstationEndpoints_AccountingWorkspace_WithoutRunAuthority_ShouldWithholdRunCardsAndBalances(string route)
+    {
+        // The workspace admits the Security Master desk on the strength of the period it works, and
+        // the strategy runs behind that period are not part of that basis: the cards carry the run id
+        // and strategy name, the audit, ledger and portfolio references, the governance evidence and
+        // the reconciliation detail, and the cash-flow summary carries the runs' balances. Every one
+        // of those is served head-on by a route admitting only ViewStrategies and ManageStrategies.
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: UserPermission.ViewSecurityMaster);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            "run-security-master-view",
+            "withheld",
+            "Withheld From Security Master",
+            RunType.Paper,
+            new DateTimeOffset(2026, 6, 20, 13, 0, 0, TimeSpan.Zero),
+            fundProfileId: "test-fund-profile"));
+
+        using var response = await app.GetTestClient().GetAsync(route);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        var root = payload.RootElement;
+
+        root.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(
+            0,
+            "run identity and its evidence are what the run routes serve, and this caller holds neither strategy permission");
+        root.GetProperty("cashFlow").GetProperty("runsWithCashSignals").GetInt32().Should().Be(0);
+        root.GetProperty("cashFlow").GetProperty("totalCash").GetDecimal().Should().Be(0m);
+
+        // The counters stay, for the same reason the break-queue counters do: a count is what the
+        // screen exists to show every desk it admits, and the run existed regardless.
+        root.GetProperty("workspace").GetProperty("totalRuns").GetInt32().Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData(UserPermission.ViewSecurityMaster | UserPermission.ViewStrategies)]
+    [InlineData(UserPermission.ViewSecurityMaster | UserPermission.ManageStrategies)]
+    public async Task MapWorkstationEndpoints_AccountingWorkspace_WithRunAuthority_ShouldServeRunCards(
+        UserPermission permissions)
+    {
+        // The other end of the same rule: withholding must follow the caller's authority, not the
+        // workspace's, so a caller the run routes admit still sees what those routes would serve.
+        // The Security Master permission is what opens the workspace -- neither strategy permission
+        // is in its declaration -- and the strategy permission is what fills the cards.
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: permissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            "run-strategy-view",
+            "served",
+            "Served To Strategy Desk",
+            RunType.Paper,
+            new DateTimeOffset(2026, 6, 20, 13, 0, 0, TimeSpan.Zero),
+            fundProfileId: "test-fund-profile"));
+
+        using var response = await app.GetTestClient().GetAsync(UiApiRoutes.WorkstationAccounting);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        payload.RootElement.GetProperty("reconciliationQueue").EnumerateArray()
+            .Should()
+            .ContainSingle(item => item.GetProperty("runId").GetString() == "run-strategy-view");
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_WithTradingReadOnly_ShouldNotContributeBreakRecords()
     {
@@ -173,5 +247,81 @@ public sealed partial class WorkstationEndpointsTests
         inbox!.Items.Should().NotContain(
             item => item.WorkItemId.StartsWith("reconciliation-break-", StringComparison.Ordinal),
             "a caller the break-queue routes refuse must not receive the same records through the inbox");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_SeparatesPeriodCloseContributorsByPayloadNotKind()
+    {
+        // Two contributors write OperatorWorkItemKindDto.LedgerPeriodClose. DailyAccrualWorker writes
+        // it to say a loan could not accrue because the period is shut -- a loan id, a date, and
+        // nothing of the book. PostgresLedgerBookService writes it to request a sign-off, carrying the
+        // book name, accounting policy, required role and tolerance profile. Filtering on the kind
+        // withheld from the direct-lending desk the one item in the collection that is entirely its
+        // own, so the payload is what has to be tested.
+        var inboxService = new RecordingOperatorInboxService();
+        await inboxService.UpsertItemAsync(new OperatorWorkItemDto(
+            WorkItemId: "direct-lending-period-blocked:loan-1:20260620",
+            Kind: OperatorWorkItemKindDto.LedgerPeriodClose,
+            Label: "Direct lending accrual blocked by accounting period",
+            Detail: "Loan loan-1 could not post accrual for 2026-06-20.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: DateTimeOffset.UnixEpoch,
+            Workspace: "Accounting",
+            TargetRoute: "/accounting/reconciliation",
+            TargetPageTag: "FundReconciliation",
+            Scope: "DirectLendingAccrual"));
+        await inboxService.UpsertItemAsync(new OperatorWorkItemDto(
+            WorkItemId: "ledger-period-close-abc",
+            Kind: OperatorWorkItemKindDto.LedgerPeriodClose,
+            Label: "Accrual HardClosed sign-off required",
+            Detail: "Fund book June 2026 is in HardClosed.",
+            Tone: OperatorWorkItemToneDto.Critical,
+            CreatedAt: DateTimeOffset.UnixEpoch,
+            Workspace: "Accounting",
+            TargetRoute: "/accounting/reconciliation",
+            TargetPageTag: "FundReconciliation",
+            Scope: "ledger-book:abc;ledger-period:def",
+            RequiredSignoffRole: "Controller",
+            ToleranceProfileId: "standard",
+            SignoffStatus: "Pending"));
+
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterRunReadServices(services);
+                services.AddSingleton<IOperatorInboxService>(inboxService);
+            },
+            currentUserPermissions: UserPermission.ViewDirectLending);
+
+        var inbox = await app.GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(
+            item => item.WorkItemId == "direct-lending-period-blocked:loan-1:20260620",
+            "a blocked accrual is direct-lending work, and it discloses nothing of the ledger book");
+        inbox.Items.Should().NotContain(
+            item => item.WorkItemId == "ledger-period-close-abc",
+            "the sign-off request carries the book, policy, role and tolerance the ledger period routes serve to ManageDirectLending and AdminMaintenance alone");
+    }
+
+    private sealed class RecordingOperatorInboxService : IOperatorInboxService
+    {
+        private readonly Dictionary<string, OperatorWorkItemDto> _items = new(StringComparer.OrdinalIgnoreCase);
+
+        public Task<IReadOnlyList<OperatorWorkItemDto>> GetItemsAsync(CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<OperatorWorkItemDto>>(_items.Values.ToArray());
+
+        public Task UpsertItemAsync(OperatorWorkItemDto item, CancellationToken ct = default)
+        {
+            _items[item.WorkItemId] = item;
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveItemAsync(string workItemId, CancellationToken ct = default)
+        {
+            _items.Remove(workItemId);
+            return Task.CompletedTask;
+        }
     }
 }

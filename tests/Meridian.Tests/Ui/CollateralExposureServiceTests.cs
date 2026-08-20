@@ -472,6 +472,85 @@ public sealed class CollateralExposureServiceTests
         snapshot.NetExposure.Should().Be(10m, "a retry is the same row whichever casing it arrives in");
     }
 
+    [Fact]
+    public void CollateralIngestionBuffer_StragglerChunk_DoesNotDeleteTheChunkItSharesAnIdentityWith()
+    {
+        // A delivery may restate one identity at the current time in one chunk and carry a straggler
+        // for the same identity at an older time in another. The straggler is dropped -- only the
+        // winning observation survives -- so treating its chunk as redelivered deletes what is held
+        // under that name and puts nothing back: the chunk is replaced by a row that never lands.
+        var buffer = new CollateralIngestionBuffer();
+        var current = DateTimeOffset.UnixEpoch.AddMinutes(10);
+        var stale = DateTimeOffset.UnixEpoch.AddMinutes(5);
+
+        buffer.IngestBatch(Scope, [
+            new CollateralInputRow(current, "CPTY-STRAGGLER", "repo", 1m, 10m, 1m, "cash", 1m, 0m, ChunkId: "page-1")
+        ]);
+
+        buffer.IngestBatch(Scope, [
+            new CollateralInputRow(current, "CPTY-STRAGGLER", "repo", 1m, 10m, 1m, "cash", 1m, 0m, ChunkId: "page-2"),
+            new CollateralInputRow(stale, "CPTY-STRAGGLER", "repo", 1m, 10m, 1m, "cash", 1m, 0m, ChunkId: "page-1")
+        ]);
+
+        var service = new CollateralExposureService();
+        service.BuildSnapshots(buffer.SnapshotCurrent(Scope))
+            .Should().ContainSingle().Subject
+            .NetExposure.Should().Be(
+                20m,
+                "page-1 was retained at the current time and the straggler naming it is older, so it is neither replaced nor dropped");
+    }
+
+    [Fact]
+    public void BuildSnapshots_CounterpartyDifferingOnlyByPadding_IsOneExposureUnderOnePolicy()
+    {
+        // Every key here compares case-insensitively but not whitespace-insensitively, so a producer
+        // that pads one delivery and not the next split one counterparty into two exposures -- each
+        // carrying half the position, each falling through to the default policy and missing the
+        // haircut rule, and neither showing the desk its real coverage.
+        var service = new CollateralExposureService();
+        service.UpsertHaircutRule(new HaircutRule("CPTY-PADDED", "govt-bond", 0.50m));
+        service.UpsertThresholdPolicy(new CounterpartyThresholdPolicy("CPTY-PADDED", 1.15m, 1.00m));
+
+        var snapshot = service.BuildSnapshots([
+            new CollateralInputRow(DateTimeOffset.UnixEpoch, "CPTY-PADDED", "repo", 1m, 40m, 100m, "govt-bond", 50m, 0m),
+            new CollateralInputRow(DateTimeOffset.UnixEpoch, "  CPTY-PADDED  ", " repo ", 1m, 60m, 100m, " govt-bond ", 50m, 0m)
+        ]).Should().ContainSingle().Subject;
+
+        snapshot.Counterparty.Should().Be("CPTY-PADDED", "padding is not part of a counterparty's name");
+        snapshot.NetExposure.Should().Be(100m);
+        snapshot.ProductDecomposition.Should().ContainSingle().Subject.ProductType.Should().Be("repo");
+        snapshot.HaircutAdjustedCollateral.Should().Be(100m, "the padded row resolves the same haircut rule as the unpadded one");
+        snapshot.CollateralCoverageRatio.Should().Be(1.00m);
+
+        service.EvaluateBreaches([snapshot])
+            .Should().ContainSingle().Subject
+            .Severity.Should().Be(
+                ThresholdSeverity.EarlyWarning,
+                "the counterparty's own policy resolves, rather than falling through to the default");
+    }
+
+    [Fact]
+    public void CollateralIngestionBuffer_RestatementDifferingOnlyByPadding_ReplacesRatherThanAdds()
+    {
+        // The buffer's exposure identity has to fold padding the same way the snapshot builder does.
+        // Folding one and not the other means a padded restatement neither replaces the row it
+        // restates nor is summed with it -- it is retained beside it, and the stale half stays until
+        // eviction.
+        var buffer = new CollateralIngestionBuffer();
+
+        buffer.IngestBatch(Scope, [
+            new CollateralInputRow(DateTimeOffset.UnixEpoch, "CPTY-PADDED", "repo", 1m, 10m, 1m, "cash", 1m, 0m)
+        ]);
+        buffer.IngestBatch(Scope, [
+            new CollateralInputRow(DateTimeOffset.UnixEpoch.AddMinutes(1), " cpty-padded ", " repo ", 1m, 25m, 1m, " cash ", 1m, 0m)
+        ]);
+
+        new CollateralExposureService()
+            .BuildSnapshots(buffer.SnapshotCurrent(Scope))
+            .Should().ContainSingle().Subject
+            .NetExposure.Should().Be(25m, "a padded restatement is a restatement of the same exposure");
+    }
+
     private static readonly CollateralTenantScope Scope = CollateralTenantScope.Unscoped;
 
     private static CollateralInputRow Row(int index)

@@ -119,16 +119,45 @@ public static partial class WorkstationEndpoints
     /// roles and tolerances that ride on a period-close item — data the ledger period routes serve only
     /// to ManageDirectLending or AdminMaintenance.
     /// <para>
-    /// Filtering by kind rather than by contributor because the kind is what survives into the shared
-    /// collection; a new contributor inherits the rule by the kind it writes.
+    /// Kind alone cannot make that separation, because both contributors write
+    /// <see cref="OperatorWorkItemKindDto.LedgerPeriodClose"/>. <c>DailyAccrualWorker</c> writes it to
+    /// say a loan could not accrue because the period is shut — a direct-lending event, carrying a loan
+    /// id and a date and nothing of the book — while <c>PostgresLedgerBookService</c> writes it to
+    /// request a sign-off, carrying the book name, accounting basis, policy id and version, required
+    /// sign-off role and tolerance profile. Filtering by kind therefore withheld from the
+    /// direct-lending desk the one item in the collection that is entirely its own.
+    /// </para>
+    /// <para>
+    /// What separates them is the payload, so that is what is tested: an item scoped to a ledger book,
+    /// or carrying any of the period-close governance fields, is the ledger-book item. A future
+    /// contributor that adds those fields is caught by the second half even if it never adopts the
+    /// scope convention, and one that carries neither is, by construction, not disclosing anything the
+    /// narrower ledger-period routes exist to hold back.
     /// </para>
     /// </summary>
     private static bool CanReceiveContributedInboxItem(HttpContext context, OperatorWorkItemDto item)
         => item.Kind != OperatorWorkItemKindDto.LedgerPeriodClose ||
+           !CarriesLedgerBookPeriodCloseDetail(item) ||
            EndpointAuthorization.HasAnyPermission(
                context,
                UserPermission.ManageDirectLending,
                UserPermission.AdminMaintenance);
+
+    /// <summary>
+    /// Whether a period-close item carries the ledger book's own close detail, as opposed to merely
+    /// reporting that a closed period blocked something else.
+    /// </summary>
+    private static bool CarriesLedgerBookPeriodCloseDetail(OperatorWorkItemDto item)
+        => item.Scope?.Contains(LedgerBookScopePrefix, StringComparison.OrdinalIgnoreCase) == true ||
+           !string.IsNullOrWhiteSpace(item.RequiredSignoffRole) ||
+           !string.IsNullOrWhiteSpace(item.ToleranceProfileId) ||
+           !string.IsNullOrWhiteSpace(item.SignoffStatus);
+
+    /// <summary>
+    /// The scope prefix <c>PostgresLedgerBookService.BuildPeriodCloseWorkItem</c> stamps on the items it
+    /// contributes.
+    /// </summary>
+    private const string LedgerBookScopePrefix = "ledger-book:";
 
     private static void PreferCanonicalReconciliationBreakWorkItems(List<OperatorWorkItemDto> workItems)
     {

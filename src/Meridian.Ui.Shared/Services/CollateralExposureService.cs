@@ -70,7 +70,22 @@ public sealed class CollateralExposureService
     }
 
     public void UpsertThresholdPolicy(CounterpartyThresholdPolicy policy)
-        => _policies[policy.Counterparty] = policy;
+        => _policies[Normalize(policy.Counterparty)] = policy;
+
+    /// <summary>
+    /// The comparable form of an identity field: padding removed, case preserved so the value stays
+    /// usable as the reported name.
+    /// <para>
+    /// Trimming is not cosmetic. Every key this service resolves by -- the exposure grouping, the
+    /// threshold policy, the haircut rule, and the ingestion buffer's exposure identity -- compares
+    /// case-insensitively but not whitespace-insensitively. A producer that pads one delivery and
+    /// not the next therefore splits one counterparty into two exposures, each carrying half the
+    /// position, each measured against the default policy and a missed haircut rule, and neither
+    /// showing the desk its real coverage. Padding also survives a restatement, so the split half
+    /// is never replaced and keeps its stale reading until eviction.
+    /// </para>
+    /// </summary>
+    internal static string Normalize(string? value) => (value ?? string.Empty).Trim();
 
     // Keyed by compared fields for the same reason the ingestion buffer is: a counterparty or
     // collateral type containing the delimiter would otherwise collide with a different pair and
@@ -80,7 +95,7 @@ public sealed class CollateralExposureService
 
     public IReadOnlyList<ExposureSnapshot> BuildSnapshots(IReadOnlyList<CollateralInputRow> rows)
     {
-        return rows.GroupBy(r => r.Counterparty, StringComparer.OrdinalIgnoreCase)
+        return rows.GroupBy(r => Normalize(r.Counterparty), StringComparer.OrdinalIgnoreCase)
             .Select(group =>
             {
                 var asOf = group.Max(x => x.AsOf);
@@ -89,7 +104,7 @@ public sealed class CollateralExposureService
                 var collateralBalance = group.Sum(x => x.CollateralBalance);
                 var required = group.Sum(x => Math.Abs(x.InitialMargin) + Math.Abs(x.VariationMargin));
                 var haircutAdjusted = group.Sum(x => x.CollateralBalance * (1m - ResolveHaircut(group.Key, x.CollateralType)));
-                var byProduct = group.GroupBy(x => x.ProductType, StringComparer.OrdinalIgnoreCase)
+                var byProduct = group.GroupBy(x => Normalize(x.ProductType), StringComparer.OrdinalIgnoreCase)
                     .Select(pg => new ProductExposure(pg.Key, pg.Sum(x => x.MarkToMarket), pg.Sum(x => Math.Abs(x.MarkToMarket))))
                     .OrderByDescending(p => p.GrossExposure)
                     .ToArray();
@@ -174,7 +189,7 @@ public sealed class CollateralExposureService
     }
 
     private CounterpartyThresholdPolicy ResolvePolicy(string counterparty)
-        => _policies.TryGetValue(counterparty, out var policy) ? policy : _policies["default"];
+        => _policies.TryGetValue(Normalize(counterparty), out var policy) ? policy : _policies["default"];
 
     private decimal ResolveHaircut(string counterparty, string collateralType)
     {
@@ -189,7 +204,7 @@ public sealed class CollateralExposureService
     }
 
     private static (string Counterparty, string CollateralType) HaircutKey(string? counterparty, string? collateralType)
-        => ((counterparty ?? string.Empty).ToLowerInvariant(), (collateralType ?? string.Empty).ToLowerInvariant());
+        => (Normalize(counterparty).ToLowerInvariant(), Normalize(collateralType).ToLowerInvariant());
 }
 
 /// <summary>
@@ -369,12 +384,22 @@ public sealed class CollateralIngestionBuffer
             // adds nothing. The residual is the one the chunk id exists to remove -- an identical
             // position arriving in a later unnamed chunk reads as a redelivery -- and it is the safer
             // way to be wrong, since it under-counts a duplicate rather than double-counting a retry.
+            //
+            // Only chunks the delivery is actually replacing. A row is enrolled here on the strength of
+            // its own AsOf, not its identity's: a batch may restate an identity at the current time in
+            // one chunk and carry a straggler for the same identity at an older time in another, and
+            // the straggler is dropped by the AsOf test below rather than added. Enrolling its chunk
+            // anyway would delete the rows retained under that name and put nothing back -- the chunk
+            // would be replaced by a row that never lands.
             var redeliveredChunks = new HashSet<(ExposureIdentity Identity, string ChunkId)>();
             foreach (var row in rows)
             {
-                if (!string.IsNullOrWhiteSpace(row.ChunkId) && continued.Contains(ExposureKey(row)))
+                var key = ExposureKey(row);
+                if (!string.IsNullOrWhiteSpace(row.ChunkId) &&
+                    continued.Contains(key) &&
+                    row.AsOf == offered[key])
                 {
-                    redeliveredChunks.Add((ExposureKey(row), row.ChunkId.Trim()));
+                    redeliveredChunks.Add((key, row.ChunkId.Trim()));
                 }
             }
 
@@ -558,5 +583,9 @@ internal readonly record struct ExposureIdentity(string Counterparty, string Pro
     public static ExposureIdentity For(string? counterparty, string? productType, string? collateralType)
         => new(Fold(counterparty), Fold(productType), Fold(collateralType));
 
-    private static string Fold(string? value) => (value ?? string.Empty).ToLowerInvariant();
+    // Trimmed as well as lowercased, matching CollateralExposureService.Normalize. Folding one and
+    // not the other would make this identity disagree with the grouping the snapshot builder does,
+    // so a padded restatement would neither replace the row it restates nor be summed with it.
+    private static string Fold(string? value)
+        => CollateralExposureService.Normalize(value).ToLowerInvariant();
 }

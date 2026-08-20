@@ -624,12 +624,22 @@ public sealed partial class FinancialRecordExplorerReadService
         Func<StrategyRunDetail, bool> predicate,
         CancellationToken ct)
     {
-        // The unclamped overload, deliberately. The query-shaped one clamps any requested limit to 500
-        // rows, so a bounded scan cannot see past the newest 500 runs however wide it asks -- and a
-        // tenant whose newest owned run sits behind that many foreign ones would be told it has no
-        // source at all. This is the same read the accounting workspace already performs over the same
-        // runs for the same reason, so the cost is one the surface has already accepted.
-        var runs = await readService.GetRunsAsync(ct: ct).ConfigureAwait(false);
+        // Scoped, and unclamped. Two separate reasons for one call.
+        //
+        // Scoped, because the read service enforces the tenant and company a run was stamped with when
+        // it is given one, and that is a stronger claim than fund ownership: a run explicitly retained
+        // for another tenant is foreign even when its fund profile has no registry record yet, and the
+        // fund-ownership check below cannot see that. Passing the scope also carries through to the
+        // detail read, so the row set and the payload agree about who the caller is.
+        //
+        // Unclamped, because the query-shaped overload clamps any requested limit to 500 rows, so a
+        // bounded scan cannot see past the newest 500 runs however wide it asks -- and a tenant whose
+        // newest own run sits behind that many others would be told it has no source at all. This
+        // overload is the one the accounting workspace already uses over the same runs.
+        var readScope = new StrategyRunReadScope(fundScope.TenantId, fundScope.CompanyId);
+        var runs = await readService
+            .GetRunsAsync(strategyId: null, runType: null, readScope, ct)
+            .ConfigureAwait(false);
         foreach (var run in runs)
         {
             if (!await IsRunOwnedByScopeAsync(run, fundScope, ct).ConfigureAwait(false))
@@ -637,7 +647,7 @@ public sealed partial class FinancialRecordExplorerReadService
                 continue;
             }
 
-            var detail = await readService.GetRunDetailAsync(run.RunId, ct).ConfigureAwait(false);
+            var detail = await readService.GetRunDetailAsync(run.RunId, readScope, ct).ConfigureAwait(false);
             if (detail is not null && predicate(detail))
             {
                 return detail;

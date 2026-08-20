@@ -121,10 +121,16 @@ public static partial class WorkstationEndpoints
                 new WorkstationMetricCard("audit-ready", "Audit Ready", Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), "0%", auditReadyRuns > 0 ? "success" : "default"),
                 new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
             ],
-            ReconciliationQueue: runs
-                .Zip(details, static (run, detail) => (run, detail))
-                .Zip(reconciliations, (pair, reconciliation) => BuildAccountingRunCard(pair.run, pair.detail, reconciliation, kernelObservability))
-                .ToArray(),
+            // Withheld exactly as the empty-run branch above renders them, so a caller without run
+            // authority sees the shape the workspace already has when there is nothing to show rather
+            // than a new one. The counters beside them are counts and stay; the records and the
+            // balances are what the run routes serve to ViewStrategies and ManageStrategies alone.
+            ReconciliationQueue: readScope.StrategyRuns
+                ? runs
+                    .Zip(details, static (run, detail) => (run, detail))
+                    .Zip(reconciliations, (pair, reconciliation) => BuildAccountingRunCard(pair.run, pair.detail, reconciliation, kernelObservability))
+                    .ToArray()
+                : Array.Empty<WorkstationAccountingRunRecord>(),
             BreakQueue: visibleBreakQueueItems,
             Workspace: new WorkstationAccountingWorkspaceSummary(
                 TotalRuns: allRuns.Length,
@@ -132,7 +138,8 @@ public static partial class WorkstationEndpoints
                 LedgerReadyRuns: runs.Count(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
                 OpenBreaks: scopedOpenBreaks,
                 SecurityIssues: runsWithSecurityIssues),
-            CashFlow: BuildAccountingWorkspaceCashFlowSummary(details),
+            CashFlow: BuildAccountingWorkspaceCashFlowSummary(
+                readScope.StrategyRuns ? details : Array.Empty<StrategyRunDetail?>()),
             Reporting: reportingPayload,
             ControlCenter: BuildAccountingControlCenterPayload(breakQueueItems, reportingPayload, readScope.BreakQueue),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
@@ -240,7 +247,11 @@ public static partial class WorkstationEndpoints
             Reporting: EndpointAuthorization.HasAnyPermission(
                 context,
                 UserPermission.ViewReporting,
-                UserPermission.AdminMaintenance));
+                UserPermission.AdminMaintenance),
+            StrategyRuns: EndpointAuthorization.HasAnyPermission(
+                context,
+                UserPermission.ViewStrategies,
+                UserPermission.ManageStrategies));
 
     private static async Task<ManualJournalEntryWorkbenchDto?> BuildManualJournalWorkbenchPayloadAsync(HttpContext context)
     {
