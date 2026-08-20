@@ -1,3 +1,6 @@
+using Meridian.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
+
 namespace Meridian.Storage.Ledger;
 
 /// <summary>
@@ -78,8 +81,85 @@ internal static class LedgerRetainedValueComparison
         return true;
     }
 
+    /// <summary>
+    /// Compares a leg's transaction-currency detail at stored scale, treating an absent detail as
+    /// the identity translation of the functional amount it accompanies.
+    /// <para>
+    /// Debit and credit are the functional amounts and are compared separately, so an identity
+    /// translation — same currency on both sides, transaction amounts equal to the functional
+    /// ones, rate 1 — carries no economic content beyond them. It is a label, not a claim. A leg
+    /// that omits the detail entirely makes the same non-claim, so the two are equivalent.
+    /// </para>
+    /// <para>
+    /// This matters because both sides of a replay acquire that label independently. The
+    /// <c>V_ledger_029</c> repair stamps the identity translation onto legs written before the
+    /// append path carried currency through, and most posting paths still build legs with no
+    /// currency detail at all. Comparing presence rather than content would make exactly the
+    /// legacy postings that repair exists to heal permanently unreplayable.
+    /// </para>
+    /// <para>
+    /// A detail that is <i>not</i> an identity translation is a claim: a foreign denomination and
+    /// a rate the other side does not record. That remains a difference.
+    /// </para>
+    /// </summary>
+    public static bool CurrencyMatches(
+        LedgerEntryCurrency? retained,
+        LedgerEntryCurrency? candidate,
+        decimal functionalDebit,
+        decimal functionalCredit)
+    {
+        if (retained is null && candidate is null)
+            return true;
+        if (retained is null)
+            return IsIdentityTranslation(candidate!, functionalDebit, functionalCredit);
+        if (candidate is null)
+            return IsIdentityTranslation(retained, functionalDebit, functionalCredit);
+
+        return CurrencyCodesMatch(retained.TransactionCurrency, candidate.TransactionCurrency)
+            && CurrencyCodesMatch(retained.FunctionalCurrency, candidate.FunctionalCurrency)
+            && AmountsMatch(retained.TransactionDebit, candidate.TransactionDebit)
+            && AmountsMatch(retained.TransactionCredit, candidate.TransactionCredit)
+            && AmountsMatch(retained.FxRateToFunctional, candidate.FxRateToFunctional);
+    }
+
+    private static bool IsIdentityTranslation(
+        LedgerEntryCurrency currency,
+        decimal functionalDebit,
+        decimal functionalCredit)
+        => CurrencyCodesMatch(currency.TransactionCurrency, currency.FunctionalCurrency)
+           && AmountsMatch(currency.FxRateToFunctional, 1m)
+           && AmountsMatch(currency.TransactionDebit, functionalDebit)
+           && AmountsMatch(currency.TransactionCredit, functionalCredit);
+
+    private static bool CurrencyCodesMatch(string? retained, string? candidate)
+        => string.Equals(
+            NormalizeOptional(retained),
+            NormalizeOptional(candidate),
+            StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>The instant PostgreSQL counts <c>timestamptz</c> microseconds from.</summary>
+    private static readonly DateTime PostgresEpochUtc = new(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+    /// <summary>
+    /// Reduces an instant to what the store keeps, mirroring the provider's own conversion.
+    /// <para>
+    /// Npgsql encodes <c>timestamptz</c> as a <i>signed</i> microsecond delta from
+    /// <see cref="PostgresEpochUtc"/> using integer division, which truncates toward the epoch
+    /// rather than toward negative infinity. Flooring on absolute ticks agrees with that at or
+    /// after the epoch and disagrees by one microsecond before it, so a journal dated earlier than
+    /// 2000 whose timestamp carries sub-microsecond ticks would be normalized past the value the
+    /// store actually returned — reporting an exact replay as different accounting content, which
+    /// is the failure this whole comparison exists to prevent.
+    /// </para>
+    /// </summary>
     private static DateTimeOffset ToStoredPrecision(DateTimeOffset value)
-        => value.AddTicks(-(value.UtcTicks % TimeSpan.TicksPerMicrosecond));
+    {
+        var storedMicroseconds =
+            (value.UtcDateTime.Ticks - PostgresEpochUtc.Ticks) / TimeSpan.TicksPerMicrosecond;
+        return new DateTimeOffset(
+            PostgresEpochUtc.AddTicks(storedMicroseconds * TimeSpan.TicksPerMicrosecond),
+            TimeSpan.Zero);
+    }
 
     private static decimal ToStoredScale(decimal value)
         => Math.Round(value, StoredDecimalScale, MidpointRounding.AwayFromZero);

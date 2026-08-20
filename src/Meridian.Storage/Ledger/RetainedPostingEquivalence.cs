@@ -112,8 +112,13 @@ public static class RetainedPostingEquivalence
             // Transaction currency, functional currency, both transaction-side amounts, and the
             // FX rate are durable per leg. Two legs can agree on functional debits and credits
             // while booking a different transaction currency or rate, which is a different
-            // posting. Structural: a scalar-only record, so equality compares by value.
-            if (!CurrencyMatches(retainedLine.Currency, candidateLine.Currency))
+            // posting. The amounts are known equal by this point, so either side's serve as the
+            // functional pair the shared comparison needs.
+            if (!CurrencyMatches(
+                    retainedLine.Currency,
+                    candidateLine.Currency,
+                    retainedLine.Debit,
+                    retainedLine.Credit))
                 return Differs($"line {index} currency", out difference);
         }
 
@@ -271,23 +276,6 @@ public static class RetainedPostingEquivalence
             && TextMatches(retained.VendorId, candidate.VendorId)
             && TextMatches(retained.ProjectId, candidate.ProjectId)
             && ExternalDimensionsMatch(retained.ExternalGlDimensions, candidate.ExternalGlDimensions);
-    }
-
-    /// <summary>
-    /// Structural comparison of a leg's currency detail at stored scale. The transaction amounts
-    /// and FX rate are <c>numeric(38, 10)</c> as well, so record equality — which compares the
-    /// raw decimals — would report a conflict for an exact replay.
-    /// </summary>
-    private static bool CurrencyMatches(LedgerEntryCurrency? retained, LedgerEntryCurrency? candidate)
-    {
-        if (retained is null || candidate is null)
-            return retained is null && candidate is null;
-
-        return TextMatches(retained.TransactionCurrency, candidate.TransactionCurrency)
-            && TextMatches(retained.FunctionalCurrency, candidate.FunctionalCurrency)
-            && AmountsMatch(retained.TransactionDebit, candidate.TransactionDebit)
-            && AmountsMatch(retained.TransactionCredit, candidate.TransactionCredit)
-            && AmountsMatch(retained.FxRateToFunctional, candidate.FxRateToFunctional);
     }
 
     private static bool Differs(string field, out string difference)

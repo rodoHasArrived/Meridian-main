@@ -435,6 +435,24 @@ public sealed class GovernedLedgerPostingTargetTests
     }
 
     [Fact]
+    public async Task PostAsync_ReplayOfAPreEpochJournalCarryingSubMicrosecondTiming_IsAReplayNotAConflict()
+    {
+        // Npgsql truncates the signed microsecond delta from 2000-01-01 toward that epoch, so an
+        // instant seven ticks before it is stored as the epoch itself, not as the microsecond
+        // below. Normalizing on absolute ticks would floor past the value the store returned and
+        // report a historical journal's exact replay as a conflict.
+        var beforeEpoch = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero).AddTicks(-7);
+        var write = WithTiming(BuildWrite(), beforeEpoch);
+        var retained = new List<LedgerJournalEntryRecord> { ToStoredRecord(write) };
+        var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
+        using var target = new DurableLedgerPostingTarget(store.Object);
+
+        var result = await target.PostAsync(write);
+
+        result.WasAppended.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task PostAsync_ReplayCarryingAmountBeyondStoredScale_IsAReplayNotAConflict()
     {
         var write = WithLineAmount(BuildWrite(), 100.00000000004m);
@@ -466,6 +484,57 @@ public sealed class GovernedLedgerPostingTargetTests
         store.Verify(
             candidate => candidate.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()),
             Times.Never);
+    }
+
+    [Fact]
+    public async Task PostAsync_ReplayOfABackfilledLegByACurrencyBlindCaller_IsAReplayNotAConflict()
+    {
+        // V_ledger_029 repairs a currency-blind leg by stamping the identity translation — same
+        // currency both sides, transaction amounts equal to the functional ones, rate 1 — and
+        // deliberately invents nothing else. Most posting paths still build legs with no currency
+        // detail at all, so replaying one of those postings after the repair compares a stamped
+        // retained leg against a blind candidate. Treating the stamp as a difference would make
+        // exactly the legacy postings the backfill exists to heal permanently unreplayable.
+        var retained = new List<LedgerJournalEntryRecord>
+        {
+            ToStoredRecord(WithLegCurrency(BuildWrite(), "USD", 100m, 1m))
+        };
+        var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
+        using var target = new DurableLedgerPostingTarget(store.Object);
+
+        var result = await target.PostAsync(BuildWrite());
+
+        result.WasAppended.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task PostAsync_ReplayDeclaringAnIdentityTranslationOverABlindLeg_IsAReplayNotAConflict()
+    {
+        // The same equivalence in the other direction, for a book repaired after the journal was
+        // retained rather than before.
+        var retained = new List<LedgerJournalEntryRecord> { ToStoredRecord(BuildWrite()) };
+        var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
+        using var target = new DurableLedgerPostingTarget(store.Object);
+
+        var result = await target.PostAsync(WithLegCurrency(BuildWrite(), "USD", 100m, 1m));
+
+        result.WasAppended.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task PostAsync_RetryDeclaringForeignCurrencyOverABlindLeg_FailsClosed()
+    {
+        // A blind leg asserts no conversion. A candidate claiming EUR at a rate asserts one the
+        // books never recorded, which is a different posting rather than a missing label.
+        var retained = new List<LedgerJournalEntryRecord> { ToStoredRecord(BuildWrite()) };
+        var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
+        using var target = new DurableLedgerPostingTarget(store.Object);
+        var divergent = WithLegCurrency(BuildWrite(), "EUR", 92m, 1.0869565217m);
+
+        Func<Task> retry = async () => await target.PostAsync(divergent);
+
+        await retry.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*already retained with different accounting content*");
     }
 
     private static Mock<ILedgerJournalStore> BuildStore(
@@ -687,11 +756,16 @@ public sealed class GovernedLedgerPostingTargetTests
     }
 
     /// <summary>
-    /// Npgsql converts CLR ticks to PostgreSQL microseconds by integer division, so sub-microsecond
-    /// ticks are truncated on the way in rather than rounded.
+    /// Npgsql encodes a timestamptz as a signed microsecond delta from 2000-01-01 using integer
+    /// division, so sub-microsecond ticks are truncated toward that epoch rather than rounded —
+    /// downward after it and upward before it.
     /// </summary>
     private static DateTimeOffset ToStoredTimestamp(DateTimeOffset value)
-        => value.AddTicks(-(value.UtcTicks % TimeSpan.TicksPerMicrosecond));
+    {
+        var epoch = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var micros = (value.UtcDateTime.Ticks - epoch.Ticks) / TimeSpan.TicksPerMicrosecond;
+        return new DateTimeOffset(epoch.AddTicks(micros * TimeSpan.TicksPerMicrosecond), TimeSpan.Zero);
+    }
 
     /// <summary>PostgreSQL rounds <c>numeric</c> half away from zero.</summary>
     private static decimal ToStoredAmount(decimal value)

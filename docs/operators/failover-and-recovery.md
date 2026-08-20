@@ -213,10 +213,20 @@ rules about what a retained value is:
 - A leg's transaction-currency detail participates. Debit and credit are the functional amounts,
   so two legs can agree on every one of them while booking a different transaction currency,
   amount, or FX rate; that is now a conflict rather than an acknowledged replay.
-- A retained leg carrying no currency detail is equivalent only to a candidate carrying none.
-  Legs written before the append path stopped discarding currency detail will therefore report a
-  conflict against a modern replay. That is the intended fail-closed answer for ambiguous legacy
-  state: back the affected journals' currency detail in rather than re-posting over them.
+- A leg carrying no currency detail is equivalent to one carrying the identity translation of the
+  same functional amount — same currency on both sides, transaction amounts equal to the
+  functional ones, rate 1. That detail is a label rather than a claim, and the functional amounts
+  it labels are compared on their own. Both sides acquire the label independently: the
+  `V_ledger_029` repair stamps it onto legs written before the append path carried currency
+  through, and most posting paths still build legs without it, so comparing presence rather than
+  content would make exactly the legacy postings that repair exists to heal permanently
+  unreplayable.
+- A detail that is *not* an identity translation is a claim, and remains a difference. A candidate
+  declaring a foreign denomination and rate against a leg that records no conversion is a
+  different posting, not a missing label.
+- Timing is compared against what the store returns, which is a *signed* microsecond delta from
+  2000-01-01 truncated toward that epoch. Journals dated before 2000 truncate upward, not
+  downward, and the comparison mirrors that rather than flooring.
 
 ## ETL Source Retention Semantics
 

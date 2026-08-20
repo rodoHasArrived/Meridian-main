@@ -173,35 +173,11 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
            && AmountsMatch(retained.Credit, candidate.Credit)
            && string.Equals(retained.Description, candidate.Description, StringComparison.Ordinal)
            && DimensionsEquivalent(retained.Dimensions, candidate.Dimensions)
-           && CurrencyEquivalent(retained.Currency, candidate.Currency);
-
-    /// <summary>
-    /// Compares a leg's transaction-currency detail, which is durable per leg and was previously
-    /// left out of this comparison entirely.
-    /// <para>
-    /// Debit and credit are the functional amounts, so two legs can agree on every one of them
-    /// while booking a different transaction currency, a different amount in it, or a different FX
-    /// rate. Leaving the detail unexamined reported that as a replay and returned the retained
-    /// journal's id, so the caller was told its posting had been applied while the books held
-    /// different currency evidence that no later attempt could correct.
-    /// </para>
-    /// <para>
-    /// A retained leg with no currency detail is only equivalent to a candidate with none. Legs
-    /// written before the append path stopped discarding currency are the ambiguous case, and
-    /// reporting the difference surfaces them for backfill rather than absorbing them.
-    /// </para>
-    /// </summary>
-    private static bool CurrencyEquivalent(LedgerEntryCurrency? retained, LedgerEntryCurrency? candidate)
-    {
-        if (retained is null || candidate is null)
-            return retained is null && candidate is null;
-
-        return TextEquals(retained.TransactionCurrency, candidate.TransactionCurrency)
-            && TextEquals(retained.FunctionalCurrency, candidate.FunctionalCurrency)
-            && AmountsMatch(retained.TransactionDebit, candidate.TransactionDebit)
-            && AmountsMatch(retained.TransactionCredit, candidate.TransactionCredit)
-            && AmountsMatch(retained.FxRateToFunctional, candidate.FxRateToFunctional);
-    }
+           // Durable per leg, and previously left out of this comparison entirely. Debit and
+           // credit are the functional amounts, so two legs can agree on every one of them while
+           // booking a different transaction currency, amount, or FX rate. The amounts are known
+           // equal by the time this runs, so either side's serve as the functional pair.
+           && CurrencyMatches(retained.Currency, candidate.Currency, retained.Debit, retained.Credit);
 
     private static LedgerJournalEntryWrite NormalizeWrite(LedgerJournalEntryWrite write)
     {
