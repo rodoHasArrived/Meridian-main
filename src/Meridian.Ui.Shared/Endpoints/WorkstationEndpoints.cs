@@ -203,9 +203,8 @@ public static partial class WorkstationEndpoints
             }
 
             // One call, not a loop: a delivery replaces the exposures it restates, so ingesting row by
-            // row would make the batch overwrite itself and report only its last row per exposure.
-            // Scoped to the tenant resolved from the request, never from the payload -- the buffer is a
-            // singleton, so an unscoped write would land in every tenant's exposure.
+            // row would make the batch overwrite itself. Scoped to the tenant the server resolved,
+            // never the payload -- the buffer is a singleton, so an unscoped write reaches every tenant.
             buffer.IngestBatch(CollateralTenantScope.ForRequest(context), rows);
 
             return Results.Accepted(value: new { ingested = rows.Count, buffered = true });
@@ -3173,17 +3172,19 @@ public static partial class WorkstationEndpoints
         // --- Providers (real data from metrics store when available) ---
         var metricsStatus = configStore?.TryLoadProviderMetrics();
         var healthyProviderCount = metricsStatus?.HealthyProviders ?? 0;
+        // Routing connections, bindings and trust snapshots follow connectionRows: their direct
+        // /api/provider-routing reads require ManageCredentials, which the Data workspace does not admit.
         var canManageCredentials = HasPermission(context, UserPermission.ManageCredentials);
         var connectionRows = canManageCredentials && providerConnectionLifecycle is not null
             ? await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
-        var routingConnections = routingConnectionService is not null
+        var routingConnections = canManageCredentials && routingConnectionService is not null
             ? await routingConnectionService.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
-        var routingBindings = routingBindingService is not null
+        var routingBindings = canManageCredentials && routingBindingService is not null
             ? await routingBindingService.GetBindingsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
-        var trustSnapshots = routingTrustService is not null
+        var trustSnapshots = canManageCredentials && routingTrustService is not null
             ? await routingTrustService.GetTrustSnapshotsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
         var providers = BuildWorkstationDataProviderRecords(

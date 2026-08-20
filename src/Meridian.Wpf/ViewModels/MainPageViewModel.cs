@@ -84,14 +84,14 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         OperatorInboxViewModel? operatorInboxPresentation = null,
         WorkflowSummaryStripViewModel? workflowSummaryStrip = null,
         ShellRefreshCoordinator? shellRefreshCoordinator = null,
-        DesktopAuthenticationSession? authenticationSession = null)
+        DesktopAuthenticationSession? session = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _wpfNavigationService = navigationService as NavigationService;
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
         _fundContextService = fundContextService ?? FundContextService.Instance;
         _operatingContextService = operatingContextService;
-        _authenticationSession = authenticationSession;
+        _authenticationSession = session;
         _selectOperatingContextAsync = operatingContextService is null
             ? null
             : (contextKey, ct) => operatingContextService.SelectContextAsync(contextKey, ct: ct);
@@ -1757,8 +1757,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             var fundDisplayName = _fundContextService.CurrentFundProfile?.DisplayName;
 
             var summary = await _workflowSummaryService
-                .GetAsync(
-                    DesktopWorkflowReadScopeResolver.Resolve(_authenticationSession),
+                .GetAsync(DesktopWorkflowReadScopeResolver.Resolve(_authenticationSession),
                     hasOperatingContext: hasOperatingContext,
                     operatingContextDisplayName: operatingContextLabel,
                     fundProfileId: fundProfileId,
