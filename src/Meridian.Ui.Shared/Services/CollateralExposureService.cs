@@ -307,24 +307,39 @@ public sealed class CollateralIngestionBuffer
     /// </summary>
     private static void EvictWholeObservations(List<CollateralInputRow> rows)
     {
-        while (rows.Count > MaxBufferedRows)
+        if (rows.Count <= MaxBufferedRows)
         {
-            // Oldest by observation time, not by insertion order. Arrival order is not observation
-            // order here either: a delayed first reading can be inserted after a current one, and
-            // trimming from the head would discard the current exposure and keep the stale arrival.
-            var oldest = rows[0];
-            foreach (var row in rows)
+            return;
+        }
+
+        // One pass for the whole overage, not one per evicted observation. A full batch arriving at the
+        // cap would otherwise drive a full minimum scan and a full RemoveAll per excess observation --
+        // tens of millions of comparisons while holding the gate, which blocks every snapshot and
+        // ingest in the process.
+        var sizes = new Dictionary<(ExposureIdentity Identity, DateTimeOffset AsOf), int>();
+        foreach (var row in rows)
+        {
+            var key = (ExposureKey(row), row.AsOf);
+            sizes[key] = sizes.TryGetValue(key, out var count) ? count + 1 : 1;
+        }
+
+        // Oldest by observation time, not by insertion order: a delayed first reading can be inserted
+        // after a current one, and trimming from the head would discard the current exposure and keep
+        // the stale arrival.
+        var doomed = new HashSet<(ExposureIdentity Identity, DateTimeOffset AsOf)>();
+        var surplus = rows.Count - MaxBufferedRows;
+        foreach (var entry in sizes.OrderBy(static entry => entry.Key.AsOf))
+        {
+            if (surplus <= 0)
             {
-                if (row.AsOf < oldest.AsOf)
-                {
-                    oldest = row;
-                }
+                break;
             }
 
-            var identity = ExposureKey(oldest);
-            var asOf = oldest.AsOf;
-            rows.RemoveAll(row => row.AsOf == asOf && ExposureKey(row).Equals(identity));
+            doomed.Add(entry.Key);
+            surplus -= entry.Value;
         }
+
+        rows.RemoveAll(row => doomed.Contains((ExposureKey(row), row.AsOf)));
     }
 
     /// <summary>

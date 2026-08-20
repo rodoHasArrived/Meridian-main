@@ -1354,6 +1354,42 @@ public sealed class LedgerBookServiceTests
     }
 
     [Fact]
+    public async Task OperatorInbox_ShouldWithholdLedgerPeriodCloseFromViewDirectLendingOnlyOperators()
+    {
+        // One IOperatorInboxService collection carries items from more than one contributor: the
+        // direct-lending accrual worker and the ledger book service both write into it. Admission to
+        // the collection is not authority over every item in it -- a period-close item carries ledger
+        // book names, accounting policies, periods, sign-off roles and tolerances, which the ledger
+        // period routes serve only to ManageDirectLending or AdminMaintenance.
+        await using var app = await CreateAppAsync(UserPermission.ViewTrades | UserPermission.ViewDirectLending);
+        var inboxService = app.Services.GetRequiredService<IOperatorInboxService>();
+        await inboxService.UpsertItemAsync(new OperatorWorkItemDto(
+            WorkItemId: "ledger-period-close-withheld",
+            Kind: OperatorWorkItemKindDto.LedgerPeriodClose,
+            Label: "SoftClosed sign-off required",
+            Detail: "Period close requires controller sign-off.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: DateTimeOffset.Parse("2026-04-30T16:00:00Z")));
+        await inboxService.UpsertItemAsync(new OperatorWorkItemDto(
+            WorkItemId: "direct-lending-accrual-visible",
+            Kind: OperatorWorkItemKindDto.SecurityMasterCoverage,
+            Label: "Accrual blocker",
+            Detail: "Daily accrual is blocked on missing terms.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: DateTimeOffset.Parse("2026-04-30T16:00:00Z")));
+
+        var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>(
+            UiApiRoutes.WorkstationOperatorInbox,
+            ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().NotContain(item => item.WorkItemId == "ledger-period-close-withheld");
+        inbox.Items.Should().Contain(
+            item => item.WorkItemId == "direct-lending-accrual-visible",
+            "the contributions this caller is entitled to still arrive");
+    }
+
+    [Fact]
     public void LedgerBookMigration_DefinesLedgerBooksAndBookScopedPeriods()
     {
         var sql = ReadMigration("V_ledger_003__ledger_books.sql");

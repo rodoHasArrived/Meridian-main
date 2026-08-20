@@ -55,7 +55,9 @@ public static partial class WorkstationEndpoints
         if (operatorInbox is not null && HasContributedInboxPermission(context))
         {
             var contributedItems = await operatorInbox.GetItemsAsync(context.RequestAborted).ConfigureAwait(false);
-            workItems.AddRange(contributedItems.Select(AttachOperatorNavigation));
+            workItems.AddRange(contributedItems
+                .Where(item => CanReceiveContributedInboxItem(context, item))
+                .Select(AttachOperatorNavigation));
         }
 
         PreferCanonicalReconciliationBreakWorkItems(workItems);
@@ -99,8 +101,8 @@ public static partial class WorkstationEndpoints
             UserPermission.ManageStrategies);
 
     /// <summary>
-    /// Items contributed through <see cref="IOperatorInboxService"/> come from the ledger book and
-    /// direct-lending accrual paths, so they are contributed only to callers who can read those.
+    /// Whether the caller may receive <em>any</em> contributed item. This admits the collection; it is
+    /// not authority over everything in it — see <see cref="CanReceiveContributedInboxItem"/>.
     /// </summary>
     private static bool HasContributedInboxPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(
@@ -108,6 +110,25 @@ public static partial class WorkstationEndpoints
             UserPermission.ViewDirectLending,
             UserPermission.ManageDirectLending,
             UserPermission.AdminMaintenance);
+
+    /// <summary>
+    /// One <see cref="IOperatorInboxService"/> collection carries items from more than one contributor:
+    /// the direct-lending accrual worker and the ledger book service both write into it. Admission to
+    /// the collection is therefore not authority over every item in it, and appending it wholesale gave
+    /// a ViewDirectLending-only caller the ledger-book names, accounting policies, periods, sign-off
+    /// roles and tolerances that ride on a period-close item — data the ledger period routes serve only
+    /// to ManageDirectLending or AdminMaintenance.
+    /// <para>
+    /// Filtering by kind rather than by contributor because the kind is what survives into the shared
+    /// collection; a new contributor inherits the rule by the kind it writes.
+    /// </para>
+    /// </summary>
+    private static bool CanReceiveContributedInboxItem(HttpContext context, OperatorWorkItemDto item)
+        => item.Kind != OperatorWorkItemKindDto.LedgerPeriodClose ||
+           EndpointAuthorization.HasAnyPermission(
+               context,
+               UserPermission.ManageDirectLending,
+               UserPermission.AdminMaintenance);
 
     private static void PreferCanonicalReconciliationBreakWorkItems(List<OperatorWorkItemDto> workItems)
     {
