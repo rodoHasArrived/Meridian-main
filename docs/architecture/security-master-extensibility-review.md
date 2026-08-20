@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-14 (verification pass; original review 2026-08-12)
+**Reviewed:** 2026-08-20 (verification pass; prior pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -35,8 +35,12 @@ risks that compound as new asset classes land.
 > **Verification pass, 2026-08-14.** Re-read against current source at `4b39e9da8`. The findings
 > below stand as written except where a **Status (2026-08-14)** note says otherwise; four of the ten
 > risk items have since closed or materially narrowed. See
-> [Verification pass — 2026-08-14](#verification-pass--2026-08-14) for the current open list and
-> re-ranked priorities.
+> [Verification pass — 2026-08-14](#verification-pass--2026-08-14) for the open list and
+> re-ranked priorities as of that date.
+>
+> **Verification pass, 2026-08-20.** Re-read against `8760cfba`. No open item closed and no new risk
+> surfaced; the 2026-08-14 open list and priority order carry forward unchanged. See
+> [Verification pass — 2026-08-20](#verification-pass--2026-08-20).
 
 ---
 
@@ -475,6 +479,72 @@ history; asset-class-scoped projection replay.
 
 ---
 
+## Verification pass — 2026-08-20
+
+Re-read against `8760cfba`, six days after the previous pass. No code was changed by this pass; no
+tests were run.
+
+### Headline
+
+**Nothing closed, nothing regressed, nothing new.** Every finding in the
+[2026-08-14 open list](#verification-pass--2026-08-14) is still open at the same file and line, and
+the re-ranked priority order carries forward unchanged. The subsystem is stable, not stalled by
+defect — Security Master simply took no architectural work in this window.
+
+605 commits landed on `main` since `4b39e9da8`. Ten touched Security Master paths, and all ten are
+cross-cutting repo-wide refactors that passed through the subsystem rather than changing it:
+SHA-256 call sites routed onto `Sha256Digest` (`c2b3fd44`, `00d78e81`, `68ba1ab7`), `NormalizeOptional`
+clones migrated to `TextPrimitives` (`73247d6e`, `6be2c34d`), the last literal schema-version writes
+replaced with named constants (`9cae1b44`), and the W9-GOV-008 authorization-declaration tranche
+(`089aabee`, `95166888`, `862dc32a`).
+
+### Newly confirmed as solid
+
+**The Security Master write surface now declares its authorization.** Tranche `089aabee` recorded
+that the `/api/security-master` route group carries `RequireViewSecurityMasterPermission` at group
+level, with twenty routes additionally carrying a per-route
+`RequireModifySecurityMasterPermission` filter. The guards existed before; what changed is that they
+are now declarative and machine-checkable rather than inferred from filter registration. This does
+not alter item 9 — the bespoke equity PATCH endpoints are permission-gated but still bypass the
+maker-checker gate that generic field edits go through.
+
+### Open items re-verified at `8760cfba`
+
+| # | Item | Evidence at this commit |
+| --- | --- | --- |
+| 5 | Governed edits do not reach the golden record | Still exactly two registered publish handlers — `CoverageInvalidationHandler` and `SecurityProjectionRebuildHandler` (`WorkstationServiceCollectionExtensions.cs:526,529`); neither writes an approved override into canonical terms. `OperatorOverridesDto.Values` is still `IReadOnlyDictionary<string, string>` and its docstring still reads "without amending the canonical security terms" (`OperatorOverrides.cs:26-33`) |
+| 2 | Three modeling routes for MBS/ABS/CLO | No canonical-home ruling; `Bond` subclasses, `StructuredCredit`, and `CustomAsset` all remain legitimate |
+| 1 | Taxonomy outruns term model | `BondCouponStructure` is still `Fixed` / `Floating` / `ZeroCoupon` (`SecurityMaster.fs:222-225`). `BondTerms.PrincipalSchedule` remains present (`:258`), so sinking-fund economics stay computable and step-rate/inflation-linked stay label-only |
+| 8 | Third factor-schedule shape | `SecurityFactorScheduleEntry` is still declared in `Meridian.Strategies` (`SecurityMasterAccountingEventService.cs:89`) with ten use sites across that project's accounting-event adapter |
+| 7 | Corporate actions: wide table | `corporate_actions` still carries eight typed nullable payload columns for eighteen declared event types; no JSONB payload column in migration 003 or 021 |
+| 10 | Per-process projection cache | `SecurityMasterProjectionCache` is byte-for-byte unchanged: a bare `ConcurrentDictionary` with no eviction, and a `ReplaceAll` that clears before repopulating |
+| 10 | Straight-line amortization only | `ConstantYield` remains an enum member with no implementation (`BondReferenceDtos.cs:21`, `SecurityTermModules.fs:426`) |
+| 9 | Bespoke equity amendments | `AmendPreferredEquityTermsAsync` / `AmendConvertibleEquityTermsAsync` still sit on the generic service (`SecurityMasterService.cs:208,229`), routed from `SecurityMasterEndpoints.cs:506` |
+| 4 | ~7 registries per asset class | Both codec arms still hand-written; drift stays test-caught rather than prevented |
+| — | Dead override dependency | `ProviderLedgerReconciliationService` still assigns `_operatorOverridesStore` (`:49,:77`) and never reads it |
+| — | Asset-class-scoped replay | `IUflProjectionRebuilder.RebuildAsync(assetClass)` still normalizes the argument, logs it, then runs the full shared replay |
+
+### Surface counts
+
+Unchanged and still mutually aligned: F# `SecurityKind` DU 26, `AssetClassRegistry` descriptors 26,
+`SecurityAssetTermsSchema` 26, `SecurityAssetClassCatalog` 26 plus the `Unknown` default descriptor,
+relational projection writers 11, migrations 28. The 26-vs-11 projection gap remains declared and
+test-guarded by `IntentionallyUnprojectedAssetClasses`.
+
+### Priorities
+
+No change. The 2026-08-14 ranking stands: (1) close the merge path from the governed workbench to the
+golden record, (2) rule on one canonical home per instrument and enforce it, (3) deepen
+`BondCouponStructure`, (4) retire the third factor-schedule shape and generalize the corporate-action
+envelope, (5) make the projection cache multi-node-safe.
+
+Priority 1 is now six days older with the surrounding machinery still fully paid for. It is the only
+item on the list where the remaining work is a single publish handler rather than a design decision
+or a schema migration, and it is the one whose absence an institutional reviewer would notice first:
+the entire Draft → Submitted → Approved → Published apparatus still governs a side table.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -488,5 +558,10 @@ The 2026-08-14 verification pass re-read the F# domain and interop, the 47 `Meri
 Security Master contracts, the 58 `Meridian.Application` Security Master services, the 46
 `Meridian.Storage` stores and 28 migrations, the workstation endpoint surfaces, and the codec
 round-trip and asset-class-support test suites.
+
+The 2026-08-20 verification pass re-read the F# domain, the Security Master contracts, application
+services, stores and migrations, the workstation passport and endpoint surfaces, and the
+asset-class/terms-schema guard tests, and diffed the 605 commits between `4b39e9da8` and `8760cfba`
+for Security Master paths.
 
 No code was changed. No tests were run — this review makes no behavioral claims requiring execution.
