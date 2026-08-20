@@ -11,10 +11,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 21.4% |
-| Endpoint coverage | 33.1% |
+| Weighted score | 21.3% |
+| Endpoint coverage | 32.9% |
 | Workstation contract coverage | 3.9% |
-| Endpoints documented | 206 / 622 |
+| Endpoints documented | 206 / 626 |
 | Workstation contracts documented | 36 / 917 |
 
 ## Endpoint Coverage
@@ -202,8 +202,12 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/failover/health` | Documented | `src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:334` |
 | `GET` | `/api/failover/rules` | Documented | `src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:113` |
 | `POST` | `/api/failover/rules` | Documented | `src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:134` |
-| `GET` | `/api/fund-accounts/brokerage-sync/accounts` | Gap | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:243` |
-| `GET` | `/api/funds/{fundId:guid}/accounts` | Gap | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:127` |
+| `GET` | `/api/fund-accounts/brokerage-sync/accounts` | Gap | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:250` |
+| `GET` | `/api/fund-accounts/{accountId:guid}/brokerage-sync/activity` | Gap | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:369` |
+| `GET` | `/api/fund-accounts/{accountId:guid}/brokerage-sync/positions` | Gap | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:353` |
+| `GET` | `/api/fund-accounts/{accountId:guid}/brokerage-sync/reconciliation/latest` | Gap | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:433` |
+| `GET` | `/api/fund-accounts/{accountId:guid}/brokerage-sync/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:294` |
+| `GET` | `/api/funds/{fundId:guid}/accounts` | Gap | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:134` |
 | `GET` | `/api/health` | Gap | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:42` |
 | `GET` | `/api/health/detailed` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:212` |
 | `GET` | `/api/health/diagnostics/bundle` | Gap | `src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:259` |
@@ -214,7 +218,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/health/providers/{provider}/test` | Gap | `src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:221` |
 | `GET` | `/api/health/storage` | Gap | `src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:154` |
 | `GET` | `/api/health/summary` | Gap | `src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:29` |
-| `GET` | `/api/indices/{indexName}/constituents` | Gap | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:560` |
+| `GET` | `/api/indices/{indexName}/constituents` | Gap | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:570` |
 | `GET` | `/api/ingestion/jobs` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:29` |
 | `POST` | `/api/ingestion/jobs` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:116` |
 | `GET` | `/api/ingestion/jobs/resumable` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:160` |
@@ -366,7 +370,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/plaid/public-token/exchange` | Gap | `src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:100` |
 | `POST` | `/api/plaid/transfers/sandbox` | Gap | `src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:207` |
 | `POST` | `/api/plaid/webhook` | Gap | `src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:155` |
-| `GET` | `/api/portfolio/household` | Gap | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:266` |
+| `GET` | `/api/portfolio/household` | Gap | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:273` |
 | `GET` | `/api/projections/{projectionRunId:guid}/flows` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:928` |
 | `GET` | `/api/provider-routing/bindings` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:36` |
 | `GET` | `/api/provider-routing/connections` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:20` |
@@ -615,26 +619,26 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/subscriptions/subscribe` | Gap | `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:44` |
 | `POST` | `/api/subscriptions/unsubscribe/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:73` |
 | `GET` | `/api/symbols` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:32` |
-| `POST` | `/api/symbols/add` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:139` |
+| `POST` | `/api/symbols/add` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:149` |
 | `GET` | `/api/symbols/archived` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:80` |
-| `POST` | `/api/symbols/batch` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:394` |
-| `POST` | `/api/symbols/bulk-add` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:309` |
-| `POST` | `/api/symbols/bulk-remove` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:349` |
-| `POST` | `/api/symbols/create` | Gap | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:442` |
+| `POST` | `/api/symbols/batch` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:404` |
+| `POST` | `/api/symbols/bulk-add` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:319` |
+| `POST` | `/api/symbols/bulk-remove` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:359` |
+| `POST` | `/api/symbols/create` | Gap | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:452` |
 | `GET` | `/api/symbols/mappings` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:70` |
 | `POST` | `/api/symbols/mappings` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:77` |
 | `GET` | `/api/symbols/monitored` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:57` |
 | `GET` | `/api/symbols/registry` | Gap | `src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:29` |
-| `GET` | `/api/symbols/search` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:370` |
-| `GET` | `/api/symbols/statistics` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:233` |
-| `POST` | `/api/symbols/validate` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:271` |
-| `DELETE` | `/api/symbols/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:532` |
-| `POST` | `/api/symbols/{symbol}/archive` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:290` |
-| `GET` | `/api/symbols/{symbol}/depth` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:208` |
-| `POST` | `/api/symbols/{symbol}/remove` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:163` |
+| `GET` | `/api/symbols/search` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:380` |
+| `GET` | `/api/symbols/statistics` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:243` |
+| `POST` | `/api/symbols/validate` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:281` |
+| `DELETE` | `/api/symbols/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:542` |
+| `POST` | `/api/symbols/{symbol}/archive` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:300` |
+| `GET` | `/api/symbols/{symbol}/depth` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:218` |
+| `POST` | `/api/symbols/{symbol}/remove` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:173` |
 | `GET` | `/api/symbols/{symbol}/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:99` |
-| `GET` | `/api/symbols/{symbol}/trades` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:183` |
-| `POST` | `/api/symbols/{symbol}/update` | Gap | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:482` |
+| `GET` | `/api/symbols/{symbol}/trades` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:193` |
+| `POST` | `/api/symbols/{symbol}/update` | Gap | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:492` |
 | `GET` | `/api/system/lifecycle` | Documented | `src/Meridian/UiServer.cs:643` |
 | `POST` | `/api/system/shutdown` | Documented | `src/Meridian/UiServer.cs:677` |
 | `GET` | `/api/system/shutdown/receipts/latest` | Documented | `src/Meridian/UiServer.cs:748` |
@@ -1568,7 +1572,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 416 mapped endpoint gap(s).
+- Document or intentionally suppress 420 mapped endpoint gap(s).
 - Document or intentionally suppress 881 workstation contract gap(s).
 
 ---

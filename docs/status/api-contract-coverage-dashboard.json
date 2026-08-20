@@ -2,13 +2,13 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 21.4,
-  "endpoint_coverage_percent": 33.1,
+  "score_percent": 21.3,
+  "endpoint_coverage_percent": 32.9,
   "contract_coverage_percent": 3.9,
   "summary": {
-    "endpoint_count": 622,
+    "endpoint_count": 626,
     "documented_endpoint_count": 206,
-    "undocumented_endpoint_count": 416,
+    "undocumented_endpoint_count": 420,
     "workstation_contract_count": 917,
     "documented_workstation_contract_count": 36,
     "undocumented_workstation_contract_count": 881
@@ -1619,19 +1619,43 @@
     {
       "method": "GET",
       "path": "/api/funds/{fundId:guid}/accounts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:127",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:134",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/fund-accounts/brokerage-sync/accounts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:243",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:250",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/portfolio/household",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:266",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:273",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/fund-accounts/{accountId:guid}/brokerage-sync/status",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:294",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/fund-accounts/{accountId:guid}/brokerage-sync/positions",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:353",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/fund-accounts/{accountId:guid}/brokerage-sync/activity",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:369",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/fund-accounts/{accountId:guid}/brokerage-sync/reconciliation/latest",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:433",
       "documented": false
     },
     {
@@ -3629,91 +3653,91 @@
     {
       "method": "POST",
       "path": "/api/symbols/add",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:139",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:149",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/{symbol}/remove",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:163",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:173",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/symbols/{symbol}/trades",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:183",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:193",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/symbols/{symbol}/depth",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:208",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:218",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/symbols/statistics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:233",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:243",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/validate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:271",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:281",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/{symbol}/archive",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:290",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:300",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/bulk-add",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:309",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:319",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/bulk-remove",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:349",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:359",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/symbols/search",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:370",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:380",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/batch",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:394",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:404",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/create",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:442",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:452",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/symbols/{symbol}/update",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:482",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:492",
       "documented": false
     },
     {
       "method": "DELETE",
       "path": "/api/symbols/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:532",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:542",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/indices/{indexName}/constituents",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:560",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:570",
       "documented": false
     },
     {

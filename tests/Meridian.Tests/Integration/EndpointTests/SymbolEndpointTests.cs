@@ -15,10 +15,12 @@ namespace Meridian.Tests.Integration.EndpointTests;
 public sealed class SymbolEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
+    private readonly EndpointTestFixture Fixture;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public SymbolEndpointTests(EndpointTestFixture fixture)
     {
+        Fixture = fixture;
         // Symbol mutations edit the platform configuration's watchlist and require ModifyConfig
         // (W9-GOV-008); the read assertions in this class are unaffected by the header.
         // W9-GOV-008: the symbol reads now declare the family whose store answers them — live
@@ -33,6 +35,34 @@ public sealed class SymbolEndpointTests : IDisposable, IClassFixture<EndpointTes
     }
 
     public void Dispose() => _client.Dispose();
+
+    [Fact]
+    public async Task SymbolStatus_ProjectsEachBlockByTheCallersOwnAuthority()
+    {
+        // One route, two families. The subscription configuration is what GetMonitoredSymbols serves
+        // under ViewConfig; the storage block is what the storage-backed symbol reads serve under
+        // ViewHistoricalData. Admitting either permission to the composite handed a caller both.
+        using var marketDataOnly = Fixture.CreatePermittedClient(UserPermission.ViewMarketData);
+        using var historicalOnly = Fixture.CreatePermittedClient(UserPermission.ViewHistoricalData);
+
+        using var marketDataResponse = await marketDataOnly.GetAsync("/api/symbols/AAPL/status");
+        marketDataResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var marketDataPayload = JsonDocument.Parse(await marketDataResponse.Content.ReadAsStringAsync());
+        marketDataPayload.RootElement.GetProperty("config").ValueKind.Should().Be(
+            JsonValueKind.Null, "the subscription configuration answers to ViewConfig");
+        marketDataPayload.RootElement.GetProperty("storage").ValueKind.Should().Be(
+            JsonValueKind.Null, "the storage block answers to ViewHistoricalData");
+
+        using var historicalResponse = await historicalOnly.GetAsync("/api/symbols/AAPL/status");
+        historicalResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var historicalPayload = JsonDocument.Parse(await historicalResponse.Content.ReadAsStringAsync());
+        historicalPayload.RootElement.GetProperty("config").ValueKind.Should().Be(
+            JsonValueKind.Null, "a historical reader has no claim on the subscription configuration");
+
+        // The permission-bearing client still sees what it is entitled to.
+        using var fullResponse = await _client.GetAsync("/api/symbols/AAPL/status");
+        fullResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
 
     #region GET Endpoints
 

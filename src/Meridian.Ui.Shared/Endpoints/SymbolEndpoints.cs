@@ -101,14 +101,24 @@ public static class SymbolEndpoints
             ConfigStore store,
             IStorageSearchService? searchService,
             StorageOptions storageOptions,
+            HttpContext context,
             CancellationToken ct) =>
         {
+            // Composite payload, projected by what the caller could fetch head-on. The subscription
+            // configuration is what GetMonitoredSymbols serves under ViewConfig, and the storage block
+            // is what the storage-backed symbol reads serve under ViewHistoricalData -- so a
+            // ViewMarketData-only caller got both through this one route, and a historical-only caller
+            // got the configuration. The admitted set stays wide; the payload narrows.
+            var canReadConfiguration = EndpointAuthorization.HasAnyPermission(
+                context, UserPermission.ViewConfig, UserPermission.ModifyConfig);
+            var canReadStorage = EndpointAuthorization.HasPermission(context, UserPermission.ViewHistoricalData);
+
             var cfg = store.Load();
             var symbolCfg = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
                 .FirstOrDefault(s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
 
             object? storageInfo = null;
-            if (searchService is not null)
+            if (canReadStorage && searchService is not null)
             {
                 try
                 {
@@ -128,7 +138,7 @@ public static class SymbolEndpoints
             {
                 symbol,
                 configured = symbolCfg is not null,
-                config = symbolCfg,
+                config = canReadConfiguration ? symbolCfg : null,
                 storage = storageInfo
             }, jsonOptions);
         })
