@@ -199,9 +199,22 @@ public sealed partial class WorkstationEndpointsTests
         // the period screen establishes none of those. Its headline card goes with the projection --
         // a zeroed alert count shown to a caller who cannot see the domains would read as an
         // all-clear rather than as a withholding.
+        var observability = CreateRecoveredKernelObservability();
         await using var app = await CreateAppAsync(
-            services => RegisterRunReadServices(services),
-            currentUserPermissions: UserPermission.ViewSecurityMaster);
+            services =>
+            {
+                RegisterRunReadServices(services);
+                services.AddSingleton(observability);
+            },
+            currentUserPermissions: UserPermission.ViewSecurityMaster | UserPermission.ViewStrategies);
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            "run-no-data-authority",
+            "strategy-no-data-authority",
+            "Strategy Without Data Authority",
+            RunType.Paper,
+            new DateTimeOffset(2026, 6, 20, 13, 0, 0, TimeSpan.Zero),
+            fundProfileId: "test-fund-profile"));
 
         using var response = await app.GetTestClient().GetAsync(route);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -216,26 +229,52 @@ public sealed partial class WorkstationEndpointsTests
         root.GetProperty("metrics").EnumerateArray()
             .Select(item => item.GetProperty("id").GetString())
             .Should().NotContain("kernel-critical-jumps");
+        var runKernel = root.GetProperty("reconciliationQueue").EnumerateArray()
+            .Single()
+            .GetProperty("kernelObservability");
+        runKernel.GetProperty("domains").GetArrayLength().Should().Be(0);
+        runKernel.GetProperty("updatedAtUtc").ValueKind.Should().Be(JsonValueKind.Null);
     }
 
     [Theory]
-    [InlineData(UserPermission.ViewSecurityMaster | UserPermission.ViewHistoricalData)]
-    [InlineData(UserPermission.ViewSecurityMaster | UserPermission.ViewDiagnostics)]
+    [InlineData(UserPermission.ViewSecurityMaster | UserPermission.ViewStrategies | UserPermission.ViewHistoricalData)]
+    [InlineData(UserPermission.ViewSecurityMaster | UserPermission.ViewStrategies | UserPermission.ViewDiagnostics)]
     public async Task MapWorkstationEndpoints_AccountingWorkspace_WithDataAuthority_ShouldServeKernelObservability(
         UserPermission permissions)
     {
         // The other end: a caller the Data workspace admits still sees it through the period screen.
+        var observability = CreateRecoveredKernelObservability();
         await using var app = await CreateAppAsync(
-            services => RegisterRunReadServices(services),
+            services =>
+            {
+                RegisterRunReadServices(services);
+                services.AddSingleton(observability);
+            },
             currentUserPermissions: permissions);
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            "run-with-data-authority",
+            "strategy-with-data-authority",
+            "Strategy With Data Authority",
+            RunType.Paper,
+            new DateTimeOffset(2026, 6, 20, 13, 0, 0, TimeSpan.Zero),
+            fundProfileId: "test-fund-profile"));
 
         using var response = await app.GetTestClient().GetAsync(UiApiRoutes.WorkstationAccounting);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         using var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
-        payload.RootElement.GetProperty("metrics").EnumerateArray()
+        var root = payload.RootElement;
+        root.GetProperty("metrics").EnumerateArray()
             .Select(item => item.GetProperty("id").GetString())
             .Should().Contain("kernel-critical-jumps");
+        root.GetProperty("kernelObservability").GetProperty("domains").GetArrayLength().Should().BeGreaterThan(0);
+        root.GetProperty("reconciliationQueue").EnumerateArray()
+            .Single()
+            .GetProperty("kernelObservability")
+            .GetProperty("domains")
+            .GetArrayLength()
+            .Should().BeGreaterThan(0);
     }
 
     [Theory]

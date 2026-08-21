@@ -132,7 +132,11 @@ public static partial class WorkstationEndpoints
             ReconciliationQueue: readScope.StrategyRuns
                 ? runs
                     .Zip(details, static (run, detail) => (run, detail))
-                    .Zip(reconciliations, (pair, reconciliation) => BuildAccountingRunCard(pair.run, pair.detail, reconciliation, kernelObservability))
+                    .Zip(reconciliations, (pair, reconciliation) => BuildAccountingRunCard(
+                        pair.run,
+                        pair.detail,
+                        reconciliation,
+                        readScope.KernelObservability ? kernelObservability : null))
                     .ToArray()
                 : Array.Empty<WorkstationAccountingRunRecord>(),
             BreakQueue: visibleBreakQueueItems,

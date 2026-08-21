@@ -1465,6 +1465,77 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithFundAccount_ShouldLoadCurrentTenantStampedRunAndSnapshot()
+    {
+        var tenancy = Substitute.For<IFundProfileTenancyRegistry>();
+        tenancy.ResolveAsync("fund-owned", Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("fund-owned", "tenant-test", "tenant-test"));
+        tenancy.ResolveAsync("fund-foreign", Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("fund-foreign", "tenant-foreign", "company-foreign"));
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterRunReadServices(services);
+                services.AddSingleton(tenancy);
+            },
+            currentUserPermissions: UserPermission.ViewTrades,
+            currentUserCompanyId: "tenant-test",
+            currentUserTenantId: "tenant-test");
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        var owned = BuildActivePaperRun("workflow-owned-scoped", withBreaks: false) with
+        {
+            StrategyName = "Owned Scoped Workflow",
+            FundProfileId = "fund-owned",
+            FundDisplayName = "Owned Fund",
+            ParameterSet = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["workstationTenantId"] = "tenant-test",
+                ["workstationCompanyId"] = "tenant-test"
+            }
+        };
+        await store.RecordRunAsync(owned);
+        await store.RecordRunAsync(BuildActivePaperRun("workflow-foreign-scoped", withBreaks: false) with
+        {
+            StrategyName = "Foreign Scoped Workflow",
+            StartedAt = owned.StartedAt.AddMinutes(2),
+            FundProfileId = "fund-foreign",
+            FundDisplayName = "Foreign Fund",
+            ParameterSet = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["workstationTenantId"] = "tenant-foreign",
+                ["workstationCompanyId"] = "company-foreign"
+            }
+        });
+        await store.RecordRunAsync(BuildActivePaperRun("workflow-foreign-legacy", withBreaks: false) with
+        {
+            StrategyName = "Foreign Legacy Workflow",
+            StartedAt = owned.StartedAt.AddMinutes(3),
+            FundProfileId = "fund-foreign",
+            FundDisplayName = "Foreign Fund"
+        });
+        await store.RecordRunAsync(BuildActivePaperRun("workflow-legacy-no-fund", withBreaks: false) with
+        {
+            StrategyName = "Legacy Unattributed Workflow",
+            StartedAt = owned.StartedAt.AddMinutes(4),
+            FundProfileId = null,
+            FundDisplayName = null
+        });
+
+        var summary = await ReadWorkflowSummaryAsync(
+            app.GetTestClient(),
+            $"/api/workstation/workflow-summary?hasOperatingContext=true&fundAccountId={Guid.NewGuid():D}");
+
+        var trading = GetWorkspace(summary, "trading");
+        trading.StatusLabel.Should().Be("Active paper cockpit");
+        trading.StatusDetail.Should().Contain("Owned Scoped Workflow");
+        trading.StatusDetail.Should().NotContain("Foreign Scoped Workflow");
+        trading.StatusDetail.Should().NotContain("Foreign Legacy Workflow");
+        trading.StatusDetail.Should().NotContain("Legacy Unattributed Workflow");
+        trading.Evidence.Should().ContainSingle(item => item.Label == "Portfolio" && item.Value == "Available");
+        trading.Evidence.Should().ContainSingle(item => item.Label == "Ledger" && item.Value == "Available");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_WorkflowSummaryWithReconciliationBreaks_ShouldEscalateAccountingNextAction()
     {
         await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewTrades);

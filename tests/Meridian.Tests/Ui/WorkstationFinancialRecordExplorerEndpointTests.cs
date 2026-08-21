@@ -1787,13 +1787,20 @@ public sealed partial class WorkstationEndpointsTests
             "vault/report-packs/manifest-foreign-202603.json",
             BuildCompleteReportLineEvidenceLinks());
 
-        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+        var client = app.GetTestClient();
+        var explorer = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
             "/api/workstation/financial-record-explorers/report-line-provenance",
             ServerJsonOptions);
 
         explorer.Should().NotBeNull();
         explorer!.Rows.Should().BeEmpty(
             "the only retained record is bound to another tenant, and this caller resolved tenant-test");
+        var foreignRecordId = $"report-line:{foreign.ReportId:N}:trial-balance-cash:0";
+        using var drillIn = await client.GetAsync(
+            $"/api/workstation/financial-record-explorers/report-line-provenance/records/{Uri.EscapeDataString(foreignRecordId)}");
+        drillIn.StatusCode.Should().Be(
+            HttpStatusCode.NotFound,
+            "a record withheld from the scoped list must not remain reachable through direct drill-in");
     }
 
     /// <summary>

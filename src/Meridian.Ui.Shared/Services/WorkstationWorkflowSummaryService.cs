@@ -57,17 +57,25 @@ public sealed class WorkstationWorkflowSummaryService
             || !string.IsNullOrWhiteSpace(operatingContextDisplayName)
             || !string.IsNullOrWhiteSpace(fundProfileId)
             || !string.IsNullOrWhiteSpace(fundDisplayName);
+        var runReadScope = string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(companyId)
+            ? null
+            : new StrategyRunReadScope(tenantId.Trim(), companyId.Trim());
 
         // Not loaded at all for a caller who reads none of the run-backed families: the projection
         // below would drop every card built from them, and a read refused is not a read to perform.
+        // A request scope must reach the repository read itself: the compatibility overload exposes
+        // legacy unstamped rows only, so filtering its result later would also hide the caller's
+        // tenant-stamped runs. The registry filter below remains necessary for legacy rows.
         var runs = scope.NeedsStrategyRuns
-            ? await _runReadService.GetRunsAsync(ct: ct).ConfigureAwait(false)
+            ? runReadScope is null
+                ? await _runReadService.GetRunsAsync(ct: ct).ConfigureAwait(false)
+                : await _runReadService.GetRunsAsync(null, null, runReadScope, ct).ConfigureAwait(false)
             : Array.Empty<StrategyRunSummary>();
         // Narrowed by fund profile when the caller named one, and by tenant ownership always. The
         // two are not the same filter and neither substitutes for the other: the browser sends only a
-        // fund account, so the fund-profile clause does nothing on the ordinary request, and the run
-        // reader returns every run the host retains -- including legacy rows carrying no tenant stamp
-        // at all, which is precisely what one shell would surface from another tenant's book.
+        // fund account, so the fund-profile clause does nothing on the ordinary request, and even the
+        // scoped run reader preserves legacy rows carrying no tenant stamp. Registry ownership is the
+        // remaining boundary that stops one shell surfacing those rows from another tenant's book.
         var fundScopedRuns = string.IsNullOrWhiteSpace(fundProfileId)
             ? runs
             : runs.Where(run => string.Equals(run.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)).ToArray();
@@ -101,13 +109,13 @@ public sealed class WorkstationWorkflowSummaryService
         // Strategy summary must not slow down or fail on the reconciliation and continuity stores it
         // is never going to report. The candidate snapshot feeds both the strategy and trading cards.
         var strategyCandidateSnapshotTask = scope.Strategy || scope.Trading
-            ? LoadRunSnapshotAsync(candidateForPaper, ct)
+            ? LoadRunSnapshotAsync(candidateForPaper, runReadScope, ct)
             : Task.FromResult<WorkflowRunSnapshot?>(null);
         var tradingActiveSnapshotTask = scope.Trading
-            ? LoadRunSnapshotAsync(activeTradingRun, ct)
+            ? LoadRunSnapshotAsync(activeTradingRun, runReadScope, ct)
             : Task.FromResult<WorkflowRunSnapshot?>(null);
         var accountingCandidateSnapshotTask = scope.Accounting
-            ? LoadRunSnapshotAsync(candidateForLive ?? activeTradingRun ?? latestGovernedRun, ct)
+            ? LoadRunSnapshotAsync(candidateForLive ?? activeTradingRun ?? latestGovernedRun, runReadScope, ct)
             : Task.FromResult<WorkflowRunSnapshot?>(null);
         var financialOperationsSnapshotTask = LoadFinancialOperationsSnapshotAsync(
             contextSelected && scope.Accounting,
@@ -1177,17 +1185,24 @@ public sealed class WorkstationWorkflowSummaryService
         return workflow.Status == OperationsWorkflowStatusDto.Closed ? "Success" : "Info";
     }
 
-    private async Task<WorkflowRunSnapshot?> LoadRunSnapshotAsync(StrategyRunSummary? run, CancellationToken ct)
+    private async Task<WorkflowRunSnapshot?> LoadRunSnapshotAsync(
+        StrategyRunSummary? run,
+        StrategyRunReadScope? readScope,
+        CancellationToken ct)
     {
         if (run is null)
         {
             return null;
         }
 
-        var detailTask = _runReadService.GetRunDetailAsync(run.RunId, ct);
+        var detailTask = readScope is null
+            ? _runReadService.GetRunDetailAsync(run.RunId, ct)
+            : _runReadService.GetRunDetailAsync(run.RunId, readScope, ct);
         var continuityTask = _continuityService is null
             ? Task.FromResult<StrategyRunContinuityDetail?>(null)
-            : _continuityService.GetRunContinuityAsync(run.RunId, ct);
+            : readScope is null
+                ? _continuityService.GetRunContinuityAsync(run.RunId, ct)
+                : _continuityService.GetRunContinuityAsync(run.RunId, readScope, ct);
         var reconciliationTask = _reconciliationRunService is null
             ? Task.FromResult<ReconciliationRunDetail?>(null)
             : _reconciliationRunService.GetLatestForRunAsync(run.RunId, ct);

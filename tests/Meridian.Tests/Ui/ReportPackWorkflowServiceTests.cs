@@ -1240,6 +1240,46 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void ListAccessibleRecords_ShouldFilterBeforeApplyingLimit()
+    {
+        var svc = new ReportPackWorkflowService();
+        var caller = BoundAccessContext("report.viewer");
+        var authorized = svc.Create(
+            "fund-owned",
+            "acct-owned",
+            "2026-03",
+            new VersionedReportTemplateIdDto("board-pack", 1),
+            "report.viewer",
+            accessContext: caller);
+        var foreign = new ReportAccessQueryContext(
+            ActorPrincipalId: "foreign.author",
+            CompanyId: "company-foreign",
+            TenantId: "tenant-foreign",
+            RequireBoundScope: true);
+        SpinWait.SpinUntil(
+            () => DateTimeOffset.UtcNow > authorized.UpdatedAt,
+            TimeSpan.FromSeconds(1)).Should().BeTrue();
+
+        for (var i = 0; i < 200; i++)
+        {
+            svc.Create(
+                $"fund-foreign-{i}",
+                $"acct-foreign-{i}",
+                "2026-03",
+                new VersionedReportTemplateIdDto("board-pack", 1),
+                "foreign.author",
+                accessContext: foreign);
+        }
+
+        svc.ListRecords(200).Should().NotContain(
+            item => item.ReportId == authorized.ReportId,
+            "the global cap must exclude the older authorized row in this fixture");
+        svc.ListAccessibleRecords(200, caller)
+            .Should().ContainSingle()
+            .Which.ReportId.Should().Be(authorized.ReportId);
+    }
+
+    [Fact]
     public void ReportPackRunReadService_ProjectsReportWriterDatasetSources()
     {
         var workflow = new ReportPackWorkflowService();
