@@ -126,20 +126,6 @@ public sealed partial class FinancialRecordExplorerReadService
     /// </summary>
     private readonly record struct FundOwnershipScope(string TenantId, string? CompanyId);
 
-    /// <summary>
-    /// Report-pack workflow records narrowed to the ones the caller's report access context admits.
-    /// <para>
-    /// A null context is the legacy in-process caller, whose authority is already established and for
-    /// which there is no request tenant to bind to. Every request-serving path supplies one, so the
-    /// null case is the seam's documented default rather than a way around it.
-    /// </para>
-    /// </summary>
-    private static IReadOnlyList<ReportPackWorkflowRecordDto> FilterReportRecords(
-        IReadOnlyList<ReportPackWorkflowRecordDto> records,
-        ReportAccessQueryContext? reportAccess)
-        => reportAccess is null
-            ? records
-            : ReportPackRunReadService.FilterWorkflowRecords(records, reportAccess);
 
     public async Task<FinancialRecordExplorerSelectedRecordDto?> GetRecordAsync(
         string explorerId,
@@ -403,7 +389,7 @@ public sealed partial class FinancialRecordExplorerReadService
         // workflow records, so a Reporting-entitled caller would otherwise be enriched with another
         // tenant's report-pack usage.
         var reportRecords = scope.Reporting
-            ? FilterReportRecords(_reportPackWorkflowService?.ListRecords(200) ?? [], reportAccess)
+            ? _reportPackWorkflowService?.ListAccessibleRecords(200, reportAccess) ?? []
             : [];
         var directLendingOperations = scope.DirectLending && _directLendingOperationsReadService is not null
             ? await _directLendingOperationsReadService.GetOperationsAsync(ct: ct).ConfigureAwait(false)
@@ -554,7 +540,7 @@ public sealed partial class FinancialRecordExplorerReadService
             "Governed report lines with retained source provenance.");
         var savedViews = await LoadSavedViewsAsync(tenantId, ReportLineProvenanceExplorerId, systemViews, ct).ConfigureAwait(false);
         var explorer = BuildReportLineProvenanceExplorer(
-            workflowService.ListRecords(200),
+            workflowService.ListAccessibleRecords(200, reportAccess),
             _reportPackDeliveryService?.ListAttempts(500),
             savedViews: savedViews,
             accessContext: reportAccess);

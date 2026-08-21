@@ -7180,6 +7180,7 @@ Meridian-main
 │   │   │   ├── ReportingSecureDistributionServiceCollectionExtensions.cs
 │   │   │   ├── ReportingStarterKitService.cs
 │   │   │   ├── ReportingStateCorruptionException.cs
+│   │   │   ├── ReportingWorkflowService.AccessibleRecords.cs
 │   │   │   ├── ReportingWorkflowService.cs
 │   │   │   ├── ReportPackDeliveryService.cs
 │   │   │   ├── ReportPackDeliveryService.Evidence.cs

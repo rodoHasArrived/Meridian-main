@@ -125,6 +125,22 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
     {
         ArgumentNullException.ThrowIfNull(request);
         EnsureHumanOrigin(request.ActionOrigin, "grant scoped access assignments");
+
+        // Refused rather than stored, because authorization cannot honour it. Both the scalar and the
+        // batch check narrow assignments to PrincipalKind.User -- their signatures carry an actor, not
+        // the actor's group memberships, so there is nothing to match a group assignment against. A
+        // stored one would read as a granted permission on every review of the assignment list while
+        // granting nothing on any route, which is the worst of the three possible behaviours.
+        // Resolving group membership during authorization is the alternative, and it is a change to
+        // the authorization contract rather than a validation fix.
+        if (request.PrincipalKind != AccessPrincipalKindDto.User)
+        {
+            throw new ArgumentException(
+                $"Scoped access assignments support {nameof(AccessPrincipalKindDto.User)} principals only; "
+                + $"authorization resolves no group membership, so a {request.PrincipalKind} assignment would never grant access.",
+                nameof(request));
+        }
+
         var normalized = ValidateCreate(request, actor);
         var now = DateTimeOffset.UtcNow;
         var auditId = IdentityGovernanceNormalization.NewAuditId("access-grant", now, maxLength: 46);

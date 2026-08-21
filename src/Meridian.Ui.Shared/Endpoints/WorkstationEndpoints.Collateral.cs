@@ -171,6 +171,20 @@ public static partial class WorkstationEndpoints
                 return false;
             }
 
+            // Length, not just presence. The row cap bounds how many rows are retained, not how many
+            // bytes: a producer sending megabyte identity strings can leave 20,000 of them held per
+            // tenant, and each one is then re-walked on every read to be trimmed, lowercased, hashed
+            // into the exposure key, grouped and projected. Bounding the field is what makes the row
+            // cap a memory bound rather than only a row count.
+            if (ExceedsIdentityLength(row.Counterparty) ||
+                ExceedsIdentityLength(row.ProductType) ||
+                ExceedsIdentityLength(row.CollateralType) ||
+                ExceedsIdentityLength(row.ChunkId))
+            {
+                rejection = $"Row {index} carries an identity field longer than {MaxCollateralIdentityLength} characters.";
+                return false;
+            }
+
             if (row.AsOf > horizon)
             {
                 rejection = $"Row {index} is dated beyond the permitted {MaxCollateralClockSkew.TotalMinutes:F0}-minute clock skew.";
@@ -193,6 +207,15 @@ public static partial class WorkstationEndpoints
 
         static bool Exceeds(decimal value) => Math.Abs(value) > MaxCollateralValueMagnitude;
     }
+
+    /// <summary>
+    /// The longest an identity field on a collateral row may be. Counterparty names, product types,
+    /// collateral types and producer chunk ids are all short by nature; the bound exists so the
+    /// buffer's row cap bounds retained bytes as well as retained rows.
+    /// </summary>
+    private const int MaxCollateralIdentityLength = 256;
+
+    private static bool ExceedsIdentityLength(string? value) => value is not null && value.Length > MaxCollateralIdentityLength;
 
     // Wide enough for ordinary producer clock drift, narrow enough that a misconfigured clock cannot
     // pin an exposure indefinitely.

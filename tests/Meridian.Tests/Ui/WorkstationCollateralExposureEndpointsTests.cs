@@ -139,6 +139,31 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_CollateralIngest_ShouldRejectOversizedIdentityFields()
+    {
+        // The row cap bounds retained rows, not retained bytes. Without a per-field bound a producer
+        // can leave 20,000 megabyte-sized identity strings held per tenant, each re-walked on every
+        // read to be trimmed, lowercased, hashed into the exposure key, grouped and projected.
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<CollateralExposureService>();
+            services.AddSingleton<CollateralIngestionBuffer>();
+        });
+
+        var oversized = new string('c', 4_096);
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/workstation/collateral/ingest",
+            new[] { new CollateralInputRow(DateTimeOffset.UnixEpoch, oversized, "repo", 1m, 1m, 1m, "cash", 1m, 0m) },
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var exposure = await app.GetTestClient().GetAsync("/api/workstation/collateral/exposure");
+        var payload = await exposure.Content.ReadFromJsonAsync<ExposureSnapshotDto>(ServerJsonOptions);
+        payload!.Counterparties.Should().BeEmpty("a refused row is not retained");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_CollateralIngest_ShouldRefuseAnObservationLargerThanTheWindow()
     {
         // The chunking protocol lets one observation arrive across several requests, and the buffer

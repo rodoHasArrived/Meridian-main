@@ -73,7 +73,12 @@ public sealed class WorkstationWorkflowSummaryService
             : runs.Where(run => string.Equals(run.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)).ToArray();
         var scopedRuns = await FilterRunsByTenantAsync(fundScopedRuns, tenantId, companyId, ct).ConfigureAwait(false);
 
-        var relevantRuns = string.IsNullOrWhiteSpace(fundProfileId) ? runs : scopedRuns;
+        // Always the scoped set, never the raw one. This was a ternary falling back to `runs` when no
+        // fund profile was named, which was a no-op while scoping meant fund-profile narrowing alone
+        // -- and became a hole the moment it also meant tenant ownership, because the ordinary browser
+        // request names a fund account and no fund profile. Every card below is built from this, so
+        // there is no path here that should see a run the scope refused.
+        var relevantRuns = scopedRuns;
         var strategyRuns = relevantRuns;
         var governedRuns = relevantRuns
             .Where(static run => run.Mode is StrategyRunMode.Paper or StrategyRunMode.Live)
