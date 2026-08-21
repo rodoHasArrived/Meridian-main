@@ -417,11 +417,37 @@ follows. The risk is the one a reviewer would hit rather than an attacker: a bla
 mutations are permission-gated and rate-limited" treats these as covered when they are not.
 
 Two separate remedies, which an earlier draft of this item wrongly merged into one. **All four**
-lack `RequireRateLimiting` — that is the four-route question. **Only `RunSecurityMasterQualityReport`**
-lacks a fluent `RequirePermission`; the three profile routes already declare
+lack `RequireRateLimiting` — that is the four-route question. The three profile routes already declare
 `RequirePermission(UserPermission.AdminMaintenance)` at `:157`, `:198`, and `:239`, so telling an
 implementer to add one there would have them write a redundant declaration. Either apply the missing
 controls on that basis, or record the exemption where a reader will find it.
+
+> **Corrected 2026-08-21, after review.** This item said "**Only `RunSecurityMasterQualityReport`**
+> lacks a fluent `RequirePermission`". That is wrong, and it made the control inventory read as
+> narrower than it is. **Six** of the file's 23 record-mutating routes carry no fluent
+> `RequirePermission`. Five of them declare the permission through a filter instead —
+> `.AddEndpointFilter(RequireModifySecurityMasterPermission)`:
+>
+> | Route | Line | Permission via | Rate-limited |
+> | --- | --- | --- | --- |
+> | `UpsertSecurityMasterPricingHierarchy` | `:1331` | endpoint filter | yes |
+> | `RecordSecurityMasterRawPrice` | `:1361` | endpoint filter | yes |
+> | `UpsertSecurityMasterCashFlowSource` | `:1433` | endpoint filter | yes |
+> | `CreateDataVendorEntitlement` | `:1506` | endpoint filter | yes |
+> | `DeactivateDataVendorEntitlement` | `:1534` | endpoint filter | yes |
+> | `RunSecurityMasterQualityReport` | `:1558` | **handler check only** | **no** |
+>
+> The five filter-based routes are a weaker finding than the quality report, and the distinction is
+> the point: they *are* permission-enforced at runtime and they *are* rate-limited, so the only gap
+> is that the requirement is invisible to the declaration ratchet
+> (`EndpointAuthorizationDeclarationTests`) that reads fluent metadata. `RunSecurityMasterQualityReport`
+> has neither a filter nor a rate limit, which is why it remains the sharper of the two. The
+> declarative-metadata remedy therefore covers six routes, not one.
+>
+> The four-route rate-limiting claim above is unaffected and re-verified: six routes in the file lack
+> `RequireRateLimiting`, but two of them — `ResolveSecurityMaster` (`:278`) and `SearchSecurityMaster`
+> (`:310`) — are POST-shaped *reads* carrying an explicit `DeclareNonMutating(...)`, so the
+> record-mutating count is four.
 
 ## Missing or Incomplete Subsystems Blocking New Asset Classes
 
