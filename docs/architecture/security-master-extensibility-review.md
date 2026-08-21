@@ -387,9 +387,13 @@ for: a per-asset workaround on a surface that is otherwise generic.
 - **Amortization is straight-line only.** `FaceValueLot.AmortizedBasisAsOf` applies day-count-weighted
   straight-line premium/discount amortization, and its docstring notes the cost-basis relief and
   ledger amortization engines use the same method. `BondAmortizationMethod.ConstantYield` exists in
-  `Contracts/FixedIncome/BondReferenceDtos.cs:21` and `SecurityTermModules.fs:426`, but no effective-
-  interest implementation was found. US GAAP (ASC 310-20) requires effective-interest for most
-  premium amortization; straight-line is an immaterial-difference accommodation.
+  `Contracts/FixedIncome/BondReferenceDtos.cs:21` and `SecurityTermModules.fs:426`, but **nothing in
+  production consumes it**. *(Corrected 2026-08-21: this read "no effective-interest implementation
+  was found," which the 2026-08-19 pass disproved further down — `SecurityCalculations.fs:122,130`
+  holds `constantYieldIncome` and `amortizationAccretion`, implemented and unit-tested. The gap is a
+  missing production consumer, not missing math. The distinction decides the remedy: wiring, not
+  authoring.)* US GAAP (ASC 310-20) requires effective-interest for most premium amortization;
+  straight-line is an immaterial-difference accommodation.
 - **`securities` holds a single current row** per security. Valid-time term history — "what was this
   bond's coupon effective 2024-06-30", as opposed to "what did we believe on 2024-06-30" — is only
   reachable by replaying the event stream. Identifiers are properly effective-dated; terms are not.
@@ -411,10 +415,14 @@ to the record-mutating routes, but four mutations do not carry that pairing:
 
 `AdminMaintenance` is a defensible — arguably stronger — permission for profile governance, so the
 gap is not that these are open. It is that they are the routes defining and approving the custom-asset
-profiles the extension point depends on (item 3), plus a report run that does real work, and they sit
-outside both the rate limit and the declarative permission convention every neighbouring mutation
-follows. The risk is the one a reviewer would hit rather than an attacker: a blanket reading of "all
-mutations are permission-gated and rate-limited" treats these as covered when they are not.
+profiles the extension point depends on (item 3), plus a report run that does real work. **All four
+sit outside the rate limit; only `RunSecurityMasterQualityReport` sits outside the declarative
+permission convention.** *(Corrected 2026-08-21: this sentence applied both gaps to all four, which
+contradicts both the table above it and the remedy below it — the three profile routes carry fluent
+`RequirePermission(UserPermission.AdminMaintenance)` at `:157`, `:198`, and `:239`. Left standing, it
+would prompt a redundant permission declaration on three routes that already have one.)* The risk is
+the one a reviewer would hit rather than an attacker: a blanket reading of "all mutations are
+permission-gated and rate-limited" treats the rate-limit gap as covered when it is not.
 
 Two separate remedies, which an earlier draft of this item wrongly merged into one. **All four**
 lack `RequireRateLimiting` — that is the four-route question. The three profile routes already declare
@@ -566,7 +574,7 @@ original assessment. No code was changed by this pass; no tests were run.
 | 2 | Three modeling routes for MBS/ABS/CLO | No canonical-home ruling; `Bond` subclasses, `StructuredCredit`, and `CustomAsset` all remain legitimate |
 | 7 | Corporate actions: wide table, per-event-type columns | Migration 021 added four more nullable columns; 9 typed payload columns for 18 declared event types, no JSONB envelope |
 | 9 | Equity has bespoke amendment endpoints | `PATCH` on preferred/convertible equity terms routes straight to `ISecurityMasterService.Amend…`, bypassing the workbench Draft→Submitted→Approved→Published gate that every generic field edit goes through. Permission-gated and rate-limited, but no maker-checker. No equivalent exists for a bond call schedule or swap leg |
-| 10 | Straight-line amortization only | `BondAmortizationMethod.ConstantYield` remains an enum member with no implementation |
+| 10 | Straight-line amortization only | `BondAmortizationMethod.ConstantYield` remains an enum member with no ~~implementation~~ **production consumer**. *(Corrected 2026-08-21: "no implementation" was wrong — `SecurityCalculations.fs:122,130` implements and tests the effective-interest pair; it has no caller.)* |
 | 10 | Per-process projection cache | `SecurityMasterProjectionCache` is still a `ConcurrentDictionary` with no eviction. *(The clear-then-refill half was fixed 2026-08-19; the per-process and eviction halves stand.)* |
 | 10 | Valid-time term history | `securities` still holds one current row; term history is reachable only by event replay. Identifiers are effective-dated, terms are not |
 | — | Relational projections | 11 asset projection stores for 26 classes; the 15 uncovered are the private/alternative classes central to fund operations. Declared and test-guarded via `IntentionallyUnprojectedAssetClasses` |
@@ -651,12 +659,26 @@ interop, and calculations; `src/Meridian.Contracts/SecurityMaster/`;
 >   'src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs'
 > ```
 >
-> Worth noting what that command returns *nothing* for: `src/Meridian.FSharp/Domain/SecurityMaster.fs`,
-> `src/Meridian.FSharp/Interop/`, `src/Meridian.FSharp/Calculations/`,
-> `src/Meridian.Contracts/SecurityMaster/`, `src/Meridian.Storage/SecurityMaster/`, and
-> `src/Meridian.ReferenceData/` are **unchanged across the entire range**. The domain model, the
-> contracts, the persistence layer and the migrations did not move at all — which is stronger
-> evidence for this pass's conclusion than the file count is.
+> The domain model, contracts, persistence layer and migrations are **unchanged across the entire
+> range** — stronger evidence for this pass's conclusion than the file count is. That claim needs its
+> own command, because the pathspec above does not list those paths and so would return nothing for
+> them whether or not they changed:
+>
+> ```bash
+> git diff --numstat 4b39e9da8..7ed160dc -- \
+>   'src/Meridian.FSharp/Domain/SecurityMaster.fs' 'src/Meridian.FSharp/Interop/' \
+>   'src/Meridian.FSharp/Calculations/' 'src/Meridian.Contracts/SecurityMaster/' \
+>   'src/Meridian.Storage/SecurityMaster/' 'src/Meridian.ReferenceData/'
+> ```
+>
+> Empty output is the result, and here it is falsifiable: these paths are *in* the pathspec, so a
+> single changed line in any of them would print a row.
+>
+> *(Corrected 2026-08-21, after review. This read "worth noting what that command returns nothing
+> for", pointing at the pathspec above — which cannot establish the claim, since pathspec filtering
+> guarantees absence for any path not listed. The conclusion was right and re-verified; the evidence
+> offered for it was circular. A correction that leaves an unfalsifiable proof in place has not
+> finished the job.)*
 
 **One of those changes is more than cosmetic, though less than it first appears.**
 `SecurityMasterEndpoints.cs` accounts for 72 of the 163 changed lines across three commits
