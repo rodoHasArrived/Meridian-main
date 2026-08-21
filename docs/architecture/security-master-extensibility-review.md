@@ -244,9 +244,16 @@ Three consequences:
   (`security-passport-editor.tsx:332`). Nothing validates the path against
   `SecurityAssetTermsSchema` for that security's asset class, and `newValue` is stored as a string
   regardless of the field's declared type.
-- **No merge path.** No consumer reads the override store except the validation service, which only
-  *flags* unapproved overrides (`SecurityValidationService.cs:570-604`). An approved correction to a
-  coupon rate has no effect on cashflow projection, amortization, pricing, or NAV.
+- **No merge path.** No consumer applies an approved override's *value* to canonical terms. An
+  approved correction to a coupon rate has no effect on cashflow projection, amortization, pricing,
+  or NAV. *(Corrected 2026-08-21: this read "no consumer reads the override store except the
+  validation service", which the retraction further down disproves — `GetSecurityMasterOverrideHistoryAsync`
+  reads it to surface override audit history into reconciliation break context. The gap is that
+  nothing applies the value, not that nothing reads the store; a categorical claim here would have
+  the reader miss the reconciliation integration entirely.)* Two consumers exist and neither closes
+  the gap: the validation service only *flags* unapproved overrides
+  (`SecurityValidationService.cs:570-604`), and the reconciliation path only surfaces governance
+  history.
 - **The approval gate protects an annotation.** Draft → Submitted → Approved → Published with
   independent-reviewer requirements, restatement resolution, and affected-ledger-book scoping — all
   applied to a side table that by design never changes the record it annotates.
@@ -355,10 +362,19 @@ half-landed.
 > `FactorScheduleEntries: FactorScheduleEntry list` alongside the retained free-text
 > `FactorSchedule: string option`, declared as `factorScheduleEntries` in the terms schema and
 > consumed by `StructuredCashFlowTermsResolver`'s `FactorAsOf` lookup; a `Maturity` anchor was added
-> so the schedule has a production effect. **Three shapes still coexist** — the free-text legacy
+> so the schedule has a production effect. ~~**Three shapes still coexist** — the free-text legacy
 > term, the domain `FactorScheduleEntry`, and the separately-declared `SecurityFactorScheduleEntry`
 > in `Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:90`. The duplicate in
-> `Meridian.Strategies` is now the remaining half of this item.
+> `Meridian.Strategies` is now the remaining half of this item.~~
+>
+> **Retracted 2026-08-21.** `SecurityFactorScheduleEntry` is not a duplicate of the other two — see
+> the Status (2026-08-19) note directly above, which establishes it as a factor *transition* carrying
+> evidence lineage rather than a dated *level*. Two shapes coexist (the free-text legacy term and the
+> domain `FactorScheduleEntry`), and the remaining half of this item is the legacy free-text field
+> alone. *This is the seventh place this claim had to be struck.* In round 11 I reported having
+> grepped every occurrence and made them consistent; I had grepped the type name, and this block
+> states the claim as "three shapes" without repeating the phrasing I searched for. Grepping the
+> identifier is not the same as grepping the claim.
 
 ### 9. Equity has bespoke amendment endpoints no other class has
 
@@ -633,7 +649,12 @@ prior passes this one also attempted repairs; see
 [Remediation attempted](#remediation-attempted--2026-08-19) for what was changed and what was
 refuted. No tests were run — this checkout has no .NET SDK.
 
-### Summary: one real change, otherwise cosmetic
+### Summary: one declarative change, ten routes actually hardened, otherwise cosmetic
+
+*(Heading corrected 2026-08-21. It read "one real change, otherwise cosmetic", which survived three
+rounds of corrections to the passage beneath it — including the round that established the tenth
+route. A section heading is the one line a skim-reader takes away, and it was the last thing I
+updated rather than the first.)*
 
 493 commits landed repo-wide since `4b39e9da8`. Across the Security Master surface — the F# domain,
 interop, and calculations; `src/Meridian.Contracts/SecurityMaster/`;
@@ -701,13 +722,39 @@ terminating line to append a fluent permission call. Those 36 split into **19** 
 > whose deletion would quietly open every route in the group, but it is a hardening of the
 > *declaration*, not of the enforcement.
 
-The remaining **14** files are genuinely cosmetic, and account for 43 insertions and 48 deletions
-between them — routing inline SHA-256 sites onto `Sha256Digest`, and replacing the last literal
-schema-version writes with named constants. The largest is
-`SecurityMasterWorkbenchQueryService.cs` at 11/13; nine of the fourteen change four lines or fewer.
-14 + `SecurityMasterEndpoints.cs` = the 15 files above, and 91 + 72 = the 163 changed lines.
+> **Corrected 2026-08-21, after review — and this one reverses part of the correction above.** The
+> "runtime authorization did not change" finding is true of `SecurityMasterEndpoints.cs`, whose group
+> filter predated the baseline. I then let it stand as the characterization of the *whole pass*, and
+> that is wrong. Two other files in this range gained permission declarations where **no group-level
+> permission filter existed at all**:
+>
+> | File | Baseline group | Declarations added | Effect |
+> | --- | --- | --- | --- |
+> | `EdgarReferenceDataEndpoints.cs` | `MapGroup(string.Empty).WithTags("EDGAR")` — no filter | 3 GET + 1 POST | open reads → enforced reads |
+> | `WorkstationEndpoints.SecurityMasterWorkbench.cs` | `MapGroup(...).RequireWorkstationTenantScope()` — tenant scope, not a permission gate | 6 | unenforced → enforced |
+>
+> Verified with `git show 4b39e9da8:<path>`: the EDGAR file contains no `AddEndpointFilter` at
+> baseline and no handler permission check; the workbench file contains none either, and
+> `RequireWorkstationTenantScope()` scopes a tenant rather than checking a permission. At
+> `7ed160dc` all ten routes carry fluent `RequirePermission` / `RequireAnyPermission`.
+>
+> So this range **does** contain real authorization hardening — ten routes' worth — and it is not in
+> the file the pass spent its attention on. The failure mode here is worth naming because it is the
+> inverse of my usual one: told that a claim overstated a security improvement, I corrected past the
+> evidence and understated it, then generalized the understatement across files I had not checked.
+> An over-correction propagates exactly like an overclaim.
 
-No change closes, narrows, or reopens any structural finding.
+Excluding those two, the remaining **12** files are genuinely cosmetic, accounting for 33 insertions
+and 38 deletions — routing inline SHA-256 sites onto `Sha256Digest`, and replacing the last literal
+schema-version writes with named constants. The largest is
+`SecurityMasterWorkbenchQueryService.cs` at 11/13. The classification now closes in both directions:
+12 cosmetic + 2 authorization + `SecurityMasterEndpoints.cs` = the 15 files; insertions
+36 + 4 + 6 + 33 = **79**; deletions 36 + 4 + 6 + 38 = **84**; total changed lines
+72 + 8 + 12 + 71 = **163**.
+
+No change closes, narrows, or reopens any structural finding — but the EDGAR and workbench routes
+were open before this range and are not now, which is a change in posture even though it moves no
+structural item.
 
 **Every open item from the 2026-08-14 pass was re-verified against source and stands verbatim:**
 
@@ -729,9 +776,8 @@ No change closes, narrows, or reopens any structural finding.
 `src/Meridian.FSharp/Calculations/SecurityCalculations.fs` (295 lines) is a documented,
 unit-tested formula library carrying exactly the math two open findings report as absent:
 
-- `constantYieldIncome` and `amortizationAccretion` — the effective-interest pair that item 10
-  records as "an enum member with no implementation" — plus `pciDailyAmortization` for
-  purchased-credit-impaired instruments.
+- `constantYieldIncome` and `amortizationAccretion` — the effective-interest pair item 10 needs —
+  plus `pciDailyAmortization` for purchased-credit-impaired instruments.
 - `inflationAdjustedPrincipal` and `inflationLinkedMarketValue` — the TIPS math item 1 needs for an
   inflation-linked `BondCouponStructure` case.
 - `weightedAverageLife` — WAL for prepaying structured securities.
@@ -748,8 +794,15 @@ other file that opens the namespace (`tests/.../CalculationTests.fs`) opens `Agg
 attribute is what makes the grep conclusive rather than suggestive. The module predates both prior
 passes (added 2026-08-10) and neither caught it.
 
-This is the `SecurityAssetPackRegistry` pattern from item 10 recurring in a second place —
-correct-looking capability that no production path reaches — with one difference that matters: the
+This resembles the `SecurityAssetPackRegistry` pattern from item 10, but the two are not the same
+and the difference is worth stating. *(Corrected 2026-08-21: this read "the `SecurityAssetPackRegistry`
+pattern ... recurring in a second place — correct-looking capability that no production path reaches",
+which is false for the registry. `SecurityMasterOperationalReadinessService` projects
+`SecurityAssetPackRegistry.All` into `MultiAssetCoverageSummaryDto.AssetPacks` (`:295`) and validates
+descriptors through it (`:873`), and that service backs the workstation multi-asset coverage endpoint.
+The registry is reached; what it does not yet do is drive downstream accounting behaviour. Only
+`SecurityCalculations` is genuinely uncalled, so the comparison as written overstated one case by
+borrowing the other's severity.)* One further difference matters: the
 `DayCount` module in the same file *does* delegate to the canonical
 `Meridian.Contracts.SecurityMaster.DayCountConventions` engine so the C# and F# lanes cannot
 diverge. The calculation module below it has no such tie to a consumer.
