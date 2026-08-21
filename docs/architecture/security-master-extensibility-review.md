@@ -38,10 +38,18 @@ risks that compound as new asset classes land.
 > [Verification pass — 2026-08-14](#verification-pass--2026-08-14) for the open list and
 > re-ranked priorities as of that date.
 >
-> **Verification pass, 2026-08-19.** Re-read against current source at `7ed160dc`. One improvement
-> landed since 2026-08-14 — permission declarations added to 36 Security Master endpoints, 19 of
-> them reads, hardening the *declaration* rather than the enforcement — and one
-> new observation was added (a tested calculation library with no production caller). This pass also
+> **Verification pass, 2026-08-19.** Re-read against current source at `7ed160dc`. Two authorization
+> changes landed since 2026-08-14, and they are different in kind: permission declarations added to 36
+> `SecurityMasterEndpoints.cs` endpoints (19 reads, 17 mutations), which harden the *declaration* over
+> a group filter that already enforced the same check; and **ten routes in
+> `EdgarReferenceDataEndpoints.cs` and `WorkstationEndpoints.SecurityMasterWorkbench.cs` that had no
+> group-level permission filter at all, which went from unenforced to enforced** — real runtime
+> hardening. *(Corrected 2026-08-21: this verdict said only the first, calling the pass's endpoint
+> improvement declarative. That was an over-correction generalised across two files I had not opened;
+> see the correction under **Summary** in the 2026-08-19 pass. It is listed here as well because this
+> paragraph is the first thing a reader sees, and it kept the withdrawn claim one round longer than
+> the section it summarises.)* One new observation was added (a tested calculation library with no
+> production caller). This pass also
 > attempted repairs: one finding was fixed, and **two were refuted and retracted** (the
 > `IOperatorOverridesStore` "dead dependency" in item 5, and the factor-schedule collapse
 > recommended by item 8). Every other structural finding stands as written. See
@@ -327,6 +335,16 @@ rather than an exception to it.)* `TenderOffer`, `CryptoFork`,
 of their own; `CorporateActionDto` mirrors the same shape as a 18-parameter positional record with
 nullable one-off fields.
 
+*Read "no columns of their own" strictly: it means no dedicated column, not no carrier.*
+`ReturnOfCapital` and `PrincipalPaydown` do carry their declared economics, by **reusing** columns
+that primarily serve other event types — `DividendPerShare` + `Currency` (`:45`) and
+`DistributionRatio` (`:129`) respectively, all persisted. `TenderOffer` (`:117`) and `CryptoFork`
+(`:225`) declare `RequiredFields: []`, as do five other types: those are the ones with nothing
+declared to carry. The distinction matters because the neighbouring blocker row conflated the two
+and listed two already-shipped flows as blocked; column reuse is evidence *for* the wide-table
+problem — the schema has no place to put an event's economics except a column named for a different
+event — but it is not the same as the economics being unrepresentable.
+
 The lifecycle design around it is good — append-only with `supersedes_corp_act_id` chains folded by
 `CorporateActionEffectiveStateProjector`, and a descriptor catalog with provider aliases and ISO
 15022 CAEV alignment. The *envelope* is what does not generalize: each new event type is another
@@ -486,7 +504,7 @@ with their outcome rather than deleted, so the table stays a record of what was 
 | `SecurityKind.CustomAsset` domain case | **Closed** — first-class DU case (`SecurityMaster.fs:566`); profile envelope round-trips | — |
 | Per-field provenance persistence | **Closed** — migration 027 creates `security_field_provenance`; 028 adds versioned attribution | — |
 | Typed amendment path from the workbench | Open — overlay only, by documented design | Operator corrections reaching pricing/ledger/NAV |
-| Generic corporate-action payload envelope | Open — wide table, 9 payload columns / 18 types | Tender offers, forks, returns of capital, paydowns carrying their own economics |
+| Generic corporate-action payload envelope | Open — wide table, 9 payload columns / 18 types; **7 of the 18 declare `RequiredFields: []`** | Tender offers (`:117`), crypto forks (`:225`) and the five other types with no declared payload carrying their own economics. *(Corrected 2026-08-21: this also listed returns of capital and paydowns, which are supported — `ReturnOfCapital` requires `DividendPerShare` + `Currency` (`:45`) and `PrincipalPaydown` requires `DistributionRatio` (`:129`), all persisted by `PostgresSecurityMasterEventStore`. Two of four examples were already-shipped flows.)* |
 | Effective-interest amortization | Open — enum only; the constant-yield primitives exist unwired in `SecurityCalculations.fs` | GAAP-compliant premium amortization for material portfolios |
 | Bond principal schedule | **Closed** — `BondTerms.PrincipalSchedule` (`SecurityMaster.fs:261`), read by `StructuredCashFlowTermsResolver` | — |
 | Bond step / inflation coupon structures | Open — `BondCouponStructure` is still `Fixed` / `Floating` / `ZeroCoupon` | Step-rate and TIPS — already classifiable, not computable |
