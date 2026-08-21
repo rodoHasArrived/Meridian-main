@@ -30,7 +30,7 @@ public static class CheckpointEndpoints
                 ? Results.Json(Array.Empty<object>(), jsonOptions)
                 : Results.Json(new[] { status }, jsonOptions);
         })
-        .WithName("GetBackfillCheckpoints")
+        .WithName("GetBackfillCheckpoints").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill)
         .WithDescription("Returns checkpoint history for backfill jobs.")
         .Produces(200);
 
@@ -84,7 +84,7 @@ public static class CheckpointEndpoints
                 signals = derived
             }, jsonOptions);
         })
-        .WithName("GetCheckpointValidation")
+        .WithName("GetCheckpointValidation").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill)
         .WithDescription("Returns per-symbol completeness signals (pass/warn/fail) for the last backfill run. Used as operator trust badges in the backfill UI.")
         .Produces(200);
 
@@ -111,7 +111,7 @@ public static class CheckpointEndpoints
 
             return Results.Json(new[] { resumable }, jsonOptions);
         })
-        .WithName("GetResumableCheckpoints")
+        .WithName("GetResumableCheckpoints").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill)
         .WithDescription("Returns incomplete or failed backfill jobs that can be resumed.")
         .Produces(200);
 
@@ -136,7 +136,7 @@ public static class CheckpointEndpoints
                 CanResume = !status.Success
             }, jsonOptions);
         })
-        .WithName("GetCheckpointById")
+        .WithName("GetCheckpointById").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill)
         .WithDescription("Returns checkpoint details for a specific backfill job.")
         .Produces(200)
         .Produces(404);
@@ -196,7 +196,7 @@ public static class CheckpointEndpoints
                 completedCount = allSymbols.Length - pendingSymbols.Length
             }, jsonOptions);
         })
-        .WithName("GetPendingSymbols")
+        .WithName("GetPendingSymbols").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill)
         .WithDescription("Returns symbols that still need processing for a resumable checkpoint.")
         .Produces(200)
         .Produces(404);

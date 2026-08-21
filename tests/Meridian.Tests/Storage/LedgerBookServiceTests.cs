@@ -1354,6 +1354,86 @@ public sealed class LedgerBookServiceTests
     }
 
     [Fact]
+    public async Task OperatorInbox_ShouldWithholdLedgerPeriodCloseFromViewDirectLendingOnlyOperators()
+    {
+        // One IOperatorInboxService collection carries items from more than one contributor: the
+        // direct-lending accrual worker and the ledger book service both write into it. Admission to
+        // the collection is not authority over every item in it -- a period-close item carries ledger
+        // book names, accounting policies, periods, sign-off roles and tolerances, which the ledger
+        // period routes serve only to ManageDirectLending or AdminMaintenance.
+        //
+        // Built the way PostgresLedgerBookService.BuildPeriodCloseWorkItem builds it, because that
+        // payload is what the rule turns on. Both contributors write this same kind -- the accrual
+        // worker writes it to say a loan could not accrue because the period is shut -- so kind alone
+        // cannot separate them, and a bare item stamped with the kind would assert a rule that
+        // withholds the direct-lending desk's own work.
+        await using var app = await CreateAppAsync(UserPermission.ViewTrades | UserPermission.ViewDirectLending);
+        var inboxService = app.Services.GetRequiredService<IOperatorInboxService>();
+        await inboxService.UpsertItemAsync(new OperatorWorkItemDto(
+            WorkItemId: "ledger-period-close-withheld",
+            Kind: OperatorWorkItemKindDto.LedgerPeriodClose,
+            Label: "SoftClosed sign-off required",
+            Detail: "Period close requires controller sign-off.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: DateTimeOffset.Parse("2026-04-30T16:00:00Z"),
+            Scope: "ledger-book:7f1d2c3b4a594e6f8091a2b3c4d5e6f7;ledger-period:1a2b3c4d5e6f47089a1b2c3d4e5f6071",
+            RequiredSignoffRole: "Controller",
+            ToleranceProfileId: "standard",
+            SignoffStatus: "Pending"));
+        await inboxService.UpsertItemAsync(new OperatorWorkItemDto(
+            WorkItemId: "direct-lending-accrual-visible",
+            Kind: OperatorWorkItemKindDto.SecurityMasterCoverage,
+            Label: "Accrual blocker",
+            Detail: "Daily accrual is blocked on missing terms.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: DateTimeOffset.Parse("2026-04-30T16:00:00Z")));
+
+        var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>(
+            UiApiRoutes.WorkstationOperatorInbox,
+            ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().NotContain(item => item.WorkItemId == "ledger-period-close-withheld");
+        inbox.Items.Should().Contain(
+            item => item.WorkItemId == "direct-lending-accrual-visible",
+            "the contributions this caller is entitled to still arrive");
+    }
+
+    [Fact]
+    public async Task OperatorInbox_ShouldDeliverBlockedAccrualsToViewDirectLendingOnlyOperators()
+    {
+        // The other contributor writing OperatorWorkItemKindDto.LedgerPeriodClose. DailyAccrualWorker
+        // stamps it when a loan cannot post an accrual because the period is shut, carrying a loan id
+        // and a date and nothing of the book -- direct-lending work, and the one item in the shared
+        // collection that is entirely this desk's own. Withholding it by kind alongside the sign-off
+        // request would take that desk's own blocker away without withholding anything the ledger
+        // period routes protect.
+        await using var app = await CreateAppAsync(UserPermission.ViewTrades | UserPermission.ViewDirectLending);
+        var inboxService = app.Services.GetRequiredService<IOperatorInboxService>();
+        await inboxService.UpsertItemAsync(new OperatorWorkItemDto(
+            WorkItemId: "direct-lending-period-blocked:9f2c:20260430",
+            Kind: OperatorWorkItemKindDto.LedgerPeriodClose,
+            Label: "Direct lending accrual blocked by accounting period",
+            Detail: "Loan 9f2c could not post accrual for 2026-04-30.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: DateTimeOffset.Parse("2026-04-30T16:00:00Z"),
+            AuditReference: "period-blocked:20260430",
+            Workspace: "Accounting",
+            TargetRoute: "/accounting/reconciliation",
+            TargetPageTag: "FundReconciliation",
+            Scope: "DirectLendingAccrual"));
+
+        var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>(
+            UiApiRoutes.WorkstationOperatorInbox,
+            ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(
+            item => item.WorkItemId == "direct-lending-period-blocked:9f2c:20260430",
+            "a blocked accrual names no ledger book and carries none of the close governance fields");
+    }
+
+    [Fact]
     public void LedgerBookMigration_DefinesLedgerBooksAndBookScopedPeriods()
     {
         var sql = ReadMigration("V_ledger_003__ledger_books.sql");

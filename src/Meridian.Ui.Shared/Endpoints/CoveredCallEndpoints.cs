@@ -218,7 +218,7 @@ public static class CoveredCallEndpoints
                 return Problem(400, ex.Message);
             }
         })
-        .WithName("PreviewCoveredCallChain")
+        .WithName("PreviewCoveredCallChain").DeclareNonMutating("Previews the covered-call option chain for an underlying; PreviewChainAsync fetches the chain, applies the filters in memory and returns a projection, never touching the run channel that StartAsync uses.")
         .Accepts<CoveredCallChainPreviewRequest>("application/json")
         .Produces<CoveredCallChainPreview>(200)
         .Produces<CoveredCallProblemDetails>(400)

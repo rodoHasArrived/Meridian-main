@@ -29,7 +29,7 @@ public static class MaintenanceScheduleEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetMaintenanceSchedules")
+        .WithName("GetMaintenanceSchedules").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Create maintenance schedule
@@ -52,7 +52,7 @@ public static class MaintenanceScheduleEndpoints
             var schedule = schedMgr?.GetSchedule(id);
             return schedule is null ? Results.NotFound() : Results.Json(schedule, jsonOptions);
         })
-        .WithName("GetMaintenanceScheduleById")
+        .WithName("GetMaintenanceScheduleById").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .Produces(404);
 
@@ -139,7 +139,7 @@ public static class MaintenanceScheduleEndpoints
                 summary = schedMgrForHistory?.ExecutionHistory?.GetScheduleSummary(id)
             }, jsonOptions);
         })
-        .WithName("GetMaintenanceScheduleHistory")
+        .WithName("GetMaintenanceScheduleHistory").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200);
     }
 }

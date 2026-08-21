@@ -102,6 +102,56 @@ public sealed class FundAccountEndpointAuthorizationTests
     }
 
     [Fact]
+    public async Task BrokerageSyncDiscoveryRoute_ShouldAcceptViewTradesWithoutManagementPermission()
+    {
+        await using var app = await CreateAppAsync(
+            [],
+            [],
+            UserPermission.ViewTrades,
+            includeTenantScope: true);
+
+        var response = await app.GetTestClient()
+            .GetAsync("/api/fund-accounts/brokerage-sync/accounts");
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.NotImplemented,
+            "the discovery handler should be reached even when the caller has no fund-account management permission");
+    }
+
+    [Fact]
+    public async Task BrokerageSyncDiscoveryRoute_ShouldRequireTenantAndCompanyScope()
+    {
+        await using var app = await CreateAppAsync(
+            [],
+            [],
+            UserPermission.ViewTrades);
+
+        var response = await app.GetTestClient()
+            .GetAsync("/api/fund-accounts/brokerage-sync/accounts");
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.Forbidden,
+            "brokerage discovery must not expose provider accounts without server-resolved tenant and company scope");
+    }
+
+    [Fact]
+    public async Task BrokerageHouseholdRoute_ShouldRequireTenantAndCompanyScope()
+    {
+        var fundId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(
+            [BuildAccount(accountId, fundId, "HOUSEHOLD-BROKERAGE")],
+            [(AccessScopeKindDto.Account, accountId)],
+            UserPermission.ViewTrades);
+
+        var response = await app.GetTestClient().GetAsync("/api/portfolio/household");
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.Forbidden,
+            "a cross-account projection must not run without server-resolved tenant and company scope");
+    }
+
+    [Fact]
     public async Task OperationalAccountRoutes_ShouldRequireScopedAccountAccess()
     {
         var fundId = Guid.NewGuid();
@@ -224,7 +274,8 @@ public sealed class FundAccountEndpointAuthorizationTests
     private static async Task<WebApplication> CreateAppAsync(
         IReadOnlyList<CreateAccountRequest> accounts,
         IReadOnlyCollection<(AccessScopeKindDto Kind, Guid Id)> allowedScopes,
-        UserPermission permissions = UserPermission.ManageDirectLending)
+        UserPermission permissions = UserPermission.ManageDirectLending,
+        bool includeTenantScope = false)
     {
         var accountService = new InMemoryFundAccountService();
         foreach (var account in accounts)
@@ -248,6 +299,12 @@ public sealed class FundAccountEndpointAuthorizationTests
         {
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "fund-ops-user";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            if (includeTenantScope)
+            {
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
+            }
+
             await next();
         });
         app.MapFundAccountEndpoints(JsonOptions);

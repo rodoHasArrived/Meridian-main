@@ -75,7 +75,7 @@ public static class ExportEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("PreviewExport")
+        .WithName("PreviewExport").RequirePermission(UserPermission.ExportData)
         .Produces(200);
 
         // Analysis export — wired to real AnalysisExportService
@@ -210,7 +210,7 @@ public static class ExportEndpoints
                 Formats = availableFormats
             }, jsonOptions);
         })
-        .WithName("GetExportFormats")
+        .WithName("GetExportFormats").RequirePermission(UserPermission.ExportData)
         .Produces<ExportFormatsResponse>(200)
         .Produces(503);
 

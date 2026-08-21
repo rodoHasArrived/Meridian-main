@@ -26,7 +26,7 @@ public static class PlaidEndpoints
             var items = await service.ListItemsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
         })
-        .WithName("ListPlaidItems")
+        .WithName("ListPlaidItems").RequireAnyPermission(UserPermission.ManageCredentials, UserPermission.ViewTrades, UserPermission.ViewDirectLending)
         .Produces<IReadOnlyList<PlaidItemDto>>(StatusCodes.Status200OK);
 
         group.MapGet(UiApiRoutes.PlaidAccounts, async (string? itemId, HttpContext context, IPlaidIngestionService service) =>
@@ -39,7 +39,7 @@ public static class PlaidEndpoints
             var accounts = await service.ListAccountsAsync(itemId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(accounts, jsonOptions);
         })
-        .WithName("ListPlaidAccounts")
+        .WithName("ListPlaidAccounts").RequireAnyPermission(UserPermission.ManageCredentials, UserPermission.ViewTrades, UserPermission.ViewDirectLending)
         .Produces<IReadOnlyList<PlaidAccountDto>>(StatusCodes.Status200OK);
 
         group.MapGet(UiApiRoutes.PlaidInstitutionSearch, async (
@@ -69,7 +69,7 @@ public static class PlaidEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
             }
         })
-        .WithName("SearchPlaidInstitutions")
+        .WithName("SearchPlaidInstitutions").RequireAnyPermission(UserPermission.ManageCredentials, UserPermission.ViewTrades, UserPermission.ViewDirectLending)
         .Produces<PlaidInstitutionSearchResult>(StatusCodes.Status200OK);
 
         group.MapPost(UiApiRoutes.PlaidLinkToken, async (

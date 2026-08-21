@@ -346,6 +346,7 @@ public static class EvidenceEndpoints
             return Results.Json(result, jsonOptions);
         })
         .WithName("SearchWorkstationEvidenceVault")
+        .DeclareNonMutating("Evidence-vault lookup by linkage criteria; the body carries the query because it has several optional fields, and the handler only reads through IEvidenceArtifactStore.FindByLinkageAsync.")
         .Produces<IReadOnlyList<EvidenceVaultIdentityDto>>(200)
         .Produces<EvidenceEndpointErrorDto>(400)
         .Produces(StatusCodes.Status403Forbidden)

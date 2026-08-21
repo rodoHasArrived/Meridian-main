@@ -130,7 +130,7 @@ public static partial class WorkstationEndpoints
             var normalized = service.Normalize(document);
             return Results.Json(service.Validate(normalized), jsonOptions);
         })
-        .WithName("ValidateStrategyDesignerDocument").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .WithName("ValidateStrategyDesignerDocument").DeclareNonMutating("Normalizes and validates the posted design document in memory; StrategyDesignService holds only a field catalog and templates and persists nothing.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyDesignValidationResult>(200)
         .Produces(400)
         .Produces(501);
@@ -154,7 +154,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(preview, jsonOptions)
                 : Results.Json(preview, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
         })
-        .WithName("PreviewStrategyDesignerDocument").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .WithName("PreviewStrategyDesignerDocument").DeclareNonMutating("Normalizes and previews the posted design document in memory; the preview is computed from the body and StrategyDesignService persists nothing. Saving a design is a separate route.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyDesignPreviewResult>(200)
         .Produces(400)
         .Produces(501);
@@ -377,7 +377,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(result, jsonOptions)
                 : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
         })
-        .WithName("ValidateStrategyEngineRun").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .WithName("ValidateStrategyEngineRun").DeclareNonMutating("Validates a posted run request against the engine registry and the supplied data availability; StrategyEngineValidationService holds only the registry and does not start or record a run.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyEngineValidationResult>(200)
         .Produces<StrategyEngineValidationResult>(400)
         .Produces(501);

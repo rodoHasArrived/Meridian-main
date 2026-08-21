@@ -275,7 +275,7 @@ public static class SecurityMasterEndpoints
 
             return Results.Json(detail, jsonOptions);
         })
-        .WithName("ResolveSecurityMaster").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .WithName("ResolveSecurityMaster").DeclareNonMutating("Resolves one Security Master record by identifier; the body carries the identifier kind, value, provider and as-of, and the handler only calls ISecurityMasterQueryService.GetByIdentifierAsync.").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -307,7 +307,7 @@ public static class SecurityMasterEndpoints
             var results = await queryService.SearchAsync(request, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("SearchSecurityMaster").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .WithName("SearchSecurityMaster").DeclareNonMutating("Security Master search; the body carries the query because it has several optional filters, and the handler only calls ISecurityMasterQueryService.SearchAsync.").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecuritySummaryDto>>(StatusCodes.Status200OK);
 
         /// <summary>

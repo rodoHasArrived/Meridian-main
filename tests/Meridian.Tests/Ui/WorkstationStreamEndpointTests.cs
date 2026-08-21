@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
+using Meridian.Identity.Auth;
 using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Streaming;
@@ -200,6 +201,10 @@ public sealed class WorkstationStreamEndpointTests
         context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
         context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
         context.Items[LoginSessionMiddleware.CurrentUserKey] = "stream-test-operator";
+        // The stream carries live quote snapshots, so the route requires ViewMarketData. These tests
+        // exercise the stream's own contract (symbol cap, broadcaster absence, session cap, framing),
+        // which needs a caller the route admits.
+        context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewMarketData;
         await next();
     }
 }

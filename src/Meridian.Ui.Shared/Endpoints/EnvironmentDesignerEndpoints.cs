@@ -23,7 +23,7 @@ public static class EnvironmentDesignerEndpoints
             var drafts = await service.ListDraftsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(drafts, jsonOptions);
         })
-        .WithName("ListEnvironmentDrafts")
+        .WithName("ListEnvironmentDrafts").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ModifyConfig)
         .Produces<IReadOnlyList<EnvironmentDraftDto>>(StatusCodes.Status200OK);
 
         group.MapGet("/drafts/{draftId:guid}", async (Guid draftId, HttpContext context) =>
@@ -35,7 +35,7 @@ public static class EnvironmentDesignerEndpoints
             var draft = await service.GetDraftAsync(draftId, context.RequestAborted).ConfigureAwait(false);
             return draft is null ? Results.NotFound() : Results.Json(draft, jsonOptions);
         })
-        .WithName("GetEnvironmentDraft")
+        .WithName("GetEnvironmentDraft").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ModifyConfig)
         .Produces<EnvironmentDraftDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -166,7 +166,7 @@ public static class EnvironmentDesignerEndpoints
             var versions = await service.ListPublishedVersionsAsync(organizationId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(versions, jsonOptions);
         })
-        .WithName("ListPublishedEnvironmentVersions")
+        .WithName("ListPublishedEnvironmentVersions").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ModifyConfig)
         .Produces<IReadOnlyList<PublishedEnvironmentVersionDto>>(StatusCodes.Status200OK);
 
         group.MapGet("/versions/current", async (HttpContext context) =>
@@ -179,7 +179,7 @@ public static class EnvironmentDesignerEndpoints
             var version = await service.GetCurrentPublishedVersionAsync(organizationId, context.RequestAborted).ConfigureAwait(false);
             return version is null ? Results.NotFound() : Results.Json(version, jsonOptions);
         })
-        .WithName("GetCurrentPublishedEnvironmentVersion")
+        .WithName("GetCurrentPublishedEnvironmentVersion").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ModifyConfig)
         .Produces<PublishedEnvironmentVersionDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -192,7 +192,7 @@ public static class EnvironmentDesignerEndpoints
             var version = await service.GetPublishedVersionAsync(versionId, context.RequestAborted).ConfigureAwait(false);
             return version is null ? Results.NotFound() : Results.Json(version, jsonOptions);
         })
-        .WithName("GetPublishedEnvironmentVersion")
+        .WithName("GetPublishedEnvironmentVersion").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ModifyConfig)
         .Produces<PublishedEnvironmentVersionDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -228,7 +228,7 @@ public static class EnvironmentDesignerEndpoints
             var runtime = await runtimeService.GetCurrentRuntimeAsync(organizationId, context.RequestAborted).ConfigureAwait(false);
             return runtime is null ? Results.NotFound() : Results.Json(runtime, jsonOptions);
         })
-        .WithName("GetCurrentEnvironmentRuntime")
+        .WithName("GetCurrentEnvironmentRuntime").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ModifyConfig)
         .Produces<PublishedEnvironmentRuntimeDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -241,7 +241,7 @@ public static class EnvironmentDesignerEndpoints
             var runtime = await runtimeService.GetRuntimeForVersionAsync(versionId, context.RequestAborted).ConfigureAwait(false);
             return runtime is null ? Results.NotFound() : Results.Json(runtime, jsonOptions);
         })
-        .WithName("GetEnvironmentRuntimeForVersion")
+        .WithName("GetEnvironmentRuntimeForVersion").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ModifyConfig)
         .Produces<PublishedEnvironmentRuntimeDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
     }
