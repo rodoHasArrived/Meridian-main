@@ -22,12 +22,30 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     private readonly string _runMatRootDirectory;
     private readonly ServiceProvider _serviceProvider;
+    private readonly Services.DesktopAuthenticationSessionTests.EnvironmentVariableScope _authenticationPosture;
     private bool _disposed;
 
     public MainPageUiAutomationFacade(
         FundContextService? fundContextService = null,
         IWorkstationOperatorInboxApiClient? operatorInboxApiClient = null)
     {
+        // These tests compose the shell the way a developer runs it: no desktop accounts configured
+        // and nobody signed in. What that shell may read is decided by DesktopAuthenticationSession,
+        // whose fail-open rule turns on the authentication mode -- and the mode defaults from the
+        // host environment name. On a developer machine that resolves Development and falls open; on
+        // a CI runner it resolves Production, falls closed, and every record-backed workspace card is
+        // withheld, so the workflow strip renders three cards instead of seven and the shell tests
+        // fail for a reason that has nothing to do with the shell.
+        //
+        // Pinned so the fixture states its own posture rather than inheriting the runner's. The
+        // permission projection itself is covered by DesktopWorkflowReadScopeResolverTests, which
+        // configures accounts and signs in rather than asserting it through the UI.
+        _authenticationPosture = new Services.DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_AUTH_MODE", "optional")
+            .Set("MDC_USERS", null)
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null);
+
         RunMatUiAutomationFacade.EnsureApplicationResources();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
@@ -352,6 +370,8 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         {
             // Best effort cleanup for the isolated main-page automation workspace.
         }
+
+        _authenticationPosture.Dispose();
     }
 
     private T GetRequired<T>(string name) where T : FrameworkElement

@@ -30,7 +30,7 @@ public static class AccountingSystemEndpoints
             var providers = await service.ListProvidersAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(providers, jsonOptions);
         })
-        .WithName("ListAccountingSystemProviders")
+        .WithName("ListAccountingSystemProviders").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<IReadOnlyList<AccountingSystemProviderDto>>(StatusCodes.Status200OK);
 
         group.MapPost(UiApiRoutes.AccountingSystemProductionReadiness, async (
@@ -75,7 +75,7 @@ public static class AccountingSystemEndpoints
                 ? Results.NotFound(new { error = "Accounting tenant administration profile was not found." })
                 : Results.Json(result, jsonOptions);
         })
-        .WithName("GetAccountingTenantAdministrationProfile")
+        .WithName("GetAccountingTenantAdministrationProfile").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingTenantAdministrationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
@@ -142,7 +142,7 @@ public static class AccountingSystemEndpoints
                 ? Results.NotFound(new { error = "Accounting production certification profile was not found." })
                 : Results.Json(result, jsonOptions);
         })
-        .WithName("GetAccountingProductionCertificationProfile")
+        .WithName("GetAccountingProductionCertificationProfile").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingProductionCertificationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -251,7 +251,7 @@ public static class AccountingSystemEndpoints
                 tenantContext.CompanyId);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("ListAccountingMigrationRunArtifacts")
+        .WithName("ListAccountingMigrationRunArtifacts").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingMigrationRunArtifactListDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
@@ -322,7 +322,7 @@ public static class AccountingSystemEndpoints
                 tenantContext.CompanyId);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("ListAccountingMigrationWorkerPlans")
+        .WithName("ListAccountingMigrationWorkerPlans").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingMigrationRunWorkerPlanListDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
@@ -414,7 +414,7 @@ public static class AccountingSystemEndpoints
                 .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetLatestAccountingSystemImport")
+        .WithName("GetLatestAccountingSystemImport").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingSystemImportDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
@@ -443,7 +443,7 @@ public static class AccountingSystemEndpoints
                 .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetLatestAccountingSystemReconciliation")
+        .WithName("GetLatestAccountingSystemReconciliation").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingSystemReconciliationSummaryDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
@@ -472,7 +472,7 @@ public static class AccountingSystemEndpoints
                 .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("ListAccountingSystemMappingProfiles")
+        .WithName("ListAccountingSystemMappingProfiles").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<IReadOnlyList<ExternalGlMappingProfileDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
@@ -553,7 +553,7 @@ public static class AccountingSystemEndpoints
                 .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("ListAccountingSystemExportPackages")
+        .WithName("ListAccountingSystemExportPackages").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<IReadOnlyList<ExternalGlExportPackageDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
@@ -638,7 +638,7 @@ public static class AccountingSystemEndpoints
                 });
             }
         })
-        .WithName("GetAccountingSystemExportPackageManifest")
+        .WithName("GetAccountingSystemExportPackageManifest").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<ExternalGlExportPackageManifestDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)

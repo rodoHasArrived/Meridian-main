@@ -65,7 +65,7 @@ public static class ComplianceEndpoints
 
         app.MapGet("/api/compliance/audit/extract", ([FromServices] ImmutableAuditLogService auditLog) =>
             Results.Ok(new { integrityValid = auditLog.VerifyIntegrity(), events = auditLog.GetAll() }))
-            .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+            .RequirePermission(UserPermission.ManageUsers);
 
         app.MapGet("/api/compliance/controls/attestation", ([FromServices] ImmutableAuditLogService auditLog) =>
             Results.Ok(new
@@ -80,7 +80,7 @@ public static class ComplianceEndpoints
                 },
                 integrityValid = auditLog.VerifyIntegrity()
             }))
-            .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+            .RequirePermission(UserPermission.ManageUsers);
 
         app.MapPost("/api/compliance/access-reviews/assess", async (
             HttpContext http,
@@ -115,7 +115,7 @@ public static class ComplianceEndpoints
         .RequirePermission(UserPermission.ManageUsers);
 
         app.MapGet("/api/compliance/access-reviews", ([FromServices] AccessReviewService reviews) => Results.Ok(reviews.GetReviews()))
-            .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+            .RequirePermission(UserPermission.ManageUsers);
 
         return app;
     }

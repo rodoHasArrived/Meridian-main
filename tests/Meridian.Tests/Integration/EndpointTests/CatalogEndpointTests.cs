@@ -1,6 +1,7 @@
 using System.Net;
 using FluentAssertions;
 using Xunit;
+using Meridian.Identity.Auth;
 
 namespace Meridian.Tests.Integration.EndpointTests;
 
@@ -10,21 +11,26 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
+public sealed class CatalogEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
-    private readonly HttpClient _client;
+    // The catalog reads answer the storage catalog's permissions -- ViewHistoricalData or
+    // ManageStorage. This client holds only the former, so the reads stay proven for an operator who
+    // can see stored coverage without administering the store.
+    private readonly HttpClient _catalogReadClient;
 
     public CatalogEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        _catalogReadClient = fixture.CreatePermittedClient(UserPermission.ViewHistoricalData);
     }
+
+    public void Dispose() => _catalogReadClient.Dispose();
 
     #region /api/catalog/search
 
     [Fact]
     public async Task CatalogSearch_NoParams_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/catalog/search");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/search");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -33,7 +39,7 @@ public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task CatalogSearch_WithSymbol_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/catalog/search?symbol=SPY");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/search?symbol=SPY");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -42,7 +48,7 @@ public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task CatalogSearch_WithNaturalLanguageQuery_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/catalog/search?q=AAPL+trades+2025");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/search?q=AAPL+trades+2025");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -51,7 +57,7 @@ public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task CatalogSearch_WithTypeFilter_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/catalog/search?symbol=SPY&type=trades");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/search?symbol=SPY&type=trades");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -60,7 +66,7 @@ public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task CatalogSearch_WithDateRange_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/catalog/search?symbol=SPY&from=2025-01-01&to=2025-12-31");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/search?symbol=SPY&from=2025-01-01&to=2025-12-31");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -69,7 +75,7 @@ public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task CatalogSearch_WithPagination_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/catalog/search?skip=0&take=10");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/search?skip=0&take=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -78,7 +84,7 @@ public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task CatalogSearch_ResponseContainsTotalCount()
     {
-        var response = await _client.GetAsync("/api/catalog/search");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/search");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadAsStringAsync();
@@ -92,7 +98,7 @@ public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task CatalogSymbols_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/catalog/symbols");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/symbols");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -101,7 +107,7 @@ public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task CatalogSymbols_ResponseContainsExpectedFields()
     {
-        var response = await _client.GetAsync("/api/catalog/symbols");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/symbols");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadAsStringAsync();
@@ -117,7 +123,7 @@ public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task CatalogTimeline_NoParams_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/catalog/timeline");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/timeline");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -126,7 +132,7 @@ public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task CatalogTimeline_WithSymbolFilter_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/catalog/timeline?symbol=SPY");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/timeline?symbol=SPY");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -135,7 +141,7 @@ public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task CatalogTimeline_ResponseContainsTimelineField()
     {
-        var response = await _client.GetAsync("/api/catalog/timeline");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/timeline");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadAsStringAsync();
@@ -146,7 +152,7 @@ public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task CatalogTimeline_WithDateRange_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/catalog/timeline?from=2025-01-01&to=2025-12-31");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/timeline?from=2025-01-01&to=2025-12-31");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -159,7 +165,7 @@ public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task CatalogCoverage_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/catalog/coverage");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/coverage");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -168,7 +174,7 @@ public sealed class CatalogEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task CatalogCoverage_ResponseContainsExpectedFields()
     {
-        var response = await _client.GetAsync("/api/catalog/coverage");
+        var response = await _catalogReadClient.GetAsync("/api/catalog/coverage");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadAsStringAsync();

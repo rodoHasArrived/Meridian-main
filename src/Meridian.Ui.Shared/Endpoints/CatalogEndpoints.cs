@@ -5,6 +5,7 @@ using Meridian.Storage.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Meridian.Identity.Auth;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -121,7 +122,7 @@ public static class CatalogEndpoints
                 }, jsonOptions);
             }, "Catalog search failed.", logger);
         })
-        .WithName("CatalogSearch")
+        .WithName("CatalogSearch").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ManageStorage)
         .Produces(200);
 
         // GET /api/catalog/symbols — list all symbols with stored data coverage
@@ -152,7 +153,7 @@ public static class CatalogEndpoints
                 }, jsonOptions);
             }, "Failed to list catalog symbols.", logger);
         })
-        .WithName("CatalogSymbols")
+        .WithName("CatalogSymbols").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ManageStorage)
         .Produces(200);
 
         // GET /api/catalog/timeline — per-symbol data coverage for timeline/Gantt visualization
@@ -225,7 +226,7 @@ public static class CatalogEndpoints
                 }, jsonOptions);
             }, "Failed to build catalog timeline.", logger);
         })
-        .WithName("CatalogTimeline")
+        .WithName("CatalogTimeline").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ManageStorage)
         .Produces(200);
 
         // GET /api/catalog/coverage — aggregate coverage summary (totals, date ranges, sources)
@@ -263,7 +264,7 @@ public static class CatalogEndpoints
                 }, jsonOptions);
             }, "Failed to build catalog coverage summary.", logger);
         })
-        .WithName("CatalogCoverage")
+        .WithName("CatalogCoverage").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ManageStorage)
         .Produces(200);
     }
 }

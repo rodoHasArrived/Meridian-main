@@ -50,7 +50,7 @@
     "src/Meridian.Ui/dashboard/src/screens/trading-screen.view-model.ts": 5243,
     "src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs": 5358,
     "src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs": 3325,
-    "src/Meridian.Wpf/ViewModels/MainPageViewModel.cs": 2313,
+    "src/Meridian.Wpf/ViewModels/MainPageViewModel.cs": 2316,
     "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs": 4408
   },
   "headroom": {

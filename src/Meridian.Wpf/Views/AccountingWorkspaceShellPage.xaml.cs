@@ -22,6 +22,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
     private readonly FundOperationsWorkspaceReadService _fundOperationsWorkspaceReadService;
     private readonly Meridian.Wpf.Services.NotificationService _notificationService;
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
+    private readonly DesktopAuthenticationSession? _authenticationSession;
     private readonly IAccountingConfigurationService? _accountingConfigurationService;
     private AccountingSubarea _selectedSubarea = AccountingSubarea.Operations;
     private FundProfileDetail? _lastProfile;
@@ -43,7 +44,8 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
         FundOperationsWorkspaceReadService fundOperationsWorkspaceReadService,
         Meridian.Wpf.Services.NotificationService notificationService,
         WorkstationWorkflowSummaryService? workflowSummaryService = null,
-        IAccountingConfigurationService? accountingConfigurationService = null)
+        IAccountingConfigurationService? accountingConfigurationService = null,
+        DesktopAuthenticationSession? authenticationSession = null)
         : base(navigationService, stateProvider, viewModel)
     {
         InitializeComponent();
@@ -53,6 +55,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
         _fundOperationsWorkspaceReadService = fundOperationsWorkspaceReadService;
         _notificationService = notificationService;
         _workflowSummaryService = workflowSummaryService;
+        _authenticationSession = authenticationSession;
         _accountingConfigurationService = accountingConfigurationService;
     }
 
@@ -236,6 +239,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
         {
             var summary = await _workflowSummaryService
                 .GetAsync(
+                    DesktopWorkflowReadScopeResolver.Resolve(_authenticationSession),
                     hasOperatingContext: _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null,
                     operatingContextDisplayName: _operatingContextService?.CurrentContext?.DisplayName,
                     fundProfileId: _fundContextService.CurrentFundProfile?.FundProfileId,

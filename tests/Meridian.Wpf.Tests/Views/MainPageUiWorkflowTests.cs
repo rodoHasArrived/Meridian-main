@@ -418,7 +418,8 @@ public sealed class MainPageUiWorkflowTests
             await WaitForConditionAsync(
                 () => facade.ViewModel.PrimaryWorkflowSummary is not null &&
                       facade.ViewModel.SecondaryWorkflowSummaries.Count == 6,
-                timeoutMs: 15000).ConfigureAwait(true);
+                timeoutMs: 15000,
+                describeState: () => DescribeWorkflowStripState(facade.ViewModel)).ConfigureAwait(true);
             facade.ViewModel.PrimaryWorkflowSummary.Should().NotBeNull();
             facade.ViewModel.SecondaryWorkflowSummaries.Should().HaveCount(6);
 
@@ -632,7 +633,20 @@ public sealed class MainPageUiWorkflowTests
         });
     }
 
-    private static async Task WaitForConditionAsync(Func<bool> predicate, int timeoutMs = 5000)
+    /// <summary>
+    /// Polls the dispatcher until the predicate holds.
+    /// </summary>
+    /// <param name="describeState">
+    /// What the shell actually looked like when the wait ran out. Optional, and worth supplying
+    /// wherever the predicate is a conjunction: a timeout otherwise reports only "found False",
+    /// which says neither which clause failed nor what the shell was showing instead, and the
+    /// difference between "the card is missing" and "the card is there under another workspace" is
+    /// the whole diagnosis.
+    /// </param>
+    private static async Task WaitForConditionAsync(
+        Func<bool> predicate,
+        int timeoutMs = 5000,
+        Func<string>? describeState = null)
     {
         var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
         while (DateTime.UtcNow < deadline)
@@ -646,8 +660,21 @@ public sealed class MainPageUiWorkflowTests
             await Task.Delay(50).ConfigureAwait(true);
         }
 
-        predicate().Should().BeTrue("expected condition to become true within the timeout window");
+        var observed = describeState is null ? string.Empty : $" Observed: {describeState()}.";
+        predicate().Should().BeTrue($"expected condition to become true within the timeout window.{observed}");
     }
+
+    /// <summary>
+    /// The workflow strip's state in one line, for a timeout message.
+    /// </summary>
+    private static string DescribeWorkflowStripState(MainPageViewModel viewModel)
+        => string.Join(
+            ", ",
+            $"currentWorkspace={viewModel.CurrentWorkspace}",
+            $"primary={viewModel.PrimaryWorkflowSummary?.WorkspaceId ?? "<null>"}",
+            $"summaries={viewModel.WorkflowSummaries.Count}",
+            $"secondary={viewModel.SecondaryWorkflowSummaries.Count}",
+            $"ids=[{string.Join("|", viewModel.WorkflowSummaries.Select(summary => summary.WorkspaceId))}]");
 
     private static Task RefreshShellContextAsync(MainPageViewModel viewModel)
     {

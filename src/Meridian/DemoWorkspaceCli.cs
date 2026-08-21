@@ -2,6 +2,7 @@ using System.Text.Json.Nodes;
 using Meridian.Application.Commands;
 using Meridian.Application.Composition.Startup;
 using Meridian.Contracts.Configuration;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using ConfigStore = Meridian.Application.UI.ConfigStore;
 
@@ -111,12 +112,15 @@ internal static class DemoWorkspaceCli
     /// </summary>
     private static void PrepareDemoRuntimeEnvironment()
     {
-        // Mark this process as the demo serving host so composition (W9-TRUTH-001) pins the
-        // seeded provenance label without re-parsing CLI verbs.
-        if (IsUnset(DemoWorkspaceLayout.DemoModeEnvironmentVariable))
-        {
-            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, "true");
-        }
+        // Mark this process as the demo serving host so composition (W9-TRUTH-001) pins the seeded
+        // provenance label without re-parsing CLI verbs. Set unconditionally rather than only when
+        // unset: this method runs on the demo serve paths and nowhere else, so the process is the
+        // demo host as a matter of fact. An inherited MERIDIAN_DEMO=false would otherwise outrank an
+        // explicit --demo or --seed-demo, and readers that consult the marker without the argument
+        // vector -- the provenance label, and the login middleware's seeded tenant fallback -- would
+        // conclude the demo is not running while it is, leaving the workstation refused for want of
+        // a tenant.
+        Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, "true");
 
         if (IsUnset("MERIDIAN_DATABASE_URL") && IsUnset("MERIDIAN_USE_INMEMORY_GOVERNANCE"))
         {
@@ -133,6 +137,16 @@ internal static class DemoWorkspaceCli
         if (IsUnset("MDC_AUTH_MODE"))
         {
             Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "optional");
+        }
+
+        // Optional authentication leaves the caller without an authorization context, and the governed
+        // surface refuses a caller it cannot authorize -- correct by default, but it would leave the
+        // demo unable to open its own workstation. The demo is a single-operator local box with no
+        // accounts, so it names the role that operator carries. This is the one place that opts in:
+        // an ordinary optional-auth deployment stays refused unless it makes the same explicit choice.
+        if (IsUnset("MDC_ANONYMOUS_ROLE"))
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
         }
     }
 

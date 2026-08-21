@@ -17,11 +17,14 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     private readonly HttpClient _client;
     // W9-GOV-008: /api/providers/latency is a platform read and now requires a permission.
     private readonly HttpClient _providerReadClient;
+    // Configuration authority without diagnostics authority, for the error-buffer boundary below.
+    private readonly HttpClient _configOnlyClient;
 
     public StatusEndpointTests(EndpointTestFixture fixture)
     {
         _client = fixture.Client;
-        _providerReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
+        _providerReadClient = fixture.CreateSessionClient(UserPermission.ViewDiagnostics);
+        _configOnlyClient = fixture.CreateSessionClient(UserPermission.ViewConfig);
     }
 
     #region Health Endpoints
@@ -101,7 +104,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task Status_ReturnsJsonWithExpectedFields()
     {
-        var response = await _client.GetAsync("/api/status");
+        var response = await _providerReadClient.GetAsync("/api/status");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -117,7 +120,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task Errors_ReturnsJsonArray()
     {
-        var response = await _client.GetAsync("/api/errors");
+        var response = await _providerReadClient.GetAsync("/api/errors");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -126,7 +129,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task Errors_AcceptsCountParameter()
     {
-        var response = await _client.GetAsync("/api/errors?count=5");
+        var response = await _providerReadClient.GetAsync("/api/errors?count=5");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -134,7 +137,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task Errors_AcceptsLevelFilter()
     {
-        var response = await _client.GetAsync("/api/errors?level=error");
+        var response = await _providerReadClient.GetAsync("/api/errors?level=error");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -146,7 +149,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task Backpressure_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/backpressure");
+        var response = await _providerReadClient.GetAsync("/api/backpressure");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -172,7 +175,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task Connections_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/connections");
+        var response = await _providerReadClient.GetAsync("/api/connections");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -183,11 +186,29 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     #region Event Stream Endpoint
 
     [Fact]
+    public async Task ErrorBufferReads_AreRefusedToConfigurationOnlyOperators()
+    {
+        // ViewConfig reads platform configuration; ErrorEntryDto carries exception type, context and
+        // message. The stream republishes GetErrors, so narrowing the route alone would leave the same
+        // detail reachable through it -- the check has to cover both doors.
+        var errors = await _configOnlyClient.GetAsync("/api/errors");
+        errors.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        using var streamRequest = new HttpRequestMessage(HttpMethod.Get, "/api/events/stream");
+        using var stream = await _configOnlyClient.SendAsync(streamRequest, HttpCompletionOption.ResponseHeadersRead);
+        stream.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        // The configuration-bearing reads in the same family stay available to that operator.
+        var status = await _configOnlyClient.GetAsync("/api/status");
+        status.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
     public async Task EventsStream_ReturnsSsePayloadWithStatusData()
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var request = new HttpRequestMessage(HttpMethod.Get, "/api/events/stream");
-        using var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+        using var response = await _providerReadClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("text/event-stream");

@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -20,6 +21,28 @@ public sealed class ApiKeyMiddleware
 {
     private const string ApiKeyHeaderName = "X-Api-Key";
     private const string ApiKeyEnvVar = "MDC_API_KEY";
+    private const string ApiKeyRoleEnvVar = "MDC_API_KEY_ROLE";
+
+    /// <summary>
+    /// Request-item key whose presence identifies a principal established by a validated API key.
+    /// Kept separate from the secret-bearing rate-limit item so authorization checks depend only
+    /// on principal type, not on the key material itself.
+    /// </summary>
+    internal const string ApiKeyPrincipalKey = "CurrentUserIsApiKey";
+
+    internal const string ApiKeyRateLimitKey = "ApiKey";
+
+    /// <summary>
+    /// Actor recorded for API-key requests so audit trails attribute them rather than leaving them
+    /// unattributed.
+    /// </summary>
+    internal const string ApiKeyActor = "api-key";
+
+    /// <summary>
+    /// Role a validated key carries when <c>MDC_API_KEY_ROLE</c> is unset. Deliberately the weakest
+    /// built-in role: a key that nobody has scoped should not be able to do more than look.
+    /// </summary>
+    private const UserRole DefaultApiKeyRole = UserRole.ReadOnly;
 
     private static readonly HashSet<string> ExemptPaths = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -64,8 +87,11 @@ public sealed class ApiKeyMiddleware
         }
 
         // Requests authenticated via a login session (the browser workstation) are governed
-        // by the session + CSRF layers; the API key protects out-of-band API clients.
-        if (context.Items.ContainsKey(LoginSessionMiddleware.CurrentUserKey))
+        // by the session + CSRF layers; the API key protects out-of-band API clients. An
+        // optional-mode anonymous principal is not a session and must not inherit that exemption,
+        // or configuring MDC_API_KEY alongside MDC_ANONYMOUS_ROLE would stop enforcing the key.
+        if (context.Items.ContainsKey(LoginSessionMiddleware.CurrentUserKey) &&
+            !context.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey))
         {
             await _next(context);
             return;
@@ -85,7 +111,53 @@ public sealed class ApiKeyMiddleware
         }
 
         // Store the validated API key identifier for downstream rate limiting
-        context.Items["ApiKey"] = providedKey;
+        context.Items[ApiKeyRateLimitKey] = providedKey;
+        context.Items[ApiKeyPrincipalKey] = true;
+
+        // A validated key needs an authorization context or it cannot pass any route that declares a
+        // permission -- the endpoint filters resolve permissions from the session items, and without
+        // these an API-key caller is refused everywhere the surface is actually governed.
+        if (!TryResolveApiKeyRole(out var apiKeyRole))
+        {
+            await ApiProblemDetails.ServiceUnavailable(
+                    context,
+                    "authentication",
+                    $"{ApiKeyRoleEnvVar} is set to a value that is not a known role. Set it to a valid role or unset it to use {DefaultApiKeyRole}.")
+                .ExecuteAsync(context);
+            return;
+        }
+
+        // A read-only role deliberately means a read-only API client whether the role was defaulted or
+        // explicitly configured. Permission names alone are not enough to enforce that contract
+        // because a few legacy POST routes use view permissions while mutating process-local replay,
+        // option, or sampling state. Fail closed for every method outside the safe-method allowlist,
+        // except where the endpoint itself declares an action grant the role holds; operators that
+        // intentionally need a command endpoint must name the role that authorizes it.
+        if (EndpointAuthorization.IsReadOnlyRoleMutation(context, apiKeyRole))
+        {
+            await ApiProblemDetails.Forbidden(
+                    context,
+                    $"The {apiKeyRole} API-key role allows only GET, HEAD, and OPTIONS requests, plus routes requiring {UserPermission.ExportData}. Set {ApiKeyRoleEnvVar} to a role that authorizes the required command endpoint.")
+                .ExecuteAsync(context);
+            return;
+        }
+
+        // LoginSessionMiddleware runs first, so optional mode may already have stamped its anonymous
+        // actor and tenant. A validated key authenticates as its own principal and must not borrow
+        // any of that scope or profile: authority comes from exactly one authentication posture.
+        context.Items.Remove(LoginSessionMiddleware.AnonymousPrincipalKey);
+        context.Items.Remove(LoginSessionMiddleware.DemoLocalOperatorPrincipalKey);
+        context.Items.Remove(LoginSessionMiddleware.CurrentTenantIdKey);
+        context.Items.Remove(LoginSessionMiddleware.CurrentUserCompanyIdKey);
+        context.Items.Remove(LoginSessionMiddleware.CurrentUserRoleProfileNameKey);
+
+        context.Items[LoginSessionMiddleware.CurrentUserKey] = ApiKeyActor;
+        context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = apiKeyRole;
+
+        // The canonical snapshot as well as the role: the endpoint filters resolve either, but many
+        // handlers read the permissions item directly and refuse a caller that has only a role, which
+        // would admit the request at the route boundary and reject it inside.
+        context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(apiKeyRole);
 
         await _next(context);
     }
@@ -100,6 +172,34 @@ public sealed class ApiKeyMiddleware
         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ApiKeyEnvVar)) &&
         context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase) &&
         context.Request.Headers.ContainsKey(ApiKeyHeaderName);
+
+    /// <summary>
+    /// Resolves the role a validated key carries. Unset means <see cref="DefaultApiKeyRole"/>; a value
+    /// that names no known role fails closed rather than silently granting the default, because
+    /// quietly applying a different permission set than the operator configured is the kind of
+    /// authorization drift the governed surface exists to prevent.
+    /// </summary>
+    private static bool TryResolveApiKeyRole(out UserRole role)
+    {
+        var configured = Environment.GetEnvironmentVariable(ApiKeyRoleEnvVar);
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            role = DefaultApiKeyRole;
+            return true;
+        }
+
+        return TryParseRoleName(configured, out role);
+    }
+
+
+    /// <summary>
+    /// Parses a role by name only. <see cref="Enum.TryParse{TEnum}(string, bool, out TEnum)"/> also
+    /// accepts numeric text, and <see cref="UserRole.Admin"/> is the zero value, so a configuration of
+    /// "0" -- or any stray number -- would otherwise resolve to full administrator rather than failing
+    /// closed as an unrecognised value.
+    /// </summary>
+    internal static bool TryParseRoleName(string? configured, out UserRole role)
+        => RolePermissions.TryParseRoleName(configured, out role);
 
     /// <summary>
     /// Constant-time string comparison to prevent timing attacks on API key validation.
@@ -157,7 +257,7 @@ public sealed class ApiKeyRateLimitMiddleware
         }
 
         // Partition by API key if present, otherwise by IP
-        var partitionKey = context.Items.TryGetValue("ApiKey", out var apiKey) && apiKey is string key
+        var partitionKey = context.Items.TryGetValue(ApiKeyMiddleware.ApiKeyRateLimitKey, out var apiKey) && apiKey is string key
             ? $"key:{key}"
             : $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
 

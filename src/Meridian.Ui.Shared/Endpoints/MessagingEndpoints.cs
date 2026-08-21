@@ -45,7 +45,7 @@ public static class MessagingEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetMessagingConfig")
+        .WithName("GetMessagingConfig").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Messaging status - returns actual webhook delivery stats
@@ -63,7 +63,7 @@ public static class MessagingEndpoints
                 }, jsonOptions);
             }
         })
-        .WithName("GetMessagingStatus")
+        .WithName("GetMessagingStatus").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Messaging stats
@@ -91,7 +91,7 @@ public static class MessagingEndpoints
                 }, jsonOptions);
             }
         })
-        .WithName("GetMessagingStats")
+        .WithName("GetMessagingStats").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Messaging activity - returns recent activity log
@@ -120,7 +120,7 @@ public static class MessagingEndpoints
                 }, jsonOptions);
             }
         })
-        .WithName("GetMessagingActivity")
+        .WithName("GetMessagingActivity").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Messaging consumers
@@ -139,7 +139,7 @@ public static class MessagingEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetMessagingConsumers")
+        .WithName("GetMessagingConsumers").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Messaging endpoints list - shows configured webhook URLs
@@ -166,7 +166,7 @@ public static class MessagingEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetMessagingEndpointsList")
+        .WithName("GetMessagingEndpointsList").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Test messaging - actually sends a test message via the webhook service
@@ -284,7 +284,7 @@ public static class MessagingEndpoints
                 }, jsonOptions);
             }
         })
-        .WithName("GetMessagingPublishing")
+        .WithName("GetMessagingPublishing").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Purge queue - clears in-memory activity/error logs
@@ -331,7 +331,7 @@ public static class MessagingEndpoints
                 }, jsonOptions);
             }
         })
-        .WithName("GetMessagingErrors")
+        .WithName("GetMessagingErrors").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Retry failed message
