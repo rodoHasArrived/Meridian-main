@@ -150,6 +150,10 @@ public static partial class WorkstationEndpoints
                     fundProfileId: fundProfileId,
                     fundAccountId: fundAccountId,
                     fundDisplayName: fundDisplayName,
+                    // The browser sends a fund account, not a fund profile, so the run load is not
+                    // narrowed by the query alone. The resolved request tenant is what bounds it.
+                    tenantId: HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId,
+                    companyId: EndpointAuthorization.ResolveCompanyId(context),
                     ct: context.RequestAborted, readScope: WorkstationWorkflowReadScope.ForRequest(context))
                 .ConfigureAwait(false);
             return Results.Json(summary, jsonOptions);

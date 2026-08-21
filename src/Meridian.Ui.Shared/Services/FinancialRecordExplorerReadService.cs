@@ -90,7 +90,7 @@ public sealed partial class FinancialRecordExplorerReadService
         FinancialRecordExplorerQueryDto? query,
         FinancialRecordExplorerReadScope scope,
         CancellationToken ct = default)
-        => await GetExplorerAsync(explorerId, tenantId, companyId: null, query, scope, ct).ConfigureAwait(false);
+        => await GetExplorerAsync(explorerId, tenantId, companyId: null, query, scope, ct: ct).ConfigureAwait(false);
 
     /// <summary>
     /// The explorer for one tenant, with <paramref name="companyId"/> completing the fund-ownership
@@ -103,6 +103,7 @@ public sealed partial class FinancialRecordExplorerReadService
         string? companyId,
         FinancialRecordExplorerQueryDto? query,
         FinancialRecordExplorerReadScope scope,
+        ReportAccessQueryContext? reportAccess = null,
         CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
@@ -113,8 +114,8 @@ public sealed partial class FinancialRecordExplorerReadService
         {
             LedgerExplorerId => await BuildLedgerExplorerAsync(tenantId, fundScope, query, ct).ConfigureAwait(false),
             PortfolioExplorerId => await BuildPortfolioExplorerAsync(tenantId, fundScope, query, ct).ConfigureAwait(false),
-            SecurityInstrumentExplorerId => await BuildSecurityInstrumentExplorerAsync(tenantId, fundScope, query, scope, ct).ConfigureAwait(false),
-            ReportLineProvenanceExplorerId => await BuildReportLineProvenanceExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
+            SecurityInstrumentExplorerId => await BuildSecurityInstrumentExplorerAsync(tenantId, fundScope, query, scope, reportAccess, ct).ConfigureAwait(false),
+            ReportLineProvenanceExplorerId => await BuildReportLineProvenanceExplorerAsync(tenantId, query, reportAccess, ct).ConfigureAwait(false),
             _ => null
         };
     }
@@ -124,6 +125,21 @@ public sealed partial class FinancialRecordExplorerReadService
     /// used as an explorer source.
     /// </summary>
     private readonly record struct FundOwnershipScope(string TenantId, string? CompanyId);
+
+    /// <summary>
+    /// Report-pack workflow records narrowed to the ones the caller's report access context admits.
+    /// <para>
+    /// A null context is the legacy in-process caller, whose authority is already established and for
+    /// which there is no request tenant to bind to. Every request-serving path supplies one, so the
+    /// null case is the seam's documented default rather than a way around it.
+    /// </para>
+    /// </summary>
+    private static IReadOnlyList<ReportPackWorkflowRecordDto> FilterReportRecords(
+        IReadOnlyList<ReportPackWorkflowRecordDto> records,
+        ReportAccessQueryContext? reportAccess)
+        => reportAccess is null
+            ? records
+            : ReportPackRunReadService.FilterWorkflowRecords(records, reportAccess);
 
     public async Task<FinancialRecordExplorerSelectedRecordDto?> GetRecordAsync(
         string explorerId,
@@ -144,7 +160,7 @@ public sealed partial class FinancialRecordExplorerReadService
         string tenantId,
         FinancialRecordExplorerReadScope scope,
         CancellationToken ct = default)
-        => await GetRecordAsync(explorerId, recordId, tenantId, companyId: null, scope, ct).ConfigureAwait(false);
+        => await GetRecordAsync(explorerId, recordId, tenantId, companyId: null, scope, ct: ct).ConfigureAwait(false);
 
     public async Task<FinancialRecordExplorerSelectedRecordDto?> GetRecordAsync(
         string explorerId,
@@ -152,6 +168,7 @@ public sealed partial class FinancialRecordExplorerReadService
         string tenantId,
         string? companyId,
         FinancialRecordExplorerReadScope scope,
+        ReportAccessQueryContext? reportAccess = null,
         CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(recordId);
@@ -160,7 +177,7 @@ public sealed partial class FinancialRecordExplorerReadService
         // must be projected the same way; routing it through the unscoped overload would withhold a
         // family from the list and hand it back on the drill-in -- or serve a foreign tenant's row
         // that the list itself refused.
-        var explorer = await GetExplorerAsync(explorerId, tenantId, companyId, query: null, scope, ct).ConfigureAwait(false);
+        var explorer = await GetExplorerAsync(explorerId, tenantId, companyId, query: null, scope, reportAccess, ct).ConfigureAwait(false);
         return explorer?.Rows
             .FirstOrDefault(row => string.Equals(row.RecordId, recordId, StringComparison.OrdinalIgnoreCase))
             ?.Detail;
@@ -346,6 +363,7 @@ public sealed partial class FinancialRecordExplorerReadService
         FundOwnershipScope fundScope,
         FinancialRecordExplorerQueryDto? query,
         FinancialRecordExplorerReadScope scope,
+        ReportAccessQueryContext? reportAccess,
         CancellationToken ct)
     {
         var readService = _runReadService;
@@ -380,8 +398,12 @@ public sealed partial class FinancialRecordExplorerReadService
         // means holding a Security Master, operations or strategy permission; none of those is a claim
         // on report-pack usage or direct-lending operations, and the enrichment builder already takes
         // both as arguments, so withholding them is a matter of not fetching them.
+        // Permission decides whether the family is loaded at all; the access context decides which of
+        // its records this caller may see. Both are needed -- ListRecords returns every tenant's
+        // workflow records, so a Reporting-entitled caller would otherwise be enriched with another
+        // tenant's report-pack usage.
         var reportRecords = scope.Reporting
-            ? _reportPackWorkflowService?.ListRecords(200) ?? []
+            ? FilterReportRecords(_reportPackWorkflowService?.ListRecords(200) ?? [], reportAccess)
             : [];
         var directLendingOperations = scope.DirectLending && _directLendingOperationsReadService is not null
             ? await _directLendingOperationsReadService.GetOperationsAsync(ct: ct).ConfigureAwait(false)
@@ -513,6 +535,7 @@ public sealed partial class FinancialRecordExplorerReadService
     private async Task<FinancialRecordExplorerDto> BuildReportLineProvenanceExplorerAsync(
         string tenantId,
         FinancialRecordExplorerQueryDto? query,
+        ReportAccessQueryContext? reportAccess,
         CancellationToken ct)
     {
         var workflowService = _reportPackWorkflowService;
@@ -533,7 +556,8 @@ public sealed partial class FinancialRecordExplorerReadService
         var explorer = BuildReportLineProvenanceExplorer(
             workflowService.ListRecords(200),
             _reportPackDeliveryService?.ListAttempts(500),
-            savedViews: savedViews);
+            savedViews: savedViews,
+            accessContext: reportAccess);
         return ApplyExplorerQuery(explorer, query);
     }
 

@@ -189,6 +189,56 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Theory]
+    [InlineData(UiApiRoutes.WorkstationAccounting)]
+    [InlineData(UiApiRoutes.WorkstationGovernance)]
+    public async Task MapWorkstationEndpoints_AccountingWorkspace_WithoutDataAuthority_ShouldWithholdKernelObservability(string route)
+    {
+        // Kernel telemetry rides in this payload but is not accounting posture: domain names,
+        // throughput, latency percentiles, drift and determinism mismatches. The Data workspace serves
+        // the same object to ViewHistoricalData, ViewDiagnostics or ManageStorage, and admission to
+        // the period screen establishes none of those. Its headline card goes with the projection --
+        // a zeroed alert count shown to a caller who cannot see the domains would read as an
+        // all-clear rather than as a withholding.
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: UserPermission.ViewSecurityMaster);
+
+        using var response = await app.GetTestClient().GetAsync(route);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        var root = payload.RootElement;
+
+        root.GetProperty("kernelObservability").GetProperty("domains").GetArrayLength().Should().Be(0);
+        root.GetProperty("kernelObservability").GetProperty("updatedAtUtc").ValueKind.Should().Be(
+            JsonValueKind.Null,
+            "the withheld projection uses the same shape as an unavailable one");
+        root.GetProperty("metrics").EnumerateArray()
+            .Select(item => item.GetProperty("id").GetString())
+            .Should().NotContain("kernel-critical-jumps");
+    }
+
+    [Theory]
+    [InlineData(UserPermission.ViewSecurityMaster | UserPermission.ViewHistoricalData)]
+    [InlineData(UserPermission.ViewSecurityMaster | UserPermission.ViewDiagnostics)]
+    public async Task MapWorkstationEndpoints_AccountingWorkspace_WithDataAuthority_ShouldServeKernelObservability(
+        UserPermission permissions)
+    {
+        // The other end: a caller the Data workspace admits still sees it through the period screen.
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: permissions);
+
+        using var response = await app.GetTestClient().GetAsync(UiApiRoutes.WorkstationAccounting);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        payload.RootElement.GetProperty("metrics").EnumerateArray()
+            .Select(item => item.GetProperty("id").GetString())
+            .Should().Contain("kernel-critical-jumps");
+    }
+
+    [Theory]
     [InlineData(UserPermission.ViewSecurityMaster | UserPermission.ViewStrategies)]
     [InlineData(UserPermission.ViewSecurityMaster | UserPermission.ManageStrategies)]
     public async Task MapWorkstationEndpoints_AccountingWorkspace_WithRunAuthority_ShouldServeRunCards(

@@ -1,3 +1,4 @@
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Strategies.Services;
@@ -16,6 +17,7 @@ public sealed class WorkstationWorkflowSummaryService
     private readonly Meridian.Application.UI.ConfigStore? _configStore;
     private readonly IWorkflowActionCatalog? _actionCatalog;
     private readonly IOperationsContinuityWorkflowService? _operationsContinuityWorkflowService;
+    private readonly IFundProfileTenancyRegistry? _tenancyRegistry;
 
     public WorkstationWorkflowSummaryService(
         StrategyRunReadService runReadService,
@@ -23,7 +25,8 @@ public sealed class WorkstationWorkflowSummaryService
         IReconciliationRunService? reconciliationRunService = null,
         Meridian.Application.UI.ConfigStore? configStore = null,
         IWorkflowActionCatalog? actionCatalog = null,
-        IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null)
+        IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null,
+        IFundProfileTenancyRegistry? tenancyRegistry = null)
     {
         _runReadService = runReadService ?? throw new ArgumentNullException(nameof(runReadService));
         _continuityService = continuityService;
@@ -31,6 +34,7 @@ public sealed class WorkstationWorkflowSummaryService
         _configStore = configStore;
         _actionCatalog = actionCatalog;
         _operationsContinuityWorkflowService = operationsContinuityWorkflowService;
+        _tenancyRegistry = tenancyRegistry;
     }
 
     // readScope names which workspace families the calling operator may read. It is required and
@@ -43,6 +47,8 @@ public sealed class WorkstationWorkflowSummaryService
         string? fundProfileId = null,
         string? fundAccountId = null,
         string? fundDisplayName = null,
+        string? tenantId = null,
+        string? companyId = null,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(readScope);
@@ -57,9 +63,15 @@ public sealed class WorkstationWorkflowSummaryService
         var runs = scope.NeedsStrategyRuns
             ? await _runReadService.GetRunsAsync(ct: ct).ConfigureAwait(false)
             : Array.Empty<StrategyRunSummary>();
-        var scopedRuns = string.IsNullOrWhiteSpace(fundProfileId)
+        // Narrowed by fund profile when the caller named one, and by tenant ownership always. The
+        // two are not the same filter and neither substitutes for the other: the browser sends only a
+        // fund account, so the fund-profile clause does nothing on the ordinary request, and the run
+        // reader returns every run the host retains -- including legacy rows carrying no tenant stamp
+        // at all, which is precisely what one shell would surface from another tenant's book.
+        var fundScopedRuns = string.IsNullOrWhiteSpace(fundProfileId)
             ? runs
             : runs.Where(run => string.Equals(run.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)).ToArray();
+        var scopedRuns = await FilterRunsByTenantAsync(fundScopedRuns, tenantId, companyId, ct).ConfigureAwait(false);
 
         var relevantRuns = string.IsNullOrWhiteSpace(fundProfileId) ? runs : scopedRuns;
         var strategyRuns = relevantRuns;
@@ -1367,4 +1379,71 @@ public sealed class WorkstationWorkflowSummaryService
         Guid FundAccountId,
         int WorkflowCount,
         OperationsContinuityWorkflowDto? ActiveWorkflow);
+
+    /// <summary>
+    /// The runs a tenant may be shown, by their fund profile's registered owner.
+    /// <para>
+    /// The rule is the one the registry itself defines and the financial-record explorers already
+    /// apply: refuse what is proven foreign rather than admit only what is proven owned. Ownership is
+    /// established on first authoritative use, so a fund nobody has claimed yet still qualifies, while
+    /// a run carrying no fund profile is not attributable to any tenant and is refused -- otherwise a
+    /// legacy row becomes readable by every tenant on the host simply by predating the stamp.
+    /// </para>
+    /// <para>
+    /// With no registry there is no tenancy to enforce and every run qualifies, which is the
+    /// single-tenant and in-process posture; the desktop shell reaches this service directly and
+    /// resolves a fund context rather than a request tenant. A registry with no tenant supplied is the
+    /// same case.
+    /// </para>
+    /// </summary>
+    private async Task<IReadOnlyList<StrategyRunSummary>> FilterRunsByTenantAsync(
+        IReadOnlyList<StrategyRunSummary> runs,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct)
+    {
+        if (_tenancyRegistry is null || string.IsNullOrWhiteSpace(tenantId) || runs.Count == 0)
+        {
+            return runs;
+        }
+
+        var ownershipByFund = new Dictionary<string, FundProfileOwnership?>(StringComparer.OrdinalIgnoreCase);
+        foreach (var fundProfileId in runs
+                     .Select(static run => run.FundProfileId)
+                     .Where(static fundProfileId => !string.IsNullOrWhiteSpace(fundProfileId))
+                     .Select(static fundProfileId => fundProfileId!.Trim())
+                     .Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            ct.ThrowIfCancellationRequested();
+            ownershipByFund[fundProfileId] = await _tenancyRegistry
+                .ResolveAsync(fundProfileId, ct)
+                .ConfigureAwait(false);
+        }
+
+        return runs
+            .Where(run =>
+            {
+                if (string.IsNullOrWhiteSpace(run.FundProfileId))
+                {
+                    return false;
+                }
+
+                if (!ownershipByFund.TryGetValue(run.FundProfileId.Trim(), out var ownership) || ownership is null)
+                {
+                    // Unbound: nobody has claimed this fund yet, so it is not another tenant's.
+                    return true;
+                }
+
+                if (!ownership.IsHeldBy(tenantId))
+                {
+                    return false;
+                }
+
+                return string.IsNullOrWhiteSpace(companyId)
+                    || string.IsNullOrWhiteSpace(ownership.CompanyId)
+                    || string.Equals(ownership.CompanyId.Trim(), companyId.Trim(), StringComparison.OrdinalIgnoreCase);
+            })
+            .ToArray();
+    }
+
 }

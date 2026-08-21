@@ -666,20 +666,19 @@ public sealed class BrokeragePortfolioSyncService
             // account number, and it is already the name of the file being read
             // (links/{guid}.json), so the warning discloses nothing the storage layout does not.
             //
-            // Code scanning reads the identifier's name and classifies it as sensitive. LogSanitizer
-            // is not the answer -- its own contract excludes server-generated identifiers, and a
-            // Guid cannot carry the control characters it neutralizes -- so the alerts are suppressed
-            // at the point they are raised rather than by routing the value through a barrier that
-            // would do nothing.
+            // Code scanning reads the identifier's name and raises
+            // cs/cleartext-storage-of-sensitive-information on both calls below. LogSanitizer is not
+            // the answer -- its own contract excludes server-generated identifiers, and a Guid cannot
+            // carry the control characters it neutralizes -- so there is no barrier to route this
+            // through that would mean anything. The alerts are dismissed on the security tab; this
+            // note is here so the next reader does not re-derive the analysis from scratch.
             catch (JsonException ex)
             {
-                // codeql[cs/cleartext-storage-of-sensitive-information]
                 _logger.LogWarning(ex, "Skipping unreadable brokerage link for fund account {FundAccountId}", fundAccountId);
                 continue;
             }
             catch (IOException ex)
             {
-                // codeql[cs/cleartext-storage-of-sensitive-information]
                 _logger.LogWarning(ex, "Skipping locked brokerage link for fund account {FundAccountId}", fundAccountId);
                 continue;
             }
@@ -967,9 +966,9 @@ public sealed class BrokeragePortfolioSyncService
         }
         catch (InvalidOperationException ex)
         {
-            // Same Guid surrogate key, same reason it stays: a sync run whose history could not be
-            // recorded is only actionable if the warning names the account it belonged to.
-            // codeql[cs/cleartext-storage-of-sensitive-information]
+            // Same Guid surrogate key, same code-scanning alert, same reason it stays: a sync run
+            // whose history could not be recorded is only actionable if the warning names the account
+            // it belonged to.
             _logger.LogWarning(
                 ex,
                 "Brokerage sync history could not be recorded for fund account {FundAccountId}.",

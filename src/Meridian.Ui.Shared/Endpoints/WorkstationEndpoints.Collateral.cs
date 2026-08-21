@@ -63,6 +63,15 @@ public static partial class WorkstationEndpoints
                 return Results.Forbid();
             }
 
+            // Before anything reads it. A body of `null` binds to a null list and an element of `null`
+            // survives into the list, both of which are well-formed JSON the deserializer accepts --
+            // so a malformed delivery would fault on the first dereference and answer 500, when the
+            // whole point of validating here is that a producer gets told what to fix.
+            if (rows is null)
+            {
+                return Results.BadRequest(new { error = "The request body must be an array of collateral rows." });
+            }
+
             const int maxRowsPerRequest = 1_000;
             if (rows.Count > maxRowsPerRequest)
             {
@@ -148,6 +157,12 @@ public static partial class WorkstationEndpoints
         for (var index = 0; index < rows.Count; index++)
         {
             var row = rows[index];
+            if (row is null)
+            {
+                rejection = $"Row {index} is null.";
+                return false;
+            }
+
             if (string.IsNullOrWhiteSpace(row.Counterparty) ||
                 string.IsNullOrWhiteSpace(row.ProductType) ||
                 string.IsNullOrWhiteSpace(row.CollateralType))

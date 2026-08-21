@@ -45,6 +45,12 @@ public static partial class WorkstationEndpoints
                     EndpointAuthorization.ResolveCompanyId(context),
                     query,
                     ResolveExplorerReadScope(context),
+                    // The report families the explorer enriches with are not tenant-partitioned at
+                    // their source -- ListRecords returns every tenant's workflow records -- so the
+                    // permission scope above decides which families load and this decides which of
+                    // their records this caller may see. Built with RequireBoundScope, the same
+                    // context the reporting routes serve these records under head-on.
+                    BuildReportAccessQueryContext(context),
                     context.RequestAborted)
                 .ConfigureAwait(false);
             return explorer is null
@@ -83,6 +89,9 @@ public static partial class WorkstationEndpoints
                     tenantId,
                     EndpointAuthorization.ResolveCompanyId(context),
                     ResolveExplorerReadScope(context),
+                    // Same bound context as the list route: the drill-in is one row of that explorer,
+                    // so a record the list filtered out must not be reachable by asking for it.
+                    BuildReportAccessQueryContext(context),
                     context.RequestAborted)
                 .ConfigureAwait(false);
             return record is null

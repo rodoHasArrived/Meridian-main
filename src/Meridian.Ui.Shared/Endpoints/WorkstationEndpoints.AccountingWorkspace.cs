@@ -82,7 +82,9 @@ public static partial class WorkstationEndpoints
                     new WorkstationMetricCard("timing-drift", "Timing Drift", "0", "0%", "default"),
                     new WorkstationMetricCard("security-gaps", "Security Gaps", "0", "0%", "success"),
                     new WorkstationMetricCard("audit-ready", "Audit Ready", "0", "0%", "default"),
-                    new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
+                    .. readScope.KernelObservability
+                        ? new[] { new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability)) }
+                        : Array.Empty<WorkstationMetricCard>()
                 ],
                 ReconciliationQueue: Array.Empty<WorkstationAccountingRunRecord>(),
                 BreakQueue: visibleBreakQueueItems,
@@ -90,7 +92,7 @@ public static partial class WorkstationEndpoints
                 CashFlow: BuildAccountingWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
                 Reporting: reporting,
                 ControlCenter: BuildAccountingControlCenterPayload(breakQueueItems, reporting, readScope.BreakQueue),
-                KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
+                KernelObservability: BuildKernelObservabilityPayload(readScope.KernelObservability ? kernelObservability : null),
                 ManualJournalWorkbench: manualJournalWorkbench);
         }
 
@@ -119,7 +121,9 @@ public static partial class WorkstationEndpoints
                 new WorkstationMetricCard("timing-drift", "Timing Drift", timingDriftRuns.ToString(CultureInfo.InvariantCulture), "0%", timingDriftRuns == 0 ? "default" : "warning"),
                 new WorkstationMetricCard("security-gaps", "Security Gaps", runsWithSecurityIssues.ToString(CultureInfo.InvariantCulture), "0%", runsWithSecurityIssues == 0 ? "success" : "warning"),
                 new WorkstationMetricCard("audit-ready", "Audit Ready", Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), "0%", auditReadyRuns > 0 ? "success" : "default"),
-                new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
+                .. readScope.KernelObservability
+                    ? new[] { new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability)) }
+                    : Array.Empty<WorkstationMetricCard>()
             ],
             // Withheld exactly as the empty-run branch above renders them, so a caller without run
             // authority sees the shape the workspace already has when there is nothing to show rather
@@ -142,7 +146,7 @@ public static partial class WorkstationEndpoints
                 readScope.StrategyRuns ? details : Array.Empty<StrategyRunDetail?>()),
             Reporting: reportingPayload,
             ControlCenter: BuildAccountingControlCenterPayload(breakQueueItems, reportingPayload, readScope.BreakQueue),
-            KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
+            KernelObservability: BuildKernelObservabilityPayload(readScope.KernelObservability ? kernelObservability : null),
             ManualJournalWorkbench: manualJournalWorkbench);
     }
 
@@ -251,7 +255,12 @@ public static partial class WorkstationEndpoints
             StrategyRuns: EndpointAuthorization.HasAnyPermission(
                 context,
                 UserPermission.ViewStrategies,
-                UserPermission.ManageStrategies));
+                UserPermission.ManageStrategies),
+            KernelObservability: EndpointAuthorization.HasAnyPermission(
+                context,
+                UserPermission.ViewHistoricalData,
+                UserPermission.ViewDiagnostics,
+                UserPermission.ManageStorage));
 
     private static async Task<ManualJournalEntryWorkbenchDto?> BuildManualJournalWorkbenchPayloadAsync(HttpContext context)
     {

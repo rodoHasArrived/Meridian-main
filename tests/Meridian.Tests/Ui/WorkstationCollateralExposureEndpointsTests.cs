@@ -116,6 +116,28 @@ public sealed partial class WorkstationEndpointsTests
         exposure.StatusCode.Should().Be(HttpStatusCode.OK, "the read stays healthy because nothing was retained");
     }
 
+    [Theory]
+    [InlineData("[null]")]
+    [InlineData("null")]
+    public async Task MapWorkstationEndpoints_CollateralIngest_ShouldRejectNullRowsWithoutFaulting(string body)
+    {
+        // Both are well-formed JSON the deserializer accepts: a null body binds to a null list, and a
+        // null element survives into the list. Validation exists so a producer is told what to fix, so
+        // faulting on the first dereference and answering 500 defeats the point of validating.
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<CollateralExposureService>();
+            services.AddSingleton<CollateralIngestionBuffer>();
+        });
+
+        using var content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
+        using var response = await app.GetTestClient().PostAsync("/api/workstation/collateral/ingest", content);
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.BadRequest,
+            "a malformed delivery is a validation failure, not a server fault");
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_CollateralIngest_ShouldRefuseAnObservationLargerThanTheWindow()
     {

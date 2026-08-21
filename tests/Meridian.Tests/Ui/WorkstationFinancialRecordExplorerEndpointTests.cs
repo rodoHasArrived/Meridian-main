@@ -228,7 +228,8 @@ public sealed partial class WorkstationEndpointsTests
             "2026-03",
             new VersionedReportTemplateIdDto("board-pack", 1),
             "report.author",
-            [line]);
+            [line],
+            accessContext: BoundReportAccessContext());
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
         var published = workflow.Publish(
@@ -353,7 +354,8 @@ public sealed partial class WorkstationEndpointsTests
             "2026-03",
             new VersionedReportTemplateIdDto("board-pack", 1),
             "report.author",
-            [line]);
+            [line],
+            accessContext: BoundReportAccessContext());
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
         workflow.Publish(
@@ -662,7 +664,8 @@ public sealed partial class WorkstationEndpointsTests
             "2026-03",
             new VersionedReportTemplateIdDto("board-pack", 1),
             "report.author",
-            [new ReportPackLineProvenanceDto("trial-balance.cash", "position", "position-aapl", "ledger-evidence-1", RunId: "run-1", LedgerEntryId: "ledger-entry-1")]);
+            [new ReportPackLineProvenanceDto("trial-balance.cash", "position", "position-aapl", "ledger-evidence-1", RunId: "run-1", LedgerEntryId: "ledger-entry-1")],
+            accessContext: BoundReportAccessContext());
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
 
@@ -1729,4 +1732,81 @@ public sealed partial class WorkstationEndpointsTests
         public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(string? fundProfileId = null, Guid? fundStructureNodeId = null, FundStructureNodeKindDto? fundStructureNodeKind = null, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default) => throw new NotSupportedException();
     }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReportLineProvenanceExplorer_ShouldNotServeAnotherTenantsRecords()
+    {
+        // ListRecords is not tenant-partitioned at its source -- it returns every workflow record the
+        // host retains -- and the explorer used to build from it with no access context at all, which
+        // the builder treats as the legacy unbound caller and answers unfiltered. The reporting routes
+        // serve these same records under RequireBoundScope, so the explorer must not be the way round
+        // them.
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+        var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
+
+        var foreign = workflow.Create(
+            "fund-foreign",
+            "acct-foreign",
+            "2026-03",
+            new VersionedReportTemplateIdDto("board-pack", 1),
+            "report.author",
+            [
+                new ReportPackLineProvenanceDto(
+                    LineKey: "trial-balance.cash",
+                    SourceKind: "position",
+                    SourceId: "position-aapl",
+                    EvidenceId: "ledger-evidence-1",
+                    RunId: "run-1",
+                    LedgerEntryId: "ledger-entry-1",
+                    ReconciliationCaseId: "recon-case-1",
+                    ReportValue: "100.00",
+                    SourceSessionId: "provider-session-1",
+                    ReconciliationRunId: "recon-run-1",
+                    ProviderEventId: "provider-event-position-aapl",
+                    SecurityMasterId: "11111111-1111-1111-1111-111111111111",
+                    SecurityDefinitionId: "security-definition-1",
+                    ReconciliationOutcome: "matched",
+                    ApprovalId: "approval-1")
+            ],
+            accessContext: new ReportAccessQueryContext(
+                ActorPrincipalId: "foreign-operator",
+                CompanyId: "tenant-foreign",
+                TenantId: "tenant-foreign",
+                RequireBoundScope: true));
+        workflow.Transition(foreign.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        workflow.Transition(foreign.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        workflow.Publish(
+            foreign.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:foreign-pack",
+            "manifest-foreign-202603",
+            "vault/report-packs/manifest-foreign-202603.json",
+            BuildCompleteReportLineEvidenceLinks());
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/report-line-provenance",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        explorer!.Rows.Should().BeEmpty(
+            "the only retained record is bound to another tenant, and this caller resolved tenant-test");
+    }
+
+    /// <summary>
+    /// The access context a request-serving create carries. Records made without one are legacy-shaped
+    /// -- no tenant, no company, no policy snapshot -- and the reporting routes refuse them under
+    /// RequireBoundScope, so a fixture that seeds them is not exercising what the explorer serves.
+    /// Tenant and company match <c>CreateAppAsync</c>'s defaults.
+    /// </summary>
+    private static ReportAccessQueryContext BoundReportAccessContext()
+        => new(
+            ActorPrincipalId: "ops-user",
+            CompanyId: "tenant-test",
+            TenantId: "tenant-test",
+            RequireBoundScope: true);
+
 }

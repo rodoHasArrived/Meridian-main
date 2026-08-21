@@ -53,12 +53,25 @@ namespace Meridian.Ui.Shared.Services;
 /// show every desk it admits; the records and the balances do not.
 /// </para>
 /// </param>
+/// <param name="KernelObservability">
+/// Kernel telemetry - domain names, evaluation throughput, latency percentiles, drift, determinism
+/// mismatches and alert thresholds. Mirrors <c>GetWorkstationData</c>, which serves the same object
+/// and admits only ViewHistoricalData, ViewDiagnostics and ManageStorage.
+/// <para>
+/// The counts-stay rule above does not reach this one. It holds because an accounting count is what
+/// the workspace exists to show every desk it admits; a kernel alert count is platform-operations
+/// telemetry that happens to be carried here, and no desk is admitted to this screen on the strength
+/// of it. Its headline card is therefore withheld with the projection rather than shown as a zero
+/// that would read as an all-clear.
+/// </para>
+/// </param>
 public sealed record AccountingWorkspaceReadScope(
     bool BreakQueue,
     bool ManualJournal,
     bool Reporting,
-    bool StrategyRuns)
+    bool StrategyRuns,
+    bool KernelObservability)
 {
     public static readonly AccountingWorkspaceReadScope All =
-        new(BreakQueue: true, ManualJournal: true, Reporting: true, StrategyRuns: true);
+        new(BreakQueue: true, ManualJournal: true, Reporting: true, StrategyRuns: true, KernelObservability: true);
 }

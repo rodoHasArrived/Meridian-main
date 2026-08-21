@@ -1104,9 +1104,7 @@ public static partial class FundStructureEndpoints
             {
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
-        })
-        .DeclareNonMutating("Renders a report template and returns the result; ReportingWorkflowService.Render resolves the template, evaluates the grids through ReportWriterGridEngine in memory, and returns a DTO without persisting anything. The body carries the template id, parameters, grid definitions and dataset rows, which is why it is a POST.")
-        .RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance);
+        }).DeclareNonMutating("Renders a report template and returns the result; ReportingWorkflowService.Render resolves the template, evaluates the grids through ReportWriterGridEngine in memory, and returns a DTO without persisting anything. The body carries the template id, parameters, grid definitions and dataset rows, which is why it is a POST.").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance);
 
         reportingGroup.MapPost("/packs/create", (HttpContext context) =>
             LegacyReportingRouteGone(
