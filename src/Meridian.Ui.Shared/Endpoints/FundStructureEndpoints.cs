@@ -1104,7 +1104,7 @@ public static partial class FundStructureEndpoints
             {
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
-        }).RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance);
+        }).DeclareNonMutating("Renders a report template and returns the result; ReportingWorkflowService.Render resolves the template, evaluates the grids through ReportWriterGridEngine in memory, and returns a DTO without persisting anything. The body carries the template id, parameters, grid definitions and dataset rows, which is why it is a POST.").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance);
 
         reportingGroup.MapPost("/packs/create", (HttpContext context) =>
             LegacyReportingRouteGone(
@@ -1191,7 +1191,7 @@ public static partial class FundStructureEndpoints
                 context,
                 "/portal/reporting/access-grants/{grantId}/exchange",
                 "Query-string portal tokens are retired; the opaque grant must be exchanged through a no-store POST body."))
-        .WithName("GetReportingPortalDeliveryPackage")
+        .WithName("GetReportingPortalDeliveryPackage").DeclareOpenRead("Retired route that only answers 410 Gone with a pointer to the grant-exchange replacement; it reads nothing.")
         .ProducesProblem(StatusCodes.Status410Gone);
 
         reportingGroup.MapPost("/packs/{reportId:guid}/deliveries", (HttpContext context) =>

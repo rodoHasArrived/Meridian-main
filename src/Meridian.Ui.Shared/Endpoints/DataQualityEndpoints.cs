@@ -608,7 +608,8 @@ public static class DataQualityEndpoints
     {
         var guard = CreateGuard(app);
         app.MapGet(UiApiRoutes.SlaStatus, () =>
-            guard.HandleSync(() => Json(slaMonitor.GetSnapshot())));
+            guard.HandleSync(() => Json(slaMonitor.GetSnapshot())))
+            .RequireAnyPermission(SlaReadPermissions);
 
         app.MapGet(UiApiRoutes.SlaStatusBySymbol, (string symbol) =>
             guard.HandleSync(() =>
@@ -617,7 +618,8 @@ public static class DataQualityEndpoints
                 return status != null
                     ? Json(status)
                     : Results.NotFound($"No SLA data for {symbol}");
-            }));
+            }))
+            .RequireAnyPermission(SlaReadPermissions);
 
         app.MapGet(UiApiRoutes.SlaViolations, () =>
             guard.HandleSync(() =>
@@ -633,7 +635,8 @@ public static class DataQualityEndpoints
                     totalViolations = snapshot.TotalViolations,
                     violations
                 });
-            }));
+            }))
+            .RequireAnyPermission(SlaReadPermissions);
 
         app.MapGet(UiApiRoutes.SlaHealth, () =>
             guard.HandleSync(() =>
@@ -659,7 +662,8 @@ public static class DataQualityEndpoints
                     isMarketOpen = snapshot.IsMarketOpen,
                     timestamp = snapshot.Timestamp
                 });
-            }));
+            }))
+            .RequireAnyPermission(SlaReadPermissions);
 
         app.MapGet(UiApiRoutes.SlaMetrics, () =>
             guard.HandleSync(() => Json(new
@@ -669,8 +673,20 @@ public static class DataQualityEndpoints
                 totalRecoveries = slaMonitor.TotalRecoveries,
                 isMarketOpen = slaMonitor.IsMarketOpen(),
                 timestamp = DateTimeOffset.UtcNow
-            })));
+            })))
+            .RequireAnyPermission(SlaReadPermissions);
     }
+
+    // Data-freshness SLA state: which feeds are late, by how much, and per symbol. It answers the
+    // operator watching live feeds, the one watching historical coverage, and the one watching system
+    // health -- the three permissions whose surfaces this monitor reports on. There is no SLA mutation
+    // to mirror, so the set is named here rather than borrowed from a sibling route.
+    private static readonly UserPermission[] SlaReadPermissions =
+    [
+        UserPermission.ViewMarketData,
+        UserPermission.ViewHistoricalData,
+        UserPermission.ViewDiagnostics
+    ];
 
     private static DataQualityEndpointGuard CreateGuard(WebApplication app)
         => new(app.Services

@@ -1397,7 +1397,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_WorkflowSummaryWithoutContext_ShouldPrioritizeChooseContextForTradingAndAccounting()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewTrades);
         var client = app.GetTestClient();
 
         var summary = await ReadWorkflowSummaryAsync(client, "/api/workstation/workflow-summary");
@@ -1411,7 +1411,12 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_WorkflowSummaryWithPaperCandidate_ShouldReflectStrategyToTradingHandoff()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        // Both ends of the handoff, so the caller needs both families: the summary now emits only the
+        // workspace cards the caller can read, and ViewTrades alone would omit the strategy card this
+        // test is about. Which caller sees which card is pinned by the projection tests below.
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: RolePermissions.For(UserRole.Admin));
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationReadyRun("workflow-backtest-candidate") with
         {
@@ -1438,7 +1443,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_WorkflowSummaryWithActivePaperRunAndNoBreaks_ShouldKeepTradingActiveAndAccountingReady()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewTrades);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildActivePaperRun("workflow-paper-active", withBreaks: false));
 
@@ -1462,7 +1467,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_WorkflowSummaryWithReconciliationBreaks_ShouldEscalateAccountingNextAction()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewTrades);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildActivePaperRun("workflow-paper-breaks", withBreaks: true));
 
@@ -1487,10 +1492,39 @@ public sealed partial class WorkstationEndpointsTests
             component.Detail.Contains("Reconciliation breaks require review", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Theory]
+    [InlineData(nameof(UserPermission.ViewConfig))]
+    [InlineData(nameof(UserPermission.ModifyConfig))]
+    public async Task MapWorkstationEndpoints_WorkflowSummary_ForSettingsOnlyOperator_ShouldServeTheSettingsCard(string permissionName)
+    {
+        // The projection adds the Settings card unconditionally, and the Settings-family reads --
+        // GetWorkstationExtensibilityCatalog and the tenant-template list -- admit ViewConfig or
+        // ModifyConfig. A caller holding one of those was refused the summary in the browser while the
+        // desktop lane, which reaches the service in process with no route filter, composed the same
+        // card for it. Admission has to equal what the projection serves, in both directions.
+        var permission = Enum.Parse<UserPermission>(permissionName);
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: permission);
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/workflow-summary");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
+        payload.Should().NotBeNull();
+        payload!.Workspaces.Select(static workspace => workspace.WorkspaceId)
+            .Should().Contain("settings");
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_WorkflowSummaryWithoutRuns_ShouldReturnStableNonNullContracts()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        // The full seven-card contract, so the caller must be able to read all seven: the summary now
+        // emits only the workspace cards the caller can read. A narrower caller is the subject of the
+        // projection tests below, not of this shape check.
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: RolePermissions.For(UserRole.Admin));
         var client = app.GetTestClient();
 
         var response = await client.GetAsync("/api/workstation/workflow-summary");
@@ -2602,7 +2636,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_ShouldProjectTradingReadinessWorkItemsWithNavigation()
     {
-        await using var app = await CreateAppAsync();
+        await using var app = await CreateAppAsync(currentUserPermissions: UserPermission.ViewTrades);
 
         var inbox = await app
             .GetTestClient()
@@ -2634,7 +2668,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades | UserPermission.ViewStrategies);
 
         var runId = $"run-inbox-route-resolution-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -2674,7 +2708,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_ShouldReturnDeterministicOrderingAcrossPollingRequests()
     {
-        await using var app = await CreateAppAsync();
+        await using var app = await CreateAppAsync(currentUserPermissions: UserPermission.ViewTrades | UserPermission.ViewStrategies);
         var client = app.GetTestClient();
 
         var first = await client.GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
@@ -2799,7 +2833,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        }, currentUserPermissions: UserPermission.ViewStrategies);
+        }, currentUserPermissions: UserPermission.ViewStrategies | UserPermission.ViewTrades);
 
         var olderRunId = $"run-inbox-review-packet-older-{Guid.NewGuid():N}";
         var newestRunId = $"run-inbox-review-packet-newest-{Guid.NewGuid():N}";
@@ -2851,13 +2885,308 @@ public sealed partial class WorkstationEndpointsTests
             item.Tone == OperatorWorkItemToneDto.Warning);
     }
 
+    /// <summary>
+    /// The inbox aggregates families whose own routes carry different permissions. A caller admitted
+    /// by the route's own permission must still not receive a family they are gated out of, so this
+    /// pins the run-review contribution to ViewStrategies: the same fixture that produces review-packet
+    /// blockers for a strategy-permitted caller must produce none for a trading-only one, while the
+    /// readiness items the route does grant stay present.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_WithoutStrategyPermission_ShouldOmitReviewPacketBlockers()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        }, currentUserPermissions: UserPermission.ViewTrades);
+
+        var newestRunId = $"run-inbox-review-gate-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun(newestRunId) with
+        {
+            StartedAt = new DateTimeOffset(2026, 3, 21, 18, 0, 0, TimeSpan.Zero),
+            EndedAt = new DateTimeOffset(2026, 3, 21, 18, 30, 0, TimeSpan.Zero)
+        });
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>(
+                "/api/workstation/operator/inbox",
+                ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        // The run-scoped work-item id is the discriminator, not the kind: trading readiness emits
+        // PromotionReview items of its own, so asserting on kind alone would fail even with the
+        // contribution correctly withheld.
+        inbox!.Items.Should().NotContain(
+            item => item.WorkItemId == $"promotion-review-{newestRunId.ToLowerInvariant()}",
+            "run-review packets restate strategy-run detail and require ViewStrategies");
+        inbox.Items.Should().NotContain(
+            item => item.RunId == newestRunId && item.TargetRoute != null && item.TargetRoute.Contains("review-packet"),
+            "no run-review contribution may reach a caller without the strategy permission");
+        inbox.Items.Should().Contain(
+            item => item.WorkItemId == "paper-session-missing",
+            "the trading-readiness items the route's own permission grants must still be present");
+    }
+
+    /// <summary>
+    /// The ledger and portfolio explorers project strategy-run detail that the run-ledger routes
+    /// already serve under ViewStrategies, so a strategy reader must reach them or the drill-in links
+    /// between the two break. The other two explorers have no such second door, so the same caller is
+    /// refused those rather than admitted to all four by the widened route declaration.
+    /// </summary>
+    [Theory]
+    [InlineData("ledger", true)]
+    [InlineData("portfolio", true)]
+    [InlineData("security-instrument", true)]
+    [InlineData("report-line-provenance", false)]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorer_AdmitsStrategyReadersToRunBackedExplorersOnly(
+        string explorerId,
+        bool runBacked)
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IFinancialRecordExplorerSavedViewStore>(_ =>
+                new FileFinancialRecordExplorerSavedViewStore(
+                    Path.Combine(Path.GetTempPath(), "meridian-tests", "explorer-views", Guid.NewGuid().ToString("N")),
+                    Microsoft.Extensions.Logging.Abstractions.NullLogger<FileFinancialRecordExplorerSavedViewStore>.Instance));
+            services.AddSingleton(sp => new FinancialRecordExplorerReadService(
+                sp.GetRequiredService<IFinancialRecordExplorerSavedViewStore>(),
+                sp.GetService<StrategyRunReadService>()));
+        }, currentUserPermissions: UserPermission.ViewStrategies);
+
+        var response = await app
+            .GetTestClient()
+            .GetAsync($"/api/workstation/financial-record-explorers/{explorerId}");
+
+        // Asserted on the authorization outcome rather than a success status: this fixture does not
+        // register every service the explorers read, so an admitted request can still fail inside the
+        // handler. What matters here is which side of the gate the caller lands on.
+        if (runBacked)
+        {
+            response.StatusCode.Should().NotBe(
+                HttpStatusCode.Forbidden,
+                "the run-ledger routes already serve this data under ViewStrategies");
+        }
+        else
+        {
+            response.StatusCode.Should().Be(
+                HttpStatusCode.Forbidden,
+                "report-line provenance is built from the report-pack workflow, so it answers to the "
+                + "reporting permissions rather than to a strategy permission");
+        }
+    }
+
+    /// <summary>
+    /// The inbox aggregates four families, so gating the route on one family's permission shuts the
+    /// other three out of items they may read. Analysis, ReportingAnalyst and ReadOnly all hold
+    /// ViewStrategies without ViewTrades; before the route admitted the union they received 403 and
+    /// lost their run-review notifications entirely, in both workstation clients.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_WithStrategyPermissionOnly_ShouldContributeReviewPacketsWithoutTradingReadiness()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        }, currentUserPermissions: UserPermission.ViewStrategies);
+
+        var newestRunId = $"run-inbox-strategy-only-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun(newestRunId) with
+        {
+            StartedAt = new DateTimeOffset(2026, 3, 21, 20, 0, 0, TimeSpan.Zero),
+            EndedAt = new DateTimeOffset(2026, 3, 21, 20, 30, 0, TimeSpan.Zero)
+        });
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/operator/inbox");
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.OK,
+            "a caller holding a permission for one of the inbox's families must reach the route");
+
+        var inbox = await response.Content.ReadFromJsonAsync<OperatorInboxDto>(ServerJsonOptions);
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(
+            item => item.WorkItemId == $"promotion-review-{newestRunId.ToLowerInvariant()}",
+            "run-review packets are exactly what the strategy permission grants");
+        // Trading readiness is a contribution like any other now, not a floor the route guarantees.
+        inbox.Items.Should().NotContain(
+            item => item.WorkItemId == "paper-session-missing",
+            "trading readiness requires ViewTrades, which this caller does not hold");
+        // The work-item id is the discriminator, not the kind: run-review continuity items carry the
+        // ReconciliationBreak kind and point at the break-queue route while originating from the
+        // strategy contribution this caller is entitled to. Only the canonical
+        // "reconciliation-break-" ids come from the break-queue repository.
+        inbox.Items.Should().NotContain(
+            item => item.WorkItemId.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase),
+            "ViewStrategies is in none of the reconciliation read permissions");
+    }
+
+    /// <summary>
+    /// The workflow summary composes one card per canonical workspace, so its route admits the union
+    /// of the per-workspace read permissions -- otherwise a reporting or strategy reader loses the
+    /// whole shell strip. Admission is not authorization: the strategy card carries candidate names,
+    /// promotion state and promotion reasons, and FundAccountant reaches the route through ViewTrades
+    /// while holding no strategy permission at all.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummary_WithoutStrategyPermission_ShouldOmitTheStrategyWorkspace()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterRunReadServices,
+            currentUserPermissions: RolePermissions.For(UserRole.FundAccountant),
+            currentUserRole: UserRole.FundAccountant);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun($"run-workflow-scope-{Guid.NewGuid():N}"));
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/workflow-summary?hasOperatingContext=true");
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.OK,
+            "FundAccountant holds ViewTrades, which this route declares");
+
+        var summary = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
+        summary.Should().NotBeNull();
+
+        var workspaceIds = summary!.Workspaces.Select(static workspace => workspace.WorkspaceId).ToArray();
+        workspaceIds.Should().NotContain(
+            "strategy",
+            "the strategy card is built from the backtest queue, which ViewStrategies governs");
+        workspaceIds.Should().NotContain(
+            "data",
+            "the data card reports provider connectivity and backfill failures, which the provider-metrics permissions govern");
+        workspaceIds.Should().Contain(
+            "trading",
+            "ViewTrades is what admitted this caller and is exactly the trading card's own permission");
+        workspaceIds.Should().Contain(
+            "accounting",
+            "FundAccountant holds the direct-lending permissions the accounting card is drawn from");
+        // Portfolio, Reporting and Settings vary only on whether a context is selected -- they carry
+        // no record content, so there is nothing in them to withhold from an admitted caller.
+        workspaceIds.Should().Contain(new[] { "portfolio", "reporting", "settings" });
+    }
+
+    /// <summary>
+    /// The other direction of the same projection: a strategy reader keeps the card its permission
+    /// names and loses the trading and accounting cards, so the gate is a projection rather than a
+    /// second admission test that happens to pass for one role.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummary_WithStrategyPermissionOnly_ShouldOmitTradingAndAccounting()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterRunReadServices,
+            currentUserPermissions: UserPermission.ViewStrategies);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun($"run-workflow-strategy-{Guid.NewGuid():N}"));
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/workflow-summary?hasOperatingContext=true");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var summary = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
+        summary.Should().NotBeNull();
+
+        var workspaceIds = summary!.Workspaces.Select(static workspace => workspace.WorkspaceId).ToArray();
+        workspaceIds.Should().Contain("strategy");
+        workspaceIds.Should().NotContain(
+            "trading",
+            "the trading card reports governed run posture, which ViewTrades governs");
+        workspaceIds.Should().NotContain(
+            "accounting",
+            "ViewStrategies is in none of the reconciliation read permissions the accounting card draws on");
+    }
+
+    /// <summary>
+    /// The route's admission set has to be the union of the projection's family sets in both
+    /// directions. Under-admitting is the failure this pins: the Data card is granted to the same
+    /// permissions the Data workspace itself admits, so a 403 at the gate would withhold the only
+    /// card such a caller can read. ViewHistoricalData is the case that names it -- the built-in
+    /// ReadOnly role holds it, and holds no other permission in any family.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummary_WithDataWorkspacePermissionOnly_ShouldReturnTheDataWorkspace()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterRunReadServices,
+            currentUserPermissions: UserPermission.ViewHistoricalData);
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/workflow-summary?hasOperatingContext=true");
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.OK,
+            "the projection grants this caller the data card, so the gate must admit it");
+
+        var summary = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
+        summary.Should().NotBeNull();
+
+        var workspaceIds = summary!.Workspaces.Select(static workspace => workspace.WorkspaceId).ToArray();
+        workspaceIds.Should().Contain("data");
+        workspaceIds.Should().NotContain(new[] { "trading", "accounting", "strategy" });
+    }
+
+    /// <summary>
+    /// The shell bootstraps from /api/workstation/session unconditionally, so the route must stay
+    /// reachable for every authenticated operator -- FundAccountant, Controller and Compliance hold
+    /// no strategy permission, and a 403 here fails their whole bootstrap. The strategy-run digest
+    /// the payload embeds is still withheld from them.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_Session_WithoutStrategyPermission_ShouldReturnShellPayloadWithoutRunDigest()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterRunReadServices,
+            currentUserPermissions: RolePermissions.For(UserRole.FundAccountant),
+            currentUserRole: UserRole.FundAccountant);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun($"run-session-gate-{Guid.NewGuid():N}"));
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/session");
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "the shell bootstrap must not 403 for a non-strategy operator");
+
+        var session = await response.Content.ReadFromJsonAsync<WorkstationSessionPayload>(ServerJsonOptions);
+        session.Should().NotBeNull();
+        session!.LatestRun.Should().BeNull("the run digest belongs to the strategy permission");
+        session.WorkspaceSummary.TotalRuns.Should().Be(0, "run counts are part of the withheld digest");
+        session.DisplayName.Should().Be("Meridian Operator", "the display name is built from the latest run's strategy name");
+        session.Role.Should().Be(
+            nameof(UserRole.FundAccountant),
+            "the masthead and Settings role catalog must reflect the authenticated principal, not the latest strategy run");
+        session.Environment.Should().Be(
+            "research",
+            "environment posture is the real run mode, not the redacted default -- the masthead drives its "
+            + "live-money warning from this field, and the withheld payload would have reported \"paper\"");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_Session_WithoutRunService_ShouldUseAuthenticatedRole()
+    {
+        await using var app = await CreateAppAsync(
+            currentUserPermissions: RolePermissions.For(UserRole.Controller),
+            currentUserRole: UserRole.Controller);
+
+        var response = await app.GetTestClient().GetAsync(UiApiRoutes.WorkstationSession);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var session = await response.Content.ReadFromJsonAsync<WorkstationSessionPayload>(ServerJsonOptions);
+        session.Should().NotBeNull();
+        session!.Role.Should().Be(
+            nameof(UserRole.Controller),
+            "service availability must not replace authenticated identity with a strategy-derived label");
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeReviewPacketBlockersFromRecentRuns()
     {
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades | UserPermission.ViewStrategies);
 
         var olderRunId = $"run-inbox-review-packet-older-{Guid.NewGuid():N}";
         var newestRunId = $"run-inbox-review-packet-newest-{Guid.NewGuid():N}";
@@ -2924,7 +3253,7 @@ public sealed partial class WorkstationEndpointsTests
             await using var app = await CreateAppAsync(services =>
             {
                 services.AddSingleton(brokerageSync);
-            });
+            }, currentUserPermissions: UserPermission.ViewTrades);
 
             var inbox = await app
                 .GetTestClient()
@@ -2966,7 +3295,7 @@ public sealed partial class WorkstationEndpointsTests
             await brokerageSync.RunSyncAsync(ibkrAccountId, new WorkstationBrokerageSyncRunRequestDto("ibkr", "DU-7788", "ops-review"));
             await brokerageSync.RunSyncAsync(robinhoodAccountId, new WorkstationBrokerageSyncRunRequestDto("robinhood", "RH-404", "ops-review"));
 
-            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync), currentUserPermissions: UserPermission.ViewTrades);
             var client = app.GetTestClient();
 
             foreach (var accountId in new[] { ibkrAccountId, robinhoodAccountId })
@@ -3098,7 +3427,7 @@ public sealed partial class WorkstationEndpointsTests
             await brokerageSync.RunSyncAsync(accountA, new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-404", "ops-review"));
             await brokerageSync.RunSyncAsync(accountB, new WorkstationBrokerageSyncRunRequestDto("ibkr", "DU-7788", "ops-review"));
 
-            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync), currentUserPermissions: UserPermission.ViewTrades);
             var client = app.GetTestClient();
 
             var accountAInbox = await client.GetFromJsonAsync<OperatorInboxDto>(
@@ -3146,7 +3475,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades | UserPermission.ModifySecurityMaster);
 
         var runId = $"run-inbox-break-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -3189,7 +3518,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades | UserPermission.ModifySecurityMaster);
 
         var runId = $"run-inbox-review-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -3234,7 +3563,7 @@ public sealed partial class WorkstationEndpointsTests
                 new FileReconciliationBreakQueueRepository(
                     Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
                     NullLogger<FileReconciliationBreakQueueRepository>.Instance));
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades);
 
         var inbox = await app
             .GetTestClient()
@@ -3267,7 +3596,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades);
 
         var runId = $"run-inbox-break-only-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -3305,7 +3634,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades | UserPermission.ViewStrategies);
 
         var runId = $"run-inbox-mixed-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -3338,7 +3667,7 @@ public sealed partial class WorkstationEndpointsTests
                 new FileReconciliationBreakQueueRepository(
                     Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
                     NullLogger<FileReconciliationBreakQueueRepository>.Instance));
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades);
 
         var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
 
@@ -3353,11 +3682,14 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_WhenBreakQueueUnavailable_ShouldReturnTradingReadinessWithWarning()
     {
+        // Two families in one assertion set: trading readiness needs ViewTrades, and the break-queue
+        // unavailability warning is only contributed to a caller the break-queue reads admit -- which
+        // ViewTrades alone is not, since it cannot act on reconciliation casework.
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton<IReconciliationBreakQueueRepository>(
                 new ThrowingReconciliationBreakQueueRepository());
-        });
+        }, currentUserPermissions: UserPermission.ViewTrades | UserPermission.ViewDirectLending);
 
         var inbox = await app
             .GetTestClient()
@@ -3660,6 +3992,14 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_WithGovernanceServices_ShouldExposeGovernanceWorkspacePayload()
     {
+        // ViewReporting alongside the default so the reporting assertions below stay about deployment
+        // readiness. The workspace withholds the reporting projection from a caller the reporting
+        // routes would refuse, and a withheld projection would satisfy "profileCount is 0" for the
+        // wrong reason -- authorization rather than an unavailable deployment.
+        //
+        // ViewStrategies for the same reason: the run cards and the cash-flow balances mirror the run
+        // routes, which admit only the strategy permissions, and this test is about what the payload
+        // reports for runs that exist rather than about who may see them.
         await using var app = await CreateAppAsync(services =>
         {
             var lookup = new StubSecurityReferenceLookup();
@@ -3679,7 +4019,8 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        });
+        },
+        currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting | UserPermission.ViewStrategies);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationReadyRun("run-governance-balanced"));
@@ -4302,11 +4643,17 @@ public sealed partial class WorkstationEndpointsTests
         tenancy.ResolveAsync("fund-unbound", Arg.Any<CancellationToken>())
             .Returns((FundProfileOwnership?)null);
 
-        await using var app = await CreateAppAsync(services =>
-        {
-            RegisterRunReadServices(services);
-            services.AddSingleton(tenancy);
-        });
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterRunReadServices(services);
+                services.AddSingleton(tenancy);
+            },
+            // The run cards mirror the run routes, which admit only the strategy permissions. This
+            // test is about which tenant's runs are projected, so the caller is given the authority
+            // to see run cards at all -- withholding them would satisfy the assertions below for the
+            // wrong reason. ModifySecurityMaster is what opens the workspace.
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewStrategies);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildRun(
@@ -4791,7 +5138,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        }, currentUserPermissions: UserPermission.ViewStrategies);
+        }, currentUserPermissions: UserPermission.ViewStrategies | UserPermission.ViewTrades);
 
         var runId = $"run-cross-surface-continuity-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -6699,7 +7046,7 @@ public sealed partial class WorkstationEndpointsTests
                     new DefaultReportingTemplateCatalog(),
                     runStore));
             },
-            currentUserPermissions: UserPermission.ViewReporting);
+            currentUserPermissions: UserPermission.ViewReporting | UserPermission.ViewTrades);
         var client = app.GetTestClient();
 
         using var reportingResponse = await client.GetAsync("/api/workstation/reporting");

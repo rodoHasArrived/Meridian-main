@@ -13,6 +13,7 @@ public static class InitialAccountBootstrapEndpoints
             bootstrap.IsAvailable
                 ? Results.Content(AccountPage, "text/html; charset=utf-8")
                 : Results.Redirect("/login"))
+            .DeclareOpenRead("Initial-account bootstrap page for a deployment with no accounts yet; redirects to /login once one exists, and is gated by its own loopback and one-use token checks rather than by a permission nobody could hold.")
             .ExcludeFromDescription();
 
         app.MapPost("/api/auth/bootstrap", async (HttpContext context, BootstrapAccountRequest request, InitialAccountBootstrapService bootstrap, CancellationToken ct) =>

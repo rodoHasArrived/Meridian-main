@@ -6958,6 +6958,8 @@ Meridian-main
 │   │   │   ├── SymbolMappingEndpoints.cs
 │   │   │   ├── UiEndpoints.cs
 │   │   │   ├── WorkstationEndpoints.AccountingCashFlow.cs
+│   │   │   ├── WorkstationEndpoints.AccountingWorkspace.cs
+│   │   │   ├── WorkstationEndpoints.Collateral.cs
 │   │   │   ├── WorkstationEndpoints.CollateralExposure.cs
 │   │   │   ├── WorkstationEndpoints.cs
 │   │   │   ├── WorkstationEndpoints.DataOperationsAssurance.cs
@@ -7059,6 +7061,7 @@ Meridian-main
 │   │   │   ├── AccountingProductionCertificationProfileStore.cs
 │   │   │   ├── AccountingProductionReadinessService.cs
 │   │   │   ├── AccountingTenantAdministrationProfileStore.cs
+│   │   │   ├── AccountingWorkspaceReadScope.cs
 │   │   │   ├── AggregatePortfolioExposureProvider.cs
 │   │   │   ├── AlpacaBrokerageConnectionService.cs
 │   │   │   ├── AuditTrailExplorerService.cs
@@ -7093,8 +7096,10 @@ Meridian-main
 │   │   │   ├── FamilyOfficeReadService.cs
 │   │   │   ├── FeatureCapabilitySettingsService.cs
 │   │   │   ├── FileFundProfileTenancyRegistry.cs
+│   │   │   ├── FinancialRecordExplorerReadScope.cs
 │   │   │   ├── FinancialRecordExplorerReadService.cs
 │   │   │   ├── FinancialRecordExplorerReadService.InstrumentJournalProof.cs
+│   │   │   ├── FinancialRecordExplorerReadService.SecurityRows.cs
 │   │   │   ├── FinancialRecordExplorerSavedViewStore.cs
 │   │   │   ├── FirstRunExperienceService.cs
 │   │   │   ├── FundAccountCloseReadinessService.cs
@@ -7176,6 +7181,7 @@ Meridian-main
 │   │   │   ├── ReportingSecureDistributionServiceCollectionExtensions.cs
 │   │   │   ├── ReportingStarterKitService.cs
 │   │   │   ├── ReportingStateCorruptionException.cs
+│   │   │   ├── ReportingWorkflowService.AccessibleRecords.cs
 │   │   │   ├── ReportingWorkflowService.cs
 │   │   │   ├── ReportPackDeliveryService.cs
 │   │   │   ├── ReportPackDeliveryService.Evidence.cs
@@ -7211,6 +7217,7 @@ Meridian-main
 │   │   │   ├── TradingOperatorReadinessService.cs
 │   │   │   ├── TradingOperatorReadinessService.Strategy.cs
 │   │   │   ├── WorkstationServiceCollectionExtensions.cs
+│   │   │   ├── WorkstationWorkflowReadScope.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
 │   │   ├── Streaming
 │   │   │   ├── IQuoteStreamBroadcaster.cs
@@ -7475,6 +7482,7 @@ Meridian-main
 │   │   │   ├── DesktopConfigurationRecoveryService.cs
 │   │   │   ├── DesktopLaunchArguments.cs
 │   │   │   ├── DesktopLaunchTicketClient.cs
+│   │   │   ├── DesktopWorkflowReadScopeResolver.cs
 │   │   │   ├── DropImportService.cs
 │   │   │   ├── EvidenceWorkbenchApiClient.cs
 │   │   │   ├── ExecutionSafetyControlClient.cs
@@ -9360,6 +9368,7 @@ Meridian-main
 │   │   │   │   ├── LiveDataEndpointTests.cs
 │   │   │   │   ├── MaintenanceEndpointTests.cs
 │   │   │   │   ├── NegativePathEndpointTests.cs
+│   │   │   │   ├── NonSessionPrincipalAuthorizationTests.cs
 │   │   │   │   ├── OperationalProblemDetailsEndpointTests.cs
 │   │   │   │   ├── OptionsEndpointTests.cs
 │   │   │   │   ├── PilotAcceptanceHarnessTests.cs
@@ -10106,6 +10115,7 @@ Meridian-main
 │   │   │   ├── DataWorkspacePresentationBuilderTests.cs
 │   │   │   ├── DesktopAuthenticationSessionTests.cs
 │   │   │   ├── DesktopConfigurationRecoveryServiceTests.cs
+│   │   │   ├── DesktopWorkflowReadScopeResolverTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs
 │   │   │   ├── FirstRunServiceTests.cs
 │   │   │   ├── FundLedgerReadServiceTests.cs

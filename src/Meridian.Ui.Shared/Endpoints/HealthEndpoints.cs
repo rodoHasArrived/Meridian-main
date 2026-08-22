@@ -48,7 +48,7 @@ public static class HealthEndpoints
             };
             return Results.Json(summary, jsonOptions);
         })
-        .WithName("GetHealthSummary")
+        .WithName("GetHealthSummary").RequirePermission(UserPermission.ViewDiagnostics)
         .WithDescription("Returns a summary of system health including provider counts, storage status, and pipeline state.")
         .Produces<HealthSummaryResponse>(200);
 
@@ -96,7 +96,7 @@ public static class HealthEndpoints
 
             return Results.Json(new { providers, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetHealthProviders")
+        .WithName("GetHealthProviders").RequirePermission(UserPermission.ViewDiagnostics)
         .WithDescription("Returns health details for all registered providers including capabilities and status.")
         .Produces(200);
 
@@ -145,7 +145,7 @@ public static class HealthEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetHealthProviderDiagnostics")
+        .WithName("GetHealthProviderDiagnostics").RequirePermission(UserPermission.ViewDiagnostics)
         .WithDescription("Returns diagnostic details for a specific provider including capabilities and configuration.")
         .Produces(200)
         .Produces(404);
@@ -181,7 +181,7 @@ public static class HealthEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetHealthStorage")
+        .WithName("GetHealthStorage").RequirePermission(UserPermission.ViewDiagnostics)
         .WithDescription("Returns storage health including root path existence, total size, and file count.")
         .Produces(200);
 
@@ -194,7 +194,7 @@ public static class HealthEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetHealthEvents")
+        .WithName("GetHealthEvents").RequirePermission(UserPermission.ViewDiagnostics)
         .WithDescription("Returns event stream health status and metrics availability.")
         .Produces(200);
 
@@ -213,7 +213,7 @@ public static class HealthEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetHealthMetrics")
+        .WithName("GetHealthMetrics").RequirePermission(UserPermission.ViewDiagnostics)
         .WithDescription("Returns health-related metrics including error statistics and tracking data.")
         .Produces(200);
 
@@ -272,7 +272,7 @@ public static class HealthEndpoints
                 message = result.Message
             }, jsonOptions);
         })
-        .WithName("GetHealthDiagnosticsBundle")
+        .WithName("GetHealthDiagnosticsBundle").RequirePermission(UserPermission.ViewDiagnostics)
         .WithDescription("Generates and returns a comprehensive diagnostics bundle for troubleshooting.")
         .Produces(200)
         .Produces(503);

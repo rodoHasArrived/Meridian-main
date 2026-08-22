@@ -19,6 +19,13 @@ public static class FundAccountEndpoints
     public static void MapFundAccountEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("/api/fund-accounts").WithTags("Fund Accounts");
+
+        // The brokerage-sync READ routes are mapped on app rather than through this group. Their own
+        // authority is CanAccessFundAccountBrokerageSyncAsync, which requires scoped ViewTrades, and the
+        // group filter admits only AdminMaintenance or ManageDirectLending -- so the two gates were
+        // nearly disjoint, the handler check was unreachable, and a ViewTrades operator who discovered
+        // an account through DiscoverBrokerageSyncAccounts was refused the detail it linked to. The
+        // brokerage mutations stay in the group and keep the management-only gate.
         group.AddEndpointFilter(RequireFundAccountAccess);
 
         // ── Account CRUD ─────────────────────────────────────────────────────
@@ -240,7 +247,7 @@ public static class FundAccountEndpoints
 
         // ── Brokerage read-side sync ──────────────────────────────────────────
 
-        group.MapGet("/brokerage-sync/accounts", async (HttpContext context) =>
+        app.MapGet("/api/fund-accounts/brokerage-sync/accounts", async (HttpContext context) =>
         {
             if (!HasBrokerageSyncAccess(context))
                 return EndpointHelpers.Forbidden();
@@ -249,12 +256,19 @@ public static class FundAccountEndpoints
             if (sync is null)
                 return BrokerageSyncUnavailable();
 
-            var accounts = await sync.DiscoverAccountsAsync(context.RequestAborted).ConfigureAwait(false);
+            var accounts = await sync.DiscoverAccountsAsync(
+                    (fundAccountIds, ct) => ResolveAccessibleBrokerageFundAccountsAsync(fundAccountIds, context, ct),
+                    includeUnlinkedAccounts: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance),
+                    ct: context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(accounts, jsonOptions);
         })
-        .WithName("DiscoverBrokerageSyncAccounts").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("DiscoverBrokerageSyncAccounts")
+        .WithTags("Fund Accounts")
+        .RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<WorkstationBrokerageAccountDto>>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope();
 
         app.MapGet("/api/portfolio/household", async (string? provider, HttpContext context) =>
         {
@@ -265,14 +279,19 @@ public static class FundAccountEndpoints
             if (sync is null)
                 return BrokerageSyncUnavailable();
 
-            var household = await sync.GetHouseholdAsync(provider, context.RequestAborted).ConfigureAwait(false);
+            var household = await sync.GetHouseholdAsync(
+                    provider,
+                    (fundAccountIds, ct) => ResolveAccessibleBrokerageFundAccountsAsync(fundAccountIds, context, ct),
+                    ct: context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(household, jsonOptions);
         })
-        .WithName("GetBrokerageHouseholdPortfolio").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("GetBrokerageHouseholdPortfolio").RequirePermission(UserPermission.ViewTrades)
         .Produces<BrokerageHouseholdPortfolioDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope();
 
-        group.MapGet("/{accountId:guid}/brokerage-sync/status", async (Guid accountId, HttpContext context) =>
+        app.MapGet("/api/fund-accounts/{accountId:guid}/brokerage-sync/status", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
                 return EndpointHelpers.Forbidden();
@@ -284,7 +303,7 @@ public static class FundAccountEndpoints
             var status = await sync.GetStatusAsync(accountId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(status, jsonOptions);
         })
-        .WithName("GetAccountBrokerageSyncStatus").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("GetAccountBrokerageSyncStatus").WithTags("Fund Accounts").RequirePermission(UserPermission.ViewTrades)
         .Produces<WorkstationBrokerageSyncStatusDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -331,7 +350,7 @@ public static class FundAccountEndpoints
         .Produces<WorkstationBrokerageSyncStatusDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
-        group.MapGet("/{accountId:guid}/brokerage-sync/positions", async (Guid accountId, HttpContext context) =>
+        app.MapGet("/api/fund-accounts/{accountId:guid}/brokerage-sync/positions", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
                 return EndpointHelpers.Forbidden();
@@ -343,11 +362,11 @@ public static class FundAccountEndpoints
             var positions = await sync.GetPositionsAsync(accountId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(positions, jsonOptions);
         })
-        .WithName("GetAccountBrokerageSyncPositions").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("GetAccountBrokerageSyncPositions").WithTags("Fund Accounts").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<FundAccountBrokeragePositionDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
-        group.MapGet("/{accountId:guid}/brokerage-sync/activity", async (Guid accountId, HttpContext context) =>
+        app.MapGet("/api/fund-accounts/{accountId:guid}/brokerage-sync/activity", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
                 return EndpointHelpers.Forbidden();
@@ -361,7 +380,7 @@ public static class FundAccountEndpoints
                 ? Results.NotFound()
                 : Results.Json(view, jsonOptions);
         })
-        .WithName("GetAccountBrokerageSyncActivity").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("GetAccountBrokerageSyncActivity").WithTags("Fund Accounts").RequirePermission(UserPermission.ViewTrades)
         .Produces<FundAccountBrokerageSyncActivityDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -411,7 +430,7 @@ public static class FundAccountEndpoints
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope();
 
-        group.MapGet("/{accountId:guid}/brokerage-sync/reconciliation/latest", async (Guid accountId, HttpContext context) =>
+        app.MapGet("/api/fund-accounts/{accountId:guid}/brokerage-sync/reconciliation/latest", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
                 return EndpointHelpers.Forbidden();
@@ -431,7 +450,7 @@ public static class FundAccountEndpoints
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
         })
-        .WithName("GetLatestProviderLedgerReconciliation").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("GetLatestProviderLedgerReconciliation").WithTags("Fund Accounts").RequirePermission(UserPermission.ViewTrades)
         .Produces<ProviderLedgerReconciliationDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -1022,6 +1041,42 @@ public static class FundAccountEndpoints
 
     private static bool HasBrokerageSyncAccess(HttpContext context)
         => EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades);
+
+    private static async Task<IReadOnlySet<Guid>> ResolveAccessibleBrokerageFundAccountsAsync(
+        IReadOnlyCollection<Guid> candidateIds,
+        HttpContext context,
+        CancellationToken ct)
+    {
+        if (candidateIds.Count == 0 || !HasBrokerageSyncAccess(context))
+        {
+            return new HashSet<Guid>();
+        }
+
+        var queryService = ResolveQueryService(context);
+        if (queryService is null)
+        {
+            return new HashSet<Guid>();
+        }
+
+        var candidateSet = candidateIds.ToHashSet();
+        var existingIds = (await queryService.ListAccountsAsync(null, null, null, ct).ConfigureAwait(false))
+            .Select(static account => account.AccountId)
+            .Where(candidateSet.Contains)
+            .Distinct()
+            .ToArray();
+        if (EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+        {
+            return existingIds.ToHashSet();
+        }
+
+        return await EndpointAuthorization.AuthorizeScopedManyAsync(
+                context,
+                UserPermission.ViewTrades,
+                AccessScopeKindDto.Account,
+                existingIds,
+                ct)
+            .ConfigureAwait(false);
+    }
 
     private static async Task<bool> CanAccessFundAccountBrokerageSyncAsync(
         Guid accountId,

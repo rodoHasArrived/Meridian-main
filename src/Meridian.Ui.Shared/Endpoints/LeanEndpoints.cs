@@ -53,7 +53,7 @@ public static class LeanEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetLeanStatus")
+        .WithName("GetLeanStatus").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
 
         // Lean config - returns actual detected configuration
@@ -80,7 +80,7 @@ public static class LeanEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetLeanConfig")
+        .WithName("GetLeanConfig").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
 
         // Verify Lean installation - performs actual filesystem checks
@@ -173,7 +173,7 @@ public static class LeanEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetLeanAlgorithms")
+        .WithName("GetLeanAlgorithms").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
 
         // Sync data to Lean format - initiates actual file copy/conversion
@@ -245,7 +245,7 @@ public static class LeanEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetLeanSyncStatus")
+        .WithName("GetLeanSyncStatus").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
 
         // Start backtest
@@ -295,7 +295,7 @@ public static class LeanEndpoints
                 startedAt = info.StartedAt
             }, jsonOptions);
         })
-        .WithName("GetLeanBacktestStatus")
+        .WithName("GetLeanBacktestStatus").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200)
         .Produces(404);
 
@@ -315,7 +315,7 @@ public static class LeanEndpoints
                     : null
             }, jsonOptions);
         })
-        .WithName("GetLeanBacktestResults")
+        .WithName("GetLeanBacktestResults").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200)
         .Produces(404);
 
@@ -373,7 +373,7 @@ public static class LeanEndpoints
 
             return Results.Json(new { backtests = deduped, total = deduped.Length, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetLeanBacktestHistory")
+        .WithName("GetLeanBacktestHistory").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
 
         // Delete backtest
@@ -418,7 +418,7 @@ public static class LeanEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetLeanAutoExportStatus")
+        .WithName("GetLeanAutoExportStatus").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
 
         // Auto-export configure — POST /api/lean/auto-export/configure
@@ -572,7 +572,7 @@ public static class LeanEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetLeanSymbolMap")
+        .WithName("GetLeanSymbolMap").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
     }
 

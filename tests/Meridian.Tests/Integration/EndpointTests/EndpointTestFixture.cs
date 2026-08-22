@@ -107,6 +107,18 @@ public sealed class EndpointTestFixture : IAsyncLifetime
     }
 
     /// <summary>
+    /// A signed-in operator holding exactly these permissions. Use this for routes that require a
+    /// validated session; <see cref="CreatePermittedClient"/> supplies a permission snapshot with no
+    /// actor, which such routes refuse by design.
+    /// </summary>
+    public HttpClient CreateSessionClient(params UserPermission[] permissions)
+    {
+        var client = CreatePermittedClient(permissions);
+        client.DefaultRequestHeaders.Add("X-Test-Auth", "session");
+        return client;
+    }
+
+    /// <summary>
     /// Creates an <see cref="HttpClient"/> backed by the in-memory TestServer that does NOT
     /// automatically follow redirects. Use this to inspect 3xx responses directly.
     /// The caller is responsible for disposing the returned client.
@@ -230,6 +242,16 @@ public sealed class EndpointTestFixture : IAsyncLifetime
                 context.Items[LoginSessionMiddleware.CurrentUserKey] = "endpoint-test";
                 context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Admin;
                 context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Admin);
+            }
+            else if (context.Request.Headers.TryGetValue("X-Test-Auth", out mode) &&
+                     StringComparer.Ordinal.Equals(mode.ToString(), "session"))
+            {
+                // Actor only: the permission set stays with X-Test-Permissions, so this models a
+                // signed-in operator holding exactly what the test declares. Deliberately separate from
+                // CreatePermittedClient, whose actor-less snapshot is itself a principal shape the
+                // codebase has a rule about -- see
+                // NonSessionPrincipalAuthorizationTests.PermissionSnapshotWithoutAnActor_*.
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = "session-operator";
             }
             else if (context.Request.Headers.TryGetValue("X-Test-Auth", out mode) &&
                      StringComparer.Ordinal.Equals(mode.ToString(), "fund-accounting"))

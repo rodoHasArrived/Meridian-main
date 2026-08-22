@@ -51,7 +51,7 @@ public static partial class LedgerEndpoints
                 .ToArray();
             return Results.Json(schedules, jsonOptions);
         })
-        .WithName("ListLedgerJournalAutomationMonthlySchedules")
+        .WithName("ListLedgerJournalAutomationMonthlySchedules").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<IReadOnlyList<AutomatedJournalScheduleWorkItem>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -258,7 +258,7 @@ public static partial class LedgerEndpoints
                 .ToArray();
             return Results.Json(schedules, jsonOptions);
         })
-        .WithName("ListLedgerJournalAutomationDailyMarkToMarketSchedules")
+        .WithName("ListLedgerJournalAutomationDailyMarkToMarketSchedules").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<IReadOnlyList<DailyValuationScheduleWorkItem>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
