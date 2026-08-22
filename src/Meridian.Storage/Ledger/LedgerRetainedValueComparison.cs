@@ -138,14 +138,26 @@ internal static class LedgerRetainedValueComparison
         if (retained is null)
             return false;
 
-        return CurrencyCodesMatch(retained.TransactionCurrency, candidate.TransactionCurrency)
-            && CurrencyCodesMatch(retained.FunctionalCurrency, candidate.FunctionalCurrency)
-            && AmountsMatch(retained.TransactionDebit, candidate.TransactionDebit)
-            && AmountsMatch(retained.TransactionCredit, candidate.TransactionCredit)
-            && AmountsMatch(retained.FxRateToFunctional, candidate.FxRateToFunctional);
+        return CurrencyDetailsMatch(retained, candidate);
     }
 
-    private static bool IsIdentityTranslation(
+    /// <summary>
+    /// Field-by-field comparison of two currency details, at stored scale. This is an equivalence
+    /// relation, unlike <see cref="CurrencyMatches"/>, which also accepts an absent detail against
+    /// a label.
+    /// </summary>
+    public static bool CurrencyDetailsMatch(LedgerEntryCurrency retained, LedgerEntryCurrency candidate)
+        => CurrencyCodesMatch(retained.TransactionCurrency, candidate.TransactionCurrency)
+           && CurrencyCodesMatch(retained.FunctionalCurrency, candidate.FunctionalCurrency)
+           && AmountsMatch(retained.TransactionDebit, candidate.TransactionDebit)
+           && AmountsMatch(retained.TransactionCredit, candidate.TransactionCredit)
+           && AmountsMatch(retained.FxRateToFunctional, candidate.FxRateToFunctional);
+
+    /// <summary>
+    /// Whether <paramref name="currency"/> only labels the functional amount it accompanies rather
+    /// than claiming a conversion — the shape that may stand in for an absent detail.
+    /// </summary>
+    public static bool IsIdentityTranslation(
         LedgerEntryCurrency currency,
         decimal functionalDebit,
         decimal functionalCredit)

@@ -580,6 +580,26 @@ public sealed class GovernedLedgerPostingTargetTests
         result.WasAppended.Should().BeFalse();
     }
 
+    // The timeout is the assertion. Journals are not bounded above, and an allocation can carry
+    // hundreds of legs equivalent to one another; pairing those by search grows far faster than
+    // the leg count, so the posting gate is only as available as this comparison is cheap. On the
+    // machine this was written on the pairing takes ~0.1s and searching for it took ~27s, so ten
+    // seconds separates the two by a wide margin without being sensitive to a slow runner.
+    [Fact(Timeout = 10_000)]
+    public async Task PostAsync_ReplayOfAJournalWithManyEquivalentLegs_PairsThemWithoutSearching()
+    {
+        // Half the legs carry the identity translation and half carry none, which is the shape
+        // that forces the pairing to be exact rather than first-come.
+        var original = WithManyEquivalentDebits(BuildWrite(), legCount: 1500);
+        var retained = new List<LedgerJournalEntryRecord> { ToStoredRecord(original) };
+        var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
+        using var target = new DurableLedgerPostingTarget(store.Object);
+
+        var result = await target.PostAsync(ReverseLines(original));
+
+        result.WasAppended.Should().BeFalse();
+    }
+
     private static Mock<ILedgerJournalStore> BuildStore(
         List<LedgerJournalEntryRecord> retained,
         Action<LedgerJournalEntryWrite> append)
@@ -915,6 +935,59 @@ public sealed class GovernedLedgerPostingTargetTests
                 entry.Timestamp,
                 entry.Description,
                 lines,
+                entry.Metadata)
+        };
+    }
+
+    /// <summary>
+    /// Splits the debit across <paramref name="legCount"/> legs identical in every compared field
+    /// except that alternating legs carry the identity translation and the rest carry no currency
+    /// detail at all.
+    /// </summary>
+    private static LedgerJournalEntryWrite WithManyEquivalentDebits(
+        LedgerJournalEntryWrite write,
+        int legCount)
+    {
+        var entry = write.Entry;
+        var debit = entry.Lines[0];
+        var share = debit.Debit / legCount;
+        var lines = new List<LedgerEntry>(legCount + 1);
+        for (var index = 0; index < legCount; index++)
+        {
+            lines.Add(new LedgerEntry(
+                Guid.Parse($"cccc0000-0000-0000-0000-{index:D12}"),
+                debit.JournalEntryId,
+                debit.Timestamp,
+                debit.Account,
+                share,
+                0m,
+                debit.Description,
+                debit.Dimensions,
+                index % 2 == 0 ? new LedgerEntryCurrency("USD", "USD", share, 0m, 1m) : null));
+        }
+
+        lines.Add(entry.Lines[1]);
+        return write with
+        {
+            Entry = new JournalEntry(
+                entry.JournalEntryId,
+                entry.Timestamp,
+                entry.Description,
+                lines,
+                entry.Metadata)
+        };
+    }
+
+    private static LedgerJournalEntryWrite ReverseLines(LedgerJournalEntryWrite write)
+    {
+        var entry = write.Entry;
+        return write with
+        {
+            Entry = new JournalEntry(
+                entry.JournalEntryId,
+                entry.Timestamp,
+                entry.Description,
+                entry.Lines.Reverse().ToArray(),
                 entry.Metadata)
         };
     }

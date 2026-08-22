@@ -132,7 +132,7 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
     }
 
     /// <summary>
-    /// Pairs every retained line with a distinct candidate line, completely rather than greedily.
+    /// Pairs every retained line with a distinct candidate line, exactly and in bounded time.
     /// <para>
     /// Line order is not durable here, so lines are compared as a multiset. Currency compatibility
     /// is deliberately one-directional — a retained identity translation is equivalent to a
@@ -143,9 +143,13 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
     /// multiset that pairs up perfectly as different accounting content.
     /// </para>
     /// <para>
-    /// Augmenting paths retire the question instead of reordering around it — a pairing is found
-    /// whenever one exists, for this asymmetry and any later one. Journals carry a handful of
-    /// legs, so the cost of being exact here is irrelevant.
+    /// Everything except currency <i>is</i> an equivalence relation, so the lines partition into
+    /// groups that can only pair within themselves, and the asymmetry is confined to one small
+    /// question inside each group. Solving it there by counting needs no search: journals are not
+    /// bounded above — <c>AccountingJournalDraftService.BuildDraftEntry</c> accepts as many lines
+    /// as a request carries — so a general matching over mutually-equivalent legs would let an
+    /// allocation-sized journal monopolise the posting gate, and a recursive one would run out of
+    /// stack before that.
     /// </para>
     /// </summary>
     private static bool JournalLinesEquivalent(
@@ -155,41 +159,125 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
         if (retained.Count != candidate.Count)
             return false;
 
-        // Which retained line currently holds each candidate line; -1 while unclaimed.
-        var claimedBy = new int[candidate.Count];
-        Array.Fill(claimedBy, -1);
-
-        for (var retainedIndex = 0; retainedIndex < retained.Count; retainedIndex++)
+        var groups = new List<LineGroup>();
+        foreach (var line in retained)
         {
-            if (!TryClaimCandidate(retainedIndex, retained, candidate, claimedBy, new bool[candidate.Count]))
+            var group = FindGroup(groups, line);
+            if (group is null)
+            {
+                group = new LineGroup(line);
+                groups.Add(group);
+            }
+
+            group.Retained.Add(line);
+        }
+
+        foreach (var line in candidate)
+        {
+            // No retained line this candidate could pair with. Counts are equal, so some retained
+            // line is unpairable too.
+            if (FindGroup(groups, line) is not { } group)
+                return false;
+
+            group.Candidates.Add(line);
+        }
+
+        foreach (var group in groups)
+        {
+            if (!GroupPairsUp(group))
                 return false;
         }
 
         return true;
     }
 
-    /// <summary>
-    /// Claims a candidate line for <paramref name="retainedIndex"/>, displacing an earlier claim
-    /// when that line can be re-housed elsewhere. <paramref name="visited"/> keeps one search from
-    /// revisiting a candidate and looping.
-    /// </summary>
-    private static bool TryClaimCandidate(
-        int retainedIndex,
-        IReadOnlyList<LedgerEntry> retained,
-        IReadOnlyList<LedgerEntry> candidate,
-        int[] claimedBy,
-        bool[] visited)
+    private static LineGroup? FindGroup(List<LineGroup> groups, LedgerEntry line)
     {
-        for (var index = 0; index < candidate.Count; index++)
+        foreach (var group in groups)
         {
-            if (visited[index] || !LinesEquivalent(retained[retainedIndex], candidate[index]))
+            if (LinesEquivalentApartFromCurrency(group.Representative, line))
+                return group;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Resolves one group's currency question by counting rather than searching.
+    /// <para>
+    /// Within a group every line agrees on its functional amounts, so a detail is either a label
+    /// for those amounts or a claim about a different denomination. Retained blind lines are the
+    /// most constrained — only a blind candidate will do — so they are served first; a detailed
+    /// retained line takes a candidate carrying the same detail, and only a label may fall back to
+    /// a blind candidate none of the above needed.
+    /// </para>
+    /// </summary>
+    private static bool GroupPairsUp(LineGroup group)
+    {
+        if (group.Retained.Count != group.Candidates.Count)
+            return false;
+
+        var spareBlind = 0;
+        var candidateDetails = new List<(LedgerEntryCurrency Detail, int Remaining)>();
+        foreach (var line in group.Candidates)
+        {
+            if (line.Currency is null)
+            {
+                spareBlind++;
+                continue;
+            }
+
+            AddDetail(candidateDetails, line.Currency);
+        }
+
+        var blindRetained = group.Retained.Count(line => line.Currency is null);
+        if (blindRetained > spareBlind)
+            return false;
+
+        spareBlind -= blindRetained;
+
+        foreach (var line in group.Retained)
+        {
+            if (line.Currency is null || TryTakeDetail(candidateDetails, line.Currency))
                 continue;
 
-            visited[index] = true;
-            if (claimedBy[index] < 0
-                || TryClaimCandidate(claimedBy[index], retained, candidate, claimedBy, visited))
+            if (spareBlind == 0
+                || !IsIdentityTranslation(line.Currency, group.Representative.Debit, group.Representative.Credit))
             {
-                claimedBy[index] = retainedIndex;
+                return false;
+            }
+
+            spareBlind--;
+        }
+
+        return true;
+    }
+
+    private static void AddDetail(
+        List<(LedgerEntryCurrency Detail, int Remaining)> details,
+        LedgerEntryCurrency detail)
+    {
+        for (var index = 0; index < details.Count; index++)
+        {
+            if (CurrencyDetailsMatch(details[index].Detail, detail))
+            {
+                details[index] = (details[index].Detail, details[index].Remaining + 1);
+                return;
+            }
+        }
+
+        details.Add((detail, 1));
+    }
+
+    private static bool TryTakeDetail(
+        List<(LedgerEntryCurrency Detail, int Remaining)> details,
+        LedgerEntryCurrency detail)
+    {
+        for (var index = 0; index < details.Count; index++)
+        {
+            if (details[index].Remaining > 0 && CurrencyDetailsMatch(details[index].Detail, detail))
+            {
+                details[index] = (details[index].Detail, details[index].Remaining - 1);
                 return true;
             }
         }
@@ -197,7 +285,23 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
         return false;
     }
 
-    private static bool LinesEquivalent(LedgerEntry retained, LedgerEntry candidate)
+    /// <summary>Lines that agree on everything except transaction-currency detail.</summary>
+    private sealed class LineGroup(LedgerEntry representative)
+    {
+        public LedgerEntry Representative { get; } = representative;
+
+        public List<LedgerEntry> Retained { get; } = [];
+
+        public List<LedgerEntry> Candidates { get; } = [];
+    }
+
+    /// <summary>
+    /// Everything a line comparison looks at except transaction-currency detail. Each part is
+    /// symmetric and transitive, so this is an equivalence relation and lines partition by it —
+    /// which is what lets the currency question be settled group by group rather than by searching
+    /// the whole pairing.
+    /// </summary>
+    private static bool LinesEquivalentApartFromCurrency(LedgerEntry retained, LedgerEntry candidate)
         => TimestampsMatch(retained.Timestamp, candidate.Timestamp)
            && retained.Account.AccountType == candidate.Account.AccountType
            && string.Equals(retained.Account.Name, candidate.Account.Name, StringComparison.Ordinal)
@@ -209,12 +313,7 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
            && AmountsMatch(retained.Debit, candidate.Debit)
            && AmountsMatch(retained.Credit, candidate.Credit)
            && string.Equals(retained.Description, candidate.Description, StringComparison.Ordinal)
-           && DimensionsEquivalent(retained.Dimensions, candidate.Dimensions)
-           // Durable per leg, and previously left out of this comparison entirely. Debit and
-           // credit are the functional amounts, so two legs can agree on every one of them while
-           // booking a different transaction currency, amount, or FX rate. The amounts are known
-           // equal by the time this runs, so either side's serve as the functional pair.
-           && CurrencyMatches(retained.Currency, candidate.Currency, retained.Debit, retained.Credit);
+           && DimensionsEquivalent(retained.Dimensions, candidate.Dimensions);
 
     private static LedgerJournalEntryWrite NormalizeWrite(LedgerJournalEntryWrite write)
     {
