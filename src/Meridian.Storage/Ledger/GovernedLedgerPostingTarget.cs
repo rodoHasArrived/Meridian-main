@@ -1,6 +1,7 @@
 using Meridian.Ledger;
 using Npgsql;
 using static Meridian.Contracts.Text.TextPrimitives;
+using static Meridian.Storage.Ledger.LedgerRetainedValueComparison;
 
 namespace Meridian.Storage.Ledger;
 
@@ -118,7 +119,7 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
             && existing.SourceJournalEntryId == requested.SourceJournalEntryId
             && existing.PostingKind == requested.PostingKind
             && existing.AdjustmentApproval == requested.AdjustmentApproval
-            && retained.Timestamp == candidate.Timestamp
+            && TimestampsMatch(retained.Timestamp, candidate.Timestamp)
             && string.Equals(retained.Description, candidate.Description, StringComparison.Ordinal)
             && MetadataEquivalent(retained.Metadata, candidate.Metadata)
             && JournalLinesEquivalent(retained.Lines, candidate.Lines);
@@ -130,6 +131,27 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
         }
     }
 
+    /// <summary>
+    /// Pairs every retained line with a distinct candidate line, exactly and in bounded time.
+    /// <para>
+    /// Line order is not durable here, so lines are compared as a multiset. Currency compatibility
+    /// is deliberately one-directional — a retained identity translation is equivalent to a
+    /// candidate that declares nothing, but not the reverse — which makes line equivalence a
+    /// non-symmetric relation. Taking the first available match over a non-symmetric relation is
+    /// order-dependent: it can spend a blind candidate on a retained line that carries detail,
+    /// then strand a retained blind line against the detailed candidate left over, and report a
+    /// multiset that pairs up perfectly as different accounting content.
+    /// </para>
+    /// <para>
+    /// Everything except currency <i>is</i> an equivalence relation, so the lines partition into
+    /// groups that can only pair within themselves, and the asymmetry is confined to one small
+    /// question inside each group. Solving it there by counting needs no search: journals are not
+    /// bounded above — <c>AccountingJournalDraftService.BuildDraftEntry</c> accepts as many lines
+    /// as a request carries — so a general matching over mutually-equivalent legs would let an
+    /// allocation-sized journal monopolise the posting gate, and a recursive one would run out of
+    /// stack before that.
+    /// </para>
+    /// </summary>
     private static bool JournalLinesEquivalent(
         IReadOnlyList<LedgerEntry> retained,
         IReadOnlyList<LedgerEntry> candidate)
@@ -137,30 +159,150 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
         if (retained.Count != candidate.Count)
             return false;
 
-        var matched = new bool[candidate.Count];
-        foreach (var retainedLine in retained)
+        var groups = new List<LineGroup>();
+        foreach (var line in retained)
         {
-            var matchIndex = -1;
-            for (var index = 0; index < candidate.Count; index++)
+            var group = FindGroup(groups, line);
+            if (group is null)
             {
-                if (!matched[index] && LinesEquivalent(retainedLine, candidate[index]))
-                {
-                    matchIndex = index;
-                    break;
-                }
+                group = new LineGroup(line);
+                groups.Add(group);
             }
 
-            if (matchIndex < 0)
+            group.Retained.Add(line);
+        }
+
+        foreach (var line in candidate)
+        {
+            // No retained line this candidate could pair with. Counts are equal, so some retained
+            // line is unpairable too.
+            if (FindGroup(groups, line) is not { } group)
                 return false;
 
-            matched[matchIndex] = true;
+            group.Candidates.Add(line);
+        }
+
+        foreach (var group in groups)
+        {
+            if (!GroupPairsUp(group))
+                return false;
         }
 
         return true;
     }
 
-    private static bool LinesEquivalent(LedgerEntry retained, LedgerEntry candidate)
-        => retained.Timestamp == candidate.Timestamp
+    private static LineGroup? FindGroup(List<LineGroup> groups, LedgerEntry line)
+    {
+        foreach (var group in groups)
+        {
+            if (LinesEquivalentApartFromCurrency(group.Representative, line))
+                return group;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Resolves one group's currency question by counting rather than searching.
+    /// <para>
+    /// Within a group every line agrees on its functional amounts, so a detail is either a label
+    /// for those amounts or a claim about a different denomination. Retained blind lines are the
+    /// most constrained — only a blind candidate will do — so they are served first; a detailed
+    /// retained line takes a candidate carrying the same detail, and only a label may fall back to
+    /// a blind candidate none of the above needed.
+    /// </para>
+    /// </summary>
+    private static bool GroupPairsUp(LineGroup group)
+    {
+        if (group.Retained.Count != group.Candidates.Count)
+            return false;
+
+        var spareBlind = 0;
+        var candidateDetails = new List<(LedgerEntryCurrency Detail, int Remaining)>();
+        foreach (var line in group.Candidates)
+        {
+            if (line.Currency is null)
+            {
+                spareBlind++;
+                continue;
+            }
+
+            AddDetail(candidateDetails, line.Currency);
+        }
+
+        var blindRetained = group.Retained.Count(line => line.Currency is null);
+        if (blindRetained > spareBlind)
+            return false;
+
+        spareBlind -= blindRetained;
+
+        foreach (var line in group.Retained)
+        {
+            if (line.Currency is null || TryTakeDetail(candidateDetails, line.Currency))
+                continue;
+
+            if (spareBlind == 0
+                || !IsIdentityTranslation(line.Currency, group.Representative.Debit, group.Representative.Credit))
+            {
+                return false;
+            }
+
+            spareBlind--;
+        }
+
+        return true;
+    }
+
+    private static void AddDetail(
+        List<(LedgerEntryCurrency Detail, int Remaining)> details,
+        LedgerEntryCurrency detail)
+    {
+        for (var index = 0; index < details.Count; index++)
+        {
+            if (CurrencyDetailsMatch(details[index].Detail, detail))
+            {
+                details[index] = (details[index].Detail, details[index].Remaining + 1);
+                return;
+            }
+        }
+
+        details.Add((detail, 1));
+    }
+
+    private static bool TryTakeDetail(
+        List<(LedgerEntryCurrency Detail, int Remaining)> details,
+        LedgerEntryCurrency detail)
+    {
+        for (var index = 0; index < details.Count; index++)
+        {
+            if (details[index].Remaining > 0 && CurrencyDetailsMatch(details[index].Detail, detail))
+            {
+                details[index] = (details[index].Detail, details[index].Remaining - 1);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Lines that agree on everything except transaction-currency detail.</summary>
+    private sealed class LineGroup(LedgerEntry representative)
+    {
+        public LedgerEntry Representative { get; } = representative;
+
+        public List<LedgerEntry> Retained { get; } = [];
+
+        public List<LedgerEntry> Candidates { get; } = [];
+    }
+
+    /// <summary>
+    /// Everything a line comparison looks at except transaction-currency detail. Each part is
+    /// symmetric and transitive, so this is an equivalence relation and lines partition by it —
+    /// which is what lets the currency question be settled group by group rather than by searching
+    /// the whole pairing.
+    /// </summary>
+    private static bool LinesEquivalentApartFromCurrency(LedgerEntry retained, LedgerEntry candidate)
+        => TimestampsMatch(retained.Timestamp, candidate.Timestamp)
            && retained.Account.AccountType == candidate.Account.AccountType
            && string.Equals(retained.Account.Name, candidate.Account.Name, StringComparison.Ordinal)
            && string.Equals(retained.Account.Symbol, candidate.Account.Symbol, StringComparison.OrdinalIgnoreCase)
@@ -168,8 +310,8 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
                retained.Account.FinancialAccountId,
                candidate.Account.FinancialAccountId,
                StringComparison.OrdinalIgnoreCase)
-           && retained.Debit == candidate.Debit
-           && retained.Credit == candidate.Credit
+           && AmountsMatch(retained.Debit, candidate.Debit)
+           && AmountsMatch(retained.Credit, candidate.Credit)
            && string.Equals(retained.Description, candidate.Description, StringComparison.Ordinal)
            && DimensionsEquivalent(retained.Dimensions, candidate.Dimensions);
 
@@ -334,25 +476,9 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
             && TextEquals(retained.CustomerId, candidate.CustomerId)
             && TextEquals(retained.VendorId, candidate.VendorId)
             && TextEquals(retained.ProjectId, candidate.ProjectId)
-            && StringDictionaryEquivalent(retained.ExternalGlDimensions, candidate.ExternalGlDimensions);
-    }
-
-    private static bool StringDictionaryEquivalent(
-        IReadOnlyDictionary<string, string> retained,
-        IReadOnlyDictionary<string, string> candidate)
-    {
-        if (retained.Count != candidate.Count)
-            return false;
-
-        foreach (var (key, retainedValue) in retained)
-        {
-            var candidatePair = candidate.FirstOrDefault(pair =>
-                string.Equals(pair.Key?.Trim(), key?.Trim(), StringComparison.OrdinalIgnoreCase));
-            if (candidatePair.Key is null || !TextEquals(retainedValue?.Trim(), candidatePair.Value?.Trim()))
-                return false;
-        }
-
-        return true;
+            // Was a first-match scan whose one-to-one pairing held only because the store
+            // canonicalizes these keys on read. Nothing at this seam said so or checked it.
+            && ExternalDimensionsMatch(retained.ExternalGlDimensions, candidate.ExternalGlDimensions);
     }
 
     private static bool TextEquals(string? retained, string? candidate)

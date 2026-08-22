@@ -202,6 +202,38 @@ Treat a conflict here as a reconciliation signal, not a transient error: two dif
 have been approved against one source event, and an operator has to decide which one the books
 should carry.
 
+The durable append seam resolves its own posting-identity collisions and now applies the same two
+rules about what a retained value is:
+
+- Timing and amounts are compared at the precision the store keeps. A retry that resubmitted the
+  identical write used to be refused as a conflicting posting whenever its timestamp carried
+  sub-microsecond ticks — which anything derived from the current clock does — or an amount
+  carried more than ten decimal places. That failure was permanent, not transient: the retained
+  journal already holds the identity, so no later attempt could have succeeded either.
+- A leg's transaction-currency detail participates. Debit and credit are the functional amounts,
+  so two legs can agree on every one of them while booking a different transaction currency,
+  amount, or FX rate; that is now a conflict rather than an acknowledged replay.
+- A *retained* leg carrying the identity translation of its functional amount — same currency on
+  both sides, transaction amounts equal to the functional ones, rate 1 — is a replay of a posting
+  that declares no currency detail at all. The `V_ledger_029` repair stamps exactly that shape
+  onto legs written before the append path carried currency through, and most posting paths still
+  build legs without it, so comparing presence rather than content would make exactly the legacy
+  postings that repair exists to heal permanently unreplayable.
+- This does **not** read in reverse. An identity translation names a currency, so a posting
+  declaring one against a retained leg that records no denomination is asserting what the books
+  say. Nothing on either replay path checks a leg's functional currency against its book's base
+  currency, so that claim cannot be corroborated at the comparison and is refused rather than
+  acknowledged.
+- A detail that is not an identity translation is a claim either way, and remains a difference. A
+  posting declaring a foreign denomination and rate against a leg that records no conversion is a
+  different posting, not a missing label.
+- The two instants stored as `infinity` and `-infinity` are compared exactly rather than reduced
+  to a microsecond, so the largest finite timestamp the store can hold is not read as a replay of
+  an infinite one.
+- Timing is compared against what the store returns, which is a *signed* microsecond delta from
+  2000-01-01 truncated toward that epoch. Journals dated before 2000 truncate upward, not
+  downward, and the comparison mirrors that rather than flooring.
+
 ## ETL Source Retention Semantics
 
 An ETL source's archive and error locations are single directories shared by every run of that
