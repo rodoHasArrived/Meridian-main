@@ -674,7 +674,8 @@ rounds of corrections to the passage beneath it — including the round that est
 route. A section heading is the one line a skim-reader takes away, and it was the last thing I
 updated rather than the first.)*
 
-493 commits landed repo-wide since `4b39e9da8`. Across the Security Master surface — the F# domain,
+440 commits (`git rev-list --count 4b39e9da8..7ed160dc`) landed repo-wide since `4b39e9da8`.
+Across the Security Master surface — the F# domain,
 interop, and calculations; `src/Meridian.Contracts/SecurityMaster/`;
 `src/Meridian.Application/SecurityMaster/`; `src/Meridian.Storage/SecurityMaster/`;
 `src/Meridian.ReferenceData/`; `src/Meridian.Instruments/`; the Security Master services in
@@ -792,7 +793,7 @@ structural item.
 ### New observation: the missing calculation math already exists, unwired
 
 `src/Meridian.FSharp/Calculations/SecurityCalculations.fs` (295 lines) is a documented,
-unit-tested formula library carrying exactly the math two open findings report as absent:
+unit-tested formula library carrying exactly the math two open findings need:
 
 - `constantYieldIncome` and `amortizationAccretion` — the effective-interest pair item 10 needs —
   plus `pciDailyAmortization` for purchased-credit-impaired instruments.
@@ -840,7 +841,7 @@ that cannot be wrong is not evidence.
 
 | Finding | Outcome |
 | --- | --- |
-| Clear-then-refill in `SecurityMasterProjectionCache.ReplaceAll` | **Fixed for readers; partly fixed for writers.** The replacement map is built and installed with one `Volatile.Write` under a write gate; reads stay lock-free through `Volatile.Read`, so a reader concurrent with a warm or rebuild sees either the whole previous master or the whole new one. An `Upsert` arriving **after the replacement takes the gate** waits and lands in the installed map. One arriving **while the argument is still being copied** does not wait — the gate is not held yet — so it writes into the outgoing map and the swap discards it. That remaining window is real at production scale and is left open deliberately; see below |
+| Clear-then-refill in `SecurityMasterProjectionCache.ReplaceAll` | **Fixed for readers and writers.** The replacement map is installed with one `Volatile.Write`; reads stay lock-free through `Volatile.Read`, so a concurrent reader sees either the whole previous master or the whole new one. Replacements serialize with one another and capture every accepted `Upsert` while their argument is copied and candidate map built outside the write gate. Captured writes are reconciled by `Version` before the swap; an upsert arriving during publication waits and then lands in the installed map. The pre-gate lost-update window is closed without enumerating a lazy source under the write gate |
 | `IOperatorOverridesStore` "dead dependency" | **Refuted, finding retracted.** It is read from a sibling partial file. See risk item 5 |
 | Third factor-schedule shape | **Refuted, recommendation withdrawn.** Two distinct concepts, not one in three shapes. See risk item 8 |
 
@@ -849,20 +850,21 @@ another, and automated review caught it. Under the old `Clear()`-then-refill, an
 landed *after* the refill loop had already copied its key survived; a plain reference swap discards
 every upsert issued during the replacement, because they all write into the outgoing map. The first
 version's own `<remarks>` claimed the outcome was "the same a concurrent `Clear()` produced" — it
-was not, and the window was strictly wider. `Upsert` and `ReplaceAll` now serialize on a write gate,
-with `Upsert` resolving the live map inside it, so a record persisted by create, amend, or a
-published rebuild cannot be dropped by a replacement **that already holds the gate**. Reads remain
-lock-free. The qualifier is load-bearing: a replacement still copying its argument has not taken the
-gate yet, and an upsert completing in that phase is still discarded — see **Left open: the pre-gate
-materialization window** below, which is the same production race and is not closed here.
+was not, and the window was strictly wider. `Upsert` and `ReplaceAll` first serialized on a write
+gate, with `Upsert` resolving the live map inside it, so a record persisted by create, amend, or a
+published rebuild could not be dropped by a replacement that already held the gate. Reads remained
+lock-free. A later finding correctly showed that this did not cover the argument-copy phase; the
+final correction is described below.
 
 The gate then created a third problem, also caught in review: because a caller can produce its
 projection and only reach `Upsert` after several awaits, a record that waits on the gate may be
 *older* than one a rebuild installed meanwhile, and an unconditional assignment downgraded that key.
 `Upsert` now compares `Version` and keeps the installed record when the incoming one is older.
-`ReplaceAll` deliberately does not do the same: a rebuild replays the whole master, so its set is
-authoritative as of its snapshot — including about which securities are absent — and merging
-stragglers in by version would resurrect every record it legitimately dropped.
+`ReplaceAll` deliberately does not merge the whole outgoing map by version: a rebuild replays the
+whole master, so its set is authoritative as of its snapshot — including about which securities are
+absent — and merging every straggler would resurrect records it legitimately dropped. It overlays
+only writes accepted after that replacement opened its capture, preserving the rebuild's absence
+semantics while closing the concurrent-write window.
 
 The regression tests were rewritten twice and then partly withdrawn, for one underlying reason. The
 first versions spun a reader thread and hoped it interleaved; the second forced the interleaving for
@@ -871,23 +873,20 @@ when it was descheduled at that point. Both could pass against the implementatio
 reject — the recurring error being to check that a test passes under the fix without checking that
 it fails under the bug.
 
-The concurrent-upsert test was then **removed rather than rewritten a third time**, because a later
-finding made it unwritable: `ReplaceAll` must copy its argument *before* taking the gate (a
-lazily-enumerating source run under the gate would deadlock against a writer waiting for it), which
-leaves an in-memory fill over an array as the only in-gate work — no seam a caller can pause. The
-interleaving is no longer externally reachable, so no synchronization scheme would let a test prove
-it. **The write gate therefore has no direct regression coverage; it is justified by the lost-update
-finding, not by a test.** What remains covered is the reader never seeing a partial master, and a
-stale upsert not downgrading an installed record, in both directions.
+The concurrent-upsert test was then removed because materializing outside the gate left no seam in
+the gated fill that could force its claimed interleaving. The final implementation makes the
+materialization phase itself observable in a safe way: a replacement-scoped capture is registered
+before enumeration, and a `PausingCollection` waits for a writer to complete while that enumeration
+is parked. The regression test fails against the unjournaled swap because the accepted new key is
+absent afterward, and passes only when the captured write is replayed. Companion cases prove that
+the newer replacement or captured version wins appropriately and that a failed enumeration clears
+its capture without losing already accepted writes.
 
-**Left open: the pre-gate materialization window.** Review then pointed out that moving
-materialization outside the gate reopens a narrower version of the lost-update problem — an `Upsert`
-that completes while `ReplaceAll` is still copying its argument writes into the outgoing map and is
-discarded by the swap, so a security created during that copy disappears from the cache until the
-next refresh. That is correct, and it is not fixed here, because the two findings pull against each
-other: enumerate inside the gate and a lazy source deadlocks against the writer; enumerate outside
-and writes made during the copy are lost. Neither is a bug in the other's fix — they are the two
-horns of the same design choice.
+**Resolved 2026-08-23: the pre-gate materialization window.** Review correctly pointed out that moving
+materialization outside the gate had reopened a narrower version of the lost-update problem — an
+`Upsert` completing while `ReplaceAll` copied its argument wrote into the outgoing map and was
+discarded by the swap. Enumerating inside the gate was not safe either, because a lazy source could
+wait on a writer that needed that gate.
 
 > **Corrected 2026-08-19, after review.** This section first claimed the window was "near-zero in
 > practice: every production caller passes an already-materialized list, which the array fast path
@@ -899,15 +898,14 @@ horns of the same design choice.
 > copy of the entire warm set rather than being near-zero. Being already materialized is not the
 > same as taking the fast path, and the claim conflated them.
 
-The window is therefore real at production scale: an `Upsert` completing while the warm set is copied
-lands in the outgoing map and is discarded by the swap. Closing it means a decision rather than a
-patch, and there are now three candidates. Widen the fast path to the concrete non-lazy types
-(`List<T>` alongside arrays), which restores the property the wrong claim assumed and is the smallest
-change. Constrain the parameter so a lazy source cannot be passed at all, which removes the deadlock
-horn and lets materialization move back inside the gate. Or give the swap a version boundary that
-reconciles writes made during the copy. The first is cheap but leaves the general hazard for any
-other `IEnumerable`; the second changes the public shape; the third changes the concurrency model.
-That decision is left to a human reviewer rather than taken here.
+The final fix takes the third path. `ReplaceAll` serializes replacement operations, registers an
+accepted-upsert capture under the write gate, then releases that gate while it copies the source and
+builds the candidate. `Upsert` continues writing the live map and also records each accepted record
+in that capture. Publication takes the write gate, overlays only those captured records using the
+same version rule, swaps the reference, and clears the capture; failure clears the capture while
+leaving the live map and its accepted writes intact. This closes the production and general
+`IEnumerable` hazard without merging untouched outgoing entries or running lazy enumeration under
+the writer gate.
 
 The remaining open findings were deliberately not attempted. Items 1, 2, 7, and the top priority
 need a decision or a schema change rather than a repair: the canonical home for MBS/ABS/CLO is a

@@ -8,11 +8,14 @@ public sealed class SecurityMasterProjectionCache
     // Writes are serialized on this gate; reads are not. ReplaceAll installs a whole new map by
     // reference instead of clearing in place, so a reader concurrent with a warm or rebuild sees
     // either the entire previous master or the entire new one — never the empty or half-filled
-    // window a Clear()-then-refill exposes. Reads go through Volatile.Read so a reader cannot
+    // window a Clear()-then-refill exposes. Upserts accepted while a replacement is being built are
+    // captured and replayed before the swap. Reads go through Volatile.Read so a reader cannot
     // observe the new map before the writes that populated it.
     private readonly Lock _writeGate = new();
+    private readonly Lock _replacementGate = new();
 
     private ConcurrentDictionary<Guid, SecurityProjectionRecord> _byId = new();
+    private Dictionary<Guid, SecurityProjectionRecord>? _upsertsDuringReplacement;
 
     private ConcurrentDictionary<Guid, SecurityProjectionRecord> Current
         => Volatile.Read(ref _byId);
@@ -27,19 +30,12 @@ public sealed class SecurityMasterProjectionCache
     /// <paramref name="record"/> is not older than it.
     /// </summary>
     /// <remarks>
-    /// Taken under the write gate, and resolving <see cref="Current"/> only once inside it, so an
-    /// upsert issued once a <see cref="ReplaceAll"/> holds that gate waits and then lands in the map
-    /// that replacement installs. Writing outside the gate would put the record into the outgoing
-    /// map, where the swap would discard it — losing a security that create, amend, or a published
-    /// rebuild had just persisted.
-    /// <para>
-    /// The guarantee covers the gated phase only, and no more. <see cref="ReplaceAll"/> copies its
-    /// argument before taking the gate (see its remarks for why it has to), and an upsert that
-    /// completes during that copy takes the gate uncontended, writes into the outgoing map, and is
-    /// discarded by the swap that follows. Callers must not treat a returned <c>Upsert</c> as proof
-    /// the record survives a concurrent rebuild; the durable record is the event stream, and a
-    /// subsequent rebuild replays it.
-    /// </para>
+    /// Taken under the write gate, and resolving <see cref="Current"/> only once inside it. If a
+    /// <see cref="ReplaceAll"/> is materializing or building its replacement outside that gate, an
+    /// accepted upsert is also recorded for replay into the map that replacement installs. Once the
+    /// replacement takes the gate to publish, the upsert waits and then lands directly in the newly
+    /// installed map. Together those phases prevent a replacement from discarding a security that
+    /// create, amend, or a published rebuild had just persisted.
     /// <para>
     /// Waiting on the gate is exactly what makes the version check necessary. A caller can produce
     /// its projection and then take a while to get here — <c>SecurityMasterService</c> releases its
@@ -53,10 +49,18 @@ public sealed class SecurityMasterProjectionCache
     {
         lock (_writeGate)
         {
-            Current.AddOrUpdate(
-                record.SecurityId,
-                record,
-                (_, installed) => record.Version >= installed.Version ? record : installed);
+            var current = Current;
+            if (current.TryGetValue(record.SecurityId, out var installed)
+                && record.Version < installed.Version)
+            {
+                return;
+            }
+
+            current[record.SecurityId] = record;
+            if (_upsertsDuringReplacement is not null)
+            {
+                _upsertsDuringReplacement[record.SecurityId] = record;
+            }
         }
     }
 
@@ -64,18 +68,21 @@ public sealed class SecurityMasterProjectionCache
     /// Replaces the cached master with <paramref name="records"/> as a single reference swap.
     /// </summary>
     /// <remarks>
-    /// <paramref name="records"/> is copied to an array before the gate is taken unless it already
-    /// is one, so only the in-memory fill and the swap run under the gate. The check is for an
-    /// array specifically, not a collection interface: a type can implement
-    /// <see cref="IReadOnlyCollection{T}"/> and still enumerate lazily, and enumerating such a
-    /// source under the gate would both do its work there and deadlock outright if it waits on
-    /// anything that calls <see cref="Upsert"/> — the enumerator would hold the gate the writer
-    /// needs. An array cannot enumerate lazily, so it is the only shape safe to skip the copy for.
+    /// Replacements are serialized with one another. <paramref name="records"/> is copied and the
+    /// candidate map is built without holding the write gate, so a lazy source cannot deadlock a
+    /// writer by waiting on work that calls <see cref="Upsert"/>. Before that work starts, this
+    /// method opens a replacement-scoped capture under the write gate. Every accepted upsert during
+    /// the copy or candidate build is replayed into the candidate by version before the reference
+    /// swap, closing the lost-update window without merging untouched entries from the outgoing map.
     /// <para>
-    /// An upsert that lands before this call takes the gate is still overwritten when the record it
-    /// touched also appears in <paramref name="records"/> — the caller materialized that set before
-    /// calling, so it may already be stale. That staleness is the caller's to resolve; it is not
-    /// something the cache can see.
+    /// A newer candidate record wins over an older captured upsert; an equal-version upsert wins as
+    /// the later accepted write. Entries absent from both the replacement and the capture remain
+    /// absent, preserving the replacement set's authority over deletions.
+    /// </para>
+    /// <para>
+    /// The capture begins when this method acquires the replacement and write gates. Records that
+    /// were already stale when the caller invoked <c>ReplaceAll</c> remain the caller's snapshot-
+    /// boundary concern; this method does not merge writes that preceded its own capture.
     /// </para>
     /// <para>
     /// This substitutes rather than merging by version, which is the deliberate asymmetry with
@@ -86,17 +93,54 @@ public sealed class SecurityMasterProjectionCache
     /// </remarks>
     public void ReplaceAll(IEnumerable<SecurityProjectionRecord> records)
     {
-        var materialized = records as SecurityProjectionRecord[] ?? records.ToArray();
+        ArgumentNullException.ThrowIfNull(records);
 
-        lock (_writeGate)
+        lock (_replacementGate)
         {
-            var replacement = new ConcurrentDictionary<Guid, SecurityProjectionRecord>();
-            foreach (var record in materialized)
+            var capturedUpserts = new Dictionary<Guid, SecurityProjectionRecord>();
+            lock (_writeGate)
             {
-                replacement[record.SecurityId] = record;
+                if (_upsertsDuringReplacement is not null)
+                {
+                    throw new InvalidOperationException("A projection-cache replacement is already active.");
+                }
+
+                _upsertsDuringReplacement = capturedUpserts;
             }
 
-            Volatile.Write(ref _byId, replacement);
+            try
+            {
+                var materialized = records as SecurityProjectionRecord[] ?? records.ToArray();
+                var replacement = new ConcurrentDictionary<Guid, SecurityProjectionRecord>();
+                foreach (var record in materialized)
+                {
+                    replacement[record.SecurityId] = record;
+                }
+
+                lock (_writeGate)
+                {
+                    foreach (var upsert in capturedUpserts.Values)
+                    {
+                        replacement.AddOrUpdate(
+                            upsert.SecurityId,
+                            upsert,
+                            (_, candidate) => upsert.Version >= candidate.Version ? upsert : candidate);
+                    }
+
+                    Volatile.Write(ref _byId, replacement);
+                    _upsertsDuringReplacement = null;
+                }
+            }
+            finally
+            {
+                lock (_writeGate)
+                {
+                    if (ReferenceEquals(_upsertsDuringReplacement, capturedUpserts))
+                    {
+                        _upsertsDuringReplacement = null;
+                    }
+                }
+            }
         }
     }
 

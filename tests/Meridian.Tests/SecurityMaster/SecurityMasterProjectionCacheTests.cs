@@ -31,14 +31,10 @@ namespace Meridian.Tests.SecurityMaster;
 /// the interleaving forced rather than hoped for.
 /// </para>
 /// <para>
-/// <strong>Not covered here, deliberately:</strong> that an upsert arriving while <c>ReplaceAll</c>
-/// holds its write gate lands in the installed map. <c>ReplaceAll</c> copies its argument to an
-/// array <em>before</em> taking the gate — it has to, or a lazily-enumerating source would run under
-/// the gate and deadlock against the very writer this would test — so the only work left inside the
-/// gate is an in-memory fill over an array, with no seam a caller can pause. That window is real but
-/// not externally observable, and a test that cannot force the interleaving would pass whether or
-/// not the gate exists. The neighbouring guarantee that <em>is</em> observable — that a stale upsert
-/// cannot downgrade an installed record — is covered below.
+/// <see cref="Upsert_DuringReplaceAllMaterialization_SurvivesTheSwap"/> uses the same seam to wait
+/// for an upsert to complete while the replacement is being copied. That forces the accepted write
+/// into the outgoing map before publication and proves that the replacement-scoped capture replays
+/// it into the installed map; a plain swap without the capture fails at the final assertion.
 /// </para>
 /// </remarks>
 [Trait("Category", "Unit")]
@@ -92,6 +88,75 @@ public sealed class SecurityMasterProjectionCacheTests
             "a reader concurrent with ReplaceAll must see a complete master — a Clear()-then-refill "
             + "would have shown zero or a partial count at this exact point");
         cache.Count.Should().Be(RecordCount);
+    }
+
+    [Fact]
+    public void Upsert_DuringReplaceAllMaterialization_SurvivesTheSwap()
+    {
+        var cache = new SecurityMasterProjectionCache();
+        cache.ReplaceAll(Build("GEN-A"));
+        var late = Record("LATE-1");
+
+        using var upsertReturned = new ManualResetEventSlim(false);
+        Thread? writer = null;
+
+        cache.ReplaceAll(new PausingCollection(Build("GEN-B"), () =>
+        {
+            writer = StartThread("projection-cache-writer", () =>
+            {
+                cache.Upsert(late);
+                upsertReturned.Set();
+            });
+
+            upsertReturned.Wait(TimeSpan.FromSeconds(30)).Should().BeTrue(
+                "replacement materialization must not hold the write gate a lazy source may wait on");
+        }));
+
+        writer!.Join(TimeSpan.FromSeconds(30)).Should().BeTrue("the writer must not be stuck");
+        cache.Get(late.SecurityId).Should().Be(late,
+            "an accepted upsert during materialization must be replayed before the replacement swap");
+    }
+
+    [Theory]
+    [InlineData(7, 8)]
+    [InlineData(9, 9)]
+    public void ReplaceAll_ReconcilesCapturedUpsertsByVersion(long replacementVersion, long expectedVersion)
+    {
+        var cache = new SecurityMasterProjectionCache();
+        var securityId = Guid.NewGuid();
+        cache.ReplaceAll([Record("SEC-1", securityId, version: 6)]);
+        var replacement = Record("SEC-1", securityId, replacementVersion);
+        var concurrent = Record("SEC-1", securityId, version: 8);
+
+        cache.ReplaceAll(new PausingCollection([replacement], () => cache.Upsert(concurrent)));
+
+        cache.Get(securityId)!.Version.Should().Be(expectedVersion,
+            "the newer record must win when captured upserts are replayed into the replacement");
+    }
+
+    [Fact]
+    public void ReplaceAll_WhenMaterializationFails_ClearsTheCaptureAndKeepsAcceptedUpserts()
+    {
+        var cache = new SecurityMasterProjectionCache();
+        var seeded = Record("SEED-1");
+        var late = Record("LATE-1");
+        cache.ReplaceAll([seeded]);
+
+        Action replace = () => cache.ReplaceAll(new PausingCollection(Build("GEN-B"), () =>
+        {
+            cache.Upsert(late);
+            throw new InvalidOperationException("materialization failed");
+        }));
+
+        replace.Should().Throw<InvalidOperationException>().WithMessage("materialization failed");
+        cache.Get(late.SecurityId).Should().Be(late,
+            "a failed replacement must leave accepted writes in the still-live map");
+
+        var next = Record("NEXT-1");
+        cache.ReplaceAll([next]);
+        cache.Get(next.SecurityId).Should().Be(next);
+        cache.Get(late.SecurityId).Should().BeNull(
+            "the failed replacement's capture must not leak into the next successful replacement");
     }
 
     [Fact]
