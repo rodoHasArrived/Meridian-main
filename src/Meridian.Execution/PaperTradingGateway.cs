@@ -28,6 +28,7 @@ namespace Meridian.Execution;
 public sealed class PaperTradingGateway :
     IExecutionGateway,
     IExecutionGatewayModeProvider,
+    IFaceValueOrderSizingGateway,
     Interfaces.IPaperFillEvaluationTrigger,
     IAsyncDisposable
 {
@@ -92,6 +93,42 @@ public sealed class PaperTradingGateway :
 
     /// <inheritdoc />
     public ExecutionMode ExecutionMode => ExecutionMode.Paper;
+
+    /// <summary>
+    /// Mirrors the live brokerage convention (see <c>AlpacaBrokerageGateway</c>): a treasury or
+    /// corporate fixed-income order routes its quantity as face value with prices quoted as a
+    /// percentage of par. Without this capability on the supported paper path, a 100,000-face
+    /// order at 101.25 is measured by the pre-trade rails and booked by the paper book as
+    /// $10,125,000 instead of $101,250 — the paper simulation must exercise the same sizing
+    /// semantics the live gateway routes.
+    /// </summary>
+    public bool UsesFaceValuePercentageOfPar(OrderRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (request.Metadata is null)
+        {
+            return false;
+        }
+
+        // Same alias order as the live gateway, and matched case-insensitively regardless of
+        // the caller-supplied dictionary's comparer.
+        foreach (var key in (string[])["asset_class", "assetClass", "alpaca:asset_class"])
+        {
+            foreach (var (metadataKey, assetClass) in request.Metadata)
+            {
+                if (string.Equals(metadataKey, key, StringComparison.OrdinalIgnoreCase)
+                    && !string.IsNullOrWhiteSpace(assetClass))
+                {
+                    return assetClass.Trim().ToLowerInvariant() is
+                        "treasury" or "us_treasury" or "fixed_income_treasury" or
+                        "corporate" or "bond" or "corporate_bond" or "us_corporate";
+                }
+            }
+        }
+
+        return false;
+    }
 
     /// <inheritdoc />
     public bool IsConnected => _connected;

@@ -355,6 +355,15 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<TradingOperatorReadinessService>());
         services.TryAddSingleton<ILiveOrderReadinessGate, TradingOperatorLiveOrderReadinessGate>();
         services.TryAddSingleton<CollateralExposureService>();
+        // First-run posture: with no operator snapshot on disk, every portfolio-aware rail
+        // starts armed at the conservative ceilings rather than unconfigured — a fresh install
+        // must not route any quantity at any price. A host (or test) that registers its own
+        // RiskRuleRuntimeOptions first keeps full control, and any persisted operator snapshot
+        // — including an explicit clear — always wins over these defaults.
+        services.TryAddSingleton(RiskRuleRuntimeOptions.Default with
+        {
+            FirstRunDefaults = RiskRuleFirstRunDefaults.Conservative
+        });
         services.TryAddSingleton<RiskRuleRuntimeService>();
         // Cross-strategy portfolio aggregation: the registry tracks every active run's
         // portfolio; the host paper portfolio is pre-registered so the aggregate surface

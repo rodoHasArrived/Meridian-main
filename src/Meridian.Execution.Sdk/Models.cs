@@ -159,6 +159,18 @@ public sealed record ExecutionReport
     public OptionContractIdentity? OptionContract { get; init; }
     public IReadOnlyList<OrderLeg>? Legs { get; init; }
     public ExecutionDiagnostics? Diagnostics { get; init; }
+
+    /// <summary>
+    /// The active gateway routed <see cref="FilledQuantity"/> as face value with prices quoted
+    /// as a percentage of par (fixed income). Stamped server-side by the OMS from the
+    /// gateway-resolved order sizing, so booking, session persistence, and restart replay all
+    /// read one authoritative classification instead of each re-deriving it. Omitted from
+    /// serialized payloads when false so existing durable fill records keep their canonical
+    /// content hash.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public bool UsesFaceValuePercentageOfPar { get; init; }
 }
 
 /// <summary>Normalized operational diagnostics derived from broker status/reject payloads.</summary>
