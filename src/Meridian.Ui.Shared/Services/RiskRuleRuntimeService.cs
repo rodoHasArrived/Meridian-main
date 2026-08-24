@@ -12,9 +12,12 @@ using Microsoft.Extensions.Logging;
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
-/// Location of the persisted operator-tuned risk-rule thresholds (drawdown %, order-rate ceiling).
+/// Location of the persisted operator-tuned risk-rule thresholds (drawdown %, order-rate ceiling),
+/// and optionally the first-run ceilings seeded before any operator snapshot exists.
 /// </summary>
-public sealed record RiskRuleRuntimeOptions(string SnapshotPath)
+public sealed record RiskRuleRuntimeOptions(
+    string SnapshotPath,
+    RiskRuleFirstRunDefaults? FirstRunDefaults = null)
 {
     public static RiskRuleRuntimeOptions Default { get; } = new(
         Path.Combine(
@@ -22,6 +25,40 @@ public sealed record RiskRuleRuntimeOptions(string SnapshotPath)
             "Meridian",
             "workstation",
             "risk-rules.json"));
+}
+
+/// <summary>
+/// Armed ceilings for the portfolio-aware rails on a host that has never persisted an operator
+/// snapshot. Without these, a fresh install starts with every portfolio-aware rule unconfigured —
+/// six of eight rules approve without measuring, so any quantity at any price routes. These are
+/// conservative starting guardrails for the composition root to opt into, not tuning advice:
+/// operators raise, lower, or clear them through the risk config endpoints, and the resulting
+/// snapshot (including an explicit clear) always wins over these on the next start.
+/// </summary>
+public sealed record RiskRuleFirstRunDefaults(
+    decimal MaxGrossExposure,
+    decimal MaxSymbolConcentrationPercent,
+    decimal MaxOrderNotional,
+    decimal EscalateOrderNotional,
+    decimal MaxOrderQuantity,
+    decimal MaxPriceDeviationPercent,
+    decimal PriceCollarPercent)
+{
+    /// <summary>
+    /// The workstation's first-run posture: sized against the default $100k paper book so the
+    /// rails constrain without strangling a fresh install — a $100k per-order reject ceiling with
+    /// governed escalation from $25k, a 10,000-unit fat-finger quantity ceiling, a 10% aggressive
+    /// price band with the 5% collar parked inside it (a collar at or above the band could never
+    /// fire), 25% single-symbol concentration, and a $1m gross-exposure ceiling.
+    /// </summary>
+    public static RiskRuleFirstRunDefaults Conservative { get; } = new(
+        MaxGrossExposure: 1_000_000m,
+        MaxSymbolConcentrationPercent: 25m,
+        MaxOrderNotional: 100_000m,
+        EscalateOrderNotional: 25_000m,
+        MaxOrderQuantity: 10_000m,
+        MaxPriceDeviationPercent: 10m,
+        PriceCollarPercent: 5m);
 }
 
 public sealed record RiskRuleStatusDto(
@@ -114,7 +151,68 @@ public sealed class RiskRuleRuntimeService
         _services = services ?? throw new ArgumentNullException(nameof(services));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options ?? RiskRuleRuntimeOptions.Default;
-        LoadSnapshot();
+        if (!LoadSnapshot())
+        {
+            SeedFirstRunDefaults();
+        }
+    }
+
+    /// <summary>
+    /// Arms the portfolio-aware rails on a host that has never persisted an operator snapshot,
+    /// so a fresh install cannot route any quantity at any price. Seeded in memory only: the
+    /// first operator config change persists whatever is live then, and a snapshot on disk —
+    /// including one that explicitly cleared a rail — always wins over these on the next start.
+    /// </summary>
+    private void SeedFirstRunDefaults()
+    {
+        if (_options.FirstRunDefaults is not { } defaults)
+        {
+            return;
+        }
+
+        // The same invariants the update endpoints enforce. A composition root handing in a
+        // collar or band no order can breach, or an escalation band above the reject ceiling,
+        // has armed a control that silently does nothing — refuse to start on it.
+        if (defaults.MaxGrossExposure <= 0m
+            || defaults.MaxSymbolConcentrationPercent is <= 0m or > 100m
+            || defaults.MaxOrderNotional <= 0m
+            || defaults.EscalateOrderNotional <= 0m
+            || defaults.EscalateOrderNotional >= defaults.MaxOrderNotional
+            || defaults.MaxOrderQuantity <= 0m
+            || defaults.MaxPriceDeviationPercent is <= 0m or >= 100m
+            || defaults.PriceCollarPercent is <= 0m or >= 100m
+            || defaults.PriceCollarPercent >= defaults.MaxPriceDeviationPercent)
+        {
+            throw new InvalidOperationException(
+                "The configured first-run risk defaults are not enforceable ceilings. "
+                + "Refusing to start with a rail that reports itself armed but cannot fire.");
+        }
+
+        lock (_gate)
+        {
+            _maxGrossExposure = defaults.MaxGrossExposure;
+            _maxSymbolConcentrationPercent = defaults.MaxSymbolConcentrationPercent;
+            _maxOrderNotional = defaults.MaxOrderNotional;
+            _escalateOrderNotional = defaults.EscalateOrderNotional;
+            _maxOrderQuantity = defaults.MaxOrderQuantity;
+            _maxPriceDeviationPercent = defaults.MaxPriceDeviationPercent;
+            _priceCollarPercent = defaults.PriceCollarPercent;
+        }
+
+        _logger.LogInformation(
+            "No risk rule snapshot exists at {SnapshotPath}; armed first-run guardrails "
+            + "(gross exposure {MaxGrossExposure}, concentration {MaxSymbolConcentrationPercent}%, "
+            + "order notional reject {MaxOrderNotional} / escalate {EscalateOrderNotional}, "
+            + "fat-finger quantity {MaxOrderQuantity}, price deviation {MaxPriceDeviationPercent}%, "
+            + "price collar {PriceCollarPercent}%).",
+            _options.SnapshotPath,
+            defaults.MaxGrossExposure,
+            defaults.MaxSymbolConcentrationPercent,
+            defaults.MaxOrderNotional,
+            defaults.EscalateOrderNotional,
+            defaults.MaxOrderQuantity,
+            defaults.MaxPriceDeviationPercent,
+            defaults.PriceCollarPercent);
     }
 
     /// <summary>
@@ -1632,13 +1730,18 @@ public sealed class RiskRuleRuntimeService
         }
     }
 
-    private void LoadSnapshot()
+    /// <summary>
+    /// Hydrates the persisted operator snapshot. Returns <see langword="false"/> when no
+    /// snapshot exists yet, so the constructor can arm first-run defaults instead; an existing
+    /// snapshot — including one that explicitly cleared a rail — always wins over defaults.
+    /// </summary>
+    private bool LoadSnapshot()
     {
         try
         {
             if (!File.Exists(_options.SnapshotPath))
             {
-                return;
+                return false;
             }
 
             var payload = File.ReadAllText(_options.SnapshotPath);
@@ -1710,6 +1813,8 @@ public sealed class RiskRuleRuntimeService
                 _maxPriceDeviationPercent = snapshot.MaxPriceDeviationPercent is > 0m ? snapshot.MaxPriceDeviationPercent : null;
                 _priceCollarPercent = snapshot.PriceCollarPercent is > 0m ? snapshot.PriceCollarPercent : null;
             }
+
+            return true;
         }
         catch (Exception exception)
         {

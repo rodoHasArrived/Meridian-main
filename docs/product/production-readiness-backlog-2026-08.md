@@ -118,7 +118,11 @@ The matching engine is institutional-grade; the wired path starves and mis-attri
   (`RiskRuleRuntimeService.cs:92-107`). Arming = seeding enforceable defaults (fat-finger
   quantity/deviation, collar percent, gross-exposure, concentration, notional) so a fresh install
   cannot route any quantity at any price. *(AR8-10 is now "default the thresholds on", not "write
-  the rules".)*
+  the rules".)* **Landed 2026-08-24:** `RiskRuleFirstRunDefaults.Conservative` seeds all six rails
+  when no operator snapshot exists, opted in by the workstation composition; a persisted snapshot
+  (including an explicit clear) still wins. Regressions:
+  `tests/Meridian.Tests/Ui/RiskRuleRuntimeFirstRunDefaultsTests.cs`. Still open: the browser
+  editor for the fat-finger/collar thresholds.
 - **Fixed-income booking (blocker for live routing):** the risk path knows bond prices are
   percent-of-par (`OrderNotionalResolver.cs:265-272`, `/100m`); the booking path does not —
   `TradeExecutedEvent.GrossValue => FilledQuantity * FillPrice`
@@ -127,13 +131,22 @@ The matching engine is institutional-grade; the wired path starves and mis-attri
   $101,250** — balanced, silent, 100× wrong — and no accrued-interest leg is ever posted against
   the clean fill price. Same defect in `PaperTradingPortfolio.cs:654,784`. This sits downstream
   of every risk gate; no rail catches it. **New finding — no AR8 row; propose a registry row.**
+  **Landed 2026-08-24 (scaling half):** the OMS carries the gateway-resolved face-value
+  classification through fill processing, `TradeExecutedEvent.GrossValue` scales the clean price
+  to a fraction of par, and `PaperTradingPortfolio.ApplyFill` converts once at the fill seam, so
+  the booked cash equals the notional the risk gate approved — round-trip proof in
+  `tests/Meridian.Tests/Execution/FixedIncomeFillBookingTests.cs`; recorded on `W9-SAFETY-007`.
+  The accrued-interest leg remains open.
 
 ## 4. Live risk on the real book
 
 - `PaperTradingPortfolio(100_000m)` is still registered as the authoritative `IPortfolioState` /
   `IPositionTracker` **outside** the paper-gateway conditional (`src/Meridian/UiServer.cs:361-367`
   vs the conditional closing at `:360`), so live position limits, exposure, notional, and drawdown
-  are measured against a hardcoded empty $100k book.
+  are measured against a hardcoded empty $100k book. **Landed 2026-08-24:** the registration is
+  now paper-scoped; a live brokerage composition registers a fail-closed `IPortfolioState` that
+  refuses startup with an actionable message until a broker-backed implementation exists. The
+  broker sync itself (next bullet) stays open.
 - The drift detector is `PositionReconciliationService`
   (`src/Meridian.Execution/Services/PositionReconciliationService.cs:40`): report-only, registered
   in **no host**, not an `IHostedService`, and unconstructible in practice — its required
@@ -255,3 +268,32 @@ misstatement no existing rail can catch — and is new since the review (**propo
 row**, alongside AR8-12/13, AR8-16, and AR8-33 already flagged as row candidates). Items 1 and 5
 convert already-paid-for capability into the first user-reachable value; 2, 6, and 7 make the
 wedge workflows truthful; 8–10 are the floor everything else stands on.
+
+---
+
+## Landed after 2026-08-18 (release-readiness follow-up, 2026-08-24)
+
+The 2026-08-19 release-readiness assessment independently confirmed several findings from this
+backlog and surfaced four adjacent ones. All were closed on branch
+`claude/document-issues-hijmes`, alongside the item-3 scaling/arming and item-4 scoping fixes
+noted inline above:
+
+- **`/health` and `/metrics` auth exemption** — both `LoginSessionMiddleware` and
+  `ApiKeyMiddleware` exempted only the `/healthz` family, so the shipped docker-compose
+  healthcheck (`/health`) and Prometheus scrape (`/metrics`) failed in any authenticated
+  deployment. Both exact paths are now exempt; `/health/detailed` stays authenticated.
+- **Synthetic backfill outranked real vendors** — `config/appsettings.sample.json` shipped
+  `Providers.Synthetic` at priority 1 (Alpaca 5, Yahoo 22) and the composite selector takes the
+  first success, so adding real API keys still produced fabricated bars. Synthetic now sits at
+  priority 99 as the last-resort offline fallback.
+- **WPF Data Browser fabricated data unlabeled** — the screen renders 240 records from
+  `new Random(42)` with no service dependency. It now carries the shared, non-dismissable
+  `DataProvenanceBadge` (the same signal the browser lane renders), and the generator documents
+  that badge and data must be removed together when the grid is wired to real storage.
+- **Simulated-origin filter missed structured evidence** — the ledger append boundary matched
+  exact tokens only, so a mark retaining `daily-close:AAPL:2026-08-18:synthetic` derived
+  provenance "real" and posted clean. `DataProvenanceExtensions.CarriesSimulatedOriginToken`
+  now matches colon-delimited segments across every structured evidence field
+  (`AccountingPostingCommandValidator`), with regressions in
+  `tests/Meridian.Tests/Storage/AssetAccountingPostingEvidenceValidatorTests.cs` and
+  `tests/Meridian.Tests/Contracts/DataProvenanceTests.cs`.
