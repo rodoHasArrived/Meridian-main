@@ -151,17 +151,17 @@ public sealed class FixedIncomeFillBookingTests
         OrderSide side,
         decimal quantity,
         decimal price) => new()
-    {
-        OrderId = $"{symbol}-{side}",
-        ReportType = ExecutionReportType.Fill,
-        Symbol = symbol,
-        Side = side,
-        OrderStatus = OrderStatus.Filled,
-        OrderQuantity = quantity,
-        FilledQuantity = quantity,
-        FillPrice = price,
-        Timestamp = DateTimeOffset.UtcNow
-    };
+        {
+            OrderId = $"{symbol}-{side}",
+            ReportType = ExecutionReportType.Fill,
+            Symbol = symbol,
+            Side = side,
+            OrderStatus = OrderStatus.Filled,
+            OrderQuantity = quantity,
+            FilledQuantity = quantity,
+            FillPrice = price,
+            Timestamp = DateTimeOffset.UtcNow
+        };
 
     /// <summary>
     /// Paper gateway that fills at the limit price and, mirroring Alpaca, routes treasury
