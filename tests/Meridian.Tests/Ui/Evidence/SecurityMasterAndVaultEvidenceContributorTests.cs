@@ -80,6 +80,11 @@ public sealed class SecurityMasterAndVaultEvidenceContributorTests
             "payment-intent",
             sp => new PaymentIntentEvidenceContributor(sp),
             new EvidenceSubjectDto("payment:alpha:1", "payment-intent", "l", "w", null, "p")
+        },
+        {
+            "journal-entry",
+            sp => new JournalEntryEvidenceContributor(sp),
+            new EvidenceSubjectDto(Guid.NewGuid().ToString("D"), "journal-entry", "l", "w", null, "p")
         }
     };
 

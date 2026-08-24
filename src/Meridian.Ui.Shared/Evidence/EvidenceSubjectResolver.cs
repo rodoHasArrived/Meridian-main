@@ -25,6 +25,7 @@ public sealed class EvidenceSubjectResolver
     public const string PaymentIntentKind = "payment-intent";
     public const string ReportPackDeliveryKind = "report-pack-delivery";
     public const string EvidenceVaultKind = "evidence-vault";
+    public const string JournalEntryKind = "journal-entry";
 
     private static readonly HashSet<string> SupportedKinds = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -41,7 +42,8 @@ public sealed class EvidenceSubjectResolver
         PrivateCapitalFundEventKind,
         PaymentIntentKind,
         ReportPackDeliveryKind,
-        EvidenceVaultKind
+        EvidenceVaultKind,
+        JournalEntryKind
     };
 
     private readonly IServiceProvider _services;
@@ -263,6 +265,11 @@ public sealed class EvidenceSubjectResolver
             return ResolveReportPackDeliverySubject(subjectId);
         }
 
+        if (string.Equals(subjectKind, JournalEntryKind, StringComparison.OrdinalIgnoreCase))
+        {
+            return await ResolveJournalEntrySubjectAsync(subjectId, ledgerBookId, ct).ConfigureAwait(false);
+        }
+
         return subjectKind.ToLowerInvariant() switch
         {
             PaperReadinessKind => new EvidenceSubjectDto(
@@ -439,6 +446,73 @@ public sealed class EvidenceSubjectResolver
             Route: BuildAccountingJournalEntriesRoute("paymentIntentId", workflow.PaymentIntentId, workflow.LedgerBookId),
             PageTag: "AccountingJournalEntries",
             LedgerBookId: workflow.LedgerBookId);
+    }
+
+    private async Task<EvidenceSubjectDto?> ResolveJournalEntrySubjectAsync(string subjectId, Guid? ledgerBookId, CancellationToken ct)
+    {
+        var service = _services.GetService<IManualJournalEntryWorkbenchService>();
+        if (service is null)
+        {
+            return null;
+        }
+
+        ledgerBookId ??= TryResolveLedgerBookId(subjectId);
+        var canonicalSubjectId = StripQueryScope(subjectId);
+        if (!Guid.TryParse(canonicalSubjectId, out var journalEntryId))
+        {
+            return null;
+        }
+
+        var draft = await FindManualJournalEntryDraftAsync(service, journalEntryId, ledgerBookId, ct).ConfigureAwait(false);
+        if (draft is null)
+        {
+            return null;
+        }
+
+        if (ledgerBookId.HasValue && draft.LedgerBookId.HasValue && draft.LedgerBookId.Value != ledgerBookId.Value)
+        {
+            return null;
+        }
+
+        return new EvidenceSubjectDto(
+            SubjectId: draft.JournalEntryId.ToString("D"),
+            SubjectKind: JournalEntryKind,
+            Label: $"Journal entry {draft.Status}",
+            Workspace: "Accounting",
+            Route: BuildJournalEntryDetailRoute(draft.JournalEntryId, draft.LedgerBookId ?? ledgerBookId),
+            PageTag: "AccountingJournalEntries",
+            LedgerBookId: draft.LedgerBookId ?? ledgerBookId);
+    }
+
+    internal static async Task<ManualJournalEntryDraftDto?> FindManualJournalEntryDraftAsync(
+        IManualJournalEntryWorkbenchService service,
+        Guid journalEntryId,
+        Guid? ledgerBookId,
+        CancellationToken ct)
+    {
+        var fundProfileIds = await service.ListFundProfileIdsAsync(ct).ConfigureAwait(false);
+        var workbenches = fundProfileIds.Count == 0
+            ? [await service.GetWorkbenchAsync(fundProfileId: null, ledgerBookId: ledgerBookId, ct: ct).ConfigureAwait(false)]
+            : await Task.WhenAll(fundProfileIds.Select(fundProfileId =>
+                service.GetWorkbenchAsync(fundProfileId, ledgerBookId: ledgerBookId, ct: ct))).ConfigureAwait(false);
+        return workbenches
+            .SelectMany(static workbench => workbench.Drafts)
+            .FirstOrDefault(draft => draft.JournalEntryId == journalEntryId);
+    }
+
+    private static string BuildJournalEntryDetailRoute(Guid journalEntryId, Guid? ledgerBookId)
+    {
+        var query = new List<string>
+        {
+            $"journalEntryId={Uri.EscapeDataString(journalEntryId.ToString("D"))}"
+        };
+
+        if (ledgerBookId.HasValue)
+        {
+            query.Add($"ledgerBookId={Uri.EscapeDataString(ledgerBookId.Value.ToString("D"))}");
+        }
+
+        return $"/accounting/journal-entries/detail?{string.Join("&", query)}";
     }
 
     private static string BuildAccountingJournalEntriesRoute(string key, string value, Guid? ledgerBookId)
