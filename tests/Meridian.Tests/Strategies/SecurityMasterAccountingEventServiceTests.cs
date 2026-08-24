@@ -54,7 +54,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
         var request = CreateRequest(
             factorSchedule:
             [
-                new SecurityFactorScheduleEntry(
+                new SecurityFactorObservation(
                     BondSecurityId,
                     new DateOnly(2026, 1, 20),
                     PriorFactor: 1.00m,
@@ -84,7 +84,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
         var request = CreateRequest(
             factorSchedule:
             [
-                new SecurityFactorScheduleEntry(
+                new SecurityFactorObservation(
                     BondSecurityId,
                     new DateOnly(2026, 2, 1),
                     PriorFactor: 1.00m,
@@ -122,7 +122,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
             },
             factorSchedule:
             [
-                new SecurityFactorScheduleEntry(
+                new SecurityFactorObservation(
                     BondSecurityId,
                     new DateOnly(2026, 1, 20),
                     PriorFactor: 1.00m,
@@ -172,7 +172,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
                 PositionId: BondPositionId),
             factorSchedule:
             [
-                new SecurityFactorScheduleEntry(
+                new SecurityFactorObservation(
                     BondSecurityId,
                     new DateOnly(2026, 1, 20),
                     PriorFactor: 0.98m,
@@ -254,7 +254,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
                 new SecurityAccountingRule("AvailableForSale", "GAAP")),
             factorSchedule:
             [
-                new SecurityFactorScheduleEntry(
+                new SecurityFactorObservation(
                     BondSecurityId,
                     new DateOnly(2025, 12, 15),
                     PriorFactor: 1.00m,
@@ -298,7 +298,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
                 new SecurityAccountingRule("AvailableForSale", "GAAP")),
             factorSchedule:
             [
-                new SecurityFactorScheduleEntry(
+                new SecurityFactorObservation(
                     BondSecurityId,
                     new DateOnly(2026, 1, 20),
                     PriorFactor: 1.00m,
@@ -347,7 +347,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
                 AccountingRule: null),
             factorSchedule:
             [
-                new SecurityFactorScheduleEntry(
+                new SecurityFactorObservation(
                     BondSecurityId,
                     new DateOnly(2026, 1, 20),
                     PriorFactor: 1.00m,
@@ -443,7 +443,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
         var request = CreateRequest(
             factorSchedule:
             [
-                new SecurityFactorScheduleEntry(
+                new SecurityFactorObservation(
                     BondSecurityId,
                     new DateOnly(2026, 1, 20),
                     PriorFactor: 1.00m,
@@ -494,7 +494,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
     public void Generate_FactorPaydown_ShouldKeepEventIdentityStableAcrossRunIds()
     {
         var service = new SecurityMasterAccountingEventService();
-        var schedule = new SecurityFactorScheduleEntry(
+        var schedule = new SecurityFactorObservation(
             BondSecurityId,
             new DateOnly(2026, 1, 20),
             0.98m,
@@ -588,7 +588,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
                 PositionId: null),
             factorSchedule:
             [
-                new SecurityFactorScheduleEntry(
+                new SecurityFactorObservation(
                     BondSecurityId,
                     new DateOnly(2026, 1, 20),
                     PriorFactor: 0.80m,
@@ -613,7 +613,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
         var result = new SecurityMasterAccountingEventService().Generate(CreateRequest(
             factorSchedule:
             [
-                new SecurityFactorScheduleEntry(
+                new SecurityFactorObservation(
                     BondSecurityId,
                     new DateOnly(2026, 1, 20),
                     PriorFactor: 0.80m,
@@ -636,7 +636,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
         var result = new SecurityMasterAccountingEventService().Generate(CreateRequest(
             factorSchedule:
             [
-                new SecurityFactorScheduleEntry(
+                new SecurityFactorObservation(
                     BondSecurityId,
                     new DateOnly(2026, 1, 20),
                     1m,
@@ -662,7 +662,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
                 0.94m),
             factorSchedule:
             [
-                new SecurityFactorScheduleEntry(
+                new SecurityFactorObservation(
                     BondSecurityId,
                     new DateOnly(2026, 1, 20),
                     1m,
@@ -692,7 +692,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
                 PositionVersion: 7),
             factorSchedule:
             [
-                new SecurityFactorScheduleEntry(
+                new SecurityFactorObservation(
                     BondSecurityId,
                     new DateOnly(2026, 1, 15),
                     1m,
@@ -700,7 +700,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
                     "custodian-factor-file",
                     "evidence://factor/bond-2026-01-a",
                     "sha256:factor-row-a"),
-                new SecurityFactorScheduleEntry(
+                new SecurityFactorObservation(
                     BondSecurityId,
                     new DateOnly(2026, 1, 20),
                     0.98m,
@@ -719,7 +719,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
     private static SecurityMasterAccountingEventRequest CreateRequest(
         SecurityMasterAccountingSecurity? security = null,
         SecurityMasterAccountingPosition? position = null,
-        IReadOnlyList<SecurityFactorScheduleEntry>? factorSchedule = null,
+        IReadOnlyList<SecurityFactorObservation>? factorSchedule = null,
         IReadOnlyList<SecurityActualCashActivity>? actualActivity = null)
     {
         security ??= new SecurityMasterAccountingSecurity(

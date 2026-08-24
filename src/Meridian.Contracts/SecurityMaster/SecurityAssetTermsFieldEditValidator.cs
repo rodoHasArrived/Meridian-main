@@ -153,7 +153,8 @@ public static class SecurityAssetTermsFieldEditValidator
             if (nestedPath.Length > 0
                 && !string.IsNullOrWhiteSpace(newValue)
                 && (string.Equals(field.Key, "principalSchedule", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(field.Key, "factorScheduleEntries", StringComparison.OrdinalIgnoreCase)))
+                    || string.Equals(field.Key, "factorScheduleEntries", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(field.Key, "stepSchedule", StringComparison.OrdinalIgnoreCase)))
             {
                 error =
                     $"'{field.Key}' rows carry schedule-wide domain invariants that a nested edit cannot " +
@@ -200,6 +201,50 @@ public static class SecurityAssetTermsFieldEditValidator
         if (string.Equals(fieldKey, "factorScheduleEntries", StringComparison.OrdinalIgnoreCase))
         {
             return FactorScheduleRowsAreValid(newValue, out error);
+        }
+
+        if (string.Equals(fieldKey, "stepSchedule", StringComparison.OrdinalIgnoreCase))
+        {
+            return StepScheduleRowsAreValid(newValue, out error);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Mirrors the canonical F# Bond step-coupon rules a whole-schedule replacement must satisfy
+    /// row-locally: each row is an object with a parseable effective date and a non-negative rate,
+    /// and effective dates are unique. The date-versus-maturity window stays at the canonical amend
+    /// seam, which re-validates the published overlay against the record.
+    /// </summary>
+    private static bool StepScheduleRowsAreValid(string newValue, out string? error)
+    {
+        error = null;
+        var dates = new List<DateOnly>();
+        using var document = JsonDocument.Parse(newValue);
+        foreach (var row in document.RootElement.EnumerateArray())
+        {
+            if (row.ValueKind != JsonValueKind.Object
+                || !TryReadRowDate(row, out var effectiveDate, "effectiveDate", "stepDate", "date")
+                || !TryReadRowDecimal(row, out var rate, "rate", "couponRate"))
+            {
+                error = "Each stepSchedule row must be an object with a parseable 'effectiveDate' and numeric 'rate'.";
+                return false;
+            }
+
+            if (rate < 0m)
+            {
+                error = "stepSchedule rates must be zero or greater — negative step coupons are rejected by the canonical Bond contract.";
+                return false;
+            }
+
+            dates.Add(effectiveDate);
+        }
+
+        if (dates.Distinct().Count() != dates.Count)
+        {
+            error = "stepSchedule effective dates must be unique — two rates on one date make the payable coupon depend on input ordering.";
+            return false;
         }
 
         return true;

@@ -205,7 +205,7 @@ const multiAssetCoverage: MultiAssetCoverageSummary = {
     },
     {
       assetClass: "CustomAsset",
-      displayName: "MBS / ABS / CLO / CMBS / private assets",
+      displayName: "Profile-backed private / other assets",
       status: "ReviewRequired",
       statusLabel: "Review required",
       summary: "Governed custom asset coverage.",
@@ -561,7 +561,7 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(structuredCreditRow?.drillThroughTargets.map((target) => target.type)).toContain("FactorScheduleEvidence");
     expect(structuredCreditRow?.drillThroughTargets.map((target) => target.type)).toContain("StructuredCollateralTape");
     expect(customAssetRow).toMatchObject({
-      displayName: "MBS / ABS / CLO / CMBS / private assets",
+      displayName: "Profile-backed private / other assets",
       statusLabel: "Review required",
       evidenceLabel: "1/2 ready",
       ledgerLabel: "Profile-derived classification",
@@ -582,7 +582,7 @@ describe("buildPortfolioScreenViewModel", () => {
         statusLabel: "Review required",
         statusTone: "warning",
         href: "/api/workstation/data-operations",
-        ariaLabel: "Open MBS / ABS / CLO / CMBS / private assets Provider evidence target"
+        ariaLabel: "Open Profile-backed private / other assets Provider evidence target"
       })
     ]);
     expect(customAssetRow?.blockerTargets).toEqual([

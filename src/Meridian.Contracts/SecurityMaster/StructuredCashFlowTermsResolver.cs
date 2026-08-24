@@ -33,6 +33,17 @@ public static class StructuredCashFlowTermsResolver
     private static readonly string[] PrincipalScheduleDateAliases = ["paymentDate"];
     private static readonly string[] PrincipalScheduleAmountAliases = ["amount"];
 
+    // Dated step-coupon schedule emitted by the Bond codec for couponType = "Step", plus vendor
+    // spellings; within each row, the effective-date and rate key aliases.
+    private static readonly string[] StepCouponScheduleAliases = ["stepSchedule", "stepCouponSchedule", "couponSteps"];
+    private static readonly string[] StepCouponDateAliases = ["effectiveDate", "stepDate", "date"];
+    private static readonly string[] StepCouponRateAliases = ["rate", "couponRate"];
+
+    // Inflation-linked indexation emitted by the Bond codec for couponType = "InflationLinked".
+    private static readonly string[] InflationIndexAliases = ["inflationIndex"];
+    private static readonly string[] InflationBaseIndexValueAliases = ["inflationBaseIndexValue", "baseIndexValue"];
+    private static readonly string[] InflationIndexRatioAliases = ["inflationIndexRatio", "indexRatio"];
+
     // Leg-container keys and, within each leg row, the per-field key aliases. "legType" is the
     // spelling the F# SwapLeg serializer persists; the rest cover vendor variants.
     private static readonly string[] LegContainerAliases = ["legs", "swapLegs", "cashFlowLegs"];
@@ -65,7 +76,56 @@ public static class StructuredCashFlowTermsResolver
             DayCountConvention: SecurityTermReader.ReadString(sources, DayCountAliases),
             FactorSchedule: ReadFactorSchedule(sources),
             Legs: ReadLegs(sources),
-            PrincipalSchedule: ReadPrincipalSchedule(sources));
+            PrincipalSchedule: ReadPrincipalSchedule(sources),
+            StepCouponSchedule: ReadStepCouponSchedule(sources),
+            InflationIndex: SecurityTermReader.ReadString(sources, InflationIndexAliases),
+            InflationBaseIndexValue: SecurityTermReader.ReadDecimal(sources, InflationBaseIndexValueAliases),
+            InflationIndexRatio: SecurityTermReader.ReadDecimal(sources, InflationIndexRatioAliases));
+    }
+
+    private static IReadOnlyList<StructuredStepCouponEntry>? ReadStepCouponSchedule(
+        IReadOnlyList<JsonElement> sources)
+    {
+        foreach (var source in sources)
+        {
+            foreach (var alias in StepCouponScheduleAliases)
+            {
+                if (!SecurityTermReader.TryGetProperty(source, alias, out var array) ||
+                    array.ValueKind != JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                var entries = new List<StructuredStepCouponEntry>();
+                foreach (var item in array.EnumerateArray())
+                {
+                    if (item.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
+
+                    var effectiveDate = SecurityTermReader.ReadDate(item, StepCouponDateAliases);
+                    var rate = SecurityTermReader.ReadDecimal(item, StepCouponRateAliases);
+                    if (effectiveDate is null || rate is null || rate.Value < 0m)
+                    {
+                        continue;
+                    }
+
+                    entries.Add(new StructuredStepCouponEntry(effectiveDate.Value, rate.Value));
+                }
+
+                // Presence claims ownership (mirroring the principal and factor schedules): the
+                // Bond codec emits stepSchedule: [] for non-step coupons to assert "no steps", so
+                // the empty result returns rather than probing lower-priority sources.
+                return entries
+                    .GroupBy(static entry => entry.EffectiveDate)
+                    .Select(static group => group.Last())
+                    .OrderBy(static entry => entry.EffectiveDate)
+                    .ToArray();
+            }
+        }
+
+        return null;
     }
 
     private static IReadOnlyList<StructuredPrincipalScheduleEntry>? ReadPrincipalSchedule(

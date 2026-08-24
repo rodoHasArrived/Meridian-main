@@ -1,3 +1,5 @@
+using Meridian.Contracts.FixedIncome;
+
 namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>
@@ -110,5 +112,137 @@ public sealed record FaceValueLot
             weight = 1m;
 
         return CostBasis - (PremiumDiscount * weight);
+    }
+
+    /// <summary>
+    /// The lot's amortized cost basis as of <paramref name="asOf"/> under the requested
+    /// <paramref name="method"/>. <see cref="BondAmortizationMethod.ConstantYield"/> applies the
+    /// effective-interest method (US GAAP ASC 310-20 for most premium amortization);
+    /// <see cref="BondAmortizationMethod.NoAmortization"/> holds the book flat;
+    /// <see cref="BondAmortizationMethod.AuctionRate"/> recognises the premium/discount to par
+    /// immediately; the remaining methods fall back to day-count-weighted straight-line
+    /// (<see cref="AmortizedBasisAsOf(DayCountConvention, DateOnly, DateOnly)"/>), the historical
+    /// immaterial-difference accommodation.
+    /// </summary>
+    /// <param name="annualCouponRatePercent">Annual coupon rate in percent-of-par terms (4.25 = 4.25%), matching the Security Master's <c>couponRate</c> convention; 0 for zero-coupon accretion.</param>
+    /// <param name="paymentsPerYear">Coupon payments per year (2 for semi-annual, the fixed-income default).</param>
+    public decimal AmortizedBasisAsOf(
+        BondAmortizationMethod method,
+        DayCountConvention convention,
+        DateOnly maturity,
+        DateOnly asOf,
+        decimal annualCouponRatePercent,
+        int paymentsPerYear = 2)
+        => method switch
+        {
+            BondAmortizationMethod.ConstantYield =>
+                ConstantYieldAmortizedBasisAsOf(convention, maturity, asOf, annualCouponRatePercent, paymentsPerYear),
+            BondAmortizationMethod.NoAmortization => CostBasis,
+            BondAmortizationMethod.AuctionRate => asOf >= AcquiredDate ? OriginalFace : CostBasis,
+            _ => AmortizedBasisAsOf(convention, maturity, asOf),
+        };
+
+    /// <summary>
+    /// Effective-interest (constant-yield) amortized basis: the yield to maturity implied by the
+    /// acquisition price is solved once, then the book value rolls forward period by period —
+    /// interest income accrues as a constant proportion of carrying value
+    /// (<c>basis × (1 + i)</c> less the period coupon), so a premium amortizes slowly at first and
+    /// faster near maturity, and a discount accretes in reverse — the ASC 310-20 profile the
+    /// straight-line method only approximates. The partial current period interpolates linearly
+    /// between period boundaries. Periods are level (no odd-first-period day-count adjustment);
+    /// the day-count convention scales elapsed time into period space.
+    /// </summary>
+    public decimal ConstantYieldAmortizedBasisAsOf(
+        DayCountConvention convention,
+        DateOnly maturity,
+        DateOnly asOf,
+        decimal annualCouponRatePercent,
+        int paymentsPerYear = 2)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(paymentsPerYear);
+        ArgumentOutOfRangeException.ThrowIfNegative(annualCouponRatePercent);
+
+        if (maturity <= AcquiredDate || PremiumDiscount == 0m)
+            return CostBasis;
+        if (asOf <= AcquiredDate)
+            return CostBasis;
+        if (asOf >= maturity)
+            return OriginalFace;
+
+        var lifeYears = DayCountConventions.Fraction(convention, AcquiredDate, maturity);
+        if (lifeYears <= 0m)
+            return CostBasis;
+
+        var totalPeriods = (int)Math.Round(lifeYears * paymentsPerYear, MidpointRounding.AwayFromZero);
+        if (totalPeriods < 1)
+            totalPeriods = 1;
+
+        var pricePerUnit = PricePercentOfPar / ParBasis;
+        var couponPerPeriod = annualCouponRatePercent / 100m / paymentsPerYear;
+        var yieldPerPeriod = SolveYieldPerPeriod(pricePerUnit, couponPerPeriod, totalPeriods);
+
+        // Elapsed holding scaled into period space, capped at the final period boundary.
+        var elapsedYears = DayCountConventions.Fraction(convention, AcquiredDate, asOf);
+        var elapsedPeriods = elapsedYears / lifeYears * totalPeriods;
+        if (elapsedPeriods >= totalPeriods)
+            return OriginalFace;
+
+        var wholePeriods = (int)decimal.Truncate(elapsedPeriods);
+        var partialPeriod = elapsedPeriods - wholePeriods;
+
+        var basis = pricePerUnit;
+        for (var period = 0; period < wholePeriods; period++)
+        {
+            basis = (basis * (1m + yieldPerPeriod)) - couponPerPeriod;
+        }
+
+        if (partialPeriod > 0m)
+        {
+            var nextBasis = (basis * (1m + yieldPerPeriod)) - couponPerPeriod;
+            basis += (nextBasis - basis) * partialPeriod;
+        }
+
+        return basis * OriginalFace;
+    }
+
+    /// <summary>
+    /// Solves the per-period yield that discounts the level coupon stream plus par redemption to
+    /// the acquisition price, by bisection — the pricing function is strictly decreasing in yield,
+    /// so the bracket converges unconditionally. Precision is far below a cent on realistic faces.
+    /// </summary>
+    private static decimal SolveYieldPerPeriod(decimal pricePerUnit, decimal couponPerPeriod, int totalPeriods)
+    {
+        var low = -0.5m;
+        var high = 5m;
+        for (var iteration = 0; iteration < 100; iteration++)
+        {
+            var mid = (low + high) / 2m;
+            if (PricePerUnitAtYield(couponPerPeriod, totalPeriods, mid) > pricePerUnit)
+            {
+                low = mid;
+            }
+            else
+            {
+                high = mid;
+            }
+        }
+
+        return (low + high) / 2m;
+    }
+
+    private static decimal PricePerUnitAtYield(decimal couponPerPeriod, int totalPeriods, decimal yieldPerPeriod)
+    {
+        if (yieldPerPeriod == 0m)
+            return (couponPerPeriod * totalPeriods) + 1m;
+
+        var discount = 1m;
+        var price = 0m;
+        for (var period = 1; period <= totalPeriods; period++)
+        {
+            discount /= 1m + yieldPerPeriod;
+            price += couponPerPeriod * discount;
+        }
+
+        return price + discount;
     }
 }
