@@ -19,6 +19,20 @@ against what they claim. Every finding is anchored to `file:line` at commit `780
 > those passes did not reach. Live status stays in the roadmap registry; nothing here competes with
 > it.
 
+**Landed with this document** (same branch, after the review was written — each slate carries
+regression tests): the WPF fabricated version check, activity feed, and Order Book demo-depth
+fallback are deleted (§4/§7); the automated breaker trip now runs the operator endpoint's
+kill-switch sweep and `LiveRunMetricsTracker` books percent-of-par fills at par scale (§2);
+`DailyAccrualWorker` catches up missed days in order and `journal-entry` resolves as an evidence
+subject (§6); OFX/IB-Flex/Alpaca movements flow through the transaction lane and empty-population
+transaction breaks publish as informational, non-blocking casework (§3); `AssignedTo` is rewritten
+server-side and the browser sends real session identity with armed confirms on period lock and
+schedule deletion (§3/§7); and the `/metrics` declaration, `HttpContext.User` stamping, paper
+slippage sample config, `--seed-demo` disclosure, Lean 501s, and `docs/start` corrections from the
+quick-win list are in (§1/§5). The remaining prioritized items — the reconciliation population
+projection, broker-truthful sweep enumeration, the release attachment, provenance-at-ingress, the
+fund-economics activation, journal immutability, and the WPF state un-fork — stay open.
+
 ## Headline
 
 The lineage of headlines: 2026-07 — "the codebase is dramatically more capable than the running
