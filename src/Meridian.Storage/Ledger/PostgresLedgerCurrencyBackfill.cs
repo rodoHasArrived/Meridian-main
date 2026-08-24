@@ -205,6 +205,12 @@ public sealed class PostgresLedgerCurrencyBackfill
     /// Stamps the identity translation onto the currency-blind legs carrying one disposition,
     /// optionally within a single ledger book. The <c>transaction_currency is null</c> guard makes
     /// this idempotent, and debit/credit are read into the transaction-side columns, never written.
+    /// <para>
+    /// V_ledger_030 made <c>journal_legs</c> immutable at the database; this repair is the one
+    /// governed mutation its trigger admits, and only from a transaction that has declared itself.
+    /// The declaration is transaction-scoped (<c>set_config(..., is_local => true)</c>), so it
+    /// expires with the transaction and never leaks to other work on the connection.
+    /// </para>
     /// </summary>
     private async Task<int> RepairAsync(
         NpgsqlConnection connection,
@@ -213,6 +219,14 @@ public sealed class PostgresLedgerCurrencyBackfill
         Guid? ledgerBookId,
         CancellationToken ct)
     {
+        await using (var declare = connection.CreateCommand())
+        {
+            declare.Transaction = transaction;
+            declare.CommandText =
+                "select set_config('meridian.ledger_currency_repair', 'on', true);";
+            await declare.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
         var bookFilter = ledgerBookId.HasValue
             ? "\n              and s.ledger_book_id = @ledger_book_id"
             : string.Empty;
