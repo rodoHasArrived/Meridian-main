@@ -1352,6 +1352,16 @@ describe("accounting-screen close-cockpit view model", () => {
       await result.current.lockClosePeriod();
     });
 
+    expect(lockClosePeriod).not.toHaveBeenCalled();
+    expect(result.current.lockClosePeriodArmed).toBe(true);
+    expect(result.current.lockClosePeriodButtonLabel).toBe("Confirm lock period");
+    expect(result.current.lockClosePeriodStatusText).toContain("Select Confirm lock period to proceed.");
+    expect(result.current.lockClosePeriodStatusTone).toBe("neutral");
+
+    await act(async () => {
+      await result.current.lockClosePeriod();
+    });
+
     expect(lockClosePeriod).toHaveBeenCalledWith(expect.objectContaining({
       workflowId: "workflow-close-1",
       expectedWorkflowVersion: closePeriodPlan.workflowVersion,
@@ -1381,6 +1391,7 @@ describe("accounting-screen close-cockpit view model", () => {
     }));
     expect(result.current.lockClosePeriodStatusText).toBe("Locked close period 2026-05.");
     expect(result.current.lockClosePeriodStatusTone).toBe("success");
+    expect(result.current.lockClosePeriodArmed).toBe(false);
     expect(result.current.lockLabel).toBe("Period locked");
 
     await act(async () => {

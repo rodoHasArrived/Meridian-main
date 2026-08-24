@@ -224,8 +224,10 @@ export interface PlaidAccountLinkRequest {
   entityId?: string | null;
 }
 
+// userId is the session operator identity when the shell supplies one; omitted otherwise so the
+// server resolves the session actor.
 export interface PlaidLinkTokenRequest {
-  userId: string;
+  userId?: string | null;
   meridianAccountId?: string | null;
   products?: string[] | null;
   webhookUrl?: string | null;
@@ -246,12 +248,14 @@ export interface PlaidLinkTokenResponse {
   environment?: string | null;
 }
 
+// requestedBy is the session operator identity when the shell supplies one; omitted otherwise so
+// the server resolves the session actor.
 export interface PlaidPublicTokenExchangeRequest {
   publicToken: string;
   institutionId?: string | null;
   institutionName?: string | null;
   accounts: PlaidAccountLinkRequest[];
-  requestedBy: string;
+  requestedBy?: string | null;
 }
 
 export interface PlaidPublicTokenExchangeResult {

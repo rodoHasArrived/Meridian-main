@@ -402,7 +402,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
           <Button
             type="button"
             size="sm"
-            variant="outline"
+            variant={view.lockClosePeriodArmed ? "destructive" : "outline"}
             disabled={Boolean(view.lockClosePeriodDisabledReason)}
             disabledReason={view.lockClosePeriodDisabledReason ?? undefined}
             busy={view.lockClosePeriodBusy}

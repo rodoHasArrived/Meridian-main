@@ -2774,6 +2774,7 @@ export interface AccountingCloseReportPackageViewModel {
   lockClosePeriodBusy: boolean;
   lockClosePeriodStatusText: string | null;
   lockClosePeriodStatusTone: "neutral" | "success" | "danger";
+  lockClosePeriodArmed: boolean;
   queueClosingEntriesBusy: boolean;
   queueClosingEntriesStatusText: string | null;
   queueClosingEntriesStatusTone: "neutral" | "success" | "danger";
@@ -3842,7 +3843,8 @@ export function useAccountingReconciliationViewModel(
   data: AccountingWorkspaceResponse | null,
   workstream: AccountingWorkstream,
   services: AccountingReconciliationServices = defaultAccountingReconciliationServices,
-  systemReconciliation: AccountingSystemReconciliationSummary | null = null
+  systemReconciliation: AccountingSystemReconciliationSummary | null = null,
+  operatorIdentity: string | null = null
 ) {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [breakQueue, setBreakQueue] = useState<ReconciliationBreakQueueItem[]>(data?.breakQueue ?? []);
@@ -4048,7 +4050,10 @@ export function useAccountingReconciliationViewModel(
     setBreakActionError(null);
 
     try {
-      const operation = await services.reviewBreak({ breakId, assignedTo: "ops.gov", reviewedBy: "ops.gov" });
+      const operation = await services.reviewBreak({
+        breakId,
+        ...(operatorIdentity ? { assignedTo: operatorIdentity, reviewedBy: operatorIdentity } : {})
+      });
       const updated = requireSuccessfulReconciliationCasework(operation);
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
     } catch (err) {
@@ -4056,7 +4061,7 @@ export function useAccountingReconciliationViewModel(
     } finally {
       setBreakAction(null);
     }
-  }, [services]);
+  }, [operatorIdentity, services]);
 
   const resolveBreak = useCallback(async (
     breakId: string,
@@ -4080,8 +4085,8 @@ export function useAccountingReconciliationViewModel(
       const operation = await services.resolveBreak({
         breakId,
         status,
-        resolvedBy: "ops.gov",
-        resolutionNote: "Reviewed in accounting panel.",
+        ...(operatorIdentity ? { resolvedBy: operatorIdentity } : {}),
+        resolutionNote: trimmedRationale,
         operatorRationale: trimmedRationale
       });
       const updated = requireSuccessfulReconciliationCasework(operation);
@@ -4091,7 +4096,7 @@ export function useAccountingReconciliationViewModel(
     } finally {
       setBreakAction(null);
     }
-  }, [services]);
+  }, [operatorIdentity, services]);
 
   const breakQueueState = useMemo(
     () => buildReconciliationBreakQueueState({

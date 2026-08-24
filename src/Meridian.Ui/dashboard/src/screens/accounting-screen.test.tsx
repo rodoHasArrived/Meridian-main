@@ -35,7 +35,8 @@ import type {
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
   SecurityMasterConflict,
-  SecurityMasterTrustSnapshot
+  SecurityMasterTrustSnapshot,
+  SessionInfo
 } from "@/types";
 import { requireFirst, requirePresent } from "@/test/fixtures";
 
@@ -5382,13 +5383,13 @@ describe("AccountingScreen", () => {
     expect(screen.getByText(/Historical breaks have been worked through/)).toBeInTheDocument();
   });
 
-  it("assigns reconciliation breaks through the view model workflow", async () => {
+  it("assigns reconciliation breaks without a fabricated actor when no session identity is available", async () => {
     const user = userEvent.setup();
     const updatedBreak = {
       ...data.breakQueue[0],
       status: "InReview" as const,
-      assignedTo: "ops.gov",
-      reviewedBy: "ops.gov",
+      assignedTo: "ops-user",
+      reviewedBy: "ops-user",
       reviewedAt: "2026-01-01T00:05:00Z"
     };
 
@@ -5401,13 +5402,87 @@ describe("AccountingScreen", () => {
 
     await user.click(await screen.findByRole("button", { name: "Assign reconciliation break run-42:cash" }));
 
-    expect(api.reviewReconciliationBreak).toHaveBeenCalledWith({
-      breakId: "run-42:cash",
-      assignedTo: "ops.gov",
-      reviewedBy: "ops.gov"
-    });
+    expect(api.reviewReconciliationBreak).toHaveBeenCalledWith({ breakId: "run-42:cash" });
     const detail = await screen.findByRole("region", { name: "Reconciliation break detail for run-42:cash" });
     expect(within(detail).getByText("InReview")).toBeInTheDocument();
+  });
+
+  it("sends the session operator identity when assigning reconciliation breaks", async () => {
+    const user = userEvent.setup();
+    const session: SessionInfo = {
+      displayName: "Avery Chen",
+      role: "Fund operations",
+      environment: "paper",
+      activeWorkspace: "accounting",
+      commandCount: 3
+    };
+    const updatedBreak = {
+      ...data.breakQueue[0],
+      status: "InReview" as const,
+      assignedTo: "Avery Chen",
+      reviewedBy: "Avery Chen",
+      reviewedAt: "2026-01-01T00:05:00Z"
+    };
+
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
+    vi.mocked(api.reviewReconciliationBreak).mockResolvedValueOnce(
+      successfulReconciliationCaseworkOperation(updatedBreak)
+    );
+
+    renderWithRouter(
+      <AccountingScreen data={data} session={session} />,
+      { initialEntries: ["/accounting/reconciliation"] }
+    );
+    await waitForAsyncEffects();
+
+    await user.click(await screen.findByRole("button", { name: "Assign reconciliation break run-42:cash" }));
+
+    expect(api.reviewReconciliationBreak).toHaveBeenCalledWith({
+      breakId: "run-42:cash",
+      assignedTo: "Avery Chen",
+      reviewedBy: "Avery Chen"
+    });
+  });
+
+  it("sends the operator rationale and session identity when resolving reconciliation breaks", async () => {
+    const user = userEvent.setup();
+    const session: SessionInfo = {
+      displayName: "Avery Chen",
+      role: "Fund operations",
+      environment: "paper",
+      activeWorkspace: "accounting",
+      commandCount: 3
+    };
+    const resolvedBreak = {
+      ...data.breakQueue[0],
+      status: "Resolved" as const,
+      resolvedBy: "Avery Chen",
+      resolvedAt: "2026-01-01T00:10:00Z",
+      resolutionNote: "Matched the balancing ledger entry."
+    };
+
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
+    vi.mocked(api.resolveReconciliationBreak).mockResolvedValueOnce(
+      successfulReconciliationCaseworkOperation(resolvedBreak)
+    );
+
+    renderWithRouter(
+      <AccountingScreen data={data} session={session} />,
+      { initialEntries: ["/accounting/reconciliation"] }
+    );
+    await waitForAsyncEffects();
+
+    await user.click(await screen.findByRole("button", { name: "Resolve reconciliation break run-42:cash" }));
+    await user.type(await screen.findByLabelText(/resolve rationale/i), "Matched the balancing ledger entry.");
+    await user.click(screen.getByRole("button", { name: /confirm resolve/i }));
+
+    await waitFor(() => expect(api.resolveReconciliationBreak).toHaveBeenCalledWith({
+      breakId: "run-42:cash",
+      status: "Resolved",
+      resolvedBy: "Avery Chen",
+      resolutionNote: "Matched the balancing ledger entry.",
+      operatorRationale: "Matched the balancing ledger entry."
+    }));
   });
 
   it("surfaces view-model disabled reasons for reconciliation queue actions", async () => {
