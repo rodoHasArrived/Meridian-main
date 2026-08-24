@@ -956,8 +956,8 @@ public sealed class CoveredCallBacktestServiceTests
                 bar.ToTimestampUtc(),
                 symbol,
                 bar,
-                sequence,
-                "covered-call-service-test");
+                "covered-call-service-test",
+                sequence);
 
             writer.WriteLine(JsonSerializer.Serialize(
                 marketEvent,

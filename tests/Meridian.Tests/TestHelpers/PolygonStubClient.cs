@@ -78,7 +78,7 @@ public sealed class PolygonStubClient : IMarketDataClient
             Aggressor: AggressorSide.Unknown,
             SequenceNumber: 0,
             StreamId: "POLYGON_STUB",
-            Venue: "POLYGON"));
+            Venue: "POLYGON", Source: "PolygonStub"));
 
         return id;
     }

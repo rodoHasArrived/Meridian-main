@@ -47,7 +47,7 @@ public class JsonSerializationBenchmarks
                 SequenceNumber: 12345,
                 StreamId: "ALPACA",
                 Venue: "NYSE"
-            ));
+            ), source: "BENCH");
 
         _tradeEvents = Enumerable.Range(0, 1000)
             .Select(i =>
@@ -65,7 +65,7 @@ public class JsonSerializationBenchmarks
                         SequenceNumber: i,
                         StreamId: "BENCH",
                         Venue: "TEST"
-                    ));
+                    ), source: "BENCH");
             })
             .ToArray();
 

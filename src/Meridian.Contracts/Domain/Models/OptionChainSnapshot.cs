@@ -72,7 +72,7 @@ public sealed record OptionChainSnapshot : MarketEventPayload
         IReadOnlyList<OptionQuote> Puts,
         InstrumentType InstrumentType = InstrumentType.EquityOption,
         long SequenceNumber = 0,
-        string Source = "IB")
+        string Source = MarketDataSources.Unknown)
     {
         if (string.IsNullOrWhiteSpace(UnderlyingSymbol))
             throw new ArgumentException("Underlying symbol is required", nameof(UnderlyingSymbol));

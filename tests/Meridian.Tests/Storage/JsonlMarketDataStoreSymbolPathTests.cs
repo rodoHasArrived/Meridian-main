@@ -214,6 +214,6 @@ public sealed class JsonlMarketDataStoreSymbolPathTests : TempDirectoryTestBase
             AggressorSide.Buy,
             sequence);
 
-        return MarketEvent.Trade(timestamp, symbol, trade, sequence, source);
+        return MarketEvent.Trade(timestamp, symbol, trade, source, sequence);
     }
 }

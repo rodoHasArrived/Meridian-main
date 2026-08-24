@@ -8,6 +8,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Platform.Results;
 using Meridian.Application.Services;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.DataIntegration.Monitoring;
@@ -305,15 +306,16 @@ public sealed class CollectorModeRunner
                 var now = DateTimeOffset.UtcNow;
                 var sym = symbols[0].Symbol;
 
-                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Bid, 500.24m, 300m, "MM1"));
-                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Ask, 500.26m, 250m, "MM2"));
-                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Update, OrderBookSide.Bid, 500.24m, 350m, "MM1"));
-                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 3, DepthOperation.Update, OrderBookSide.Ask, 500.30m, 100m, "MMX"));
+                // The simulated feed self-identifies as SAMPLE — never as a real vendor.
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Bid, 500.24m, 300m, "MM1", Source: MarketDataSources.Sample));
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Ask, 500.26m, 250m, "MM2", Source: MarketDataSources.Sample));
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Update, OrderBookSide.Bid, 500.24m, 350m, "MM1", Source: MarketDataSources.Sample));
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 3, DepthOperation.Update, OrderBookSide.Ask, 500.30m, 100m, "MMX", Source: MarketDataSources.Sample));
                 depthCollector.ResetSymbolStream(sym);
-                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Bid, 500.20m, 100m, "MM3"));
-                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Ask, 500.22m, 90m, "MM4"));
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Bid, 500.20m, 100m, "MM3", Source: MarketDataSources.Sample));
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Ask, 500.22m, 90m, "MM4", Source: MarketDataSources.Sample));
 
-                tradeCollector.OnTrade(new MarketTradeUpdate(now, sym, 500.21m, 100, AggressorSide.Buy, SequenceNumber: 1, StreamId: "SIM", Venue: "TEST"));
+                tradeCollector.OnTrade(new MarketTradeUpdate(now, sym, 500.21m, 100, AggressorSide.Buy, SequenceNumber: 1, StreamId: "SIM", Venue: "TEST", Source: MarketDataSources.Sample));
 
                 await Task.Delay(200, ct);
             }

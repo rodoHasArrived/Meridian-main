@@ -1449,7 +1449,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             StreamId: "TEST",
             Venue: "XNAS");
 
-        return MarketEvent.Trade(ts, symbol, trade, sequence, "TEST");
+        return MarketEvent.Trade(ts, symbol, trade, "TEST", sequence);
     }
 
     /// <summary>

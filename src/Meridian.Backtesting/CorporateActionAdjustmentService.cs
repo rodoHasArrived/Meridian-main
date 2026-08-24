@@ -166,7 +166,8 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
             Close: bar.Close * dividendFactor / splitDivisor,
             Volume: (long)Math.Round(bar.Volume * splitDivisor, MidpointRounding.AwayFromZero),
             Source: bar.Source,
-            SequenceNumber: bar.SequenceNumber);
+            SequenceNumber: bar.SequenceNumber,
+            IsAdjusted: true);
     }
 
     private static IReadOnlyDictionary<DateOnly, decimal> BuildDividendFactors(

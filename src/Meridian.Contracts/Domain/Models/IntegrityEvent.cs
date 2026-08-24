@@ -104,6 +104,25 @@ public sealed record IntegrityEvent(
 
 
     /// <summary>
+    /// Creates a missing-source integrity event for an ingress update that carried no
+    /// provider identity. The update is rejected rather than being silently attributed
+    /// to a default vendor, so this event is the loud mark the tape keeps instead.
+    /// </summary>
+    public static IntegrityEvent MissingSource(
+        DateTimeOffset ts,
+        string symbol,
+        string updateKind,
+        long sequenceNumber,
+        string? streamId = null,
+        string? venue = null)
+        => new(ts, symbol, IntegritySeverity.Error,
+            $"Rejected {updateKind} update without a provider source: adapters must stamp their real provider identity at origin.",
+            ErrorCode: 1008,
+            SequenceNumber: sequenceNumber,
+            StreamId: streamId,
+            Venue: venue);
+
+    /// <summary>
     /// Creates a canonicalization hard-fail integrity event when required fields are missing.
     /// </summary>
     public static IntegrityEvent CanonicalizationHardFail(
