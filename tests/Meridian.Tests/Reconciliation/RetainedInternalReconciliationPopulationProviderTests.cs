@@ -77,7 +77,7 @@ public sealed class RetainedInternalReconciliationPopulationProviderTests
         var transaction = result.LedgerTransactions.Should().ContainSingle().Subject;
         transaction.Account.Should().Be("EXT-1", "projected transactions are labeled with the run's external account key");
         captured.Should().NotBeNull();
-        captured!.AccountKey.Should().Be("EXT-1");
+        captured!.AccountLabel.Should().Be("EXT-1");
         captured.AccountAliases.Should().Contain(
             AccountId.ToString("D"), "journals stamped with the fund-account GUID must attribute to this account");
         captured.AccountAliases.Should().Contain(

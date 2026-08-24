@@ -81,7 +81,7 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
             // Both sides of the match are keyed by the run's external (custodian) account so the
             // per-row account string a statement carries (an IBAN, a bank id, a broker account number)
             // does not have to equal Meridian's internal account code for the books to reconcile.
-            var accountKey = string.IsNullOrWhiteSpace(context.ExternalAccountId)
+            var accountLabel = string.IsNullOrWhiteSpace(context.ExternalAccountId)
                 ? context.FundAccountId
                 : context.ExternalAccountId.Trim();
 
@@ -91,9 +91,9 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                 ? (DateOnly?)null
                 : context.StatementPeriodEnd;
 
-            var cash = await ReadCashAsync(accounts, accountId, accountKey, asOfCeiling, ct).ConfigureAwait(false);
-            var positions = await ReadPositionsAsync(positionSnapshots, account, context.FundAccountId, accountKey, asOfCeiling, ct).ConfigureAwait(false);
-            var ledgerTransactions = await ReadLedgerTransactionsAsync(ledgerTransactionSource, account, context, accountKey, ct).ConfigureAwait(false);
+            var cash = await ReadCashAsync(accounts, accountId, accountLabel, asOfCeiling, ct).ConfigureAwait(false);
+            var positions = await ReadPositionsAsync(positionSnapshots, account, context.FundAccountId, accountLabel, asOfCeiling, ct).ConfigureAwait(false);
+            var ledgerTransactions = await ReadLedgerTransactionsAsync(ledgerTransactionSource, account, context, accountLabel, ct).ConfigureAwait(false);
 
             return new InternalReconciliationPopulations(positions, cash, ledgerTransactions);
         }
@@ -112,7 +112,7 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
     private static async Task<IReadOnlyList<InternalCashBalance>> ReadCashAsync(
         IAccountQueryService accounts,
         Guid accountId,
-        string accountKey,
+        string accountLabel,
         DateOnly? asOfCeiling,
         CancellationToken ct)
     {
@@ -142,8 +142,8 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                     .ThenByDescending(snapshot => snapshot.RecordedAt)
                     .First();
                 return new InternalCashBalance(
-                    $"internal-cash:{accountKey}:{group.Key}",
-                    accountKey,
+                    $"internal-cash:{accountLabel}:{group.Key}",
+                    accountLabel,
                     latest.Currency,
                     latest.CashBalance,
                     $"internal:balance:{latest.SnapshotId:D}",
@@ -163,7 +163,7 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
         IInternalLedgerTransactionSource? ledgerTransactionSource,
         AccountSummaryDto account,
         InternalReconciliationPopulationContext context,
-        string accountKey,
+        string accountLabel,
         CancellationToken ct)
     {
         if (ledgerTransactionSource is null)
@@ -185,7 +185,7 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
         return await ledgerTransactionSource
             .GetTransactionsAsync(
                 new InternalLedgerTransactionQuery(
-                    accountKey,
+                    accountLabel,
                     aliases,
                     context.StatementPeriodStart,
                     context.StatementPeriodEnd,
@@ -198,7 +198,7 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
         IPositionSnapshotStore? positionSnapshots,
         AccountSummaryDto account,
         string accountIdText,
-        string accountKey,
+        string accountLabel,
         DateOnly? asOfCeiling,
         CancellationToken ct)
     {
@@ -224,8 +224,8 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
             }
 
             positions.Add(new InternalPortfolioPosition(
-                $"internal-pos:{accountKey}:{position.Symbol}",
-                accountKey,
+                $"internal-pos:{accountLabel}:{position.Symbol}",
+                accountLabel,
                 position.Symbol,
                 asOfDate,
                 position.Quantity,

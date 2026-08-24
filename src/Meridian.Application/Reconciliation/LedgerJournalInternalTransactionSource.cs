@@ -9,14 +9,14 @@ namespace Meridian.Application.Reconciliation;
 
 /// <summary>
 /// Identifies the fund account and statement window an internal ledger-transaction population is
-/// projected for. <paramref name="AccountKey"/> is the label every projected record carries — the
+/// projected for. <paramref name="AccountLabel"/> is the label every projected record carries — the
 /// run's external (custodian) account key, matching how the retained cash and position populations
 /// are labeled. <paramref name="AccountAliases"/> are the identifiers a posted journal may be
 /// stamped with for this account (the fund-account GUID, the account's ledger reference, the
 /// external custodian key); a journal attributable to none of them is never projected.
 /// </summary>
 public sealed record InternalLedgerTransactionQuery(
-    string AccountKey,
+    string AccountLabel,
     IReadOnlyList<string> AccountAliases,
     DateOnly PeriodStart,
     DateOnly PeriodEnd,
@@ -185,15 +185,14 @@ public sealed class LedgerJournalInternalTransactionSource(
             // Fail closed to the empty transaction population only: the retained cash/position
             // populations must keep reconciling even when the journal store is unavailable or does
             // not support scoped queries.
-            // AccountKey is the reconciliation run's account label - the fund-account Guid
-            // surrogate or its ledger reference, the same identifier every retained statement and
-            // internal population record already carries as its identity. It is not a credential
-            // or provider-side account number, and without it the warning cannot say which
-            // account's projection failed closed. What triggers the query is the identifier's
-            // name. Same reasoning as the brokerage-sync suppressions.
-            // The statement stays on one line so the suppression comment sits on the alert's own
-            // line - the scanner anchors the alert to the argument, not the statement start.
-            logger?.LogWarning(ex, "Failed to query posted journals for account {AccountKey}; projecting an empty internal transaction population.", query.AccountKey); // codeql[cs/cleartext-storage-of-sensitive-information]
+            // The account label is the run's reconciliation identity - the fund-account Guid
+            // surrogate or its ledger reference, the same label every retained population record
+            // carries - not a credential or provider-side account number; without it the warning
+            // cannot say which account's projection failed closed.
+            logger?.LogWarning(
+                ex,
+                "Failed to query posted journals for account {AccountLabel}; projecting an empty internal transaction population.",
+                query.AccountLabel);
             return [];
         }
 
@@ -261,12 +260,12 @@ public sealed class LedgerJournalInternalTransactionSource(
             foreach (var (currency, netAmount) in currencyGroups)
             {
                 var transactionId = currencyGroups.Length == 1
-                    ? $"internal-txn:{query.AccountKey}:{journalId}"
-                    : $"internal-txn:{query.AccountKey}:{journalId}:{currency}";
+                    ? $"internal-txn:{query.AccountLabel}:{journalId}"
+                    : $"internal-txn:{query.AccountLabel}:{journalId}:{currency}";
                 transactions.Add(new InternalLedgerTransaction(
                     transactionId,
                     externalTransactionId,
-                    query.AccountKey,
+                    query.AccountLabel,
                     entry.Metadata.Symbol,
                     currency,
                     tradeDate,

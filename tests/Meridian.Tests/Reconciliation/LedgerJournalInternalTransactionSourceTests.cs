@@ -18,7 +18,7 @@ namespace Meridian.Tests.Reconciliation;
 /// </summary>
 public sealed class LedgerJournalInternalTransactionSourceTests
 {
-    private const string AccountKey = "EXT-1";
+    private const string AccountLabel = "EXT-1";
     private static readonly DateOnly PeriodStart = new(2026, 5, 1);
     private static readonly DateOnly PeriodEnd = new(2026, 5, 31);
 
@@ -28,50 +28,50 @@ public sealed class LedgerJournalInternalTransactionSourceTests
         var trade = Journal(
             Timestamp(2026, 5, 28),
             "Buy 10 MSFT",
-            new JournalEntryMetadata(ActivityType: "buy", Symbol: "MSFT", FinancialAccountId: AccountKey),
-            (LedgerAccounts.Securities("MSFT", AccountKey), 5000m, 0m),
-            (LedgerAccounts.CommissionExpenseFor(AccountKey), 5m, 0m),
-            (LedgerAccounts.CashAccount(AccountKey), 0m, 5005m));
+            new JournalEntryMetadata(ActivityType: "buy", Symbol: "MSFT", FinancialAccountId: AccountLabel),
+            (LedgerAccounts.Securities("MSFT", AccountLabel), 5000m, 0m),
+            (LedgerAccounts.CommissionExpenseFor(AccountLabel), 5m, 0m),
+            (LedgerAccounts.CashAccount(AccountLabel), 0m, 5005m));
         var fee = Journal(
             Timestamp(2026, 5, 29),
             "Monthly custody fee",
-            new JournalEntryMetadata(ActivityType: "commission", FinancialAccountId: AccountKey),
-            (LedgerAccounts.CommissionExpenseFor(AccountKey), 25m, 0m),
-            (LedgerAccounts.CashAccount(AccountKey), 0m, 25m));
+            new JournalEntryMetadata(ActivityType: "commission", FinancialAccountId: AccountLabel),
+            (LedgerAccounts.CommissionExpenseFor(AccountLabel), 25m, 0m),
+            (LedgerAccounts.CashAccount(AccountLabel), 0m, 25m));
         var dividend = Journal(
             Timestamp(2026, 5, 30),
             "MSFT dividend received",
-            new JournalEntryMetadata(Symbol: "MSFT", FinancialAccountId: AccountKey),
-            (LedgerAccounts.CashAccount(AccountKey), 40m, 0m),
-            (LedgerAccounts.DividendIncomeFor(AccountKey), 0m, 40m));
+            new JournalEntryMetadata(Symbol: "MSFT", FinancialAccountId: AccountLabel),
+            (LedgerAccounts.CashAccount(AccountLabel), 40m, 0m),
+            (LedgerAccounts.DividendIncomeFor(AccountLabel), 0m, 40m));
         // Pure internal postings: a valuation mark moves no cash, and a cash reclass nets to zero
         // in its currency. Neither has a custodian-visible counterpart, so neither may project.
         var valuationMark = Journal(
             Timestamp(2026, 5, 30),
             "Fair value mark MSFT",
-            new JournalEntryMetadata(ActivityType: "fair-value-mark", Symbol: "MSFT", FinancialAccountId: AccountKey),
-            (LedgerAccounts.Securities("MSFT", AccountKey), 100m, 0m),
-            (LedgerAccounts.UnrealizedGainFor(AccountKey), 0m, 100m));
+            new JournalEntryMetadata(ActivityType: "fair-value-mark", Symbol: "MSFT", FinancialAccountId: AccountLabel),
+            (LedgerAccounts.Securities("MSFT", AccountLabel), 100m, 0m),
+            (LedgerAccounts.UnrealizedGainFor(AccountLabel), 0m, 100m));
         var internalReclass = Journal(
             Timestamp(2026, 5, 30),
             "Internal cash reclass",
-            new JournalEntryMetadata(FinancialAccountId: AccountKey),
-            (LedgerAccounts.CashAccount(AccountKey), 500m, 0m),
-            (LedgerAccounts.CashAccount(AccountKey), 0m, 500m));
+            new JournalEntryMetadata(FinancialAccountId: AccountLabel),
+            (LedgerAccounts.CashAccount(AccountLabel), 500m, 0m),
+            (LedgerAccounts.CashAccount(AccountLabel), 0m, 500m));
 
         var source = Source(trade, fee, dividend, valuationMark, internalReclass);
 
         var transactions = await source.GetTransactionsAsync(Query());
 
         transactions.Should().HaveCount(3, "only custodian-visible cash movements project");
-        transactions.Should().OnlyContain(transaction => transaction.Account == AccountKey);
+        transactions.Should().OnlyContain(transaction => transaction.Account == AccountLabel);
 
         var projectedTrade = transactions.Single(transaction => transaction.TransactionType == "trade");
         projectedTrade.SecurityId.Should().Be("MSFT");
         projectedTrade.NetAmount.Should().Be(-5005m, "the trade's net cash out includes the embedded commission");
         projectedTrade.Currency.Should().Be("USD");
         projectedTrade.TradeDate.Should().Be(new DateOnly(2026, 5, 28));
-        projectedTrade.TransactionId.Should().Be($"internal-txn:{AccountKey}:{trade.JournalEntryId:D}");
+        projectedTrade.TransactionId.Should().Be($"internal-txn:{AccountLabel}:{trade.JournalEntryId:D}");
         projectedTrade.EvidenceReference.Should().Be($"internal:journal:{trade.JournalEntryId:D}");
 
         var projectedFee = transactions.Single(transaction => transaction.TransactionType == "fee");
@@ -92,7 +92,7 @@ public sealed class LedgerJournalInternalTransactionSourceTests
             new JournalEntryMetadata(
                 ActivityType: "buy",
                 Symbol: "MSFT",
-                FinancialAccountId: AccountKey,
+                FinancialAccountId: AccountLabel,
                 EffectiveDate: new DateOnly(2026, 5, 28),
                 SettlementReference: "EXT-9",
                 Tags: new Dictionary<string, string>
@@ -100,14 +100,14 @@ public sealed class LedgerJournalInternalTransactionSourceTests
                     ["quantity"] = "5",
                     ["settlementDate"] = "2026-05-30",
                 }),
-            (LedgerAccounts.Securities("MSFT", AccountKey), 100m, 0m),
-            (LedgerAccounts.CashAccount(AccountKey), 0m, 100m));
+            (LedgerAccounts.Securities("MSFT", AccountLabel), 100m, 0m),
+            (LedgerAccounts.CashAccount(AccountLabel), 0m, 100m));
         var internalTransactions = await Source(trade).GetTransactionsAsync(Query());
 
         var statementRow = new NormalizedStatementTransaction(
             "import-1:3",
             "EXT-9",
-            AccountKey,
+            AccountLabel,
             "MSFT",
             "USD",
             new DateOnly(2026, 5, 28),
@@ -142,15 +142,15 @@ public sealed class LedgerJournalInternalTransactionSourceTests
         var inWindow = Journal(
             Timestamp(2026, 5, 20),
             "In-window deposit",
-            new JournalEntryMetadata(FinancialAccountId: AccountKey),
-            (LedgerAccounts.CashAccount(AccountKey), 1000m, 0m),
-            (LedgerAccounts.CapitalAccountFor(AccountKey), 0m, 1000m));
+            new JournalEntryMetadata(FinancialAccountId: AccountLabel),
+            (LedgerAccounts.CashAccount(AccountLabel), 1000m, 0m),
+            (LedgerAccounts.CapitalAccountFor(AccountLabel), 0m, 1000m));
         var afterWindow = Journal(
             Timestamp(2026, 6, 15),
             "Post-period withdrawal",
-            new JournalEntryMetadata(FinancialAccountId: AccountKey),
-            (LedgerAccounts.CapitalAccountFor(AccountKey), 400m, 0m),
-            (LedgerAccounts.CashAccount(AccountKey), 0m, 400m));
+            new JournalEntryMetadata(FinancialAccountId: AccountLabel),
+            (LedgerAccounts.CapitalAccountFor(AccountLabel), 400m, 0m),
+            (LedgerAccounts.CashAccount(AccountLabel), 0m, 400m));
         var store = new QueryRecordingLedgerJournalStore([Record(inWindow), Record(afterWindow)]);
 
         var transactions = await new LedgerJournalInternalTransactionSource(store).GetTransactionsAsync(Query());
@@ -179,8 +179,8 @@ public sealed class LedgerJournalInternalTransactionSourceTests
             Timestamp(2026, 5, 21),
             "Line-scoped dividend",
             new JournalEntryMetadata(Symbol: "SPY"),
-            (LedgerAccounts.CashAccount(AccountKey), 12m, 0m),
-            (LedgerAccounts.DividendIncomeFor(AccountKey), 0m, 12m));
+            (LedgerAccounts.CashAccount(AccountLabel), 12m, 0m),
+            (LedgerAccounts.DividendIncomeFor(AccountLabel), 0m, 12m));
 
         var transactions = await Source(otherAccount, lineScoped).GetTransactionsAsync(Query());
 
@@ -195,9 +195,9 @@ public sealed class LedgerJournalInternalTransactionSourceTests
         var original = Journal(
             Timestamp(2026, 5, 12),
             "Dividend posted in error",
-            new JournalEntryMetadata(ActivityType: "dividend", Symbol: "SPY", FinancialAccountId: AccountKey),
-            (LedgerAccounts.CashAccount(AccountKey), 75m, 0m),
-            (LedgerAccounts.DividendIncomeFor(AccountKey), 0m, 75m));
+            new JournalEntryMetadata(ActivityType: "dividend", Symbol: "SPY", FinancialAccountId: AccountLabel),
+            (LedgerAccounts.CashAccount(AccountLabel), 75m, 0m),
+            (LedgerAccounts.DividendIncomeFor(AccountLabel), 0m, 75m));
         var reversal = LedgerJournalReversal.Reverse(
             original,
             Guid.NewGuid(),
@@ -225,7 +225,7 @@ public sealed class LedgerJournalInternalTransactionSourceTests
                     Guid.NewGuid(),
                     journalId,
                     timestamp,
-                    LedgerAccounts.CashInCurrency("EUR", AccountKey),
+                    LedgerAccounts.CashInCurrency("EUR", AccountLabel),
                     1085m,
                     0m,
                     description,
@@ -234,13 +234,13 @@ public sealed class LedgerJournalInternalTransactionSourceTests
                     Guid.NewGuid(),
                     journalId,
                     timestamp,
-                    LedgerAccounts.CashInCurrency("USD", AccountKey),
+                    LedgerAccounts.CashInCurrency("USD", AccountLabel),
                     0m,
                     1085m,
                     description,
                     currency: new LedgerEntryCurrency("USD", "USD", 0m, 1085m, 1m)),
             ],
-            new JournalEntryMetadata(FinancialAccountId: AccountKey));
+            new JournalEntryMetadata(FinancialAccountId: AccountLabel));
 
         var transactions = await Source(fxConversion).GetTransactionsAsync(Query());
 
@@ -250,7 +250,7 @@ public sealed class LedgerJournalInternalTransactionSourceTests
         transactions.Should().ContainSingle(transaction =>
             transaction.Currency == "USD" && transaction.NetAmount == -1085m);
         transactions.Should().OnlyContain(transaction =>
-            transaction.TransactionId.StartsWith($"internal-txn:{AccountKey}:{journalId:D}:", StringComparison.Ordinal));
+            transaction.TransactionId.StartsWith($"internal-txn:{AccountLabel}:{journalId:D}:", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -284,7 +284,7 @@ public sealed class LedgerJournalInternalTransactionSourceTests
         var source = new LedgerJournalInternalTransactionSource(store);
 
         var transactions = await source.GetTransactionsAsync(
-            new InternalLedgerTransactionQuery(AccountKey, [AccountKey], default, default, "USD"));
+            new InternalLedgerTransactionQuery(AccountLabel, [AccountLabel], default, default, "USD"));
 
         transactions.Should().BeEmpty("a period-scoped projection is meaningless without a statement window");
         store.LastQuery.Should().BeNull("no unbounded journal read may be issued");
@@ -294,7 +294,7 @@ public sealed class LedgerJournalInternalTransactionSourceTests
         new(new QueryRecordingLedgerJournalStore(entries.Select(Record).ToArray()));
 
     private static InternalLedgerTransactionQuery Query() =>
-        new(AccountKey, [AccountKey], PeriodStart, PeriodEnd, "USD");
+        new(AccountLabel, [AccountLabel], PeriodStart, PeriodEnd, "USD");
 
     private static DateTimeOffset Timestamp(int year, int month, int day) =>
         new(year, month, day, 14, 30, 0, TimeSpan.Zero);
