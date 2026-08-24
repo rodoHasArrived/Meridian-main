@@ -23,7 +23,7 @@ namespace Meridian.Wpf.Tests.Services;
 public sealed class FundReconciliationWorkbenchServiceTests
 {
     [Fact]
-    public async Task GetSnapshotAsync_SortsBreakQueueAndIncludesStrategyAndAccountRuns()
+    public async Task GetSnapshotAsync_SortsBreakQueue_AndBuildsRunRowsFromServerApiOnly()
     {
         var context = await CreateContextAsync();
 
@@ -35,7 +35,9 @@ public sealed class FundReconciliationWorkbenchServiceTests
             "run-fund-ops:open-small",
             "run-fund-ops:reviewed-gap");
         snapshot.RunRows.Should().Contain(row => row.SourceType == FundReconciliationSourceType.StrategyRun);
-        snapshot.RunRows.Should().Contain(row => row.SourceType == FundReconciliationSourceType.AccountRun);
+        // The desktop-local fund-account JSON universe recorded in CreateContextAsync must
+        // not surface beside the server break queue: one screen, one source of truth.
+        snapshot.RunRows.Should().NotContain(row => row.SourceType == FundReconciliationSourceType.AccountRun);
         snapshot.RunRows.First().HasOpenExceptions.Should().BeTrue();
         snapshot.InReviewBreakCount.Should().Be(1);
         snapshot.CalibrationSummary.Should().NotBeNull();
@@ -53,7 +55,7 @@ public sealed class FundReconciliationWorkbenchServiceTests
     }
 
     [Fact]
-    public async Task GetSnapshotAsync_WhenWorkstationApiUnavailable_KeepsLocalRunsAndFallbackCalibration()
+    public async Task GetSnapshotAsync_WhenWorkstationApiUnavailable_DegradesEmptyWithoutLocalFallback()
     {
         var context = await CreateContextAsync(new UnavailableWorkstationReconciliationApiClient());
 
@@ -63,8 +65,11 @@ public sealed class FundReconciliationWorkbenchServiceTests
         snapshot.CalibrationProfiles.Should().BeEmpty();
         snapshot.CalibrationSummary.Should().NotBeNull();
         snapshot.CalibrationSummary!.Status.Should().Be(ReconciliationCalibrationStatusDto.Ready);
-        snapshot.RunRows.Should().Contain(row => row.SourceType == FundReconciliationSourceType.StrategyRun);
-        snapshot.RunRows.Should().Contain(row => row.SourceType == FundReconciliationSourceType.AccountRun);
+        // An API outage degrades to an empty posture; it must never be papered over with
+        // the desktop-local fund-account universe or an in-process recomputation.
+        snapshot.RunRows.Should().BeEmpty();
+        snapshot.Summary.RunCount.Should().Be(0);
+        snapshot.Summary.OpenBreakCount.Should().Be(0);
         snapshot.InReviewBreakCount.Should().Be(0);
     }
 
@@ -86,20 +91,20 @@ public sealed class FundReconciliationWorkbenchServiceTests
     }
 
     [Fact]
-    public async Task GetRunDetailAsync_ForAccountRun_ReturnsReadOnlyNormalizedRows()
+    public async Task GetRunDetailAsync_ForStrategyRun_ReturnsServerBackedReadOnlyDetail()
     {
         var context = await CreateContextAsync();
         var snapshot = await context.Service.GetSnapshotAsync("alpha-fund");
-        var accountRun = snapshot.RunRows.Single(row => row.SourceType == FundReconciliationSourceType.AccountRun);
+        var strategyRun = snapshot.RunRows.Single(row => row.SourceType == FundReconciliationSourceType.StrategyRun);
 
-        var detail = await context.Service.GetRunDetailAsync(accountRun, "USD");
+        var detail = await context.Service.GetRunDetailAsync(strategyRun, "USD");
 
         detail.Should().NotBeNull();
-        detail!.SourceType.Should().Be(FundReconciliationSourceType.AccountRun);
+        detail!.SourceType.Should().Be(FundReconciliationSourceType.StrategyRun);
         detail.SupportsBreakActions.Should().BeFalse();
-        detail.AccountId.Should().Be(accountRun.AccountId);
+        detail.RunId.Should().Be("run-fund-ops");
         detail.AllCheckRows.Should().NotBeEmpty();
-        detail.ExceptionRows.Should().BeEmpty();
+        detail.ExceptionRows.Should().NotBeEmpty();
         detail.AuditRows.Should().HaveCountGreaterThanOrEqualTo(2);
     }
 
@@ -201,18 +206,6 @@ public sealed class FundReconciliationWorkbenchServiceTests
             AsOfDate: new DateOnly(2026, 3, 21),
             RequestedBy: "test"));
 
-        var fundAccountReadService = new FundAccountReadService(fundAccountService);
-        var reconciliationRepository = new InMemoryReconciliationRunRepository();
-        var strategyReconciliationService = new ReconciliationRunService(
-            runReadService: runReadService,
-            projectionService: new ReconciliationProjectionService(),
-            repository: reconciliationRepository);
-        var reconciliationReadService = new ReconciliationReadService(
-            fundAccountService,
-            fundAccountReadService,
-            workspaceService,
-            strategyReconciliationService);
-
         var apiClient = apiClientOverride ?? new FakeWorkstationReconciliationApiClient(
         [
             new ReconciliationBreakQueueItem(
@@ -279,6 +272,12 @@ public sealed class FundReconciliationWorkbenchServiceTests
         [
             BuildStrategyDetail("run-fund-ops")
         ]);
+
+        // The summary read service consumes the same workstation API client as the break
+        // queue so both halves of the workbench share one source of truth.
+        var reconciliationReadService = new ReconciliationReadService(
+            workspaceService,
+            apiClient);
 
         var service = new FundReconciliationWorkbenchService(
             reconciliationReadService,
