@@ -295,7 +295,10 @@ public static class ExecutionEndpoints
                 OccurredAt: DateTimeOffset.UtcNow,
                 // Every surviving order, not the bounded prose. A caller driving recovery needs the
                 // ids to cancel by hand, and the rendered message names only the first ten.
-                StillWorking: sweep.StillWorking);
+                StillWorking: sweep.StillWorking,
+                // Distinct from Status: a Completed sweep over an unenumerable broker book has
+                // emptied only the in-memory view, and the caller must be able to see that.
+                BrokerViewUnavailable: sweep.BrokerViewUnavailable ? true : null);
 
             return Results.Json(actionResult, jsonOptions);
         })
@@ -1867,7 +1870,14 @@ public sealed record TradingActionResult(
     /// Orders a kill-switch sweep could not cancel, in full. The rendered <paramref name="Message"/>
     /// names only the first few, so this is what a caller uses to finish the job by hand.
     /// </summary>
-    IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null);
+    IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null,
+    /// <summary>
+    /// True when the kill-switch sweep could not enumerate the broker's own open-order book and
+    /// covered only the in-memory view — the broker may hold working orders the sweep never saw,
+    /// so the broker book must be verified by hand even when <c>Status</c> reads Completed.
+    /// Null on actions that carry no sweep, and omitted when the broker view was established.
+    /// </summary>
+    bool? BrokerViewUnavailable = null);
 
 /// <summary>Request to update the global execution circuit breaker.</summary>
 public sealed record UpdateExecutionCircuitBreakerRequest(

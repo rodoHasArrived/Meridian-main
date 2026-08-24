@@ -584,6 +584,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
                 LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(safeRequest.Symbol), safeRequest.Side, safeRequest.Quantity, updatedState.Status);
 
+            // A bracket/OCO submission spawns broker-side child legs with their own order ids.
+            // Registering them here makes their execution reports land on tracked state instead
+            // of being dropped as "not tracked", and puts them in the book a kill-switch sweep
+            // enumerates.
+            RegisterGatewayChildOrders(orderId, updatedState, report);
+
             // Once the broker has acknowledged a fill, its accounting handoff is authoritative.
             // Caller cancellation, paper-session persistence, or audit failures must never run
             // first and leave a broker fill without durable posting/fallback state.
@@ -1308,6 +1314,93 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired;
 
     /// <summary>
+    /// Registers the broker-created child orders a gateway acknowledgement carries (bracket/OCO
+    /// take-profit and stop-loss legs) as tracked orders under the parent's accounting scope.
+    /// <para>
+    /// Without this the children exist only at the broker: their execution reports are dropped as
+    /// "not tracked by this OMS" and a kill-switch sweep can truthfully report the in-memory book
+    /// empty while live TP/SL legs rest at the broker. Each child is keyed the way
+    /// <see cref="ProcessGatewayReportAsync"/> resolves reports — client order id first, broker
+    /// order id otherwise — so later stream reports land on the registered state.
+    /// </para>
+    /// </summary>
+    private void RegisterGatewayChildOrders(string parentOrderId, OrderState parent, ExecutionReport report)
+    {
+        if (report.ChildOrders is not { Count: > 0 } childOrders)
+        {
+            return;
+        }
+
+        foreach (var child in childOrders)
+        {
+            var childOrderId = string.IsNullOrWhiteSpace(child.ClientOrderId) ? child.OrderId : child.ClientOrderId;
+            if (string.IsNullOrWhiteSpace(childOrderId) || IsTerminal(child.Status))
+            {
+                continue;
+            }
+
+            // A child already tracked keeps whatever state its own reports have built — including
+            // a terminal one. TryRegisterOrder would resurrect a terminal entry, which is correct
+            // for a reused client order id but wrong for a re-sighted child leg.
+            if (_orders.ContainsKey(childOrderId))
+            {
+                continue;
+            }
+
+            var childState = new OrderState
+            {
+                OrderId = childOrderId,
+                Symbol = string.IsNullOrWhiteSpace(child.Symbol) ? parent.Symbol : child.Symbol,
+                Side = child.Side,
+                Type = child.Type,
+                Quantity = child.Quantity,
+                FilledQuantity = child.FilledQuantity,
+                LimitPrice = child.LimitPrice,
+                StopPrice = child.StopPrice,
+                Status = child.Status,
+                CreatedAt = child.CreatedAt == default ? DateTimeOffset.UtcNow : child.CreatedAt,
+                StrategyId = parent.StrategyId,
+                // The parent's scope, deliberately: a bracket's exit legs settle into the same
+                // fund account and derivative identity the entry was admitted under.
+                FundAccountId = parent.FundAccountId,
+                ContractMultiplier = parent.ContractMultiplier,
+                OptionContract = parent.OptionContract
+            };
+
+            if (!TryRegisterOrder(childOrderId, childState))
+            {
+                continue;
+            }
+
+            // The same per-order side tables the parent got at registration, so child fills book
+            // into the right session, fund account, and contract scale.
+            if (_orderSessionIds.TryGetValue(parentOrderId, out var parentSessionId))
+            {
+                _orderSessionIds[childOrderId] = parentSessionId;
+            }
+
+            if (_orderFinancialAccountIds.TryGetValue(parentOrderId, out var parentFinancialAccountId))
+            {
+                _orderFinancialAccountIds[childOrderId] = parentFinancialAccountId;
+            }
+
+            if (_orderContractMultipliers.TryGetValue(parentOrderId, out var parentMultiplier))
+            {
+                _orderContractMultipliers[childOrderId] = parentMultiplier;
+            }
+
+            _logger.LogInformation(
+                "Registered broker child order {ChildOrderId} ({Symbol}, {Status}) under parent {ParentOrderId}",
+                LogSanitizer.Sanitize(childOrderId),
+                LogSanitizer.Sanitize(childState.Symbol),
+                childState.Status,
+                LogSanitizer.Sanitize(parentOrderId));
+        }
+
+        TrimRetainedOrdersIfNeeded();
+    }
+
+    /// <summary>
     /// Long-running consumer of <see cref="IExecutionGateway.StreamExecutionReportsAsync"/>.
     /// Applies asynchronous reports (partial fills, rejects, cancels from a live broker) to
     /// tracked order state and routes fills through the same funnel as the synchronous
@@ -1403,6 +1496,14 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 _logger.LogWarning(
                     "Received execution report for order {OrderId} ({ReportType}, {Status}) not tracked by this OMS",
                     LogSanitizer.Sanitize(report.OrderId), report.ReportType, report.OrderStatus);
+            }
+            else
+            {
+                // Gateways that acknowledge asynchronously deliver bracket child legs on the
+                // report stream rather than on the submit return; register them from here too so
+                // both delivery shapes end with the children tracked. TryRegisterOrder makes a
+                // second sighting of the same child a no-op.
+                RegisterGatewayChildOrders(orderId!, updatedState, report);
             }
 
             if (isFillReport)

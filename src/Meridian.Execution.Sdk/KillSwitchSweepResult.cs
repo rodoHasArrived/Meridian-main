@@ -45,6 +45,19 @@ public sealed record KillSwitchSweepResult(
     int Cancelled,
     IReadOnlyList<KillSwitchSweepFailure> StillWorking)
 {
+    /// <summary>
+    /// True when the broker's own open-order book could not be enumerated, so the sweep covered
+    /// only the in-memory book. Distinct from <see cref="Outcome"/> because the two failures call
+    /// for different operator responses: <see cref="StillWorking"/> names orders to cancel by
+    /// hand, while this flag means the broker may hold orders the sweep never even saw — after an
+    /// OMS restart or for legs the OMS does not track — and the broker book must be verified
+    /// directly.
+    /// </summary>
+    public bool BrokerViewUnavailable { get; init; }
+
+    /// <summary>Why the broker book could not be enumerated, when <see cref="BrokerViewUnavailable"/>.</summary>
+    public string? BrokerViewError { get; init; }
+
     /// <summary>A sweep over an empty book. Vacuously complete, and honestly so.</summary>
     public static KillSwitchSweepResult Empty { get; } =
         new(KillSwitchSweepOutcome.Completed, 0, 0, []);
@@ -67,10 +80,13 @@ public sealed record KillSwitchSweepResult(
                 "The order manager did not report what the sweep cancelled; verify the broker book by hand.")]);
 
     /// <summary>
-    /// Whether an operator has to act. True whenever anything is still working, which is the
-    /// question the audit trail and the endpoint response both need answered.
+    /// Whether an operator has to act. True whenever anything is still working — or whenever the
+    /// broker book could not be enumerated, because a sweep that never saw the broker's view
+    /// cannot establish the book is empty, which is the question the audit trail and the endpoint
+    /// response both need answered.
     /// </summary>
-    public bool RequiresOperatorAction => Outcome is not KillSwitchSweepOutcome.Completed;
+    public bool RequiresOperatorAction =>
+        Outcome is not KillSwitchSweepOutcome.Completed || BrokerViewUnavailable;
 
     /// <summary>
     /// Builds the aggregate from per-order outcomes. Partial rather than failed whenever anything
@@ -101,9 +117,18 @@ public sealed record KillSwitchSweepResult(
     /// </summary>
     public string Describe()
     {
+        // The broker-view warning is appended to whichever sentence applies below: a sweep that
+        // could not see the broker book has not established an empty book no matter how many
+        // in-memory orders it cancelled, and every rendering of the outcome must say so.
+        var brokerViewWarning = BrokerViewUnavailable
+            ? " The broker's open-order book could not be enumerated"
+              + (string.IsNullOrWhiteSpace(BrokerViewError) ? string.Empty : $" ({BrokerViewError})")
+              + "; broker-side orders may still be working — verify the broker book by hand."
+            : string.Empty;
+
         if (StillWorking.Count == 0)
         {
-            return $"Kill-switch cancel-all cancelled {Cancelled} of {Requested} open order(s).";
+            return $"Kill-switch cancel-all cancelled {Cancelled} of {Requested} open order(s).{brokerViewWarning}";
         }
 
         // Bounded, and bounded only here: this is the audit/log rendering, while the structured
@@ -123,6 +148,7 @@ public sealed record KillSwitchSweepResult(
             : string.Empty;
 
         return $"Kill-switch cancel-all cancelled {Cancelled} of {Requested} open order(s); "
-            + $"{StillWorking.Count} still working and requiring manual cancellation: {names}{overflow}.";
+            + $"{StillWorking.Count} still working and requiring manual cancellation: {names}{overflow}."
+            + brokerViewWarning;
     }
 }
