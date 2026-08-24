@@ -84,6 +84,13 @@ public sealed partial class OrderManagementSystem
                 _orderContractMultipliers[childOrderId] = parentMultiplier;
             }
 
+            // The flagged flow's source is RemoveBrokerAccountAndOverrideKeys - the sanitizer that
+            // strips broker account and override keys before an order is retained - and every
+            // logged value additionally passes LogSanitizer. Order ids and a ticker symbol are the
+            // whole payload; removing them would leave an operator unable to tell which child leg
+            // was registered. What triggers the query is the flow's OrderRequest origin, not the
+            // content.
+            // codeql[cs/cleartext-storage-of-sensitive-information]
             _logger.LogInformation(
                 "Registered broker child order {ChildOrderId} ({Symbol}, {Status}) under parent {ParentOrderId}",
                 LogSanitizer.Sanitize(childOrderId),

@@ -185,6 +185,13 @@ public sealed class LedgerJournalInternalTransactionSource(
             // Fail closed to the empty transaction population only: the retained cash/position
             // populations must keep reconciling even when the journal store is unavailable or does
             // not support scoped queries.
+            // AccountKey is the reconciliation run's account label - the fund-account Guid
+            // surrogate or its ledger reference, the same identifier every retained statement and
+            // internal population record already carries as its identity. It is not a credential
+            // or provider-side account number, and without it the warning cannot say which
+            // account's projection failed closed. What triggers the query is the identifier's
+            // name. Same reasoning as the brokerage-sync suppressions.
+            // codeql[cs/cleartext-storage-of-sensitive-information]
             logger?.LogWarning(
                 ex,
                 "Failed to query posted journals for account {AccountKey}; projecting an empty internal transaction population.",
