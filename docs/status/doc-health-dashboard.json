@@ -1,6 +1,6 @@
 {
-  "total_files": 654,
-  "total_lines": 131232,
+  "total_files": 655,
+  "total_lines": 131490,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1040,6 +1040,14 @@
       "stale": false
     },
     {
+      "path": "docs/adr/022-canonical-asset-class-homes.md",
+      "line_count": 141,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/adr/_template.md",
       "line_count": 94,
       "has_heading": true,
@@ -1049,7 +1057,7 @@
     },
     {
       "path": "docs/adr/README.md",
-      "line_count": 26,
+      "line_count": 27,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1601,7 +1609,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 492,
+      "line_count": 601,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2617,7 +2625,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10517,
+      "line_count": 10524,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
