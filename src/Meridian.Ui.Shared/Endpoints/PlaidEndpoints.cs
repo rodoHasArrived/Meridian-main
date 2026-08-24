@@ -202,6 +202,10 @@ public static class PlaidEndpoints
             return Results.Json(result, jsonOptions);
         })
         .WithName("RecordPlaidWebhook")
+        .DeclareIndependentAuthentication(
+            "Inbound Plaid callback, authenticated by verifying the ES256 Plaid-Verification " +
+            "header and the signed body hash against the received bytes; the caller is Plaid, " +
+            "never the ambient operator principal, and carries no session to hold a permission.")
         .Produces<PlaidWebhookEventDto>(StatusCodes.Status200OK);
 
         group.MapPost(UiApiRoutes.PlaidSandboxTransfer, async (

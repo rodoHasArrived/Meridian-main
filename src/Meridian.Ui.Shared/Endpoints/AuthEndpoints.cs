@@ -142,7 +142,10 @@ public static class AuthEndpoints
 
             var redirect = string.IsNullOrWhiteSpace(returnUrl) ? "/workstation/" : returnUrl;
             return Results.Redirect(redirect);
-        }).ExcludeFromDescription();
+        }).ExcludeFromDescription()
+          .DeclarePermissionlessMutation(
+              "Login is the seam that establishes the session permissions come from; requiring a " +
+              "permission here would make authentication itself unreachable.");
 
         // POST /api/auth/logout – invalidate session and redirect to login
         app.MapPost(UiApiRoutes.AuthApiLogout, (HttpContext context, LoginSessionService sessionService) =>
@@ -162,7 +165,10 @@ public static class AuthEndpoints
                 });
             CookieCsrfProtection.DeleteCsrfCookie(context, secureCookies);
             return Results.Redirect(UiApiRoutes.AuthLoginPage);
-        }).ExcludeFromDescription();
+        }).ExcludeFromDescription()
+          .DeclarePermissionlessMutation(
+              "Logout must be reachable by any caller holding a session cookie, including one " +
+              "whose permissions can no longer be resolved; it only removes the caller's own session.");
 
         // GET /api/auth/me – return the current user's identity and role
         app.MapGet(UiApiRoutes.AuthApiMe, (HttpContext context, LoginSessionService sessionService) =>

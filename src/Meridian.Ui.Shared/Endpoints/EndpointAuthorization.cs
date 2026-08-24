@@ -104,6 +104,32 @@ public sealed class EndpointIndependentAuthenticationMetadata
 }
 
 /// <summary>
+/// Declares that a mutating route is deliberately callable without any permission: the
+/// authentication bootstrap itself (login, logout, the one-use first-account seam) and the
+/// 410 Gone tombstones for retired lifecycles, which perform no action. The pre-binding
+/// mutation guard (<see cref="MutationAuthorizationGuardMiddleware"/>) stands aside for it, and
+/// the coverage suite asserts its permissionless allowlist matches these declarations
+/// one-for-one, so the runtime exemption and the tested exemption cannot drift apart.
+/// <para>
+/// Applied per route after reading the handler, never by convention. A route that
+/// authenticates its caller by its own mechanism belongs under
+/// <see cref="EndpointIndependentAuthenticationMetadata"/> instead; this marker is only for
+/// routes whose permissionless reachability is itself the design.
+/// </para>
+/// </summary>
+public sealed class EndpointPermissionlessMutationMetadata
+{
+    public EndpointPermissionlessMutationMetadata(string reason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        Reason = reason;
+    }
+
+    /// <summary>Why this mutation is safe without any permission, e.g. "login bootstrap".</summary>
+    public string Reason { get; }
+}
+
+/// <summary>
 /// Centralized authorization helpers for workstation endpoints that rely on
 /// LoginSessionMiddleware session data instead of ad hoc caller-supplied fields.
 /// </summary>
@@ -493,6 +519,18 @@ public static class EndpointAuthorization
         where TBuilder : IEndpointConventionBuilder
     {
         builder.WithMetadata(new EndpointIndependentAuthenticationMetadata(reason));
+        return builder;
+    }
+
+    /// <summary>
+    /// Records <see cref="EndpointPermissionlessMutationMetadata"/> on a mutating route that is
+    /// deliberately callable without any permission, so the pre-binding mutation guard stands
+    /// aside for it with the reason stated where reviewers and the coverage suite can see it.
+    /// </summary>
+    public static TBuilder DeclarePermissionlessMutation<TBuilder>(this TBuilder builder, string reason)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.WithMetadata(new EndpointPermissionlessMutationMetadata(reason));
         return builder;
     }
 

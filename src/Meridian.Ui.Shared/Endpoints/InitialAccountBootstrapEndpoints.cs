@@ -35,7 +35,10 @@ public static class InitialAccountBootstrapEndpoints
             });
             CookieCsrfProtection.IssueCsrfCookie(context, secure, LoginSessionService.SessionDuration);
             return Results.Ok(new { redirect = "/workstation/setup" });
-        }).ExcludeFromDescription();
+        }).ExcludeFromDescription()
+          .DeclarePermissionlessMutation(
+              "The first-account bootstrap runs before any user or permission store exists; it is " +
+              "gated by its own loopback and one-use token checks and refuses once any account exists.");
     }
 
     private sealed record BootstrapAccountRequest(string Token, string Username, string Password);
