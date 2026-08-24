@@ -109,6 +109,7 @@ internal static class DemoWorkspaceCli
     /// otherwise fail closed at startup; the demo opts into the local in-memory governance profile and
     /// an optional-auth, non-production environment. Every value is only set when unset, so an operator
     /// who has configured a real database (for a fully durable demo) or auth mode is never overridden.
+    /// The resulting posture is disclosed on the console so the relaxations are seen, not discovered.
     /// </summary>
     private static void PrepareDemoRuntimeEnvironment()
     {
@@ -148,6 +149,39 @@ internal static class DemoWorkspaceCli
         {
             Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
         }
+
+        DiscloseDemoRuntimePosture();
+    }
+
+    /// <summary>
+    /// Prints exactly what the demo posture relaxes, reading the effective values back rather than
+    /// assuming the defaults above applied — an operator who configured a real database or auth
+    /// mode sees their own choice reported, not the demo default. A demo that silently grants an
+    /// unauthenticated local caller Admin is a posture the operator must see, not discover.
+    /// </summary>
+    private static void DiscloseDemoRuntimePosture()
+    {
+        var inMemoryGovernance = string.Equals(
+            Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE"),
+            "true",
+            StringComparison.OrdinalIgnoreCase);
+        var environmentName = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+            ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+            ?? "Production";
+        var authMode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE") ?? "(default)";
+        var anonymousRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+
+        Console.WriteLine("Demo runtime posture (relaxed for local evaluation):");
+        Console.WriteLine(inMemoryGovernance
+            ? "  governance stores: in-memory (MERIDIAN_USE_INMEMORY_GOVERNANCE=true); posted money-path records do not survive restart"
+            : "  governance stores: database-backed (MERIDIAN_DATABASE_URL or per-domain connection strings are configured)");
+        Console.WriteLine($"  environment:       {environmentName} (DOTNET_ENVIRONMENT)");
+        Console.WriteLine($"  authentication:    {authMode} (MDC_AUTH_MODE); no login is required in optional mode");
+        Console.WriteLine(string.IsNullOrWhiteSpace(anonymousRole)
+            ? "  anonymous role:    none (MDC_ANONYMOUS_ROLE unset); governed routes refuse anonymous callers"
+            : $"  anonymous role:    {anonymousRole} (MDC_ANONYMOUS_ROLE); the unauthenticated local operator acts with this role's full authority");
+        Console.WriteLine("  containment:       the demo host binds to loopback only (http://localhost), so this posture is not reachable from other machines");
+        Console.WriteLine("Do not point this posture at real data; use --reset-demo to remove the demo workspace.");
     }
 
     private static bool IsUnset(string variable)
