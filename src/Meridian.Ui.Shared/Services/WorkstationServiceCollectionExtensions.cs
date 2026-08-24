@@ -524,13 +524,19 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.IAffectedLedgerBookResolver,
             Meridian.Application.SecurityMaster.LedgerBookAffectedResolver>();
-        // Ordered published-revision side-effect fan-out: projection rebuild (Order=10) then coverage
-        // invalidation (Order=20). The period-aware restatement decision is resolved separately by the
-        // command service (it returns candidates the void handler seam cannot). The coverage read path
-        // is currently uncached, so the invalidator defaults to a no-op.
+        // Ordered published-revision side-effect fan-out: canonical merge (Order=5) then projection
+        // rebuild (Order=10) then coverage invalidation (Order=20). The merge emits a complete
+        // economic-definition amendment for approved assetSpecificTerms.* field edits so the
+        // correction reaches the golden record (and therefore cash flow, amortization, pricing, and
+        // NAV) before the rebuild refreshes the projection. The period-aware restatement decision is
+        // resolved separately by the command service (it returns candidates the void handler seam
+        // cannot). The coverage read path is currently uncached, so the invalidator defaults to a no-op.
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.IMultiAssetCoverageInvalidator,
             Meridian.Application.SecurityMaster.NullMultiAssetCoverageInvalidator>();
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<
+            Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
+            Meridian.Application.SecurityMaster.ApprovedFieldEditCanonicalMergeHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Scoped<
             Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
             Meridian.Application.SecurityMaster.Rebuild.SecurityProjectionRebuildHandler>());

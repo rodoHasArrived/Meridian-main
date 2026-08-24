@@ -283,7 +283,7 @@ public sealed class ReconciliationRunServiceTests
             PeriodEnd: new DateOnly(2026, 1, 31),
             Securities: [new SecurityMasterAccountingSecurity(securityId, "MBS1", "MortgageBacked", "USD", new SecurityFixedIncomeTerms(0.03m, "Fixed", "30/360", 12, CurrentFactor: 1.00m, RequiresFactorSchedule: true), new SecurityAccountingRule("AvailableForSale", "GAAP"))],
             Positions: [new SecurityMasterAccountingPosition("MBS1", securityId, "acct-1", 100_000m, PositionId: Guid.Parse("55555555-3333-4333-8333-333333333334"))],
-            FactorSchedule: [new SecurityFactorScheduleEntry(
+            FactorSchedule: [new SecurityFactorObservation(
                 securityId,
                 new DateOnly(2026, 1, 15),
                 1.00m,

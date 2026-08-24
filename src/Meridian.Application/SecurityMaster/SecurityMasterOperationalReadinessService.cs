@@ -104,8 +104,8 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
             hardBlocker: true),
         Listed(
             "StructuredCredit",
-            "Structured credit",
-            "Structured-credit readiness requires tranche and pool identity, trustee or servicer reporting, factor schedules, collateral tape support, valuation evidence, and cash remittance reconciliation.",
+            "Structured credit (MBS / ABS / CLO / CMBS)",
+            "The canonical home for securitized products (ADR-022). Structured-credit readiness requires tranche and pool identity, trustee or servicer reporting, factor schedules, collateral tape support, valuation evidence, and cash remittance reconciliation.",
             ["Internal code", "CUSIP/ISIN/FIGI when available", "Provider symbol"],
             ["tranche", "pool/collateral type", "original/current factor", "coupon/index", "factor schedule"],
             ["Trustee report", "Servicer report", "Factor schedule", "Collateral tape", "Dealer pricing", "Valuation source", "Cash remittance"],
@@ -154,8 +154,8 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
             hardBlocker: true),
         Listed(
             "CustomAsset",
-            "MBS / ABS / CLO / CMBS / private assets",
-            "Structured and private assets require governed custom profiles, servicer/trustee reports, factor or NAV evidence, obligation events, valuation approval, and profile-aware ledger classification.",
+            "Profile-backed private / other assets",
+            "The home for private and other assets with no first-class kind; securitized products (MBS/ABS/CLO/CMBS) belong in StructuredCredit — via a reclassifying profile where profile-backed (ADR-022). Requires governed custom profiles, servicer/trustee reports, factor or NAV evidence, obligation events, valuation approval, and profile-aware ledger classification.",
             ["Internal code", "CUSIP/ISIN/FIGI when available", "Provider symbol"],
             ["approved profile", "profile version", "required profile fields", "valuation date", "servicer/trustee cut-off date", "obligation event"],
             ["Custom profile", "Servicer report", "Trustee report", "Warehouse tape", "Factor schedule", "Dealer pricing", "NAV", "Capital call", "Distribution notice", "Cash", "Collateral", "Obligation schedule"],

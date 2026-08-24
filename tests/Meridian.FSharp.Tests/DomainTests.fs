@@ -624,6 +624,110 @@ let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` ()
     payload.GetProperty("floorRate").GetDecimal() |> should equal 0.75m
     payload.GetProperty("dayCount").GetString() |> should equal "ACT/360"
 
+let private stepBondTerms = {
+    Maturity = DateOnly(2032, 6, 30)
+    IssueDate = Some (DateOnly(2026, 6, 30))
+    Coupon =
+        BondCouponStructure.Step(
+            [ { EffectiveDate = DateOnly(2026, 6, 30); Rate = 3.0m }
+              { EffectiveDate = DateOnly(2028, 6, 30); Rate = 4.0m } ],
+            Some "30/360")
+    IsCallable = false
+    CallDate = None
+    IssuerName = Some "Step Issuer"
+    Seniority = None
+    Subclass = BondSubclass.StepRate
+    Par = Some 1000m
+    PaymentFrequency = None
+    LegalFinalMaturity = None
+    PreRefundDate = None
+    MandatoryPutDate = None
+    PrincipalSchedule = []
+}
+
+[<Fact>]
+let ``BondTerms couponRateAsOf resolves the step rate in effect`` () =
+    // A step-rate bond has no meaningful scalar rate; the dated schedule is the coupon.
+    BondTerms.couponRate stepBondTerms |> should equal None
+    BondTerms.couponRateAsOf (DateOnly(2027, 1, 1)) stepBondTerms |> should equal (Some 3.0m)
+    BondTerms.couponRateAsOf (DateOnly(2028, 6, 30)) stepBondTerms |> should equal (Some 4.0m)
+    BondTerms.couponRateAsOf (DateOnly(2026, 1, 1)) stepBondTerms |> should equal None
+
+[<Fact>]
+let ``SecurityMasterSnapshotWrapper serializes step coupon schedules`` () =
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.Bond stepBondTerms }
+
+    let record =
+        match SecurityMaster.create command with
+        | Ok [ SecurityMasterEvent.SecurityCreated snapshot ] -> snapshot
+        | Ok events -> failwithf "Expected SecurityCreated event, got: %A" events
+        | Error errors -> failwithf "Expected create to succeed, got: %A" errors
+
+    let wrapper = SecurityMasterSnapshotWrapper(record)
+    use assetDocument = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    let payload = assetDocument.RootElement
+
+    payload.GetProperty("couponType").GetString() |> should equal "Step"
+    let steps = payload.GetProperty("stepSchedule")
+    steps.GetArrayLength() |> should equal 2
+    steps.[0].GetProperty("effectiveDate").GetString() |> should equal "2026-06-30"
+    steps.[0].GetProperty("rate").GetDecimal() |> should equal 3.0m
+    steps.[1].GetProperty("rate").GetDecimal() |> should equal 4.0m
+    payload.GetProperty("dayCount").GetString() |> should equal "30/360"
+
+[<Fact>]
+let ``SecurityMaster.create rejects an empty step-coupon schedule`` () =
+    let emptyStep = { stepBondTerms with Coupon = BondCouponStructure.Step([], Some "30/360") }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.Bond emptyStep }
+
+    match SecurityMaster.create command with
+    | Error errors ->
+        errors |> List.map (fun error -> error.Code) |> should contain "bond_step_schedule_required"
+    | Ok _ -> failwith "Expected create to reject an empty step schedule"
+
+[<Fact>]
+let ``SecurityMasterSnapshotWrapper serializes inflation-linked coupon terms`` () =
+    let linkerTerms = {
+        stepBondTerms with
+            Coupon = BondCouponStructure.InflationLinked(1.25m, "CPI-U", Some 305.109m, Some 1.0432m, Some "ACT/ACT")
+            Subclass = BondSubclass.InflationLinked
+    }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.Bond linkerTerms }
+
+    let record =
+        match SecurityMaster.create command with
+        | Ok [ SecurityMasterEvent.SecurityCreated snapshot ] -> snapshot
+        | Ok events -> failwithf "Expected SecurityCreated event, got: %A" events
+        | Error errors -> failwithf "Expected create to succeed, got: %A" errors
+
+    let wrapper = SecurityMasterSnapshotWrapper(record)
+    use assetDocument = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    let payload = assetDocument.RootElement
+
+    payload.GetProperty("couponType").GetString() |> should equal "InflationLinked"
+    payload.GetProperty("couponRate").GetDecimal() |> should equal 1.25m
+    payload.GetProperty("inflationIndex").GetString() |> should equal "CPI-U"
+    payload.GetProperty("inflationBaseIndexValue").GetDecimal() |> should equal 305.109m
+    payload.GetProperty("inflationIndexRatio").GetDecimal() |> should equal 1.0432m
+
+[<Fact>]
+let ``SecurityMaster.create rejects a non-positive inflation index ratio`` () =
+    let badLinker = {
+        stepBondTerms with
+            Coupon = BondCouponStructure.InflationLinked(1.25m, "CPI-U", Some 305.109m, Some 0m, None)
+            Subclass = BondSubclass.InflationLinked
+    }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.Bond badLinker }
+
+    match SecurityMaster.create command with
+    | Error errors ->
+        errors |> List.map (fun error -> error.Code) |> should contain "bond_inflation_index_values_invalid"
+    | Ok _ -> failwith "Expected create to reject a zero index ratio"
+
 [<Fact>]
 let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
     let terms = {
