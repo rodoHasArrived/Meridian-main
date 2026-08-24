@@ -1,11 +1,11 @@
 {
   "total_files": 656,
-  "total_lines": 132082,
+  "total_lines": 132086,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 239,
-  "average_lines": 201.3,
+  "average_lines": 201.4,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2737,7 +2737,7 @@
     },
     {
       "path": "docs/operators/browser-workstation-installer.md",
-      "line_count": 69,
+      "line_count": 73,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
