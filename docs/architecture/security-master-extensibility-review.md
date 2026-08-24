@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-14 (verification pass; original review 2026-08-12)
+**Reviewed:** 2026-08-24 (verification pass; earlier passes 2026-08-14, 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -35,8 +35,12 @@ risks that compound as new asset classes land.
 > **Verification pass, 2026-08-14.** Re-read against current source at `4b39e9da8`. The findings
 > below stand as written except where a **Status (2026-08-14)** note says otherwise; four of the ten
 > risk items have since closed or materially narrowed. See
-> [Verification pass — 2026-08-14](#verification-pass--2026-08-14) for the current open list and
-> re-ranked priorities.
+> [Verification pass — 2026-08-14](#verification-pass--2026-08-14) for that pass's open list.
+>
+> **Verification pass, 2026-08-24.** Re-read against `9ed072df` (416 commits later). Nothing on the
+> 2026-08-14 open list closed in that window; two new findings were added, both concrete defects
+> rather than extensibility risks. See [Verification pass — 2026-08-24](#verification-pass--2026-08-24)
+> for the current open list and re-ranked priorities.
 
 ---
 
@@ -475,6 +479,148 @@ history; asset-class-scoped projection replay.
 
 ---
 
+## Verification pass — 2026-08-24
+
+Re-read against `9ed072df`, ten days and 416 commits after the previous pass. No code was changed by
+this pass; no tests were run. Every claim below cites the file and line it was read from.
+
+**Headline:** the write-side, codec, provenance, and governance layers held up — none regressed, and
+the 2026-08-14 verdict ("structurally sound, unusually well governed, not yet uniformly extensible")
+still stands. But **no item on the 2026-08-14 open list closed in this window**, and two concrete
+defects surfaced that had not been named as such before: `InvestmentFund` fails validation outright,
+and CSV import covers 9 of 26 asset classes off a private hard-coded table.
+
+### Closed since 2026-08-14
+
+| # | Item | Evidence |
+| --- | --- | --- |
+| — | Profile-backed amend silently discarded field patches | `GetProfileBackedAssetSpecificTermsOverride` no longer restores the previous envelope when a non-envelope patch arrives — it throws with actionable guidance ("submit the full envelope with the updated profileFields, or edit individual fields through the workbench field-edit route") (`SecurityMasterService.cs:921-949`). The write-side data-loss path that pass named is gone. |
+| — | Repinning a profile-backed record kept the stale class | An amendment now resolves its class from the SUBMITTED envelope, not the stored projection, so a repin routes into the resolved class's validators exactly as an identical create would (`SecurityMasterService.cs:88-107, 894-919`). |
+
+### New findings
+
+#### N1 — `InvestmentFund` is declared everywhere and wired nowhere; every such record fails validation
+
+`InvestmentFund` — mutual funds, ETFs, hedge funds, REITs, closed-end funds — is a first-class F# DU
+case (`SecurityMaster.fs:563`), has an `AssetClassRegistry` descriptor (`:648`), a catalog entry
+(`SecurityAssetClassCatalog.cs:369`), a terms-schema entry (`SecurityAssetTermsSchema.cs:333`), a
+codec arm on both sides (`Interop.SecurityMaster.fs:387`, `SecurityMasterMapping.cs:403`), and a
+round-trip test payload (`SecurityAssetTermsSchemaRoundTripTests.cs:322`).
+
+It has **no validator**. `DefaultAssetClassValidators.Create` registers 24 `JsonAssetClassValidator`
+classes plus profile validators for `OtherSecurity` and `CustomAsset` — 25 of the catalog's 26 real
+classes (`AssetClassValidatorRegistry.cs:64-70`). `InvestmentFund` is the omission. Any record
+carrying that class therefore falls to the registry's else-branch and raises Error-severity
+`SM_ASSET_CLASS_UNSUPPORTED` on every validation run (`SecurityValidationService.cs:116-129`),
+which is what governed run, ledger, and report-pack use gate on.
+
+The gap is structural, not incidental: there are coverage guards binding the catalog to the terms
+schema (`SecurityAssetTermsSchemaTests.Schema_DeclaresEveryCatalogAssetClass`) and to relational
+projections (`IntentionallyUnprojectedAssetClasses`), but **none binding the catalog to validators**.
+Nothing fails when a class is added without one.
+
+It is also unreachable through every other route: `SecurityKindMapping` maps it to an empty
+`InstrumentType` list (`SecurityKindMapping.cs:49`), so the market-data bridge has no pricing route
+for it; no `SecurityAssetPackRegistry` pack claims the string; it is in
+`IntentionallyUnprojectedAssetClasses`; and it is absent from the CSV importer (N2). Funds are a
+core fund-operations asset class for this product, and the one class that is declared but unusable
+is a fund class.
+
+*This was raised as R7 in `docs/engineering/security-master-architecture-audit-2026-08-13.md` and
+ranked its fifth priority ("cheapest high-value fix in the list"). Eleven days and 416 commits later
+it is unchanged.*
+
+#### N2 — CSV import covers 9 of 26 asset classes off a private table bound to nothing
+
+`SecurityMasterCsvParser.AssetClassMapping` is a private 9-entry dictionary — Equity, Option, Future,
+Bond, Crypto/CryptoCurrency, Commodity, CFD, Warrant (`SecurityMasterCsvParser.cs:13-24`). Rows
+naming any other catalog class are rejected with "Unknown AssetClass". Every fund-operations class
+the product differentiates on — `Deposit`, `MoneyMarketFund`, `CertificateOfDeposit`,
+`CommercialPaper`, `TreasuryBill`, `Repo`, `CashSweep`, `DirectLoan`, `StructuredCredit`,
+`PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, `CommitmentGuarantee`,
+`InvestmentFund`, `Swap`, `FxSpot` — is unimportable by CSV.
+
+The table is not derived from `SecurityAssetClassCatalog` and no test binds it there, so this is the
+same failure mode as N1: adding an asset class leaves a bulk-onboarding path silently behind, and
+nothing reports it. This is the eleventh registry a new class must be hand-edited into.
+
+#### N3 — The profile-backed compensating patch grew rather than generalized
+
+`IsProfileBackedCustomAsset` still hard-codes seven asset-class strings
+(`SecurityMasterService.cs:956-968`), and the layer around it has since gained a five-entry
+`KnownProfileAssetClasses` profile→class map (`:980-988`) and an `AssetClassMetadataKeywords`
+table (`:991-999`), plus `TryResolveProfileBackedAlternativeAssetClass`,
+`GetProfileBackedAssetClassOverride` (three overloads), and `EnsureProfileBackedTermsAreCatalogValid`.
+
+Each addition fixed a real bug — the correctness of this path is materially better than on 08-14 —
+but the shape is unchanged: the aggregate still drops the profile envelope, and an application-layer
+override patches it back on afterwards (`CreateProjectionFromResult` applies `assetClassOverride`
+and `assetSpecificTermsOverride` to the projection the domain returned, `:860-875`). A new
+profile-backed class that is not added to all three hard-coded tables is still silently misrouted.
+The generalization target from the 08-13 audit (R1) stands, and the compensating layer it named is
+now roughly three times larger.
+
+### Still open, unchanged from 2026-08-14
+
+Re-verified individually; each is as that pass described it.
+
+| # | Item | Current evidence |
+| --- | --- | --- |
+| 5 | Governed edits do not reach the golden record | `OperatorOverridesDto.Values` is still `IReadOnlyDictionary<string, string>` and its docstring still reads "without amending the canonical security terms" (`OperatorOverrides.cs:25-33`). Still exactly two `ISecurityMasterRevisionPublishedHandler` implementations — `CoverageInvalidationHandler` and `SecurityProjectionRebuildHandler` — neither of which merges. The overrides endpoint still serves a side dictionary (`SecurityMasterEndpoints.cs:938-952`); no read model exposes an effective merged value. |
+| 5a | Browser passport editor is still free-text | `security-passport-editor.tsx:332-336` is still two bare `Input`s with placeholders `EconomicDefinition.Coupon` and `5.125`. Note the placeholder itself names an **annotation-namespace** path: `SecurityAssetTermsFieldEditValidator` only governs `assetSpecificTerms.*` (`:19-35`), so the example the UI suggests is precisely the unvalidated case. No schema-driven form exists on the browser lane. |
+| 5b | Dead override dependency | `ProviderLedgerReconciliationService` still injects and stores `IOperatorOverridesStore` without ever reading it (`ProviderLedgerReconciliationService.cs:49,64,77`). |
+| 1 | Taxonomy outruns term model | `BondCouponStructure` is still `Fixed` / `Floating` / `ZeroCoupon` (`SecurityMaster.fs:222-225`). Step-rate and inflation-linked bonds remain classifiable, not computable. |
+| 8 | Third factor-schedule shape | `SecurityFactorScheduleEntry` is still separately declared in `Meridian.Strategies` (`SecurityMasterAccountingEventService.cs:89`), and `SecurityMasterAccountingEventSourceAdapter` still probes both the typed `factorScheduleEntries` and the legacy array/free-text spellings across four containers (`:581-625`). |
+| 4 | Registries per asset class | Now count **eleven** hand-edited surfaces, not seven: F# DU + `AssetClassRegistry` descriptors, interop serializer, `SecurityMasterMapping.ToSecurityKind`, `SecurityAssetClassCatalog`, `SecurityAssetTermsSchema`, `AssetClassValidatorRegistry`, `SecurityKindMapping`, `SecurityMasterOperationalReadinessService`, `SecurityMasterCsvParser`, the round-trip payload table, and optionally a projection + migration + store. Guards exist for three of them. |
+| 2 | Three modeling routes for MBS/ABS/CLO | No canonical-home ruling. `KnownProfileAssetClasses` now routes `structured-credit-io-po` profiles to `StructuredCredit` (`SecurityMasterService.cs:982`), which narrows the *profile* route but leaves `Bond`-with-subclass and direct `StructuredCredit` both legitimate. |
+| 7 | Corporate actions: wide table | Unchanged; no migration since 021 touches the payload columns (latest is 028). |
+| 9 | Equity bespoke amendment endpoints | `AmendPreferredEquityTermsAsync` / `AmendConvertibleEquityTermsAsync` still sit on the generic `ISecurityMasterService` (`:7-8`) with dedicated endpoints (`SecurityMasterEndpoints.cs:519,576,1122`), bypassing the workbench maker-checker gate. No equivalent for a bond call schedule or swap leg. |
+| 10 | Per-process projection cache | `ReplaceAll` still calls `_byId.Clear()` before repopulating (`SecurityMasterProjectionCache.cs:17-25`), so a concurrent reader still sees an empty master. Still no eviction, still no cross-node invalidation. |
+| 10 | Straight-line amortization only | `ConstantYield` remains an enum member in two places with no implementation (`BondReferenceDtos.cs:21`, `SecurityTermModules.fs:426`). |
+| 10 | `SecurityAssetPackRegistry` is prose compiled into C# | Still 802 lines; still consumed by exactly one caller (`SecurityMasterOperationalReadinessService`); `InferLifecycleEvent` still maps journal-template labels to lifecycle events by substring-matching English words (`:464-500`). It gates nothing a new asset class must satisfy. |
+| 10 | Valid-time term history | `securities` still holds one current row; identifiers are effective-dated, terms are not. |
+| — | Relational projections | Still 11 projections (migrations 005-015) for 26 classes; the 15 uncovered are still the private/alternative classes. Declared and test-guarded. |
+
+### Re-ranked priorities
+
+The ranking shifts because two cheap, concrete defects now outrank the deeper architectural items.
+
+**1. Add a catalog↔validator coverage guard and give `InvestmentFund` a validator.** (N1)
+A test mirroring the existing catalog↔schema and catalog↔projection guards, plus one
+`JsonAssetClassValidator` entry. This removes an asset class that currently fails validation
+outright, and — more importantly — makes the *next* omission fail at commit time instead of in a
+governed report pack. Hours of work; highest value-per-effort in this document.
+
+**2. Derive `SecurityMasterCsvParser.AssetClassMapping` from `SecurityAssetClassCatalog`.** (N2)
+The catalog already knows every class and its `SupportsBasicCreateWorkflow` flag. Deriving the
+importer's accepted set from it (with vendor spellings as an alias overlay, not the source of truth)
+deletes a hand-maintained list and closes bulk onboarding for 17 classes. Same shape of fix as
+priority 1, same order of effort.
+
+**3. Close the merge path from the governed workbench to the golden record.** (item 5)
+Unchanged from the 2026-08-14 ranking and still the largest *institutional* gap — everything around
+it is built and paid for, and an approved coupon correction still cannot reach NAV. It drops to
+third only because two fixes above it are an order of magnitude cheaper, not because it got smaller.
+
+**4. Make the profile-backed passthrough a first-class domain contract.** (N3, item 4)
+The compensating-override layer in `SecurityMasterService` has tripled while staying the same shape.
+Either give the domain a case that carries the profile envelope through amend intact, or make the
+raw-terms passthrough the explicit typed contract — then delete the three hard-coded tables and the
+post-hoc projection patching. This is the change that stops new profile-backed classes from being
+silently misrouted, and it shrinks the eleven-registry count.
+
+**5. Rule on one canonical home per instrument, and retire the third factor-schedule shape.**
+(items 2 and 8) Both are decisions more than implementations. `KnownProfileAssetClasses` shows the
+partition can be enforced once ruled; collapsing `SecurityFactorScheduleEntry` onto the domain
+`FactorScheduleEntry` removes the last duplicate of a type that already has a typed owner.
+
+*Deferred but worth tracking, unchanged:* generic corporate-action payload envelope; effective-interest
+amortization; multi-node projection-cache invalidation; relational projections for the
+private/alternative classes; valid-time term history; the standing question of whether
+`SecurityAssetPackRegistry` becomes a registry that gates admission or moves to `docs/`.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -488,5 +634,17 @@ The 2026-08-14 verification pass re-read the F# domain and interop, the 47 `Meri
 Security Master contracts, the 58 `Meridian.Application` Security Master services, the 46
 `Meridian.Storage` stores and 28 migrations, the workstation endpoint surfaces, and the codec
 round-trip and asset-class-support test suites.
+
+The 2026-08-24 verification pass re-read, at `9ed072df`: the F# `SecurityKind` DU, `AssetClassRegistry`,
+and term records; `Interop.SecurityMaster.fs` and `SecurityMasterMapping.ToSecurityKind`;
+`SecurityAssetClassCatalog`, `SecurityAssetTermsSchema`, `SecurityAssetTermsFieldEditValidator`,
+`SecurityAssetPackRegistry`, `SecurityMasterProvenance`, `OperatorOverrides`, `FaceValueLot`, and
+`StructuredCashFlowTermsResolver`; `SecurityMasterService` (profile-backed override layer),
+`AssetClassValidatorRegistry`, `SecurityValidationService`, `SecurityMasterWorkbenchCommandService`,
+`SecurityMasterCsvParser`, and the revision-published handlers; `SecurityMasterProjectionCache`,
+`ISecurityFieldProvenanceStore`, and migrations 004-028; `SecurityKindMapping` and `InstrumentType`;
+`SecurityMasterEndpoints` and the browser `security-passport-editor`; and the
+`SecurityAssetTermsSchema*`, `SecurityAssetClassCatalog`, and `SecurityMasterMappingInterop` test
+suites.
 
 No code was changed. No tests were run — this review makes no behavioral claims requiring execution.
