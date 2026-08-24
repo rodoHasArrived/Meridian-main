@@ -2265,7 +2265,6 @@ Meridian-main
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
-│   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
 │   │   ├── workflow-drift-report.md
 │   │   ├── workflow-manifest.json
@@ -6922,6 +6921,7 @@ Meridian-main
 │   │   │   ├── MessagingEndpoints.cs
 │   │   │   ├── MoneyMarketFundEndpoints.cs
 │   │   │   ├── MoneyMarketFundReferenceEndpoints.cs
+│   │   │   ├── MutationAuthorizationGuardMiddleware.cs
 │   │   │   ├── OmsIntegrationEndpoints.cs
 │   │   │   ├── OptionChainEndpoints.cs
 │   │   │   ├── OptionReferenceEndpoints.cs
@@ -9368,6 +9368,7 @@ Meridian-main
 │   │   │   │   ├── LeanEndpointTests.cs
 │   │   │   │   ├── LiveDataEndpointTests.cs
 │   │   │   │   ├── MaintenanceEndpointTests.cs
+│   │   │   │   ├── MutationAuthorizationGuardMiddlewareTests.cs
 │   │   │   │   ├── NegativePathEndpointTests.cs
 │   │   │   │   ├── NonSessionPrincipalAuthorizationTests.cs
 │   │   │   │   ├── OperationalProblemDetailsEndpointTests.cs
