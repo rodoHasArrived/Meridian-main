@@ -560,6 +560,13 @@ public sealed class StatementImportServiceTests : IDisposable
         ofxResult.RecordCount.Should().Be(4);
         flexResult.RecordCount.Should().Be(7);
 
+        // OFX STMTTRN movements commit into the transaction lane with only LEDGERBAL as a cash
+        // balance; Flex CashTransactions likewise land as transactions, never as ending balances.
+        ofxResult.KindSummaries.Single(summary => summary.Kind == "Transaction").RecordCount.Should().Be(2);
+        ofxResult.KindSummaries.Single(summary => summary.Kind == "CashBalance").RecordCount.Should().Be(1);
+        flexResult.KindSummaries.Single(summary => summary.Kind == "Transaction").RecordCount.Should().Be(3);
+        flexResult.KindSummaries.Should().NotContain(summary => summary.Kind == "CashBalance");
+
         var imports = await _workflow.ListImportsAsync();
         imports.Select(import => import.ImportId).Should().Contain([ofxResult.RunId, flexResult.RunId]);
     }

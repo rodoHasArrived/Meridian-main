@@ -5,6 +5,7 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System.Net;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -45,6 +46,12 @@ public sealed class LoginSessionMiddleware
     internal const string DemoLocalOperatorPrincipalKey = "CurrentUserIsDemoLocalOperator";
 
     private const string LocalShutdownTokenHeader = "X-Meridian-Shutdown-Token";
+
+    /// <summary>
+    /// Authentication type stamped on <see cref="HttpContext.User"/> for validated login sessions,
+    /// so <c>Identity.IsAuthenticated</c> is true for exactly the principals a session established.
+    /// </summary>
+    public const string SessionAuthenticationType = "MeridianLoginSession";
 
     /// <summary>Name of the HTTP-only session cookie set after successful login.</summary>
     public const string SessionCookieName = "mdc-session";
@@ -264,6 +271,22 @@ public sealed class LoginSessionMiddleware
                 }
 
                 context.Items[CurrentUserPermissionsKey] = profile.Permissions;
+
+                // Framework components see only the standard principal, never the session items:
+                // the ASP.NET rate limiter partitions the direct-lending policy by
+                // HttpContext.User.Identity?.Name, and with User left anonymous every session fell
+                // into the shared per-IP bucket. Stamp a minimal authenticated principal for
+                // validated login sessions only — API-key and optional-mode anonymous callers are
+                // not sessions and deliberately keep the default anonymous User, so nothing
+                // downstream can mistake them for a signed-in operator.
+                context.User = new ClaimsPrincipal(new ClaimsIdentity(
+                    new[]
+                    {
+                        new Claim(ClaimTypes.Name, profile.Username),
+                        new Claim(ClaimTypes.Role, profile.Role.ToString())
+                    },
+                    authenticationType: SessionAuthenticationType));
+
                 CookieCsrfProtection.EnsureCsrfCookie(
                     context,
                     CookieCsrfProtection.ShouldUseSecureCookies(context),

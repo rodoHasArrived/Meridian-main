@@ -366,15 +366,30 @@ function StatementFetchSchedulesTable({
                         <Button
                           type="button"
                           size="sm"
-                          variant="ghost"
-                          aria-label={`Delete schedule ${schedule.scheduleId}`}
+                          variant={viewModel.pendingDeleteScheduleId === schedule.scheduleId ? "destructive" : "ghost"}
+                          aria-label={viewModel.pendingDeleteScheduleId === schedule.scheduleId
+                            ? `Confirm delete schedule ${schedule.scheduleId}. This permanently removes the fetch schedule.`
+                            : `Delete schedule ${schedule.scheduleId}`}
+                          aria-describedby={viewModel.pendingDeleteScheduleId === schedule.scheduleId
+                            ? `statement-fetch-delete-${schedule.scheduleId}-status`
+                            : undefined}
                           busy={viewModel.deleteBusyId === schedule.scheduleId}
                           busyLabel="Deleting…"
                           onClick={() => void viewModel.deleteSchedule(schedule.scheduleId)}
                         >
                           <Trash2 className="size-3.5" aria-hidden="true" />
-                          Delete
+                          {viewModel.pendingDeleteScheduleId === schedule.scheduleId ? "Confirm delete" : "Delete"}
                         </Button>
+                        {viewModel.pendingDeleteScheduleId === schedule.scheduleId ? (
+                          <p
+                            id={`statement-fetch-delete-${schedule.scheduleId}-status`}
+                            role="status"
+                            aria-live="polite"
+                            className="basis-full text-right text-[11px] leading-4 text-warning"
+                          >
+                            Delete confirmation pending for {schedule.scheduleId}. Confirm delete permanently removes this schedule.
+                          </p>
+                        ) : null}
                       </div>
                     </td>
                   </tr>

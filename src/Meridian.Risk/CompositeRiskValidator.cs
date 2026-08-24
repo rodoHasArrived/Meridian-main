@@ -17,7 +17,10 @@ namespace Meridian.Risk;
 /// approval queue instead of routed; a valid one-shot approval token on the order releases
 /// it past the escalation.</description></item>
 /// <item><description><see cref="RiskRuleSeverity.Critical"/> — the order is rejected and the
-/// execution circuit breaker trips, halting all further routing until an operator closes it.</description></item>
+/// execution circuit breaker trips, halting all further routing until an operator closes it;
+/// when an <see cref="ICircuitBreakerTripHandler"/> is composed, the trip is followed by the
+/// kill-switch cancel-all sweep of the open book, mirroring the operator endpoint's
+/// activation.</description></item>
 /// </list>
 /// Rules evaluate by priority; warning flags accumulate across rules and are carried on the
 /// final result whether approved or not.
@@ -28,6 +31,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
     private readonly ILogger<CompositeRiskValidator> _logger;
     private readonly ExecutionOperatorControlService? _operatorControls;
     private readonly RiskEscalationQueueService? _escalationQueue;
+    private readonly ICircuitBreakerTripHandler? _tripHandler;
 
     // Fail-closed latch: set when a critical rule demanded the circuit breaker but the
     // durable trip failed. While latched, every order is rejected and the trip is retried,
@@ -48,7 +52,8 @@ public sealed class CompositeRiskValidator : IRiskValidator
         ILogger<CompositeRiskValidator> logger,
         ExecutionOperatorControlService? operatorControls = null,
         RiskEscalationQueueService? escalationQueue = null,
-        TimeSpan? perRuleTimeout = null)
+        TimeSpan? perRuleTimeout = null,
+        ICircuitBreakerTripHandler? tripHandler = null)
     {
         _rules = rules?
             .Select(static (rule, index) => new { Rule = rule, Index = index })
@@ -75,6 +80,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _operatorControls = operatorControls;
         _escalationQueue = escalationQueue;
+        _tripHandler = tripHandler;
 
         _perRuleTimeout = perRuleTimeout ?? DefaultPerRuleTimeout;
         if (_perRuleTimeout != Timeout.InfiniteTimeSpan)
@@ -784,10 +790,15 @@ public sealed class CompositeRiskValidator : IRiskValidator
             return;
         }
 
+        var tripReason = $"Tripped by critical risk rule '{rule.RuleName}': {reason}";
+        var trippedBy = $"risk-engine/{rule.RuleName}";
         try
         {
             if (_operatorControls.GetSnapshot().CircuitBreaker.IsOpen)
             {
+                // Already halted: whichever activation opened the breaker owned its sweep
+                // (the operator endpoint's, or an earlier trip's below), so a repeat breach
+                // must not re-run cancel-all against an already-swept book.
                 return;
             }
 
@@ -796,8 +807,8 @@ public sealed class CompositeRiskValidator : IRiskValidator
             // runs on its own token.
             await _operatorControls.SetCircuitBreakerAsync(
                 isOpen: true,
-                reason: $"Tripped by critical risk rule '{rule.RuleName}': {reason}",
-                changedBy: $"risk-engine/{rule.RuleName}",
+                reason: tripReason,
+                changedBy: trippedBy,
                 ct: CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception exception)
@@ -806,7 +817,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
             // fail-closed so every subsequent order is rejected until the trip lands. This
             // covers cancellation as well — the latch is recorded before the exception
             // propagates, so an interrupted trip still halts routing.
-            _breakerTripReason = $"Tripped by critical risk rule '{rule.RuleName}': {reason}";
+            _breakerTripReason = tripReason;
             _breakerTripPending = true;
             _logger.LogError(
                 exception,
@@ -820,6 +831,45 @@ public sealed class CompositeRiskValidator : IRiskValidator
             await _operatorControls
                 .TryRecordPendingCircuitBreakerTripAsync(_breakerTripReason, CancellationToken.None)
                 .ConfigureAwait(false);
+        }
+
+        // The halt is applied (or latched fail-closed above); now sweep the open book, exactly
+        // as the operator kill-switch endpoint does when it opens the breaker. Ordered strictly
+        // after the trip so the sweep can never gate or delay it, and run even when the durable
+        // flip failed: the latch only stops NEW orders through this validator, while resting
+        // orders keep filling at the broker until they are cancelled — which is precisely the
+        // moment the desk is losing money. The retry path (TryApplyPendingBreakerTripAsync)
+        // deliberately does not re-sweep: the book was swept when the halt was demanded.
+        await TrySweepOpenBookAsync(rule, tripReason, trippedBy).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Invokes the composed on-trip handler (the kill-switch cancel-all sweep) without letting
+    /// any of its failures back into the risk path: a sweep failure must be loudly reported by
+    /// the handler and suppressed here, never un-trip the halt or replace the order's rejection.
+    /// No handler composed (hosts without an OMS, and every pre-existing test composition)
+    /// keeps the historical trip-only behavior.
+    /// </summary>
+    private async Task TrySweepOpenBookAsync(IRiskRule rule, string tripReason, string trippedBy)
+    {
+        if (_tripHandler is null)
+        {
+            return;
+        }
+
+        try
+        {
+            // CancellationToken.None for the same reason as the trip itself: the sweep is owed
+            // to the desk, not to the order submission that exposed the breach.
+            await _tripHandler
+                .OnCircuitBreakerTrippedAsync(tripReason, trippedBy, CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            TryLogSuppressed(
+                exception,
+                $"kill-switch cancel-all sweep after critical rule '{rule.RuleName}' tripped the circuit breaker; open orders may remain working");
         }
     }
 

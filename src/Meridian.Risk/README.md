@@ -112,7 +112,11 @@ exposes one. Rule severity maps to a real outcome in `CompositeRiskValidator`:
   arms a one-shot, fingerprint-matched release token that lets exactly that order back through
   the escalation while every other rule still enforces.
 - `Critical` - the order is rejected and the execution circuit breaker
-  (`ExecutionOperatorControlService`) trips, halting routing until an operator closes it.
+  (`ExecutionOperatorControlService`) trips, halting routing until an operator closes it. When an
+  `ICircuitBreakerTripHandler` is composed (the workstation registers `KillSwitchSweepTripHandler`),
+  the trip is followed by the same kill-switch cancel-all sweep of the open book the operator
+  breaker endpoint performs, with the sweep outcome audited as `controls/CircuitBreakerCancelAll`;
+  the sweep runs strictly after the trip and can never delay, block, or revert it.
 
 Portfolio-aware rules read a `PortfolioExposureSnapshot` per evaluation, so thresholds tuned
 through the UI runtime service apply immediately and enforcement always sees the same

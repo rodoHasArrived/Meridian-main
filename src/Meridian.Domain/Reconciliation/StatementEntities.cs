@@ -234,4 +234,24 @@ public sealed record ReconciliationBreakRecord(
     string Status)
 {
     public string? EvidenceLink { get; init; }
+
+    /// <summary>
+    /// Optional machine-readable classification qualifying how the break should be governed.
+    /// <see langword="null"/> for an ordinary break. See <see cref="ReconciliationBreakClassifications"/>.
+    /// </summary>
+    public string? Classification { get; init; }
+}
+
+/// <summary>
+/// Machine-readable break classifications carried on <see cref="ReconciliationBreakRecord.Classification"/>.
+/// </summary>
+public static class ReconciliationBreakClassifications
+{
+    /// <summary>
+    /// Statement transaction matching ran against an empty internal ledger-transaction population, so
+    /// every statement movement is structurally unmatched. Breaks carrying this classification are
+    /// informational only: they stay visible for operator review but must not block close outputs.
+    /// </summary>
+    public const string InternalTransactionPopulationUnavailable =
+        "internal-transaction-population-unavailable";
 }

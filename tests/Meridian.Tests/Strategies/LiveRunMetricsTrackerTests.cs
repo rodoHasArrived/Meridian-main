@@ -65,6 +65,75 @@ public sealed class LiveRunMetricsTrackerTests
         metrics.CalmarRatio.Should().Be(0, "Calmar is undefined without a drawdown and is reported as zero");
     }
 
+    /// <summary>
+    /// Regression guard for the fixed-income booking convention carried by
+    /// <c>TradeExecutedEvent.GrossValue</c> and the OMS fill stamp: a face-value fill quotes its
+    /// price as a percentage of par, so 100,000 face at 101.25 is a $101,250 cash movement.
+    /// The tracker previously multiplied quantity by the raw price and booked $10,125,000.
+    /// </summary>
+    [Fact]
+    public void RecordFill_FaceValuePercentOfParFill_BooksTheParScaledCashFlow()
+    {
+        var tracker = new LiveRunMetricsTracker(initialEquity: 1_000_000m, StartedAt);
+
+        tracker.RecordFill(
+            CreateFill(symbol: "US912828XG55", quantity: 100_000, price: 101.25m),
+            StartedAt,
+            usesFaceValuePercentageOfPar: true);
+
+        var cashFlow = BuildCashFlows(tracker).Should().ContainSingle().Subject;
+        cashFlow.Amount.Should().Be(-101_250m,
+            "a buy of 100,000 face at a clean price of 101.25 percent of par spends $101,250, not $10,125,000");
+        cashFlow.Quantity.Should().Be(100_000);
+        cashFlow.Price.Should().Be(101.25m, "the cash flow still reports the price as it was quoted");
+    }
+
+    [Fact]
+    public void RecordFill_FaceValueSell_BooksParScaledProceeds()
+    {
+        var tracker = new LiveRunMetricsTracker(initialEquity: 1_000_000m, StartedAt);
+
+        // Sells carry a negative signed quantity, so the proceeds come back positive.
+        tracker.RecordFill(
+            CreateFill(symbol: "US912828XG55", quantity: -100_000, price: 99.50m),
+            StartedAt,
+            usesFaceValuePercentageOfPar: true);
+
+        BuildCashFlows(tracker).Should().ContainSingle()
+            .Which.Amount.Should().Be(99_500m, "selling 100,000 face at 99.50 percent of par raises $99,500");
+    }
+
+    [Fact]
+    public void RecordFill_EquityFill_StillBooksRawQuantityTimesPrice()
+    {
+        var tracker = new LiveRunMetricsTracker(initialEquity: 1_000_000m, StartedAt);
+
+        tracker.RecordFill(CreateFill(symbol: "AAPL", quantity: 100, price: 50.25m), StartedAt);
+
+        BuildCashFlows(tracker).Should().ContainSingle()
+            .Which.Amount.Should().Be(-5_025m, "an outright equity fill books quantity times price unscaled");
+    }
+
+    private static FillEvent CreateFill(string symbol, long quantity, decimal price) => new(
+        FillId: Guid.NewGuid(),
+        OrderId: Guid.NewGuid(),
+        Symbol: symbol,
+        FilledQuantity: quantity,
+        FillPrice: price,
+        Commission: 0m,
+        FilledAt: StartedAt);
+
+    private static IReadOnlyList<TradeCashFlow> BuildCashFlows(LiveRunMetricsTracker tracker) => tracker
+        .Build(
+            engineId: "BrokerPaper",
+            universe: new HashSet<string>(),
+            finalEquity: 1_000_000m,
+            ledger: new MeridianLedger(),
+            endedAt: StartedAt.AddDays(1))
+        .CashFlows
+        .OfType<TradeCashFlow>()
+        .ToArray();
+
     private static BacktestMetrics BuildMetricsFor(
         IReadOnlyList<decimal> dailyEquity,
         decimal initialEquity,

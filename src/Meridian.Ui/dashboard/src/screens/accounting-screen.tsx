@@ -129,6 +129,7 @@ import type {
   OperationsContinuityWorkflowSummary,
   OperationsTimelineEntry,
   PrivateCapitalCloseCockpit,
+  SessionInfo,
 } from "@/types";
 import {
   approvalBlockedReason,
@@ -148,6 +149,7 @@ import {
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
   multiAssetCoverage?: MultiAssetCoverageSummary | null;
+  session?: SessionInfo | null;
 }
 
 const SECURITY_MASTER_DRILL_IN_TAB_IDS = ["identity", "reference", "schedules", "lots", "passport", "evidence"] as const;
@@ -1627,9 +1629,10 @@ function AccountingCaseWorkbench({
   );
 }
 
-export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenProps) {
+export function AccountingScreen({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
   const { pathname, search, hash } = useLocation();
   const navigate = useNavigate();
+  const operatorIdentity = session?.displayName.trim() || null;
   const workstream = resolveAccountingWorkstream(pathname);
   const taskMode = buildAccountingTaskMode(pathname);
   const sectionVisibility = buildAccountingSectionVisibility(taskMode, hash);
@@ -1642,7 +1645,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const workspace = workspaceForPath(pathname);
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
   const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
-  const reconciliation = useAccountingReconciliationViewModel(data, workstream, undefined, accountingSystemReconciliation);
+  const reconciliation = useAccountingReconciliationViewModel(data, workstream, undefined, accountingSystemReconciliation, operatorIdentity);
   const selectedBreakPrimaryFields = reconciliation.selectedDetail?.fields.filter((field) => [
     "Variance",
     "Owner",

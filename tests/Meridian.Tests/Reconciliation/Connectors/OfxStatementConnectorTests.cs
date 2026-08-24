@@ -32,22 +32,29 @@ public sealed class OfxStatementConnectorTests : IDisposable
         result.Records.Should().HaveCount(4);
         result.Records.Should().OnlyContain(record => record.Account == "FUND-A-CASH");
 
+        // STMTTRN movements are transactions with their FITID identity intact — not cash balances.
+        // The prior "cash" mapping routed every bank movement into the cash-balance lane, where a
+        // mid-period movement can structurally never reconcile against a period-end balance.
         var credit = result.Records.Single(record => record.ExternalTransactionId == "B1-20260603-1");
-        credit.Kind.Should().Be(StatementRecordKind.CashBalance);
+        credit.Kind.Should().Be(StatementRecordKind.Transaction);
         credit.CashAmount.Should().Be(50000.00m);
         credit.TradeDate.Should().Be(new DateOnly(2026, 6, 3), "OFX timestamps reduce to their date component");
 
         var debit = result.Records.Single(record => record.ExternalTransactionId == "B1-20260610-1");
+        debit.Kind.Should().Be(StatementRecordKind.Transaction);
         debit.CashAmount.Should().Be(-18726.05m);
 
         var serviceCharge = result.Records.Single(record => record.ExternalTransactionId == "B1-20260628-1");
         serviceCharge.Kind.Should().Be(StatementRecordKind.Fee);
         serviceCharge.CashAmount.Should().Be(-25.00m);
 
+        // LEDGERBAL remains the genuine period-end cash balance.
         var ledgerBalance = result.Records.Single(record => record.ExternalTransactionId is null);
         ledgerBalance.Kind.Should().Be(StatementRecordKind.CashBalance);
         ledgerBalance.CashAmount.Should().Be(31248.95m);
         ledgerBalance.TradeDate.Should().Be(new DateOnly(2026, 6, 30));
+        result.Records.Where(record => record.Kind == StatementRecordKind.CashBalance)
+            .Should().ContainSingle("only the LEDGERBAL aggregate is a cash balance");
     }
 
     [Fact]
