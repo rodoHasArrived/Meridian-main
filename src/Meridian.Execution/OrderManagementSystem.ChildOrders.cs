@@ -90,13 +90,9 @@ public sealed partial class OrderManagementSystem
             // whole payload; removing them would leave an operator unable to tell which child leg
             // was registered. What triggers the query is the flow's OrderRequest origin, not the
             // content.
-            // codeql[cs/cleartext-storage-of-sensitive-information]
-            _logger.LogInformation(
-                "Registered broker child order {ChildOrderId} ({Symbol}, {Status}) under parent {ParentOrderId}",
-                LogSanitizer.Sanitize(childOrderId),
-                LogSanitizer.Sanitize(childState.Symbol),
-                childState.Status,
-                LogSanitizer.Sanitize(parentOrderId));
+            // The statement stays on one line so the suppression comment sits on the alert's own
+            // line - the scanner anchors the alert to the argument, not the statement start.
+            _logger.LogInformation("Registered broker child order {ChildOrderId} ({Symbol}, {Status}) under parent {ParentOrderId}", LogSanitizer.Sanitize(childOrderId), LogSanitizer.Sanitize(childState.Symbol), childState.Status, LogSanitizer.Sanitize(parentOrderId)); // codeql[cs/cleartext-storage-of-sensitive-information]
         }
 
         TrimRetainedOrdersIfNeeded();

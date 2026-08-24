@@ -191,11 +191,9 @@ public sealed class LedgerJournalInternalTransactionSource(
             // or provider-side account number, and without it the warning cannot say which
             // account's projection failed closed. What triggers the query is the identifier's
             // name. Same reasoning as the brokerage-sync suppressions.
-            // codeql[cs/cleartext-storage-of-sensitive-information]
-            logger?.LogWarning(
-                ex,
-                "Failed to query posted journals for account {AccountKey}; projecting an empty internal transaction population.",
-                query.AccountKey);
+            // The statement stays on one line so the suppression comment sits on the alert's own
+            // line - the scanner anchors the alert to the argument, not the statement start.
+            logger?.LogWarning(ex, "Failed to query posted journals for account {AccountKey}; projecting an empty internal transaction population.", query.AccountKey); // codeql[cs/cleartext-storage-of-sensitive-information]
             return [];
         }
 
