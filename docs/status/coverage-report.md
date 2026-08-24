@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**1245 / 8819** items documented (**14.1%**) &mdash; Grade: **F**
+**1247 / 8823** items documented (**14.1%**) &mdash; Grade: **F**
 
 ```text
 [===-----------------] 14.1%
@@ -15,15 +15,15 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1144 | 8350 | 13.7% | F |
+| Public Classes / Interfaces | 1146 | 8353 | 13.7% | F |
 | API Endpoints | 89 | 329 | 27.1% | F |
-| Configuration Options | 1 | 129 | 0.8% | F |
+| Configuration Options | 1 | 130 | 0.8% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (7206 undocumented)
+### Public Classes / Interfaces (7207 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,7 +77,7 @@
 | `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| ... and 7156 more | |
+| ... and 7157 more | |
 
 ### API Endpoints (240 undocumented)
 
@@ -135,7 +135,7 @@
 | `/api/loans/servicer-statements/{batchId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:546` |
 | ... and 190 more | |
 
-### Configuration Options (128 undocumented)
+### Configuration Options (129 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -162,6 +162,7 @@
 | `SecurityMasterWorkbench.GoldenCopySource` | `config/appsettings.sample.json` |
 | `SecurityMasterWorkbench.RequireIndependentReviewer` | `config/appsettings.sample.json` |
 | `SecurityMasterWorkbench.MaxBulkResolveBatch` | `config/appsettings.sample.json` |
+| `SecurityMasterWorkbench.RequireGovernedTermAmendments` | `config/appsettings.sample.json` |
 | `Synthetic` | `config/appsettings.sample.json` |
 | `Synthetic.Enabled` | `config/appsettings.sample.json` |
 | `Synthetic.Seed` | `config/appsettings.sample.json` |
@@ -188,14 +189,13 @@
 | `Backfill.SymbolResolutionMode` | `config/appsettings.sample.json` |
 | `Backfill.ProviderPriority` | `config/appsettings.sample.json` |
 | `Backfill.EnableRateLimitRotation` | `config/appsettings.sample.json` |
-| `Backfill.RateLimitRotationThreshold` | `config/appsettings.sample.json` |
-| ... and 78 more | |
+| ... and 79 more | |
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 7206 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
+1. **Public Classes / Interfaces**: 7207 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
 2. **API Endpoints**: 240 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
-3. **Configuration Options**: 128 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
+3. **Configuration Options**: 129 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---
 

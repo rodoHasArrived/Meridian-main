@@ -142,6 +142,7 @@ erDiagram
         text lifecycle_state
         uuid supersedes_corp_act_id
         numeric redemption_price_percent_of_par
+        jsonb payload
     }
     security_master_crypto_projection {
         uuid security_id PK
@@ -959,7 +960,7 @@ erDiagram
 | `cash_transaction` | table | 13 | `cash_transaction_id` | 2 | 5 | - |
 | `certificate_of_deposit_projection` | table | 10 | `security_id` | 0 | 3 | - |
 | `commodity_projection` | table | 10 | `security_id` | 0 | 3 | - |
-| `corporate_actions` | table | 19 | `corp_act_id` | 1 | 3 | - |
+| `corporate_actions` | table | 20 | `corp_act_id` | 1 | 3 | - |
 | `crypto_projection` | table | 7 | `security_id` | 0 | 3 | - |
 | `data_vendor_entitlements` | table | 21 | `entitlement_id` | 0 | 4 | - |
 | `deposit_projection` | table | 11 | `security_id` | 0 | 3 | - |

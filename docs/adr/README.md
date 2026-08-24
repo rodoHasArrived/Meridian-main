@@ -23,4 +23,5 @@ This folder keeps only current material:
 - [019-production-support-matrix-and-deployment-posture.md](019-production-support-matrix-and-deployment-posture.md)
 - [020-lifecycle-control-plane.md](020-lifecycle-control-plane.md)
 - [021-verified-operation-outcomes-and-case-history.md](021-verified-operation-outcomes-and-case-history.md)
+- [022-canonical-asset-class-homes.md](022-canonical-asset-class-homes.md)
 - [_template.md](_template.md) — template for authoring new ADRs

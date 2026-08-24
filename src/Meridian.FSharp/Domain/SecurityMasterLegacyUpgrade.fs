@@ -157,6 +157,8 @@ module SecurityMasterLegacyUpgrade =
                                 Some (match terms.Coupon with
                                       | BondCouponStructure.ZeroCoupon -> CouponKind.ZeroCoupon
                                       | BondCouponStructure.Floating _ -> CouponKind.Floating
+                                      | BondCouponStructure.Step _ -> CouponKind.Step
+                                      | BondCouponStructure.InflationLinked _ -> CouponKind.OtherCoupon "InflationLinked"
                                       | _ -> CouponKind.Fixed)
                             CouponRate = BondTerms.couponRate terms
                             PaymentFrequency = None

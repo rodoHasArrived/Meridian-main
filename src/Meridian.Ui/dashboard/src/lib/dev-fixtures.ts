@@ -4318,7 +4318,7 @@ const fixturePortfolioMultiAssetCoverage = {
     },
     {
       assetClass: "CustomAsset",
-      displayName: "MBS / ABS / CLO / CMBS / private assets",
+      displayName: "Profile-backed private / other assets",
       status: "ReviewRequired",
       statusLabel: "Review required",
       summary: "Structured and private assets require governed profiles, factor or NAV evidence, valuation approval, and profile-aware ledger classification.",

@@ -100,6 +100,53 @@ module SecurityMaster =
                 (error
                     "bond_principal_schedule_requires_par"
                     "Bond principal schedules require Par — without a face value, projections substitute a 100-unit basis and cap instalments against it, silently contradicting the persisted contractual amounts.")
+            @ require
+                (match terms.Coupon with
+                 | BondCouponStructure.Step(schedule, _) -> not schedule.IsEmpty
+                 | _ -> true)
+                (error
+                    "bond_step_schedule_required"
+                    "Step-coupon bonds must carry at least one dated step entry — an empty schedule leaves every accrual period without a payable rate.")
+            @ require
+                (match terms.Coupon with
+                 | BondCouponStructure.Step(schedule, _) -> schedule |> List.forall (fun entry -> entry.Rate >= 0m)
+                 | _ -> true)
+                (error "bond_step_rate_invalid" "Step-coupon rates must be zero or greater.")
+            @ require
+                (match terms.Coupon with
+                 | BondCouponStructure.Step(schedule, _) ->
+                     (schedule |> List.map (fun entry -> entry.EffectiveDate) |> List.distinct |> List.length) = schedule.Length
+                 | _ -> true)
+                (error
+                    "bond_step_dates_duplicate"
+                    "Step-coupon effective dates must be unique — two rates on one date make the payable coupon depend on input ordering.")
+            @ require
+                (match terms.Coupon with
+                 | BondCouponStructure.Step(schedule, _) ->
+                     schedule |> List.forall (fun entry -> entry.EffectiveDate <= terms.Maturity)
+                 | _ -> true)
+                (error
+                    "bond_step_date_after_maturity"
+                    "Step-coupon effective dates must fall on or before Maturity — a step past maturity can never take effect.")
+            @ require
+                (match terms.Coupon with
+                 | BondCouponStructure.InflationLinked(realRate, _, _, _, _) -> realRate >= 0m
+                 | _ -> true)
+                (error "bond_inflation_real_rate_invalid" "Inflation-linked real coupon rate must be zero or greater.")
+            @ require
+                (match terms.Coupon with
+                 | BondCouponStructure.InflationLinked(_, indexName, _, _, _) -> not (String.IsNullOrWhiteSpace indexName)
+                 | _ -> true)
+                (error "bond_inflation_index_required" "Inflation-linked bonds must name their reference index (e.g. CPI-U).")
+            @ require
+                (match terms.Coupon with
+                 | BondCouponStructure.InflationLinked(_, _, baseIndexValue, indexRatio, _) ->
+                     (baseIndexValue |> Option.forall (fun value -> value > 0m))
+                     && (indexRatio |> Option.forall (fun ratio -> ratio > 0m))
+                 | _ -> true)
+                (error
+                    "bond_inflation_index_values_invalid"
+                    "Inflation-linked base index value and index ratio must be greater than zero when present — a non-positive ratio zeroes or inverts index-adjusted principal.")
         | SecurityKind.FxSpot terms ->
             []
             @ requireNotBlank "fx_base_currency_required" "BaseCurrency" terms.BaseCurrency

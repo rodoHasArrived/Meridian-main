@@ -16,7 +16,11 @@ public sealed record StructuredCashFlowTerms(
     string? DayCountConvention,
     IReadOnlyList<StructuredFactorScheduleEntry> FactorSchedule,
     IReadOnlyList<StructuredCashFlowLeg>? Legs = null,
-    IReadOnlyList<StructuredPrincipalScheduleEntry>? PrincipalSchedule = null)
+    IReadOnlyList<StructuredPrincipalScheduleEntry>? PrincipalSchedule = null,
+    IReadOnlyList<StructuredStepCouponEntry>? StepCouponSchedule = null,
+    string? InflationIndex = null,
+    decimal? InflationBaseIndexValue = null,
+    decimal? InflationIndexRatio = null)
 {
     /// <summary>An empty term set used when a security carries no readable structured terms.</summary>
     public static StructuredCashFlowTerms Empty { get; } = new(
@@ -57,4 +61,41 @@ public sealed record StructuredCashFlowTerms(
 
         return CurrentFactor;
     }
+
+    /// <summary>True when a dated step-coupon schedule was resolved from the terms.</summary>
+    public bool HasStepCouponSchedule => StepCouponSchedule is { Count: > 0 };
+
+    /// <summary>
+    /// Returns the coupon rate payable on <paramref name="asOf"/> — for step coupons the latest
+    /// scheduled step effective on or before that day, otherwise the scalar
+    /// <see cref="CouponRate"/>. This is what makes a step-rate bond computable instead of a
+    /// classified-but-inert label: accrual and projection math can ask for the rate per period.
+    /// </summary>
+    public decimal? CouponRateAsOf(DateOnly asOf)
+    {
+        if (StepCouponSchedule is { Count: > 0 } schedule)
+        {
+            decimal? applicable = null;
+            DateOnly? applicableDate = null;
+            foreach (var entry in schedule)
+            {
+                if (entry.EffectiveDate <= asOf
+                    && (applicableDate is null || entry.EffectiveDate >= applicableDate.Value))
+                {
+                    applicable = entry.Rate;
+                    applicableDate = entry.EffectiveDate;
+                }
+            }
+
+            return applicable ?? CouponRate;
+        }
+
+        return CouponRate;
+    }
 }
+
+/// <summary>
+/// One dated coupon-rate step resolved from a bond's <c>stepSchedule</c>: the annual rate payable
+/// from <see cref="EffectiveDate"/> until the next entry's effective date (or maturity).
+/// </summary>
+public sealed record StructuredStepCouponEntry(DateOnly EffectiveDate, decimal Rate);

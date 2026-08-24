@@ -274,6 +274,11 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
+
+        // Keep the in-memory projection cache coherent with the durable write, matching the
+        // create/amend paths — without this a deactivated security kept reading Active from the
+        // warm cache until the next full re-warm.
+        _projectionCache?.Upsert(projection);
     }
 
     public Task<SecurityAliasDto> UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default)
