@@ -1464,6 +1464,19 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             var fillIncrement = incrementQuantity == report.FilledQuantity
                 ? report
                 : report with { FilledQuantity = incrementQuantity };
+
+            // Stamp the gateway-resolved sizing semantics onto the increment itself: the paper
+            // book, the accounting event, and the durable session record all consume this one
+            // report, and the session record is replayed after a restart when the sidecar
+            // dictionary no longer exists. The flag is not part of the canonical fill identity,
+            // so a replayed broker report still resolves to the same FillId.
+            if (!string.IsNullOrWhiteSpace(orderId)
+                && _orderFaceValueSizing.ContainsKey(orderId)
+                && !fillIncrement.UsesFaceValuePercentageOfPar)
+            {
+                fillIncrement = fillIncrement with { UsesFaceValuePercentageOfPar = true };
+            }
+
             progress = _fillProcessing.GetOrAdd(
                 report,
                 _ => new FillProcessingProgress(
@@ -1484,10 +1497,10 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             var fillIncrement = progress.FillIncrement;
 
             // Gateway-resolved sizing semantics for this order: quantity routed as face value,
-            // price quoted as a percentage of par. Both the paper book and the accounting event
-            // must scale the clean price the same way the pre-trade rails measured the order.
-            var usesFaceValuePercentageOfPar =
-                !string.IsNullOrWhiteSpace(orderId) && _orderFaceValueSizing.ContainsKey(orderId);
+            // price quoted as a percentage of par. Stamped onto the increment when its
+            // processing state was created, so the paper book, the accounting event, and the
+            // durable session record all read the same classification.
+            var usesFaceValuePercentageOfPar = fillIncrement.UsesFaceValuePercentageOfPar;
 
             if (!progress.PortfolioApplied)
             {

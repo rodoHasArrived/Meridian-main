@@ -136,7 +136,11 @@ The matching engine is institutional-grade; the wired path starves and mis-attri
   to a fraction of par, and `PaperTradingPortfolio.ApplyFill` converts once at the fill seam, so
   the booked cash equals the notional the risk gate approved — round-trip proof in
   `tests/Meridian.Tests/Execution/FixedIncomeFillBookingTests.cs`; recorded on `W9-SAFETY-007`.
-  The accrued-interest leg remains open.
+  Review-round hardening (same date): the classification is stamped onto the fill's
+  `ExecutionReport` so durable paper-session records replay par-scaled after a restart,
+  face-value positions normalize subsequent percentage-of-par marks in `UpdateMarketPrice`,
+  and the production paper gateway implements `IFaceValueOrderSizingGateway` with the live
+  gateway's asset-class rule. The accrued-interest leg remains open.
 
 ## 4. Live risk on the real book
 
