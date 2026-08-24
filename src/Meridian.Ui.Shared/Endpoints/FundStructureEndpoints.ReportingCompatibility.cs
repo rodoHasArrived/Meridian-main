@@ -63,6 +63,7 @@ public static partial class FundStructureEndpoints
                 "/api/fund-structure/reporting/runs/readiness",
                 "Legacy report-pack preview did not use the canonical server-owned run parameters and blocking readiness decision."))
         .WithName("PreviewFundReportPack")
+        .DeclarePermissionlessMutation(LegacyReportingTombstoneReason)
         .ProducesProblem(StatusCodes.Status410Gone);
 
         legacyReportingGroup.MapPost("/report-packs", (HttpContext context) =>
@@ -71,6 +72,7 @@ public static partial class FundStructureEndpoints
                 "/api/fund-structure/reporting/runs",
                 "Legacy report-pack generation bypassed certified snapshots, canonical readiness, and governed lifecycle creation."))
         .WithName("GenerateFundReportPack")
+        .DeclarePermissionlessMutation(LegacyReportingTombstoneReason)
         .ProducesProblem(StatusCodes.Status410Gone);
 
         legacyReportingGroup.MapGet("/report-packs", async (HttpContext context) =>

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T06:23:41Z",
+  "generatedAt": "2026-08-24T06:17:53Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2225,324 +2225,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs",
+      "path": "src/Meridian.Execution/OrderManagementSystem.cs",
       "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
+      "lastModified": "2026-08-24T04:06:54Z",
+      "lastCommit": "0854e607d",
+      "lastSummary": "Carry face-value sizing through replay, marks, and the paper gateway",
       "touches": 10
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Reporting/ReportingOrchestrationService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Contracts/Integrity/Sha256Digest.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Execution/Services/IPaperSessionStore.cs",
+      "path": "src/Meridian.Execution.Sdk/Models.cs",
       "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 4
+      "lastModified": "2026-08-24T04:06:54Z",
+      "lastCommit": "0854e607d",
+      "lastSummary": "Carry face-value sizing through replay, marks, and the paper gateway",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 4
+      "path": "src/Meridian.Execution/Services/PaperTradingPortfolio.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-08-24T04:06:54Z",
+      "lastCommit": "0854e607d",
+      "lastSummary": "Carry face-value sizing through replay, marks, and the paper gateway",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 4
+      "path": "src/Meridian.Execution/PaperTradingGateway.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-08-24T04:06:54Z",
+      "lastCommit": "0854e607d",
+      "lastSummary": "Carry face-value sizing through replay, marks, and the paper gateway",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 3
+      "path": "src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 13
     },
     {
-      "path": "src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.WorkflowAudit.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 3
+      "path": "src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 13
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/ApiKeyMiddleware.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 10
     },
     {
       "path": "src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 3
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 6
     },
     {
-      "path": "src/Meridian.Storage/Reporting/PostgresStatementReconciliationReportAuthorityStore.cs",
+      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Contracts/Operations/DataProvenance.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian/UiServer.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution/Events/TradeExecutedEvent.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagementSystem.FillIdentity.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/DataBrowserViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Wpf/Views/DataBrowserPage.xaml",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 3
+      "lastModified": "2026-08-22T00:58:53Z",
+      "lastCommit": "d319d33b1",
+      "lastSummary": "Settle the line pairing by counting instead of searching",
+      "touches": 5
     },
     {
-      "path": "src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Integrations/ProviderIntegrationQuarantineReplayService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingCloseServices.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Reconciliation/ReconciliationCaseInfrastructure.cs",
+      "path": "src/Meridian.Storage/Ledger/LedgerRetainedValueComparison.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 2
+      "lastModified": "2026-08-22T00:58:53Z",
+      "lastCommit": "d319d33b1",
+      "lastSummary": "Settle the line pairing by counting instead of searching",
+      "touches": 4
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs",
+      "path": "src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 2
+      "lastModified": "2026-08-21T00:43:27Z",
+      "lastCommit": "422678bba",
+      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
+      "touches": 13
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/DailyValuationBatchLifecycleService.cs",
+      "path": "src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 2
+      "lastModified": "2026-08-21T00:43:27Z",
+      "lastCommit": "422678bba",
+      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
+      "touches": 6
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs",
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Collateral.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 2
+      "lastModified": "2026-08-21T00:43:27Z",
+      "lastCommit": "422678bba",
+      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
+      "touches": 5
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs",
+      "path": "src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 2
+      "lastModified": "2026-08-21T00:43:27Z",
+      "lastCommit": "422678bba",
+      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
+      "touches": 5
     },
     {
-      "path": "src/Meridian.Application/Composition/LegacySnapshotArchiver.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/DirectLendingEventRebuilder.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/Integrations/ProviderIntegrationSyncOrchestrationService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Domain/Reconciliation/BrokerStatementModels.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Ledger/AssetAccountingCandidateCanonicalizer.cs",
+      "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
+      "lastModified": "2026-08-21T00:43:27Z",
+      "lastCommit": "422678bba",
+      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ReportingWorkflowService.AccessibleRecords.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-21T00:43:27Z",
+      "lastCommit": "422678bba",
+      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
       "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs",
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-21T00:20:11Z",
+      "lastCommit": "118164551",
+      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
+      "touches": 36
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FinancialRecordExplorers.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-21T00:20:11Z",
+      "lastCommit": "118164551",
+      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-21T00:20:11Z",
+      "lastCommit": "118164551",
+      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-21T00:20:11Z",
+      "lastCommit": "118164551",
+      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AccountingWorkspace.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-21T00:20:11Z",
+      "lastCommit": "118164551",
+      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-21T00:20:11Z",
+      "lastCommit": "118164551",
+      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/CollateralExposureService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T23:26:19Z",
+      "lastCommit": "b166ebbd8",
+      "lastSummary": "Refuse an unbufferable observation, and let a read-only role render a template",
+      "touches": 14
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/RetainedPostingEquivalence.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-08-20T21:31:05Z",
+      "lastCommit": "e30ca8a13",
+      "lastSummary": "Mirror the store's own timestamp encoding, and treat an identity translation as no claim",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorInbox.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T12:27:20Z",
+      "lastCommit": "7b0958b86",
+      "lastSummary": "Scope run cards, keep the blocker, and fold padding out of exposure identities",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Wpf/Services/DesktopWorkflowReadScopeResolver.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T11:31:44Z",
+      "lastCommit": "2ccf0921a",
+      "lastSummary": "Refuse unattributed runs under tenancy, and fail closed on a bad role",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
+      "lastModified": "2026-08-20T11:31:44Z",
+      "lastCommit": "2ccf0921a",
+      "lastSummary": "Refuse unattributed runs under tenancy, and fail closed on a bad role",
       "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-16T21:03:30Z",
-      "lastCommit": "c2b3fd447",
-      "lastSummary": "Route 79 inline SHA-256 sites onto Sha256Digest byte and hex forms",
-      "touches": 1
+      "path": "src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T10:54:12Z",
+      "lastCommit": "0440cad06",
+      "lastSummary": "Admit established principals to host status, and close three residuals",
+      "touches": 14
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T10:54:12Z",
+      "lastCommit": "0440cad06",
+      "lastSummary": "Admit established principals to host status, and close three residuals",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T10:54:12Z",
+      "lastCommit": "0440cad06",
+      "lastSummary": "Admit established principals to host status, and close three residuals",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T10:29:54Z",
+      "lastCommit": "fc771b89d",
+      "lastSummary": "Scope explorer sources by tenant, and stop capping self-authenticating routes",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/SecureReportingDistributionEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T10:29:54Z",
+      "lastCommit": "fc771b89d",
+      "lastSummary": "Scope explorer sources by tenant, and stop capping self-authenticating routes",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T08:56:18Z",
+      "lastCommit": "c7de32903",
+      "lastSummary": "Project symbol status by authority, and free the brokerage reads",
+      "touches": 8
     }
   ],
   "recentChangesWindowDays": 14,
