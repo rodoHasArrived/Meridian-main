@@ -5380,7 +5380,9 @@ Meridian-main
 │   │   │   ├── PriceCollarRule.cs
 │   │   │   └── SymbolConcentrationRule.cs
 │   │   ├── CompositeRiskValidator.cs
+│   │   ├── ICircuitBreakerTripHandler.cs
 │   │   ├── IRiskRule.cs
+│   │   ├── KillSwitchSweepTripHandler.cs
 │   │   ├── Meridian.Risk.csproj
 │   │   ├── PortfolioExposure.cs
 │   │   └── README.md
@@ -9374,6 +9376,7 @@ Meridian-main
 │   │   │   │   ├── InitialAccountBootstrapEndpointTests.cs
 │   │   │   │   ├── LeanEndpointTests.cs
 │   │   │   │   ├── LiveDataEndpointTests.cs
+│   │   │   │   ├── LoginSessionMiddlewarePrincipalTests.cs
 │   │   │   │   ├── MaintenanceEndpointTests.cs
 │   │   │   │   ├── MutationAuthorizationGuardMiddlewareTests.cs
 │   │   │   │   ├── NegativePathEndpointTests.cs
@@ -9550,6 +9553,7 @@ Meridian-main
 │   │   │   ├── DrawdownCircuitBreakerTests.cs
 │   │   │   ├── EnforcedRiskValidatorCompositionTests.cs
 │   │   │   ├── FatFingerRuleTests.cs
+│   │   │   ├── KillSwitchSweepTripHandlerTests.cs
 │   │   │   ├── OrderRateThrottleTests.cs
 │   │   │   ├── PortfolioRiskRulesTests.cs
 │   │   │   ├── PositionLimitRuleTests.cs
@@ -9819,6 +9823,7 @@ Meridian-main
 │   │   │   ├── Evidence
 │   │   │   │   ├── EvidenceDocumentExtractionTests.cs
 │   │   │   │   ├── EvidenceProofChainBuilderTests.cs
+│   │   │   │   ├── JournalEntryEvidenceTests.cs
 │   │   │   │   ├── ReconciliationEvidenceContributorTests.cs
 │   │   │   │   └── SecurityMasterAndVaultEvidenceContributorTests.cs
 │   │   │   ├── Streaming
@@ -9905,6 +9910,7 @@ Meridian-main
 │   │   │   ├── ProviderRoutingEndpointsTests.cs
 │   │   │   ├── ReconciliationApiServiceTests.cs
 │   │   │   ├── ReconciliationBreakQueueProjectionTests.cs
+│   │   │   ├── ReconciliationLegacyBulkActionTests.cs
 │   │   │   ├── ReferenceDataEndpointAuthorizationTests.cs
 │   │   │   ├── RegistryFundProfileTenantGuardTests.cs
 │   │   │   ├── ReportingArtifactVaultServiceTests.cs
@@ -10242,6 +10248,7 @@ Meridian-main
 │   │   │   ├── ServiceManagerViewModelTests.cs
 │   │   │   ├── SettingsViewModelAssetProfileTests.cs
 │   │   │   ├── SettingsViewModelOperationsControlTests.cs
+│   │   │   ├── SettingsViewModelTests.cs
 │   │   │   ├── SetupWizardViewModelTests.cs
 │   │   │   ├── ShellPresentationViewModelTests.cs
 │   │   │   ├── StartupWindowViewModelTests.cs
