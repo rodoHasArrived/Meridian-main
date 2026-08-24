@@ -60,6 +60,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private readonly ConcurrentDictionary<ExecutionReport, ExecutionReport> _pendingFillReservations = new();
     // Contract multiplier per order id, for derivative fills.
     private readonly ConcurrentDictionary<string, decimal> _orderContractMultipliers = new(StringComparer.OrdinalIgnoreCase);
+    // Order ids the active gateway routes as face value priced as a percentage of par, so the
+    // fill booking path scales the clean price exactly as the pre-trade rails valued the order.
+    private readonly ConcurrentDictionary<string, bool> _orderFaceValueSizing = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentQueue<ExecutionReport> _completedFillReportOrder = new();
     private readonly object _disposeSync = new();
     private long _droppedExecutionReports;
@@ -502,6 +505,17 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             else
             {
                 _orderContractMultipliers.TryRemove(orderId, out _);
+            }
+
+            if (usesFaceValuePercentageOfPar)
+            {
+                _orderFaceValueSizing[orderId] = true;
+            }
+            else
+            {
+                // A terminal client-order id may be reused. Do not let a prior bond order's
+                // price scaling leak into fills for an equity replacement order.
+                _orderFaceValueSizing.TryRemove(orderId, out _);
             }
 
             if (safeRequest.FundAccountId is { } fundAccountId)
@@ -1450,6 +1464,19 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             var fillIncrement = incrementQuantity == report.FilledQuantity
                 ? report
                 : report with { FilledQuantity = incrementQuantity };
+
+            // Stamp the gateway-resolved sizing semantics onto the increment itself: the paper
+            // book, the accounting event, and the durable session record all consume this one
+            // report, and the session record is replayed after a restart when the sidecar
+            // dictionary no longer exists. The flag is not part of the canonical fill identity,
+            // so a replayed broker report still resolves to the same FillId.
+            if (!string.IsNullOrWhiteSpace(orderId)
+                && _orderFaceValueSizing.ContainsKey(orderId)
+                && !fillIncrement.UsesFaceValuePercentageOfPar)
+            {
+                fillIncrement = fillIncrement with { UsesFaceValuePercentageOfPar = true };
+            }
+
             progress = _fillProcessing.GetOrAdd(
                 report,
                 _ => new FillProcessingProgress(
@@ -1468,6 +1495,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 return;
 
             var fillIncrement = progress.FillIncrement;
+
+            // Gateway-resolved sizing semantics for this order: quantity routed as face value,
+            // price quoted as a percentage of par. Stamped onto the increment when its
+            // processing state was created, so the paper book, the accounting event, and the
+            // durable session record all read the same classification.
+            var usesFaceValuePercentageOfPar = fillIncrement.UsesFaceValuePercentageOfPar;
 
             if (!progress.PortfolioApplied)
             {
@@ -1492,7 +1525,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                         contractMultiplier: fillOrderId is not null
                             && _orderContractMultipliers.TryGetValue(fillOrderId, out var multiplier)
                             ? multiplier
-                            : 1m);
+                            : 1m,
+                        usesFaceValuePercentageOfPar: usesFaceValuePercentageOfPar);
                     progress.RealizedPnl = paperPortfolio.RealisedPnl - realisedPnlBefore;
                 }
 
@@ -1513,7 +1547,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                         progress.CumulativeFilledQuantity,
                         progress.RealizedPnl,
                         progress.NewCash,
-                        ResolveFinancialAccountId(orderId));
+                        ResolveFinancialAccountId(orderId),
+                        usesFaceValuePercentageOfPar);
                 }
 
                 if (_tradeEventPublisher is not null && progress.IsTrackedOrder)
@@ -1957,6 +1992,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             _orderSessionIds.TryRemove(removableOrderId, out _);
             _orderFinancialAccountIds.TryRemove(removableOrderId, out _);
             _orderContractMultipliers.TryRemove(removableOrderId, out _);
+            _orderFaceValueSizing.TryRemove(removableOrderId, out _);
         }
     }
 

@@ -13,7 +13,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Middleware that enforces session-based authentication.
 /// <list type="bullet">
-///   <item>Health probes (/healthz, /readyz, /livez) are always exempt.</item>
+///   <item>Health probes (/health, /healthz, /readyz, /livez) and the Prometheus scrape path (/metrics) are always exempt.</item>
 ///   <item>The initial-account bootstrap surface (/setup/account, /api/auth/bootstrap) is exempt
 ///     while no account exists; those endpoints gate themselves on the loopback-only, one-use
 ///     MDC_BOOTSTRAP_TOKEN.</item>
@@ -87,7 +87,13 @@ public sealed class LoginSessionMiddleware
 
     private static readonly HashSet<string> ExemptPaths = new(StringComparer.OrdinalIgnoreCase)
     {
+        // "/health" is what the shipped docker-compose healthcheck curls and "/metrics" is what
+        // the shipped Prometheus scrape config targets; without both here every authenticated
+        // deployment reports its container unhealthy and scrapes nothing. The detailed probe
+        // ("/health/detailed") stays authenticated — only the exact liveness/scrape paths open.
+        "/health",
         "/healthz",
+        "/metrics",
         "/ready",
         "/readyz",
         "/live",

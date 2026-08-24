@@ -15,7 +15,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// Requests already authenticated by a login session (the browser workstation) are exempt —
 /// the API key protects out-of-band API clients, so this middleware must run after
 /// <see cref="LoginSessionMiddleware"/>.
-/// Health check endpoints (/healthz, /readyz, /livez) are always exempt.
+/// Health check endpoints (/health, /healthz, /readyz, /livez) and the Prometheus scrape path (/metrics) are always exempt.
 /// </summary>
 public sealed class ApiKeyMiddleware
 {
@@ -46,7 +46,12 @@ public sealed class ApiKeyMiddleware
 
     private static readonly HashSet<string> ExemptPaths = new(StringComparer.OrdinalIgnoreCase)
     {
+        // "/health" (compose healthcheck) and "/metrics" (Prometheus scrape) must stay
+        // reachable in an authenticated deployment, or the probes that watch the host are
+        // the first thing authentication breaks. "/health/detailed" stays authenticated.
+        "/health",
         "/healthz",
+        "/metrics",
         "/readyz",
         "/livez"
     };
@@ -350,7 +355,7 @@ public static class ApiKeyMiddlewareExtensions
     /// Adds API key authentication middleware for /api/* endpoints.
     /// The key is read from the MDC_API_KEY environment variable.
     /// When no key is set, requests pass through so other authentication layers can decide access.
-    /// Health check endpoints (/healthz, /readyz, /livez) are always exempt.
+    /// Health check endpoints (/health, /healthz, /readyz, /livez) and the Prometheus scrape path (/metrics) are always exempt.
     /// </summary>
     public static IApplicationBuilder UseApiKeyAuthentication(this IApplicationBuilder app)
     {
