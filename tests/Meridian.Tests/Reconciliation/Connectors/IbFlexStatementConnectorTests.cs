@@ -37,10 +37,11 @@ public sealed class IbFlexStatementConnectorTests : IDisposable
         var byKind = result.Records.GroupBy(record => record.Kind).ToDictionary(group => group.Key, group => group.Count());
         byKind.Should().BeEquivalentTo(new Dictionary<StatementRecordKind, int>
         {
-            [StatementRecordKind.Transaction] = 2,
+            // Trades plus the Deposits/Withdrawals cash movement: Flex CashTransactions are ledger
+            // movements, so they reconcile in the transaction lane, never as an ending cash balance.
+            [StatementRecordKind.Transaction] = 3,
             [StatementRecordKind.Dividend] = 1,
             [StatementRecordKind.Fee] = 1,
-            [StatementRecordKind.CashBalance] = 1,
             [StatementRecordKind.Position] = 2
         });
 
@@ -61,8 +62,12 @@ public sealed class IbFlexStatementConnectorTests : IDisposable
         dividend.CashAmount.Should().Be(132.50m);
         dividend.TradeDate.Should().Be(new DateOnly(2026, 6, 10), "timestamped Flex dateTime reduces to its date");
 
-        var deposit = result.Records.Single(record => record.Kind == StatementRecordKind.CashBalance);
+        var deposit = result.Records.Single(record => record.ExternalTransactionId == "9002003");
+        deposit.Kind.Should().Be(StatementRecordKind.Transaction, "a deposit is a movement, not the account's ending balance");
         deposit.CashAmount.Should().Be(50000.00m);
+        result.ActivityEvents.Should().Contain(
+            item => item.Subtype == BrokerageActivitySubtype.CashDeposit,
+            "remapping the reconciliation lane must not change brokerage-activity enrichment");
 
         var positions = result.Records.Where(record => record.Kind == StatementRecordKind.Position).ToArray();
         positions.Select(position => position.Symbol).Should().BeEquivalentTo("AAPL", "TLT");

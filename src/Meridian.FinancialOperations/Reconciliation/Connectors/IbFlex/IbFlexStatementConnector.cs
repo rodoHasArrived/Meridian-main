@@ -460,8 +460,10 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         {
             "fee" => (BrokerageActivityCategory.Fee, BrokerageActivitySubtype.Fee),
             "dividend" or "div" => (BrokerageActivityCategory.Dividend, BrokerageActivitySubtype.CashDividend),
-            "cash" or "cashbalance" when amount < 0m => (BrokerageActivityCategory.Cash, BrokerageActivitySubtype.CashWithdrawal),
-            "cash" or "cashbalance" => (BrokerageActivityCategory.Cash, BrokerageActivitySubtype.CashDeposit),
+            // The profile maps cash movements to the canonical "transaction" activity (so reconciliation
+            // routes them to the ledger-transaction lane); they remain deposits/withdrawals here.
+            "cash" or "cashbalance" or "transaction" when amount < 0m => (BrokerageActivityCategory.Cash, BrokerageActivitySubtype.CashWithdrawal),
+            "cash" or "cashbalance" or "transaction" => (BrokerageActivityCategory.Cash, BrokerageActivitySubtype.CashDeposit),
             _ => (BrokerageActivityCategory.Cash, BrokerageActivitySubtype.Other)
         };
         return BuildActivity(

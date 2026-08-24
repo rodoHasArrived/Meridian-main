@@ -1829,97 +1829,97 @@
     {
       "method": "GET",
       "path": "/api/lean/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:32",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:33",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/config",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:60",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:63",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/lean/verify",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:87",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:90",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/algorithms",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:150",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:153",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/lean/sync",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:180",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:188",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/sync/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:232",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:198",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/lean/backtest/start",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:252",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:205",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/backtest/{backtestId}/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:285",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:215",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/backtest/{backtestId}/results",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:303",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:223",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/lean/backtest/{backtestId}/stop",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:323",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:232",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/backtest/history",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:339",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:248",
       "documented": false
     },
     {
       "method": "DELETE",
       "path": "/api/lean/backtest/{backtestId}/delete",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:380",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:289",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/auto-export",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:394",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:303",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/lean/auto-export/configure",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:425",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:334",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/lean/results/ingest",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:461",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:370",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/symbol-map",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:555",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:464",
       "documented": false
     },
     {
@@ -3761,13 +3761,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2755",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2761",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2896",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2902",
       "documented": false
     }
   ],
@@ -7194,67 +7194,67 @@
     },
     {
       "name": "StatementReconciliationCaseDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:205",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:206",
       "documented": false
     },
     {
       "name": "StatementReconciliationCaseCommentThreadDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:228",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:229",
       "documented": false
     },
     {
       "name": "StatementReconciliationCaseCommentDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:233",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:234",
       "documented": false
     },
     {
       "name": "StatementReconciliationCaseAttachmentDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:240",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:241",
       "documented": false
     },
     {
       "name": "StatementReconciliationBreakExplanationDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:249",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:250",
       "documented": false
     },
     {
       "name": "StatementReconciliationCaseAuditEventDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:258",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:259",
       "documented": false
     },
     {
       "name": "StatementRunDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:269",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:270",
       "documented": false
     },
     {
       "name": "StatementRunCreateDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:298",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:299",
       "documented": false
     },
     {
       "name": "StatementRunReconcileRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:316",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:317",
       "documented": false
     },
     {
       "name": "StatementRunSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:324",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:325",
       "documented": false
     },
     {
       "name": "StatementRunValidationDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:338",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:339",
       "documented": false
     },
     {
       "name": "StatementRunBreakDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:346",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:347",
       "documented": false
     },
     {
       "name": "StatementRunExceptionDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:361",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:362",
       "documented": false
     },
     {

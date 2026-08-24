@@ -86,11 +86,13 @@ import type {
   ProviderReadinessSummary,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
-  ProviderRoutingTrustSnapshot
+  ProviderRoutingTrustSnapshot,
+  SessionInfo
 } from "@/types";
 
 interface DataScreenProps {
   data: DataWorkspaceResponse | null;
+  session?: SessionInfo | null;
   providerConnections?: ProviderConnectionRow[] | null;
   providerReadiness?: ProviderReadinessSummary | null;
   providerRoutingConnections?: ProviderRoutingConnection[] | null;
@@ -165,6 +167,7 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
 
 export function DataScreen({
   data,
+  session = null,
   providerConnections = null,
   providerReadiness = null,
   providerRoutingConnections = null,
@@ -199,7 +202,8 @@ export function DataScreen({
     providerRoutingRefreshing,
     providerRoutingTrustSnapshots
   ]);
-  const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence);
+  const operatorIdentity = session?.displayName.trim() || null;
+  const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence, operatorIdentity);
   const queryPanel = useDataQueryPanel();
   const qualityPanel = useDataQualityPanel(dataQualityFetcher);
   const capabilityMatrixPanel = useCapabilityMatrixPanel();

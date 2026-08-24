@@ -90,6 +90,10 @@ internal static class StatementRunMatcher
         var breaks = new List<StatementRunBreak>();
         var matchCount = 0;
         var breakOrdinal = 0;
+        // With no retained internal ledger transactions, every statement movement is structurally
+        // unmatched — the breaks are real evidence but carry no comparison. Classify them so the
+        // governed queue publishes them as informational instead of close blockers.
+        var internalTransactionsUnavailable = populations.LedgerTransactions.Count == 0;
         foreach (var result in engineResult.Results)
         {
             if (result.MatchTier is StatementMatchTier.Exact or StatementMatchTier.Tolerance)
@@ -121,7 +125,12 @@ internal static class StatementRunMatcher
                 Tolerance: ResolveToleranceAmount(result.Tolerance),
                 ToleranceBreached: toleranceBreached,
                 CreatedAtUtc: createdAtUtc,
-                Status: "Open");
+                Status: "Open")
+            {
+                Classification = internalTransactionsUnavailable && result.Kind == StatementMatchKind.Transaction
+                    ? ReconciliationBreakClassifications.InternalTransactionPopulationUnavailable
+                    : null
+            };
 
             breaks.Add(new StatementRunBreak(record, result, statementRow));
         }

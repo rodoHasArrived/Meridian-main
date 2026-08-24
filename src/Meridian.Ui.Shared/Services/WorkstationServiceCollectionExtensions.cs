@@ -412,6 +412,17 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RiskEscalationQueueService>>(),
             sp.GetService<ExecutionAuditTrailService>(),
             sp.GetService<RiskEscalationQueueOptions>()));
+        // On-trip kill switch: when a Critical rule trips the circuit breaker automatically,
+        // the same cancel-all sweep the operator breaker endpoint performs must empty the open
+        // book — a halt that only blocks new submissions leaves resting orders filling. The
+        // order manager is reached through a lazy accessor, not a constructor dependency: the
+        // OMS depends on the risk validator that holds this handler, so resolving it eagerly
+        // would close a DI cycle (same pattern as orderManagerAccessor above).
+        services.TryAddSingleton<Meridian.Risk.ICircuitBreakerTripHandler>(sp =>
+            new Meridian.Risk.KillSwitchSweepTripHandler(
+                orderManagerAccessor: sp.GetService<Meridian.Execution.Sdk.IOrderManager>,
+                logger: sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.KillSwitchSweepTripHandler>>(),
+                auditTrail: sp.GetService<ExecutionAuditTrailService>()));
         // Enforced pre-trade risk path: Meridian.Risk's CompositeRiskValidator is the
         // IRiskValidator the OMS invokes before routing an order, composed of the operator-tuned
         // guardrails (thresholds sourced live from RiskRuleRuntimeService and the operator
@@ -484,7 +495,10 @@ public static class WorkstationServiceCollectionExtensions
                 rules,
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.CompositeRiskValidator>>(),
                 operatorControls,
-                sp.GetService<RiskEscalationQueueService>());
+                sp.GetService<RiskEscalationQueueService>(),
+                // Safe to resolve here: the handler defers its own IOrderManager lookup to trip
+                // time, so constructing it does not re-enter the OMS -> validator DI chain.
+                tripHandler: sp.GetService<Meridian.Risk.ICircuitBreakerTripHandler>());
         });
         services.TryAddSingleton<StrategyRunReviewPacketService>();
         services.TryAddSingleton<BacktestToLivePromoter>();

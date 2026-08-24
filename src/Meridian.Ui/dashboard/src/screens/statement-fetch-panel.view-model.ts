@@ -63,6 +63,7 @@ export interface StatementFetchPanelViewModel {
   loadError: ApiErrorDisplay | null;
   loading: boolean;
   newSchedule: () => void;
+  pendingDeleteScheduleId: string | null;
   preview: StatementImportPreview | null;
   previewBusy: boolean;
   previewDisabledReason: string | null;
@@ -171,6 +172,15 @@ export function useStatementFetchPanelViewModel({
   const [runResult, setRunResult] = useState<StatementImportCommitResult | null>(null);
   const [deleteBusyId, setDeleteBusyId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<ApiErrorDisplay | null>(null);
+  const [pendingDeleteScheduleId, setPendingDeleteScheduleId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!pendingDeleteScheduleId || schedules.some((schedule) => schedule.scheduleId === pendingDeleteScheduleId)) {
+      return;
+    }
+
+    setPendingDeleteScheduleId(null);
+  }, [pendingDeleteScheduleId, schedules]);
 
   const refreshSchedules = useCallback(async () => {
     setLoading(true);
@@ -320,6 +330,13 @@ export function useStatementFetchPanelViewModel({
   }, [services]);
 
   const deleteSchedule = useCallback(async (scheduleId: string) => {
+    if (pendingDeleteScheduleId !== scheduleId) {
+      setPendingDeleteScheduleId(scheduleId);
+      setDeleteError(null);
+      return;
+    }
+
+    setPendingDeleteScheduleId(null);
     setDeleteBusyId(scheduleId);
     setDeleteError(null);
     try {
@@ -333,7 +350,7 @@ export function useStatementFetchPanelViewModel({
     } finally {
       setDeleteBusyId(null);
     }
-  }, [draft.scheduleId, remoteConnectors, services]);
+  }, [draft.scheduleId, pendingDeleteScheduleId, remoteConnectors, services]);
 
   const previewErrors = validateStatementFetchDraft(draft, remoteConnectors, "preview");
   const scheduleErrors = validateStatementFetchDraft(draft, remoteConnectors, "schedule");
@@ -352,6 +369,7 @@ export function useStatementFetchPanelViewModel({
     loadError,
     loading,
     newSchedule,
+    pendingDeleteScheduleId,
     preview,
     previewBusy,
     previewDisabledReason,

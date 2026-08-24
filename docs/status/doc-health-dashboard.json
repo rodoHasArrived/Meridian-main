@@ -1,11 +1,11 @@
 {
-  "total_files": 655,
-  "total_lines": 131498,
+  "total_files": 656,
+  "total_lines": 132082,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 239,
-  "average_lines": 200.8,
+  "average_lines": 201.3,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2625,7 +2625,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10524,
+      "line_count": 10533,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2952,6 +2952,14 @@
       "stale": false
     },
     {
+      "path": "docs/product/adversarial-program-review-2026-08-24.md",
+      "line_count": 552,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/adversarial-program-review-2026-08.md",
       "line_count": 556,
       "has_heading": true,
@@ -3049,7 +3057,7 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 304,
+      "line_count": 310,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3705,7 +3713,7 @@
     },
     {
       "path": "docs/start/README.md",
-      "line_count": 249,
+      "line_count": 262,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5369,7 +5377,7 @@
     },
     {
       "path": "src/Meridian.Risk/README.md",
-      "line_count": 184,
+      "line_count": 188,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

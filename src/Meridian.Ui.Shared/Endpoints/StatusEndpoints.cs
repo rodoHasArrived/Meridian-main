@@ -32,7 +32,7 @@ public static class StatusEndpoints
             var statusCode = handlers.GetHealthStatusCode(response);
             return Results.Json(response, jsonOptions, statusCode: statusCode);
         })
-        .WithName("GetHealth").DeclareOpenRead("Liveness health check returning 503 when unhealthy; status, uptime and coarse check names only, so it needs no permission beyond the session a configured deployment already requires. The unauthenticated probe surface is /healthz and its siblings, which the session middleware exempts outright.")
+        .WithName("GetHealth").DeclareOpenRead("Intentionally unauthenticated: both the session and API-key middlewares exempt the exact /health path because the shipped docker-compose healthcheck curls it, and a probe that authentication breaks reports every configured deployment unhealthy. Payload is status, uptime and coarse check names only; the detailed probe (/health/detailed) stays authenticated.")
         .WithTags("Health")
         .WithDescription("Returns comprehensive health status including provider connectivity and storage health.")
         .Produces<HealthCheckResponse>(200)
@@ -45,7 +45,7 @@ public static class StatusEndpoints
             var statusCode = handlers.GetHealthStatusCode(response);
             return Results.Json(response, jsonOptions, statusCode: statusCode);
         })
-        .WithName("GetHealthApi").DeclareOpenRead("Documented alias of /health kept for backward compatibility; same coarse liveness payload, and the same reasoning applies.")
+        .WithName("GetHealthApi").DeclareOpenRead("Documented alias of /health kept for backward compatibility; same coarse liveness payload. Unlike /health itself, this alias is not in the middleware exemption sets, so it still sits behind the session or API key a configured deployment requires.")
         .WithTags("Health")
         .WithDescription("Alias for /health endpoint for backward compatibility.")
         .Produces<HealthCheckResponse>(200)
@@ -107,7 +107,7 @@ public static class StatusEndpoints
             var content = await handlers.GetPrometheusMetricsAsync(cancellationToken).ConfigureAwait(false);
             return Results.Content(content, "text/plain; version=0.0.4");
         })
-        .WithName("GetMetrics").DeclareOpenRead("Prometheus scrape contract in text exposition format; operational counters only, so no permission is warranted beyond the session or API key a configured deployment already requires of any out-of-band client.")
+        .WithName("GetMetrics").DeclareOpenRead("Intentionally unauthenticated: both the session and API-key middlewares exempt the exact /metrics path because the shipped Prometheus scrape config targets it, and a scrape that authentication breaks collects nothing. Operational caveat: the exposition includes symbol-labelled counters, so the configured symbol set is visible to any caller that can reach the port — network-restrict /metrics (scrape network or reverse-proxy allowlist) in deployments where that matters.")
         .WithTags("Monitoring")
         .WithDescription("Returns Prometheus-format metrics for scraping by monitoring systems.")
         .Produces(200);
