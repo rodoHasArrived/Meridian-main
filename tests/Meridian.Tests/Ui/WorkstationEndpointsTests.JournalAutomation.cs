@@ -173,6 +173,128 @@ public sealed partial class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task CapitalCallIssuanceIntake_RequiresLedgerMutationPermission()
+    {
+        await using var app = await CreateAppAsync(
+            mapLedgerApi: true,
+            currentUserPermissions: Meridian.Identity.Auth.UserPermission.ModifySecurityMaster);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            UiApiRoutes.LedgerJournalAutomationCapitalCallIssuanceIntake,
+            CapitalCallIssuanceRequest(),
+            CapitalCallRequestJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task CapitalCallIssuanceIntake_LandsGovernedDraftsInApprovalQueue()
+    {
+        var configurationStore = new InMemoryAccountingConfigurationStore();
+        await configurationStore.SaveAsync(new AccountingConfigurationWorkspaceDto(
+            "fund-alpha",
+            LedgerBookId: null,
+            AccountingConfigurationStatusDto.Draft,
+            "test",
+            DateTimeOffset.UtcNow,
+            LedgerBooks: [],
+            ChartOfAccounts:
+            [
+                new ChartOfAccountsNodeDto(
+                    NodeId: "Assets:Capital Call Receivable",
+                    Path: "Assets:Capital Call Receivable",
+                    AccountName: "Capital Call Receivable",
+                    AccountType: "Asset"),
+                new ChartOfAccountsNodeDto(
+                    NodeId: "Equity:Investor Capital",
+                    Path: "Equity:Investor Capital",
+                    AccountName: "Investor Capital",
+                    AccountType: "Equity")
+            ],
+            JournalTemplates: [],
+            PostingRules: [],
+            ValidationIssues: [],
+            AuditTrail: [],
+            TenantId: "tenant-test",
+            CompanyId: "tenant-test"));
+        var configuration = new AccountingConfigurationService(
+            configurationStore,
+            new InMemoryAccountingActionAuditStore());
+        var draftStore = new InMemoryManualJournalEntryDraftStore();
+        var workbench = new ManualJournalEntryWorkbenchService(
+            draftStore,
+            configuration,
+            new InMemoryAccountingActionAuditStore());
+        var runner = new AutomatedJournalIntakeRunner(
+            new AutomatedJournalDraftIntakeService(workbench, draftStore, configuration),
+            new FeeScheduleAccrualEventProducer(),
+            manualJournalWorkbench: workbench);
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton(runner),
+            mapLedgerApi: true,
+            currentUserPermissions: Meridian.Identity.Auth.UserPermission.AdminMaintenance);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            UiApiRoutes.LedgerJournalAutomationCapitalCallIssuanceIntake,
+            CapitalCallIssuanceRequest(),
+            CapitalCallRequestJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        payload.RootElement.GetProperty("readiness").GetString().Should().Be("Ready");
+        var created = payload.RootElement.GetProperty("intake").GetProperty("created");
+        created.GetArrayLength().Should().Be(2);
+
+        var drafts = await draftStore.ListAsync("fund-alpha", tenantId: "tenant-test", companyId: "tenant-test");
+        drafts.Should().HaveCount(2);
+        drafts.Should().OnlyContain(
+            draft => draft.Status == ManualJournalEntryStatusDto.Draft,
+            "capital-call issuance must land in the approval queue, never post");
+        // Actor is server-resolved from the session, not taken from the request body.
+        drafts.Should().OnlyContain(draft => draft.PreparedBy == "ops-user");
+    }
+
+    // Serializes enums as numbers: the server binds request bodies with default web JSON
+    // options, which carry no string-enum converter for the Meridian.Ledger enums.
+    private static readonly JsonSerializerOptions CapitalCallRequestJsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    private static RunCapitalCallIssuanceDraftIntakeRequest CapitalCallIssuanceRequest()
+        => new(
+            FundProfileId: "fund-alpha",
+            // Without a ledger book the workbench correctly grades the draft NeedsFix
+            // (manual-je.book-missing); the endpoint contract expects the caller to name the book.
+            LedgerBookId: Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+            Currency: "USD",
+            Actor: "client-supplied-actor",
+            CallId: "call-1",
+            AmountToCall: 1_000_000m,
+            NoticeDate: new DateOnly(2026, 3, 15),
+            DueDate: new DateOnly(2026, 3, 29),
+            Commitments:
+            [
+                new CapitalCallCommitmentInput(
+                    "cmt-1",
+                    CapitalAccountId: "ca-lp-1",
+                    InvestorId: "lp-1",
+                    TotalCommitment: 6_000_000m,
+                    CommitmentDate: new DateOnly(2025, 1, 1),
+                    EvidenceLinks: ["evidence://commitments/cmt-1/subscription-agreement"]),
+                new CapitalCallCommitmentInput(
+                    "cmt-2",
+                    CapitalAccountId: "ca-lp-2",
+                    InvestorId: "lp-2",
+                    TotalCommitment: 4_000_000m,
+                    CommitmentDate: new DateOnly(2025, 1, 1),
+                    EvidenceLinks: ["evidence://commitments/cmt-2/subscription-agreement"])
+            ],
+            PeriodId: "2026-03",
+            EntityId: "entity-alpha",
+            AsOf: new DateTimeOffset(2026, 3, 15, 12, 0, 0, TimeSpan.Zero));
+
     private static AutomatedJournalScheduleWorkItem MonthlySchedule(string scheduleId)
         => new(
             ScheduleId: scheduleId,

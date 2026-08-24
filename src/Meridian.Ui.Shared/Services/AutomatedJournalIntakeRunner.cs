@@ -149,6 +149,7 @@ public sealed class AutomatedJournalIntakeRunner
     private readonly AutomatedJournalEvidencePolicy _evidencePolicy;
     private readonly IAutomatedJournalCapitalAccountReconciliationResolver? _capitalAccountReconciliationResolver;
     private readonly TimeProvider _timeProvider;
+    private readonly IManualJournalEntryWorkbenchService? _manualJournalWorkbench;
 
     public AutomatedJournalIntakeRunner(
         AutomatedJournalDraftIntakeService intake,
@@ -159,7 +160,8 @@ public sealed class AutomatedJournalIntakeRunner
         DailyValuationPositionService? dailyValuationPositionService = null,
         AutomatedJournalEvidencePolicy? evidencePolicy = null,
         IAutomatedJournalCapitalAccountReconciliationResolver? capitalAccountReconciliationResolver = null,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        IManualJournalEntryWorkbenchService? manualJournalWorkbench = null)
     {
         _intake = intake ?? throw new ArgumentNullException(nameof(intake));
         _feeProducer = feeProducer ?? throw new ArgumentNullException(nameof(feeProducer));
@@ -170,6 +172,7 @@ public sealed class AutomatedJournalIntakeRunner
         _evidencePolicy = evidencePolicy ?? AutomatedJournalEvidencePolicy.Default;
         _capitalAccountReconciliationResolver = capitalAccountReconciliationResolver;
         _timeProvider = timeProvider ?? TimeProvider.System;
+        _manualJournalWorkbench = manualJournalWorkbench;
     }
 
     /// <summary>Whether this process can execute the provider-backed daily valuation lane.</summary>
@@ -570,6 +573,107 @@ public sealed class AutomatedJournalIntakeRunner
             AutomatedJournalIntakeReadiness.Ready,
             []);
     }
+
+    /// <summary>
+    /// Plans a fund-level capital call over the operator-attested commitment register and admits
+    /// the per-LP issuance drafts into the human approval queue. The called-to-date basis is
+    /// recomputed server-side from posted private-capital fund events before planning; runs whose
+    /// evidence or capacity cannot be corroborated return Blocked with reasons instead of drafts.
+    /// Posting remains exclusively available via the governed workbench lifecycle.
+    /// </summary>
+    public async Task<AutomatedJournalIntakeRunResult> RunCapitalCallIssuanceIntakeAsync(
+        RunCapitalCallIssuanceDraftIntakeRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (string.IsNullOrWhiteSpace(request.FundProfileId))
+            throw new ArgumentException("Fund profile identifier is required.", nameof(request));
+        if (string.IsNullOrWhiteSpace(request.CallId))
+            throw new ArgumentException("Capital-call identifier is required.", nameof(request));
+
+        var evaluatedAtUtc = (request.AsOf ?? _timeProvider.GetUtcNow()).ToUniversalTime();
+        var runKey = CapitalCallIssuanceDraftProducer.BuildRunAssessmentKey(request.FundProfileId, request.CallId);
+        if (_manualJournalWorkbench is null)
+        {
+            return BuildBlockedCapitalCallResult(
+                runKey,
+                "The posted private-capital activity source is unavailable; capital-call issuance cannot corroborate the commitment register.");
+        }
+
+        IReadOnlyList<PrivateCapitalFundEventDto> postedFundEvents;
+        try
+        {
+            var activity = await _manualJournalWorkbench
+                .GetPrivateCapitalActivityAsync(
+                    request.FundProfileId,
+                    request.LedgerBookId,
+                    ct,
+                    request.TenantId,
+                    request.CompanyId)
+                .ConfigureAwait(false);
+            postedFundEvents = activity.FundEvents;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return BuildBlockedCapitalCallResult(
+                runKey,
+                "The posted private-capital activity projection could not be read; capital-call issuance is blocked.");
+        }
+
+        var production = CapitalCallIssuanceDraftProducer.Produce(request, postedFundEvents, evaluatedAtUtc);
+        if (!production.IsReady)
+        {
+            return new AutomatedJournalIntakeRunResult(
+                production.Skipped,
+                EmptyIntake,
+                production.EvidenceAssessments,
+                production.Readiness,
+                production.Blockers);
+        }
+
+        var intake = await _intake.IntakeDraftsAsync(
+            new AutomatedJournalPreparedDraftIntakeRequest(
+                request.FundProfileId,
+                request.Currency,
+                production.Drafts,
+                request.Actor,
+                request.LedgerBookId,
+                request.PeriodId,
+                request.EntityId,
+                request.TenantId,
+                request.CompanyId,
+                production.EvidenceAssessments,
+                BatchCorrelationId: runKey),
+            ct).ConfigureAwait(false);
+
+        return new AutomatedJournalIntakeRunResult(
+            production.Skipped,
+            intake,
+            production.EvidenceAssessments,
+            AutomatedJournalIntakeReadiness.Ready,
+            []);
+    }
+
+    private static AutomatedJournalIntakeRunResult BuildBlockedCapitalCallResult(string runKey, string blocker)
+        => new(
+            ProducerSkips: [],
+            Intake: EmptyIntake,
+            EvidenceAssessments: new Dictionary<string, AutomatedJournalEvidenceAssessmentDto>(StringComparer.OrdinalIgnoreCase)
+            {
+                [runKey] = new AutomatedJournalEvidenceAssessmentDto(
+                    CapitalCallIssuanceDraftProducer.AssessmentCode,
+                    ConfidenceScore: 0m,
+                    Quality: AutomatedJournalEvidenceQualityDto.Low,
+                    RequiresInvestigation: true,
+                    Summary: $"Capital-call issuance cannot enter approval: {blocker}",
+                    Reasons: [blocker])
+            },
+            Readiness: AutomatedJournalIntakeReadiness.Blocked,
+            ReadinessBlockers: [blocker]);
 
     private async Task<(AutomatedJournalCapitalAccountReconciliationDto? Reconciliation, string? Blocker)>
         ResolveCapitalAccountReconciliationAsync(

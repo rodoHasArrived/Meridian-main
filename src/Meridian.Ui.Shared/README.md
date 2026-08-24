@@ -761,6 +761,16 @@ intake and is exposed at `/api/ledger/journal-automation/dividend-intake` and
 `/api/ledger/journal-automation/fee-accrual-intake` (ledger-mutation permission, fund-scoped
 write tenant, mutation rate limit); the dividend lane returns a conflict when the Security Master
 query service is not configured rather than silently producing nothing.
+`/api/ledger/journal-automation/capital-call-issuance-intake` (same permission, tenant, and
+rate-limit posture) activates the fund-economics capital-call kernel: the request carries the
+operator-attested commitment register (each line must cite retained register evidence), the
+runner recomputes each commitment's called-to-date basis from posted private-capital fund events
+via `IManualJournalEntryWorkbenchService.GetPrivateCapitalActivityAsync` — never from the caller
+— and `CapitalCallPlanBuilder`/`CapitalCallScheduleDraftBuilder` turn the fund-level amount into
+balanced per-LP `CapitalCallIssued` drafts that land in the same approval queue. Runs whose
+evidence or uncalled capacity cannot be corroborated return `Blocked` with reasons instead of
+drafts, and intake stamps the drafts' fund-event identity into their treasury context so posting
+feeds the roll-forward that corroborates the next call.
 Close-management endpoints under `/api/ledger/close-management/*`
 adapt Financial Operations close-plan behavior for browser and WPF consumers: the period-plan route
 projects checklist dependencies, approval sign-offs, materiality policy, late adjustments, period
