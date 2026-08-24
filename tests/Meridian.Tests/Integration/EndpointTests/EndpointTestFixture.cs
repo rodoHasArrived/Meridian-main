@@ -295,6 +295,9 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         // mutations. Registered after the X-Test-Permissions stub so header-declared permissions
         // are visible to it, exactly as upstream authenticators' permissions are in production.
         _app.UseAccountAdministrationGuard();
+        // Mirrors the production pipeline's pre-binding enforcement of declared mutation
+        // authorization, in the same order relative to the permission-contributing middleware.
+        _app.UseMutationAuthorizationGuard();
 
         var config = _app.Services.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load();
         _app.MapPackagingEndpoints(config.DataRoot);

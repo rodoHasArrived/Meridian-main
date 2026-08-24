@@ -17,25 +17,25 @@
     {
       "method": "GET",
       "path": "/api/system/lifecycle",
-      "source": "src/Meridian/UiServer.cs:666",
+      "source": "src/Meridian/UiServer.cs:669",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/system/shutdown",
-      "source": "src/Meridian/UiServer.cs:700",
+      "source": "src/Meridian/UiServer.cs:703",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/{operationId}",
-      "source": "src/Meridian/UiServer.cs:750",
+      "source": "src/Meridian/UiServer.cs:757",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/receipts/latest",
-      "source": "src/Meridian/UiServer.cs:771",
+      "source": "src/Meridian/UiServer.cs:778",
       "documented": true
     },
     {
@@ -449,79 +449,79 @@
     {
       "method": "POST",
       "path": "/api/auth/logout",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:148",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:151",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/me",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:168",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:174",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/roles",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:194",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:200",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/accounts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:209",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:215",
       "documented": false
     },
     {
       "method": "PUT",
       "path": "/api/auth/accounts/{username}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:232",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:238",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/accounts/{username}/password-reset",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:270",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:276",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/accounts/{username}/disable",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:330",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:336",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/sessions/revoke",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:390",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:396",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/audit",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:421",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:427",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/role-profiles",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:445",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:451",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/access-assignments",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:497",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:503",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/access-assignments",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:538",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:544",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/access-assignments/{assignmentId}/revoke",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:578",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:584",
       "documented": false
     },
     {
@@ -2663,7 +2663,7 @@
     {
       "method": "POST",
       "path": "/api/plaid/transfers/sandbox",
-      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:207",
+      "source": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:211",
       "documented": false
     },
     {

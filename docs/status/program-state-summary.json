@@ -352,8 +352,8 @@
       "Priority": "high",
       "Owner Lane": "Execution and Fund Accounts",
       "Evidence Posture": "in_progress",
-      "Evidence": "src/Meridian.Execution/Services/ExecutionOperatorControlService.cs; src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs; src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs; src/Meridian.Risk/CompositeRiskValidator.cs; tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs",
-      "Last Reviewed": "2026-08-10"
+      "Evidence": "src/Meridian.Execution/Services/ExecutionOperatorControlService.cs; src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs; src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs; src/Meridian.Risk/CompositeRiskValidator.cs; src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs; src/Meridian.Wpf/Services/ExecutionSafetyControlClient.cs; src/Meridian.Wpf/Services/TradingSafetyCommandService.cs; src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs; src/Meridian.Risk/Rules/FatFingerRule.cs; src/Meridian.Risk/Rules/PriceCollarRule.cs; src/Meridian.Risk/Rules/OrderPriceLimbs.cs; src/Meridian.FSharp/Risk/RiskRules.fs; tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs; tests/Meridian.Tests/Risk/FatFingerRuleTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimeFatFingerStatusTests.cs; tests/Meridian.Tests/Risk/PriceCollarRuleTests.cs; tests/Meridian.Tests/Execution/KillSwitchCloseOnlyTests.cs; tests/Meridian.Wpf.Tests/Services/TradingSafetyCommandTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimePriceCollarConfigTests.cs; tests/Meridian.Tests/Execution/FixedIncomeFillBookingTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimeFirstRunDefaultsTests.cs",
+      "Last Reviewed": "2026-08-24"
     },
     {
       "ID": "W9-GOV-008",
@@ -366,7 +366,7 @@
       "Owner Lane": "Platform Security and Governance",
       "Evidence Posture": "planned_evidence",
       "Evidence": "",
-      "Last Reviewed": "2026-08-10"
+      "Last Reviewed": "2026-08-24"
     },
     {
       "ID": "W9-INGEST-009",

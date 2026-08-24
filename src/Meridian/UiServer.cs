@@ -583,6 +583,9 @@ public sealed class UiServer : IAsyncDisposable
             // Refuse account-administration mutations before binding parses the body; the session
             // middleware exempts /api/auth, and endpoint filters only run after binding.
             _app.UseAccountAdministrationGuard();
+            // Enforce every mutating route's declared permission before binding, and refuse
+            // mutating routes that declare no authorization requirement at all.
+            _app.UseMutationAuthorizationGuard();
             _app.UseRateLimiter();
             if (_apiHostOptions.AllowedOrigins.Length > 0)
             {
@@ -745,7 +748,11 @@ public sealed class UiServer : IAsyncDisposable
                 processId = Environment.ProcessId,
                 shutdownRequested = _lifecycle.IsShutdownRequested
             }, statusCode: StatusCodes.Status202Accepted);
-        });
+        })
+        .DeclareIndependentAuthentication(
+            "Loopback-only lifecycle control, authenticated in-handler by the supervisor's local " +
+            "shutdown token or an AdminMaintenance principal; the token path carries no session, " +
+            "so a declared permission would break the supervisor's only shutdown seam.");
 
         _app.MapGet("/api/system/shutdown/{operationId}", (string operationId, HttpContext context) =>
         {
