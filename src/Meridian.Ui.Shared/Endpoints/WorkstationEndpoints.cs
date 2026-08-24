@@ -1900,9 +1900,15 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // Authentication proves the executing operator. Rewrite the client-supplied assignee the
+            // same way as the reviewer: the browser lane hardcodes a placeholder assignee, the queue's
+            // assignee filter must answer "my breaks", and the repository derives the audit actor from
+            // AssignedTo ?? ReviewedBy ?? ResolvedBy — so neither identity may pass through verbatim.
+            var reviewActor = ResolveCurrentActor(context);
             var transition = await ReviewBreakAsync(context.RequestServices, queueScope, request with
             {
-                ReviewedBy = ResolveCurrentActor(context)
+                AssignedTo = reviewActor,
+                ReviewedBy = reviewActor
             }, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
         })
