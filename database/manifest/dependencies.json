@@ -8236,6 +8236,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionPayloads"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionTypeDescriptor"
     },
     {
@@ -9101,6 +9107,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry"
     },
     {
       "kind": "contract-set-member",
@@ -19258,6 +19270,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionPayloads"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionTypeDescriptor"
     },
     {
@@ -20123,6 +20141,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry"
     },
     {
       "kind": "contract-set-member",
@@ -29717,6 +29741,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry"
     },
     {
       "kind": "contract-reference",
@@ -42671,7 +42701,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "9a80355212315d21eb3deecfcdba8b0116960951518ef6c93f9949baf4e2c06b",
+  "fingerprint": "e30007d3d76d7d88407214ef90897272eb31bfd771b0c0d70a05db85f802a292",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -50957,6 +50987,12 @@
       "label": "Meridian.Contracts.SecurityMaster.CorporateActionLifecycleStates"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionPayloads",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionPayloads"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionTypeDescriptor",
       "kind": "contract-type",
@@ -51825,6 +51861,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry"
     },
     {
       "classification": "dto",
@@ -62250,11 +62292,11 @@
     }
   ],
   "summary": {
-    "contract_references": 2932,
-    "contract_set_memberships": 3358,
-    "edges": 7093,
+    "contract_references": 2933,
+    "contract_set_memberships": 3362,
+    "edges": 7098,
     "foreign_keys": 96,
     "logical_references": 6,
-    "nodes": 3371
+    "nodes": 3373
   }
 }

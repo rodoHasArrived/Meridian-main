@@ -2,11 +2,18 @@
 
 # `security-master-contracts` data objects - page 2 of 3
 
-Objects 81-160 of 178. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 180. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_ResolveSecurityRequest["ResolveSecurityRequest"] {
+        +bool ActiveOnly
+        +DateTimeOffset? AsOfUtc
+        +SecurityIdentifierKind IdentifierKind
+        +string IdentifierValue
+        +string? Provider
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAliasDto["SecurityAliasDto"] {
         +Guid AliasId
         +string AliasKind
@@ -371,6 +378,7 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_SecurityMasterOptions["SecurityMasterOptions"] {
         +string ConnectionString
         +bool PreloadProjectionCache
+        +int ProjectionCacheRefreshMinutes
         +int ProjectionReplayBatchSize
         +bool ResolveInactiveByDefault
         +string Schema
@@ -527,8 +535,7 @@ classDiagram
         +SecurityValidationWorkflowDto Workflow
         +string? WorkflowReference
     }
-    class Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto["SecurityValidationWorkflowDto"] {
-    }
+    Meridian_Contracts_SecurityMaster_ResolveSecurityRequest --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
     Meridian_Contracts_SecurityMaster_SecurityAliasDto --> Meridian_Contracts_SecurityMaster_SecurityAliasScope
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto
@@ -577,13 +584,10 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecuritySummaryDto --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
     Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationReportDto
     Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto
-    Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
     Meridian_Contracts_SecurityMaster_SecurityValidationIssueDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityValidationIssueDto --> Meridian_Contracts_SecurityMaster_SecurityValidationSeverityDto
     Meridian_Contracts_SecurityMaster_SecurityValidationReportDto --> Meridian_Contracts_SecurityMaster_SecurityValidationIssueDto
     Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityValidationReportDto
-    Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
     Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
-    Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
 ```

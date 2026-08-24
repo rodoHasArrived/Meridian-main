@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "9f14247d13f524070a3bb46e8b02e81029387f20c6e035d259db585f9c3f48e4",
+  "database_fingerprint": "f633d010dad8d76e2e5af1754310c4ef07f52640d087b9de74831b9cb0d46e84",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -10877,6 +10877,10 @@
       "object": "column:security_master.corporate_actions.pay_date"
     },
     {
+      "fingerprint": "6fb910218430810bb25b2031f8c460309ae8609cd2a8982e65db9021047aa606",
+      "object": "column:security_master.corporate_actions.payload"
+    },
+    {
       "fingerprint": "5395a406878aaefbe97ca5eae4535d625cbb11f7483232e54389982ca970d0e9",
       "object": "column:security_master.corporate_actions.record_date"
     },
@@ -19753,7 +19757,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "e29412963a3cdba76b280e694586b6793e56af1be24c67a9c0e3d389bd0c53ae",
+      "fingerprint": "74e065d603766df4ffb71e3244ac989fdc84ba2d74ba717277c05d2943261899",
       "object": "schema:security_master"
     },
     {
@@ -20181,7 +20185,7 @@
       "object": "table:security_master.commodity_projection"
     },
     {
-      "fingerprint": "ad1d7ec3e0cd2cde0be5ae4a093890dc59d4f15c6905f7e79b790920a9420a4d",
+      "fingerprint": "be685f37640399035d6a590f10c43210170401606349c502c774a20e912b2050",
       "object": "table:security_master.corporate_actions"
     },
     {
@@ -102974,7 +102978,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "e29412963a3cdba76b280e694586b6793e56af1be24c67a9c0e3d389bd0c53ae",
+      "fingerprint": "74e065d603766df4ffb71e3244ac989fdc84ba2d74ba717277c05d2943261899",
       "foreign_tables": [],
       "functions": [
         {
@@ -106269,6 +106273,22 @@
               "security_labels": [],
               "type_name": "numeric",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "6fb910218430810bb25b2031f8c460309ae8609cd2a8982e65db9021047aa606",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload",
+              "nullable": true,
+              "ordinal_position": 20,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -106318,7 +106338,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "ad1d7ec3e0cd2cde0be5ae4a093890dc59d4f15c6905f7e79b790920a9420a4d",
+          "fingerprint": "be685f37640399035d6a590f10c43210170401606349c502c774a20e912b2050",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -130030,6 +130050,22 @@
               "security_labels": [],
               "type_name": "numeric",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "6fb910218430810bb25b2031f8c460309ae8609cd2a8982e65db9021047aa606",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload",
+              "nullable": true,
+              "ordinal_position": 20,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -130079,7 +130115,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "ad1d7ec3e0cd2cde0be5ae4a093890dc59d4f15c6905f7e79b790920a9420a4d",
+          "fingerprint": "be685f37640399035d6a590f10c43210170401606349c502c774a20e912b2050",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
