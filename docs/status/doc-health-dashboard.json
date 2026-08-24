@@ -1,6 +1,6 @@
 {
   "total_files": 656,
-  "total_lines": 132086,
+  "total_lines": 132122,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1913,7 +1913,7 @@
     },
     {
       "path": "docs/development/provider-implementation.md",
-      "line_count": 988,
+      "line_count": 995,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2625,7 +2625,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10533,
+      "line_count": 10544,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2777,7 +2777,7 @@
     },
     {
       "path": "docs/operators/ledger-currency-backfill.md",
-      "line_count": 95,
+      "line_count": 103,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5417,7 +5417,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2226,
+      "line_count": 2236,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

@@ -3,8 +3,8 @@
 # `ledger` schema
 
 - Relations: 24
-- Functions/procedures: 1
-- Triggers: 2
+- Functions/procedures: 4
+- Triggers: 7
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -385,7 +385,7 @@ erDiagram
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_originating_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_disposal_mutation_batch_id_fkey"
     ledger_journal_entries ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_journal_entry_id_fkey"
-    ledger_journal_entries ||--o{ ledger_journal_legs : "journal_legs_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_journal_legs : "fk_journal_legs_journal_entry"
     ledger_journal_entries ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lots : "tax_lots_source_journal_entry_id_fkey"
     ledger_ledger_books ||--o{ ledger_accounting_periods : "accounting_periods_ledger_book_id_fkey"
