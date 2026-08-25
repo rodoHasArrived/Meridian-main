@@ -346,8 +346,16 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
 
             if (!booksResponse.Success || booksResponse.Data is null)
             {
+                // A refresh that fails after a good load must not leave the previous book's
+                // balances on screen: the pickers and the book label are gone, so the figures
+                // would render unlabelled and read as though they belonged to whatever book the
+                // operator selects next.
                 Books.Clear();
-                Periods.Clear();
+                ClearBookScopedFigures();
+                SelectedBookRow = null;
+                SelectedBookId = null;
+                SelectedBookLabel = "No ledger book selected";
+                BaseCurrency = string.Empty;
                 PeriodsErrorText = string.IsNullOrWhiteSpace(booksResponse.ErrorMessage)
                     ? "Ledger books could not be loaded."
                     : booksResponse.ErrorMessage;
@@ -360,9 +368,7 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
             var bookId = PostedLedgerProjection.ResolveDefaultBookId(booksResponse.Data);
             if (bookId is null)
             {
-                Periods.Clear();
-                TrialBalance.Clear();
-                PnlMetrics.Clear();
+                ClearBookScopedFigures();
                 StatusText = "No ledger books exist yet. Create a ledger book and period to start the governed book.";
                 return;
             }
@@ -390,6 +396,21 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Drops every figure that only means something in the context of a particular book and
+    /// period. Callers own <see cref="PeriodsErrorText"/> and <see cref="StatusText"/>, because
+    /// what to say about the empty state differs between switching books and failing to load them.
+    /// </summary>
+    private void ClearBookScopedFigures()
+    {
+        Periods.Clear();
+        TrialBalance.Clear();
+        PnlMetrics.Clear();
+        SelectedPeriodId = null;
+        SelectedPeriodLabel = "No period selected";
+        BalanceSummaryText = "Trial balance not loaded.";
+    }
+
     public async Task SelectBookAsync(Guid ledgerBookId, CancellationToken ct = default)
     {
         SelectedBookId = ledgerBookId;
@@ -409,12 +430,7 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
 
         PeriodsErrorText = string.Empty;
         // The outgoing book's periods and figures are a different book entirely.
-        Periods.Clear();
-        TrialBalance.Clear();
-        PnlMetrics.Clear();
-        SelectedPeriodId = null;
-        SelectedPeriodLabel = "No period selected";
-        BalanceSummaryText = "Trial balance not loaded.";
+        ClearBookScopedFigures();
 
         if (_client is null)
         {

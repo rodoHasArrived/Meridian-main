@@ -109,6 +109,36 @@ public sealed class PostedLedgerViewModelTests
     }
 
     [Fact]
+    public async Task RefreshAsync_WhenTheBooksRequestFailsAfterALoad_DropsThePreviousBooksFigures()
+    {
+        var periodId = Guid.NewGuid();
+        var client = new FakeLedgerReportsApiClient
+        {
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(periodId)]),
+            TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok(
+                [Line("Cash", 120500m), Line("Financing payable", -120500m)]),
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(periodId))
+        };
+
+        using var viewModel = new PostedLedgerViewModel(client);
+        await viewModel.RefreshAsync();
+        viewModel.TrialBalance.Should().HaveCount(2, "the first load must succeed for this to test a refresh");
+
+        // The operator refreshes and the books request fails. The pickers and the book label go
+        // away, so leaving the balances behind would render them unlabelled -- and the next book
+        // the operator selects would appear to own them.
+        client.Books = ApiResponse<List<LedgerBookDto>>.Fail("ledger service unavailable", 503);
+        await viewModel.RefreshAsync();
+
+        viewModel.HasPeriodsError.Should().BeTrue();
+        viewModel.TrialBalance.Should().BeEmpty();
+        viewModel.PnlMetrics.Should().BeEmpty();
+        viewModel.Periods.Should().BeEmpty();
+        viewModel.SelectedPeriodId.Should().BeNull();
+        viewModel.SelectedBookId.Should().BeNull();
+    }
+
+    [Fact]
     public async Task RefreshAsync_WithoutAClient_ReportsUnavailableRatherThanAnEmptyBook()
     {
         using var viewModel = new PostedLedgerViewModel();

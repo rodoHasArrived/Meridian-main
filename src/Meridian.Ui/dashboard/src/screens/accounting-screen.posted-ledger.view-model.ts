@@ -405,7 +405,11 @@ export function buildAccountingPostedLedgerViewState({
 
 export function useAccountingPostedLedgerViewModel(
   workstream: AccountingWorkstream,
-  services: AccountingPostedLedgerServices = defaultAccountingPostedLedgerServices
+  services: AccountingPostedLedgerServices = defaultAccountingPostedLedgerServices,
+  // Opt-in because the journal is the one request here whose cost scales with the size of the
+  // book: a production month's posted entries are returned in full. Only a consumer that renders
+  // them should pay for them. AccountingPostedLedgerSection does not, so it does not ask.
+  { includeJournal = false }: { includeJournal?: boolean } = {}
 ): AccountingPostedLedgerViewModel {
   const [books, setBooks] = useState<LedgerBook[]>([]);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
@@ -595,7 +599,7 @@ export function useAccountingPostedLedgerViewModel(
   }, [selectedPeriodId, services, workstream]);
 
   useEffect(() => {
-    if (!selectedPeriodId || workstream !== "ledger") {
+    if (!includeJournal || !selectedPeriodId || workstream !== "ledger") {
       setJournalLines([]);
       setJournalErrorText(null);
       setJournalLoading(false);
@@ -635,7 +639,7 @@ export function useAccountingPostedLedgerViewModel(
     return () => {
       cancelled = true;
     };
-  }, [selectedPeriodId, services, workstream]);
+  }, [selectedPeriodId, services, workstream, includeJournal]);
 
   const selectPeriod = useCallback((periodId: string) => {
     setSelectedPeriodId(periodId);

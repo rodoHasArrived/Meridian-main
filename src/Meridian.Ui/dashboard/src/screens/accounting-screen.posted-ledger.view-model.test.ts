@@ -14,7 +14,8 @@ import type {
   LedgerBook,
   LedgerPeriod,
   LedgerPeriodPnlSummary,
-  LedgerPeriodTrialBalanceLine
+  LedgerPeriodTrialBalanceLine,
+  LedgerPostedJournalEntry
 } from "@/types";
 
 function makePeriod(overrides: Partial<LedgerPeriod> = {}): LedgerPeriod {
@@ -357,5 +358,48 @@ describe("useAccountingPostedLedgerViewModel", () => {
     await waitFor(() => {
       expect(result.current.view.selectedBookLabel).toBe("Feeder Fund");
     });
+  });
+
+  it("leaves the posted journal unrequested for a consumer that does not render it", async () => {
+    // AccountingPostedLedgerSection destructures only `view`. The journal route returns a
+    // period's entries in full, so fetching it for that panel downloads a production month's
+    // book purely to discard it.
+    const services = makeServices();
+    const { result } = renderHook(() => useAccountingPostedLedgerViewModel("ledger", services));
+
+    await waitFor(() => {
+      expect(result.current.view.trialBalance.hasRows).toBe(true);
+    });
+
+    expect(services.getJournalEntries).not.toHaveBeenCalled();
+    expect(result.current.journalLines).toHaveLength(0);
+    expect(result.current.journalLoading).toBe(false);
+  });
+
+  it("requests the posted journal for a consumer that opts in", async () => {
+    const entry: LedgerPostedJournalEntry = {
+      journalEntryId: "je-1",
+      periodId: "00000000-0000-0000-0000-000000000001",
+      ledgerBookId: "00000000-0000-0000-0000-0000000000aa",
+      timestamp: "2026-07-31T00:00:00Z",
+      description: "Management fee accrual",
+      totalDebits: 1200,
+      totalCredits: 1200,
+      isBalanced: true,
+      lines: []
+    };
+    const services = makeServices({
+      getJournalEntries: vi.fn().mockResolvedValue([entry])
+    });
+    const { result } = renderHook(
+      () => useAccountingPostedLedgerViewModel("ledger", services, { includeJournal: true })
+    );
+
+    await waitFor(() => {
+      expect(result.current.journalLines).toHaveLength(1);
+    });
+
+    expect(services.getJournalEntries).toHaveBeenCalledWith("00000000-0000-0000-0000-000000000001");
+    expect(result.current.journalLines[0]?.journalEntryId).toBe("je-1");
   });
 });

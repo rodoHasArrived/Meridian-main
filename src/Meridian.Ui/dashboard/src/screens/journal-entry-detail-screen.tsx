@@ -186,7 +186,7 @@ export function JournalEntryDetailScreen() {
   const operationalSummaryFields = view.summaryFields.filter((field) => !technicalSummaryFields.includes(field));
 
   const lineRows: LedgerRow[] = view.lines.map((line) => ({
-    date: draft?.accountingDate ?? "",
+    date: line.date ?? draft?.accountingDate ?? "",
     ref: "Current entry",
     memo: line.description ?? "",
     account: line.account,

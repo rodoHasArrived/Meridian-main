@@ -40,7 +40,8 @@ export function TrialBalanceScreen() {
   // ledger period. It used to read the selected strategy run's simulation ledger, which
   // meant this screen — the one an operator reaches for "Accounting → Trial Balance" —
   // showed numbers that were never the fund's.
-  const postedLedger = useAccountingPostedLedgerViewModel("ledger");
+  // This screen renders the posted journal, so it is the consumer that asks for it.
+  const postedLedger = useAccountingPostedLedgerViewModel("ledger", undefined, { includeJournal: true });
   const { journalLines, journalLoading, journalErrorText, selectedPeriodId, selectedPeriodLabel } = postedLedger;
   const periodOptions = postedLedger.view.periodSelector.options;
   // Depend on the stable callback, never on the view-model object: the hook returns a fresh
@@ -111,6 +112,25 @@ export function TrialBalanceScreen() {
     return Array.from(seen.entries()).map(([securityId, label]) => ({ securityId, label }));
   }, [postedLedger.view.trialBalance.rows]);
 
+  // Hoisted above the early returns below. A book with no periods still has to offer the book
+  // picker: without it an operator whose default book is empty or failing has no way to reach
+  // another book they can read, and the screen is a dead end rather than an empty state.
+  const bookSelector = postedLedger.view.bookOptions.length > 1 ? (
+    <FormRow label="Ledger book" labelFor="trial-balance-book-select" className="w-full max-w-xs sm:w-56">
+      <Select
+        id="trial-balance-book-select"
+        value={postedLedger.view.bookOptions.find((option) => option.isSelected)?.id ?? ""}
+        onChange={(event) => postedLedger.selectBook(event.target.value)}
+      >
+        {postedLedger.view.bookOptions.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.label} · {option.baseCurrency}
+          </option>
+        ))}
+      </Select>
+    </FormRow>
+  ) : null;
+
   // Deliberately not gated on the aggregate accounting-workspace payload any more: every value
   // this screen renders now comes from the posted-ledger hook's own /api/ledger/* requests. Gating
   // on `data` meant a partial outage of the unrelated workspace request hid a perfectly good
@@ -143,6 +163,7 @@ export function TrialBalanceScreen() {
               ?? "No ledger periods are available for this accounting scope."}
           </CardDescription>
         </CardHeader>
+        {bookSelector ? <CardContent>{bookSelector}</CardContent> : null}
       </Card>
     );
   }
@@ -192,21 +213,7 @@ export function TrialBalanceScreen() {
       description="Account balances from the fund's posted journal, scoped by ledger period."
       actions={
         <>
-        {postedLedger.view.bookOptions.length > 1 ? (
-          <FormRow label="Ledger book" labelFor="trial-balance-book-select" className="w-full max-w-xs sm:w-56">
-            <Select
-              id="trial-balance-book-select"
-              value={postedLedger.view.bookOptions.find((option) => option.isSelected)?.id ?? ""}
-              onChange={(event) => postedLedger.selectBook(event.target.value)}
-            >
-              {postedLedger.view.bookOptions.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.label} · {option.baseCurrency}
-                </option>
-              ))}
-            </Select>
-          </FormRow>
-        ) : null}
+        {bookSelector}
         <FormRow label="Period" labelFor="trial-balance-period-select" className="w-full max-w-xs sm:w-64">
           <Select
             id="trial-balance-period-select"
@@ -264,7 +271,7 @@ export function TrialBalanceScreen() {
           <FormRow label="Book" labelFor="trial-balance-book">
             <Input
               id="trial-balance-book"
-              value={ledgerBook}
+              value={postedLedger.view.selectedBookLabel ?? ledgerBook}
               readOnly
               aria-readonly="true"
             />

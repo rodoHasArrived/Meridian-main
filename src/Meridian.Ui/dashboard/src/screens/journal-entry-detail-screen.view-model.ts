@@ -17,6 +17,12 @@ export interface JournalEntryDetailSummaryField {
 export interface JournalEntryDetailLineRow {
   lineId: string;
   account: string;
+  /**
+   * The date to show against this line. Posted lines carry their own timestamp, which is the only
+   * date a posted entry has — there is no draft accounting date to fall back on — so the
+   * projection must keep it or the detail table renders a blank Date column for the whole entry.
+   */
+  date: string | null;
   debit?: number;
   credit?: number;
   description: string | null;
@@ -135,6 +141,7 @@ export function buildJournalEntryDetailViewState({
       lines: draft.lines.map((line) => ({
         lineId: line.lineId,
         account: line.accountPath,
+        date: draft.accountingDate ?? null,
         debit: line.side === "Debit" ? line.amount : undefined,
         credit: line.side === "Credit" ? line.amount : undefined,
         description: line.description ?? null,
@@ -169,6 +176,7 @@ export function buildJournalEntryDetailViewState({
       lines: postedEntry.lines.map((line, index) => ({
         lineId: line.entryId || `posted-line-${index + 1}`,
         account: line.accountName,
+        date: line.timestamp || postedEntry.timestamp || null,
         debit: line.debit > 0 ? line.debit : undefined,
         credit: line.credit > 0 ? line.credit : undefined,
         description: line.description ?? null,

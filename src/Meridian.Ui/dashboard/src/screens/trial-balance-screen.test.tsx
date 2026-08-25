@@ -183,7 +183,10 @@ describe("TrialBalanceScreen", () => {
     expect(screen.getByText("Posted journal")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Trial balance scope" })).toBeInTheDocument();
     expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("All entities");
-    expect(screen.getByLabelText("Book")).toHaveValue("Primary GL");
+    // The scope card names the book actually in scope, not a fixed "Primary GL": the card asks
+    // operators to confirm the book before drill-through, so it must not label another book's
+    // balances as the primary one.
+    expect(screen.getByLabelText("Book")).toHaveValue("Master Fund");
     expect(await screen.findByRole("region", { name: POSTED_REGION })).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /Cash Asset\. Primary basis/ })).toBeInTheDocument();
   });

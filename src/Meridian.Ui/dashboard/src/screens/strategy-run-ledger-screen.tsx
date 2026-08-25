@@ -33,6 +33,25 @@ import type {
  * (adversarial-program-review-2026-08-25 §1). The fund's posted journal now owns the Accounting
  * ledger surface; run evidence belongs next to the runs that produced it.
  */
+/**
+ * The basis to select for a run that has just loaded.
+ *
+ * The trial-balance builder renders exactly one basis and filters the rest out, so the selection
+ * has to name a basis the run actually carries. Keeping the outgoing run's choice hides an
+ * incoming Primary-only run; resetting to Primary hides an incoming GAAP- or tax-only one. Prefer
+ * Primary when the run has it — it is the basis an operator expects to land on — and otherwise
+ * fall back to whichever basis the returned rows are keyed on. Rows with no basis are normalized
+ * to Primary downstream, so they count as Primary here too.
+ */
+function resolveRunAccountingBasis(rows: LedgerTrialBalanceLine[]): AccountingBasisKind {
+  const present = new Set(rows.map((row) => row.accountingBasis ?? DEFAULT_ACCOUNTING_BASIS));
+  if (present.size === 0 || present.has(DEFAULT_ACCOUNTING_BASIS)) {
+    return DEFAULT_ACCOUNTING_BASIS;
+  }
+
+  return [...present][0];
+}
+
 export function StrategyRunLedgerScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const runId = searchParams.get("runId")?.trim() || null;
@@ -44,9 +63,11 @@ export function StrategyRunLedgerScreen() {
   const [trialBalanceError, setTrialBalanceError] = useState<ApiErrorDisplay | null>(null);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [journalLines, setJournalLines] = useState<LedgerJournalLine[]>([]);
+  const [journalLoading, setJournalLoading] = useState(false);
   const [journalErrorText, setJournalErrorText] = useState<string | null>(null);
-  // Without this the builder defaults to Primary and filters every other projection out, so a
-  // GAAP- or tax-only run reads as having no trial balance at all.
+  // Resolved from each run's own rows once they arrive; see resolveRunAccountingBasis. The
+  // builder filters to exactly one basis, so this cannot be left on the outgoing run's choice
+  // and cannot be pinned to Primary either.
   const [selectedBasis, setSelectedBasis] = useState<AccountingBasisKind>(DEFAULT_ACCOUNTING_BASIS);
 
   useEffect(() => {
@@ -78,6 +99,7 @@ export function StrategyRunLedgerScreen() {
       setTrialBalanceLoading(false);
       setJournalLines([]);
       setJournalErrorText(null);
+      setJournalLoading(false);
       return;
     }
 
@@ -87,22 +109,24 @@ export function StrategyRunLedgerScreen() {
     // loading, so keeping them would show run A's ledger and journal as run B's.
     setTrialBalanceRows([]);
     setJournalLines([]);
-    // The outgoing run's basis may not exist in the incoming one; leaving it selected filters the
-    // new rows to an unavailable projection and the run reads as having no trial balance at all.
-    setSelectedBasis(DEFAULT_ACCOUNTING_BASIS);
     setTrialBalanceLoading(true);
     setTrialBalanceError(null);
     setJournalErrorText(null);
+    setJournalLoading(true);
 
     getRunTrialBalance(runId)
       .then((rows) => {
         if (!cancelled) {
           setTrialBalanceRows(rows);
+          // Resolved from the rows themselves rather than reset to a fixed basis: see
+          // resolveRunAccountingBasis for why neither keeping nor pinning the selection works.
+          setSelectedBasis(resolveRunAccountingBasis(rows));
         }
       })
       .catch((err) => {
         if (!cancelled) {
           setTrialBalanceRows([]);
+          setSelectedBasis(DEFAULT_ACCOUNTING_BASIS);
           setTrialBalanceError(describeApiError(err, "The run trial balance failed to load."));
         }
       })
@@ -122,6 +146,11 @@ export function StrategyRunLedgerScreen() {
         if (!cancelled) {
           setJournalLines([]);
           setJournalErrorText("Journal lineage could not be loaded for this run.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setJournalLoading(false);
         }
       });
 
@@ -189,7 +218,7 @@ export function StrategyRunLedgerScreen() {
       savedViews={[]}
       summaryItems={[
         { id: "rows", label: "Rows", value: trialBalanceView.filteredRowCountLabel },
-        { id: "journal", label: "Journal entries", value: String(journalEvidence.rows.length) }
+        { id: "journal", label: "Journal entries", value: journalLoading ? "…" : String(journalEvidence.rows.length) }
       ]}
       appliedFilters={[]}
       explorer={explorer}
@@ -298,7 +327,11 @@ export function StrategyRunLedgerScreen() {
             <CardDescription>{journalEvidence.description}</CardDescription>
           </CardHeader>
           <CardContent>
-            {journalErrorText ? (
+            {journalLoading ? (
+              <p role="status" aria-busy="true" aria-live="polite" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm text-muted-foreground">
+                Loading journal lineage for this run.
+              </p>
+            ) : journalErrorText ? (
               <p role="alert" className="rounded-md border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger">
                 {journalErrorText}
               </p>
