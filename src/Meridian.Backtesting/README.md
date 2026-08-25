@@ -96,6 +96,8 @@ Studio UX remains deferred.
   only after an accepted fill. Per-order minimums and maximums therefore apply once across partial
   slices, while rejected fills do not consume commission state and terminal orders release their
   accumulator entries.
+- Corporate-action projections apply only revisions known at the requested as-of time, so a later
+  amendment or cancellation cannot rewrite an earlier backtest's split or distribution economics.
 - Metrics use resolved account opening cash, external investor opening/terminal flows for XIRR, and
   a consistent 365-day calendar basis for snapshots, financing accruals, rolling metrics, and
   walk-forward aggregation. Internal trade, fee, interest, and corporate-action settlements remain

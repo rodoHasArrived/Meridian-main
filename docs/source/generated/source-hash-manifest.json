@@ -16,7 +16,7 @@
       "id": "SRC-BACKTESTING",
       "path": "src/Meridian.Backtesting",
       "readme": "src/Meridian.Backtesting/README.md",
-      "readme_hash": "c3ccf13e8fc3fe394c7ba3a925e15ee74b1d487a0a45a9a39d07abd13acb322a",
+      "readme_hash": "e6312bcc3dd9b0a998a919e60d4ea48237437d3ee762669e078d5ca031bd3624",
       "source_hash": "aa2ba4c56d81ec31a83a0ec096ca560a81ddb963ef0fee886b2938540a3d9056"
     },
     {
@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "a6253f1c5cbd5797f0c7335b9c1a1dd685d130520e5f55dde9b8348725f2b6d9",
-      "source_hash": "8f1dd433deb2663887d5f5926d8affe75314e67319c8d08436cbfa232d4a7382"
+      "readme_hash": "03faaa06cceabcc411716aea31c6b18aa165cead8233af13488ffe56c44f146c",
+      "source_hash": "fa6f0f559f051485dbac76f0d824d834c98b0226ac42b1271bffcff2994c1ce4"
     },
     {
       "id": "SRC-CORE",
@@ -233,8 +233,8 @@
       "id": "SRC-QUANTSCRIPT",
       "path": "src/Meridian.QuantScript",
       "readme": "src/Meridian.QuantScript/README.md",
-      "readme_hash": "bf0416ca81db4fca31579ecc2221d9b05223fd8b2b83257297f3b887233fce83",
-      "source_hash": "fda3ee9f25b91c361f9e3f4ac5356f05b6d19df56422684f1cdb1cc46fc167f8"
+      "readme_hash": "d6864f93d7aaeec738150a00740083e9f94e5f9510d1c2ec0b9b0071c52e1fa7",
+      "source_hash": "fc8f354dee3759768b63333596fd3dd89d087d133e77f206c6235bd68ffd4fce"
     },
     {
       "id": "SRC-RISK",
@@ -248,7 +248,7 @@
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
       "readme_hash": "f1102ef9f7c4468af07056338d3cdc80d1d5ee3356d5ce046e251186b39d5c98",
-      "source_hash": "13d3f51f9440a43755ef527f20959f30a7b3c9c43ad198b41def86a86ec2755a"
+      "source_hash": "69fb6757b3f7451c3baaeb5c9c3fd3f2aa3e99703441a9f2c3b4f5a6c70e7f3b"
     },
     {
       "id": "SRC-STRATEGIES",

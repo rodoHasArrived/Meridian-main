@@ -335,7 +335,8 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                    lifecycle_state,
                    supersedes_corp_act_id,
                    redemption_price_percent_of_par,
-                   payload
+                   payload,
+                   recorded_at
             from {Qualified("corporate_actions")}
             where security_id = @security_id
             order by ex_date;
@@ -368,7 +369,8 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 LifecycleState: reader.IsDBNull(15) ? null : reader.GetString(15),
                 SupersedesCorpActId: reader.IsDBNull(16) ? null : reader.GetGuid(16),
                 RedemptionPricePercentOfPar: reader.IsDBNull(17) ? null : reader.GetDecimal(17),
-                Payload: reader.IsDBNull(18) ? null : ParsePayload(reader.GetString(18))));
+                Payload: reader.IsDBNull(18) ? null : ParsePayload(reader.GetString(18)),
+                RecordedAtUtc: reader.GetFieldValue<DateTimeOffset>(19)));
         }
 
         return results;

@@ -60,6 +60,15 @@ public sealed class BacktestProxyTests : IDisposable
     }
 
     [Fact]
+    public void WithCommission_PercentageWithoutRate_UsesBasisPointDefault()
+    {
+        var proxy = new BacktestProxy(null, new QuantScriptOptions())
+            .WithCommission(BacktestCommissionKind.Percentage);
+
+        proxy.BuildRequest().CommissionRate.Should().Be(5m);
+    }
+
+    [Fact]
     public void WithSlippage_NegativeValue_FailsClosed()
     {
         var proxy = new BacktestProxy(null, new QuantScriptOptions());

@@ -61,6 +61,33 @@ public sealed class CorporateActionAdjustmentServiceTests
     }
 
     [Fact]
+    public async Task PrepareAsync_RevisionRecordedAfterBoundary_UsesKnownSplitTerms()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+        var asOf = new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero);
+        var original = new CorporateActionDto(
+            Guid.NewGuid(), securityId, "StockSplit", new DateOnly(2024, 2, 1), null,
+            null, null, 2m, null, null, null, null, null, null,
+            RecordedAtUtc: asOf.AddDays(-1));
+        var amendment = original with
+        {
+            CorpActId = Guid.NewGuid(),
+            SplitRatio = 4m,
+            SupersedesCorpActId = original.CorpActId,
+            RecordedAtUtc = asOf.AddDays(1)
+        };
+        _mockQueryService.SetCorporateActions([original, amendment]);
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 2), 100m, 100m, 100m, 100m, 1_000);
+
+        var plan = await _service.PrepareAsync([bar], "SPY", asOf);
+        var adjusted = plan.Apply(bar);
+
+        adjusted.Close.Should().Be(50m);
+        adjusted.Volume.Should().Be(2_000L);
+    }
+
+    [Fact]
     public async Task AdjustAsync_NoCorporateActions_ReturnsOriginalBars()
     {
         var securityId = Guid.NewGuid();

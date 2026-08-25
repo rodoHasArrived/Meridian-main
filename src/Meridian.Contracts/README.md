@@ -71,7 +71,8 @@ or provider implementations.
   15022 CAEV alignment, provider aliases (alias-tolerant `TryNormalize`), required fields,
   asset-class validity, and adjustment/ledger-posting behavior. Lifecycle support rides
   `CorporateActionLifecycleStates` (write-side Announced/Confirmed/Cancelled; Ex/Paid derived
-  from dates) plus `CorporateActionEffectiveStateProjector`, which folds append-only
+  from dates) plus `CorporateActionEffectiveStateProjector`, which pins revisions by recorded-at
+  time before folding append-only
   supersede chains (`CorporateActionDto.SupersedesCorpActId`) into effective actions with
   amendment timelines.
   Data vendor entitlement payloads carry optional client, account, fund-profile, security, and

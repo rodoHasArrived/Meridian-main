@@ -76,12 +76,17 @@ public sealed class BacktestProxy
     }
     public BacktestProxy WithCommission(
         BacktestCommissionKind kind,
-        decimal rate = 0.005m,
+        decimal? rate = null,
         decimal minimum = 1m,
         decimal maximum = decimal.MaxValue)
     {
         _commissionKind = kind;
-        _commissionRate = rate;
+        _commissionRate = rate ?? kind switch
+        {
+            BacktestCommissionKind.Percentage => 5m,
+            BacktestCommissionKind.Free => 0m,
+            _ => 0.005m
+        };
         _commissionMinimum = minimum;
         _commissionMaximum = maximum;
         return this;
