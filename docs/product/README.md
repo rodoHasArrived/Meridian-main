@@ -43,7 +43,10 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     explorer was retired from Accounting to `/strategy/run-ledger`. What remains open is
     assigned-fund scoping (the new tenant filter is cross-tenant and fail-open, and the client sends
     no fund id), one run-scoped binding under `/accounting/accounts/detail`, the missing
-    `ViewCompliance` read grant, the option contract multiplier that reaches the two aggregate
+    `ViewCompliance` read grant (which must also be subtracted from the `Developer` role, defined as
+    `Admin` minus a list), the compliance read surfaces that need server work beyond that grant —
+    `controls/attestation` evaluates none of the four controls it names, and neither read route is
+    tenant-scoped — the option contract multiplier that reaches the two aggregate
     exposure projections but none of the paper transaction, valuation, persistence or margin paths
     — nor the Trading screen's own exposure and P&L arithmetic, which the book-side fix does not
     reach — and an estimated 29%

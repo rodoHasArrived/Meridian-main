@@ -192,7 +192,9 @@ an approval request.
 `ViewCompliance` / `ManageCompliance` — the read/write split matters on both, because a single
 `ManageCompliance` re-creates this very overload one level down: an auditor who only reads
 `/audit/extract`, `/controls/attestation` and `GET /access-reviews` would also gain authority over
-approval decisions and access-review remediation
+approval decisions and access-review remediation. Whichever flags are added, **update the `Developer`
+subtraction in the same change** — `DeveloperPermissions = AdminPermissions & ~(…)`
+(`RolePermissions.cs:49`) inherits every new `Admin` grant by construction
 permissions and re-gate these surfaces. The permission enum has 27 flags in a `long` — there is ample
 room. This is a small, mechanical change that removes a real blocker to any multi-user deployment.
 
@@ -597,7 +599,24 @@ surface's purpose twice over: an extract reads clean *because* the refusals were
 attestation's own control list claims "Immutable append-only audit chain" (`:78`) over a chain
 that never saw them. It is a two-line fix — append the decision before branching, with the outcome
 on the record — and it has to precede any UI that presents either surface as evidence, because a
-gap-by-construction is not visible to the operator reading the result. The **data-quality** surface is different in kind, and narrower than an earlier draft of this
+gap-by-construction is not visible to the operator reading the result.
+
+**Two further gaps mean neither read surface is close to evidence-ready, and one of them asserts
+compliance it never checks.** `controls/attestation` names four controls — RBAC, step-up with
+privileged role/dual approval/MFA, the append-only chain, segregation of duties — and every one is a
+**hard-coded string** (`:74-80`). The only computed value in the whole response is
+`integrityValid = auditLog.VerifyIntegrity()` (`:81`). A deployment with no MFA hook and no SoD
+enforcement therefore returns a payload byte-identical to a compliant one, and appending denials
+would make exactly one of the four assertions true while leaving three unevaluated. As it stands it
+is a static control *inventory* labelled as attestation: the §1 failure mode in its strongest form,
+a surface answering a question it never asked. Second, neither read route is tenant-scoped —
+`audit/extract` returns `GetAll()` (`:67`), `GET /access-reviews` returns the singleton's whole list
+(`:123`), neither `AuditEvent` (`ComplianceModels.cs:66-80`) nor `AccessReviewRecord` (`:101-111`)
+carries a company identifier, and these endpoints never call `ResolveCompanyId`
+(`EndpointAuthorization.cs:307-317`) although other surfaces in the same layer do. In a multi-company
+deployment one company's compliance operator reads every company's audit chain.
+
+The **data-quality** surface is different in kind, and narrower than an earlier draft of this
 section claimed. The aggregate `/api/quality/dashboard` is wired, *and so is the per-symbol
 drill-down*: the mounted `DataQualityRegion` expands each symbol into component scores with
 explanations, provider freshness, open gaps with remediation actions, and current issues
@@ -615,6 +634,17 @@ five `*/statistics` endpoints, the ranked cross-symbol views (`errors/top-symbol
 for one symbol*; nothing in it carries a trend, a distribution, a cross-symbol ranking, or an
 exportable report. That is the gap worth scoping, and scoping it as a missing drill-down would
 duplicate an operator path that already exists.
+
+**One of the 27 is not UI-only work, and it is the export.**
+`POST /api/quality/reports/export` (`DataQualityEndpoints.cs:366-377`) generates the report on the
+server and returns `{ filePath, format }` — a path on the host filesystem — and no quality route
+streams that file back; the catalog contains no quality download route at all. Against a remote
+host the browser cannot resolve or open that path, so mounting the button yields an apparent
+success and no artifact. It needs a streamed response or a retained-artifact download contract
+first, which is server work. This is the same shape as the compliance surfaces above: **a route
+being reachable and a route being usable are different properties, and the reference-based measure
+sees only the first.** The dark-route count is a discovery tool, not a work estimate — and every
+group it surfaces needs the same check before it is called cheap.
 
 *Caveat on the method, and it cuts both ways:* this measures **reference**, not operator reach, and
 the error is unbounded in each direction, so **29% is an estimate — not a floor and not a ceiling.**
@@ -722,7 +752,13 @@ improvement #6, but this block was never updated to match — the second time in
 refuted remedy survived in the section that first proposed it while the summary carried the fix.
 The two viable options are to invoke the Windows job *from* `meridian-ci.yml` and add its real job ID
 to `needs`, or to make its emitted check required directly — verifying the context string first,
-since the workflow overrides the job's display name to `verify-desktop (build/test WPF)`. Also
+since the workflow overrides the job's display name to `verify-desktop (build/test WPF)`, **and
+adding a `merge_group` trigger to that workflow in the same change.** `meridian-ci.yml` declares one
+(`:10`) and is the *only* workflow in the repository that does; `windows-desktop-build.yml` is
+triggered by `pull_request`, `push` and `workflow_dispatch` alone. A required check the merge queue
+can never receive does not fail a merge — it hangs it, indefinitely and with no failing job to point
+at. That asymmetry is the strongest argument for the first option: the workflow that already handles
+`merge_group` is the one to hang the desktop job from. Also
 promote a first-mile subset of the Integration category (bootstrap + role authorization) into the
 required lane. A gate that cannot fail on the supported platform or on the authorization model is
 not measuring the product's supported surface.
@@ -864,7 +900,16 @@ close-management product can tell.
    required`) and manage does *not* imply view, so re-gating the reads without widening the baselines
    locks out the only roles that can currently reach them; the landed ledger split is the precedent,
    granting `ViewLedgerReports` explicitly alongside `ManageLedgerReports` on each role
-   (`:38,85,98,108,121`). Then re-gate the **three** read-only
+   (`:38,85,98,108,121`). **And subtract it from `Developer` in the same change**, or the grant leaks:
+   `DeveloperPermissions = AdminPermissions & ~(ManageUsers | ManageCompliance)`
+   (`RolePermissions.cs:49`) is defined by subtraction, so anything added to `AdminPermissions`
+   lands on `Developer` silently. This is not a hypothetical — the comment directly above that line
+   (`:42-48`) records the same trap firing once already for `ManageCompliance`, and says why it
+   matters: "inheriting the new grant would have let a Developer account file and decide approval
+   requests, extract the audit chain, and read access reviews — the opposite of what a least-privilege
+   split is for." A `ViewCompliance` added without the matching subtraction hands `Developer` the
+   audit extract, the attestation and the access-review records the split exists to withhold. Then
+   re-gate the **three** read-only
    compliance routes onto it — `audit/extract` (`ComplianceEndpoints.cs:66`),
    `controls/attestation` (`:70`) and `GET /access-reviews` (`:123`), which all still require
    `ManageCompliance`, so an auditor who only reads holds authority over approval decisions and
@@ -974,12 +1019,27 @@ close-management product can tell.
    **`verify-desktop (build/test WPF)`**, so configuring `Windows Desktop Build / desktop` would
    match nothing and silently leave WPF non-blocking. Verify the emitted context string before
    configuring it, and accept that the workflow's path filters must widen, since a change outside
-   them can still break WPF. Also promote the bootstrap and role-authorization
+   them can still break WPF. **The second option carries a further trap that would block the merge
+   queue outright.** `meridian-ci.yml` handles `merge_group` (`:10`); `windows-desktop-build.yml` is
+   triggered only by `pull_request`, `push` and `workflow_dispatch` — it is the only required-lane
+   candidate with no `merge_group` trigger, and in fact `meridian-ci.yml` is the sole workflow in
+   the repository that declares one. A required status the merge queue can never receive does not
+   fail the merge; it hangs it. So making that check required means adding `merge_group` to the
+   Windows workflow in the same change — which is one more argument for the first option, invoking
+   the desktop job from the already merge-group-aware workflow rather than making a second one
+   required. Also promote the bootstrap and role-authorization
    Integration suites into the required lane. (§7)
 7. **Surface the evidence that already exists — after checking each surface can bear the weight.**
    27 quality routes carrying history, statistics, ranked views, comparison and reports sit behind
    a dashboard *and* a per-symbol drill-down that are already wired, so those are genuinely cheap:
-   the servers are done and the operator path exists to hang them from. The 8 compliance
+   the servers are done and the operator path exists to hang them from. **One of the 27 is not, and
+   it is the one an operator would reach for first.** `POST /api/quality/reports/export`
+   (`DataQualityEndpoints.cs:366-377`) generates the report server-side and returns
+   `{ filePath, format }` — a path on the host filesystem — and no quality route streams that file
+   back; the catalog has no quality download route at all. Mounted as-is against a remote host, the
+   button reports success and produces nothing the operator can open. It needs a streamed response
+   or a retained-artifact download contract before it counts as UI-only work, so it belongs with the
+   server-work group below rather than in the cheap 27. The 8 compliance
    endpoints are not cheap in the same way, for two independent reasons. First, there is **no
    discovery contract for approvals**: no GET for approval requests, and `IComplianceApprovalStore`
    has no enumeration method (`ComplianceApprovalStore.cs:12-27`), so the approver queue cannot be
@@ -998,9 +1058,28 @@ close-management product can tell.
    records permitted actions only. An extract or an attestation built on that log shows a clean
    history because refusals were never written, not because none occurred — the inverse of what an
    auditor consults it for, and the one class of event a compliance log exists to hold. Move the
-   append above the denial branch, recording the decision either way, before either surface is
-   presented as evidence. The approver queue is blocked
-   on the discovery contract, and access reviews on durable retention; those two wait. Register them as route constants too, so the
+   append above the denial branch, recording the decision either way.
+
+   **Two further gaps close the question: I am withdrawing "those two can be built now" rather than
+   qualifying it a third time.** First, `controls/attestation` evaluates nothing it asserts. Its four
+   controls — RBAC, step-up/dual-approval/MFA, the append-only chain, segregation of duties — are
+   **hard-coded strings** (`ComplianceEndpoints.cs:74-80`), and the only computed value in the
+   response is `integrityValid = auditLog.VerifyIntegrity()` (`:81`). A deployment with no MFA hook
+   and no SoD enforcement returns a payload identical to a compliant one. Appending denials fixes at
+   most one of the four assertions and leaves the other three unevaluated, so this endpoint is a
+   static control *inventory*; presenting it to an operator as attestation is the strongest version
+   of the withheld-as-empty failure in §1 — a surface that answers a question it never asked.
+   Second, neither read route is tenant-scoped. `audit/extract` returns `auditLog.GetAll()` (`:67`)
+   and `GET /access-reviews` returns the singleton's whole list (`:123`); neither `AuditEvent`
+   (`ComplianceModels.cs:66-80`) nor `AccessReviewRecord` (`:101-111`) carries a company or tenant
+   identifier, and the compliance endpoints never call `ResolveCompanyId`
+   (`EndpointAuthorization.cs:307-317`) though other surfaces do. In a multi-company deployment a
+   company-scoped Compliance operator reads every company's audit chain and access-review history.
+
+   So all four route groups need server work first; they differ in how much, not in whether. The
+   approver queue needs a discovery contract, access reviews need durable retention, `audit/extract`
+   needs denial events and tenant provenance, and `controls/attestation` needs all of that plus
+   actual control evaluation. Register them as route constants too, so the
    drift gate can see them. (§6)
 8. **Fix the freshness gap; standardize the error vocabulary second.** The demonstrated defect is
    staleness, and only **break casework** is established as unbounded: `usePollingInterval` does not
@@ -1051,8 +1130,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Thirty-three rounds of automated review challenged **93 claims** across this document. Every one was checked
-against the code, **all 93 held**, and the findings above are the corrected text. **Ten more were
+Thirty-four rounds of automated review challenged **98 claims** across this document. Every one was checked
+against the code, **all 98 held**, and the findings above are the corrected text. **Ten more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
@@ -1061,7 +1140,7 @@ and the second addendum's miscited compliance gate lines — and each is recorde
 marked *(self-detected)*. A further self-initiated pass, numbered round 31 below, is **absent from the table on purpose**: every correction it made was
 wrong and was retracted in round 32, so it contributes no rows and its number is left as a gap
 rather than silently reused.
-The table therefore holds **103 rows: 93 raised by review, 10 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **108 rows: 98 raised by review, 10 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1617,6 +1696,41 @@ already handles it, and is structurally blind to the code that should. The Tradi
 by asking what iterates `IPosition`, not by grepping `ContractMultiplier` — which had been done four
 times and could never have surfaced it.
 
+**Round 35 — five, four of them P1, and three converge on one recommendation:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| Improvement #2's remedy, as amended in round 33: add `ViewCompliance` and grant it to `Admin` and `Compliance` | Still incomplete, and this time the codebase had written the answer down. `DeveloperPermissions = AdminPermissions & ~(ManageUsers \| ManageCompliance)` (`RolePermissions.cs:49`) is defined by **subtraction**, so any flag added to `AdminPermissions` lands on `Developer` silently. The comment at `:42-48` records this trap firing once already for `ManageCompliance` and spells out the consequence — a Developer account gaining the audit extract, attestation and access reviews. The remedy needed a fourth compensating step: subtract `ViewCompliance` too | Improvement #2, §2's improvement block, and the second addendum |
+| "`controls/attestation` can be built now" (as qualified in round 34) | It evaluates nothing it asserts. All four controls — RBAC, step-up/dual-approval/MFA, the append-only chain, segregation of duties — are **string literals** (`ComplianceEndpoints.cs:74-80`); the only computed value is `integrityValid = VerifyIntegrity()` (`:81`). A deployment with no MFA and no SoD enforcement returns a byte-identical payload to a compliant one, and round 34's denial fix would make one of four assertions true. It is a static control inventory labelled as attestation | Improvement #7 and §6 — recommendation withdrawn, not re-qualified |
+| The compliance read routes are ready once the permission split lands | Neither is tenant-scoped. `audit/extract` returns `GetAll()` (`:67`), `GET /access-reviews` returns the singleton's whole list (`:123`), neither `AuditEvent` (`ComplianceModels.cs:66-80`) nor `AccessReviewRecord` (`:101-111`) carries a company identifier, and neither endpoint calls `ResolveCompanyId` (`EndpointAuthorization.cs:307-317`) though other surfaces in the same layer do. One company's compliance operator reads every company's audit chain | Improvement #7, §6, second addendum |
+| Improvement #6's second option: make the Windows workflow's check required | It would hang the merge queue rather than gate it. `meridian-ci.yml` declares `merge_group` (`:10`) and is the **only** workflow in the repository that does; `windows-desktop-build.yml` is triggered by `pull_request`, `push` and `workflow_dispatch` alone, so no status is ever emitted for a merge-group commit. A required check that never arrives has no failing job to point at | Improvement #6 and §7 — `merge_group` trigger added to the option, first option now preferred |
+| The 27 quality routes are "genuinely cheap — the servers are done" | One is not, and it is the export. `POST /api/quality/reports/export` (`DataQualityEndpoints.cs:366-377`) writes the artifact server-side and returns `{ filePath, format }`, a host filesystem path; no quality route streams it back and the catalog has no quality download route. Against a remote host the button reports success and produces nothing openable | Improvement #7 and §6 — moved to the server-work group |
+
+Three of these five are the same failure, and naming it is the point: **I checked that each thing
+existed and not that it worked.** The routes are reachable, the permission flag is expressible, the
+Windows job really does run tests. Every one of those observations is true, and every recommendation
+built on one stopped a step short of the property that actually matters — is the log complete, is the
+attestation computed, is the data scoped, does the check reach the queue, can the file be retrieved.
+The reference-based dark-route measure has this blindness by construction, which is why §6 now says
+so where the count is introduced: it is a discovery tool, not a work estimate.
+
+The compliance activation recommendation is the sharpest lesson, because this is the third
+consecutive round to narrow it. Round 28 said the blanket deferral was wrong and split activation by
+route group; round 34 added the denial caveat; round 35 finds the attestation computes nothing and
+neither read is tenant-scoped. **A recommendation qualified in three consecutive rounds is not
+under-qualified — it is wrong**, and the honest move is to withdraw it rather than add a fourth
+caveat. It has been withdrawn: all four compliance route groups need server work first, differing in
+how much rather than in whether. What round 28 got right survives — the original blanket deferral was
+right by accident, for a reason that did not hold — and that is worth separating from a conclusion
+that did not.
+
+And the first row is the fifth consecutive remedy in this document that would have left working code
+worse (14, 19, 33, 34 were the others). The escalation across them is uncomfortable to state plainly:
+round 33's evidence was elsewhere in the same file; round 34's was in a different file entirely; this
+one's was **a comment directly above the line the remedy already cited**, written by someone who had
+made the same mistake and documented it so the next person would not. Reading the line and not the
+comment above it is the whole failure.
+
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
 remedies — and are rewritten rather than softened; the multiplier correction made the defect
@@ -1799,9 +1913,13 @@ ledger because four of them overstated how much was closed.
 
 So the remaining work on §1 and §2 is: an assigned-fund selector with scoped authorization on the
 ledger read routes; delete the `AccountDetailScreen` run binding and the leftover reconciliation
-fetch; add `ViewCompliance`, grant it to `Admin` and `Compliance` alongside their existing `ManageCompliance` (an exact-bit check means manage does not imply view), and re-gate the **three** read-only compliance routes to it —
+fetch; add `ViewCompliance`, grant it to `Admin` and `Compliance` alongside their existing `ManageCompliance` (an exact-bit check means manage does not imply view), **subtract it from `Developer` at `RolePermissions.cs:49`** (that role is defined as `AdminPermissions` minus a list, so an unsubtracted grant leaks to it silently — the comment at `:42-48` records this trap firing once already), and re-gate the **three** read-only compliance routes to it —
 `audit/extract` (`:66`), `controls/attestation` (`:70`) and `GET /access-reviews` (`:123`) — leaving
-`access-reviews/run` on `ManageUsers`. The lockout §1 describes is resolved for the *posted* book —
+`access-reviews/run` on `ManageUsers`. **Re-gating is necessary and not sufficient for the two read
+surfaces:** neither is tenant-scoped (`GetAll()` at `:67`, the whole review list at `:123`, and no
+company identifier on either record), and `controls/attestation` evaluates none of the four controls
+it names (`:74-80` are string literals; only `VerifyIntegrity()` is computed). Both are server work,
+not permission work — see improvement #7. The lockout §1 describes is resolved for the *posted* book —
 which is the book those roles own — and the `ViewStrategies` gate on the run queue is now the
 correct behaviour rather than the defect.
 
