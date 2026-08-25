@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.Workstation;
+using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
@@ -10,8 +11,8 @@ namespace Meridian.Wpf.Services;
 /// <see cref="IWorkstationReconciliationApiClient"/> the workbench break queue already uses —
 /// so the summary tiles and the break queue on the same screen share one source of truth
 /// (co-equal-lanes contract: neither client forks product state). When the API is
-/// unavailable the summary degrades to an empty posture, mirroring the break queue's
-/// degrade path; it never falls back to the desktop-local fund-account JSON stores.
+/// unavailable the result preserves that failure separately from a confirmed missing
+/// reconciliation record; it never falls back to the desktop-local fund-account JSON stores.
 /// </summary>
 public sealed class ReconciliationReadService
 {
@@ -26,7 +27,7 @@ public sealed class ReconciliationReadService
         _reconciliationApiClient = reconciliationApiClient ?? throw new ArgumentNullException(nameof(reconciliationApiClient));
     }
 
-    public async Task<ReconciliationSummary> GetAsync(
+    public async Task<FundReconciliationReadResult> GetAsync(
         string fundProfileId,
         CancellationToken ct = default)
     {
@@ -39,17 +40,25 @@ public sealed class ReconciliationReadService
         var openBreaks = 0;
         decimal breakAmountTotal = 0m;
         var securityCoverageIssues = 0;
+        var missingRunCount = 0;
+        var unavailableRunCount = 0;
 
         foreach (var run in relevantRuns)
         {
-            var detail = await ReadLatestRunDetailAsync(run.RunId, ct).ConfigureAwait(false);
-            if (detail is null)
+            var detailRead = await ReadLatestRunDetailAsync(run.RunId, ct).ConfigureAwait(false);
+            if (detailRead.State == ReconciliationDetailReadState.Missing)
             {
-                // The server has no recorded reconciliation for this run, or the API read
-                // failed. Surface no posture for the run instead of recomputing one from
-                // desktop-local state.
+                missingRunCount++;
                 continue;
             }
+
+            if (detailRead.State == ReconciliationDetailReadState.Unavailable)
+            {
+                unavailableRunCount++;
+                continue;
+            }
+
+            var detail = detailRead.Detail!;
 
             var asOf = detail.Summary.PortfolioAsOf
                 ?? detail.Summary.LedgerAsOf
@@ -91,19 +100,26 @@ public sealed class ReconciliationReadService
             .OrderByDescending(item => item.RequestedAt)
             .ToArray();
 
-        return new ReconciliationSummary(
-            RunCount: ordered.Length,
-            OpenBreakCount: openBreaks,
-            BreakAmountTotal: breakAmountTotal,
-            RecentRuns: ordered,
-            SecurityCoverageIssueCount: securityCoverageIssues);
+        return new FundReconciliationReadResult(
+            Summary: new ReconciliationSummary(
+                RunCount: ordered.Length,
+                OpenBreakCount: openBreaks,
+                BreakAmountTotal: breakAmountTotal,
+                RecentRuns: ordered,
+                SecurityCoverageIssueCount: securityCoverageIssues),
+            KnownRunCount: relevantRuns.Length,
+            MissingRunCount: missingRunCount,
+            UnavailableRunCount: unavailableRunCount);
     }
 
-    private async Task<ReconciliationRunDetail?> ReadLatestRunDetailAsync(string runId, CancellationToken ct)
+    private async Task<ReconciliationDetailRead> ReadLatestRunDetailAsync(string runId, CancellationToken ct)
     {
         try
         {
-            return await _reconciliationApiClient.GetLatestRunDetailAsync(runId, ct).ConfigureAwait(false);
+            var detail = await _reconciliationApiClient.GetLatestRunDetailAsync(runId, ct).ConfigureAwait(false);
+            return detail is null
+                ? new ReconciliationDetailRead(ReconciliationDetailReadState.Missing, null)
+                : new ReconciliationDetailRead(ReconciliationDetailReadState.Available, detail);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -111,11 +127,20 @@ public sealed class ReconciliationReadService
         }
         catch (Exception)
         {
-            // Same degrade contract as the workbench break queue: an API outage renders an
-            // empty posture, never a desktop-local recomputation.
-            return null;
+            return new ReconciliationDetailRead(ReconciliationDetailReadState.Unavailable, null);
         }
     }
+
+    private enum ReconciliationDetailReadState : byte
+    {
+        Available = 0,
+        Missing = 1,
+        Unavailable = 2
+    }
+
+    private readonly record struct ReconciliationDetailRead(
+        ReconciliationDetailReadState State,
+        ReconciliationRunDetail? Detail);
 
     private static string MapStrategyStatus(ReconciliationRunSummary summary)
     {
