@@ -1516,6 +1516,49 @@ role-to-surface expectation table**, asserted against the workspace ∩ leaf int
 panel from Accounting (or relabelling it as a Strategy-run artifact) and splitting the permission are
 the remaining work.
 
+### Second addendum — `main` at `bb43e0e6`, 35 further commits
+
+`main` advanced again while this PR was open and is merged into this branch. Substantial remediation
+of §1 and §2 has landed, and it is worth stating precisely what is closed and what is not, because
+the half that landed is the half that does not remove the defect.
+
+**Landed, and correct:**
+
+- **The ledger permission split exists.** `ViewLedgerReports` (`UserPermission.cs:111`) and
+  `ManageLedgerReports` (`:114`) are real flags, and `LedgerEndpoints.cs` uses them as a genuine
+  read/write split — reads accept `ViewLedgerReports` (`:52,75,185,311,361,386`), writes require
+  `ManageLedgerReports` (`:103,146,213,264`). `FundAccountant` now holds both.
+- **Fund scoping landed on the read routes.** `RequireFundProfileTenantScope` (`:53,186`) closes the
+  "any holder reads every fund's posted book" defect this review found in PR #2824.
+- **A Strategy-side home for the run ledger exists.** `StrategyRunLedgerScreen` is mounted at
+  `/strategy/run-ledger` (`app.tsx:852`) and calls `getRunTrialBalance` and `getRunLedgerJournal`
+  (`:109,131`) — exactly the destination improvement #1 named.
+
+**Not landed — and these are the parts that actually close the finding:**
+
+- **The lockout is unchanged.** `WorkstationEndpoints.AccountingWorkspace.cs:132` still withholds
+  `ReconciliationQueue` on `readScope.StrategyRuns`, still computed from
+  `ViewStrategies|ManageStrategies` at `:255`. `FundAccountant` and `Controller` still receive an
+  empty queue indistinguishable from a clean fund.
+- **Neither Accounting-side surface was retired.** `accounting-screen.view-model.ts:2954` still binds
+  `getTrialBalance: (runId) => getRunTrialBalance(runId)`, and `AccountDetailScreen` still calls it
+  (`finance-standard-pages-screen.tsx:299`). The Strategy screen was added *alongside* them, not
+  migrated. So there are now **three** run-scoped trial-balance surfaces where there were two, and
+  the "two books, one screen name" ambiguity inside Accounting is untouched.
+- **`ViewCompliance` does not exist.** Only `ManageCompliance` (`:118`) was added, and every route in
+  `ComplianceEndpoints.cs` gates on it (`:24,46,64,68,83,99,124`) — including the read-only
+  `audit/extract` and `controls/attestation`. This is the exact outcome §2's remedy rules out: an
+  auditor who only reads is handed authority over approval decisions. The implementation took the
+  version of §2 that predates this document's round-26 correction, which is the strongest available
+  argument for that correction having been worth making.
+
+The pattern is worth naming, because it is the same one this review found in the code. Adding the
+correct destination does not remove the incorrect one; a migration that only creates the new surface
+leaves both live, and the operator-visible defect — an accountant reading a strategy run's book under
+a screen called Accounting — persists until the old binding is deleted. **Improvements #1 and #2
+should be read as still open**, with their remaining work now smaller and precisely bounded: delete
+two client bindings, stop withholding the queue on a strategy permission, and add `ViewCompliance`.
+
 ## Relationship to existing planning
 
 This review is independent input. Live delivery status stays in the roadmap registry
