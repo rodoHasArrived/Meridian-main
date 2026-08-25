@@ -663,7 +663,7 @@ resolution stays invisible **until the first triggers a manual refresh or remoun
 divergence with no upper bound at all. That is a materially worse defect than the 15s/60s polls
 elsewhere, and it is the finding here, not error handling: the accounting surfaces **do** surface failures — the
 reconciliation panel renders `view.errorText` (`accounting-screen.reconciliation-panels.tsx:106-118`),
-the close cockpit does the same (`close-cockpit-panels.tsx:177,457`), and the trial balance carries a
+the close cockpit does the same (`accounting-screen.close-cockpit-panels.tsx:177,457`), and the trial balance carries a
 structured `ApiErrorDisplay`. `RegionErrorState` appears directly in only 3 non-test modules, but it
 is also composed by `AsyncRegion` (`async-region.tsx:95,109`), so a raw import count understates
 adoption and is not evidence that the rest collapse failures into empty data.
@@ -897,12 +897,13 @@ close-management product can tell.
 ## Corrections applied after automated review
 
 Twenty-four rounds of automated review challenged **66 claims** across this document. Every one was checked
-against the code, **all 66 held**, and the findings above are the corrected text. **Six more were
+against the code, **all 66 held**, and the findings above are the corrected text. **Eight more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
-claim, §3's own lead sentence, §5's title, and §5's four-type undercount — and each is recorded as a
+claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
+in the published artifact, and an unresolvable file path in §8 — and each is recorded as a
 row below, marked *(self-detected)*.
-The table therefore holds **72 rows: 66 raised by review, 6 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **74 rows: 66 raised by review, 8 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1269,12 +1270,14 @@ asserted what the `exit_criteria:` four lines below say **without reading them**
 the fact you came to find is not reading it" was written into this document as a lesson in round 20
 and violated in round 21, against the same file and the same item.
 
-**Round 24 — two, both self-detected, and the first is the round-22 pattern in a section heading:**
+**Round 24 — four, all self-detected; the first is the round-22 pattern in a section heading, the third the round-17 pattern in the published artifact:**
 
 | Claim | Why it was wrong | Corrected in |
 | --- | --- | --- |
 | *(self-detected)* §5's title: "The fund-economics kernel is a closed island" | The same section's body says capital-call issuance shipped through `CapitalCallDraftFactory`, and `CapitalCallFundingIntake.cs:53` calls that factory "the fund-economics kernel" in as many words. Measured: **133 of 231** public `Meridian.Ledger` types are consumed outside the assembly. The kernel is 57.6% live; it is the *fund-administration lane* inside it that is dark. The heading contradicted its own paragraph for twenty-three rounds | §5 retitled and remeasured |
 | *(self-detected)* §5 quantified the dark surface as four types | The measured set is **80 of 231** — units, equalization, waterfall, carry, shadow NAV, multi-currency, partners' capital, depreciation, tax lots, report-pack lifecycle. The four named types were a sample presented as the finding, understating it roughly twentyfold | §5 measurement table |
+| *(self-detected)* The published artifact still said the accounting surfaces "fall back to empty values on failure, rendering 'no breaks' and 'request failed' identically" | §8 retracted that two rounds earlier — the reconciliation panel and close cockpit both render `view.errorText`, and `AsyncRegion` composes `RegionErrorState`. The artifact's own corrections table already carried a row recording the retraction, so it logged the fix and never applied it to its body or to its ranked item #7 | Artifact §8 and ranked item 7 |
+| *(self-detected)* §8 cited `close-cockpit-panels.tsx:177,457` | No file of that name exists; it is `accounting-screen.close-cockpit-panels.tsx`. Both line references are correct, so the claim held while the path did not resolve | §8 citation |
 
 Both were found by re-measuring §5's existential claim rather than re-reading its prose — the same
 method that caught rounds 9 and 22. The first measurement pass produced **98** dark types and was
