@@ -1056,6 +1056,64 @@ describe("finance standard pages", () => {
     expect(await screen.findByRole("table", { name: "Ledger Explorer results" })).toHaveTextContent("June sweep");
   });
 
+  it("publishes an operator's period even when the route is still carrying another", async () => {
+    // The pending gate exists so a deep link is applied before the URL is written back. But a
+    // period the operator picked by hand supersedes that request, and without saying so the gate
+    // never opened: the screen showed the period they chose while the URL went on naming the one
+    // a sibling had put there, with no way out of it.
+    const JUNE_PERIOD_ID = "88888888-8888-8888-8888-888888888888";
+    mockPostedBook();
+    const july = {
+      periodId: LEDGER_PERIOD_ID,
+      ledgerBookId: LEDGER_BOOK_ID,
+      fiscalYear: 2026,
+      periodNo: 7,
+      label: "July 2026",
+      startDate: "2026-07-01",
+      endDate: "2026-07-31",
+      status: "HardClosed",
+      openedAt: "2026-07-01T00:00:00Z",
+      closedAt: "2026-08-02T00:00:00Z",
+      version: 1
+    };
+    // Earlier than July, so it is never anyone's default -- only a deliberate pick puts it in play.
+    const june = { ...july, periodId: JUNE_PERIOD_ID, periodNo: 6, label: "June 2026" };
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValue([july, june] as never);
+
+    // The route already names June while this tab last applied July: the shared scope moved on
+    // while the tab was elsewhere, which is what leaves the request pending.
+    const search = renderLedgerExplorerWithLocation(
+      `/accounting/ledger?ledgerBookId=${LEDGER_BOOK_ID}&periodId=${LEDGER_PERIOD_ID}`
+    );
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
+    await waitForAsyncEffects();
+    fireEvent.change(
+      document.getElementById("trial-balance-period-select") as HTMLSelectElement,
+      { target: { value: JUNE_PERIOD_ID } }
+    );
+    await waitForAsyncEffects();
+    expect(search()).toContain(JUNE_PERIOD_ID);
+
+    // Back on a tab whose own refresh fails, so nothing can settle.
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockRejectedValue(new Error("Ledger periods are unavailable."));
+    fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    // The operator picks the other cached period.
+    const periodSelect = document.getElementById("ledger-period-select") as HTMLSelectElement;
+    fireEvent.change(periodSelect, { target: { value: LEDGER_PERIOD_ID } });
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    expect(periodSelect.value).toBe(LEDGER_PERIOD_ID);
+    expect(search()).toContain(LEDGER_PERIOD_ID);
+    expect(search()).not.toContain(JUNE_PERIOD_ID);
+  });
+
   it("offers no ledger filter it does not apply", async () => {
     // "Unposted", "Reversals", "Manual JEs" and "System Generated" changed a label and nothing
     // else, and the results header reported the unfiltered count as that view's. On a governed

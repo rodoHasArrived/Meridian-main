@@ -259,6 +259,8 @@ export interface AccountingPostedLedgerViewModel {
   booksSettled: boolean;
   /** True when the operator picked the current period by hand rather than it being held or defaulted. */
   periodChosenByOperator: boolean;
+  /** Applies a period the shared route named, without recording it as an operator's choice. */
+  applyRoutePeriod: (periodId: string) => void;
 }
 
 /**
@@ -1078,9 +1080,22 @@ export function useAccountingPostedLedgerViewModel(
     };
   }, [enabled, routePeriodUnresolved, selectedPeriodId, services, workstream, includeJournal]);
 
+  /** The operator picking a period. Records the choice, which is what lets it supersede a route
+   * request this surface cannot resolve. */
   const selectPeriod = useCallback((periodId: string) => {
     setSelectedPeriodId(periodId);
     setPeriodChosenByOperator(true);
+    setSelectedRowId(null);
+  }, []);
+
+  /**
+   * The route applying a period it named. Deliberately NOT recorded as a choice: it is the shared
+   * scope arriving, not the operator making one. Routed through selectPeriod, a link's own period
+   * counted as a pick and could then be published back over a newer period the route had moved to
+   * -- the exact overwrite the publish rule exists to prevent.
+   */
+  const applyRoutePeriod = useCallback((periodId: string) => {
+    setSelectedPeriodId(periodId);
     setSelectedRowId(null);
   }, []);
 
@@ -1189,6 +1204,7 @@ export function useAccountingPostedLedgerViewModel(
     view,
     selectBook,
     selectPeriod,
+    applyRoutePeriod,
     selectBasis,
     updateAccountFilter,
     selectTrialBalanceRow: setSelectedRowId,

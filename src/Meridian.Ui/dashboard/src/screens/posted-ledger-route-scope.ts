@@ -31,7 +31,7 @@ export function usePostedLedgerRouteScope(
   const [searchParams, setSearchParams] = useSearchParams();
   const {
     selectBook,
-    selectPeriod,
+    applyRoutePeriod,
     selectedPeriodId,
     periodsSettled,
     booksSettled,
@@ -94,7 +94,11 @@ export function usePostedLedgerRouteScope(
     // it. A book chosen by hand supersedes a link that could not be honoured.
     const namedBookIsAbsent = requestedBookId !== null && resolvedRequestedBookId === null;
     const movedOffNamedBook = resolvedRequestedBookId !== null && resolvedRequestedBookId !== selectedBookId;
-    if (namedBookIsAbsent || movedOffNamedBook) {
+    // A period the operator picked by hand supersedes the one the route is still carrying, for the
+    // same reason a book chosen by hand does. Left pending, the gate below the write-back stayed
+    // shut: the screen showed the period they had chosen while the URL went on naming one nobody
+    // had, with no way out of it.
+    if (namedBookIsAbsent || movedOffNamedBook || periodChosenByOperator) {
       setAppliedPeriodId(requestedPeriodId);
       return;
     }
@@ -112,18 +116,19 @@ export function usePostedLedgerRouteScope(
     setAppliedPeriodId(requestedPeriodId);
     const matched = periodOptions.find((option) => idsMatch(option.id, requestedPeriodId));
     if (matched) {
-      selectPeriod(matched.id);
+      applyRoutePeriod(matched.id);
     }
   }, [
     active,
     appliedBookId,
     appliedPeriodId,
+    applyRoutePeriod,
+    periodChosenByOperator,
     periodOptions,
     periodsSettled,
     requestedBookId,
     requestedPeriodId,
     resolvedRequestedBookId,
-    selectPeriod,
     selectedBookId
   ]);
 
