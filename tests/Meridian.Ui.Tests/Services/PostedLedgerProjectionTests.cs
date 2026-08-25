@@ -462,6 +462,54 @@ public sealed class PostedLedgerProjectionTests
     public void DescribeDimensionScope_WithNoDimensions_IsEmptySoTheColumnStaysBlank()
         => PostedLedgerProjection.DescribeDimensionScope(Line()).Should().BeEmpty();
 
+    /// <summary>
+    /// The same one definition serves every surface that names a dimensional scope, with the
+    /// separator each one wants. Three copies of this enumeration had drifted apart, each omitting
+    /// a different subset of the contract.
+    /// </summary>
+    [Fact]
+    public void DescribeDimensionScope_OverADimensionSet_HonoursTheCallersSeparator()
+    {
+        var dimensions = new LedgerDimensionSetDto(
+            FundId: "fund-alpha",
+            CustomerId: "cust-1",
+            VendorId: "vend-1",
+            ProjectId: "proj-1");
+
+        PostedLedgerProjection.DescribeDimensionScope(dimensions, " | ")
+            .Should().Be("Fund: fund-alpha · Customer: cust-1 · Vendor: vend-1 · Project: proj-1"
+                .Replace(" · ", " | ", StringComparison.Ordinal));
+        PostedLedgerProjection.DescribeDimensionScope(dimensions)
+            .Should().Be("Fund: fund-alpha · Customer: cust-1 · Vendor: vend-1 · Project: proj-1");
+        PostedLedgerProjection.DescribeDimensionScope(dimensions: null).Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// The close workbench's own scope strings, proven here rather than only on Windows. Folding
+    /// its private enumeration into this one had to preserve them exactly: the desktop tests that
+    /// pin them cannot run off Windows, so a silent reordering would only surface in CI.
+    /// </summary>
+    [Fact]
+    public void DescribeDimensionScope_PreservesTheCloseWorkbenchScopeStrings()
+    {
+        PostedLedgerProjection.DescribeDimensionScope(
+            new LedgerDimensionSetDto(
+                FundId: "fund-alpha",
+                EntityId: "entity-alpha",
+                SleeveId: "sleeve-credit",
+                ExternalGlDimensions: new Dictionary<string, string> { ["class"] = "private-fund" }),
+            " | ")
+            .Should().Be("Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit | External class: private-fund");
+
+        PostedLedgerProjection.DescribeDimensionScope(
+            new LedgerDimensionSetDto(
+                FundId: "fund-alpha",
+                EntityId: "entity-alpha",
+                CostCenterId: "fund-operations"),
+            " | ")
+            .Should().Be("Fund: fund-alpha | Entity: entity-alpha | Cost center: fund-operations");
+    }
+
     // ── P&L basis scoping ────────────────────────────────────────────
 
     private static LedgerPeriodPnlSummaryDto Pnl(

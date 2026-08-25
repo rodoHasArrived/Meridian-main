@@ -139,7 +139,20 @@ public static class PostedLedgerProjection
     public static string DescribeDimensionScope(LedgerPeriodTrialBalanceLineDto line)
     {
         ArgumentNullException.ThrowIfNull(line);
-        var dimensions = line.Dimensions;
+        return DescribeDimensionScope(line.Dimensions);
+    }
+
+    /// <summary>
+    /// The canonical dimension-scope label, over any retained dimension set.
+    /// <para>
+    /// One definition on purpose. Three separate enumerations of the same eighteen-member contract
+    /// had drifted apart, each omitting a different subset, so the same balance was
+    /// distinguishable on one surface and not another. Empty when no dimension is set — the caller
+    /// owns what to say about that, because a grid column and a detail field want different words.
+    /// </para>
+    /// </summary>
+    public static string DescribeDimensionScope(LedgerDimensionSetDto? dimensions, string separator = " · ")
+    {
         if (dimensions is null)
         {
             return string.Empty;
@@ -182,7 +195,7 @@ public static class PostedLedgerProjection
             }
         }
 
-        return string.Join(" · ", parts);
+        return string.Join(separator, parts);
     }
 
     private static void AppendDimension(List<string> parts, string label, string? value)
