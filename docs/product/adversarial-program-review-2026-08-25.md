@@ -211,16 +211,19 @@ There is no multiplier parameter, so a live option fill books 1/100 of its cash.
 `FillEvent` (`Meridian.Backtesting.Sdk/FillEvent.cs:4-18`) carries neither a multiplier nor a
 percent-of-par flag, so the record cannot express the distinction even if the caller knew it.
 
-**What this does and does not corrupt.** The headline session metrics are safe: `Build(finalEquity,
-…)` derives net P&L and total return from the passed-in equity (`:131-132`), drawdown from the
-`RecordEquity` peak/observation series (`:96-105`), Sharpe from equity-derived daily returns, and
-commissions from an independent `_totalCommissions` accumulator — and the paper portfolio behind that
-equity *is* multiplier-aware, because the OMS applies `_orderContractMultipliers` on the live path.
-What the missing multiplier corrupts is the per-trade record: the emitted `TradeCashFlow`
-(`:55-61`) and the retained `FillEvent` list, i.e. the trade-level cash attribution, any
-cash-flow-derived analytics such as TWR/IRR, and the fill log an operator or auditor reads back.
-That is narrower than session-level P&L and still wrong in the place a proof-of-the-number product
-can least afford it.
+**Blast radius: the whole metric set, not just the fill log.** It is tempting to stop at "the
+`TradeCashFlow` is wrong" — `Build` derives net P&L and total return from a *passed-in* equity
+figure (`:131-132`), drawdown from the `RecordEquity` series (`:96-105`), and Sharpe from
+equity-derived daily returns, so none of them read the cash flows. But §3 establishes that the
+portfolio producing that equity is itself unscaled: `PaperPosition.MarketValue` is
+`Math.Abs(Quantity) * MarketPrice` (`PaperTradingPortfolio.cs:1118`) with no multiplier, and
+`LiveStrategyRunSession` feeds exactly that `_context.PortfolioValue` into both `RecordDayEnd`
+(`:361-364`) and `Build` (`:772-775`).
+
+So for an options session the equity series is 1/100-scaled at source, and **net P&L, total return,
+drawdown, and Sharpe all inherit it**. Only commissions escape, because `_totalCommissions`
+accumulates independently of position value. The per-trade record is wrong *and* every session-level
+number computed from the book is wrong, for the same root cause.
 
 This is the same defect shape as §3, in a third subsystem. Three subsystems now model instrument
 scale differently: `ExecutionPosition.ContractMultiplier` (`ExecutionPosition.cs:42`), the
@@ -434,35 +437,57 @@ close-management product can tell.
    view under Strategy with an explicit label; grant `FundAccountant` and `Controller` the
    permissions their screens require. Until this lands, the product's flagship persona cannot open
    the product's flagship screen, and the number on it is not the fund's. (§1)
-2. **Split the overloaded permissions.** Add `ViewLedgerReports`/`ManageLedgerReports` and
-   `ManageCompliance`; stop using `ManageDirectLending` as the fund-accounting grant and `ManageUsers`
-   as the compliance grant. This is what makes a least-privilege multi-user deployment possible at
-   all. (§2)
+2. **Split the overloaded permissions — and split the replacements too.** Add
+   `ViewLedgerReports`/`ManageLedgerReports` and `ViewCompliance`/`ManageCompliance`; stop using
+   `ManageDirectLending` as the fund-accounting grant and `ManageUsers` as the compliance grant. Note
+   the read/write split on both: a single `ManageCompliance` would re-create the same defect one
+   level down, forcing an auditor who only reads `/audit/extract`, `/controls/attestation`, and
+   `GET /access-reviews` to also hold authority over approval decisions and access-review
+   remediation. This is what makes a least-privilege multi-user deployment possible at all. (§2)
 3. **Make instrument scale a modeled concept, once.** One value object carrying multiplier and price
-   convention, on `ExecutionReport` and `FillEvent`, consumed by the three restore sites in
-   `PaperSessionPersistenceService` and by `LiveRunMetricsTracker`. This is the third consecutive
-   review to find this defect class in a new subsystem; fixing the instance again will not stop the
-   fourth. (§3, §4)
-4. **Gate the catalogs against each other.** Three structural tests: (a) every route a workspace
-   links to must be callable by at least one role that can reach that workspace; (b) every route
-   constant must be referenced by a client or appear on a declared headless allowlist; (c) the dark
+   convention, on `ExecutionReport` and `FillEvent` — and *consumed* in `ApplyBuy`/`ApplySellLong`,
+   `PaperPosition.MarketValue`, and the three restore sites in `PaperSessionPersistenceService`.
+   Carrying it is not the fix; multiplying by it is. Until then every option session's equity, P&L,
+   drawdown, and Sharpe are 1/100-scaled. Third consecutive review to find this class in a new
+   subsystem. (§3, §4)
+4. **Gate the catalogs against each other — with predicates that actually bite.** An
+   existential check ("some role can reach it") is useless here: Admin, Developer, and Accounting
+   satisfy it while `FundAccountant` and `Controller` stay locked out, so the defect passes. Three
+   tests that do bite: (a) a declared **role-to-surface expectation table** — `FundAccountant` and
+   `Controller` must reach the Accounting trial balance and P&L — asserted against the workspace ∩
+   leaf intersection, so a persona lockout fails the build; (b) every route
+   constant must be referenced by a client or appear on a declared headless allowlist — this is the
+   only one of the three that would have caught the unconsumed posted-ledger routes, since no
+   workspace links to them and no role check can see them; (c) the dark
    count must not grow. These three tests would have caught §1, §5, §6, and §9's reopen gap
    automatically. (§1, §6)
 5. **Activate NAV per unit end-to-end.** Valuation → `ShareClassUnitRegisterProjector` → governed
    journal intake → an operator panel, following the path capital-call issuance just proved. Highest
    value-per-line change available, and the plumbing is already validated. (§5)
-6. **Put the supported platform in the merge gate.** Add `verify-desktop` to `quality-gate`'s
-   `needs`, and promote the bootstrap and role-authorization Integration suites into the required
-   lane. (§7)
+6. **Put the supported platform in the merge gate — noting the naive fix does not work.**
+   `needs:` resolves only job IDs within the same workflow, and `verify-desktop` is a lane-manifest
+   ID, not a job: the Windows validation is the `desktop` job in the separate
+   `windows-desktop-build.yml`. So either invoke that Windows job from `meridian-ci.yml` (or move it
+   there) and add the real job ID to `needs`, or make `Windows Desktop Build / desktop` a required
+   status check alongside `quality-gate` — and accept that its path filters must widen, since a
+   change outside them can still break WPF. Also promote the bootstrap and role-authorization
+   Integration suites into the required lane. (§7)
 7. **Surface the evidence that already exists — after checking each surface can bear the weight.**
    31 quality drill-downs sit behind a dashboard that is already wired, so those are genuinely
    cheap: the servers are done and the operator path exists to hang them from. The 8 compliance
-   endpoints are not cheap in the same way — three write to the immutable audit log, approvals live
-   in a rewritable snapshot, and access reviews do not survive restart, so durable retention has to
-   land *before* a UI presents them as governed proof. Register them as route constants too, so the
+   endpoints are not cheap in the same way — exactly **one** route writes to the immutable audit log
+   (`actions/evaluate`, via `auditLog.Append` at `ComplianceEndpoints.cs:61`); `audit/extract` and
+   `controls/attestation` only read it (`GetAll`/`VerifyIntegrity`), approvals live in a rewritable
+   snapshot, and access reviews do not survive restart. Durable retention has to land *before* a UI
+   presents any of it as governed proof. Register them as route constants too, so the
    drift gate can see them. (§6)
-8. **Stop the UI lying by omission.** `RegionErrorState` on the reconciliation queue, break detail,
-   and close cockpit; SSE fan-out for break/approval/inbox mutations instead of 60s polls. (§8)
+8. **Fix the freshness gap; standardize the error vocabulary second.** The demonstrated defect is
+   staleness — break casework, approvals, and close readiness do not refresh after a mutation, so
+   route them over the existing SSE fan-out instead of 60-second polls. The error work is *not*
+   restoring missing failure semantics: the reconciliation panel, trial balance, and close cockpit
+   already render their failures. Consolidating those bespoke blocks onto `RegionErrorState` is
+   visual standardization — worth doing so operators learn one vocabulary for "this failed", but
+   lower priority than the staleness it was previously bundled with. (§8)
 9. **Close the small governed gaps.** Wire period reopen; make `MarketTradeUpdate.Source` required;
    make the fund-structure snapshot loader fail loudly rather than starting empty. (§9)
 
@@ -521,14 +546,29 @@ because a review that demands evidence discipline owes the same discipline about
 | Compliance surface "backed by `ImmutableAuditLogService`" | Only three of eight routes touch it; approvals use a rewritable JSON snapshot and access reviews an in-memory list emptied on restart | §6, improvement #7 |
 | Index entry describing the posted trial balance as unreachable | True at `e232ece1`, stale after PR #2824 merged into this branch | `docs/product/README.md` |
 
-The core findings survive, several in sharper form. Three were materially wrong as first stated — the
-role-access table, the fixed-income claim, and the multiplier's blast radius — and are rewritten
-rather than softened; the multiplier correction made the defect *larger* and the original remedy
-insufficient. Two method lessons generalize. **A permission gate read in isolation predicts the wrong
+**Round 3 — six more, four of them contradictions introduced by the earlier corrections:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "Session metrics are safe; the corruption is trade-level" | Contradicted §3 in the same commit. `PaperPosition.MarketValue` is `Math.Abs(Quantity) * MarketPrice` (`:1118`) and `LiveStrategyRunSession` feeds that equity into `RecordDayEnd` (`:361-364`) and `Build` (`:772-775`), so net P&L, total return, drawdown, and Sharpe all inherit the 1/100 scale. Only commissions escape | §4 — narrowing reversed |
+| "Add `verify-desktop` to `quality-gate`'s `needs`" | Not implementable. `needs:` resolves only job IDs in the same workflow; `verify-desktop` is a lane-manifest ID, and the Windows validation is the `desktop` job in a separate workflow | Improvement #6 |
+| The proposed catalog structural test | An existential predicate ("some role can reach it") passes on this very defect — Admin, Developer, and Accounting satisfy it while `FundAccountant` and `Controller` stay locked out — and never examines the posted-ledger routes, which no workspace links to | Improvement #4 — respecified |
+| "Three compliance routes write to the immutable log" | One does. `audit/extract` and `controls/attestation` are GETs calling `GetAll`/`VerifyIntegrity` | Improvement #7 |
+| "Stop the UI lying by omission" | Contradicted the corrected §8. The named panels already render failures; consolidating them is standardization, not restoration, and was crowding out the real staleness defect | Improvement #8 |
+| `ManageCompliance` as a single new grant | Re-creates the §2 overload one level down: an auditor reading `/audit/extract` would also gain authority over approval decisions | Improvement #2 — split into `ViewCompliance`/`ManageCompliance` |
+
+The core findings survive, several in sharper form. Four were materially wrong as first stated — the
+role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
+remedies — and are rewritten rather than softened; the multiplier correction made the defect
+*larger* and the original remedy insufficient, and both the catalog test and the CI `needs` change
+were unimplementable as specified. Three method lessons generalize. **A permission gate read in isolation predicts the wrong
 access** — the same intersection error this document accuses the codebase of, committed while
 describing it. And **a value that is carried but never consumed reads as handled**: `ContractMultiplier`
 is threaded through three layers and multiplied by nothing, which is why four consecutive reviews,
-this one included, mistook plumbing for correctness.
+this one included, mistook plumbing for correctness. And third: **correcting one section without
+re-reading the sections that depend on it introduces fresh contradictions** — round 2's narrowing of
+§4 was refuted by §3, which the same commit had just rewritten. Four of round 3's six findings are
+damage from rounds 1 and 2, not from the original draft.
 
 ## Addendum — remediation landed while this review was in flight
 
