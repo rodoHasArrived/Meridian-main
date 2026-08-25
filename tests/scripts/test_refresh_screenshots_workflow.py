@@ -366,7 +366,9 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         # withdrawn while /strategy/quant-lab?view=formulas stays in UNWIRED_WORKSTATION_ROUTES, so
         # the capture navigated to a route the screen now canonicalizes away and waited for text
         # that no longer renders.
-        self.assertEqual(77, len(captures))
+        # 78 after adding W03O (web-accounting-capital-calls) for the new
+        # /accounting/capital-calls issuance screen.
+        self.assertEqual(78, len(captures))
         self.assertNotIn("W05E", captures)
         self.assertEqual("/data/import", captures["W06I"].get("path"))
         self.assertEqual("/data/operations", captures["W06J"].get("path"))
