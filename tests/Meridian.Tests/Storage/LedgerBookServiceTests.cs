@@ -1471,6 +1471,55 @@ public sealed class LedgerBookServiceTests
         return payload!;
     }
 
+    [Fact]
+    public async Task ListLedgerBooks_ServesTheCanonicalOrderRatherThanTheStoreOrder()
+    {
+        // The first book served is the one a freshly opened surface scopes itself to, so this
+        // order decides which period and whose figures an operator is shown. It is settled here,
+        // once, rather than by each client: the comparison is StringComparer.OrdinalIgnoreCase
+        // over names and Guid order over ids, and neither is reproducible in a browser. When the
+        // browser sorted the response for itself, the two co-equal workstations could open the
+        // same governed ledger on different books.
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        // Created in an order the canonical one must change, and named so that an ordinal
+        // (case-sensitive) comparison would also disagree: 'Z' (U+005A) precedes 'a' (U+0061).
+        foreach (var (fundProfileId, displayName) in new[]
+        {
+            ("zulu-fund", "Zulu Feeder Fund"),
+            ("alpha-fund", "alpha Master Fund")
+        })
+        {
+            await PostJsonAsync<LedgerBookDto>(
+                client,
+                UiApiRoutes.LedgerBooks,
+                new CreateLedgerBookRequest(
+                    fundProfileId,
+                    Guid.NewGuid(),
+                    FundStructureNodeKindDto.Fund,
+                    displayName,
+                    "usd"));
+        }
+
+        var storeOrder = (await app.Services.GetRequiredService<ILedgerBookService>()
+                .ListBooksAsync(new LedgerBookQuery(null, null)))
+            .Select(book => book.DisplayName)
+            .ToList();
+        var servedOrder = (await client.GetFromJsonAsync<IReadOnlyList<LedgerBookDto>>(
+                UiApiRoutes.LedgerBooks,
+                ServerJsonOptions))!
+            .Select(book => book.DisplayName)
+            .ToList();
+
+        // Guards the fixture rather than the behaviour: if the store ever returned the canonical
+        // order on its own, the assertion below would hold whether or not the endpoint sorted.
+        storeOrder.Should().NotEqual(
+            servedOrder,
+            "the store's own order must differ from the canonical one for this test to reach the sort");
+        servedOrder.Should().Equal("alpha Master Fund", "Zulu Feeder Fund");
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         UserPermission permissions = UserPermission.ViewTrades | UserPermission.ManageDirectLending)
     {
