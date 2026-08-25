@@ -262,6 +262,14 @@ pre-trade exposure by the multiplier, the same double-count the cost-basis cavea
 A field consumed in one projection and ignored in the rest is worse than a missing one: it reads, to
 every subsequent reviewer, as though the concern were already handled.
 
+**Third — and this one is not about scale at all.** Persisting and consuming `ContractMultiplier`
+leaves the restored book *still* wrong for fund-scoped sessions, because the same three replay sites
+omit `ownerAccountId` and `AttributeFill` receives null (see the per-owner gap above). Restore the
+owning fund too: either persist it alongside the fill, or join the durable order history's
+`OrderState.FundAccountId` through the fill's order identity, and pass it at every replay and
+projection site. A two-step remedy that fixes only scale produces a book with correct numbers and no
+idea whose they are.
+
 ## 4. The percent-of-par fix landed; the contract multiplier one parameter away did not
 
 `LiveRunMetricsTracker.RecordFill(FillEvent fill, DateTimeOffset timestamp, bool
@@ -492,8 +500,21 @@ needs:
 </PropertyGroup>
 ```
 
+That guard is what lets a Windows-targeted *restore* succeed off Windows — but it is **not** what
+happens in the gate, and an earlier draft of this section had the mechanism wrong. The required lane
+never compiles `Meridian.Wpf` at all. `scripts/ci.sh` restores the full solution (`:135`) and then
+builds exactly one filter — `dotnet build Meridian.WebWorkstation.slnf` (`:156`) — and that filter
+lists a single project, `src/Meridian/Meridian.csproj`. Only that project and its project-reference
+closure are compiled, and a WPF desktop app is not in the web host's closure. The test runner then
+excludes the desktop suite explicitly: `run-dotnet-ci-tests.py:29` drops
+`tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj`, under a comment noting it "compiles an empty
+stub off-Windows".
+
 So the desktop workstation — a co-equal UI lane, and the client for the platform ADR-019
-*proposes* as the v1 production envelope (Windows 11 x64) — compiles to an empty stub in the gate.
+*proposes* as the v1 production envelope (Windows 11 x64) — is **absent from the gate's build
+entirely**, which is a wider gap than the stub reading suggested: it is not that WPF compiles to
+nothing, it is that the merge gate compiles one project's closure out of the solution and never
+looks at the desktop lane.
 That ADR is still **"Proposed (awaiting core-team sign-off)"** (`019-production-support-matrix-and-deployment-posture.md:3`),
 and its context records that no support declaration exists yet and that `PRD-000` blocks every
 supported production release until one is signed (`:11-14`) — so Windows is the *target*, not a
@@ -544,11 +565,17 @@ The surfaces where staleness actually costs an operator money still poll:
   among them, and the break-queue fetch runs only when its effect dependencies change
   (`accounting-screen.view-model.ts:3903-3912`)
 
-Break casework, approvals, and close-readiness do not refresh after a mutation elsewhere in the app,
-so two operators working the same close diverge — and for break casework that divergence is
-**unbounded**, not capped at a poll interval. A second operator's assignment or resolution stays
-invisible until the first triggers a manual refresh or remounts the screen. That is a materially
-worse defect than the 15s/60s polls elsewhere, and it is the finding here, not error handling: the accounting surfaces **do** surface failures — the
+**Break casework is the unbounded case, and it is the only one established here.** Approvals *do*
+refresh on their own: `useGovernedApprovalsViewModel` installs a `setInterval` at
+`DEFAULT_APPROVAL_REFRESH_MS = 15_000` (`trading-screen.governed-approvals.ts:47,101-112`), so a
+second operator's escalation appears within fifteen seconds — stale, but bounded. An earlier draft of
+this paragraph swept approvals and close-readiness into the same claim as break casework; that
+overstates it, and for close-readiness the evidence gathered here establishes nothing either way.
+Break casework is different in kind: `usePollingInterval` does not cover Accounting, and the
+break-queue fetch runs only when its effect dependencies change, so a second operator's assignment or
+resolution stays invisible **until the first triggers a manual refresh or remounts the screen** —
+divergence with no upper bound at all. That is a materially worse defect than the 15s/60s polls
+elsewhere, and it is the finding here, not error handling: the accounting surfaces **do** surface failures — the
 reconciliation panel renders `view.errorText` (`accounting-screen.reconciliation-panels.tsx:106-118`),
 the close cockpit does the same (`close-cockpit-panels.tsx:177,457`), and the trial balance carries a
 structured `ApiErrorDisplay`. `RegionErrorState` appears directly in only 3 non-test modules, but it
@@ -747,10 +774,12 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Seventeen rounds of automated review challenged **53 claims** across this document. Every one was checked
-against the code, **all 53 held**, and the findings above are the corrected text. Two more — the
-quality-route count, wrong at 31 in three places, and a refuted remedy still standing in §1 — were
-caught by re-measuring and re-reading rather than by a reviewer, and are recorded with them. Noted here because a review that demands evidence discipline
+Eighteen rounds of automated review challenged **57 claims** across this document. Every one was checked
+against the code, **all 57 held**, and the findings above are the corrected text. **Four more were
+caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
+31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
+claim, and §3's own lead sentence — and each is recorded as a row below, marked *(self-detected)*.
+The table therefore holds **61 rows: 57 raised by review, 4 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -837,7 +866,7 @@ until round 12 caught it; the rows are restored here in the order they were rais
 | The run trial balance is a "simulation ledger"/"simulation book" | `StrategyRunReadService` serves backtest, paper **and live** history (`:14-16`); the Accounting run population applies no mode filter (`FundOperationsWorkspaceReadService.cs:796-812`); live runs persist as `BrokerLive`. A live selection shows a live subledger | §1(a), §1(c), headline |
 | "The operator can see that a symbol is unhealthy and cannot open the evidence that says why" | The per-symbol drill-down *is* mounted in both clients (`data-screen.data-regions.tsx:236-359`; `DataQualityViewModel.ShowSymbolDrilldown:298-320`), projected from the composite payload. The real gap is history, distribution, ranking, comparison and reports | §6 — reframed |
 | Windows 11 x64 is "the only platform ADR-019 supports" | ADR-019 is **Proposed (awaiting core-team sign-off)** and records that no support declaration exists; `PRD-000` blocks supported release until it is signed. Windows is the proposed envelope, not a ratified one | §7 heading and body |
-| "31" quality drill-downs lack consumers (3 places) | Re-measuring under this document's own three-layer method gives **27**; the table in §6 already said 27, so the document contradicted itself. Self-detected while verifying the reframe above | §6, improvement #7, round-1 row |
+| *(self-detected)* "31" quality drill-downs lack consumers (3 places) | Re-measuring under this document's own three-layer method gives **27**; the table in §6 already said 27, so the document contradicted itself. Self-detected while verifying the reframe above | §6, improvement #7, round-1 row |
 
 The round-9 measurement is worth one more note, because the first two attempts at it were both
 wrong and wrong in opposite directions. A scan that `re.escape`d route literals into `grep` turned
@@ -854,7 +883,7 @@ attempt, restricted to the three genuine client layers, gives 27.
 | --- | --- | --- |
 | "29% is a **lower bound** on the dark surface, not an estimate of it" | A bound requires error in one direction. Dead wrappers undercount the dark surface; composed URL builders and legitimately headless routes overcount it. The same paragraph opened "it cuts one way" and then conceded both directions three sentences later | §6 caveat — rewritten as an estimate |
 | The three catalog tests "would have caught §1, **§5**, §6, and §9" | The NAV kernel has no route constant and no endpoint — `ShareClassUnitRegisterProjector` and `NavPerUnitCalculator` live only in `src/Meridian.Ledger/`, its README, tests and planning docs. Route- and role-based tests have nothing to inspect | Improvement #4 — §5 dropped, fourth invariant added |
-| §1's improvement still proposed the disjoint-permission test | Round 4 refuted that predicate as existential, and improvement #4 says so explicitly — but §1's own remedy block was never updated, so the document recommended in one place the test it calls useless in another | §1 improvement |
+| *(self-detected)* §1's improvement still proposed the disjoint-permission test | Round 4 refuted that predicate as existential, and improvement #4 says so explicitly — but §1's own remedy block was never updated, so the document recommended in one place the test it calls useless in another | §1 improvement |
 
 The §5 correction is the more interesting of the two, because it marks a limit of this review's own
 thesis rather than an error inside it. Cross-catalog testing detects catalogs that *disagree*. The
@@ -985,6 +1014,8 @@ finding that was directionally reasonable and materially wrong about the risk.
 | The docs index still said the multiplier "never reaches portfolio economics" | Round 14 established that `AggregatePortfolioExposureProvider` already scales aggregate pre-trade exposure. The round-14 sweep corrected §3, improvement #3 and the method lesson — and missed the index | `docs/product/README.md` |
 | The round-7 narrative still concluded Sharpe is "approximately *unaffected*" | Round 8 refuted exactly that with a six-mark series showing 17.9% error. The corrections *table* recorded the refutation; the corrections *prose* two screens below kept the refuted conclusion as a closing takeaway | Round-7 lesson paragraph |
 | The addendum still referred implementers to "the disjoint-permission structural test" | Improvement #4 rejects that predicate as existential, and round 12 replaced it with the role-to-surface expectation table. The addendum was never updated | Addendum |
+| *(self-detected)* The re-test table carried the same categorical multiplier claim | Found by sweeping for the conclusion rather than the phrasing, in the same commit | Re-test table |
+| *(self-detected)* §3's own bolded lead sentence said the multiplier "never reaches portfolio economics on any path" | Round 14 added its qualifying paragraph directly beneath this sentence and never corrected the sentence itself | §3 lead |
 
 Three rounds ago the reviewer was finding defects in the codebase. This round it found none — all
 three items are places where a correction landed in one part of this document and a dependent
@@ -1003,6 +1034,28 @@ phrasing is what surfaced them; both are fixed here.
 The useful signal is what it implies about convergence: the review's claims about the code are
 holding, and the remaining churn is internal consistency in a document that has been rewritten
 seventeen times.
+
+**Round 18 — four, including one that corrects this review's evidence rather than its conclusion:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "`Meridian.Wpf` compiles to an empty stub in the gate" | The required lane never compiles it at all. `scripts/ci.sh` restores the full solution (`:135`) but builds only `dotnet build Meridian.WebWorkstation.slnf` (`:156`), and that filter contains one project — `src/Meridian/Meridian.csproj`. Only its reference closure is built, and a WPF app is not in a web host's closure; `run-dotnet-ci-tests.py:29` then drops the desktop test suite explicitly. The `EnableDefaultCompileItems` guard makes the Windows-targeted *restore* work off-Windows; it is not the CI mechanism | §7 — evidence replaced, conclusion widened |
+| "Break casework, approvals, and close-readiness do not refresh after a mutation elsewhere" | Approvals poll: `useGovernedApprovalsViewModel` installs a `setInterval` at `DEFAULT_APPROVAL_REFRESH_MS = 15_000` (`:47,101-112`), so they are stale but **bounded**. Only break casework is unbounded, and close-readiness is not established either way by the evidence gathered here | §8 — narrowed to the case that holds |
+| The §3 remedy's two steps fix only scale | The same three replay sites also omit `ownerAccountId`, so `AttributeFill` receives null and the restored book stays unattributed even after the multiplier is persisted and consumed. Round 4 established the gap; the remedy was never updated to close it | §3 — third step added |
+| The corrections total still did not foot | The header counted 53 raised + 2 self-detected, while round 17's prose described two further self-detected fixes that appeared in no row and no total. Recorded as rows and counted | This header, round-17 block |
+
+The first row is the one that matters, because it is the first time in eighteen rounds that the
+*evidence* under a finding was wrong while the finding itself held. §7 said WPF compiles to a stub
+because the csproj disables default compile items off Windows. The csproj guard is real, but it is
+not why the gate misses WPF — the gate misses WPF because it builds a one-project solution filter.
+The corrected mechanism makes the finding **wider**: the required lane does not compile most of the
+solution, not merely the desktop lane.
+
+The last row is the second time the audit ledger has failed to foot, and the cause is a variant of
+the first: round 12 found a missing round, and this time the missing entries were corrections
+described in *prose* but never entered as *rows*. Recording a fix in narrative form is not recording
+it in the ledger, which is a distinction a document about evidence discipline should not have needed
+twice.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
