@@ -1,0 +1,14 @@
+import{o as e}from"./button-CHUXGgnN.js";import{S as t}from"./index-Dsr33UAf.js";var n=e(),r=`
+.mds-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;font-family:var(--font-body);padding:48px 24px;gap:12px;}
+.mds-empty--compact{padding:24px 16px;gap:8px;}
+.mds-empty__icon{color:var(--text-disabled,#889099);display:inline-flex;}
+.mds-empty__title{font-size:14px;font-weight:600;color:var(--text-secondary,#4D5967);}
+.mds-empty--compact .mds-empty__title{font-size:13px;}
+.mds-empty__detail{font-size:12px;color:var(--text-muted,#59636F);max-width:280px;line-height:1.5;}
+.mds-empty__action{margin-top:4px;padding:7px 16px;border:1px solid var(--accent,#2F6F8F);
+  background:var(--accent,#2F6F8F);color:#fff;border-radius:var(--radius-button,2px);
+  font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;transition:background .12s ease;}
+.mds-empty__action:hover{background:var(--accent-pressed,#255B75);border-color:var(--accent-pressed,#255B75);}
+.mds-empty__action:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:2px;}
+`,i={table:(0,n.jsxs)(n.Fragment,{children:[(0,n.jsx)(`rect`,{x:`3`,y:`3`,width:`18`,height:`18`,rx:`2`}),(0,n.jsx)(`line`,{x1:`3`,y1:`9`,x2:`21`,y2:`9`}),(0,n.jsx)(`line`,{x1:`3`,y1:`15`,x2:`21`,y2:`15`}),(0,n.jsx)(`line`,{x1:`9`,y1:`9`,x2:`9`,y2:`21`})]}),search:(0,n.jsxs)(n.Fragment,{children:[(0,n.jsx)(`circle`,{cx:`11`,cy:`11`,r:`7`}),(0,n.jsx)(`line`,{x1:`16.5`,y1:`16.5`,x2:`21`,y2:`21`})]}),chart:(0,n.jsx)(`polyline`,{points:`22 12 18 12 15 21 9 3 6 12 2 12`}),docs:(0,n.jsxs)(n.Fragment,{children:[(0,n.jsx)(`path`,{d:`M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z`}),(0,n.jsx)(`polyline`,{points:`14 2 14 8 20 8`})]}),inbox:(0,n.jsxs)(n.Fragment,{children:[(0,n.jsx)(`polyline`,{points:`22 13 16 13 14 16 10 16 8 13 2 13`}),(0,n.jsx)(`path`,{d:`M5.45 5.11L2 13v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-7.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z`})]})};function a({icon:e=`table`,title:a=`No data`,detail:o,action:s,onAction:c,compact:l=!1,role:u,ariaLabel:d,className:f}){return t(`empty-state`,r),(0,n.jsxs)(`div`,{className:`mds-empty${l?` mds-empty--compact`:``}${f?` `+f:``}`,role:u,"aria-label":d,children:[(0,n.jsx)(`span`,{className:`mds-empty__icon`,"aria-hidden":`true`,children:(0,n.jsx)(`svg`,{width:32,height:32,viewBox:`0 0 24 24`,fill:`none`,stroke:`currentColor`,strokeWidth:1.5,strokeLinecap:`round`,strokeLinejoin:`round`,children:i[e]??i.table})}),(0,n.jsx)(`div`,{className:`mds-empty__title`,children:a}),o&&(0,n.jsx)(`div`,{className:`mds-empty__detail`,children:o}),s&&c&&(0,n.jsx)(`button`,{type:`button`,className:`mds-empty__action`,onClick:c,children:s})]})}export{a as t};

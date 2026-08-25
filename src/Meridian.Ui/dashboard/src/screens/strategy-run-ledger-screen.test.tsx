@@ -82,6 +82,23 @@ describe("StrategyRunLedgerScreen", () => {
     expect(screen.getByText("Cash sweep")).toBeInTheDocument();
   });
 
+  it("renders the basis bridge that moved with this screen", async () => {
+    // The trial balance shows one basis at a time, so the per-account Primary-to-GAAP difference
+    // is only readable here. Moving the run ledger out of Accounting removed the bridge's only
+    // renderer while leaving the view model still building it, so it silently disappeared.
+    vi.mocked(api.getRunTrialBalance).mockResolvedValue([
+      { ...trialBalanceLines[0], accountingBasis: "Primary", balance: 120500 },
+      { ...trialBalanceLines[0], accountingBasis: "Gaap", balance: 118000 }
+    ]);
+
+    await renderRunLedger("/strategy/run-ledger?runId=run-42");
+    await waitForAsyncEffects();
+
+    const bridge = await screen.findByRole("region", { name: /GAAP to Primary basis bridge/i });
+    expect(bridge).toBeInTheDocument();
+    expect(bridge).toHaveTextContent("Cash");
+  });
+
   it("asks for a run instead of fabricating a ledger when none is selected", async () => {
     await renderRunLedger();
 

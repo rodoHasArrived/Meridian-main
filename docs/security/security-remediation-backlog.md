@@ -135,6 +135,20 @@ This backlog converts the threat-model residual concerns into tracked remediatio
 - **Target date:** **gated on a multi-tenant deployment decision** (as SEC-005).
 - **Done evidence:** PR adding the server-resolved tenant filter and the ownership checks, with tests; threat-model update reclassifying the residual.
 
+### SEC-008 — Compliance approval requests are keyed globally, so any request id can be decided by any compliance operator
+- **Affected module/path:** `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs` (`POST /api/compliance/approvals/{approvalRequestId}/decision`); `FileComplianceApprovalStore.RecordDecision` in `src/Meridian.Audit/Compliance/ComplianceApprovalStore.cs`; `ComplianceApprovalRequestRecord` in `src/Meridian.Audit/Compliance/ComplianceModels.cs`.
+- **Risk rating:** **Low–Medium** (deployment-conditional cross-company evidence forgery; **not reachable** under the single-company-per-deployment boundary SEC-005 documents).
+- **What it is:** the store holds one process-wide dictionary keyed by `ApprovalRequestId` alone, and `RecordDecision` resolves an id straight out of it with no ownership check. `ComplianceApprovalRequestRecord` carries no tenant or company field, so — exactly as with `AuditEvent` in SEC-006 — there is nothing to filter on even if the route wanted to. A compliance operator who obtains another company's approval request id could therefore record an authoritative approve/reject decision against it. Unlike SEC-006 and SEC-007, which disclose data, this one *writes*: the decision becomes part of the approval evidence for someone else's governed action.
+- **Why the gate was widened deliberately:** the same least-privilege split as SEC-006. Deciding a compliance approval is a compliance function, and the split moved it to `ManageCompliance` so a compliance officer no longer needs user administration to do their own job. The grant is correct; the missing scope is the gap.
+- **Current security boundary (documented, relied upon):** the same one SEC-005, SEC-006 and SEC-007 rest on — one company per deployment, `TenantId == CompanyId`. In a single-company deployment every approval request in the store belongs to the only company, so there is no foreign request to decide.
+- **Required code/tests to close:**
+  - Stamp the resolved tenant/company onto `ComplianceApprovalRequestRecord` when the request is created (server-resolved, never body-supplied), with the same additive/legacy treatment SEC-006 needs for its hash-linked chain.
+  - Resolve the caller's scope in `RecordDecision` and treat a request outside it as not found, so the route cannot be used to probe which ids exist.
+  - Regression test proving a company-A operator deciding a company-B request is refused, and that an unstamped legacy request still resolves for its own deployment.
+- **Owner:** `@platform-security` + `@fund-operations`.
+- **Target date:** **gated on a multi-tenant deployment decision** (as SEC-005).
+- **Done evidence:** PR adding the tenant stamp and the scope check in `RecordDecision`, with tests; threat-model update reclassifying the residual.
+
 ## Threat-model traceability
 
 | Backlog ID | Threat-model section | Threat-model source lines | Residual concern excerpt |

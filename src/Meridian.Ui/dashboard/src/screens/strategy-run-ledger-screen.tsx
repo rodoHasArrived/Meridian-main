@@ -321,6 +321,45 @@ export function StrategyRunLedgerScreen() {
             )}
           </CardContent>
         </Card>
+        {/*
+          Moved with the run ledger rather than dropped. The trial balance above renders one basis
+          at a time, so without this the per-account difference between Primary and the run's other
+          projection has nowhere to be read — and the move out of Accounting removed its only
+          renderer while leaving the view state building it.
+        */}
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle>{trialBalanceView.basisBridge.title}</CardTitle>
+            <CardDescription>{trialBalanceView.basisBridge.description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div role="region" aria-label={trialBalanceView.basisBridge.tableLabel}>
+              {trialBalanceView.basisBridge.hasRows ? (
+                <div className="space-y-2">
+                  {trialBalanceView.basisBridge.rows.map((row) => (
+                    <div key={row.rowId} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2" aria-label={row.ariaLabel}>
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-semibold text-foreground">{row.accountLabel}</span>
+                          <span className="mt-1 block text-xs text-muted-foreground">{row.sourceLabel}</span>
+                        </span>
+                        <Badge variant={row.varianceTone}>{row.varianceLabel}</Badge>
+                      </div>
+                      <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                        <span className="font-mono tabular-nums">Primary {row.primaryBalanceLabel}</span>
+                        <span className="font-mono tabular-nums">{row.comparisonBalanceLabel}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm leading-6 text-muted-foreground">
+                  {trialBalanceView.basisBridge.emptyText}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle>{journalEvidence.title}</CardTitle>
