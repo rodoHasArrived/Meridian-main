@@ -481,6 +481,16 @@ public static class WorkstationServiceCollectionExtensions
                 exposureProvider,
                 () => runtime.PriceCollarThresholds,
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.PriceCollarRule>>()));
+            // Directly behind the parent price bands (Priority -8): bracket take-profit/stop-loss
+            // child prices ride in metadata past both parent price rules, so this focused rule
+            // runs the same fat-finger band over each child limb before dispatch. Price sanity
+            // only — the limbs reserve no notional or exposure capacity (one-executes exit legs
+            // close the parent's position; see the rule's remarks), and reservation-aware OCO
+            // arithmetic remains future work.
+            rules.Add(new Meridian.Risk.Rules.BracketChildLimbRule(
+                exposureProvider,
+                () => runtime.FatFingerThresholds,
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.BracketChildLimbRule>>()));
             rules.Add(new Meridian.Risk.Rules.GrossExposureRule(
                 exposureProvider,
                 () => runtime.MaxGrossExposure,
