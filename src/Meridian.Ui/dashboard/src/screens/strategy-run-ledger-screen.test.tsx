@@ -97,4 +97,35 @@ describe("StrategyRunLedgerScreen", () => {
 
     expect(await screen.findByRole("alert")).toBeInTheDocument();
   });
+  it("offers the explorer's runs as a selector so the nav entry is not a dead end", async () => {
+    // The Strategy nav links here with no runId. Without an in-screen selector the operator
+    // would land on the "select a run" prompt with no way to select one.
+    vi.mocked(api.getFinancialRecordExplorer).mockResolvedValue({
+      explorerId: "ledger",
+      title: "Ledger",
+      description: "",
+      sourceState: "Ready",
+      isBlocked: false,
+      blockedReason: "",
+      scopeItems: [],
+      savedViews: [],
+      summaryItems: [],
+      filters: [],
+      columns: [],
+      rows: [
+        { recordId: "run-42", recordType: "LedgerRun", label: "Run 42", source: "", status: "", tone: "neutral", cells: [], detail: null },
+        { recordId: "run-43", recordType: "LedgerRun", label: "Run 43", source: "", status: "", tone: "neutral", cells: [], detail: null }
+      ],
+      selectedRecord: null,
+      proofActions: [],
+      recordGraph: { nodes: [], edges: [] }
+    } as never);
+
+    await renderRunLedger();
+
+    const selector = await screen.findByLabelText("Strategy run", { selector: "select" });
+    expect(selector).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Run 42" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Run 43" })).toBeInTheDocument();
+  });
 });

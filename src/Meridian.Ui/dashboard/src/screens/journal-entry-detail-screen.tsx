@@ -9,6 +9,8 @@ import { ScreenLayout } from "@/components/ui/screen-layout";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { getManualJournalEntryWorkbench, getRunLedgerJournal } from "@/lib/api";
+import { getLedgerPeriodJournalEntries } from "@/lib/ledger-reports-api";
+import { toLedgerJournalLine } from "@/screens/accounting-screen.posted-ledger.view-model";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { buildJournalEntryDetailViewState } from "@/screens/journal-entry-detail-screen.view-model";
@@ -18,6 +20,10 @@ export function JournalEntryDetailScreen() {
   const [searchParams] = useSearchParams();
   const journalEntryId = searchParams.get("journalEntryId") ?? "";
   const runId = searchParams.get("runId");
+  // Trial Balance links posted entries with ?periodId=. Those live in the governed journal, not
+  // in the manual workbench and not in any strategy run, so without this the fund's own postings
+  // were the one kind of entry this screen could not open.
+  const periodId = searchParams.get("periodId");
 
   const [draft, setDraft] = useState<ManualJournalEntryDraft | null>(null);
   const [journalLine, setJournalLine] = useState<LedgerJournalLine | null>(null);
@@ -47,12 +53,25 @@ export function JournalEntryDetailScreen() {
         const matchedDraft = workbench.drafts.find((candidate) => candidate.journalEntryId === journalEntryId) ?? null;
         setDraft(matchedDraft);
 
-        if (matchedDraft || !runId) {
+        if (matchedDraft) {
           setLoading(false);
           return;
         }
 
-        return getRunLedgerJournal(runId)
+        // A period scope means the posted journal is the authority; a run scope means the
+        // simulation's. They are different books, so never fall back from one to the other.
+        const lookup = periodId
+          ? getLedgerPeriodJournalEntries(periodId).then((entries) => entries.map(toLedgerJournalLine))
+          : runId
+            ? getRunLedgerJournal(runId)
+            : null;
+
+        if (!lookup) {
+          setLoading(false);
+          return;
+        }
+
+        return lookup
           .then((lines) => {
             if (!cancelled) {
               setJournalLine(lines.find((line) => line.journalEntryId === journalEntryId) ?? null);
@@ -76,7 +95,7 @@ export function JournalEntryDetailScreen() {
     return () => {
       cancelled = true;
     };
-  }, [journalEntryId, reloadVersion, runId]);
+  }, [journalEntryId, periodId, reloadVersion, runId]);
 
   if (!journalEntryId) {
     return (

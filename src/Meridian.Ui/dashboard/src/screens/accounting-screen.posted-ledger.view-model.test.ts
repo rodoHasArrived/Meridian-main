@@ -272,4 +272,44 @@ describe("useAccountingPostedLedgerViewModel", () => {
     });
     expect(result.current.view.periodSelector.options.find((option) => option.isSelected)?.id).toBe(older.periodId);
   });
+
+  it("clears the outgoing period's figures rather than relabelling them as the new period", async () => {
+    const closed = makePeriod();
+    const older = makePeriod({
+      periodId: "00000000-0000-0000-0000-000000000002",
+      periodNo: 6,
+      label: "June 2026"
+    });
+    // The second period's request never settles, standing in for a slow or hung response. The
+    // period label and scope switch the moment the selection changes, so any retained rows would
+    // be July's balances presented as June's — and stay that way.
+    const getTrialBalance = vi.fn()
+      .mockResolvedValueOnce([makeLine()])
+      .mockImplementationOnce(() => new Promise(() => {}));
+    const getJournalEntries = vi.fn()
+      .mockResolvedValueOnce([])
+      .mockImplementationOnce(() => new Promise(() => {}));
+    const services = makeServices({
+      getPeriods: vi.fn().mockResolvedValue([closed, older]),
+      getTrialBalance,
+      getJournalEntries
+    });
+    const { result } = renderHook(() => useAccountingPostedLedgerViewModel("ledger", services));
+
+    await waitFor(() => {
+      expect(result.current.view.trialBalance.hasRows).toBe(true);
+    });
+
+    act(() => {
+      result.current.selectPeriod(older.periodId);
+    });
+
+    await waitFor(() => {
+      expect(getTrialBalance).toHaveBeenCalledWith(older.periodId);
+    });
+
+    expect(result.current.view.trialBalance.hasRows).toBe(false);
+    expect(result.current.view.trialBalance.state).toBe("loading");
+    expect(result.current.journalLines).toHaveLength(0);
+  });
 });

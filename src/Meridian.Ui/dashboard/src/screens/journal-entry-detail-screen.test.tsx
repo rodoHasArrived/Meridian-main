@@ -1,5 +1,6 @@
 import { screen } from "@testing-library/react";
 import * as api from "@/lib/api";
+import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import { JournalEntryDetailScreen } from "@/screens/journal-entry-detail-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type { LedgerJournalLine, ManualJournalEntryDraft, ManualJournalEntryWorkbench } from "@/types";
@@ -10,6 +11,14 @@ vi.mock("@/lib/api", async () => {
     ...actual,
     getManualJournalEntryWorkbench: vi.fn(),
     getRunLedgerJournal: vi.fn()
+  };
+});
+
+vi.mock("@/lib/ledger-reports-api", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/ledger-reports-api")>("@/lib/ledger-reports-api");
+  return {
+    ...actual,
+    getLedgerPeriodJournalEntries: vi.fn()
   };
 });
 
@@ -171,6 +180,31 @@ describe("JournalEntryDetailScreen", () => {
     await renderScreen("/accounting/journal-entries/detail?journalEntryId=unknown-je");
 
     expect(await screen.findByRole("heading", { name: "Journal entry not found" })).toBeInTheDocument();
+    expect(api.getRunLedgerJournal).not.toHaveBeenCalled();
+  });
+  it("resolves a posted entry through the period journal when the link carries a periodId", async () => {
+    // Trial Balance links posted entries by period. Before this the screen only knew the manual
+    // workbench and strategy runs, so the fund's own postings always read as "not found".
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(workbench);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValueOnce([
+      {
+        journalEntryId: "je-posted-1",
+        timestamp: "2026-06-30T00:00:00Z",
+        description: "Posted close entry",
+        totalDebits: 500,
+        totalCredits: 500,
+        lines: [],
+        dimensions: null
+      }
+    ] as never);
+
+    await renderScreen("/accounting/journal-entries/detail?journalEntryId=je-posted-1&periodId=period-7");
+
+    expect(await screen.findByRole("heading", { name: "Posting summary" })).toBeInTheDocument();
+    expect(ledgerReportsApi.getLedgerPeriodJournalEntries).toHaveBeenCalledWith("period-7");
+    expect(screen.queryByRole("heading", { name: "Journal entry not found" })).not.toBeInTheDocument();
+    // The posted journal and a strategy run are different books; a period scope must never
+    // fall back to the run ledger.
     expect(api.getRunLedgerJournal).not.toHaveBeenCalled();
   });
 });

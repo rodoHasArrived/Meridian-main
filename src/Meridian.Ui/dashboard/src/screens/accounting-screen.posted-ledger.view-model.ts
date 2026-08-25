@@ -458,6 +458,12 @@ export function useAccountingPostedLedgerViewModel(
     }
 
     let cancelled = false;
+    // Drop the outgoing period's figures before requesting the new one. The period label and
+    // scope re-render from selectedPeriodId immediately, and the trial-balance view state counts
+    // retained rows as "ready" even while loading, so keeping them would present one period's
+    // balances under another period's name — indefinitely if the request never settles.
+    setTrialBalanceRows([]);
+    setPnl(null);
     setTrialBalanceLoading(true);
     setTrialBalanceError(null);
     setPnlLoading(true);
@@ -531,6 +537,8 @@ export function useAccountingPostedLedgerViewModel(
     }
 
     let cancelled = false;
+    // Same reason as the trial balance above: these entries are the outgoing period's evidence.
+    setJournalLines([]);
     setJournalLoading(true);
     setJournalErrorText(null);
 

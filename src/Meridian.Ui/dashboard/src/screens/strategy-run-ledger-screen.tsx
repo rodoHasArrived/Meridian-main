@@ -6,6 +6,8 @@ import { TrialBalanceTable } from "@/components/accounting";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormRow } from "@/components/ui/form";
+import { Select } from "@/components/ui/select";
 import { getFinancialRecordExplorer, getRunLedgerJournal, getRunTrialBalance } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
@@ -25,7 +27,7 @@ import type { FinancialRecordExplorerDto, LedgerJournalLine, LedgerTrialBalanceL
  * ledger surface; run evidence belongs next to the runs that produced it.
  */
 export function StrategyRunLedgerScreen() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const runId = searchParams.get("runId")?.trim() || null;
 
   const [explorer, setExplorer] = useState<FinancialRecordExplorerDto | null>(null);
@@ -126,6 +128,28 @@ export function StrategyRunLedgerScreen() {
     [journalLines, runId]
   );
 
+  // The Strategy nav opens this screen with no ?runId=, and the screen deliberately requests
+  // nothing without one. Without a way to choose a run in-screen that is a dead end, so the
+  // explorer's own records — the ledger runs — become the selector.
+  const runOptions = useMemo(
+    () => (explorer?.rows ?? []).map((row) => ({
+      id: row.recordId,
+      label: row.label?.trim() || row.recordId
+    })),
+    [explorer]
+  );
+
+  function selectRun(nextRunId: string) {
+    const next = new URLSearchParams(searchParams);
+    if (nextRunId) {
+      next.set("runId", nextRunId);
+    } else {
+      next.delete("runId");
+    }
+
+    setSearchParams(next, { replace: true });
+  }
+
   return (
     <FinancialRecordExplorerShell
       explorerLabel="Financial Record Explorer"
@@ -145,6 +169,24 @@ export function StrategyRunLedgerScreen() {
       appliedFilters={[]}
       explorer={explorer}
     >
+      {runOptions.length > 0 ? (
+        <FormRow
+          label="Strategy run"
+          labelFor="strategy-run-ledger-run-select"
+          className="mb-4 w-full max-w-sm"
+        >
+          <Select
+            id="strategy-run-ledger-run-select"
+            value={runId ?? ""}
+            onChange={(event) => selectRun(event.target.value)}
+          >
+            <option value="">Select a run…</option>
+            {runOptions.map((option) => (
+              <option key={option.id} value={option.id}>{option.label}</option>
+            ))}
+          </Select>
+        </FormRow>
+      ) : null}
       <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <Card aria-labelledby="run-trial-balance-title" className="panel-surface">
           <CardHeader>
