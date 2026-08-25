@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { AccountTree, type AccountNode } from "@/components/accounting/AccountTree";
@@ -6,6 +6,8 @@ import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "
 import { TrialBalanceTable } from "@/components/accounting/TrialBalanceTable";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
+import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
+import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,9 +36,7 @@ type TrialBalanceViewMode = "table" | "hierarchy";
  * previously meant an unrelated request's failure blanked a book that had loaded fine.
  */
 export function TrialBalanceScreen() {
-  const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<TrialBalanceViewMode>("table");
-  const entityScope = "All entities";
   const ledgerBook = "Primary GL";
 
   // The trial balance is the fund's book of record, so it reads the posted journal by
@@ -44,36 +44,18 @@ export function TrialBalanceScreen() {
   // meant this screen — the one an operator reaches for "Accounting → Trial Balance" —
   // showed numbers that were never the fund's.
   // This screen renders the posted journal, so it is the consumer that asks for it.
-  const postedLedger = useAccountingPostedLedgerViewModel("ledger", undefined, { includeJournal: true });
+  const [routeSearchParams] = useSearchParams();
+  const postedLedger = useAccountingPostedLedgerViewModel(
+    "ledger",
+    undefined,
+    // Same reason as the journal tab: read from the URL here, not back from the route binding.
+    { includeJournal: true, requestedPeriodId: routeSearchParams.get("periodId") });
   const { journalLines, journalLoading, journalErrorText, selectedPeriodId, selectedPeriodLabel } = postedLedger;
   const periodOptions = postedLedger.view.periodSelector.options;
-  // Depend on the stable callback, never on the view-model object: the hook returns a fresh
-  // object every render, so an object dependency would re-run this effect forever.
-  const selectPeriod = postedLedger.selectPeriod;
 
-  // Apply each distinct ?periodId= exactly once. Comparing against current state instead
-  // would fight the view model whenever it declines a period that is not in the loaded set:
-  // it resets to the default, this effect re-applies the URL value, and neither settles.
-  const appliedPeriodIdRef = useRef<string | null>(null);
-  useEffect(() => {
-    const requestedPeriodId = searchParams.get("periodId");
-    if (!requestedPeriodId || requestedPeriodId === appliedPeriodIdRef.current) {
-      return;
-    }
-
-    appliedPeriodIdRef.current = requestedPeriodId;
-    selectPeriod(requestedPeriodId);
-  }, [searchParams, selectPeriod]);
-
-  useEffect(() => {
-    if (!selectedPeriodId || searchParams.get("periodId") === selectedPeriodId) {
-      return;
-    }
-
-    const nextParams = new URLSearchParams(searchParams);
-    nextParams.set("periodId", selectedPeriodId);
-    setSearchParams(nextParams, { replace: true });
-  }, [searchParams, selectedPeriodId, setSearchParams]);
+  // The book and period this surface shows travel in the URL, through the one binding both
+  // ledger tabs share.
+  usePostedLedgerRouteScope(postedLedger);
 
   const journalEvidence: AccountingLedgerJournalEvidenceViewState = useMemo(
     () => buildAccountingLedgerJournalEvidenceViewState({
@@ -84,9 +66,12 @@ export function TrialBalanceScreen() {
       // screen was repointed to end.
       scopeLabel: selectedPeriodLabel
         ? `the posted journal for period ${selectedPeriodLabel}`
-        : "the posted journal"
+        : "the posted journal",
+      // The trial balance on this same page is labelled in the book's base currency; without this
+      // its journal evidence labelled the same governed debits and credits in dollars.
+      currency: postedLedger.view.baseCurrency
     }),
-    [journalLines, selectedPeriodId, selectedPeriodLabel]
+    [journalLines, postedLedger.view.baseCurrency, selectedPeriodId, selectedPeriodLabel]
   );
 
   const treeNodes: AccountNode[] = useMemo(
@@ -204,7 +189,19 @@ export function TrialBalanceScreen() {
       ? new Intl.NumberFormat("en-US", { style: "currency", currency: postedCurrency }).format(value)
       : new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(value);
 
+  // The selected book names the fund-structure node it belongs to. Hard-coding "All entities"
+  // presented an entity-scoped governed balance as an all-entity one.
+  const entityScope = postedLedger.view.bookScopeLabel ?? "All entities";
   const trialBalanceScope = `${entityScope} · ${postedLedger.view.selectedBookLabel ?? ledgerBook} · ${selectedPeriodLabel ?? "No period selected"}`;
+
+  // Retained on the closed-period summary. Claiming none was kept asserted an evidence gap that
+  // is not there, and left freshness permanently "needs review" on a perfectly good period.
+  const periodCompletedAt = postedLedger.view.periodCompletedAt;
+  const freshness = postedLedger.view.trialBalance.state === "loading"
+    ? { value: "Loading", detail: undefined, tone: "review" as const }
+    : periodCompletedAt
+      ? { value: formatDateTimeLabel(periodCompletedAt), detail: "Closed-period summary completion retained with the posted journal.", tone: "ready" as const }
+      : { value: "Needs review", detail: "No trial-balance as-of timestamp was retained.", tone: "review" as const };
 
   return (
     <ScreenLayout
@@ -246,7 +243,7 @@ export function TrialBalanceScreen() {
       <OperationalTrustSummary
         source={{ value: "Posted journal", tone: postedLedger.view.trialBalance.state === "error" ? "blocked" : "ready" }}
         scope={{ value: selectedPeriodLabel ?? "No period selected", detail: selectedBasisLabel, tone: selectedPeriodId ? "ready" : "unknown" }}
-        freshness={{ value: postedLedger.view.trialBalance.state === "loading" ? "Loading" : "Needs review", detail: postedLedger.view.trialBalance.state === "loading" ? undefined : "No trial-balance as-of timestamp was retained.", tone: "review" }}
+        freshness={freshness}
         completeness={{ value: isTrialBalanceOutOfBalance ? `${postedLedger.view.trialBalance.filteredRowCountLabel} · out by ${formatPostedAmount(Math.abs(trialBalanceVariance))}` : postedLedger.view.trialBalance.filteredRowCountLabel, tone: postedLedger.view.trialBalance.hasRows && !isTrialBalanceOutOfBalance ? "ready" : "review" }}
         blocker={postedLedger.view.trialBalance.errorText
           ? { value: "Trial balance unavailable", detail: postedLedger.view.trialBalance.errorText, tone: "blocked" }

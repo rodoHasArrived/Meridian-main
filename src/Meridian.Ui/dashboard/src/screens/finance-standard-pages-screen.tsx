@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { formatCurrency } from "@/lib/format";
+import { formatCurrencyForCode } from "@/screens/accounting-screen.formatting";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +23,7 @@ import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
 import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
+import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
 import {
   buildTemplateRows,
   hasRetainedReportingAsOfDate,
@@ -419,10 +421,67 @@ const LEDGER_EXPLORER_TABS = [
 export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const view = searchParams.get("view") === "trial-balance" ? "trial-balance" : "ledger";
+
+  return (
+    <Tabs
+      tabs={LEDGER_EXPLORER_TABS}
+      value={view}
+      onValueChange={(nextView) => {
+        // Only `view` changes: ledgerBookId and periodId are the shared scope both tabs read.
+        const nextParams = new URLSearchParams(searchParams);
+        if (nextView === "ledger") {
+          nextParams.delete("view");
+        } else {
+          nextParams.set("view", nextView);
+        }
+        setSearchParams(nextParams, { replace: true });
+      }}
+    >
+      <TabPanel>
+        {/*
+          Always mounted, and idle unless it is the tab on screen. Held unconditionally live, its
+          posted-ledger hook duplicated every request TrialBalanceScreen already makes on the other
+          tab; unmounted instead, it lost the operator's chosen book and period every time they
+          looked at the trial balance and came back. `active` pauses the requests and keeps the
+          selection.
+        */}
+        <PostedLedgerJournalTab active={view === "ledger"} />
+      </TabPanel>
+      <TabPanel>
+        {view === "trial-balance" ? <TrialBalanceScreen /> : null}
+      </TabPanel>
+    </Tabs>
+  );
+}
+
+/** The Ledger tab's own body, so its requests belong to the tab that renders them. */
+function PostedLedgerJournalTab({ active }: { active: boolean }) {
   const [searchText, setSearchText] = useState("");
-  const postedLedger = useAccountingPostedLedgerViewModel("ledger", undefined, { includeJournal: true });
+  const [tabSearchParams] = useSearchParams();
+  const postedLedger = useAccountingPostedLedgerViewModel(
+    "ledger",
+    undefined,
+    {
+      includeJournal: true,
+      enabled: active,
+      // Read straight from the URL rather than back from the route binding below, so the hook has
+      // it in the same render: the binding runs after it, and a value fed back would arrive a
+      // render late.
+      requestedPeriodId: tabSearchParams.get("periodId")
+    });
+  // The same route binding the trial-balance tab uses, so the two tabs share one scope rather
+  // than holding two. This tab never wrote to the route before: selecting book B here and
+  // switching tabs showed A, and switching back showed B under a URL that said A. Only the tab
+  // on screen syncs — two active writers would race each other's edits.
+  usePostedLedgerRouteScope(postedLedger, active);
   const journalLines = postedLedger.journalLines;
   const loading = postedLedger.journalLoading;
+
+  const baseCurrency = postedLedger.view.baseCurrency;
+  // The trial balance on the sibling tab is labelled in the book's base currency; these are the
+  // same governed debits and credits, so they carry it too rather than defaulting to dollars.
+  const postedMoney = (value: number) =>
+    (baseCurrency ? formatCurrencyForCode(value, baseCurrency) : formatCurrency(value));
 
   const filteredRows = useMemo(() => {
     const needle = searchText.trim().toLowerCase();
@@ -434,28 +493,21 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
       line.description,
       line.accountScopeDisplayName,
       line.entityScopeDisplayName,
+      // The retained dimensions, not only the derived display names: an entry scoped to an entity
+      // or fund was otherwise impossible to find by the id it is actually tagged with.
+      line.dimensions?.entityId,
+      line.dimensions?.fundId,
       line.dimensions?.instrumentId,
       String(line.totalDebits),
       String(line.totalCredits)
     ].some((value) => String(value ?? "").toLowerCase().includes(needle)));
   }, [journalLines, searchText]);
 
+  if (!active) {
+    return null;
+  }
+
   return (
-    <Tabs
-      tabs={LEDGER_EXPLORER_TABS}
-      value={view}
-      onValueChange={(nextView) => {
-        const nextParams = new URLSearchParams(searchParams);
-        if (nextView === "ledger") {
-          nextParams.delete("view");
-        } else {
-          nextParams.set("view", nextView);
-        }
-        setSearchParams(nextParams, { replace: true });
-      }}
-    >
-      <TabPanel>
-        {view === "ledger" ? (
     <div className="space-y-4">
       <Card className="panel-surface">
         <CardHeader>
@@ -483,7 +535,14 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
               )) : <option value="">No ledger book available</option>}
             </Select>
           </FormRow>
-          <FormRow label="Ledger period" labelFor="ledger-period-select">
+          {/* The retained list survives a failed refresh so the period stays named, which leaves
+              the selector looking entirely normal. Without this the operator had no sign that
+              discovery failed, or that the list may be missing periods closed since. */}
+          <FormRow
+            label="Ledger period"
+            labelFor="ledger-period-select"
+            error={postedLedger.view.periodSelector.errorText}
+          >
             <Select
               id="ledger-period-select"
               value={postedLedger.selectedPeriodId ?? ""}
@@ -526,7 +585,6 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
                   <th className="px-3 py-2" scope="col">Entity</th>
                   <th className="px-3 py-2" scope="col">Source</th>
                   <th className="px-3 py-2" scope="col">Status</th>
-                  <th className="px-3 py-2" scope="col">Evidence status</th>
                 </tr>
               </thead>
               <tbody>
@@ -545,18 +603,25 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
                       </Link>
                     </td>
                     <td className="px-3 py-2">{line.accountScopeDisplayName ?? "Multiple accounts"}</td>
-                    <td className="px-3 py-2 text-right font-mono">{formatCurrency(line.totalDebits)}</td>
-                    <td className="px-3 py-2 text-right font-mono">{formatCurrency(line.totalCredits)}</td>
-                    <td className="px-3 py-2">{line.entityScopeDisplayName ?? "All entities"}</td>
+                    <td className="px-3 py-2 text-right font-mono">{postedMoney(line.totalDebits)}</td>
+                    <td className="px-3 py-2 text-right font-mono">{postedMoney(line.totalCredits)}</td>
+                    <td className="px-3 py-2">{line.entityScopeDisplayName ?? "Not scoped to one entity"}</td>
                     <td className="px-3 py-2">{line.description || "Ledger posting"}</td>
                     <td className="px-3 py-2">Posted</td>
-                    <td className="px-3 py-2">{line.lineCount > 0 ? "Linked" : "Needs evidence"}</td>
                   </tr>
                 )) : (
                   <tr>
-                    <td className="px-3 py-4 text-muted-foreground" colSpan={9}>
+                    <td className="px-3 py-4 text-muted-foreground" colSpan={8}>
+                      {/* "Create a ledger book and period" is an instruction, and it must not be
+                          given during an outage: the selector above reports the API error, so
+                          hard-coding emptiness here told the operator to create accounting data
+                          and showed the failure that caused it, at the same time. The view state
+                          already distinguishes these -- emptyText is null while loading or failed. */}
                       {postedLedger.view.periodSelector.options.length === 0
-                        ? "No ledger periods exist yet. Create a ledger book and period in Accounting → Configure to start the governed book."
+                        ? (postedLedger.view.periodSelector.errorText
+                          ?? postedLedger.view.periodSelector.loadingText
+                          ?? postedLedger.view.periodSelector.emptyText
+                          ?? "No ledger periods are available for this accounting scope.")
                         : "No posted entries match the current search."}
                     </td>
                   </tr>
@@ -576,12 +641,6 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
         </CardContent>
       </Card>
     </div>
-        ) : null}
-      </TabPanel>
-      <TabPanel>
-        {view === "trial-balance" ? <TrialBalanceScreen /> : null}
-      </TabPanel>
-    </Tabs>
   );
 }
 

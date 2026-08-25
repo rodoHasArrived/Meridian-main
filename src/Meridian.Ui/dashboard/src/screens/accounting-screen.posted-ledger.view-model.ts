@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getLedgerPeriodJournalEntries,
   getLedgerPeriodPnlSummary,
@@ -94,7 +94,31 @@ export function resolvePostedEntryDimensions(entry: LedgerPostedJournalEntry): L
  * Maps a posted journal entry onto the shared ledger-journal evidence row so the
  * posted book can reuse the journal-lineage panels the run-scoped ledger built.
  */
+/**
+ * The entity every one of an entry's lines was posted to, when they agree on one.
+ *
+ * Resolved on its own rather than from the whole-set match: a perfectly ordinary entry has a
+ * debit and a credit that share an entity but differ in another dimension — an account, most
+ * often — so requiring the complete sets to be equal reported "not scoped to one entity" for
+ * exactly the entries an operator most expects to see scoped.
+ */
+export function resolvePostedEntryEntityId(entry: LedgerPostedJournalEntry): string | null {
+  const lines = Array.isArray(entry.lines) ? entry.lines : [];
+  if (lines.length === 0) {
+    return null;
+  }
+
+  const first = lines[0].dimensions?.entityId?.trim() || null;
+  if (!first) {
+    return null;
+  }
+
+  return lines.every((line) => (line.dimensions?.entityId?.trim() || null) === first) ? first : null;
+}
+
 export function toLedgerJournalLine(entry: LedgerPostedJournalEntry): LedgerJournalLine {
+  const dimensions = resolvePostedEntryDimensions(entry);
+  const entityId = resolvePostedEntryEntityId(entry);
   return {
     journalEntryId: entry.journalEntryId,
     timestamp: entry.timestamp,
@@ -102,7 +126,12 @@ export function toLedgerJournalLine(entry: LedgerPostedJournalEntry): LedgerJour
     totalDebits: entry.totalDebits,
     totalCredits: entry.totalCredits,
     lineCount: Array.isArray(entry.lines) ? entry.lines.length : 0,
-    dimensions: resolvePostedEntryDimensions(entry)
+    dimensions,
+    // Derived, not left null: consumers fall back to "all entities" on a null scope, which is an
+    // affirmative claim about an entry that may be scoped to exactly one. Null here means the
+    // entry's lines do not agree on an entity, which is not the same as spanning all of them.
+    entityScopeId: entityId,
+    entityScopeDisplayName: entityId
   };
 }
 
@@ -196,6 +225,17 @@ export interface AccountingPostedLedgerViewState {
   bookOptions: PostedLedgerBookOption[];
   /** The selected book's base currency; posted amounts are in book units, not USD. */
   baseCurrency: string | null;
+  /**
+   * The fund-structure node the selected book is attached to. Dropping it left surfaces labelling
+   * an entity-scoped governed balance as an all-entity one.
+   */
+  bookScopeLabel: string | null;
+  /**
+   * When the selected period's closed summary completed. Retained on the P&L response, so a
+   * surface that claims no as-of timestamp was kept is asserting an evidence gap that is not
+   * there.
+   */
+  periodCompletedAt: string | null;
   trialBalance: AccountingTrialBalanceViewState;
   pnl: PostedLedgerPnlViewState;
 }
@@ -213,6 +253,78 @@ export interface AccountingPostedLedgerViewModel {
   journalErrorText: string | null;
   selectedPeriodId: string | null;
   selectedPeriodLabel: string | null;
+  /** True once the selected book's period request has come back successfully. */
+  periodsSettled: boolean;
+  /** True once the ledger books request has come back successfully. */
+  booksSettled: boolean;
+  /** True when the operator picked the current period by hand rather than it being held or defaulted. */
+  periodChosenByOperator: boolean;
+  /** Applies a period the shared route named, without recording it as an operator's choice. */
+  applyRoutePeriod: (periodId: string) => void;
+}
+
+/**
+ * Ledger books in the order both workstations present them: by display name, with a stable id
+ * tie-break.
+ *
+ * Mirrors <c>PostedLedgerProjection.SortBooks</c> exactly. Taking the store's own order here
+ * instead meant the browser's default book followed `fund_profile_id, display_name,
+ * ledger_book_id` while the desktop's followed display name alone, so in a multi-fund deployment
+ * the two co-equal views of the same governed ledger opened on different books — and therefore
+ * different periods and figures — for the same operator in the same session.
+ */
+export function sortLedgerBooks(books: readonly LedgerBook[]): LedgerBook[] {
+  const name = (book: LedgerBook) => book.displayName.trim() || book.ledgerBookId;
+  return [...books].sort((left, right) =>
+    compareOrdinalIgnoreCase(name(left), name(right))
+    || compareOrdinalIgnoreCase(left.ledgerBookId, right.ledgerBookId));
+}
+
+/**
+ * Ordinal, case-insensitive, locale-independent — the same decision
+ * <c>StringComparer.OrdinalIgnoreCase</c> makes on the desktop.
+ *
+ * `localeCompare` was not equivalent: it collates by the operator's locale, so two books named
+ * "Álpha" and "Zulu" can order differently in the browser than on the desktop, and differently
+ * for two operators in different locales. That would reintroduce the very divergence this
+ * ordering exists to remove — a locale-dependent default book, and therefore a locale-dependent
+ * default period and set of figures.
+ *
+ * The desktop's tie-break is `Guid.CompareTo`, which orders by .NET's Guid byte groups rather
+ * than by the textual form; the ids only decide between books whose display names are already
+ * equal, so the residual disagreement is confined to that case.
+ */
+function compareOrdinalIgnoreCase(left: string, right: string): number {
+  const upperLeft = toSimpleUpperCase(left);
+  const upperRight = toSimpleUpperCase(right);
+  return upperLeft < upperRight ? -1 : upperLeft > upperRight ? 1 : 0;
+}
+
+/**
+ * Simple, one-to-one uppercase folding — what <c>char.ToUpperInvariant</c> does, and what
+ * <c>StringComparer.OrdinalIgnoreCase</c> is built on.
+ *
+ * `String.prototype.toUpperCase()` is not that: it applies full Unicode case mapping, which
+ * expands some code units into several. "ß" becomes "SS", so a book named "ß Fund" folded equal
+ * to one named "SS Fund" and the browser fell through to the id tie-break while the desktop kept
+ * ordering them by their distinct names — the same cross-workstation divergence in default book
+ * and figures, one layer down. A code unit with no single-character uppercase is left as it is,
+ * which is exactly what the .NET mapping does.
+ */
+function toSimpleUpperCase(value: string): string {
+  let folded = "";
+  for (const codeUnit of value) {
+    const upper = codeUnit.toUpperCase();
+    folded += upper.length === codeUnit.length ? upper : codeUnit;
+  }
+
+  return folded;
+}
+
+/** Ledger ids travel as GUIDs, whose textual form is case-insensitive: the API and .NET `Guid`
+ * treat "AA…" and "aa…" as the same id, so a link written in upper case names the same period. */
+function periodIdsMatch(left: string, right: string): boolean {
+  return compareOrdinalIgnoreCase(left, right) === 0;
 }
 
 export function sortLedgerPeriodsDescending(periods: LedgerPeriod[]): LedgerPeriod[] {
@@ -455,6 +567,7 @@ export function buildAccountingPostedLedgerViewState({
   accountFilter,
   selectedBookLabel,
   baseCurrency,
+  bookScopeLabel = null,
   bookOptions
 }: {
   periods: LedgerPeriod[];
@@ -478,6 +591,7 @@ export function buildAccountingPostedLedgerViewState({
   selectedBookLabel: string | null;
   baseCurrency: string | null;
   bookOptions: PostedLedgerBookOption[];
+  bookScopeLabel?: string | null;
 }): AccountingPostedLedgerViewState {
   const selectedPeriod = periods.find((period) => period.periodId === selectedPeriodId) ?? null;
   const periodLabel = selectedPeriod
@@ -536,6 +650,8 @@ export function buildAccountingPostedLedgerViewState({
     selectedBookLabel,
     bookOptions,
     baseCurrency,
+    bookScopeLabel,
+    periodCompletedAt: pnl?.completedAt ?? null,
     trialBalance,
     pnl: buildPostedLedgerPnlViewState({
       pnl,
@@ -555,7 +671,20 @@ export function useAccountingPostedLedgerViewModel(
   // Opt-in because the journal is the one request here whose cost scales with the size of the
   // book: a production month's posted entries are returned in full. Only a consumer that renders
   // them should pay for them. AccountingPostedLedgerSection does not, so it does not ask.
-  { includeJournal = false }: { includeJournal?: boolean } = {}
+  //
+  // `enabled` pauses every request while retaining the selection. A consumer that unmounts to stop
+  // requesting loses the operator's chosen book and period with it; one that stays mounted and
+  // sets this keeps them.
+  //
+  // `requestedPeriodId` is the period the shared route names, read from the URL by the consumer.
+  // Passed in rather than read here so this stays a headless hook, and so the value is available
+  // in the same render the hook runs -- a consumer that fed it back from a later hook would be one
+  // render behind, which is the whole class of bug this scoping has already produced twice.
+  {
+    includeJournal = false,
+    enabled = true,
+    requestedPeriodId = null
+  }: { includeJournal?: boolean; enabled?: boolean; requestedPeriodId?: string | null } = {}
 ): AccountingPostedLedgerViewModel {
   const [books, setBooks] = useState<LedgerBook[]>([]);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
@@ -564,6 +693,49 @@ export function useAccountingPostedLedgerViewModel(
   // selector reporting "no ledger periods exist yet -- create a ledger book" while the books
   // request was still in flight: an instruction to create accounting data, during a load.
   const [booksLoading, setBooksLoading] = useState(false);
+  // Whether a successful books response has landed. Same distinction the period settlement makes,
+  // for the same reason: an empty book list left by an outage says nothing about what this
+  // deployment holds, and acting on it as though it did destroys the operator's link.
+  const [booksSettled, setBooksSettled] = useState(false);
+  // Whether the operator has chosen the current period by hand since this surface last had an
+  // answer of its own about what the book holds. A retained tab's cached options stay selectable
+  // through a failed refresh, so a choice made from them is real -- and has to reach the shared
+  // route even though nothing has settled. Distinct from merely still HOLDING a period, which is
+  // what must not be published.
+  const [periodChosenByOperator, setPeriodChosenByOperator] = useState(false);
+  // Which book's period request has finished SUCCESSFULLY. A caller cannot tell "no periods yet"
+  // from "no periods at all" by watching the loading flags: between books landing and the period
+  // effect setting its own flag there is a render where nothing is loading and the list is still
+  // empty. Only a successful response settles the question -- a failure leaves it open, because
+  // an empty list from an outage means nothing about what the book holds.
+  const [periodsLoadedForBookId, setPeriodsLoadedForBookId] = useState<string | null>(null);
+  // A tab that stays mounted while idle keeps its last successful period response. On the way back
+  // it refreshes -- and until that response lands, its cached list is not an authority on what the
+  // book holds: a sibling tab may have selected a period closed since. Left marked settled, route
+  // resolution judged the sibling's period against the stale list, rejected it, and wrote the old
+  // one back before the new response arrived.
+  //
+  // Reset during render rather than in an effect. Route resolution reads `periodsSettled` in the
+  // very commit `enabled` flips, and an effect's write lands one render too late to stop it.
+  // Which book the periods currently held came from -- deliberately distinct from the settlement
+  // marker above. A list can be correctly LABELLED (this book's, from the last good response)
+  // without being an AUTHORITY on what the book holds right now. A ref because it is read only
+  // inside the request callbacks below: never during render, and never as an effect dependency.
+  const periodsBookIdRef = useRef<string | null>(null);
+  const [settledWhileEnabled, setSettledWhileEnabled] = useState(enabled);
+  if (settledWhileEnabled !== enabled) {
+    setSettledWhileEnabled(enabled);
+    setPeriodsLoadedForBookId(null);
+    // Books need the same reset, and for the same reason one level up: a sibling tab can add or
+    // remove a book while this one is idle, so the list this tab still holds is not an authority
+    // on what the deployment has until its own refresh lands. Left settled, route resolution
+    // judged the sibling's book against the stale list, called it absent, and wrote the old one
+    // back into the shared URL before getBooks returned.
+    setBooksSettled(false);
+    // The choice belonged to the last time this tab was on screen. Coming back it is holding a
+    // period again, not choosing one, and holding is not grounds to publish.
+    setPeriodChosenByOperator(false);
+  }
   const [periods, setPeriods] = useState<LedgerPeriod[]>([]);
   const [periodsLoading, setPeriodsLoading] = useState(false);
   const [periodsError, setPeriodsError] = useState<ApiErrorDisplay | null>(null);
@@ -583,6 +755,13 @@ export function useAccountingPostedLedgerViewModel(
   const [journalErrorText, setJournalErrorText] = useState<string | null>(null);
 
   /**
+   * Whether a successful response has established what the selected book holds. Only a success
+   * settles it: an empty list left by a failure says nothing about the book, and an empty list
+   * that HAS settled is the book answering that it holds no periods at all.
+   */
+  const periodsSettled = periodsLoadedForBookId !== null && periodsLoadedForBookId === selectedBookId;
+
+  /**
    * Drops everything that only means something within one ledger book. The book label and base
    * currency come off the selected book, so figures left behind after it goes render unlabelled
    * and read as belonging to whatever book is chosen next.
@@ -599,10 +778,29 @@ export function useAccountingPostedLedgerViewModel(
     setJournalLines([]);
     setJournalErrorText(null);
     setSelectedRowId(null);
+    setPeriodsLoadedForBookId(null);
+    setPeriodChosenByOperator(false);
+    periodsBookIdRef.current = null;
   }, []);
 
+  // Everything below the book -- the period selection, the figures, the entries -- means something
+  // only within one book, so a change of book has to drop it. That was the job of each path that
+  // changes the book, and one path forgot: when discovery finds the selected book gone it falls
+  // back to the first available WITHOUT clearing. The report and journal effects key off
+  // selectedPeriodId rather than selectedBookId, so the outgoing book's period survived and its
+  // figures reloaded under the fallback book's label and base currency.
+  //
+  // Made an invariant of the change itself rather than a duty of each caller, so the next path to
+  // move the book cannot forget. Render-phase for the same reason as the reset above: the report
+  // effects would otherwise read the outgoing selection in the commit the book changes.
+  const [scopedBookId, setScopedBookId] = useState<string | null>(null);
+  if (scopedBookId !== selectedBookId) {
+    setScopedBookId(selectedBookId);
+    clearBookScopedState();
+  }
+
   useEffect(() => {
-    if (workstream !== "ledger") {
+    if (workstream !== "ledger" || !enabled) {
       return;
     }
 
@@ -610,9 +808,11 @@ export function useAccountingPostedLedgerViewModel(
     setBooksErrorText(null);
     setBooksLoading(true);
     services.getBooks()
-      .then((rows) => {
+      .then((unsorted) => {
         if (cancelled) return;
+        const rows = sortLedgerBooks(unsorted);
         setBooks(rows);
+        setBooksSettled(true);
         if (rows.length === 0) {
           // No book means no scope for anything below, and the period effect will not run to
           // clear it.
@@ -629,6 +829,8 @@ export function useAccountingPostedLedgerViewModel(
       .catch((err) => {
         if (cancelled) return;
         setBooks([]);
+        // Deliberately not settled, so nothing downstream reads this empty list as an answer.
+        setBooksSettled(false);
         setSelectedBookId(null);
         // The previous book's periods, balances and P&L are book-scoped, and the label and base
         // currency that named them come off the selected book -- so leaving them rendered a book's
@@ -649,10 +851,16 @@ export function useAccountingPostedLedgerViewModel(
     return () => {
       cancelled = true;
     };
-  }, [clearBookScopedState, services, workstream]);
+  }, [clearBookScopedState, enabled, services, workstream]);
 
   useEffect(() => {
-    if (workstream !== "ledger" || selectedBookId === null) {
+    if (workstream !== "ledger" || !enabled || selectedBookId === null) {
+      // No book means no period request will run -- and nothing else will ever clear one that was
+      // in flight when the book went away, because cancellation suppresses its own `finally`. The
+      // selector then sat on its loading card forever, hiding the very book error that caused it.
+      // The error goes too: it belonged to a request for a book that is no longer selected.
+      setPeriodsLoading(false);
+      setPeriodsError(null);
       return;
     }
 
@@ -664,11 +872,28 @@ export function useAccountingPostedLedgerViewModel(
       .then((rows) => {
         if (!cancelled) {
           setPeriods(rows);
+          periodsBookIdRef.current = selectedBookId;
+          setPeriodsLoadedForBookId(selectedBookId);
         }
       })
       .catch((err) => {
         if (!cancelled) {
-          setPeriods([]);
+          // Emptying the list here was a misstatement during a partial outage. A returning tab
+          // whose period request fails while its journal request succeeds still holds a valid
+          // selection, so it rendered governed entries under a selector saying no period was
+          // available and a scope label naming none — posted entries with nothing saying which
+          // period they belong to. This book's last good list is still correctly labelled, so it
+          // stays; another book's leftovers would name the wrong scope, so those go.
+          if (periodsBookIdRef.current !== selectedBookId) {
+            setPeriods([]);
+            periodsBookIdRef.current = null;
+          }
+          // Deliberately not settled — separately from whether the list is retained above. A
+          // failed request is not an authoritative "this book has no periods": treating it as one
+          // let a deep link's period be judged invalid against an empty list, and the route
+          // write-back then dropped periodId from the URL — destroying the operator's bookmark
+          // over a transient 500. Left unsettled, the link stays pending and survives to be
+          // retried, and route resolution keeps waiting rather than trusting the retained list.
           setPeriodsError(describeApiError(err, "Ledger periods failed to load."));
         }
       })
@@ -681,13 +906,23 @@ export function useAccountingPostedLedgerViewModel(
     return () => {
       cancelled = true;
     };
-  }, [selectedBookId, services, workstream]);
+  }, [enabled, selectedBookId, services, workstream]);
 
   useEffect(() => {
     // Nothing to validate a selection against until the periods land. Resetting here would
     // clobber a caller-supplied selection (a deep link's ?periodId=) on the first render and
     // fight whoever re-applies it.
+    //
+    // A SETTLED empty list is not that case: it is the book answering that it holds no periods at
+    // all, so whatever is still selected does not exist. Left selected, a returning tab reloaded
+    // that period's figures and wrote it back into the shared route -- showing results for a
+    // period its own selector no longer offered, after a sibling had already established it was
+    // gone.
     if (periods.length === 0) {
+      if (periodsSettled && selectedPeriodId !== null) {
+        setSelectedPeriodId(null);
+        setSelectedRowId(null);
+      }
       return;
     }
 
@@ -698,10 +933,24 @@ export function useAccountingPostedLedgerViewModel(
     }
 
     setSelectedPeriodId(resolveDefaultPostedLedgerPeriodId(periods));
-  }, [periods, selectedPeriodId]);
+  }, [periods, periodsSettled, selectedPeriodId]);
+
+  // The shared route names a period this hook holds no answer for, and cannot get one: the list it
+  // has is a retained one that no successful response has replaced. Whatever is selected here is
+  // then NOT the scope the route asks for, so loading its figures put one period's balances and
+  // entries on screen while the URL named another -- a link that does not reproduce what it opens.
+  // Periods settling resolves it either way, so this only holds during an actual outage.
+  const routePeriodUnresolved = requestedPeriodId !== null
+    && selectedPeriodId !== null
+    && !periodIdsMatch(requestedPeriodId, selectedPeriodId)
+    && !periodsSettled
+    // A period the operator picked from the list in front of them is the scope on screen, so its
+    // figures load. Left suppressed, choosing a cached period during an outage showed that period
+    // in the selector and never loaded anything for it.
+    && !periodChosenByOperator;
 
   useEffect(() => {
-    if (!selectedPeriodId || workstream !== "ledger") {
+    if (!selectedPeriodId || workstream !== "ledger" || !enabled || routePeriodUnresolved) {
       setTrialBalanceRows([]);
       setTrialBalanceError(null);
       setTrialBalanceLoading(false);
@@ -786,10 +1035,10 @@ export function useAccountingPostedLedgerViewModel(
     return () => {
       cancelled = true;
     };
-  }, [selectedPeriodId, services, workstream]);
+  }, [enabled, routePeriodUnresolved, selectedPeriodId, services, workstream]);
 
   useEffect(() => {
-    if (!includeJournal || !selectedPeriodId || workstream !== "ledger") {
+    if (!includeJournal || !selectedPeriodId || workstream !== "ledger" || !enabled || routePeriodUnresolved) {
       setJournalLines([]);
       setJournalErrorText(null);
       setJournalLoading(false);
@@ -829,9 +1078,23 @@ export function useAccountingPostedLedgerViewModel(
     return () => {
       cancelled = true;
     };
-  }, [selectedPeriodId, services, workstream, includeJournal]);
+  }, [enabled, routePeriodUnresolved, selectedPeriodId, services, workstream, includeJournal]);
 
+  /** The operator picking a period. Records the choice, which is what lets it supersede a route
+   * request this surface cannot resolve. */
   const selectPeriod = useCallback((periodId: string) => {
+    setSelectedPeriodId(periodId);
+    setPeriodChosenByOperator(true);
+    setSelectedRowId(null);
+  }, []);
+
+  /**
+   * The route applying a period it named. Deliberately NOT recorded as a choice: it is the shared
+   * scope arriving, not the operator making one. Routed through selectPeriod, a link's own period
+   * counted as a pick and could then be published back over a newer period the route had moved to
+   * -- the exact overwrite the publish rule exists to prevent.
+   */
+  const applyRoutePeriod = useCallback((periodId: string) => {
     setSelectedPeriodId(periodId);
     setSelectedRowId(null);
   }, []);
@@ -852,6 +1115,15 @@ export function useAccountingPostedLedgerViewModel(
   );
   const selectedBookLabel = selectedBook ? (selectedBook.displayName.trim() || selectedBook.ledgerBookId) : null;
   const baseCurrency = selectedBook?.baseCurrency?.trim() || null;
+  // The book names the fund-structure node it belongs to. Surfaces that dropped it fell back to
+  // "All entities", which is an affirmative claim about a book scoped to exactly one.
+  // Named by the node the book is scoped to, not by its fund profile: an entity-scoped book under
+  // fund-alpha read as "Entity · fund-alpha", which names the fund while claiming to name the
+  // entity -- a wrong identity on the card an operator confirms a governed balance against.
+  const bookScopeLabel = selectedBook
+    ? [selectedBook.fundStructureNodeKind?.trim(), selectedBook.fundStructureNodeId?.trim()]
+      .filter(Boolean).join(" · ") || null
+    : null;
   const bookOptions = useMemo<PostedLedgerBookOption[]>(
     () => books.map((book) => ({
       id: book.ledgerBookId,
@@ -896,12 +1168,14 @@ export function useAccountingPostedLedgerViewModel(
       accountFilter,
       selectedBookLabel,
       baseCurrency,
+      bookScopeLabel,
       bookOptions
     }),
     [
       accountFilter,
       baseCurrency,
       bookOptions,
+      bookScopeLabel,
       booksErrorText,
       booksLoading,
       selectedBookLabel,
@@ -930,6 +1204,7 @@ export function useAccountingPostedLedgerViewModel(
     view,
     selectBook,
     selectPeriod,
+    applyRoutePeriod,
     selectBasis,
     updateAccountFilter,
     selectTrialBalanceRow: setSelectedRowId,
@@ -937,6 +1212,25 @@ export function useAccountingPostedLedgerViewModel(
     journalLoading,
     journalErrorText,
     selectedPeriodId,
-    selectedPeriodLabel
+    selectedPeriodLabel,
+    /**
+     * True once the selected book's period request has come back successfully. A deep link cannot
+     * tell an empty book from a still-loading one without this, and waiting on the loading flags
+     * alone leaves the request unresolved forever on a book that genuinely has no periods. A
+     * failed request does not settle it: an empty list from an outage says nothing about the book.
+     */
+    periodsSettled,
+    /**
+     * True once the books request has come back successfully. Book discovery gates every scope
+     * below it, so a consumer that writes the scope somewhere durable -- the URL -- has to be able
+     * to tell "this deployment has no books" from "the books request failed".
+     */
+    booksSettled,
+    /**
+     * True when the current period was picked by hand. A surface that publishes the scope to the
+     * URL needs to tell an operator's choice from a value this hook is merely still holding: the
+     * first must reach the shared route even with nothing settled, the second must not.
+     */
+    periodChosenByOperator
   };
 }

@@ -1844,45 +1844,17 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             _ => state.ToString()
         };
 
+    /// <summary>
+    /// Names a close posting's dimensional scope through the shared projection.
+    /// <para>
+    /// This used to enumerate the contract itself, and omitted customer, vendor and project — a
+    /// third copy of the same list, drifting from the other two. One definition now owns it.
+    /// </para>
+    /// </summary>
     private static string FormatClosePostingBalanceScope(LedgerDimensionSetDto? dimensions)
     {
-        if (dimensions is null)
-        {
-            return "No scoped dimensions returned";
-        }
-
-        var labels = new List<string>();
-        AddScopeLabel(labels, "Fund", dimensions.FundId);
-        AddScopeLabel(labels, "Entity", dimensions.EntityId);
-        AddScopeLabel(labels, "Sleeve", dimensions.SleeveId);
-        AddScopeLabel(labels, "Strategy", dimensions.StrategyId);
-        AddScopeLabel(labels, "Investor", dimensions.InvestorId);
-        AddScopeLabel(labels, "Capital account", dimensions.CapitalAccountId);
-        AddScopeLabel(labels, "Instrument", dimensions.InstrumentId?.ToString("D"));
-        AddScopeLabel(labels, "Position", dimensions.PositionId?.ToString("D"));
-        AddScopeLabel(labels, "Tax lot", dimensions.TaxLotId);
-        AddScopeLabel(labels, "Cost center", dimensions.CostCenterId);
-        AddScopeLabel(labels, "Counterparty", dimensions.CounterpartyId);
-        AddScopeLabel(labels, "Organization", dimensions.OrganizationId);
-        AddScopeLabel(labels, "Portfolio", dimensions.PortfolioId);
-        AddScopeLabel(labels, "Book", dimensions.BookId);
-        AddScopeLabel(labels, "Account", dimensions.AccountId);
-        foreach (var (key, value) in dimensions.ExternalGlDimensions.OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase))
-        {
-            AddScopeLabel(labels, $"External {key}", value);
-        }
-
-        return labels.Count == 0
-            ? "No scoped dimensions returned"
-            : string.Join(" | ", labels);
-    }
-
-    private static void AddScopeLabel(ICollection<string> labels, string label, string? value)
-    {
-        if (!string.IsNullOrWhiteSpace(value))
-        {
-            labels.Add($"{label}: {value.Trim()}");
-        }
+        var scope = PostedLedgerProjection.DescribeDimensionScope(dimensions, " | ");
+        return string.IsNullOrEmpty(scope) ? "No scoped dimensions returned" : scope;
     }
 
     private static AccountingWorkbenchRow BuildMaterialityPolicyRow(ClosePeriodPlanDto closePlan)
