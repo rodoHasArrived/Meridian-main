@@ -39,7 +39,7 @@ The single sharpest expression of it: **the two roles named for owning the fund'
 refused the screen that shows a trial balance.** `FundAccountant` and `Controller` hold the
 permissions for the *posted* book and are denied the Accounting screen's panel, which reads the
 *strategy run's* ledger and gates on `ViewStrategies`. Trading, Analysis, ReportingAnalyst and
-Executive see only that simulation book; Compliance sees neither. Admin, Developer and Accounting do
+Executive see only that strategy-run book; Compliance sees neither. Admin, Developer and Accounting do
 reach both — so the split is not clean, and calling the role sets "disjoint" (as an earlier draft of
 this line did) overstates a matrix that shows otherwise. The defect is a persona lockout at the
 centre of the accounting lane, not a partition. And the endpoint serving the posted book's trial
@@ -70,7 +70,7 @@ This is the headline finding. It has three independently verified parts that com
 > state**. (a) and (c) still stand: the run-scoped panel remains wired on `ViewStrategies`, which
 > `FundAccountant` and `Controller` do not hold. See the addendum at the end for the verified split.
 
-**(a) The screen reads the simulation ledger.** Accounting → Trial Balance binds to
+**(a) The screen reads the strategy-run ledger.** Accounting → Trial Balance binds to
 `getTrialBalance: (runId) => getRunTrialBalance(runId)`
 (`src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts:2940`), which calls
 `/api/workstation/runs/{runId}/ledger/trial-balance`
@@ -86,6 +86,15 @@ useEffect(() => {
 ```
 
 There is no path to a trial balance that is not scoped to a run.
+
+That run scope is **not simulation-only**, and the distinction matters for who is harmed.
+`StrategyRunReadService` serves "backtest, paper, and live history" (`:14-16`), `LoadRunsAsync`
+filters the Accounting reconciliation population by fund profile alone, with no run-mode predicate
+(`FundOperationsWorkspaceReadService.cs:796-812`), and live sessions persist as `BrokerLive`
+(`StrategyRunEntry.cs:138`). So when a live run is selected this panel shows a **live strategy-run
+subledger**, not a simulated book. The defect is therefore not "operators are shown fake numbers" —
+it is that the Accounting screen's only trial balance is scoped to a *strategy run* in any mode,
+while the posted journal that the fund's books actually close on has no screen at all.
 
 **(b) The posted book's trial balance has no client.** The governed reporting endpoints over the
 immutable journal — the very spine `W9-ASSET-010` and `V_ledger_030` were built to make
@@ -121,7 +130,7 @@ which is the computed expression `AdminPermissions & ~UserPermission.ManageUsers
 | ReadOnly (`:129-133`) | **no** | — | — |
 
 The interesting shape is not a single locked-out role but a **split**: the trading, analysis, and
-reporting roles reach only the simulation book; the two roles that own the fund's records reach only
+reporting roles reach only the strategy-run book; the two roles that own the fund's records reach only
 the posted book; and outside Admin, Developer, and Accounting no role can see both. The Fund
 Accountant — described in the role catalog as owning "fund-accounting evidence for assigned funds" —
 passes the workspace gate and is then refused the screen's trial balance. So is the Controller who
@@ -335,7 +344,7 @@ Largest dark groups (routes unreachable from either client):
 | Group | Dark | What is unreachable |
 | --- | --- | --- |
 | `/api/workstation` | 33 | assorted read models |
-| `/api/quality` | 27 | per-symbol and per-dimension drill-downs behind the wired dashboard |
+| `/api/quality` | 27 | history, statistics, ranked views, comparison and reports behind the wired dashboard and drill-down |
 | `/api/security-master` | 24 | — |
 | `/api/ledger` | 19 | period journal entries, posting-rule candidates, asset-accounting projections |
 | `/api/fund-structure` | 17 | — |
@@ -359,12 +368,24 @@ durability is uneven**, and any activation work has to fix that first: only `act
 — durable but mutable, not append-only; and access reviews are held in a plain
 `List<AccessReviewRecord>` (`AccessReviewService.cs:94-95`) that is empty after restart. Wiring a UI
 onto the approval and access-review routes as they stand would present retention and tamper-evidence
-the storage does not provide. The **data-quality** surface is different in kind: the aggregate
-`/api/quality/dashboard` *is* wired — the Data workspace renders its composite health, gap, anomaly,
-and completeness evidence through `data-screen.data-quality.view-model.ts` — while the 31 per-symbol
-and per-dimension drill-downs behind it have no consumer. So the operator can see that a symbol is
-unhealthy and cannot open the evidence that says why. That is a depth gap, not an invisible
-capability, and it should be scoped as one.
+the storage does not provide. The **data-quality** surface is different in kind, and narrower than an earlier draft of this
+section claimed. The aggregate `/api/quality/dashboard` is wired, *and so is the per-symbol
+drill-down*: the mounted `DataQualityRegion` expands each symbol into component scores with
+explanations, provider freshness, open gaps with remediation actions, and current issues
+(`data-screen.data-regions.tsx:236-359`), and WPF opens an equivalent panel through
+`DataQualityViewModel.ShowSymbolDrilldown` (`:298-320`). Both project from the composite payload —
+`data-screen.data-quality.view-model.ts` imports `getQualityDashboard` and nothing else. So an
+operator **can** already open the evidence for why a symbol is unhealthy; the earlier claim that they
+could not was wrong.
+
+What the 27 dark quality routes add is a different axis — **history, distribution, ranking,
+cross-provider comparison, and reporting**: `gaps/timeline/{symbol}`, `latency/{symbol}/histogram`,
+five `*/statistics` endpoints, the ranked cross-symbol views (`errors/top-symbols`,
+`completeness/low`, `health/unhealthy`, `latency/high`, `anomalies/stale`),
+`comparison/discrepancies`, and `reports/daily|weekly|export`. The composite carries *current state
+for one symbol*; nothing in it carries a trend, a distribution, a cross-symbol ranking, or an
+exportable report. That is the gap worth scoping, and scoping it as a missing drill-down would
+duplicate an operator path that already exists.
 
 *Caveat on the method, and it cuts one way:* this measures **reference**, not operator reach. A route
 counts as reached if any client-layer file names it — including a wrapper nothing calls. Three
@@ -385,7 +406,7 @@ grows. There is no evidence the ratio *has* grown — the corrected 29% matches 
 the apparent increase was an artifact of the broken scan. The gate's value is preventing future
 drift, not arresting an observed slide.
 
-## 7. The authoritative merge gate never compiles or tests the only supported platform
+## 7. The authoritative merge gate never compiles or tests the proposed support platform
 
 `CLAUDE.md` names `Meridian CI / quality-gate` the authoritative merge gate, and
 `build/ci/lane-manifest.json` confirms it is the sole required status check. It aggregates exactly
@@ -410,8 +431,13 @@ needs:
 </PropertyGroup>
 ```
 
-So the desktop workstation — a co-equal UI lane, and the client for the only platform ADR-019
-supports (Windows 11 x64) — compiles to an empty stub in the gate. **A change that breaks WPF
+So the desktop workstation — a co-equal UI lane, and the client for the platform ADR-019
+*proposes* as the v1 production envelope (Windows 11 x64) — compiles to an empty stub in the gate.
+That ADR is still **"Proposed (awaiting core-team sign-off)"** (`019-production-support-matrix-and-deployment-posture.md:3`),
+and its context records that no support declaration exists yet and that `PRD-000` blocks every
+supported production release until one is signed (`:11-14`) — so Windows is the *target*, not a
+ratified guarantee. The gating argument does not depend on the difference: whichever platform is
+ratified, the lane that compiles WPF is not the lane that blocks the merge. **A change that breaks WPF
 compilation merges green.**
 
 The desktop lane is not untested, and the gap is narrower than "no Windows tests": for changes
@@ -545,8 +571,9 @@ close-management product can tell.
    them can still break WPF. Also promote the bootstrap and role-authorization
    Integration suites into the required lane. (§7)
 7. **Surface the evidence that already exists — after checking each surface can bear the weight.**
-   31 quality drill-downs sit behind a dashboard that is already wired, so those are genuinely
-   cheap: the servers are done and the operator path exists to hang them from. The 8 compliance
+   27 quality routes carrying history, statistics, ranked views, comparison and reports sit behind
+   a dashboard *and* a per-symbol drill-down that are already wired, so those are genuinely cheap:
+   the servers are done and the operator path exists to hang them from. The 8 compliance
    endpoints are not cheap in the same way — exactly **one** route writes to the immutable audit log
    (`actions/evaluate`, via `auditLog.Append` at `ComplianceEndpoints.cs:61`); `audit/extract` and
    `controls/attestation` only read it (`GetAll`/`VerifyIntegrity`), approvals live in a rewritable
@@ -593,9 +620,11 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Eight rounds of automated review challenged **30 claims** across this document. Every one was checked
-against the code, **all 30 held**, and the findings above are the corrected text. Recorded here
-because a review that demands evidence discipline owes the same discipline about its own errors.
+Nine rounds of automated review challenged **33 claims** across this document. Every one was checked
+against the code, **all 33 held**, and the findings above are the corrected text. A 34th — the
+quality-route count, wrong at 31 in three places — was caught by re-measuring rather than by a
+reviewer, and is recorded with them. Noted here because a review that demands evidence discipline
+owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
 while the table below it grew to seven. The section documenting a failure to keep dependent text in
@@ -611,7 +640,7 @@ careful.
 | `Developer` marked as lacking `ViewStrategies` | `DeveloperPermissions` is the computed expression `AdminPermissions & ~ManageUsers` (`RolePermissions.cs:39-40`); the first pass parsed only `\|`-joined literals and mis-read it | §1(c) |
 | "A fixed-income position restores at 100× its cash" | `ExecutionReport.UsesFaceValuePercentageOfPar` is a persisted field and `ApplyFill` reads it off the record (`PaperTradingPortfolio.cs:469`); percent-of-par survives restore. Only the multiplier defect is real | §3 |
 | Missing multiplier corrupts "realized P&L, drawdown, Sharpe, commission ratio" | Those derive from equity observations and an independent commission accumulator, not from the fill cash flow. The corruption is trade-level | §4 |
-| "The operator sees none of" the data-quality surface | `/api/quality/dashboard` is wired into the Data workspace; the 31 drill-downs behind it are what lack consumers | §6 |
+| "The operator sees none of" the data-quality surface | `/api/quality/dashboard` is wired into the Data workspace; 27 routes behind it are what lack consumers | §6 |
 | "`windows-desktop-build.yml` runs no `dotnet test`" | It runs `validate-wpf-dev.ps1` without `-BuildOnly`, which does run the WPF and supervisor suites. The defect is gating, not coverage | §7 |
 | "A truncated write means silent total state loss" | Saves go through `AtomicFileWriter.WriteAsync`, which prevents exactly that. The fail-quiet loader is still real; the scenario was not | §9 |
 
@@ -664,6 +693,24 @@ careful.
 | Claim | Why it was wrong | Corrected in |
 | --- | --- | --- |
 | "Equity is not 1/100 — cash is intact"; "Sharpe is distorted nonlinearly" | Only *initial* cash is intact. `ApplyBuy` deducts the same unscaled `notional` it books into the position (`:701-715`), so the legs are paired. Worked arithmetic: equity is **exactly correct at entry** and **overstated on losses**; net P&L and total return are **exactly 1/100**; and daily returns carry a *uniform* 1/100 factor, so **Sharpe cancels it and is approximately correct** in a pure-option book — distorted only in a mixed one | §4 — rewritten from the arithmetic |
+
+**Round 9 — three from review, one self-detected:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| The run trial balance is a "simulation ledger"/"simulation book" | `StrategyRunReadService` serves backtest, paper **and live** history (`:14-16`); the Accounting run population applies no mode filter (`FundOperationsWorkspaceReadService.cs:796-812`); live runs persist as `BrokerLive`. A live selection shows a live subledger | §1(a), §1(c), headline |
+| "The operator can see that a symbol is unhealthy and cannot open the evidence that says why" | The per-symbol drill-down *is* mounted in both clients (`data-screen.data-regions.tsx:236-359`; `DataQualityViewModel.ShowSymbolDrilldown:298-320`), projected from the composite payload. The real gap is history, distribution, ranking, comparison and reports | §6 — reframed |
+| Windows 11 x64 is "the only platform ADR-019 supports" | ADR-019 is **Proposed (awaiting core-team sign-off)** and records that no support declaration exists; `PRD-000` blocks supported release until it is signed. Windows is the proposed envelope, not a ratified one | §7 heading and body |
+| "31" quality drill-downs lack consumers (3 places) | Re-measuring under this document's own three-layer method gives **27**; the table in §6 already said 27, so the document contradicted itself. Self-detected while verifying the reframe above | §6, improvement #7, round-1 row |
+
+The round-9 measurement is worth one more note, because the first two attempts at it were both
+wrong and wrong in opposite directions. A scan that `re.escape`d route literals into `grep` turned
+every braced route (`/api/quality/latency/{symbol}`) into a BRE interval and reported 7 dark; a
+second scan that folded `Meridian.Ui.Shared` into the "client" corpus reported 0, because that
+project is where the 385 `app.Map*` registrations live — it is the **server**. Counting a route as
+reached because the server declares it would make every route reachable by construction. The
+document's original scan excluded it correctly; only this round's scratch check did not. Third
+attempt, restricted to the three genuine client layers, gives 27.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
