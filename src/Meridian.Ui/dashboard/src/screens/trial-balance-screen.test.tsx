@@ -182,9 +182,10 @@ describe("TrialBalanceScreen", () => {
     expect(ledgerReportsApi.getLedgerPeriodJournalEntries).toHaveBeenCalledWith(PERIOD_ID);
     expect(screen.getByText("Posted journal")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Trial balance scope" })).toBeInTheDocument();
-    // Derived from the selected book's fund-structure node. This asserted the hard-coded
-    // "All entities" — an affirmative claim about a book scoped to exactly one fund.
-    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("Fund · fund-alpha");
+    // The structure node the book is scoped to. This asserted the hard-coded "All entities" — an
+    // affirmative claim about a book scoped to exactly one node — and then, briefly, the book's
+    // fund profile, which names the fund even for an entity-scoped book.
+    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("Fund · 00000000-0000-0000-0000-0000000000bb");
     // The scope card names the book actually in scope, not a fixed "Primary GL": the card asks
     // operators to confirm the book before drill-through, so it must not label another book's
     // balances as the primary one.
@@ -283,7 +284,7 @@ describe("TrialBalanceScreen", () => {
 
     // The book is attached to a fund-structure node; "All entities" was an affirmative claim
     // about a book scoped to exactly one.
-    expect(screen.getAllByText((_, node) => (node?.textContent ?? "").includes("Fund · fund-alpha")).length)
+    expect(screen.getAllByText((_, node) => (node?.textContent ?? "").includes("Fund · 00000000-0000-0000-0000-0000000000bb")).length)
       .toBeGreaterThan(0);
   });
 

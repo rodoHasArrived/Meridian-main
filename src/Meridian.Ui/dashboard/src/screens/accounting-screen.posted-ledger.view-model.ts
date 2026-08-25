@@ -230,6 +230,8 @@ export interface AccountingPostedLedgerViewModel {
   journalErrorText: string | null;
   selectedPeriodId: string | null;
   selectedPeriodLabel: string | null;
+  /** True once the selected book's period request has finished, whatever it returned. */
+  periodsSettled: boolean;
 }
 
 /**
@@ -243,10 +245,30 @@ export interface AccountingPostedLedgerViewModel {
  * different periods and figures — for the same operator in the same session.
  */
 export function sortLedgerBooks(books: readonly LedgerBook[]): LedgerBook[] {
+  const name = (book: LedgerBook) => book.displayName.trim() || book.ledgerBookId;
   return [...books].sort((left, right) =>
-    (left.displayName.trim() || left.ledgerBookId)
-      .localeCompare(right.displayName.trim() || right.ledgerBookId, undefined, { sensitivity: "accent" })
-    || left.ledgerBookId.localeCompare(right.ledgerBookId));
+    compareOrdinalIgnoreCase(name(left), name(right))
+    || compareOrdinalIgnoreCase(left.ledgerBookId, right.ledgerBookId));
+}
+
+/**
+ * Ordinal, case-insensitive, locale-independent — the same decision
+ * <c>StringComparer.OrdinalIgnoreCase</c> makes on the desktop.
+ *
+ * `localeCompare` was not equivalent: it collates by the operator's locale, so two books named
+ * "Álpha" and "Zulu" can order differently in the browser than on the desktop, and differently
+ * for two operators in different locales. That would reintroduce the very divergence this
+ * ordering exists to remove — a locale-dependent default book, and therefore a locale-dependent
+ * default period and set of figures.
+ *
+ * The desktop's tie-break is `Guid.CompareTo`, which orders by .NET's Guid byte groups rather
+ * than by the textual form; the ids only decide between books whose display names are already
+ * equal, so the residual disagreement is confined to that case.
+ */
+function compareOrdinalIgnoreCase(left: string, right: string): number {
+  const upperLeft = left.toUpperCase();
+  const upperRight = right.toUpperCase();
+  return upperLeft < upperRight ? -1 : upperLeft > upperRight ? 1 : 0;
 }
 
 export function sortLedgerPeriodsDescending(periods: LedgerPeriod[]): LedgerPeriod[] {
@@ -593,7 +615,11 @@ export function useAccountingPostedLedgerViewModel(
   // Opt-in because the journal is the one request here whose cost scales with the size of the
   // book: a production month's posted entries are returned in full. Only a consumer that renders
   // them should pay for them. AccountingPostedLedgerSection does not, so it does not ask.
-  { includeJournal = false }: { includeJournal?: boolean } = {}
+  //
+  // `enabled` pauses every request while retaining the selection. A consumer that unmounts to stop
+  // requesting loses the operator's chosen book and period with it; one that stays mounted and
+  // sets this keeps them.
+  { includeJournal = false, enabled = true }: { includeJournal?: boolean; enabled?: boolean } = {}
 ): AccountingPostedLedgerViewModel {
   const [books, setBooks] = useState<LedgerBook[]>([]);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
@@ -602,6 +628,10 @@ export function useAccountingPostedLedgerViewModel(
   // selector reporting "no ledger periods exist yet -- create a ledger book" while the books
   // request was still in flight: an instruction to create accounting data, during a load.
   const [booksLoading, setBooksLoading] = useState(false);
+  // Which book's period request has actually finished. A caller cannot tell "no periods yet" from
+  // "no periods at all" by watching the loading flags: between books landing and the period effect
+  // setting its own flag there is a render where nothing is loading and the list is still empty.
+  const [periodsLoadedForBookId, setPeriodsLoadedForBookId] = useState<string | null>(null);
   const [periods, setPeriods] = useState<LedgerPeriod[]>([]);
   const [periodsLoading, setPeriodsLoading] = useState(false);
   const [periodsError, setPeriodsError] = useState<ApiErrorDisplay | null>(null);
@@ -637,10 +667,11 @@ export function useAccountingPostedLedgerViewModel(
     setJournalLines([]);
     setJournalErrorText(null);
     setSelectedRowId(null);
+    setPeriodsLoadedForBookId(null);
   }, []);
 
   useEffect(() => {
-    if (workstream !== "ledger") {
+    if (workstream !== "ledger" || !enabled) {
       return;
     }
 
@@ -688,10 +719,10 @@ export function useAccountingPostedLedgerViewModel(
     return () => {
       cancelled = true;
     };
-  }, [clearBookScopedState, services, workstream]);
+  }, [clearBookScopedState, enabled, services, workstream]);
 
   useEffect(() => {
-    if (workstream !== "ledger" || selectedBookId === null) {
+    if (workstream !== "ledger" || !enabled || selectedBookId === null) {
       return;
     }
 
@@ -703,11 +734,13 @@ export function useAccountingPostedLedgerViewModel(
       .then((rows) => {
         if (!cancelled) {
           setPeriods(rows);
+          setPeriodsLoadedForBookId(selectedBookId);
         }
       })
       .catch((err) => {
         if (!cancelled) {
           setPeriods([]);
+          setPeriodsLoadedForBookId(selectedBookId);
           setPeriodsError(describeApiError(err, "Ledger periods failed to load."));
         }
       })
@@ -720,7 +753,7 @@ export function useAccountingPostedLedgerViewModel(
     return () => {
       cancelled = true;
     };
-  }, [selectedBookId, services, workstream]);
+  }, [enabled, selectedBookId, services, workstream]);
 
   useEffect(() => {
     // Nothing to validate a selection against until the periods land. Resetting here would
@@ -740,7 +773,7 @@ export function useAccountingPostedLedgerViewModel(
   }, [periods, selectedPeriodId]);
 
   useEffect(() => {
-    if (!selectedPeriodId || workstream !== "ledger") {
+    if (!selectedPeriodId || workstream !== "ledger" || !enabled) {
       setTrialBalanceRows([]);
       setTrialBalanceError(null);
       setTrialBalanceLoading(false);
@@ -825,10 +858,10 @@ export function useAccountingPostedLedgerViewModel(
     return () => {
       cancelled = true;
     };
-  }, [selectedPeriodId, services, workstream]);
+  }, [enabled, selectedPeriodId, services, workstream]);
 
   useEffect(() => {
-    if (!includeJournal || !selectedPeriodId || workstream !== "ledger") {
+    if (!includeJournal || !selectedPeriodId || workstream !== "ledger" || !enabled) {
       setJournalLines([]);
       setJournalErrorText(null);
       setJournalLoading(false);
@@ -868,7 +901,7 @@ export function useAccountingPostedLedgerViewModel(
     return () => {
       cancelled = true;
     };
-  }, [selectedPeriodId, services, workstream, includeJournal]);
+  }, [enabled, selectedPeriodId, services, workstream, includeJournal]);
 
   const selectPeriod = useCallback((periodId: string) => {
     setSelectedPeriodId(periodId);
@@ -893,8 +926,11 @@ export function useAccountingPostedLedgerViewModel(
   const baseCurrency = selectedBook?.baseCurrency?.trim() || null;
   // The book names the fund-structure node it belongs to. Surfaces that dropped it fell back to
   // "All entities", which is an affirmative claim about a book scoped to exactly one.
+  // Named by the node the book is scoped to, not by its fund profile: an entity-scoped book under
+  // fund-alpha read as "Entity · fund-alpha", which names the fund while claiming to name the
+  // entity -- a wrong identity on the card an operator confirms a governed balance against.
   const bookScopeLabel = selectedBook
-    ? [selectedBook.fundStructureNodeKind?.trim(), selectedBook.fundProfileId?.trim()]
+    ? [selectedBook.fundStructureNodeKind?.trim(), selectedBook.fundStructureNodeId?.trim()]
       .filter(Boolean).join(" · ") || null
     : null;
   const bookOptions = useMemo<PostedLedgerBookOption[]>(
@@ -984,6 +1020,12 @@ export function useAccountingPostedLedgerViewModel(
     journalLoading,
     journalErrorText,
     selectedPeriodId,
-    selectedPeriodLabel
+    selectedPeriodLabel,
+    /**
+     * True once the selected book's period request has finished, whatever it returned. A deep link
+     * cannot tell an empty book from a still-loading one without this, and waiting on the loading
+     * flags alone leaves the request unresolved forever on a book that genuinely has no periods.
+     */
+    periodsSettled: periodsLoadedForBookId !== null && periodsLoadedForBookId === selectedBookId
   };
 }

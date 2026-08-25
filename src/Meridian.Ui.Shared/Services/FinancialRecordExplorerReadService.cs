@@ -270,7 +270,7 @@ public sealed partial class FinancialRecordExplorerReadService
                 .. BuildScope(run, ledger.AsOf, ledger.LedgerReference)
             ],
             BuildLedgerSummary(run, ledger, rows.Length),
-            BuildLedgerRunViews(candidates, run.RunId),
+            BuildLedgerRunViews(IncludeResolvedRun(candidates, run), run.RunId),
             BuildLedgerFilters(run, ledger),
             [
                 new("accountName", "Account", Width: 220),
@@ -775,6 +775,30 @@ public sealed partial class FinancialRecordExplorerReadService
         return await IsRunOwnedByScopeAsync(requested, fundScope, ct).ConfigureAwait(false)
             ? requested
             : null;
+    }
+
+    /// <summary>
+    /// The picker list, guaranteed to contain the run actually being displayed.
+    /// <para>
+    /// A run resolved from outside the bound is not in the candidate list, so no view carried its
+    /// filter and none was marked active. The client then fell back to the first candidate — a
+    /// newer run — and used that run's filter for the picker and for any link copied from it, so
+    /// an older run's rows were shown under a different run's identity. The requested run takes
+    /// the last slot rather than extending the list, keeping the picker bounded.
+    /// </para>
+    /// </summary>
+    private static IReadOnlyList<StrategyRunSummary> IncludeResolvedRun(
+        IReadOnlyList<StrategyRunSummary> candidates,
+        StrategyRunSummary resolved)
+    {
+        if (candidates.Any(run => string.Equals(run.RunId, resolved.RunId, StringComparison.OrdinalIgnoreCase)))
+        {
+            return candidates;
+        }
+
+        var bounded = candidates.Take(Math.Max(0, LedgerRunCandidateLimit - 1)).ToList();
+        bounded.Add(resolved);
+        return bounded;
     }
 
     /// <summary>

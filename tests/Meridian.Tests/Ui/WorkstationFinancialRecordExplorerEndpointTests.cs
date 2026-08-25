@@ -303,6 +303,17 @@ public sealed partial class WorkstationEndpointsTests
         explorer!.SavedViews.Should().HaveCountLessThanOrEqualTo(50, "the picker stays bounded");
         explorer.SourceState.Should().Contain("explorer-ledger-bounded-000");
         explorer.Rows.Should().OnlyContain(row => row.SourceRunId == "explorer-ledger-bounded-000");
+
+        // And the run being displayed owns the active view. Without it the client fell back to the
+        // first candidate -- a newer run -- so the picker and any link copied from it identified a
+        // different run than the rows on screen.
+        var activeRunId = explorer.SavedViews
+            .Where(view => view.IsActive)
+            .SelectMany(view => view.Filters)
+            .Where(filter => filter.FilterId == "run")
+            .Select(filter => filter.Value)
+            .ToList();
+        activeRunId.Should().ContainSingle().Which.Should().Be("explorer-ledger-bounded-000");
     }
 
     /// <summary>

@@ -437,12 +437,13 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
     >
       <TabPanel>
         {/*
-          Mounted only on its own tab. Held in this component unconditionally, its posted-ledger
-          hook stayed live while the trial-balance tab rendered TrialBalanceScreen -- which creates
-          its own -- so the tab issued two copies of book discovery, period discovery, trial
-          balance, P&L, and the full-period journal for a panel that was not on screen.
+          Always mounted, and idle unless it is the tab on screen. Held unconditionally live, its
+          posted-ledger hook duplicated every request TrialBalanceScreen already makes on the other
+          tab; unmounted instead, it lost the operator's chosen book and period every time they
+          looked at the trial balance and came back. `active` pauses the requests and keeps the
+          selection.
         */}
-        {view === "ledger" ? <PostedLedgerJournalTab /> : null}
+        <PostedLedgerJournalTab active={view === "ledger"} />
       </TabPanel>
       <TabPanel>
         {view === "trial-balance" ? <TrialBalanceScreen /> : null}
@@ -452,9 +453,12 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
 }
 
 /** The Ledger tab's own body, so its requests belong to the tab that renders them. */
-function PostedLedgerJournalTab() {
+function PostedLedgerJournalTab({ active }: { active: boolean }) {
   const [searchText, setSearchText] = useState("");
-  const postedLedger = useAccountingPostedLedgerViewModel("ledger", undefined, { includeJournal: true });
+  const postedLedger = useAccountingPostedLedgerViewModel(
+    "ledger",
+    undefined,
+    { includeJournal: true, enabled: active });
   const journalLines = postedLedger.journalLines;
   const loading = postedLedger.journalLoading;
 
@@ -483,6 +487,10 @@ function PostedLedgerJournalTab() {
       String(line.totalCredits)
     ].some((value) => String(value ?? "").toLowerCase().includes(needle)));
   }, [journalLines, searchText]);
+
+  if (!active) {
+    return null;
+  }
 
   return (
     <div className="space-y-4">

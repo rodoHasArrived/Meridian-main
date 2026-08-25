@@ -186,6 +186,28 @@ describe("sortLedgerBooks", () => {
     expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-a", "book-b", "book-z"]);
   });
 
+  it("collates ordinally, not by the operator's locale", () => {
+    // localeCompare collates by locale, so an accented name can order differently in the browser
+    // than under the desktop's StringComparer.OrdinalIgnoreCase -- and differently for two
+    // operators. That would reintroduce a locale-dependent default book.
+    const sorted = sortLedgerBooks([
+      makeBook({ ledgerBookId: "book-z", displayName: "Zulu Fund" }),
+      makeBook({ ledgerBookId: "book-a", displayName: "\u00C1lpha Fund" })
+    ]);
+
+    // "Á" (U+00C1) sorts after "Z" (U+005A) ordinally, whereas most locales collate it with "A".
+    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-z", "book-a"]);
+  });
+
+  it("ignores case, as the desktop comparator does", () => {
+    const sorted = sortLedgerBooks([
+      makeBook({ ledgerBookId: "book-b", displayName: "beta Fund" }),
+      makeBook({ ledgerBookId: "book-a", displayName: "Alpha Fund" })
+    ]);
+
+    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-a", "book-b"]);
+  });
+
   it("falls back to the id for a book with no display name", () => {
     const sorted = sortLedgerBooks([
       makeBook({ ledgerBookId: "zzz", displayName: "   " }),

@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import type { ReactElement } from "react";
 import * as api from "@/lib/api";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
@@ -438,6 +438,64 @@ describe("finance standard pages", () => {
     // spans every entity.
     expect(table).toHaveTextContent("entity-lux");
     expect(table).not.toHaveTextContent("All entities");
+  });
+
+  it("keeps the journal tab's selected book when the operator visits the trial balance", async () => {
+    // Mounting the tab conditionally stopped the duplicate requests but threw its hook state away,
+    // so a non-default book silently reverted to the first one on the way back. The tab stays
+    // mounted and idle instead.
+    mockPostedBook();
+    const FEEDER_BOOK_ID = "00000000-0000-0000-0000-0000000000cc";
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([
+      {
+        ledgerBookId: LEDGER_BOOK_ID,
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+        fundStructureNodeKind: "Fund",
+        displayName: "Alpha Master Fund",
+        baseCurrency: "USD",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
+        accountingBasis: "Primary",
+        accountingPolicyId: "legacy-v1",
+        accountingPolicyVersion: "legacy-v1"
+      },
+      {
+        ledgerBookId: FEEDER_BOOK_ID,
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+        fundStructureNodeKind: "Fund",
+        displayName: "Beta Feeder Fund",
+        baseCurrency: "EUR",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
+        accountingBasis: "Primary",
+        accountingPolicyId: "legacy-v1",
+        accountingPolicyVersion: "legacy-v1"
+      }
+    ] as never);
+
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+
+    // The trial-balance tab renders its own book selector under the same label, so target the
+    // journal tab's by id.
+    const journalBookSelect = () => document.getElementById("ledger-book-select") as HTMLSelectElement | null;
+
+    await waitForAsyncEffects();
+    expect(journalBookSelect()?.value).toBe(LEDGER_BOOK_ID);
+    fireEvent.change(journalBookSelect()!, { target: { value: FEEDER_BOOK_ID } });
+    await waitForAsyncEffects();
+    expect(journalBookSelect()?.value).toBe(FEEDER_BOOK_ID);
+
+    // Away to the trial balance and back, through the tabs themselves.
+    fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
+    await waitForAsyncEffects();
+    expect(journalBookSelect()).toBeNull();
+
+    fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
+    await waitForAsyncEffects();
+
+    expect(journalBookSelect()?.value).toBe(FEEDER_BOOK_ID);
   });
 
   it("offers no ledger filter it does not apply", async () => {

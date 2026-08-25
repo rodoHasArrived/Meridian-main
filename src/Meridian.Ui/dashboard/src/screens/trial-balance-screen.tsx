@@ -67,6 +67,7 @@ export function TrialBalanceScreen() {
 
   const appliedBookIdRef = useRef<string | null>(null);
   const appliedPeriodIdRef = useRef<string | null>(null);
+  const periodsSettled = postedLedger.periodsSettled;
 
   useEffect(() => {
     // Books have to have landed before a requested one can be judged present or absent.
@@ -92,7 +93,12 @@ export function TrialBalanceScreen() {
       return;
     }
 
-    if (periodOptions.length === 0) {
+    // Wait only while the periods are still arriving. A book that has finished loading with no
+    // periods at all is an answer, not a pending state: treating it as pending left the request
+    // permanently unresolved, so the write-back below never ran and the URL kept naming the empty
+    // book and its stale period even after the operator moved to a populated one — a copied or
+    // refreshed link then reopened the wrong scope.
+    if (!periodsSettled) {
       return;
     }
 
@@ -100,7 +106,7 @@ export function TrialBalanceScreen() {
     if (periodOptions.some((option) => option.id === requestedPeriodId)) {
       selectPeriod(requestedPeriodId);
     }
-  }, [periodOptions, requestedPeriodId, resolvedRequestedBookId, selectPeriod, selectedBookId]);
+  }, [periodOptions, periodsSettled, requestedPeriodId, resolvedRequestedBookId, selectPeriod, selectedBookId]);
 
   // The book goes into the URL with the period. Without it a link named a period but not the book
   // it belongs to, so reopening it resolved against whichever book sorts first.
@@ -111,7 +117,10 @@ export function TrialBalanceScreen() {
       return;
     }
 
-    const periodMatches = !selectedPeriodId || searchParams.get("periodId") === selectedPeriodId;
+    // Compared against what the URL actually says, in both directions: testing only
+    // "no selection means nothing to write" left a stale periodId in place for a book that has
+    // none, which is the case this has to clean up.
+    const periodMatches = searchParams.get("periodId") === (selectedPeriodId ?? null);
     const bookMatches = !selectedBookId || searchParams.get("ledgerBookId") === selectedBookId;
     if (periodMatches && bookMatches) {
       return;
@@ -123,6 +132,10 @@ export function TrialBalanceScreen() {
     }
     if (selectedPeriodId) {
       nextParams.set("periodId", selectedPeriodId);
+    } else {
+      // The book on screen has no period. Leaving the outgoing one in the URL would name a scope
+      // this screen is not showing.
+      nextParams.delete("periodId");
     }
     setSearchParams(nextParams, { replace: true });
   }, [requestedBookId, requestedPeriodId, searchParams, selectedBookId, selectedPeriodId, setSearchParams]);
