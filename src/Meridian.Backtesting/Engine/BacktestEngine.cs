@@ -106,7 +106,12 @@ public sealed class BacktestEngine(
         var startTimestamp = new DateTimeOffset(request.From.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var accounts = request.ResolveAccounts();
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp);
-        var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId);
+        var ctx = new BacktestContext(
+            portfolio,
+            universe,
+            ledger,
+            request.DefaultBrokerageAccountId,
+            commissionModel);
         var orderBookFillModel = new OrderBookFillModel(
             commissionModel,
             tickSizes,
@@ -523,12 +528,13 @@ public sealed class BacktestEngine(
             var acceptedFills = new List<FillEvent>(result.Fills.Count);
             var acceptedCandidateCount = 0;
             var proposedFilledQuantity = result.Fills.Sum(static fill => fill.FilledQuantity);
-            var fillOrKillHasCompleteProposal =
-                order.TimeInForce != TimeInForce.FillOrKill ||
+            var proposalRequiresAtomicCompletion =
+                !order.AllowPartialFills || order.TimeInForce == TimeInForce.FillOrKill;
+            var proposalIsComplete =
                 Math.Abs(proposedFilledQuantity) == order.RemainingQuantity;
 
-            if (!order.AllowPartialFills &&
-                fillOrKillHasCompleteProposal &&
+            if (proposalRequiresAtomicCompletion &&
+                proposalIsComplete &&
                 result.Fills.Count > 0)
             {
                 try

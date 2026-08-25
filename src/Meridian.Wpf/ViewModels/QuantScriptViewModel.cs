@@ -507,6 +507,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         var succeeded = true;
         var latestRuntimeParameters = Array.Empty<ParameterDescriptor>();
         var capturedBacktests = new List<BacktestResult>();
+        var accumulatedBacktestRuns = 0;
 
         try
         {
@@ -524,7 +525,12 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
                     ? await _runner.RunAsync(NormalizeNotebookCellSource(cell.Source), parameters, ct)
                     : await _runner.ContinueWithAsync(NormalizeNotebookCellSource(cell.Source), checkpoint, parameters, ct);
 
-                ApplyResult(result);
+                ApplyResult(result, accumulatedBacktestRuns);
+                accumulatedBacktestRuns += Math.Max(
+                    result.CapturedBacktests.Count,
+                    result.Trades.Count == 0
+                        ? 0
+                        : result.Trades.Max(static trade => trade.BacktestRunIndex) + 1);
 
                 if (result.RuntimeParameters.Count > 0)
                 {
@@ -601,7 +607,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         }
     }
 
-    private void ApplyResult(ScriptRunResult result)
+    private void ApplyResult(ScriptRunResult result, int backtestRunOffset = 0)
     {
         if (!string.IsNullOrEmpty(result.ConsoleOutput))
         {
@@ -637,7 +643,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             Charts.Add(new PlotViewModel(plot.Title, plot));
 
         if (result.CapturedBacktests.Count > 0)
-            ApplyCapturedBacktests(result.CapturedBacktests);
+            ApplyCapturedBacktests(result.CapturedBacktests, backtestRunOffset);
 
         foreach (var trade in result.Trades.OrderBy(static item => item.Timestamp))
         {
@@ -650,7 +656,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
                 trade.Side,
                 trade.FillId,
                 trade.OrderId,
-                trade.BacktestRunIndex));
+                trade.BacktestRunIndex + backtestRunOffset));
         }
 
         ActiveResultsTab = ResolvePreferredResultsTab();
@@ -663,12 +669,14 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         MemoryText = $"{result.PeakMemoryBytes / 1024.0:F0} KB";
     }
 
-    private void ApplyCapturedBacktests(IReadOnlyList<BacktestResult> backtests)
+    private void ApplyCapturedBacktests(IReadOnlyList<BacktestResult> backtests, int backtestRunOffset)
     {
         for (var index = 0; index < backtests.Count; index++)
         {
             var backtest = backtests[index];
-            var category = backtests.Count == 1 ? "Backtest" : $"Backtest {index + 1}";
+            var category = backtests.Count == 1 && backtestRunOffset == 0
+                ? "Backtest"
+                : $"Backtest {backtestRunOffset + index + 1}";
 
             AddOrUpdateMetric("Net PnL", backtest.Metrics.NetPnl.ToString("C2"), category, "Captured");
             AddOrUpdateMetric("Total Return", backtest.Metrics.TotalReturn.ToString("P2"), category, "Captured");

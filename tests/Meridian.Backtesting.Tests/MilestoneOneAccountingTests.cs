@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Metrics;
 using Meridian.Backtesting.Portfolio;
 
@@ -133,6 +134,39 @@ public sealed class MilestoneOneAccountingTests
         second.Amount.Should().Be(0m);
         third.Amount.Should().Be(0.50m);
         capped.Amount.Should().Be(0m);
+    }
+
+    [Fact]
+    public void PerShareCommission_Release_DropsTerminalOrderState()
+    {
+        var model = new PerShareCommissionModel(perShare: 0.005m, minimumPerOrder: 1m);
+        var orderId = Guid.NewGuid();
+        var first = model.Quote(orderId, "SPY", 100, 10m);
+        model.Commit(first);
+
+        model.Release(orderId);
+        var afterRelease = model.Quote(orderId, "SPY", 100, 10m);
+
+        afterRelease.Amount.Should().Be(1m,
+            "terminal-order state must no longer influence later accumulator lookups");
+    }
+
+    [Fact]
+    public void BacktestContext_CancelOrder_ReleasesCommissionState()
+    {
+        var commission = new TrackingCommissionModel();
+        var portfolio = new SimulatedPortfolio(10_000m, commission, 0.05, 0.02);
+        var context = new BacktestContext(
+            portfolio,
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "SPY" },
+            new BacktestLedger(),
+            BacktestDefaults.DefaultBrokerageAccountId,
+            commission);
+        var orderId = context.PlaceMarketOrder("SPY", 1L);
+
+        context.CancelOrder(orderId);
+
+        commission.ReleasedOrderIds.Should().ContainSingle().Which.Should().Be(orderId);
     }
 
     [Fact]
@@ -412,5 +446,14 @@ public sealed class MilestoneOneAccountingTests
     private sealed class LegacyCommissionModel : ICommissionModel
     {
         public decimal Calculate(string symbol, long quantity, decimal fillPrice) => 1.25m;
+    }
+
+    private sealed class TrackingCommissionModel : ICommissionModel
+    {
+        public List<Guid> ReleasedOrderIds { get; } = [];
+
+        public decimal Calculate(string symbol, long quantity, decimal fillPrice) => 0m;
+
+        public void Release(Guid orderId) => ReleasedOrderIds.Add(orderId);
     }
 }

@@ -443,6 +443,51 @@ public sealed class QuantScriptViewModelTests
     }
 
     [Fact]
+    public async Task RunAll_WithBacktestsInMultipleCells_OffsetsTradeRunNumbers()
+    {
+        var checkpoint = (ScriptExecutionCheckpoint)System.Runtime.CompilerServices.RuntimeHelpers
+            .GetUninitializedObject(typeof(ScriptExecutionCheckpoint));
+
+        ScriptRunResult ResultFor(string symbol, Guid fillId) => new(
+            Success: true,
+            Elapsed: TimeSpan.FromMilliseconds(50),
+            CompileTime: TimeSpan.FromMilliseconds(10),
+            PeakMemoryBytes: 0,
+            CompilationErrors: [],
+            RuntimeDiagnostics: [],
+            RuntimeError: null,
+            ConsoleOutput: string.Empty,
+            Metrics: [],
+            Plots: [],
+            Trades:
+            [
+                new ScriptTradeResult(
+                    DateTimeOffset.UtcNow,
+                    symbol,
+                    "Buy",
+                    1m,
+                    100m,
+                    0m,
+                    FillId: fillId,
+                    BacktestRunIndex: 0)
+            ],
+            CapturedBacktests: [],
+            RuntimeParameters: [],
+            Checkpoint: checkpoint);
+
+        var runner = new FakeScriptRunner().SetResults(
+            ResultFor("SPY", Guid.NewGuid()),
+            ResultFor("QQQ", Guid.NewGuid()));
+        var vm = CreateVm(runner: runner);
+        vm.NewNotebookCommand.Execute(null);
+        vm.AddCellCommand.Execute(null);
+
+        await vm.RunAllCommand.ExecuteAsync(null);
+
+        vm.Trades.Select(static trade => trade.BacktestRunNumber).Should().Equal(1, 2);
+    }
+
+    [Fact]
     public async Task RunScriptCommand_WithCompilerWarning_RendersWarningSeparately()
     {
         var runner = new FakeScriptRunner().SetResult(new ScriptRunResult(

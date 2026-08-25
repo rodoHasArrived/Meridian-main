@@ -94,7 +94,8 @@ Studio UX remains deferred.
   or results.
 - Commission models quote cumulative order economics before portfolio validation and commit state
   only after an accepted fill. Per-order minimums and maximums therefore apply once across partial
-  slices, while rejected fills do not consume commission state.
+  slices, while rejected fills do not consume commission state and terminal orders release their
+  accumulator entries.
 - Metrics use resolved account opening cash, external investor opening/terminal flows for XIRR, and
   a consistent 365-day calendar basis for snapshots, financing accruals, rolling metrics, and
   walk-forward aggregation. Internal trade, fee, interest, and corporate-action settlements remain

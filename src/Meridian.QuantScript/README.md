@@ -48,7 +48,8 @@ external side effects from earlier cells; notebook authors should keep setup cel
 ### Runtime contract correctness
 
 `BacktestProxy` maps its fill-model choice and typed execution, timing, liquidity, impact, slippage,
-and commission controls into the SDK `BacktestRequest`. A proxy instance rejects overlapping runs,
+and commission controls into the SDK `BacktestRequest`; negative slippage or market-impact costs
+fail closed. A proxy instance rejects overlapping runs,
 and its result-aware completion callback runs only after the matching `BacktestResult` exists.
 Trade projections preserve fill id, order id, and multi-backtest run index through in-process and
 worker execution.

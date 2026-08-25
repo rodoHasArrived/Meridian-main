@@ -95,6 +95,9 @@ public interface ICommissionModel
     /// </summary>
     void Commit(CommissionQuote quote) => ArgumentNullException.ThrowIfNull(quote);
 
+    /// <summary>Releases per-order accumulation after an order becomes terminal.</summary>
+    void Release(Guid orderId) { }
+
     /// <summary>
     /// Calculates a standalone single-fill commission for compatibility and diagnostics.
     /// This method does not read or mutate per-order accumulation state.
@@ -120,6 +123,8 @@ public sealed class FixedCommissionModel : ICommissionModel
         => _accumulator.QuoteBatch(orderId, fills);
 
     public void Commit(CommissionQuote quote) => _accumulator.Commit(quote);
+
+    public void Release(Guid orderId) => _accumulator.Release(orderId);
 
     public decimal Calculate(string symbol, long quantity, decimal fillPrice)
         => _accumulator.Calculate(quantity, fillPrice);
@@ -153,6 +158,8 @@ public sealed class PerShareCommissionModel : ICommissionModel
 
     public void Commit(CommissionQuote quote) => _accumulator.Commit(quote);
 
+    public void Release(Guid orderId) => _accumulator.Release(orderId);
+
     public decimal Calculate(string symbol, long quantity, decimal fillPrice)
         => _accumulator.Calculate(quantity, fillPrice);
 }
@@ -179,6 +186,8 @@ public sealed class PercentageCommissionModel : ICommissionModel
         => _accumulator.QuoteBatch(orderId, fills);
 
     public void Commit(CommissionQuote quote) => _accumulator.Commit(quote);
+
+    public void Release(Guid orderId) => _accumulator.Release(orderId);
 
     public decimal Calculate(string symbol, long quantity, decimal fillPrice)
         => _accumulator.Calculate(quantity, fillPrice);
@@ -267,6 +276,8 @@ internal sealed class CommissionAccumulator(Func<decimal, decimal, decimal> calc
             quote.CumulativeNotional,
             quote.CumulativeCommission);
     }
+
+    public void Release(Guid orderId) => _orders.Remove(orderId);
 
     public decimal Calculate(long quantity, decimal fillPrice)
     {

@@ -536,6 +536,35 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
     }
 
     [Fact]
+    public async Task RunAsync_FillOrKillCompleteProposal_WithDefaultPartialFlag_FillsAtomically()
+    {
+        WriteMultiLevelLobJsonl(
+            "SPY",
+            (new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero),
+                [(99m, 1_000L)],
+                [(100m, 1L), (101m, 1L)]));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(
+            request,
+            new SubmitOnceStrategy(new OrderRequest(
+                "SPY",
+                2L,
+                OrderType.Market,
+                TimeInForce: TimeInForce.FillOrKill,
+                ExecutionModel: ExecutionModel.OrderBook)));
+
+        result.Fills.Should().HaveCount(2);
+        result.Fills.Sum(static fill => fill.FilledQuantity).Should().Be(2L,
+            "FOK requires atomic handling even when AllowPartialFills retains its default value");
+    }
+
+    [Fact]
     public async Task RunAsync_NonPartialBatchRejectedOnLaterSlice_AcceptsNoSlices()
     {
         WriteMultiLevelLobJsonl(
@@ -572,6 +601,34 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         result.Snapshots.Should().ContainSingle();
         result.Snapshots[0].Accounts[BacktestDefaults.DefaultBrokerageAccountId]
             .Cash.Should().Be(150m);
+    }
+
+    [Fact]
+    public async Task RunAsync_NonPartialMarketImpactLimitProposalMustBeComplete()
+    {
+        WriteCustomBarJsonl(
+            "AAPL",
+            (new DateOnly(2024, 1, 2), 100m, 110m, 90m, 100m, 1_000));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(
+            request,
+            new SubmitOnceStrategy(new OrderRequest(
+                "AAPL",
+                500L,
+                OrderType.Limit,
+                LimitPrice: 104m,
+                TimeInForce: TimeInForce.GoodTilCancelled,
+                AllowPartialFills: false,
+                ExecutionModel: ExecutionModel.MarketImpact)));
+
+        result.Fills.Should().BeEmpty(
+            "a non-partial limit order cannot accept only the market-impact slices below its limit");
     }
 
     [Fact]

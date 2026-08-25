@@ -662,7 +662,8 @@ routing while preserving the existing button automation ID and run-detail naviga
 The QuantScript parameter editor validates supported numeric and Boolean inputs before enabling Run;
 invalid, non-finite, or out-of-range values never become null fallbacks at the worker boundary.
 Successful runs render compiler warnings separately from errors, and result/trade rows retain fill
-id, order id, and multi-backtest run index for exact drill-through.
+id, order id, and a run index that remains unique across multi-cell notebook execution for exact
+drill-through.
 `StrategyWorkspaceShellPresentationService` owns Strategy shell briefing, workflow, degraded-state,
 command, and promotion presentation state. Strategy shell page types, state providers, view models,
 page bases, automation IDs, and hero/workflow bindings use canonical `StrategyWorkspace*` and

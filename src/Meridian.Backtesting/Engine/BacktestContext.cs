@@ -10,7 +10,8 @@ internal sealed class BacktestContext(
     SimulatedPortfolio portfolio,
     IReadOnlySet<string> universe,
     BacktestLedger ledger,
-    string defaultBrokerageAccountId) : IBacktestContext
+    string defaultBrokerageAccountId,
+    ICommissionModel? commissionModel = null) : IBacktestContext
 {
     private readonly List<Order> _workingOrders = [];
 
@@ -130,7 +131,7 @@ internal sealed class BacktestContext(
     public void CancelOrder(Guid orderId) => RemoveWorkingOrder(orderId);
 
     public void CancelContingentOrders(Guid parentOrderId) =>
-        _workingOrders.RemoveAll(order => order.ParentOrderId == parentOrderId);
+        RemoveWorkingOrders(order => order.ParentOrderId == parentOrderId);
 
     internal IReadOnlyList<Order> GetWorkingOrdersSnapshot() => _workingOrders.ToArray();
 
@@ -181,13 +182,21 @@ internal sealed class BacktestContext(
             return false;
 
         _workingOrders.RemoveAt(index);
+        commissionModel?.Release(orderId);
         return true;
     }
 
     internal int RemoveWorkingOrders(Predicate<Order> predicate)
     {
         ArgumentNullException.ThrowIfNull(predicate);
-        return _workingOrders.RemoveAll(predicate);
+        var removedOrderIds = _workingOrders
+            .Where(order => predicate(order))
+            .Select(static order => order.OrderId)
+            .ToHashSet();
+        _workingOrders.RemoveAll(order => removedOrderIds.Contains(order.OrderId));
+        foreach (var orderId in removedOrderIds)
+            commissionModel?.Release(orderId);
+        return removedOrderIds.Count;
     }
 
     private int FindWorkingOrderIndex(Guid orderId) =>

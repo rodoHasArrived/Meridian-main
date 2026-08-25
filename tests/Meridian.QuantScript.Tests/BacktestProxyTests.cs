@@ -70,6 +70,16 @@ public sealed class BacktestProxyTests : IDisposable
     }
 
     [Fact]
+    public void WithMarketImpactCoefficient_NegativeValue_FailsClosed()
+    {
+        var proxy = new BacktestProxy(null, new QuantScriptOptions());
+
+        var act = () => proxy.WithMarketImpactCoefficient(-0.01m);
+
+        act.Should().Throw<ArgumentOutOfRangeException>().WithMessage("*cannot be negative*");
+    }
+
+    [Fact]
     public async Task RunAsync_OnFinishedReceivesTheCompletedMatchingResult()
     {
         Directory.CreateDirectory(_dataRoot);
