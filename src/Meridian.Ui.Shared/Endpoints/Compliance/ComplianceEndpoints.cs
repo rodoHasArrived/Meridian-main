@@ -112,7 +112,13 @@ public static class ComplianceEndpoints
                 ct).ConfigureAwait(false);
             return Results.Ok(result);
         })
-        .RequirePermission(UserPermission.ManageCompliance);
+        // Deliberately NOT ManageCompliance, unlike every other route on this surface. This one
+        // removes roles from the account named in the body, and it decides dormancy from the
+        // caller's own LastUsedAtUtc rather than from authoritative activity data, so a caller can
+        // strip every role from any account -- an administrator included -- by supplying an old
+        // date. That is user administration however it is labelled, so it keeps the gate it had
+        // before the compliance surface was split out.
+        .RequirePermission(UserPermission.ManageUsers);
 
         app.MapGet("/api/compliance/access-reviews", ([FromServices] AccessReviewService reviews) => Results.Ok(reviews.GetReviews()))
             .RequirePermission(UserPermission.ManageCompliance);

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NSubstitute;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -144,19 +145,26 @@ public sealed class LedgerAndCompliancePermissionSplitTests
 
     // ── Endpoint declarations ────────────────────────────────────────────────
 
-    private static async Task<WebApplication> CreateLedgerAndComplianceAppAsync(UserPermission permissions)
+    private static async Task<WebApplication> CreateLedgerAndComplianceAppAsync(
+        UserPermission permissions,
+        IFundProfileTenantGuard? tenantGuard = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
             EnvironmentName = Environments.Development
         });
         builder.WebHost.UseTestServer();
+        if (tenantGuard is not null)
+        {
+            builder.Services.AddSingleton(tenantGuard);
+        }
 
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "permission-split-user";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
             await next();
         });
 
@@ -182,12 +190,22 @@ public sealed class LedgerAndCompliancePermissionSplitTests
             .Where(route => route.Authorization is not null)
             .ToList();
 
+    /// <summary>
+    /// The one compliance route that is not compliance authority. It removes roles from the account
+    /// named in the request body, and decides dormancy from the caller's own supplied timestamp
+    /// rather than authoritative activity data, so reaching it is enough to strip every role from
+    /// any account. It stays behind user administration.
+    /// </summary>
+    private const string AccessReviewRemediationRoute = "/api/compliance/access-reviews/run";
+
     [Fact]
     public async Task ComplianceRoutes_GateOnManageCompliance_AndNoLongerOnUserAdministration()
     {
         await using var app = await CreateLedgerAndComplianceAppAsync(UserPermission.ManageCompliance);
 
-        var routes = DeclaredRoutes(app, "/api/compliance");
+        var routes = DeclaredRoutes(app, "/api/compliance")
+            .Where(route => !route.Pattern.Equals(AccessReviewRemediationRoute, StringComparison.OrdinalIgnoreCase))
+            .ToList();
         routes.Should().NotBeEmpty("the compliance surface must be mapped");
 
         foreach (var route in routes)
@@ -199,6 +217,35 @@ public sealed class LedgerAndCompliancePermissionSplitTests
                 UserPermission.ManageUsers,
                 $"{route.Method} {route.Pattern} must not require user administration");
         }
+    }
+
+    /// <summary>
+    /// Regression guard for the escalation the compliance split first introduced: moving this route
+    /// to <see cref="UserPermission.ManageCompliance"/> let a compliance operator demote or disable
+    /// an administrator by posting an old <c>LastUsedAtUtc</c> for their account.
+    /// </summary>
+    [Fact]
+    public async Task AccessReviewRemediation_RequiresUserAdministration_NotMerelyCompliance()
+    {
+        await using var app = await CreateLedgerAndComplianceAppAsync(UserPermission.ManageCompliance);
+
+        var remediation = DeclaredRoutes(app, "/api/compliance")
+            .Where(route => route.Pattern.Equals(AccessReviewRemediationRoute, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        remediation.Should().NotBeEmpty($"{AccessReviewRemediationRoute} must stay mapped");
+        foreach (var route in remediation)
+        {
+            route.Authorization.Permissions.Should().Contain(
+                UserPermission.ManageUsers,
+                "removing another account's roles is user administration whatever surface it sits on");
+            route.Authorization.Permissions.Should().NotContain(
+                UserPermission.ManageCompliance,
+                "holding compliance authority alone must not reach a route that can demote an administrator");
+        }
+
+        RolePermissions.For(UserRole.Compliance).HasFlag(UserPermission.ManageUsers).Should().BeFalse(
+            "the built-in Compliance role must not reach the remediation route");
     }
 
     /// <summary>
@@ -268,5 +315,28 @@ public sealed class LedgerAndCompliancePermissionSplitTests
         var response = await app.GetTestClient().GetAsync($"/api/ledger/periods/{Guid.NewGuid()}/trial-balance");
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.Forbidden);
+    }
+
+    /// <summary>
+    /// Widening a fund-scoped read route means widening its tenant filter with it. The filter skips
+    /// its ownership evaluation for callers holding none of the permissions it was given — so a route
+    /// that accepts the new ledger grants while its filter still lists only the old ones lets a
+    /// least-privilege caller read another tenant's fund with no ownership check at all.
+    /// </summary>
+    [Fact]
+    public async Task ForeignFund_IsRefused_ForACallerHoldingOnlyTheNewLedgerGrant()
+    {
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        guard.EvaluateAsync(Arg.Any<WorkstationTenantContext>(), "fund-other", Arg.Any<CancellationToken>())
+            .Returns(FundProfileTenantDecision.Deny("owned by another tenant"));
+        await using var app = await CreateLedgerAndComplianceAppAsync(UserPermission.ViewLedgerReports, guard);
+
+        var response = await app.GetTestClient().GetAsync("/api/ledger/books?fundProfileId=fund-other");
+
+        response.StatusCode.Should().Be(
+            System.Net.HttpStatusCode.Forbidden,
+            "the tenant filter must evaluate ownership for every permission its route accepts");
+        await guard.Received().EvaluateAsync(
+            Arg.Any<WorkstationTenantContext>(), "fund-other", Arg.Any<CancellationToken>());
     }
 }
