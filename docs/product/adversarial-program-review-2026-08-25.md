@@ -58,7 +58,7 @@ and it is invisible to every gate the repository runs, because no gate compares 
 | Release attachment | **Landed** | tag `eval-v0.1.0-eval.1`; `8e9b11c3` attaches consumer setup to the evaluation prerelease |
 | Provenance at the ingress seam | **Landed at runtime; type-level hardening outstanding** | `2361152c` threads real provider identity, and `TradeDataCollector.OnTrade` rejects a missing `Source` with a `MissingSource` integrity event before storing (`:117-134`, tested). `MarketTradeUpdate.cs:33` is still `string? Source = null`, so the remaining work is compile-time, not behavioural |
 | Fund-economics activation | **Partial — the named alternative was skipped** | capital-call issuance wired (`CapitalCallFundingIntake.cs:236`); NAV-per-unit + unit register still at zero consumers |
-| `ContractMultiplier` on the durable fill record | **Open — and wider than reported** | §3–§4 below: the multiplier reaches aggregate pre-trade exposure (`AggregatePortfolioExposureProvider:571-582`) and nothing else — not the paper book's transaction branches, valuation projections, persistence sites or either margin model — so option position value is understated live as well as on restore (see §4 for the per-metric breakdown, which is not a uniform 1/100 on equity or Sharpe) |
+| `ContractMultiplier` on the durable fill record | **Open — and wider than reported** | §3–§4 below: the multiplier reaches the two exposure projections (`AggregatePortfolioExposureProvider:571-582`, `WorkstationEndpoints.BuildExposureReport`) and nothing else — not the paper book's transaction branches, valuation projections, persistence sites or either margin model — so option position value is understated live as well as on restore (see §4 for the per-metric breakdown, which is not a uniform 1/100 on equity or Sharpe) |
 | WPF state un-fork | **Partial** | reconciliation posture no longer reads desktop-local state and the remaining local fund-setup lane is labelled with a provenance badge (`AccountingFeatureModule.cs:53-59`); the scheduler host loops were removed from the desktop process and now run server-side (`:196-202`). Residual: fund-account and fund-structure services still persist JSON under `%LOCALAPPDATA%`, along with drafts and schedules |
 | Desktop test job in the required gate | **Open** | §7 below. Bundling this with the state un-fork, as an earlier draft did, hid the remediation above and meant neither half was actually re-tested |
 
@@ -178,8 +178,8 @@ room. This is a small, mechanical change that removes a real blocker to any mult
 
 The 2026-08-24 review flagged the missing `ContractMultiplier` on the durable fill record. It is
 still open — and tracing it end to end shows the defect is larger than "the durable record drops it".
-**The multiplier reaches exactly one downstream consumer — aggregate pre-trade exposure — and none
-of the paper book's own economics, live or restored.**
+**The multiplier reaches two downstream consumers — both exposure projections — and none of the
+paper book's own economics, live or restored.**
 
 `PaperTradingPortfolio.ApplyFill` carries the multiplier
 (`PaperTradingPortfolio.cs:443-448`), and exactly one call site passes a real value:
@@ -209,20 +209,29 @@ in-memory book.
 So a paper session holding 10 SPY calls at $2.50 is booked at **$25 of exposure from the very first
 live fill**, not on restore.
 
-**One downstream path does consume it, and the remedy must not touch that one.**
-`PaperPosition.ToExecutionPosition` preserves the multiplier (`:1324`),
-`AggregatePortfolioService.SplitByOwner` carries it into each contribution, and
-`AggregatePortfolioExposureProvider` multiplies by it explicitly —
-`var price = unitPrice * (contribution.ContractMultiplier > 0m ? contribution.ContractMultiplier : 1m)`
-(`AggregatePortfolioExposureProvider.cs:571-582`), under a comment making precisely this section's
-argument: "an option position of 100 contracts at a $5 premium is $50k of exposure, not $500".
-**Aggregate pre-trade exposure is therefore already correct**, and a remediation applied
-indiscriminately would scale it twice. The defective consumers are the paper book's own cash, cost
+**Two downstream paths already consume it, and the remedy must not touch either.**
+`PaperPosition.ToExecutionPosition` preserves the multiplier (`:1324`) and
+`AggregatePortfolioService.SplitByOwner` carries it into each contribution. From there:
+
+1. `AggregatePortfolioExposureProvider` multiplies by it —
+   `var price = unitPrice * (contribution.ContractMultiplier > 0m ? contribution.ContractMultiplier : 1m)`
+   (`:571-582`), under a comment making precisely this section's argument: "an option position of
+   100 contracts at a $5 premium is $50k of exposure, not $500".
+2. `WorkstationEndpoints.BuildExposureReport` multiplies **independently** —
+   `Math.Abs(contribution.Quantity) * Math.Abs(contribution.CostBasis) * (ContractMultiplier > 0m ? … : 1m)`
+   (`WorkstationEndpoints.PortfolioAggregation.cs:96-123`) — and its `/api/portfolio/exposure`
+   result is operator-facing: the WPF `AggregatePortfolioViewModel` consumes it (`:246`).
+
+**Both exposure projections are therefore already correct**, and a remediation applied
+indiscriminately would scale them twice. The defective consumers are the paper book's own cash, cost
 basis, P&L and account snapshots, and the two margin models — not everything downstream.
 
-So the accurate statement is narrower than "carried but never used": `ContractMultiplier` is
-consumed by exactly one aggregate risk projection and ignored by the transaction and valuation paths
-that produce the numbers an operator reads.
+The count here has now been wrong twice in the same direction. The original text said *nothing*
+consumes the multiplier; round 14 corrected that to *one*; this is the second. Each correction was
+made by finding a consumer rather than by enumerating them, which is why the number kept moving.
+The reliable statement is structural: **the multiplier is consumed by the exposure projections and
+ignored by everything that produces the numbers an operator reads** — and any remediation needs an
+exhaustive consumer list, not another spot-check.
 
 That reframes the persistence gap rather than erasing it. All three
 `PaperSessionPersistenceService` call sites — `:159` (session restore on startup), `:820`
@@ -254,11 +263,22 @@ downstream consumers already apply the multiplier themselves (`OptionPosition.cs
 onward as separate values). Multiplying at storage while leaving those consumers alone would report
 $250,000 of exposure for ten $2.50 calls instead of $2,500 — a 100× error in the opposite direction.
 Keep lot and average prices in per-unit terms; migrate every consumer together or not at all.
-Second, give `ContractMultiplier` a persisted field so no reconstruction path can drop it. `ResolveContractMultiplier`
+Second, give `ContractMultiplier` a persisted field so no reconstruction path can drop it — **and
+version the canonical hash when you do, or every existing durable session stops loading.**
+`PaperSessionFillRecord.Validate` recomputes `ComputeCanonicalHash(Fill)` by re-serializing the whole
+report through `ExecutionJsonContext` and **throws `InvalidDataException`** on any mismatch
+(`IPaperSessionStore.cs:149-175`). That context sets `DefaultIgnoreCondition = WhenWritingNull`
+(`ExecutionJsonContext.cs:18`), so a non-nullable `decimal` defaulting to `1m` is always written: a
+legacy record persisted before the field existed deserializes to `1m`, re-serializes with
+`contractMultiplier: 1`, hashes differently, and fails validation. This is a hard restore failure,
+not a warning. The fix needs a schema-versioned hash path or an explicit migration, with a
+legacy-hash compatibility test. `ResolveContractMultiplier`
 (`OrderManagementSystem.RiskOutcomes.cs:324`) already derives the value; the gap is that the
 transaction, valuation and margin paths do not multiply by it. **Scope the fix to those** — the
-aggregate exposure provider already applies it (`:571-582`) and scaling it again would overstate
-pre-trade exposure by the multiplier, the same double-count the cost-basis caveat above warns about.
+two exposure projections already apply it — `AggregatePortfolioExposureProvider:571-582` and
+`WorkstationEndpoints.BuildExposureReport` (`PortfolioAggregation.cs:96-123`, consumed by the WPF
+`AggregatePortfolioViewModel`) — and scaling either again would overstate exposure by the multiplier,
+the same double-count the cost-basis caveat above warns about.
 A field consumed in one projection and ignored in the rest is worse than a missing one: it reads, to
 every subsequent reviewer, as though the concern were already handled.
 
@@ -774,12 +794,12 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Eighteen rounds of automated review challenged **57 claims** across this document. Every one was checked
-against the code, **all 57 held**, and the findings above are the corrected text. **Four more were
+Nineteen rounds of automated review challenged **59 claims** across this document. Every one was checked
+against the code, **all 59 held**, and the findings above are the corrected text. **Four more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, and §3's own lead sentence — and each is recorded as a row below, marked *(self-detected)*.
-The table therefore holds **61 rows: 57 raised by review, 4 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **63 rows: 59 raised by review, 4 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1056,6 +1076,24 @@ the first: round 12 found a missing round, and this time the missing entries wer
 described in *prose* but never entered as *rows*. Recording a fix in narrative form is not recording
 it in the ledger, which is a distinction a document about evidence discipline should not have needed
 twice.
+
+**Round 19 — two, both places where the remedy would regress working code:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "The multiplier reaches **exactly one** downstream consumer" | There are two. `WorkstationEndpoints.BuildExposureReport` multiplies quantity × cost basis × `ContractMultiplier` independently (`PortfolioAggregation.cs:96-123`), and its `/api/portfolio/exposure` output is operator-facing — the WPF `AggregatePortfolioViewModel` consumes it (`:246`). Both must be in the do-not-double-scale inventory | §3, improvement #3, re-test table |
+| The remedy said only "give `ContractMultiplier` a persisted field" | Doing that alone **breaks every existing durable session**. `PaperSessionFillRecord.Validate` recomputes the canonical hash from the re-serialized report and throws `InvalidDataException` on mismatch (`IPaperSessionStore.cs:149-175`); `ExecutionJsonContext` ignores only nulls (`:18`), so a legacy record defaulting to `1m` serializes with `contractMultiplier: 1` and no longer matches its stored hash. Round 5 noticed the hash problem while rejecting a different serialization pattern, but the implementation instruction was never updated | §3 remedy — versioned hash / migration now required |
+
+The consumer count has now been wrong twice in the same direction: *none* → *one* → *two*. Both
+corrections came from someone finding a consumer, not from anyone enumerating them, which is exactly
+why the number kept moving — and it is a warning about the shape of the remedy rather than about
+this document alone. A "scale everything downstream" instruction is only as safe as the list of
+things already scaled, and that list has been under-counted at every revision.
+
+The second row is the same failure in a different register: round 5 established that adding this
+field changes the canonical hash of every legacy record, recorded it in the corrections table, and
+left the implementation instruction saying "add the field". A hazard noted in the audit trail but
+absent from the instruction is a hazard an implementer will hit.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
