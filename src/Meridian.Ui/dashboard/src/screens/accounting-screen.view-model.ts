@@ -5151,7 +5151,8 @@ export function buildAccountingTrialBalanceViewState({
   loading,
   error,
   scopeLabel = null,
-  currency = null
+  currency = null,
+  periodId = null
 }: {
   runId: string | null;
   rows: LedgerTrialBalanceLine[];
@@ -5164,6 +5165,12 @@ export function buildAccountingTrialBalanceViewState({
   scopeLabel?: string | null;
   /** The book's base currency, when these rows come from a posted book rather than a run. */
   currency?: string | null;
+  /**
+   * The ledger period these rows were posted in, when they come from a posted book. Journal
+   * drill-through needs it: the detail screen resolves a posted entry by period, and a link
+   * without one cannot reach the entry it names.
+   */
+  periodId?: string | null;
 }): AccountingTrialBalanceViewState {
   const detailPanelId = "trial-balance-account-detail";
   const runLabel = scopeLabel?.trim() || (runId ? "the selected ledger run" : "the current ledger selection");
@@ -5222,7 +5229,7 @@ export function buildAccountingTrialBalanceViewState({
     isBasisOutOfBalance: Math.abs(basisVariance) > 0.005,
     selectedRowId: resolvedSelectedRowId,
     detailPanelId,
-    selectedDetail: selectedRow ? buildTrialBalanceDetail(selectedRow, runLabel, runId) : null,
+    selectedDetail: selectedRow ? buildTrialBalanceDetail(selectedRow, runLabel, runId, periodId) : null,
     detailEmptyTitle: "No account selected",
     detailEmptyText: hasRows
       ? "Select an account line to inspect balance evidence for report handoff."
@@ -5496,7 +5503,8 @@ function buildLedgerAccountFilteredCountLabel(
 function buildTrialBalanceDetail(
   line: AccountingTrialBalanceRowViewModel,
   runLabel: string,
-  runId: string | null
+  runId: string | null,
+  periodId: string | null = null
 ): AccountingTrialBalanceDetailViewState {
   const securityLabel = line.security?.displayName?.trim()
     || line.security?.primaryIdentifier?.trim()
@@ -5556,7 +5564,8 @@ function buildTrialBalanceDetail(
       runId,
       sourceEventIds,
       approvalIds,
-      sourceJournalEntryIds
+      sourceJournalEntryIds,
+      periodId
     }),
     supportingDocumentsEmptyText: "No source documents, approvals, or review packet links are attached to this GL account yet."
   };
@@ -5600,13 +5609,15 @@ function buildSupportingDocumentRows({
   runId,
   sourceEventIds,
   approvalIds,
-  sourceJournalEntryIds
+  sourceJournalEntryIds,
+  periodId
 }: {
   line: AccountingTrialBalanceRowViewModel;
   runId: string | null;
   sourceEventIds: string[];
   approvalIds: string[];
   sourceJournalEntryIds: string[];
+  periodId?: string | null;
 }): AccountingSupportingDocumentViewModel[] {
   const rows: AccountingSupportingDocumentViewModel[] = [];
 
@@ -5635,7 +5646,11 @@ function buildSupportingDocumentRows({
       id: `${line.rowId}-journal-${journalEntryId}`,
       label: "Journal entry evidence",
       detail: "Posting support and ledger entry lineage.",
-      href: `/accounting/ledger?journalEntryId=${encodeURIComponent(journalEntryId)}`,
+      // The journal-entry detail screen, not the ledger explorer: the explorer reads `view` and
+      // its book and period, never a journalEntryId, so this used to land on whatever period the
+      // explorer defaulted to with the entry silently dropped. The period is carried because that
+      // is how the detail screen resolves a posted entry.
+      href: buildJournalEntryEvidenceHref(journalEntryId, periodId, runId),
       ariaLabel: `Open journal entry ${journalEntryId} for ${line.accountLabel}`
     });
   }
@@ -5651,6 +5666,25 @@ function buildSupportingDocumentRows({
   }
 
   return rows;
+}
+
+/**
+ * Where a journal-entry evidence link goes. The detail screen resolves a posted entry from its
+ * period and a run-scoped one from its run, so whichever scope these rows came from is carried.
+ */
+function buildJournalEntryEvidenceHref(
+  journalEntryId: string,
+  periodId: string | null | undefined,
+  runId: string | null
+): string {
+  const params = new URLSearchParams({ journalEntryId });
+  if (periodId) {
+    params.set("periodId", periodId);
+  } else if (runId) {
+    params.set("runId", runId);
+  }
+
+  return `/accounting/journal-entries/detail?${params.toString()}`;
 }
 
 function readStringArrayField(value: unknown, fieldName: string): string[] {

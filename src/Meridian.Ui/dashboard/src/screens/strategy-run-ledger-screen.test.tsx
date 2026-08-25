@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import * as api from "@/lib/api";
 import { StrategyRunLedgerScreen } from "@/screens/strategy-run-ledger-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
@@ -114,6 +114,23 @@ describe("StrategyRunLedgerScreen", () => {
 
     expect(await screen.findByRole("alert")).toBeInTheDocument();
   });
+  it("filters the run's accounts, which a several-hundred-row ledger needs", async () => {
+    // The view state has always computed a filtered row count; the control that drives it was
+    // never rendered when this screen moved out of Accounting, so the count could only ever read
+    // as unfiltered.
+    vi.mocked(api.getRunTrialBalance).mockResolvedValue(trialBalanceLines);
+    await renderRunLedger("/strategy/run-ledger?runId=run-42");
+
+    expect(screen.getAllByText("2 GL account rows").length).toBeGreaterThan(0);
+
+    const filter = screen.getByLabelText(/filter/i, { selector: "input" });
+    fireEvent.change(filter, { target: { value: "financing" } });
+    await waitForAsyncEffects();
+
+    expect(screen.getAllByText("1 of 2 GL account rows").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Financing payable").length).toBeGreaterThan(0);
+  });
+
   it("falls back to the rows when the explorer publishes no run views", async () => {
     // A fallback, not the main path: BuildLedgerExplorerAsync composes its rows from exactly one
     // run, so rows can only ever name that run. Two runs' rows are constructed here to prove the

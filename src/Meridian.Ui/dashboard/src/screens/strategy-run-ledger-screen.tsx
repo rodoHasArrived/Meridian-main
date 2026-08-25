@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Search } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
@@ -8,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormRow } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getFinancialRecordExplorer, getRunLedgerJournal, getRunTrialBalance } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
@@ -46,6 +48,9 @@ export function StrategyRunLedgerScreen() {
   const [trialBalanceLoading, setTrialBalanceLoading] = useState(false);
   const [trialBalanceError, setTrialBalanceError] = useState<ApiErrorDisplay | null>(null);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+  // A run's ledger runs to hundreds of accounts, and the view state has always computed the
+  // filtered count -- the control that drives it was simply never rendered on this screen.
+  const [accountFilter, setAccountFilter] = useState("");
   const [journalLines, setJournalLines] = useState<LedgerJournalLine[]>([]);
   const [journalLoading, setJournalLoading] = useState(false);
   const [journalErrorText, setJournalErrorText] = useState<string | null>(null);
@@ -152,10 +157,11 @@ export function StrategyRunLedgerScreen() {
       rows: trialBalanceRows,
       selectedRowId,
       selectedBasis,
+      accountFilter,
       loading: trialBalanceLoading,
       error: trialBalanceError
     }),
-    [runId, selectedBasis, selectedRowId, trialBalanceError, trialBalanceLoading, trialBalanceRows]
+    [accountFilter, runId, selectedBasis, selectedRowId, trialBalanceError, trialBalanceLoading, trialBalanceRows]
   );
 
   const journalEvidence = useMemo(
@@ -268,6 +274,24 @@ export function StrategyRunLedgerScreen() {
                 ))}
               </div>
             ) : null}
+            <div className="mb-4 rounded-md border border-border/70 bg-secondary/15 p-3">
+              <FormRow label={trialBalanceView.accountFilterLabel} labelFor="run-ledger-account-filter">
+                <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+                  <div className="relative min-w-0 flex-1">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                    <Input
+                      id="run-ledger-account-filter"
+                      type="search"
+                      value={trialBalanceView.accountFilterValue}
+                      onChange={(event) => setAccountFilter(event.target.value)}
+                      placeholder={trialBalanceView.accountFilterPlaceholder}
+                      className="pl-9"
+                    />
+                  </div>
+                  <span className="font-mono text-xs text-muted-foreground">{trialBalanceView.filteredRowCountLabel}</span>
+                </div>
+              </FormRow>
+            </div>
             {trialBalanceView.hasRows ? (
               <div className="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
                 {trialBalanceView.rows.length > DENSE_VIRTUALIZATION_THRESHOLD ? (

@@ -13,6 +13,7 @@ import {
   useAccountingPostedLedgerViewModel,
   type AccountingPostedLedgerServices
 } from "@/screens/accounting-screen.posted-ledger.view-model";
+import type { AccountingWorkstream } from "@/screens/accounting-screen.task-mode-view-model";
 import type {
   LedgerBook,
   LedgerPeriod,
@@ -650,6 +651,62 @@ describe("useAccountingPostedLedgerViewModel", () => {
     expect(result.current.view.bookOptions.find((book) => book.isSelected)?.id).toBe(selectedBook!.id);
     expect(result.current.view.periodSelector.options).toHaveLength(periodCount);
     expect(result.current.view.trialBalance.hasRows).toBe(true);
+  });
+
+  it("drops the previous book's figures when book discovery fails", async () => {
+    // The book label and base currency come off the selected book, and the period effect does not
+    // run without one -- so figures left behind after a failed refresh rendered a book's balances
+    // with nothing on screen saying whose they were, indefinitely.
+    const getBooks = vi.fn()
+      .mockResolvedValueOnce([makeBook()])
+      .mockRejectedValue(new Error("ledger service unavailable"));
+    const services = makeServices({ getBooks, getTrialBalance: vi.fn().mockResolvedValue([makeLine()]) });
+    const { result, rerender } = renderHook(
+      ({ workstream }: { workstream: AccountingWorkstream }) =>
+        useAccountingPostedLedgerViewModel(workstream, services),
+      { initialProps: { workstream: "ledger" as AccountingWorkstream } }
+    );
+
+    await waitFor(() => {
+      expect(result.current.view.trialBalance.hasRows).toBe(true);
+    });
+
+    // Re-run book discovery by leaving and returning to the ledger workstream.
+    rerender({ workstream: "reconciliation" });
+    rerender({ workstream: "ledger" });
+
+    await waitFor(() => {
+      expect(result.current.view.periodSelector.errorText).toContain("unavailable");
+    });
+    expect(result.current.view.trialBalance.hasRows).toBe(false);
+    expect(result.current.view.periodSelector.options).toHaveLength(0);
+    expect(result.current.view.selectedBookLabel).toBeNull();
+    // And it must not read as "create a ledger book" during an outage.
+    expect(result.current.view.periodSelector.emptyText).toBeNull();
+  });
+
+  it("reads as loading while book discovery is in flight, not as an empty book", async () => {
+    let releaseBooks: (books: LedgerBook[]) => void = () => undefined;
+    const services = makeServices({
+      getBooks: vi.fn().mockImplementation(() => new Promise<LedgerBook[]>((resolve) => {
+        releaseBooks = resolve;
+      }))
+    });
+    const { result } = renderHook(() => useAccountingPostedLedgerViewModel("ledger", services));
+
+    // Book discovery gates every request below it, so an untracked one told the operator to create
+    // a ledger book while the request that would have found one was still running.
+    expect(result.current.view.periodSelector.loading).toBe(true);
+    expect(result.current.view.periodSelector.emptyText).toBeNull();
+
+    await act(async () => {
+      releaseBooks([makeBook()]);
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(result.current.view.periodSelector.loading).toBe(false);
+    });
   });
 
   it("leaves the posted journal unrequested for a consumer that does not render it", async () => {

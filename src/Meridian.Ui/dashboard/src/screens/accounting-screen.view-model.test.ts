@@ -1545,7 +1545,12 @@ describe("accounting-screen view model", () => {
     expect(state.selectedDetail?.supportingDocuments).toEqual(expect.arrayContaining([
       expect.objectContaining({ label: "Run review packet", href: "/api/workstation/runs/run-42/review-packet" }),
       expect.objectContaining({ label: "Source event evidence", href: "/accounting/audit?sourceEventId=evt-cash-1" }),
-      expect.objectContaining({ label: "Journal entry evidence", href: "/accounting/ledger?journalEntryId=je-cash-1" }),
+      // The journal-entry detail screen, not the ledger explorer: the explorer never read a
+      // journalEntryId, so this link used to drop the entry it named.
+      expect.objectContaining({
+        label: "Journal entry evidence",
+        href: "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42"
+      }),
       expect.objectContaining({ label: "Approval evidence", href: "/accounting/approvals?approvalId=approval-cash-1" })
     ]));
     expect(state.rows[1]).toMatchObject({

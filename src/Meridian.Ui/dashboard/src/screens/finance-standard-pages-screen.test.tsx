@@ -1,6 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import type { ReactElement } from "react";
 import * as api from "@/lib/api";
+import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import {
   AccountDetailScreen,
   ApprovalInboxScreen,
@@ -23,6 +24,49 @@ vi.mock("@/lib/api", async () => {
     getRunTrialBalance: vi.fn()
   };
 });
+
+vi.mock("@/lib/ledger-reports-api", () => ({
+  getLedgerBooks: vi.fn(),
+  getLedgerPeriods: vi.fn(),
+  getLedgerPeriodTrialBalance: vi.fn(),
+  getLedgerPeriodPnlSummary: vi.fn(),
+  getLedgerPeriodJournalEntries: vi.fn()
+}));
+
+const LEDGER_BOOK_ID = "00000000-0000-0000-0000-0000000000aa";
+const LEDGER_PERIOD_ID = "11111111-1111-1111-1111-111111111111";
+
+function mockPostedBook() {
+  vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([{
+    ledgerBookId: LEDGER_BOOK_ID,
+    fundProfileId: "fund-alpha",
+    fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+    fundStructureNodeKind: "Fund",
+    displayName: "Master Fund",
+    baseCurrency: "USD",
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-01-01T00:00:00Z",
+    accountingBasis: "Primary",
+    accountingPolicyId: "legacy-v1",
+    accountingPolicyVersion: "legacy-v1"
+  }] as never);
+  vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValue([{
+    periodId: LEDGER_PERIOD_ID,
+    ledgerBookId: LEDGER_BOOK_ID,
+    fiscalYear: 2026,
+    periodNo: 7,
+    label: "July 2026",
+    startDate: "2026-07-01",
+    endDate: "2026-07-31",
+    status: "HardClosed",
+    openedAt: "2026-07-01T00:00:00Z",
+    closedAt: "2026-08-02T00:00:00Z",
+    version: 1
+  }] as never);
+  vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValue([] as never);
+  vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockRejectedValue(new Error("not configured"));
+  vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([] as never);
+}
 
 const data = {
   metrics: [],
@@ -298,38 +342,64 @@ describe("finance standard pages", () => {
     expect(api.getRunTrialBalance).not.toHaveBeenCalled();
   });
 
-  it("renders ledger explorer search, saved views, and journal drill links", async () => {
-    vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce([
+  it("reads Accounting's ledger from the posted journal, not from a strategy run", async () => {
+    // This is the surface the workspace links to as "Validate the ledger". It used to load
+    // getRunLedgerJournal for whichever run headed the reconciliation queue -- a simulation
+    // artifact under the name an operator reads as the book of record.
+    mockPostedBook();
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([
       {
         journalEntryId: "je-cash-1",
-        timestamp: "2026-06-30T00:00:00Z",
+        periodId: LEDGER_PERIOD_ID,
+        ledgerBookId: LEDGER_BOOK_ID,
+        timestamp: "2026-07-31T00:00:00Z",
         description: "Cash sweep",
         totalDebits: 500,
         totalCredits: 500,
-        lineCount: 2,
-        accountScopeDisplayName: "Cash",
-        entityScopeDisplayName: "Fund Alpha"
+        isBalanced: true,
+        lines: []
       }
-    ]);
+    ] as never);
 
-    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger?runId=run-42");
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
 
     expect(screen.getByRole("heading", { name: "Ledger Explorer" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Search by account, amount, journal ID, source, security, entity")).toBeInTheDocument();
+    expect(api.getRunLedgerJournal).not.toHaveBeenCalled();
+    expect(ledgerReportsApi.getLedgerPeriodJournalEntries).toHaveBeenCalledWith(LEDGER_PERIOD_ID);
+
+    // Scoped by ledger book and period, the posted book's own coordinates -- not by run.
+    expect(screen.getByLabelText("Ledger book")).toBeInTheDocument();
+    expect(screen.getByLabelText("Ledger period")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Run / period")).not.toBeInTheDocument();
+
+    // The drill-through carries the period, which is how the detail screen resolves a posted
+    // entry. It used to carry a runId, which no posted entry has.
+    expect(await screen.findByRole("table", { name: "Ledger Explorer results" })).toHaveTextContent("Open journal detail");
+    expect(screen.getByRole("link", { name: "Open journal detail" })).toHaveAttribute(
+      "href",
+      `/accounting/journal-entries/detail?journalEntryId=je-cash-1&periodId=${LEDGER_PERIOD_ID}`
+    );
+  });
+
+  it("offers no ledger filter it does not apply", async () => {
+    // "Unposted", "Reversals", "Manual JEs" and "System Generated" changed a label and nothing
+    // else, and the results header reported the unfiltered count as that view's. On a governed
+    // book of record a control that appears to filter and does not is a misstatement.
+    mockPostedBook();
+
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+
+    expect(screen.queryByRole("button", { name: "Manual JEs" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Unposted" })).not.toBeInTheDocument();
+    // Search does filter, so it stays.
     expect(screen.getByLabelText("Search by account, amount, journal ID, source, security, entity")).toHaveAttribute(
       "placeholder",
       "Cash, $120,500, AAPL, cash sweep"
     );
-    expect(screen.getByLabelText("Run / period")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Manual JEs" })).toBeInTheDocument();
-    expect(await screen.findByRole("table", { name: "Ledger Explorer results" })).toHaveTextContent("Open journal detail");
-    expect(screen.getByRole("link", { name: "Open journal detail" })).toHaveAttribute(
-      "href",
-      "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42"
-    );
   });
 
   it("switches the ledger explorer to the trial balance tab via the view search param", async () => {
+    mockPostedBook();
     vi.mocked(api.getRunLedgerJournal).mockResolvedValue([]);
     vi.mocked(api.getRunTrialBalance).mockResolvedValue([]);
 

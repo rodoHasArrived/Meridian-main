@@ -441,6 +441,7 @@ export function buildAccountingPostedLedgerViewState({
   periodsLoading,
   periodsError,
   booksErrorText,
+  booksLoading = false,
   selectedPeriodId,
   periodNotice,
   trialBalanceRows,
@@ -460,6 +461,8 @@ export function buildAccountingPostedLedgerViewState({
   periodsLoading: boolean;
   periodsError: ApiErrorDisplay | null;
   booksErrorText: string | null;
+  /** Book discovery gates every request below it, so it reads as loading on the period selector. */
+  booksLoading?: boolean;
   selectedPeriodId: string | null;
   periodNotice: string | null;
   trialBalanceRows: LedgerTrialBalanceLine[];
@@ -494,7 +497,9 @@ export function buildAccountingPostedLedgerViewState({
     error: trialBalanceError,
     scopeLabel,
     // These rows are a posted book's, so their balances carry the book's base currency.
-    currency: baseCurrency
+    currency: baseCurrency,
+    // And their journal evidence resolves by period, not by run.
+    periodId: selectedPeriodId
   });
   const trialBalance: AccountingTrialBalanceViewState = {
     ...base,
@@ -515,11 +520,15 @@ export function buildAccountingPostedLedgerViewState({
     periodSelector: {
       label: "Ledger period",
       options: buildPostedLedgerPeriodOptions(periods, selectedPeriodId),
-      loading: periodsLoading,
-      loadingText: periodsLoading ? "Loading ledger periods." : null,
+      loading: periodsLoading || booksLoading,
+      loadingText: booksLoading
+        ? "Loading ledger books."
+        : periodsLoading ? "Loading ledger periods." : null,
       errorText: booksErrorText ?? periodsError?.summary ?? null,
       errorDetails: periodsError?.details ?? [],
-      emptyText: periodsLoading || periodsError || periods.length > 0
+      // "Create a ledger book" is an instruction, and it must not appear while the request that
+      // would have found one is still in flight or has failed.
+      emptyText: periodsLoading || booksLoading || periodsError || booksErrorText || periods.length > 0
         ? null
         : "No ledger periods exist yet. Create a ledger book and period in Accounting → Configure to start the governed book."
     },
@@ -551,6 +560,10 @@ export function useAccountingPostedLedgerViewModel(
   const [books, setBooks] = useState<LedgerBook[]>([]);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [booksErrorText, setBooksErrorText] = useState<string | null>(null);
+  // Book discovery gates every request below it, so an untracked one left the period
+  // selector reporting "no ledger periods exist yet -- create a ledger book" while the books
+  // request was still in flight: an instruction to create accounting data, during a load.
+  const [booksLoading, setBooksLoading] = useState(false);
   const [periods, setPeriods] = useState<LedgerPeriod[]>([]);
   const [periodsLoading, setPeriodsLoading] = useState(false);
   const [periodsError, setPeriodsError] = useState<ApiErrorDisplay | null>(null);
@@ -569,6 +582,25 @@ export function useAccountingPostedLedgerViewModel(
   const [journalLoading, setJournalLoading] = useState(false);
   const [journalErrorText, setJournalErrorText] = useState<string | null>(null);
 
+  /**
+   * Drops everything that only means something within one ledger book. The book label and base
+   * currency come off the selected book, so figures left behind after it goes render unlabelled
+   * and read as belonging to whatever book is chosen next.
+   */
+  const clearBookScopedState = useCallback(() => {
+    setSelectedPeriodId(null);
+    // Clearing the id alone was not enough: the periods array still held book A's, so the
+    // selection-validation effect immediately re-picked A's default and loaded its figures under
+    // B's label and currency -- and left them there indefinitely if B's period request hung.
+    setPeriods([]);
+    setPeriodNotice(null);
+    setTrialBalanceRows([]);
+    setPnl(null);
+    setJournalLines([]);
+    setJournalErrorText(null);
+    setSelectedRowId(null);
+  }, []);
+
   useEffect(() => {
     if (workstream !== "ledger") {
       return;
@@ -576,10 +608,16 @@ export function useAccountingPostedLedgerViewModel(
 
     let cancelled = false;
     setBooksErrorText(null);
+    setBooksLoading(true);
     services.getBooks()
       .then((rows) => {
         if (cancelled) return;
         setBooks(rows);
+        if (rows.length === 0) {
+          // No book means no scope for anything below, and the period effect will not run to
+          // clear it.
+          clearBookScopedState();
+        }
         // Scope to one book before any period is chosen. Unscoped, the period list spans every
         // book and the default lands on whichever book owns the globally latest closed period —
         // presented under this panel's fixed scope label as though it were the only book.
@@ -592,16 +630,26 @@ export function useAccountingPostedLedgerViewModel(
         if (cancelled) return;
         setBooks([]);
         setSelectedBookId(null);
+        // The previous book's periods, balances and P&L are book-scoped, and the label and base
+        // currency that named them come off the selected book -- so leaving them rendered a book's
+        // figures with nothing saying whose they were, indefinitely, since the period effect does
+        // not run without a selected book. The desktop workstation drops them for the same reason.
+        clearBookScopedState();
         // Without this the period effect simply never runs and the screen renders its ordinary
         // "no ledger periods exist yet" empty state, telling operators to create accounting data
         // during what is actually an API outage.
         setBooksErrorText(describeApiError(err, "Ledger books failed to load.").summary);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setBooksLoading(false);
+        }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [services, workstream]);
+  }, [clearBookScopedState, services, workstream]);
 
   useEffect(() => {
     if (workstream !== "ledger" || selectedBookId === null) {
@@ -825,18 +873,8 @@ export function useAccountingPostedLedgerViewModel(
     setSelectedBookId(ledgerBookId);
     // The incoming book's periods are a different set entirely; keeping the outgoing selection
     // would request a period that does not belong to it.
-    setSelectedPeriodId(null);
-    // Clearing the id alone was not enough: the periods array still held book A's, so the
-    // selection-validation effect immediately re-picked A's default and loaded its figures under
-    // B's label and currency -- and left them there indefinitely if B's period request hung.
-    setPeriods([]);
-    setPeriodNotice(null);
-    setTrialBalanceRows([]);
-    setPnl(null);
-    setJournalLines([]);
-    setJournalErrorText(null);
-    setSelectedRowId(null);
-  }, [selectedBookId]);
+    clearBookScopedState();
+  }, [clearBookScopedState, selectedBookId]);
 
   const view = useMemo(
     () => buildAccountingPostedLedgerViewState({
@@ -844,6 +882,7 @@ export function useAccountingPostedLedgerViewModel(
       periodsLoading,
       periodsError,
       booksErrorText,
+      booksLoading,
       selectedPeriodId,
       periodNotice,
       trialBalanceRows,
@@ -864,6 +903,7 @@ export function useAccountingPostedLedgerViewModel(
       baseCurrency,
       bookOptions,
       booksErrorText,
+      booksLoading,
       selectedBookLabel,
       periodNotice,
       periods,
