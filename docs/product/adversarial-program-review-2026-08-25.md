@@ -265,7 +265,10 @@ notional helper is unscaled for the same reason (`NotionalValue(lastPrice) => Qu
 `UnrealizedPnl` — the value improvement #3 corrects — is read **only when there is no live mark**.
 Whenever a quote is available, which is the case the screen exists for, the endpoint's unscaled
 arithmetic wins. A remedy confined to the paper book therefore leaves the operator's live option
-P&L at 1/100 and makes the two branches of a single ternary disagree by the multiplier. The fix
+P&L at 1/100 and makes the two branches of a single ternary disagree by the multiplier. **This is
+rendered, not latent:** `trading-screen.tsx` binds `position.unrealizedPnl` and `position.exposure`
+into the mounted position table (`:212-226`), so the understated figures are what an operator reads
+on the Trading screen. The fix
 has to reach the projection, not only the book: `WorkstationEndpoints.Trading.cs` must read
 `pos.ContractMultiplier` in all three sites, which is a change to a different file than any the
 improvement below names.
