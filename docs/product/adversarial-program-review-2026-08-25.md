@@ -1831,7 +1831,7 @@ commits that did not come from this session:**
 
 **Three commits in this round came from outside this session** — `400d891f`, `a3e82038` and
 `b53f9cc2`, authored under the repository owner's account and carrying none of the
-`Co-Authored-By`/`Claude-Session` trailers every other commit on this branch carries. They applied the three review-raised corrections
+`Co-Authored-By`/`Claude-Session` trailers every other commit on this branch carries. They applied the four review-raised corrections
 above. They were not reverted: the changes were checked against source and against the sections they
 touch, they are correct, and rewriting someone else's history on a shared branch is not a thing to do
 because the authorship surprised me. The first two left this ledger undone — three corrections in the
