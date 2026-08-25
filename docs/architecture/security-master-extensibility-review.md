@@ -46,8 +46,8 @@ risks that compound as new asset classes land.
 >
 > **Independent verification pass, 2026-08-24 (post-resolution).** A separately-run review of the
 > same subsystem, re-verified against `780aeb9e` after the resolution merged. Two findings survive
-> it, both the same shape — a registry that governs asset-class behavior with no test binding it to
-> the catalog. See
+> it: no catalog-to-validator parity guard, and a CSV import path that fails for **every** asset
+> class because the parser never populates the terms payloads the create path requires. See
 > [Independent verification pass](#independent-verification-pass--2026-08-24-post-resolution).
 
 ---
@@ -602,6 +602,12 @@ identity, event-sourcing, codec, provenance, and governance layers hold up under
 read — and independently identified findings 5, 2, 8 and the pack-registry item that the resolution
 pass had already fixed. Two of its findings survive.
 
+V2 below was materially sharpened by automated review on the pull request that recorded this
+section: the pass had originally described CSV import as *narrow* (eight of twenty-six classes
+accepted), and review correctly identified that it is in fact *entirely broken*, and that the
+remediation the pass proposed would have made things worse. Both corrections were verified against
+source before being adopted, and the finding is restated accordingly.
+
 ### V1 — There is still no catalog-to-validator coverage guard
 
 The resolution pass gave `InvestmentFund` a validator (`AssetClassValidatorRegistry.cs:286`),
@@ -623,22 +629,40 @@ So the next catalog class added without a validator fails the same way `Investme
 nothing fails at commit time to say so. The fix is a fifth guard mirroring the four that exist —
 the cheapest durable item in this document.
 
-### V2 — CSV import covers 8 of 26 asset classes off a table bound to nothing
+### V2 — CSV import is broken for every asset class, not merely narrow
 
-`SecurityMasterCsvParser.AssetClassMapping` is a private dictionary of nine accepted spellings
-resolving to **eight** distinct classes — Equity, Option, Future, Bond, CryptoCurrency, Commodity,
-Cfd, Warrant (`SecurityMasterCsvParser.cs:13-24`). Rows naming any other catalog class are rejected
-with "Unknown AssetClass". Every fund-operations class the product differentiates on — `Deposit`,
-`MoneyMarketFund`, `CertificateOfDeposit`, `CommercialPaper`, `TreasuryBill`, `Repo`, `CashSweep`,
-`DirectLoan`, `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`,
-`RealEstateHolding`, `CommitmentGuarantee`, `InvestmentFund`, `Swap`, `FxSpot` — is unimportable by
-CSV.
+**The parser discards the columns the create path requires.** `SecurityMasterCsvParser.ParseRow`
+constructs its `CreateSecurityRequest` with `CommonTerms` and `AssetSpecificTerms` both hardcoded to
+the empty document `{}` (`SecurityMasterCsvParser.cs:143-155`) — the `Name` and `Currency` columns it
+just parsed are never carried into the payload. `SecurityMasterImportService` then hands that request
+to `SecurityMasterService.CreateAsync` (`:164`), whose command mapping calls
+`ToCommonTerms(request.CommonTerms)`, and that requires both fields:
+`GetRequiredString(json, "displayName")` and `GetRequiredString(json, "currency")`
+(`SecurityMasterMapping.cs:214-217`), each throwing `Missing required string '<name>'` when absent
+(`:698-701`).
 
-The table is not derived from `SecurityAssetClassCatalog` and no test binds it there. This is the
-same failure mode as V1 on a different surface: adding an asset class leaves a bulk-onboarding path
-silently behind. The catalog already carries `SupportsBasicCreateWorkflow` per class, so the
-accepted set can be derived from it with vendor spellings kept as an alias overlay rather than the
-source of truth.
+So **every CSV row fails at create time, for every asset class** — including a well-formed Equity row
+naming one of the eight accepted spellings. The empty `assetSpecificTerms` compounds it: classes with
+required term fields (Option's `underlyingId` / `putCall` / `strike` / `expiry`, for instance) would
+still fail strict write-mode mapping even after the common-terms payload is fixed. CSV import is a
+dead path, not a narrow one.
+
+**The accepted-class table is a second, downstream gap.**
+`SecurityMasterCsvParser.AssetClassMapping` is a private dictionary of nine spellings resolving to
+eight distinct classes — Equity, Option, Future, Bond, CryptoCurrency, Commodity, Cfd, Warrant
+(`:13-24`) — not derived from `SecurityAssetClassCatalog` and bound by no test. Rows naming any other
+catalog class are rejected with "Unknown AssetClass" before the outage above is even reached. That
+is the same shape as V1 (a registry governing asset-class behavior with no catalog parity guard), and
+it is worth closing — but only after the payload path works, since widening the table alone changes
+nothing.
+
+Note for whoever picks this up: **do not derive the accepted set from
+`SecurityAssetClassCatalog.SupportsBasicCreateWorkflow`.** That flag describes the workstation's basic
+create flow and is true for exactly two classes, `Equity` and `CustomAsset`; deriving from it would
+drop the seven other spellings CSV accepts today and admit `CustomAsset`, whose required profile
+envelope an empty terms payload cannot satisfy. Closing this properly needs a CSV-specific capability
+on the catalog (or another invariant that actually models importability), plus a parser that
+populates the terms payloads it already parses.
 
 ### Noted, not re-filed
 
