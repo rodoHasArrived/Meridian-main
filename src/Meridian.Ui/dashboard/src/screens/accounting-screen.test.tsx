@@ -44,7 +44,8 @@ import { requireFirst, requirePresent } from "@/test/fixtures";
 vi.mock("@/lib/ledger-reports-api", () => ({
   getLedgerPeriods: vi.fn().mockResolvedValue([]),
   getLedgerPeriodTrialBalance: vi.fn().mockResolvedValue([]),
-  getLedgerPeriodPnlSummary: vi.fn().mockResolvedValue(null)
+  getLedgerPeriodPnlSummary: vi.fn().mockResolvedValue(null),
+  getLedgerPeriodJournalEntries: vi.fn().mockResolvedValue([])
 }));
 
 vi.mock("@/lib/api", async () => {

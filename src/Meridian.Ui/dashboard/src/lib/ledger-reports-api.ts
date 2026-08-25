@@ -1,5 +1,6 @@
 import { apiGetJson } from "@/lib/api";
 import {
+  ledgerPeriodJournalEntriesEndpoint,
   ledgerPeriodPnlSummaryEndpoint,
   ledgerPeriodsEndpoint,
   ledgerPeriodTrialBalanceEndpoint
@@ -7,7 +8,8 @@ import {
 import type {
   LedgerPeriod,
   LedgerPeriodPnlSummary,
-  LedgerPeriodTrialBalanceLine
+  LedgerPeriodTrialBalanceLine,
+  LedgerPostedJournalEntry
 } from "@/types";
 
 /**
@@ -26,4 +28,8 @@ export function getLedgerPeriodTrialBalance(periodId: string) {
 
 export function getLedgerPeriodPnlSummary(periodId: string) {
   return apiGetJson<LedgerPeriodPnlSummary>(ledgerPeriodPnlSummaryEndpoint(periodId));
+}
+
+export function getLedgerPeriodJournalEntries(periodId: string) {
+  return apiGetJson<LedgerPostedJournalEntry[]>(ledgerPeriodJournalEntriesEndpoint(periodId));
 }

@@ -1058,6 +1058,25 @@ export interface LedgerPeriodTrialBalanceLine {
   dimensions?: LedgerDimensionSet | null;
 }
 
+/**
+ * A posted journal entry for a ledger period
+ * (`GET /api/ledger/periods/{periodId}/journal-entries`). This is the immutable book's
+ * own entry, distinct from the strategy run's `LedgerJournalLine` evidence row.
+ */
+export interface LedgerPostedJournalEntry {
+  journalEntryId: string;
+  periodId: string;
+  ledgerBookId: string | null;
+  timestamp: string;
+  description: string;
+  totalDebits: number;
+  totalCredits: number;
+  isBalanced: boolean;
+  lines: unknown[];
+  accountingBasis?: AccountingBasisKind;
+  dimensions?: LedgerDimensionSet | null;
+}
+
 /** P&L summary of the posted journal for a closed ledger period (`GET /api/ledger/periods/{periodId}/pnl-summary`). */
 export interface LedgerPeriodPnlSummary {
   periodId: string;

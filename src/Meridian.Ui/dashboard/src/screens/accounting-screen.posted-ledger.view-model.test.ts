@@ -73,6 +73,7 @@ function makeServices(overrides: Partial<AccountingPostedLedgerServices> = {}): 
     getPeriods: vi.fn().mockResolvedValue([makePeriod()]),
     getTrialBalance: vi.fn().mockResolvedValue([makeLine()]),
     getPnlSummary: vi.fn().mockResolvedValue(makePnl()),
+    getJournalEntries: vi.fn().mockResolvedValue([]),
     ...overrides
   };
 }

@@ -39,6 +39,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   ledgerPeriods: UI_API_ROUTES.LedgerPeriods,
   ledgerPeriodTrialBalance: UI_API_ROUTES.LedgerPeriodTrialBalance,
   ledgerPeriodPnlSummary: UI_API_ROUTES.LedgerPeriodPnlSummary,
+  ledgerPeriodJournalEntries: UI_API_ROUTES.LedgerPeriodJournalEntries,
   accountingConfiguration: UI_API_ROUTES.LedgerAccountingConfiguration,
   accountingConfigurationChart: UI_API_ROUTES.LedgerAccountingConfigurationChart,
   accountingConfigurationTemplates: UI_API_ROUTES.LedgerAccountingConfigurationTemplates,
@@ -130,6 +131,10 @@ export function ledgerPeriodTrialBalanceEndpoint(periodId: string): string {
 
 export function ledgerPeriodPnlSummaryEndpoint(periodId: string): string {
   return routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodPnlSummary, "periodId", periodId);
+}
+
+export function ledgerPeriodJournalEntriesEndpoint(periodId: string): string {
+  return routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodJournalEntries, "periodId", periodId);
 }
 
 export function workstationIngestionOperationActionEndpoint(jobId: string, action: string): string {

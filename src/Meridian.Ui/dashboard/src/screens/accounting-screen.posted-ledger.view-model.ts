@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  getLedgerPeriodJournalEntries,
   getLedgerPeriodPnlSummary,
   getLedgerPeriods,
   getLedgerPeriodTrialBalance
@@ -7,9 +8,11 @@ import {
 import { describeApiError, isApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import type {
   AccountingBasisKind,
+  LedgerJournalLine,
   LedgerPeriod,
   LedgerPeriodPnlSummary,
   LedgerPeriodTrialBalanceLine,
+  LedgerPostedJournalEntry,
   LedgerTrialBalanceLine
 } from "@/types";
 import { formatCurrency, formatSignedCurrency } from "./accounting-screen.formatting";
@@ -33,13 +36,31 @@ export interface AccountingPostedLedgerServices {
   getPeriods: () => Promise<LedgerPeriod[]>;
   getTrialBalance: (periodId: string) => Promise<LedgerPeriodTrialBalanceLine[]>;
   getPnlSummary: (periodId: string) => Promise<LedgerPeriodPnlSummary>;
+  getJournalEntries: (periodId: string) => Promise<LedgerPostedJournalEntry[]>;
 }
 
 const defaultAccountingPostedLedgerServices: AccountingPostedLedgerServices = {
   getPeriods: () => getLedgerPeriods(),
   getTrialBalance: (periodId) => getLedgerPeriodTrialBalance(periodId),
-  getPnlSummary: (periodId) => getLedgerPeriodPnlSummary(periodId)
+  getPnlSummary: (periodId) => getLedgerPeriodPnlSummary(periodId),
+  getJournalEntries: (periodId) => getLedgerPeriodJournalEntries(periodId)
 };
+
+/**
+ * Maps a posted journal entry onto the shared ledger-journal evidence row so the
+ * posted book can reuse the journal-lineage panels the run-scoped ledger built.
+ */
+export function toLedgerJournalLine(entry: LedgerPostedJournalEntry): LedgerJournalLine {
+  return {
+    journalEntryId: entry.journalEntryId,
+    timestamp: entry.timestamp,
+    description: entry.description,
+    totalDebits: entry.totalDebits,
+    totalCredits: entry.totalCredits,
+    lineCount: Array.isArray(entry.lines) ? entry.lines.length : 0,
+    dimensions: entry.dimensions ?? null
+  };
+}
 
 export const POSTED_LEDGER_DETAIL_PANEL_ID = "posted-ledger-account-detail";
 
@@ -98,6 +119,12 @@ export interface AccountingPostedLedgerViewModel {
   selectBasis: (basis: AccountingBasisKind) => void;
   updateAccountFilter: (value: string) => void;
   selectTrialBalanceRow: (rowId: string | null) => void;
+  /** Posted journal entries for the selected period, in the shared evidence-row shape. */
+  journalLines: LedgerJournalLine[];
+  journalLoading: boolean;
+  journalErrorText: string | null;
+  selectedPeriodId: string | null;
+  selectedPeriodLabel: string | null;
 }
 
 export function sortLedgerPeriodsDescending(periods: LedgerPeriod[]): LedgerPeriod[] {
@@ -365,6 +392,9 @@ export function useAccountingPostedLedgerViewModel(
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [selectedBasis, setSelectedBasis] = useState<AccountingBasisKind>(DEFAULT_ACCOUNTING_BASIS);
   const [accountFilter, setAccountFilter] = useState("");
+  const [journalLines, setJournalLines] = useState<LedgerJournalLine[]>([]);
+  const [journalLoading, setJournalLoading] = useState(false);
+  const [journalErrorText, setJournalErrorText] = useState<string | null>(null);
 
   useEffect(() => {
     if (workstream !== "ledger") {
@@ -399,6 +429,13 @@ export function useAccountingPostedLedgerViewModel(
   }, [services, workstream]);
 
   useEffect(() => {
+    // Nothing to validate a selection against until the periods land. Resetting here would
+    // clobber a caller-supplied selection (a deep link's ?periodId=) on the first render and
+    // fight whoever re-applies it.
+    if (periods.length === 0) {
+      return;
+    }
+
     const hasSelection = selectedPeriodId !== null &&
       periods.some((period) => period.periodId === selectedPeriodId);
     if (hasSelection) {
@@ -485,6 +522,47 @@ export function useAccountingPostedLedgerViewModel(
     };
   }, [selectedPeriodId, services, workstream]);
 
+  useEffect(() => {
+    if (!selectedPeriodId || workstream !== "ledger") {
+      setJournalLines([]);
+      setJournalErrorText(null);
+      setJournalLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setJournalLoading(true);
+    setJournalErrorText(null);
+
+    services.getJournalEntries(selectedPeriodId)
+      .then((entries) => {
+        if (!cancelled) {
+          setJournalLines(entries.map(toLedgerJournalLine));
+        }
+      })
+      .catch((err) => {
+        if (cancelled) {
+          return;
+        }
+
+        setJournalLines([]);
+        // A period with no closed summary has no posted entries to show yet; that is a
+        // state, not a failure, and the period notice already explains it.
+        setJournalErrorText(isApiError(err) && err.status === 404
+          ? null
+          : describeApiError(err, "Posted journal entries failed to load.").summary);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setJournalLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedPeriodId, services, workstream]);
+
   const selectPeriod = useCallback((periodId: string) => {
     setSelectedPeriodId(periodId);
     setSelectedRowId(null);
@@ -535,11 +613,21 @@ export function useAccountingPostedLedgerViewModel(
     ]
   );
 
+  const selectedPeriodLabel = useMemo(() => {
+    const period = periods.find((candidate) => candidate.periodId === selectedPeriodId);
+    return period ? (period.label.trim() || `FY${period.fiscalYear} P${period.periodNo}`) : null;
+  }, [periods, selectedPeriodId]);
+
   return {
     view,
     selectPeriod,
     selectBasis,
     updateAccountFilter,
-    selectTrialBalanceRow: setSelectedRowId
+    selectTrialBalanceRow: setSelectedRowId,
+    journalLines,
+    journalLoading,
+    journalErrorText,
+    selectedPeriodId,
+    selectedPeriodLabel
   };
 }
