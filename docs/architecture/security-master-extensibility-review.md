@@ -696,7 +696,7 @@ survived review, and files two items that earlier passes either did not reach or
 ### V1 — still open; the instance is closed, the guard is not
 
 Every one of the 26 catalog classes now has a validator arm in `DefaultAssetClassValidators.Create`
-(`AssetClassValidatorRegistry.cs:69-310`), so no record currently falls to the
+(`AssetClassValidatorRegistry.cs:69-310`), so no catalog-defined record currently falls to the
 `SM_ASSET_CLASS_UNSUPPORTED` else-branch. But the parity **guard** is still absent:
 `AssetClassValidatorRegistry.SupportedAssetClasses` is referenced in exactly two places outside the
 registry — the error message it feeds (`SecurityValidationService.cs:128`) and
@@ -711,15 +711,15 @@ both, constructing its request with `CommonTerms` and `AssetSpecificTerms` hardc
 (`SecurityMasterCsvParser.cs:143-155`). `SecurityMasterImportService` hands that straight to
 `CreateAsync` (`:164`), whose `ToCommonTerms` requires `displayName` and `currency`
 (`SecurityMasterMapping.cs:214-217`, throwing at `:698-701`). Every otherwise parseable CSV row
-still fails at create time across every asset class the parser accepts. The path is live on both UI
-lanes — `SecurityMasterViewModel.cs:4358` (WPF) and `SecurityMasterEndpoints.cs:914-918` (web).
+still fails at create time across every asset class the parser accepts. The path is live in WPF and
+exposed by the browser API — `SecurityMasterViewModel.cs:4358` and `SecurityMasterEndpoints.cs:914-918`.
 
 **New evidence — the test suite cannot see this.** Both `SecurityMasterImportServiceTests` files
 construct the real `SecurityMasterCsvParser` and then never feed it CSV: each drives the service
 through hand-built `.json` content. The first supplies `displayName` and `currency` and reaches
-the real `SecurityMasterService` (`tests/Meridian.Tests/SecurityMaster/SecurityMasterImportServiceTests.cs:52-88`);
+the real `SecurityMasterService` (`tests/Meridian.Tests/SecurityMaster/SecurityMasterImportServiceTests.cs:39-95`);
 the second omits `currency` but uses a blocking service double that never maps the request
-(`tests/Meridian.Tests/Application/SecurityMaster/SecurityMasterImportServiceTests.cs:23-91`). There
+(`tests/Meridian.Tests/Application/SecurityMaster/SecurityMasterImportServiceTests.cs:63-115`). There
 is no test anywhere that parses a CSV row and maps it through `SecurityMasterMapping`. The fix needs
 that end-to-end test as much as it needs the payload change — otherwise the same gap reopens.
 
@@ -774,8 +774,8 @@ schedule replaced.
 ### Priorities after this pass
 
 1. **Fix the CSV import payload, with an end-to-end parser→create test.** The only live functional
-   break in the subsystem: an operator-reachable import path that fails every otherwise parseable row
-   on both UI lanes, invisible to a test suite that constructs its requests by hand.
+   break in the subsystem: otherwise parseable rows fail through WPF and the browser API, invisible
+   to a test suite that constructs its requests by hand.
 2. **Add the catalog↔validator parity guard.** A fifth guard mirroring the four that exist; the
    cheapest durable item here, unchanged for two passes.
 3. **Close the workbench UI's half of finding 5.** Schema-drive the field-path input and label the
