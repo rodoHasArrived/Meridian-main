@@ -787,8 +787,14 @@ close-management product can tell.
 2. **Finish the permission split.** *Mostly landed in `bb43e0e6` — see the second addendum.*
    `ViewLedgerReports` (`UserPermission.cs:111`), `ManageLedgerReports` (`:114`) and
    `ManageCompliance` (`:118`) **already exist and are wired**, and the ledger routes already apply a
-   real read/write split. Do not re-add them. **What remains is exactly three things:** add
-   `ViewCompliance`, the one flag of the four still missing; re-gate the **three** read-only
+   real read/write split. Do not re-add them. **What remains is exactly four things:** add
+   `ViewCompliance`, the one flag of the four still missing; **grant it to every role that holds
+   `ManageCompliance` today — `Admin` and `Compliance` — in the same change**, because
+   `HasPermission` is an exact-bit test (`RolePermissions.cs:212`, `(For(role) & required) ==
+   required`) and manage does *not* imply view, so re-gating the reads without widening the baselines
+   locks out the only roles that can currently reach them; the landed ledger split is the precedent,
+   granting `ViewLedgerReports` explicitly alongside `ManageLedgerReports` on each role
+   (`:38,85,98,108,121`). Then re-gate the **three** read-only
    compliance routes onto it — `audit/extract` (`ComplianceEndpoints.cs:66`),
    `controls/attestation` (`:70`) and `GET /access-reviews` (`:123`), which all still require
    `ManageCompliance`, so an auditor who only reads holds authority over approval decisions and
@@ -962,8 +968,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Thirty-one rounds of automated review challenged **88 claims** across this document. Every one was checked
-against the code, **all 88 held**, and the findings above are the corrected text. **Nine more were
+Thirty-two rounds of automated review challenged **89 claims** across this document. Every one was checked
+against the code, **all 89 held**, and the findings above are the corrected text. **Nine more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
@@ -972,7 +978,7 @@ in the published artifact, an unresolvable file path in §8, the artifact's refu
 numbered round 31 below, is **absent from the table on purpose**: every correction it made was
 wrong and was retracted in round 32, so it contributes no rows and its number is left as a gap
 rather than silently reused.
-The table therefore holds **97 rows: 88 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **98 rows: 89 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1482,6 +1488,22 @@ different frame is not verification.** Round 31's ledger row has been rewritten 
 retraction, and its "hostage to the next merge" generalization withdrawn — it was the inverse of the
 truth, and had it survived it would have invited the same damage after every future merge.
 
+**Round 33 — one, and it is a remedy that would have broken working access:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| Improvement #2's remedy: "add `ViewCompliance`; re-gate the three read-only compliance routes onto it" | Implemented literally that **locks out `Admin` and `Compliance`** — the only roles that can reach those routes today. Their baselines carry `ManageCompliance` alone, and `HasPermission` is an exact-bit test (`RolePermissions.cs:212`: `(For(role) & required) == required`), so manage does not imply view. The landed ledger split already shows the correct shape, granting `ViewLedgerReports` explicitly beside `ManageLedgerReports` on each role — the compliance remedy simply omitted the equivalent step | Improvement #2 and the second addendum — role-baseline update added as an explicit fourth step |
+
+This is the third time a proposed remedy in this document would have regressed working code if
+followed as written (rounds 14 and 19 were the others), and the pattern across all three is the same:
+**the remedy names the change and omits the compensating change that keeps existing callers whole.**
+Round 14 would have double-scaled an already-correct exposure path; round 19 would have broken every
+durable session by adding a field to a hashed record; this one would have revoked access while
+"splitting" a permission. A remedy is not complete when the new behaviour is specified — it is
+complete when everything that depends on the old behaviour has been accounted for. The evidence for
+this one was sitting in the same file the remedy already cited: the ledger split, three lines up,
+does the thing the compliance split forgot.
+
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
 remedies — and are rewritten rather than softened; the multiplier correction made the defect
@@ -1664,7 +1686,7 @@ ledger because four of them overstated how much was closed.
 
 So the remaining work on §1 and §2 is: an assigned-fund selector with scoped authorization on the
 ledger read routes; delete the `AccountDetailScreen` run binding and the leftover reconciliation
-fetch; add `ViewCompliance` and re-gate the **three** read-only compliance routes to it —
+fetch; add `ViewCompliance`, grant it to `Admin` and `Compliance` alongside their existing `ManageCompliance` (an exact-bit check means manage does not imply view), and re-gate the **three** read-only compliance routes to it —
 `audit/extract` (`:66`), `controls/attestation` (`:70`) and `GET /access-reviews` (`:123`) — leaving
 `access-reviews/run` on `ManageUsers`. The lockout §1 describes is resolved for the *posted* book —
 which is the book those roles own — and the `ViewStrategies` gate on the run queue is now the
