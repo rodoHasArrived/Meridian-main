@@ -144,9 +144,13 @@ name shows a different ledger.
 
 **Improvement.** Point the Accounting workstream's trial-balance and P&L panels at the period/report
 endpoints over the posted journal; keep the run-scoped view as an explicitly labelled *strategy run*
-artifact under Strategy, not under Accounting. Then add a structural test that fails when a route's
-permission set is disjoint from the permission set of every role whose workspace links to it. That
-test is what would have caught all three parts.
+artifact under Strategy, not under Accounting. Then add the **role-to-surface expectation table**
+described in improvement #4 — a declared assertion that `FundAccountant` and `Controller` reach the
+Accounting trial balance and P&L, evaluated against the workspace ∩ leaf intersection. An earlier
+draft proposed instead a test that fails when a route's permission set is *disjoint from every* role
+whose workspace links to it; that predicate is existential and this very defect satisfies it, since
+Admin, Developer and Accounting all reach both surfaces. It is kept here only as a record of what
+does not work.
 
 ## 2. `ManageDirectLending` has become the de facto "fund accounting" grant
 
@@ -387,18 +391,25 @@ for one symbol*; nothing in it carries a trend, a distribution, a cross-symbol r
 exportable report. That is the gap worth scoping, and scoping it as a missing drill-down would
 duplicate an operator path that already exists.
 
-*Caveat on the method, and it cuts one way:* this measures **reference**, not operator reach. A route
-counts as reached if any client-layer file names it — including a wrapper nothing calls. Three
-browser exports prove the gap: `getQualityCompleteness`, `getQualityGaps` and `getQualityAnomalies`
-have **zero call sites outside `lib/api.ts`**, yet their routes are counted as reached. So **29% is a
-lower bound on the dark surface, not an estimate of it**; the true figure is higher by however many
-wrappers are themselves dead. Establishing it needs transitive reachability from mounted routes and
-views — which is precisely what the CI gate in improvement #4 would have to compute, so the
-measurement debt and the gate are the same piece of work. Separately, some dark routes are
-legitimately server-to-server or diagnostic, and a few paths are reached through composed URL
-builders the scan would miss. Spot checks confirmed both directions. And note the first attempt at
-this number was wrong by half in the *other* direction, because it enumerated two client layers out
-of three.
+*Caveat on the method, and it cuts both ways:* this measures **reference**, not operator reach, and
+the error is unbounded in each direction, so **29% is an estimate — not a floor and not a ceiling.**
+
+*Undercounting:* a route counts as reached if any client-layer file names it, including a wrapper
+nothing calls. Three browser exports prove it — `getQualityCompleteness`, `getQualityGaps` and
+`getQualityAnomalies` have **zero call sites outside `lib/api.ts`**, yet their routes are counted as
+reached. Every dead wrapper hides a dark route.
+
+*Overcounting:* some dark routes are legitimately server-to-server or diagnostic and were never
+meant to have a client, and a few live paths are assembled through composed URL builders the scan
+cannot follow, so they are recorded dark while an operator does reach them.
+
+Spot checks confirmed both directions, which is exactly why the figure is not a bound: an earlier
+version of this caveat opened "it cuts one way" and then conceded both in the same paragraph.
+Establishing a real number needs transitive reachability from mounted routes and views — which is
+precisely what the CI gate in improvement #4 would have to compute, so the measurement debt and the
+gate are the same piece of work, and the gate's baseline must be set from a measurement that does
+not yet exist rather than from 250. Note also that the first attempt at this number was wrong by
+half in the *other* direction, because it enumerated two client layers out of three.
 
 **Improvement.** Add the orphan-export structural test the backlog already specifies, with a
 declared allowlist for intentionally headless routes, and fail CI when the unallowed dark count
@@ -553,8 +564,15 @@ close-management product can tell.
    constant must be referenced by a client or appear on a declared headless allowlist — this is the
    only one of the three that would have caught the unconsumed posted-ledger routes, since no
    workspace links to them and no role check can see them; (c) the dark
-   count must not grow. These three tests would have caught §1, §5, §6, and §9's reopen gap
-   automatically. (§1, §6)
+   count must not grow. These three catch §1, §6, and §9's reopen gap automatically — but **not
+   §5**, and the reason is worth stating because it exposes a limit of this whole review's thesis.
+   The NAV kernel has no route constant and no endpoint registration:
+   `ShareClassUnitRegisterProjector` and `NavPerUnitCalculator` appear only in
+   `src/Meridian.Ledger/`, its README, their tests, and planning docs. A cross-catalog test can
+   detect that catalogs *disagree*; it is blind to a capability absent from all of them. Catching §5
+   needs a fourth, different invariant: a **declared-capability-to-surface** check that reads the
+   roadmap register's shipped domain capabilities and fails when one has no registered route and no
+   client consumer. (§1, §5, §6)
 5. **Activate NAV per unit end-to-end.** Valuation → `ShareClassUnitRegisterProjector` → governed
    journal intake → an operator panel, following the path capital-call issuance just proved. Highest
    value-per-line change available, and the plumbing is already validated. (§5)
@@ -620,10 +638,10 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Nine rounds of automated review challenged **33 claims** across this document. Every one was checked
-against the code, **all 33 held**, and the findings above are the corrected text. A 34th — the
-quality-route count, wrong at 31 in three places — was caught by re-measuring rather than by a
-reviewer, and is recorded with them. Noted here because a review that demands evidence discipline
+Ten rounds of automated review challenged **35 claims** across this document. Every one was checked
+against the code, **all 35 held**, and the findings above are the corrected text. Two more — the
+quality-route count, wrong at 31 in three places, and a refuted remedy still standing in §1 — were
+caught by re-measuring and re-reading rather than by a reviewer, and are recorded with them. Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -711,6 +729,26 @@ project is where the 385 `app.Map*` registrations live — it is the **server**.
 reached because the server declares it would make every route reachable by construction. The
 document's original scan excluded it correctly; only this round's scratch check did not. Third
 attempt, restricted to the three genuine client layers, gives 27.
+
+**Round 10 — two from review, one self-detected:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "29% is a **lower bound** on the dark surface, not an estimate of it" | A bound requires error in one direction. Dead wrappers undercount the dark surface; composed URL builders and legitimately headless routes overcount it. The same paragraph opened "it cuts one way" and then conceded both directions three sentences later | §6 caveat — rewritten as an estimate |
+| The three catalog tests "would have caught §1, **§5**, §6, and §9" | The NAV kernel has no route constant and no endpoint — `ShareClassUnitRegisterProjector` and `NavPerUnitCalculator` live only in `src/Meridian.Ledger/`, its README, tests and planning docs. Route- and role-based tests have nothing to inspect | Improvement #4 — §5 dropped, fourth invariant added |
+| §1's improvement still proposed the disjoint-permission test | Round 4 refuted that predicate as existential, and improvement #4 says so explicitly — but §1's own remedy block was never updated, so the document recommended in one place the test it calls useless in another | §1 improvement |
+
+The §5 correction is the more interesting of the two, because it marks a limit of this review's own
+thesis rather than an error inside it. Cross-catalog testing detects catalogs that *disagree*. The
+NAV kernel is absent from every catalog — no route, no permission, no screen — so there is nothing
+for a cross-catalog invariant to compare, and the most complete built-and-unexposed capability in
+the codebase is exactly the one the proposed gate cannot see. A capability that never entered a
+catalog is invisible to catalog consistency by construction.
+
+The self-detected one repeats the pattern this section exists to record: round 4 refuted the
+existential test and the correction landed in improvement #4, while §1 — the section that first
+proposed it — kept it for six more rounds. Correcting the summary and leaving the source is the same
+failure as correcting the source and leaving the summary.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
