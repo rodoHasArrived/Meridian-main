@@ -58,7 +58,7 @@ and it is invisible to every gate the repository runs, because no gate compares 
 | Release attachment | **Landed** | tag `eval-v0.1.0-eval.1`; `8e9b11c3` attaches consumer setup to the evaluation prerelease |
 | Provenance at the ingress seam | **Landed at runtime; type-level hardening outstanding** | `2361152c` threads real provider identity, and `TradeDataCollector.OnTrade` rejects a missing `Source` with a `MissingSource` integrity event before storing (`:117-134`, tested). `MarketTradeUpdate.cs:33` is still `string? Source = null`, so the remaining work is compile-time, not behavioural |
 | Fund-economics activation | **Partial — the named alternative was skipped** | capital-call issuance wired (`CapitalCallFundingIntake.cs:236`); NAV-per-unit + unit register still at zero consumers |
-| `ContractMultiplier` on the durable fill record | **Open — and wider than reported** | §3–§4 below: the multiplier never reaches portfolio economics on any path, so option position value is understated live as well as on restore, and every number derived from it is wrong (see §4 for the per-metric breakdown — it is not a uniform 1/100 on equity or Sharpe) |
+| `ContractMultiplier` on the durable fill record | **Open — and wider than reported** | §3–§4 below: the multiplier reaches aggregate pre-trade exposure (`AggregatePortfolioExposureProvider:571-582`) and nothing else — not the paper book's transaction branches, valuation projections, persistence sites or either margin model — so option position value is understated live as well as on restore (see §4 for the per-metric breakdown, which is not a uniform 1/100 on equity or Sharpe) |
 | WPF state un-fork | **Partial** | reconciliation posture no longer reads desktop-local state and the remaining local fund-setup lane is labelled with a provenance badge (`AccountingFeatureModule.cs:53-59`); the scheduler host loops were removed from the desktop process and now run server-side (`:196-202`). Residual: fund-account and fund-structure services still persist JSON under `%LOCALAPPDATA%`, along with drafts and schedules |
 | Desktop test job in the required gate | **Open** | §7 below. Bundling this with the state un-fork, as an earlier draft did, hid the remediation above and meant neither half was actually re-tested |
 
@@ -178,7 +178,8 @@ room. This is a small, mechanical change that removes a real blocker to any mult
 
 The 2026-08-24 review flagged the missing `ContractMultiplier` on the durable fill record. It is
 still open — and tracing it end to end shows the defect is larger than "the durable record drops it".
-**The multiplier never reaches portfolio economics on any path, live or restored.**
+**The multiplier reaches exactly one downstream consumer — aggregate pre-trade exposure — and none
+of the paper book's own economics, live or restored.**
 
 `PaperTradingPortfolio.ApplyFill` carries the multiplier
 (`PaperTradingPortfolio.cs:443-448`), and exactly one call site passes a real value:
@@ -746,8 +747,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Sixteen rounds of automated review challenged **50 claims** across this document. Every one was checked
-against the code, **all 50 held**, and the findings above are the corrected text. Two more — the
+Seventeen rounds of automated review challenged **53 claims** across this document. Every one was checked
+against the code, **all 53 held**, and the findings above are the corrected text. Two more — the
 quality-route count, wrong at 31 in three places, and a refuted remedy still standing in §1 — were
 caught by re-measuring and re-reading rather than by a reviewer, and are recorded with them. Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
@@ -977,6 +978,32 @@ inference that a nullable field means an unchecked field. That is the same one-s
 round-7 lesson names, applied to a type declaration instead of a code path — and it produced a
 finding that was directionally reasonable and materially wrong about the risk.
 
+**Round 17 — three, and every one is this document's own stale dependent text:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| The docs index still said the multiplier "never reaches portfolio economics" | Round 14 established that `AggregatePortfolioExposureProvider` already scales aggregate pre-trade exposure. The round-14 sweep corrected §3, improvement #3 and the method lesson — and missed the index | `docs/product/README.md` |
+| The round-7 narrative still concluded Sharpe is "approximately *unaffected*" | Round 8 refuted exactly that with a six-mark series showing 17.9% error. The corrections *table* recorded the refutation; the corrections *prose* two screens below kept the refuted conclusion as a closing takeaway | Round-7 lesson paragraph |
+| The addendum still referred implementers to "the disjoint-permission structural test" | Improvement #4 rejects that predicate as existential, and round 12 replaced it with the role-to-surface expectation table. The addendum was never updated | Addendum |
+
+Three rounds ago the reviewer was finding defects in the codebase. This round it found none — all
+three items are places where a correction landed in one part of this document and a dependent
+sentence elsewhere was left standing. That is the failure this section exists to record, and it has
+now happened often enough to be the document's most reliable defect: **corrections propagate to the
+text being corrected and to the summary, and stop there.** The cross-surface grep adopted in round 8
+catches restated *phrases*; it does not catch a *conclusion* restated in different words two sections
+away, which is what all three of these are.
+
+Applying that lesson in the same commit immediately found **two more instances the reviewer had not
+flagged**: the re-test table, and §3's own bolded lead sentence — *"the multiplier never reaches
+portfolio economics on any path"* — which round 14 qualified in the very next paragraph without
+correcting the categorical claim three lines above it. A sweep for the *conclusion* rather than the
+phrasing is what surfaced them; both are fixed here.
+
+The useful signal is what it implies about convergence: the review's claims about the code are
+holding, and the remaining churn is internal consistency in a document that has been rewritten
+seventeen times.
+
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
 remedies — and are rewritten rather than softened; the multiplier correction made the defect
@@ -1019,11 +1046,16 @@ to name.
 Round 7 closed the §4 loop and is worth stating as the fifth lesson. Every earlier version of that
 table reasoned about the position leg and *inferred* the cash leg. Reading `ApplyBuy` to the end —
 `account.Cash -= notional` — and then running the numbers produced a materially different and partly
-opposite answer: equity is right at entry and overstated on losses, P&L is exactly 1/100, and Sharpe
-is approximately *unaffected*. **The metrics an operator would use to sanity-check an options book
-are precisely the ones this defect leaves looking plausible.** Four wrong versions of one table, each
-confidently reasoned, none of them arithmetic — inference from one side of a seam is not evidence,
-which is the thesis of this entire document applied to its own author.
+opposite answer: equity is right at entry and overstated on losses, and P&L is exactly 1/100.
+Round 7 also concluded that Sharpe was approximately unaffected, and **round 8 refuted that**:
+`RecordDayEnd` divides by the *previous* equity, the two books' denominators diverge as P&L
+accumulates, and over a six-mark series `mean/stdDev` lands 17.9% below correct even in a pure-option
+book. The settled position is §4's — Sharpe is distorted by a drifting amount, which is worse than a
+clean factor because it still looks plausible. **The metrics an operator would use to sanity-check an
+options book are precisely the ones this defect leaves looking plausible.** Five wrong versions of
+one table, each confidently reasoned, only the last of them arithmetic over a series — inference from
+one side of a seam is not evidence, which is the thesis of this entire document applied to its own
+author.
 
 ## Addendum — remediation landed while this review was in flight
 
@@ -1084,8 +1116,12 @@ the client and scoped authorization on the routes.
   roles *only because* `ManageDirectLending` is the overloaded fund-accounting grant §2 names. The
   remediation is load-bearing on the defect.
 
-So §1(c), §2, and the disjoint-permission structural test in improvement #4 all remain open, and the
-"two books, one screen name" ambiguity is now more visible rather than less. Retiring the run-scoped
+So §1(c), §2, and improvement #4's catalog gate all remain open, and the "two books, one screen
+name" ambiguity is now more visible rather than less. On that gate: an earlier draft of this line
+pointed at the *disjoint-permission* structural test, which improvement #4 rejects as an existential
+predicate this very defect satisfies — Admin, Developer and Accounting all pass it while
+`FundAccountant` and `Controller` stay locked out. The test that replaced it is the **declared
+role-to-surface expectation table**, asserted against the workspace ∩ leaf intersection. Retiring the run-scoped
 panel from Accounting (or relabelling it as a Strategy-run artifact) and splitting the permission are
 the remaining work.
 
