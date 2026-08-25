@@ -58,7 +58,10 @@ export function StrategyRunLedgerScreen() {
     let cancelled = false;
     setExplorerError(null);
 
-    getFinancialRecordExplorer("ledger")
+    // Scoped to the run on screen. Unscoped, the explorer answered for whichever run was newest,
+    // so an operator reading an older run saw that run's rows under the newest run's header,
+    // proof links and scope.
+    getFinancialRecordExplorer("ledger", {}, runId ? [{ filterId: "run", value: runId }] : [])
       .then((dto) => {
         if (!cancelled) {
           setExplorer(dto);
@@ -74,7 +77,7 @@ export function StrategyRunLedgerScreen() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [runId]);
 
   useEffect(() => {
     if (!runId) {
@@ -163,15 +166,26 @@ export function StrategyRunLedgerScreen() {
   // The Strategy nav opens this screen with no ?runId=, and the screen deliberately requests
   // nothing without one, so it needs a way to choose a run in-screen.
   //
-  // The explorer's rows are ledger *accounts*, not runs — one row per account per run, with a
-  // composite record id. Read the run from each row's sourceRunId and dedupe; never split the
-  // record id, which would send "ledger:<runId>:<index>" to an API expecting a bare run id.
+  // Read from the explorer's system views, one per run the caller may read. Deriving them from
+  // the rows instead — as this did — could only ever surface the single run those rows came from,
+  // so the picker offered exactly one option and older runs were unreachable. The rows remain the
+  // fallback for an explorer that publishes no run views; never split a record id to recover a
+  // run, which would send "ledger:<runId>:<index>" to an API expecting a bare run id.
   const runOptions = useMemo(() => {
     const seen = new Map<string, string>();
-    for (const row of explorer?.rows ?? []) {
-      const runId = row.sourceRunId?.trim();
-      if (!runId || seen.has(runId)) continue;
-      seen.set(runId, row.source?.trim() || runId);
+    for (const view of explorer?.savedViews ?? []) {
+      const runFilter = view.filters?.find((filter) => filter.filterId === "run");
+      const id = runFilter?.value?.trim();
+      if (!id || seen.has(id)) continue;
+      seen.set(id, view.label?.trim() || id);
+    }
+
+    if (seen.size === 0) {
+      for (const row of explorer?.rows ?? []) {
+        const id = row.sourceRunId?.trim();
+        if (!id || seen.has(id)) continue;
+        seen.set(id, row.source?.trim() || id);
+      }
     }
 
     return [...seen].map(([id, label]) => ({ id, label }));

@@ -114,9 +114,10 @@ describe("StrategyRunLedgerScreen", () => {
 
     expect(await screen.findByRole("alert")).toBeInTheDocument();
   });
-  it("offers the explorer's runs as a selector so the nav entry is not a dead end", async () => {
-    // The Strategy nav links here with no runId. Without an in-screen selector the operator
-    // would land on the "select a run" prompt with no way to select one.
+  it("falls back to the rows when the explorer publishes no run views", async () => {
+    // A fallback, not the main path: BuildLedgerExplorerAsync composes its rows from exactly one
+    // run, so rows can only ever name that run. Two runs' rows are constructed here to prove the
+    // dedupe, and the run-views test below covers what the server actually sends.
     vi.mocked(api.getFinancialRecordExplorer).mockResolvedValue({
       explorerId: "ledger",
       title: "Ledger",
@@ -152,5 +153,76 @@ describe("StrategyRunLedgerScreen", () => {
     expect(runOptions.map((option) => (option as HTMLOptionElement).value)).toEqual(["run-42", "run-43"]);
     expect(screen.getByRole("option", { name: "Run 42" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Run 43" })).toBeInTheDocument();
+  });
+
+  it("offers every run the explorer publishes, not only the one whose rows it returned", async () => {
+    // The selector used to read run ids out of the rows, and the explorer builds its rows from a
+    // single run — so it offered exactly one option and every older run was unreachable from this
+    // screen. The runs now arrive as system views, one per run the caller may read.
+    vi.mocked(api.getFinancialRecordExplorer).mockResolvedValue({
+      explorerId: "ledger",
+      title: "Ledger",
+      description: "",
+      sourceState: "Ready",
+      isBlocked: false,
+      blockedReason: "",
+      scopeItems: [],
+      savedViews: [
+        {
+          viewId: "system-ledger-run-run-42",
+          label: "Momentum · Backtest · 2026-06-30 09:00",
+          description: "",
+          isSystem: true,
+          isActive: true,
+          filters: [{ filterId: "run", label: "Run", value: "run-42", operator: "equals", tone: "Info" }],
+          searchText: "",
+          columnIds: []
+        },
+        {
+          viewId: "system-ledger-run-run-41",
+          label: "Momentum · Backtest · 2026-05-31 09:00",
+          description: "",
+          isSystem: true,
+          isActive: false,
+          filters: [{ filterId: "run", label: "Run", value: "run-41", operator: "equals", tone: "Info" }],
+          searchText: "",
+          columnIds: []
+        }
+      ],
+      summaryItems: [],
+      filters: [],
+      columns: [],
+      // Rows from the active run alone, exactly as the server composes them.
+      rows: [
+        { recordId: "ledger:run-42:0", recordType: "ledger", label: "Cash", source: "Run 42", status: "Asset", tone: "neutral", cells: [], detail: null, sourceRunId: "run-42" }
+      ],
+      selectedRecord: null,
+      proofActions: [],
+      recordGraph: { nodes: [], edges: [] }
+    } as never);
+
+    await renderRunLedger();
+
+    const runOptions = screen.getAllByRole("option").filter((option) => (option as HTMLOptionElement).value !== "");
+    expect(runOptions.map((option) => (option as HTMLOptionElement).value)).toEqual(["run-42", "run-41"]);
+    expect(screen.getByRole("option", { name: "Momentum · Backtest · 2026-05-31 09:00" })).toBeInTheDocument();
+  });
+
+  it("scopes the explorer request to the run the panels are reading", async () => {
+    // Unscoped, the explorer answered for whichever run was newest, so an older run's rows sat
+    // under the newest run's header, proof links and scope.
+    await renderRunLedger("/strategy/run-ledger?runId=run-41");
+
+    expect(api.getFinancialRecordExplorer).toHaveBeenCalledWith(
+      "ledger",
+      {},
+      [{ filterId: "run", value: "run-41" }]
+    );
+  });
+
+  it("asks the explorer for nothing in particular when no run is selected", async () => {
+    await renderRunLedger();
+
+    expect(api.getFinancialRecordExplorer).toHaveBeenCalledWith("ledger", {}, []);
   });
 });

@@ -196,6 +196,110 @@ public sealed partial class WorkstationEndpointsTests
             field.Value == "acct-ops");
     }
 
+    /// <summary>
+    /// The ledger explorer answered for whichever run was newest, whatever run the screen was
+    /// showing, so an operator reading an older run's trial balance saw that run's rows under the
+    /// newest run's header, proof links and scope. It now answers for the run it is asked for.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ShouldAnswerForTheRequestedRun()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-run-older", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-run-newer", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+
+        var client = app.GetTestClient();
+
+        foreach (var runId in new[] { "explorer-ledger-run-older", "explorer-ledger-run-newer" })
+        {
+            var explorer = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+                $"/api/workstation/financial-record-explorers/ledger?filter={Uri.EscapeDataString($"run:{runId}")}",
+                ServerJsonOptions);
+
+            explorer.Should().NotBeNull();
+            explorer!.SourceState.Should().Contain(runId);
+            explorer.Filters.Should().Contain(filter => filter.FilterId == "run" && filter.Value == runId);
+            explorer.Rows.Should().OnlyContain(row => row.SourceRunId == runId);
+            explorer.ProofActions.Should().Contain(action => action.Href.Contains(runId, StringComparison.Ordinal));
+        }
+    }
+
+    /// <summary>
+    /// The screen's run picker read run ids out of the rows, and the explorer composes its rows
+    /// from exactly one run — so it offered one option and every older run was unreachable. Each
+    /// run the caller may read is published as a system view carrying its own run filter.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ShouldPublishEveryReadableRunAsAView()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-view-a", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-view-b", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/ledger",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        var runViews = explorer!.SavedViews
+            .Select(view => view.Filters.FirstOrDefault(filter => filter.FilterId == "run")?.Value)
+            .Where(runId => !string.IsNullOrEmpty(runId))
+            .ToList();
+
+        runViews.Should().Contain(["explorer-ledger-view-a", "explorer-ledger-view-b"]);
+        explorer.SavedViews.Should().ContainSingle(view =>
+            view.IsActive && view.Filters.Any(filter => filter.FilterId == "run"));
+    }
+
+    /// <summary>
+    /// A run id can arrive from a bookmark long after the run was pruned, or name another tenant's
+    /// run. Neither may leave the screen with nothing where a readable ledger exists, and neither
+    /// may serve the named run: the explorer resolves against the caller's own runs and names the
+    /// one it resolved.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ForAnUnreachableRun_ShouldFallBackAndSaySo()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-reachable", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            $"/api/workstation/financial-record-explorers/ledger?filter={Uri.EscapeDataString("run:no-such-run")}",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        explorer!.SourceState.Should().Contain("explorer-ledger-reachable");
+        explorer.SourceState.Should().NotContain("no-such-run");
+        explorer.Rows.Should().OnlyContain(row => row.SourceRunId == "explorer-ledger-reachable");
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_ReportLineProvenanceExplorer_ShouldExposeEndToEndDrillThroughChain()
     {

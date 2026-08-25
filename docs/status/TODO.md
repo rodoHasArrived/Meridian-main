@@ -235,7 +235,7 @@ Total items: **239**
 | `tests/Meridian.Tests/Ui/SecurityMasterWorkbenchEndpointsTests.cs` | 274 | `NOTE` | ❌ | Note: "ready", |
 | `tests/Meridian.Tests/Ui/StatementReconciliationCaseworkHandoffTests.cs` | 611 | `NOTE` | ❌ | Note: "Corrected statement row retained.", |
 | `tests/Meridian.Tests/Ui/StatementReconciliationCaseworkHandoffTests.cs` | 1059 | `NOTE` | ❌ | Note: "Statement variance reviewed.", |
-| `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs` | 250 | `NOTE` | ❌ | Note: "Board pack delivered with retained evidence graph.", |
+| `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs` | 354 | `NOTE` | ❌ | Note: "Board pack delivered with retained evidence graph.", |
 | `tests/Meridian.Tests/Ui/WorkstationStatementCaseworkAuthorityEndpointTests.cs` | 130 | `NOTE` | ❌ | Note: request.ResolutionNote, |
 | `tests/Meridian.Ui.Tests/Services/DiagnosticsServiceTests.cs` | 9 | `NOTE` | ❌ | /// Note: The service methods require a running backend (ApiClientService), |
 | `tests/Meridian.Ui.Tests/Services/ScheduledMaintenanceServiceTests.cs` | 110 | `NOTE` | ❌ | // NOTE: since this is a singleton shared across tests, if StartScheduler was |

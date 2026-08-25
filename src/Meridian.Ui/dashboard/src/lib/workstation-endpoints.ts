@@ -1325,8 +1325,28 @@ export function workstationAssetOperationsEndpoint(securityId: string): string {
   return routeWithParam(UI_API_ROUTES.WorkstationAssetOperations, "securityId", securityId);
 }
 
-export function workstationFinancialRecordExplorerEndpoint(explorerId: string): string {
-  return routeWithParam(WORKSTATION_API_ENDPOINTS.financialRecordExplorer, "explorerId", explorerId);
+/**
+ * One explorer-side filter to send with an explorer request, so the explorer answers for the same
+ * subject the screen is showing. The ledger explorer reads `run`; without it it answers for
+ * whichever run is newest, whatever run the panels beside it are reading.
+ */
+export interface ExplorerFilterSelection {
+  filterId: string;
+  value: string;
+}
+
+export function workstationFinancialRecordExplorerEndpoint(
+  explorerId: string,
+  filters: readonly ExplorerFilterSelection[] = []
+): string {
+  const base = routeWithParam(WORKSTATION_API_ENDPOINTS.financialRecordExplorer, "explorerId", explorerId);
+  // The endpoint parses each `filter` as one "filterId:value" pair, so the id must not contain a
+  // colon and the value keeps everything after the first one.
+  const query = filters
+    .filter((filter) => filter.filterId && filter.value)
+    .map((filter) => `filter=${encodeURIComponent(`${filter.filterId}:${filter.value}`)}`)
+    .join("&");
+  return query ? `${base}?${query}` : base;
 }
 
 export function workstationFinancialRecordExplorerRecordEndpoint(explorerId: string, recordId: string): string {
