@@ -6540,6 +6540,7 @@ Meridian-main
 │   │   │   │   │   ├── portfolio-screen.view-model.test.ts
 │   │   │   │   │   ├── portfolio-screen.view-model.ts
 │   │   │   │   │   ├── portfolio-screen.workflow-continuity.ts
+│   │   │   │   │   ├── posted-ledger-route-scope.ts
 │   │   │   │   │   ├── price-alerts-screen.test.tsx
 │   │   │   │   │   ├── price-alerts-screen.tsx
 │   │   │   │   │   ├── price-alerts-screen.view-model.test.ts

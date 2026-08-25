@@ -512,7 +512,19 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         // without a stamp the slower one wins and shows book A's periods under book B's header
         // and currency.
         var revision = ++_bookRevision;
-        var response = await _client.GetPeriodsAsync(ledgerBookId, ct).ConfigureAwait(true);
+        ApiResponse<List<LedgerPeriodDto>> response;
+        try
+        {
+            response = await _client.GetPeriodsAsync(ledgerBookId, ct).ConfigureAwait(true);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Navigating away mid-load cancels the page token and the real client rethrows. Unlike
+            // RefreshAsync and SelectPeriodAsync this path is reached straight from a command, so
+            // without a handler the AsyncRelayCommand faults on ordinary navigation.
+            return;
+        }
+
         if (revision != _bookRevision)
         {
             return;

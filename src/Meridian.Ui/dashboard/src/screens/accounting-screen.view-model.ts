@@ -5251,17 +5251,23 @@ export function buildAccountingTrialBalanceViewState({
 export function buildAccountingLedgerJournalEvidenceViewState({
   runId,
   rows,
-  dimensionFilter = "", scopeLabel = null
+  dimensionFilter = "", scopeLabel = null, currency = null
 }: {
   runId: string | null;
   rows: LedgerJournalLine[];
   dimensionFilter?: string | null;
   scopeLabel?: string | null; // overrides the run phrasing: the posted journal is period-scoped
+  /**
+   * The ledger book's base currency, when these rows are a posted book's. Without it the debits
+   * and credits below were labelled in dollars beside a trial balance on the same page labelled
+   * in the book's own currency — the same governed figures, in two currencies.
+   */
+  currency?: string | null;
 }): AccountingLedgerJournalEvidenceViewState {
   const runLabel = scopeLabel?.trim() || (runId ? "the selected ledger run" : "the current ledger selection");
   const normalizedFilter = normalizeLedgerAccountFilter(dimensionFilter);
   const journalRows = rows
-    .map(buildLedgerJournalEvidenceRow)
+    .map((row) => buildLedgerJournalEvidenceRow(row, currency))
     .filter((row) => ledgerJournalRowMatchesDimensionFilter(row, normalizedFilter));
 
   return {
@@ -5276,9 +5282,13 @@ export function buildAccountingLedgerJournalEvidenceViewState({
   };
 }
 
-function buildLedgerJournalEvidenceRow(line: LedgerJournalLine): AccountingLedgerJournalEvidenceRowViewModel {
+function buildLedgerJournalEvidenceRow(
+  line: LedgerJournalLine,
+  currency: string | null = null
+): AccountingLedgerJournalEvidenceRowViewModel {
   const dimensionLabels = buildLedgerDimensionLabels(line);
-  const amountLabel = `${formatCurrency(line.totalDebits)} debit / ${formatCurrency(line.totalCredits)} credit`;
+  const money = (value: number) => (currency ? formatCurrencyForCode(value, currency) : formatCurrency(value));
+  const amountLabel = `${money(line.totalDebits)} debit / ${money(line.totalCredits)} credit`;
   const lineCountLabel = line.lineCount === 1 ? "1 line" : `${line.lineCount.toLocaleString()} lines`;
 
   return {
@@ -5342,13 +5352,18 @@ function buildTrialBalanceRow(
   const dimensionLabels = buildLedgerDimensionLabels(line);
   const dimensionLabel = dimensionLabels.summary;
   const dimensionDetailLabel = dimensionLabels.detail;
+  // Identity from the full dimension set, not the summary. The summary shows the first three
+  // dimensions and a "+N" count, so two rows differing only in a later one produced the same
+  // string -- duplicate React keys, and selecting the second row resolving the first row's detail
+  // and evidence. Widening the enumeration to every declared dimension made that collision far
+  // easier to hit. The summary is still what the operator reads; it is just not the identity.
   const rowId = [
     line.accountingBasis,
     accountLabel,
     accountTypeLabel,
     line.financialAccountId,
     securityLabel,
-    dimensionLabel === "No dimensions" ? null : dimensionLabel
+    dimensionDetailLabel === "No ledger dimensions are attached to this row." ? null : dimensionDetailLabel
   ].filter(Boolean).join("-");
 
   return {
@@ -5383,13 +5398,25 @@ function buildLedgerDimensionLabels(line: Pick<LedgerTrialBalanceLine, "dimensio
   const dimensions = line.dimensions ?? null;
   const labels: string[] = [];
 
+  // Every dimension LedgerDimensionSet declares, in the canonical order the desktop workstation's
+  // PostedLedgerProjection.DescribeDimensionScope also uses. Enumerating a subset meant two rows
+  // differing only by an omitted dimension rendered an identical scope, and the two lanes omitted
+  // different ones — so the same balance was distinguishable on one workstation and not the other.
+  appendDimensionLabel(labels, "Organization", dimensions?.organizationId);
   appendDimensionLabel(labels, "Fund", dimensions?.fundId);
   appendDimensionLabel(labels, "Entity", dimensions?.entityId ?? line.entityScopeDisplayName ?? line.entityScopeId);
+  appendDimensionLabel(labels, "Portfolio", dimensions?.portfolioId);
+  appendDimensionLabel(labels, "Book", dimensions?.bookId);
   appendDimensionLabel(labels, "Sleeve", dimensions?.sleeveId ?? line.sleeveScopeDisplayName ?? line.sleeveScopeId);
   appendDimensionLabel(labels, "Strategy", dimensions?.strategyId);
   appendDimensionLabel(labels, "Investor", dimensions?.investorId);
   appendDimensionLabel(labels, "Capital account", dimensions?.capitalAccountId ?? line.accountScopeDisplayName ?? line.accountScopeId);
+  appendDimensionLabel(labels, "Customer", dimensions?.customerId);
+  appendDimensionLabel(labels, "Vendor", dimensions?.vendorId);
+  appendDimensionLabel(labels, "Project", dimensions?.projectId);
+  appendDimensionLabel(labels, "Account", dimensions?.accountId);
   appendDimensionLabel(labels, "Instrument", dimensions?.instrumentId);
+  appendDimensionLabel(labels, "Position", dimensions?.positionId);
   appendDimensionLabel(labels, "Tax lot", dimensions?.taxLotId);
   appendDimensionLabel(labels, "Cost center", dimensions?.costCenterId);
   appendDimensionLabel(labels, "Counterparty", dimensions?.counterpartyId);
@@ -5401,7 +5428,7 @@ function buildLedgerDimensionLabels(line: Pick<LedgerTrialBalanceLine, "dimensio
   if (labels.length === 0) {
     return {
       summary: "No dimensions",
-      detail: "No fund, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, or external GL dimensions are attached."
+      detail: "No ledger dimensions are attached to this row."
     };
   }
 

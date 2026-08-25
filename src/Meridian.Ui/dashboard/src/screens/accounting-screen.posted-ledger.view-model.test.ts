@@ -7,6 +7,8 @@ import {
   collectPostedLedgerRelatedSecurities,
   resolveDefaultPostedLedgerPeriodId,
   resolvePostedEntryDimensions,
+  resolvePostedEntryEntityId,
+  sortLedgerBooks,
   sortLedgerPeriodsDescending,
   toLedgerJournalLine,
   toTrialBalanceLine,
@@ -171,6 +173,66 @@ function makePostedEntry(overrides: Partial<LedgerPostedJournalEntry> = {}): Led
   };
 }
 
+describe("sortLedgerBooks", () => {
+  it("orders by display name with a stable id tie-break, matching the desktop projection", () => {
+    // Taking the store's own order meant the browser default followed
+    // `fund_profile_id, display_name, ledger_book_id` while the desktop followed display name
+    // alone, so the two co-equal views of the same ledger opened on different books.
+    const sorted = sortLedgerBooks([
+      makeBook({ ledgerBookId: "book-z", displayName: "Zeta Fund" }),
+      makeBook({ ledgerBookId: "book-b", displayName: "Alpha Fund" }),
+      makeBook({ ledgerBookId: "book-a", displayName: "Alpha Fund" })
+    ]);
+
+    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-a", "book-b", "book-z"]);
+  });
+
+  it("collates ordinally, not by the operator's locale", () => {
+    // localeCompare collates by locale, so an accented name can order differently in the browser
+    // than under the desktop's StringComparer.OrdinalIgnoreCase -- and differently for two
+    // operators. That would reintroduce a locale-dependent default book.
+    const sorted = sortLedgerBooks([
+      makeBook({ ledgerBookId: "book-z", displayName: "Zulu Fund" }),
+      makeBook({ ledgerBookId: "book-a", displayName: "\u00C1lpha Fund" })
+    ]);
+
+    // "Á" (U+00C1) sorts after "Z" (U+005A) ordinally, whereas most locales collate it with "A".
+    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-z", "book-a"]);
+  });
+
+  it("folds case one-to-one, without full Unicode expansion", () => {
+    // toUpperCase() applies full case mapping: "ß" becomes "SS", which would tie a book named
+    // "ß Fund" with one named "SS Fund" and drop the browser to the id tie-break while the desktop
+    // still separates them by name. char.ToUpperInvariant leaves a code unit with no
+    // single-character uppercase alone, and so does this.
+    const sorted = sortLedgerBooks([
+      makeBook({ ledgerBookId: "book-sharp", displayName: "\u00DF Fund" }),
+      makeBook({ ledgerBookId: "book-ss", displayName: "SS Fund" })
+    ]);
+
+    // "ß" (U+00DF) sorts after "S" (U+0053), so the two names stay distinct and ordered by name.
+    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-ss", "book-sharp"]);
+  });
+
+  it("ignores case, as the desktop comparator does", () => {
+    const sorted = sortLedgerBooks([
+      makeBook({ ledgerBookId: "book-b", displayName: "beta Fund" }),
+      makeBook({ ledgerBookId: "book-a", displayName: "Alpha Fund" })
+    ]);
+
+    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-a", "book-b"]);
+  });
+
+  it("falls back to the id for a book with no display name", () => {
+    const sorted = sortLedgerBooks([
+      makeBook({ ledgerBookId: "zzz", displayName: "   " }),
+      makeBook({ ledgerBookId: "book-m", displayName: "Master Fund" })
+    ]);
+
+    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-m", "zzz"]);
+  });
+});
+
 describe("resolvePostedEntryDimensions", () => {
   it("reports the shared scope when every line was posted to it", () => {
     // LedgerJournalEntryDto declares no dimensions of its own. Reading `entry.dimensions` meant
@@ -186,6 +248,42 @@ describe("resolvePostedEntryDimensions", () => {
 
     expect(resolvePostedEntryDimensions(entry)).toEqual(dimensions);
     expect(toLedgerJournalLine(entry).dimensions).toEqual(dimensions);
+  });
+
+  it("names the entry's entity scope so consumers do not claim it spans every entity", () => {
+    // Consumers fall back to "all entities" on a null scope, which is an affirmative claim about
+    // an entry posted to exactly one.
+    const scoped = makePostedEntry({
+      lines: [makePostedEntryLine({ dimensions: { entityId: "entity-lux" } })]
+    });
+    expect(toLedgerJournalLine(scoped).entityScopeDisplayName).toBe("entity-lux");
+    expect(toLedgerJournalLine(scoped).entityScopeId).toBe("entity-lux");
+
+    // Lines that disagree have no single entity, which is not the same as spanning all of them.
+    const mixed = makePostedEntry({
+      lines: [
+        makePostedEntryLine({ entryId: "entry-1", dimensions: { entityId: "entity-lux" } }),
+        makePostedEntryLine({ entryId: "entry-2", debit: 0, credit: 1200, dimensions: { entityId: "entity-cay" } })
+      ]
+    });
+    expect(toLedgerJournalLine(mixed).entityScopeDisplayName).toBeNull();
+  });
+
+  it("names the entity when every line agrees on it, whatever else differs", () => {
+    // The ordinary case: a debit and a credit sharing an entity but posted to different accounts.
+    // Requiring the whole dimension sets to match reported "not scoped to one entity" for exactly
+    // the entries an operator most expects to see scoped.
+    const entry = makePostedEntry({
+      lines: [
+        makePostedEntryLine({ entryId: "entry-1", dimensions: { entityId: "entity-lux", accountId: "1000" } }),
+        makePostedEntryLine({ entryId: "entry-2", debit: 0, credit: 1200, dimensions: { entityId: "entity-lux", accountId: "2000" } })
+      ]
+    });
+
+    expect(resolvePostedEntryEntityId(entry)).toBe("entity-lux");
+    expect(toLedgerJournalLine(entry).entityScopeDisplayName).toBe("entity-lux");
+    // The whole-set match still declines, which is right for the dimension set as a whole.
+    expect(resolvePostedEntryDimensions(entry)).toBeNull();
   });
 
   it("reports no scope for an entry whose lines disagree", () => {
@@ -448,6 +546,68 @@ describe("useAccountingPostedLedgerViewModel", () => {
     expect(result.current.view.pnl.state).toBe("ready");
   });
 
+  it("stops reporting a period load that the book scope cancelled", async () => {
+    // A retained consumer pauses with `enabled: false`, which cancels an in-flight period request.
+    // Cancellation deliberately suppresses that request's own `finally`, and no replacement runs
+    // once the book is gone -- so the hook went on reporting a period load that would never
+    // finish. Any consumer that gates on periodSelector.loading, as the trial balance does, would
+    // sit on its loading card for good.
+    let releasePeriods: ((rows: LedgerPeriod[]) => void) | null = null;
+    const services = makeServices({
+      getPeriods: vi.fn().mockImplementation(() =>
+        new Promise<LedgerPeriod[]>((resolve) => { releasePeriods = resolve; })),
+      getBooks: vi.fn().mockResolvedValue([makeBook()])
+    });
+
+    const { result, rerender } = renderHook(
+      ({ enabled }: { enabled: boolean }) =>
+        useAccountingPostedLedgerViewModel("ledger", services, { enabled }),
+      { initialProps: { enabled: true } }
+    );
+
+    await waitFor(() => {
+      expect(result.current.view.periodSelector.loading).toBe(true);
+    });
+    expect(releasePeriods).not.toBeNull();
+
+    // The books go away while that request is still outstanding, so nothing will replace it.
+    services.getBooks = vi.fn().mockRejectedValue(new Error("Ledger books are unavailable."));
+    rerender({ enabled: false });
+
+    await waitFor(() => {
+      expect(result.current.view.periodSelector.loading).toBe(false);
+    });
+  });
+
+  it("loads the period the operator picked even while the route still names another", async () => {
+    // The route-scope binding suppresses period-scoped loads while the route names a period this
+    // hook cannot resolve. A period the operator picked from the list in front of them is not that
+    // case -- it is the scope on screen. Left suppressed, the pick showed in the selector and
+    // never loaded anything, and it stayed that way for as long as the route disagreed.
+    const services = makeServices({
+      getPeriods: vi.fn().mockRejectedValue(new Error("Ledger periods are unavailable."))
+    });
+
+    const { result } = renderHook(() =>
+      useAccountingPostedLedgerViewModel("ledger", services, {
+        // What a stale shared route says, which this hook has no way to resolve while its own
+        // period request is failing.
+        requestedPeriodId: "period-named-by-the-route"
+      }));
+
+    await waitFor(() => {
+      expect(result.current.view.periodSelector.errorText).toBe("Ledger periods are unavailable.");
+    });
+
+    act(() => {
+      result.current.selectPeriod("period-picked-by-the-operator");
+    });
+
+    await waitFor(() => {
+      expect(services.getTrialBalance).toHaveBeenCalledWith("period-picked-by-the-operator");
+    });
+  });
+
   it("does not call the ledger API outside the ledger workstream", async () => {
     const services = makeServices();
     renderHook(() => useAccountingPostedLedgerViewModel("reconciliation", services));
@@ -604,7 +764,7 @@ describe("useAccountingPostedLedgerViewModel", () => {
     const services = makeServices({
       getBooks: vi.fn().mockResolvedValue([
         makeBook(),
-        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Feeder Fund" })
+        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Zulu Feeder Fund" })
       ]),
       getTrialBalance: vi.fn().mockResolvedValue([makeLine()])
     });
@@ -630,7 +790,7 @@ describe("useAccountingPostedLedgerViewModel", () => {
     const services = makeServices({
       getBooks: vi.fn().mockResolvedValue([
         makeBook(),
-        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Feeder Fund" })
+        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Zulu Feeder Fund" })
       ]),
       getTrialBalance: vi.fn().mockResolvedValue([makeLine()])
     });
