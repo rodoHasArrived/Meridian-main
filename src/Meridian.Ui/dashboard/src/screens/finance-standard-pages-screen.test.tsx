@@ -777,6 +777,42 @@ describe("finance standard pages", () => {
     expect(screen.queryByText("Cash sweep")).not.toBeInTheDocument();
   });
 
+  it("drops a retained period the book has since reported it no longer holds", async () => {
+    // A successful EMPTY response is the book answering that it holds no periods at all, so a
+    // retained selection does not exist. The validation effect returned early on an empty list, so
+    // the tab reloaded that period's figures and wrote it back into the shared route -- results
+    // for a period its own selector no longer offered.
+    mockPostedBook();
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([
+      {
+        journalEntryId: "je-cash-1",
+        periodId: LEDGER_PERIOD_ID,
+        ledgerBookId: LEDGER_BOOK_ID,
+        timestamp: "2026-07-31T00:00:00Z",
+        description: "Cash sweep",
+        totalDebits: 500,
+        totalCredits: 500,
+        isBalanced: true,
+        lines: []
+      }
+    ] as never);
+
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+    await waitForAsyncEffects();
+    expect(await screen.findByRole("table", { name: "Ledger Explorer results" })).toHaveTextContent("Cash sweep");
+
+    // The period is deleted while the tab is idle, and discovery now says so authoritatively.
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValue([] as never);
+    fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
+    await waitForAsyncEffects();
+    fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    expect((document.getElementById("ledger-period-select") as HTMLSelectElement | null)?.value).toBe("");
+    expect(screen.queryByText("Cash sweep")).not.toBeInTheDocument();
+  });
+
   it("offers no ledger filter it does not apply", async () => {
     // "Unposted", "Reversals", "Manual JEs" and "System Generated" changed a label and nothing
     // else, and the results header reported the unfiltered count as that view's. On a governed

@@ -730,6 +730,13 @@ export function useAccountingPostedLedgerViewModel(
   const [journalErrorText, setJournalErrorText] = useState<string | null>(null);
 
   /**
+   * Whether a successful response has established what the selected book holds. Only a success
+   * settles it: an empty list left by a failure says nothing about the book, and an empty list
+   * that HAS settled is the book answering that it holds no periods at all.
+   */
+  const periodsSettled = periodsLoadedForBookId !== null && periodsLoadedForBookId === selectedBookId;
+
+  /**
    * Drops everything that only means something within one ledger book. The book label and base
    * currency come off the selected book, so figures left behind after it goes render unlabelled
    * and read as belonging to whatever book is chosen next.
@@ -819,6 +826,12 @@ export function useAccountingPostedLedgerViewModel(
 
   useEffect(() => {
     if (workstream !== "ledger" || !enabled || selectedBookId === null) {
+      // No book means no period request will run -- and nothing else will ever clear one that was
+      // in flight when the book went away, because cancellation suppresses its own `finally`. The
+      // selector then sat on its loading card forever, hiding the very book error that caused it.
+      // The error goes too: it belonged to a request for a book that is no longer selected.
+      setPeriodsLoading(false);
+      setPeriodsError(null);
       return;
     }
 
@@ -870,7 +883,17 @@ export function useAccountingPostedLedgerViewModel(
     // Nothing to validate a selection against until the periods land. Resetting here would
     // clobber a caller-supplied selection (a deep link's ?periodId=) on the first render and
     // fight whoever re-applies it.
+    //
+    // A SETTLED empty list is not that case: it is the book answering that it holds no periods at
+    // all, so whatever is still selected does not exist. Left selected, a returning tab reloaded
+    // that period's figures and wrote it back into the shared route -- showing results for a
+    // period its own selector no longer offered, after a sibling had already established it was
+    // gone.
     if (periods.length === 0) {
+      if (periodsSettled && selectedPeriodId !== null) {
+        setSelectedPeriodId(null);
+        setSelectedRowId(null);
+      }
       return;
     }
 
@@ -881,7 +904,7 @@ export function useAccountingPostedLedgerViewModel(
     }
 
     setSelectedPeriodId(resolveDefaultPostedLedgerPeriodId(periods));
-  }, [periods, selectedPeriodId]);
+  }, [periods, periodsSettled, selectedPeriodId]);
 
   // The shared route names a period this hook holds no answer for, and cannot get one: the list it
   // has is a retained one that no successful response has replaced. Whatever is selected here is
@@ -891,7 +914,7 @@ export function useAccountingPostedLedgerViewModel(
   const routePeriodUnresolved = requestedPeriodId !== null
     && selectedPeriodId !== null
     && !periodIdsMatch(requestedPeriodId, selectedPeriodId)
-    && !(periodsLoadedForBookId !== null && periodsLoadedForBookId === selectedBookId);
+    && !periodsSettled;
 
   useEffect(() => {
     if (!selectedPeriodId || workstream !== "ledger" || !enabled || routePeriodUnresolved) {
@@ -1148,6 +1171,6 @@ export function useAccountingPostedLedgerViewModel(
      * alone leaves the request unresolved forever on a book that genuinely has no periods. A
      * failed request does not settle it: an empty list from an outage says nothing about the book.
      */
-    periodsSettled: periodsLoadedForBookId !== null && periodsLoadedForBookId === selectedBookId
+    periodsSettled
   };
 }

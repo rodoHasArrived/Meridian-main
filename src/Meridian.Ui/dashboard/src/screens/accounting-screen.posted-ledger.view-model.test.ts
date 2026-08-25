@@ -546,6 +546,39 @@ describe("useAccountingPostedLedgerViewModel", () => {
     expect(result.current.view.pnl.state).toBe("ready");
   });
 
+  it("stops reporting a period load that the book scope cancelled", async () => {
+    // A retained consumer pauses with `enabled: false`, which cancels an in-flight period request.
+    // Cancellation deliberately suppresses that request's own `finally`, and no replacement runs
+    // once the book is gone -- so the hook went on reporting a period load that would never
+    // finish. Any consumer that gates on periodSelector.loading, as the trial balance does, would
+    // sit on its loading card for good.
+    let releasePeriods: ((rows: LedgerPeriod[]) => void) | null = null;
+    const services = makeServices({
+      getPeriods: vi.fn().mockImplementation(() =>
+        new Promise<LedgerPeriod[]>((resolve) => { releasePeriods = resolve; })),
+      getBooks: vi.fn().mockResolvedValue([makeBook()])
+    });
+
+    const { result, rerender } = renderHook(
+      ({ enabled }: { enabled: boolean }) =>
+        useAccountingPostedLedgerViewModel("ledger", services, { enabled }),
+      { initialProps: { enabled: true } }
+    );
+
+    await waitFor(() => {
+      expect(result.current.view.periodSelector.loading).toBe(true);
+    });
+    expect(releasePeriods).not.toBeNull();
+
+    // The books go away while that request is still outstanding, so nothing will replace it.
+    services.getBooks = vi.fn().mockRejectedValue(new Error("Ledger books are unavailable."));
+    rerender({ enabled: false });
+
+    await waitFor(() => {
+      expect(result.current.view.periodSelector.loading).toBe(false);
+    });
+  });
+
   it("does not call the ledger API outside the ledger workstream", async () => {
     const services = makeServices();
     renderHook(() => useAccountingPostedLedgerViewModel("reconciliation", services));
