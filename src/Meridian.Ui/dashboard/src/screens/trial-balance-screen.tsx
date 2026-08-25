@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { AccountTree, type AccountNode } from "@/components/accounting/AccountTree";
 import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
 import { TrialBalanceTable } from "@/components/accounting/TrialBalanceTable";
@@ -44,7 +44,12 @@ export function TrialBalanceScreen() {
   // meant this screen — the one an operator reaches for "Accounting → Trial Balance" —
   // showed numbers that were never the fund's.
   // This screen renders the posted journal, so it is the consumer that asks for it.
-  const postedLedger = useAccountingPostedLedgerViewModel("ledger", undefined, { includeJournal: true });
+  const [routeSearchParams] = useSearchParams();
+  const postedLedger = useAccountingPostedLedgerViewModel(
+    "ledger",
+    undefined,
+    // Same reason as the journal tab: read from the URL here, not back from the route binding.
+    { includeJournal: true, requestedPeriodId: routeSearchParams.get("periodId") });
   const { journalLines, journalLoading, journalErrorText, selectedPeriodId, selectedPeriodLabel } = postedLedger;
   const periodOptions = postedLedger.view.periodSelector.options;
 

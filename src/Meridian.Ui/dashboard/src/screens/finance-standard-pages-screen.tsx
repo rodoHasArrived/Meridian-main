@@ -457,10 +457,18 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
 /** The Ledger tab's own body, so its requests belong to the tab that renders them. */
 function PostedLedgerJournalTab({ active }: { active: boolean }) {
   const [searchText, setSearchText] = useState("");
+  const [tabSearchParams] = useSearchParams();
   const postedLedger = useAccountingPostedLedgerViewModel(
     "ledger",
     undefined,
-    { includeJournal: true, enabled: active });
+    {
+      includeJournal: true,
+      enabled: active,
+      // Read straight from the URL rather than back from the route binding below, so the hook has
+      // it in the same render: the binding runs after it, and a value fed back would arrive a
+      // render late.
+      requestedPeriodId: tabSearchParams.get("periodId")
+    });
   // The same route binding the trial-balance tab uses, so the two tabs share one scope rather
   // than holding two. This tab never wrote to the route before: selecting book B here and
   // switching tabs showed A, and switching back showed B under a URL that said A. Only the tab
@@ -527,7 +535,14 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
               )) : <option value="">No ledger book available</option>}
             </Select>
           </FormRow>
-          <FormRow label="Ledger period" labelFor="ledger-period-select">
+          {/* The retained list survives a failed refresh so the period stays named, which leaves
+              the selector looking entirely normal. Without this the operator had no sign that
+              discovery failed, or that the list may be missing periods closed since. */}
+          <FormRow
+            label="Ledger period"
+            labelFor="ledger-period-select"
+            error={postedLedger.view.periodSelector.errorText}
+          >
             <Select
               id="ledger-period-select"
               value={postedLedger.selectedPeriodId ?? ""}

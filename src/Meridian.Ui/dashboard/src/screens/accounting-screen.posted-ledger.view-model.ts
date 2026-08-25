@@ -315,6 +315,12 @@ function toSimpleUpperCase(value: string): string {
   return folded;
 }
 
+/** Ledger ids travel as GUIDs, whose textual form is case-insensitive: the API and .NET `Guid`
+ * treat "AA…" and "aa…" as the same id, so a link written in upper case names the same period. */
+function periodIdsMatch(left: string, right: string): boolean {
+  return compareOrdinalIgnoreCase(left, right) === 0;
+}
+
 export function sortLedgerPeriodsDescending(periods: LedgerPeriod[]): LedgerPeriod[] {
   return [...periods].sort((left, right) =>
     right.fiscalYear - left.fiscalYear ||
@@ -663,7 +669,16 @@ export function useAccountingPostedLedgerViewModel(
   // `enabled` pauses every request while retaining the selection. A consumer that unmounts to stop
   // requesting loses the operator's chosen book and period with it; one that stays mounted and
   // sets this keeps them.
-  { includeJournal = false, enabled = true }: { includeJournal?: boolean; enabled?: boolean } = {}
+  //
+  // `requestedPeriodId` is the period the shared route names, read from the URL by the consumer.
+  // Passed in rather than read here so this stays a headless hook, and so the value is available
+  // in the same render the hook runs -- a consumer that fed it back from a later hook would be one
+  // render behind, which is the whole class of bug this scoping has already produced twice.
+  {
+    includeJournal = false,
+    enabled = true,
+    requestedPeriodId = null
+  }: { includeJournal?: boolean; enabled?: boolean; requestedPeriodId?: string | null } = {}
 ): AccountingPostedLedgerViewModel {
   const [books, setBooks] = useState<LedgerBook[]>([]);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
@@ -734,6 +749,22 @@ export function useAccountingPostedLedgerViewModel(
     setPeriodsLoadedForBookId(null);
     periodsBookIdRef.current = null;
   }, []);
+
+  // Everything below the book -- the period selection, the figures, the entries -- means something
+  // only within one book, so a change of book has to drop it. That was the job of each path that
+  // changes the book, and one path forgot: when discovery finds the selected book gone it falls
+  // back to the first available WITHOUT clearing. The report and journal effects key off
+  // selectedPeriodId rather than selectedBookId, so the outgoing book's period survived and its
+  // figures reloaded under the fallback book's label and base currency.
+  //
+  // Made an invariant of the change itself rather than a duty of each caller, so the next path to
+  // move the book cannot forget. Render-phase for the same reason as the reset above: the report
+  // effects would otherwise read the outgoing selection in the commit the book changes.
+  const [scopedBookId, setScopedBookId] = useState<string | null>(null);
+  if (scopedBookId !== selectedBookId) {
+    setScopedBookId(selectedBookId);
+    clearBookScopedState();
+  }
 
   useEffect(() => {
     if (workstream !== "ledger" || !enabled) {
@@ -852,8 +883,18 @@ export function useAccountingPostedLedgerViewModel(
     setSelectedPeriodId(resolveDefaultPostedLedgerPeriodId(periods));
   }, [periods, selectedPeriodId]);
 
+  // The shared route names a period this hook holds no answer for, and cannot get one: the list it
+  // has is a retained one that no successful response has replaced. Whatever is selected here is
+  // then NOT the scope the route asks for, so loading its figures put one period's balances and
+  // entries on screen while the URL named another -- a link that does not reproduce what it opens.
+  // Periods settling resolves it either way, so this only holds during an actual outage.
+  const routePeriodUnresolved = requestedPeriodId !== null
+    && selectedPeriodId !== null
+    && !periodIdsMatch(requestedPeriodId, selectedPeriodId)
+    && !(periodsLoadedForBookId !== null && periodsLoadedForBookId === selectedBookId);
+
   useEffect(() => {
-    if (!selectedPeriodId || workstream !== "ledger" || !enabled) {
+    if (!selectedPeriodId || workstream !== "ledger" || !enabled || routePeriodUnresolved) {
       setTrialBalanceRows([]);
       setTrialBalanceError(null);
       setTrialBalanceLoading(false);
@@ -938,10 +979,10 @@ export function useAccountingPostedLedgerViewModel(
     return () => {
       cancelled = true;
     };
-  }, [enabled, selectedPeriodId, services, workstream]);
+  }, [enabled, routePeriodUnresolved, selectedPeriodId, services, workstream]);
 
   useEffect(() => {
-    if (!includeJournal || !selectedPeriodId || workstream !== "ledger" || !enabled) {
+    if (!includeJournal || !selectedPeriodId || workstream !== "ledger" || !enabled || routePeriodUnresolved) {
       setJournalLines([]);
       setJournalErrorText(null);
       setJournalLoading(false);
@@ -981,7 +1022,7 @@ export function useAccountingPostedLedgerViewModel(
     return () => {
       cancelled = true;
     };
-  }, [enabled, selectedPeriodId, services, workstream, includeJournal]);
+  }, [enabled, routePeriodUnresolved, selectedPeriodId, services, workstream, includeJournal]);
 
   const selectPeriod = useCallback((periodId: string) => {
     setSelectedPeriodId(periodId);

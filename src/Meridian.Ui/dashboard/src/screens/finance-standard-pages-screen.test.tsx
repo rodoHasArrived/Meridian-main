@@ -606,6 +606,177 @@ describe("finance standard pages", () => {
     expect(screen.queryByText(/No ledger periods exist yet/)).not.toBeInTheDocument();
   });
 
+  it("drops the outgoing book's period when discovery falls back to another book", async () => {
+    // A book can be deleted while its tab is idle. Discovery then replaces the selection with the
+    // first available book -- but the report and journal effects key off selectedPeriodId, not
+    // selectedBookId, so the outgoing book's period survived the swap and its entries reloaded
+    // under the fallback book's label and base currency. On a book of record that is one book's
+    // figures presented as another's.
+    const FEEDER_BOOK_ID = "00000000-0000-0000-0000-0000000000cc";
+    const FEEDER_PERIOD_ID = "55555555-5555-5555-5555-555555555555";
+    const masterBook = {
+      ledgerBookId: LEDGER_BOOK_ID,
+      fundProfileId: "fund-alpha",
+      fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+      fundStructureNodeKind: "Fund",
+      displayName: "Alpha Master Fund",
+      baseCurrency: "USD",
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+      accountingBasis: "Primary",
+      accountingPolicyId: "legacy-v1",
+      accountingPolicyVersion: "legacy-v1"
+    };
+    const feederBook = {
+      ...masterBook,
+      ledgerBookId: FEEDER_BOOK_ID,
+      displayName: "Beta Feeder Fund",
+      baseCurrency: "EUR"
+    };
+    const period = (periodId: string, ledgerBookId: string, label: string) => ({
+      periodId,
+      ledgerBookId,
+      fiscalYear: 2026,
+      periodNo: 7,
+      label,
+      startDate: "2026-07-01",
+      endDate: "2026-07-31",
+      status: "HardClosed",
+      openedAt: "2026-07-01T00:00:00Z",
+      closedAt: "2026-08-02T00:00:00Z",
+      version: 1
+    });
+
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([masterBook, feederBook] as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockImplementation((query) =>
+      Promise.resolve(query?.ledgerBookId === FEEDER_BOOK_ID
+        ? [period(FEEDER_PERIOD_ID, FEEDER_BOOK_ID, "July 2026 (feeder)")]
+        : [period(LEDGER_PERIOD_ID, LEDGER_BOOK_ID, "July 2026")]) as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValue([] as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockRejectedValue(new Error("not configured"));
+    // Only the feeder period has entries, so seeing them names the book they came from.
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockImplementation((periodId) =>
+      Promise.resolve(periodId === FEEDER_PERIOD_ID
+        ? [{
+          journalEntryId: "je-feeder-1",
+          periodId: FEEDER_PERIOD_ID,
+          ledgerBookId: FEEDER_BOOK_ID,
+          timestamp: "2026-07-31T00:00:00Z",
+          description: "Feeder sweep",
+          totalDebits: 500,
+          totalCredits: 500,
+          isBalanced: true,
+          lines: []
+        }]
+        : []) as never);
+
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+    await waitForAsyncEffects();
+
+    const bookSelect = () => document.getElementById("ledger-book-select") as HTMLSelectElement | null;
+    const periodSelect = () => document.getElementById("ledger-period-select") as HTMLSelectElement | null;
+
+    fireEvent.change(bookSelect()!, { target: { value: FEEDER_BOOK_ID } });
+    await waitForAsyncEffects();
+    expect(periodSelect()?.value).toBe(FEEDER_PERIOD_ID);
+    expect(await screen.findByRole("table", { name: "Ledger Explorer results" })).toHaveTextContent("Feeder sweep");
+
+    // The feeder book is deleted while the tab is idle, and the surviving book cannot answer for
+    // its periods -- so nothing arrives to replace the outgoing selection.
+    fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
+    await waitForAsyncEffects();
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([masterBook] as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockRejectedValue(new Error("Ledger periods are unavailable."));
+
+    fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    expect(bookSelect()?.value).toBe(LEDGER_BOOK_ID);
+    expect(periodSelect()?.value).toBe("");
+    expect(screen.queryByText("Feeder sweep")).not.toBeInTheDocument();
+  });
+
+  it("says so when the retained period list could not be refreshed", async () => {
+    // Retention keeps the period named through an outage, which leaves the selector looking
+    // entirely normal. Nothing on this tab consumed the discovery error, so the operator had no
+    // sign that the list was stale and might be missing periods closed since.
+    mockPostedBook();
+
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+    await waitForAsyncEffects();
+    expect(screen.queryByText("Ledger periods are unavailable.")).not.toBeInTheDocument();
+
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockRejectedValue(new Error("Ledger periods are unavailable."));
+    fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
+    await waitForAsyncEffects();
+    fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    expect(screen.getByText("Ledger periods are unavailable.")).toBeInTheDocument();
+  });
+
+  it("shows no figures for a period the shared route no longer names", async () => {
+    // Round 4 and round 5 combined: the sibling tab selects a period this one has never seen, and
+    // this tab's refresh then fails, so it cannot resolve what the route asks for. Loading its own
+    // retained period anyway put one period's entries on screen under a URL naming another --
+    // a link that does not reproduce the scope it opens.
+    mockPostedBook();
+    const AUGUST_PERIOD_ID = "44444444-4444-4444-4444-444444444444";
+    const july = {
+      periodId: LEDGER_PERIOD_ID,
+      ledgerBookId: LEDGER_BOOK_ID,
+      fiscalYear: 2026,
+      periodNo: 7,
+      label: "July 2026",
+      startDate: "2026-07-01",
+      endDate: "2026-07-31",
+      status: "HardClosed",
+      openedAt: "2026-07-01T00:00:00Z",
+      closedAt: "2026-08-02T00:00:00Z",
+      version: 1
+    };
+    const august = { ...july, periodId: AUGUST_PERIOD_ID, periodNo: 8, label: "August 2026" };
+    vi.mocked(ledgerReportsApi.getLedgerPeriods)
+      .mockResolvedValueOnce([july] as never)
+      .mockResolvedValue([july, august] as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([
+      {
+        journalEntryId: "je-cash-1",
+        periodId: LEDGER_PERIOD_ID,
+        ledgerBookId: LEDGER_BOOK_ID,
+        timestamp: "2026-07-31T00:00:00Z",
+        description: "Cash sweep",
+        totalDebits: 500,
+        totalCredits: 500,
+        isBalanced: true,
+        lines: []
+      }
+    ] as never);
+
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+    await waitForAsyncEffects();
+    expect(await screen.findByRole("table", { name: "Ledger Explorer results" })).toHaveTextContent("Cash sweep");
+
+    // The sibling tab discovers August and selects it, putting it in the shared route.
+    fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
+    await waitForAsyncEffects();
+    fireEvent.change(
+      document.getElementById("trial-balance-period-select") as HTMLSelectElement,
+      { target: { value: AUGUST_PERIOD_ID } }
+    );
+    await waitForAsyncEffects();
+
+    // Coming back, this tab cannot refresh, so it can never resolve August.
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockRejectedValue(new Error("Ledger periods are unavailable."));
+    fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    expect(screen.queryByText("Cash sweep")).not.toBeInTheDocument();
+  });
+
   it("offers no ledger filter it does not apply", async () => {
     // "Unposted", "Reversals", "Manual JEs" and "System Generated" changed a label and nothing
     // else, and the results header reported the unfiltered count as that view's. On a governed
