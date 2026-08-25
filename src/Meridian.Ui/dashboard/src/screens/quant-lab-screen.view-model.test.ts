@@ -18,6 +18,7 @@ import {
   initializeNewParameterValues,
   markQuantRunSourceDrift,
   mergeQuantParameters,
+  reconcileQuantParameterValues,
   useQuantLabScreenViewModel,
   validateQuantSource,
   type QuantLabServices,
@@ -56,6 +57,7 @@ const successfulRunState: QuantRunState = {
     runtimeError: null,
     consoleOutput: "Hello from Quant Lab.\n",
     compilationErrors: [],
+    compilationWarnings: [],
     runtimeDiagnostics: [],
     metrics: [{ label: "answer", value: "42" }],
     plots: [
@@ -85,6 +87,7 @@ const noEvidenceSuccessfulRunState: QuantRunState = {
     runtimeError: null,
     consoleOutput: "",
     compilationErrors: [],
+    compilationWarnings: [],
     runtimeDiagnostics: [],
     metrics: [],
     plots: [],
@@ -104,6 +107,7 @@ const tradesOnlySuccessfulRunState: QuantRunState = {
     runtimeError: null,
     consoleOutput: "",
     compilationErrors: [],
+    compilationWarnings: [],
     runtimeDiagnostics: [],
     metrics: [],
     plots: [],
@@ -114,7 +118,10 @@ const tradesOnlySuccessfulRunState: QuantRunState = {
         side: "buy",
         quantity: 10,
         price: 512.35,
-        commission: 1.25
+        commission: 1.25,
+        fillId: "fill-1",
+        orderId: "order-1",
+        backtestRunIndex: 0
       },
       {
         timestamp: "2026-01-02T15:45:00Z",
@@ -122,7 +129,10 @@ const tradesOnlySuccessfulRunState: QuantRunState = {
         side: "sell",
         quantity: 10,
         price: 514.1,
-        commission: 1.25
+        commission: 1.25,
+        fillId: "fill-2",
+        orderId: "order-2",
+        backtestRunIndex: 0
       }
     ],
     runtimeParameters: []
@@ -173,12 +183,84 @@ describe("Quant Lab view model helpers", () => {
     });
   });
 
+  it("transports Int64 and Decimal values as exact canonical strings", () => {
+    const parameters: QuantParameter[] = [
+      { ...numberParameter, name: "large", label: "Large", typeName: "long", min: null, max: null },
+      { ...numberParameter, name: "precise", label: "Precise", typeName: "decimal", min: null, max: null }
+    ];
+
+    expect(buildQuantParameters(parameters, {
+      large: "+09223372036854775807",
+      precise: "001234567890.12345678901234567800"
+    })).toEqual({
+      large: "9223372036854775807",
+      precise: "1234567890.123456789012345678"
+    });
+    expect(() => buildQuantParameters(parameters, { large: "9223372036854775808", precise: "1" }))
+      .toThrow(/Int64 range/);
+  });
+
+  it("checks Int64 bounds without losing precision", () => {
+    const parameter: QuantParameter = {
+      ...numberParameter,
+      name: "large",
+      label: "Large",
+      typeName: "long",
+      min: null,
+      max: 9007199254740992
+    };
+
+    expect(() => buildQuantParameters([parameter], { large: "9007199254740993" }))
+      .toThrow(/at most 9007199254740992/);
+  });
+
+  it("prunes values for parameters no longer present in source", () => {
+    expect(reconcileQuantParameterValues(
+      { lookback: "63", stale: "remove-me" },
+      [numberParameter, boolParameter]
+    )).toEqual({ lookback: "63", includeFees: "true" });
+  });
+
+  it("retains overrides across casing-only parameter edits", () => {
+    expect(reconcileQuantParameterValues(
+      { Lookback: "63" },
+      [{ ...numberParameter, name: "lookback" }]
+    )).toEqual({ lookback: "63" });
+  });
+
+  it("preserves an explicit empty string override", () => {
+    const textParameter: QuantParameter = {
+      ...numberParameter,
+      name: "label",
+      label: "Label",
+      typeName: "string",
+      defaultValue: "default"
+    };
+
+    // An empty string is a deliberate value for text parameters, not a missing override.
+    expect(buildQuantParameters([textParameter], { label: "" })).toEqual({ label: "" });
+  });
+
   it("builds disabled run command state for empty source", () => {
     expect(validateQuantSource("   ")).toBe("Enter some script source first.");
     expect(buildRunCommandState("   ", "idle")).toMatchObject({
       label: "Run",
       disabled: true,
       disabledReason: "Enter some script source first.",
+      busy: false
+    });
+  });
+
+  it("keeps Run disabled while parameters are being extracted for the current source", () => {
+    expect(buildRunCommandState(
+      "var lookback = Param(\"lookback\", 20);",
+      "idle",
+      false,
+      "extracting"
+    )).toMatchObject({
+      label: "Run",
+      disabled: true,
+      disabledReason: "Wait for runtime parameter detection to finish.",
       busy: false
     });
   });
@@ -438,6 +520,9 @@ describe("Quant Lab view model helpers", () => {
       description: "Net cash impact +$5,139.75 after $1.25 commission."
     });
     expect(ledger.selectedDetail?.fields).toEqual([
+      { label: "Fill ID", value: "fill-2" },
+      { label: "Order ID", value: "order-2" },
+      { label: "Backtest run", value: "1" },
       { label: "Symbol", value: "SPY" },
       { label: "Side", value: "Sell" },
       { label: "Timestamp", value: "2026-01-02T15:45:00Z" },
@@ -447,6 +532,20 @@ describe("Quant Lab view model helpers", () => {
       { label: "Commission", value: "$1.25" },
       { label: "Net cash", value: "+$5,139.75" }
     ]);
+  });
+
+  it("uses unique fallback row IDs when fill lineage is the empty GUID", () => {
+    const trades = tradesOnlySuccessfulRunState.result!.trades.map((trade) => ({
+      ...trade,
+      fillId: "00000000-0000-0000-0000-000000000000"
+    }));
+
+    const rows = buildQuantTradeRows(trades);
+    const ledger = buildQuantTradeLedgerState(trades, rows[1]!.id);
+
+    expect(rows[0]!.id).not.toBe(rows[1]!.id);
+    expect(ledger.selectedRowId).toBe(rows[1]!.id);
+    expect(ledger.selectedDetail?.title).toBe("SPY Sell");
   });
 
   it("ignores stale parameter extraction responses after the source changes", async () => {
@@ -492,6 +591,27 @@ describe("Quant Lab view model helpers", () => {
       inputType: "checkbox"
     });
     expect(result.current.parameterPhase).toBe("ready");
+  });
+
+  it("removes previously detected parameters as soon as source scanning restarts", async () => {
+    const nextRequest = createDeferred<QuantParametersResponse>();
+    const services: QuantLabServices = {
+      getTemplates: vi.fn().mockResolvedValue({ templates: [] }),
+      extractParameters: vi.fn()
+        .mockResolvedValueOnce({ parameters: [numberParameter] })
+        .mockReturnValueOnce(nextRequest.promise),
+      runScript: vi.fn<QuantLabServices["runScript"]>().mockResolvedValue({} as QuantRunResponse)
+    };
+
+    const { result } = renderHook(() => useQuantLabScreenViewModel(services));
+    await waitFor(() => expect(result.current.parameterRows).toHaveLength(1));
+
+    await act(async () => {
+      result.current.setSource("Print(\"new source\");");
+    });
+
+    expect(result.current.parameterRows).toEqual([]);
+    expect(result.current.parameterPhase).toBe("extracting");
   });
 
   it("finishes the initial parameter scan under React StrictMode", async () => {
@@ -558,6 +678,7 @@ describe("Quant Lab view model helpers", () => {
       title: "Run succeeded for previous source",
       sourceDrifted: true
     });
+    await waitFor(() => expect(result.current.parameterPhase).toBe("idle"));
     expect(result.current.runCommand).toMatchObject({
       label: "Run current source",
       disabled: false

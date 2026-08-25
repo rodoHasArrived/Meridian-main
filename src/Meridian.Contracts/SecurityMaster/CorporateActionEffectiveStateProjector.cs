@@ -15,11 +15,11 @@ public static class CorporateActionEffectiveStateProjector
         DateTimeOffset asOf)
     {
         ArgumentNullException.ThrowIfNull(actions);
+        actions = CorporateActionRevisionMetadata.FilterKnown(actions, asOf);
         if (actions.Count == 0)
         {
             return [];
         }
-
         var byId = new Dictionary<Guid, CorporateActionDto>(actions.Count);
         foreach (var action in actions)
         {

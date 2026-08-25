@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-08-03
+last_reviewed: 2026-08-18
 ---
 
 # src/Meridian.Backtesting
@@ -87,6 +87,21 @@ Studio UX remains deferred.
   harness: per rolling (or anchored) training window it sweeps the parameter grid, selects the best
   set by a configurable objective, evaluates it once on the adjacent unseen test window, and stitches
   the test windows into aggregate OOS metrics with train-vs-test degradation reporting.
+- The engine keeps one authoritative working-order collection in `BacktestContext`. Submit,
+  cancellation, contingent cancellation, trigger, partial-fill, IOC/FOK, OCO, expiry, and rejection
+  transitions therefore survive the strategy/engine boundary instead of being split between two
+  lists. Only fills accepted by `SimulatedPortfolio` reach strategy callbacks, contingents, metrics,
+  or results.
+- Commission models quote cumulative order economics before portfolio validation and commit state
+  only after an accepted fill. Per-order minimums and maximums therefore apply once across partial
+  slices, while rejected fills do not consume commission state and terminal orders release their
+  accumulator entries.
+- Corporate-action projections apply only revisions known at the requested as-of time, so a later
+  amendment or cancellation cannot rewrite an earlier backtest's split or distribution economics.
+- Metrics use resolved account opening cash, external investor opening/terminal flows for XIRR, and
+  a consistent 365-day calendar basis for snapshots, financing accruals, rolling metrics, and
+  walk-forward aggregation. Internal trade, fee, interest, and corporate-action settlements remain
+  ledger/cash-flow evidence but are not treated as investor contributions or withdrawals.
 
 ## API / contract notes
 
@@ -113,12 +128,17 @@ Studio UX remains deferred.
 
 ## Benchmarks and performance
 
-- `MultiSymbolMergeEnumerator` uses a heap for multi-symbol replay and a single-stream fast path
-  for one-symbol runs, avoiding per-event heap churn on large historical windows while preserving
-  cancellation and enumerator disposal.
-- Corporate-action adjustment in `BacktestEngine` adjusts historical bars one event at a time after
-  cached Security Master action lookup, so mixed bar/trade/depth streams do not buffer replay
-  windows before yielding downstream events.
+- `JsonlReplayer` creates fixed-size sorted runs from physical JSONL and compressed JSONL partitions,
+  then uses bounded 16-way external merge passes with full UTC ticks plus stable file/line ties. Late
+  provider records remain replayable without retaining every source handle or the complete history
+  in memory. `MultiSymbolMergeEnumerator` then uses a full-tick heap with a
+  single-stream fast path, stable stream ties, cancellation, monotonicity checks, and deterministic
+  enumerator disposal.
+- Corporate-action adjustment prepares one immutable, content-versioned plan per symbol and run,
+  pinned to the request end date and built from the complete bar history. The engine performs a
+  bars-only first replay pass, then streams the second pass through `plan.Apply`; the concrete plan
+  retains actions and adjustment factors rather than the mixed event window, and its shared cache is
+  bounded.
 
 ## Diagrams
 

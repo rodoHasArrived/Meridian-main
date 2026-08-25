@@ -61,14 +61,14 @@ public sealed class BacktestMetricsEngineTests
         var metrics = BacktestMetricsEngine.Compute(snapshots, [], [], request);
 
         var returns = snapshots.Select(s => (double)s.DailyReturn).ToList();
-        var dailyRf = 0.05 / 252.0;
+        var dailyRf = 0.05 / 365.0;
         var excess = returns.Select(r => r - dailyRf).ToList();
         var mean = excess.Average();
         var std = SampleStdDev(excess);
         var downside = excess.Where(r => r < 0).ToList();
         var downsideDev = Math.Sqrt(downside.Select(r => r * r).Average());
-        var expectedSharpe = mean / std * Math.Sqrt(252.0);
-        var expectedSortino = mean / downsideDev * Math.Sqrt(252.0);
+        var expectedSharpe = mean / std * Math.Sqrt(365.0);
+        var expectedSortino = mean / downsideDev * Math.Sqrt(365.0);
 
         metrics.SharpeRatio.Should().BeApproximately(expectedSharpe, 1e-10);
         metrics.SortinoRatio.Should().BeApproximately(expectedSortino, 1e-10);
@@ -83,8 +83,8 @@ public sealed class BacktestMetricsEngineTests
         var series = new Dictionary<DateOnly, double>
         {
             [startDate] = 0.00,
-            [startDate.AddDays(1)] = 0.252, // daily 0.1%
-            [startDate.AddDays(3)] = 0.126  // daily 0.05%
+            [startDate.AddDays(1)] = 0.365,  // daily 0.1%
+            [startDate.AddDays(3)] = 0.1825 // daily 0.05%
         };
 
         var request = new BacktestRequest(
@@ -100,7 +100,7 @@ public sealed class BacktestMetricsEngineTests
             .Select(s =>
             {
                 var annual = series.TryGetValue(s.Date, out var rate) ? rate : 0.05;
-                return (double)s.DailyReturn - annual / 252.0;
+                return (double)s.DailyReturn - annual / 365.0;
             })
             .ToList();
         var mean = expectedExcess.Average();
@@ -108,8 +108,31 @@ public sealed class BacktestMetricsEngineTests
         var downside = expectedExcess.Where(r => r < 0).ToList();
         var downsideDev = Math.Sqrt(downside.Select(r => r * r).Average());
 
-        metrics.SharpeRatio.Should().BeApproximately(mean / std * Math.Sqrt(252.0), 1e-10);
-        metrics.SortinoRatio.Should().BeApproximately(mean / downsideDev * Math.Sqrt(252.0), 1e-10);
+        metrics.SharpeRatio.Should().BeApproximately(mean / std * Math.Sqrt(365.0), 1e-10);
+        metrics.SortinoRatio.Should().BeApproximately(mean / downsideDev * Math.Sqrt(365.0), 1e-10);
+    }
+
+    [Fact]
+    public void Compute_AnnualizedReturnAndXirr_StartAtRequestOpening_NotFirstSnapshot()
+    {
+        var from = new DateOnly(2023, 1, 1);
+        var to = new DateOnly(2023, 12, 31);
+        var snapshots = new[]
+        {
+            Snapshot(from.AddDays(1), 100m),
+            Snapshot(to, 110m),
+        };
+        var request = new BacktestRequest(from, to, InitialCash: 100m, RiskFreeRate: 0d);
+
+        var metrics = BacktestMetricsEngine.Compute(snapshots, [], [], request);
+        var opening = new DateTimeOffset(from.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var elapsedYears = (snapshots[^1].Timestamp - opening).TotalDays / 365d;
+        var expectedAnnualizedReturn = (decimal)(Math.Pow(1.1d, 1d / elapsedYears) - 1d);
+
+        metrics.AnnualizedReturn.Should().BeApproximately(expectedAnnualizedReturn, 0.0000001m);
+        metrics.Xirr.Should().BeApproximately((double)expectedAnnualizedReturn, 0.000001d);
+        metrics.AnnualizedReturn.Should().BeLessThan(0.101m,
+            "the period starts at request opening and is nearly 365 days, not 363 days from the first snapshot");
     }
 
     // ------------------------------------------------------------------ //
@@ -245,6 +268,19 @@ public sealed class BacktestMetricsEngineTests
         var variance = values.Sum(v => (v - mean) * (v - mean)) / (values.Count - 1);
         return Math.Sqrt(variance);
     }
+
+    private static PortfolioSnapshot Snapshot(DateOnly date, decimal equity) => new(
+        new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero),
+        date,
+        Cash: equity,
+        MarginBalance: 0m,
+        LongMarketValue: 0m,
+        ShortMarketValue: 0m,
+        TotalEquity: equity,
+        DailyReturn: 0m,
+        Positions: new Dictionary<string, Position>(),
+        Accounts: new Dictionary<string, FinancialAccountSnapshot>(),
+        DayCashFlows: []);
 
     [Fact]
     public void Compute_Attribution_HonoursLifoLotSelection()

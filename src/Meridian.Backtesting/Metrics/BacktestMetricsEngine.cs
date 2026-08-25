@@ -14,10 +14,10 @@ internal static class BacktestMetricsEngine
         IReadOnlyList<FillEvent> fills,
         BacktestRequest request)
     {
+        var initial = ResolveInitialCapital(request);
         if (snapshots.Count == 0)
-            return EmptyMetrics(request.InitialCash);
+            return EmptyMetrics(initial);
 
-        var initial = request.InitialCash;
         var final = snapshots[^1].TotalEquity;
 
         // Commissions and margin interest are stored as negative cash flows; negate to get positive totals.
@@ -33,7 +33,12 @@ internal static class BacktestMetricsEngine
         var grossPnl = netPnl + totalCommissions + totalMarginInterest - totalShortRebates;
 
         var datedDailyReturns = snapshots.Select(s => (Date: s.Date, Return: (double)s.DailyReturn)).ToList();
-        var years = Math.Max((snapshots[^1].Date.ToDateTime(TimeOnly.MinValue) - snapshots[0].Date.ToDateTime(TimeOnly.MinValue)).TotalDays / 365.0, 1.0 / 365.0);
+        var openingTimestamp = new DateTimeOffset(
+            request.From.ToDateTime(TimeOnly.MinValue),
+            TimeSpan.Zero);
+        var years = Math.Max(
+            (snapshots[^1].Timestamp - openingTimestamp).TotalDays / 365.0,
+            1.0 / 365.0);
 
         var totalReturn = initial == 0 ? 0m : (final - initial) / initial;
         var annualisedReturn = (decimal)(Math.Pow(1.0 + (double)totalReturn, 1.0 / years) - 1.0);
@@ -44,7 +49,7 @@ internal static class BacktestMetricsEngine
 
         var (winRate, profitFactor, totalTrades, wins, losses) = ComputeTradeStats(fills);
         var attribution = ComputeAttribution(fills, snapshots, request);
-        var xirr = ComputeXirr(allCashFlows, initial, snapshots);
+        var xirr = ComputeXirr(initial, openingTimestamp, snapshots);
 
         return new BacktestMetrics(
             initial,
@@ -85,7 +90,7 @@ internal static class BacktestMetricsEngine
             .ToList();
         var mean = excess.Average();
         var std = StdDev(excess);
-        return std < 1e-10 ? 0.0 : mean / std * Math.Sqrt(252.0);
+        return std < 1e-10 ? 0.0 : mean / std * Math.Sqrt(365.0);
     }
 
     private static double ComputeSortino(
@@ -103,7 +108,7 @@ internal static class BacktestMetricsEngine
         if (downside.Count == 0)
             return double.PositiveInfinity;
         var downsideDev = Math.Sqrt(downside.Select(r => r * r).Average());
-        return downsideDev < 1e-10 ? 0.0 : mean / downsideDev * Math.Sqrt(252.0);
+        return downsideDev < 1e-10 ? 0.0 : mean / downsideDev * Math.Sqrt(365.0);
     }
 
     private static double ResolveDailyRiskFreeRate(
@@ -114,7 +119,7 @@ internal static class BacktestMetricsEngine
         var annualRate = annualRfrSeries is not null && annualRfrSeries.TryGetValue(date, out var value)
             ? value
             : annualRfrFallback;
-        return annualRate / 252.0;
+        return annualRate / 365.0;
     }
 
     private static (decimal maxDrawdown, decimal maxDrawdownPct, int recoveryDays) ComputeMaxDrawdown(
@@ -405,19 +410,16 @@ internal static class BacktestMetricsEngine
     }
 
     private static double ComputeXirr(
-        IReadOnlyList<CashFlowEntry> cashFlows,
         decimal initialCapital,
+        DateTimeOffset openingTimestamp,
         IReadOnlyList<PortfolioSnapshot> snapshots)
     {
         var flows = new List<(DateTimeOffset date, decimal amount)>();
 
-        // Initial capital outflow
-        var startDate = snapshots.Count > 0 ? snapshots[0].Timestamp : DateTimeOffset.UtcNow;
-        flows.Add((startDate, -initialCapital));
-
-        // All real cash flows
-        foreach (var cf in cashFlows)
-            flows.Add((cf.Timestamp, cf.Amount));
+        // Money-weighted return is from the investor's perspective. Trades, commissions,
+        // financing accruals, dividends, and corporate-action settlements are internal portfolio
+        // movements already reflected in terminal equity; including them here double-counts them.
+        flows.Add((openingTimestamp, -initialCapital));
 
         // Terminal value inflow
         if (snapshots.Count > 0)
@@ -434,6 +436,11 @@ internal static class BacktestMetricsEngine
         var variance = values.Sum(v => (v - mean) * (v - mean)) / (values.Count - 1);
         return Math.Sqrt(variance);
     }
+
+    private static decimal ResolveInitialCapital(BacktestRequest request)
+        => request.Accounts is { Count: > 0 }
+            ? request.Accounts.Sum(static account => account?.InitialCash ?? 0m)
+            : request.InitialCash;
 
     private static BacktestMetrics EmptyMetrics(decimal initial) =>
         new(initial, initial, 0m, 0m, 0m, 0m, 0.0, 0.0, 0.0, 0m, 0m, 0, 0.0, 0.0, 0, 0, 0, 0m, 0m, 0m, 0.0,

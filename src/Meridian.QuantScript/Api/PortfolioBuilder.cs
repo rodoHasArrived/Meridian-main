@@ -2,6 +2,15 @@ using Meridian.QuantScript.Plotting;
 
 namespace Meridian.QuantScript.Api;
 
+/// <summary>Controls how portfolio analytics handle dates missing from one or more assets.</summary>
+public enum ReturnAlignmentMode
+{
+    /// <summary>Use only dates present in every constituent return series. This is the default.</summary>
+    Intersection,
+    /// <summary>Use the union of dates and substitute a zero return for a missing constituent.</summary>
+    ZeroReturn
+}
+
 /// <summary>
 /// Result of a portfolio construction operation.
 /// Holds constituent weights and exposes return/risk analytics.
@@ -23,25 +32,19 @@ public sealed class PortfolioResult
     }
 
     /// <summary>Weighted portfolio daily return series.</summary>
-    public ReturnSeries Returns()
+    public ReturnSeries Returns(ReturnAlignmentMode alignment = ReturnAlignmentMode.Intersection)
     {
-        var dailyBySymbol = _series.ToDictionary(
-            s => s.Symbol,
-            s => s.DailyReturns().Points.ToDictionary(p => p.Date, p => p.Value));
-
-        var allDates = dailyBySymbol.Values
-            .SelectMany(d => d.Keys)
-            .Distinct()
-            .OrderBy(d => d)
-            .ToList();
-
-        var pts = allDates.Select(date =>
+        var (dates, dailyBySymbol) = AlignReturns(_series, alignment);
+        var pts = dates.Select(date =>
         {
             double r = 0;
             foreach (var (sym, returns) in dailyBySymbol)
             {
-                if (returns.TryGetValue(date, out var ret) && Weights.TryGetValue(sym, out var w))
-                    r += w * ret;
+                if (!Weights.TryGetValue(sym, out var weight))
+                    continue;
+
+                if (returns.TryGetValue(date, out var value))
+                    r += weight * value;
             }
             return new ReturnPoint(date, r);
         }).ToList();
@@ -49,23 +52,69 @@ public sealed class PortfolioResult
         return new ReturnSeries("Portfolio", ReturnKind.Arithmetic, pts);
     }
 
-    public double[,] CorrelationMatrix()
+    public double[,] CorrelationMatrix(ReturnAlignmentMode alignment = ReturnAlignmentMode.Intersection)
     {
-        var streams = _series.Select(s => (IReadOnlyList<double>)s.DailyReturns().Points.Select(p => p.Value).ToList()).ToList();
+        var (dates, dailyBySymbol) = AlignReturns(_series, alignment);
+        var streams = _series
+            .Select(series => (IReadOnlyList<double>)dates
+                .Select(date => dailyBySymbol[series.Symbol].TryGetValue(date, out var value) ? value : 0d)
+                .ToList())
+            .ToList();
         return StatisticsEngine.CorrelationMatrix(streams);
     }
 
-    public double[,] CovarianceMatrix()
+    public double[,] CovarianceMatrix(ReturnAlignmentMode alignment = ReturnAlignmentMode.Intersection)
     {
-        var streams = _series.Select(s => (IReadOnlyList<double>)s.DailyReturns().Points.Select(p => p.Value).ToList()).ToList();
+        var (dates, dailyBySymbol) = AlignReturns(_series, alignment);
+        var streams = _series
+            .Select(series => (IReadOnlyList<double>)dates
+                .Select(date => dailyBySymbol[series.Symbol].TryGetValue(date, out var value) ? value : 0d)
+                .ToList())
+            .ToList();
         return StatisticsEngine.CovarianceMatrix(streams);
     }
 
-    public double SharpeRatio(double riskFreeRate = 0.04) =>
-        Returns().SharpeRatio(riskFreeRate);
+    public double SharpeRatio(
+        double riskFreeRate = 0.04,
+        ReturnAlignmentMode alignment = ReturnAlignmentMode.Intersection) =>
+        Returns(alignment).SharpeRatio(riskFreeRate);
 
-    public IReadOnlyList<ReturnPoint> Drawdowns() =>
-        Returns().DrawdownSeries();
+    public IReadOnlyList<ReturnPoint> Drawdowns(
+        ReturnAlignmentMode alignment = ReturnAlignmentMode.Intersection) =>
+        Returns(alignment).DrawdownSeries();
+
+    internal static (
+        IReadOnlyList<DateOnly> Dates,
+        IReadOnlyDictionary<string, IReadOnlyDictionary<DateOnly, double>> ReturnsBySymbol)
+        AlignReturns(IReadOnlyList<PriceSeries> series, ReturnAlignmentMode alignment)
+    {
+        if (!Enum.IsDefined(alignment))
+            throw new ArgumentOutOfRangeException(nameof(alignment));
+
+        var returnsBySymbol = series.ToDictionary(
+            static item => item.Symbol,
+            static item => (IReadOnlyDictionary<DateOnly, double>)item.DailyReturns().Points
+                .ToDictionary(static point => point.Date, static point => point.Value),
+            StringComparer.OrdinalIgnoreCase);
+
+        if (returnsBySymbol.Count == 0)
+            return (Array.Empty<DateOnly>(), returnsBySymbol);
+
+        IEnumerable<DateOnly> dates;
+        if (alignment == ReturnAlignmentMode.ZeroReturn)
+        {
+            dates = returnsBySymbol.Values.SelectMany(static values => values.Keys).Distinct();
+        }
+        else
+        {
+            var commonDates = new HashSet<DateOnly>(returnsBySymbol.Values.First().Keys);
+            foreach (var values in returnsBySymbol.Values.Skip(1))
+                commonDates.IntersectWith(values.Keys);
+            dates = commonDates;
+        }
+
+        return (dates.OrderBy(static date => date).ToArray(), returnsBySymbol);
+    }
 
     /// <summary>Enqueues a correlation heatmap chart.</summary>
     public void PlotHeatmap(string? title = null)
@@ -126,7 +175,36 @@ public static class PortfolioBuilder
     {
         ArgumentNullException.ThrowIfNull(weights);
         ArgumentNullException.ThrowIfNull(series);
-        return new PortfolioResult(weights, series);
+        if (series.Length == 0)
+            throw new ArgumentException("At least one series is required", nameof(series));
+
+        var symbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in series)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+            if (!symbols.Add(item.Symbol))
+                throw new ArgumentException($"Series symbol '{item.Symbol}' was supplied more than once.", nameof(series));
+        }
+
+        if (weights.Count != symbols.Count ||
+            weights.Keys.Any(key => !symbols.Contains(key)) ||
+            symbols.Any(symbol => !weights.Keys.Contains(symbol, StringComparer.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException("Custom weights must contain exactly one entry for every series symbol.", nameof(weights));
+        }
+
+        if (weights.Values.Any(static weight => !double.IsFinite(weight)))
+            throw new ArgumentException("Custom weights must be finite.", nameof(weights));
+
+        var total = weights.Values.Sum();
+        if (Math.Abs(total - 1d) > 1e-12)
+            throw new ArgumentException($"Custom weights must sum to 1.0; the supplied sum was {total:R}.", nameof(weights));
+
+        var normalizedWeights = series.ToDictionary(
+            static item => item.Symbol,
+            item => weights.First(pair => string.Equals(pair.Key, item.Symbol, StringComparison.OrdinalIgnoreCase)).Value,
+            StringComparer.OrdinalIgnoreCase);
+        return new PortfolioResult(normalizedWeights, series);
     }
 
     /// <summary>
@@ -141,6 +219,15 @@ public static class PortfolioBuilder
     /// </summary>
     public static PortfolioResult EfficientFrontier(
         EfficientFrontierConstraints constraints, params PriceSeries[] series)
+        => EfficientFrontier(constraints, ReturnAlignmentMode.Intersection, series);
+
+    /// <summary>
+    /// Minimum-variance portfolio using the requested missing-date alignment policy.
+    /// </summary>
+    public static PortfolioResult EfficientFrontier(
+        EfficientFrontierConstraints constraints,
+        ReturnAlignmentMode alignment,
+        params PriceSeries[] series)
     {
         ArgumentNullException.ThrowIfNull(constraints);
         ArgumentNullException.ThrowIfNull(series);
@@ -151,8 +238,11 @@ public static class PortfolioBuilder
             return new PortfolioResult(new Dictionary<string, double> { [series[0].Symbol] = 1.0 }, series);
 
         // Collect aligned daily return streams.
+        var (dates, dailyBySymbol) = PortfolioResult.AlignReturns(series, alignment);
         var returnStreams = series
-            .Select(static s => (IReadOnlyList<double>)s.DailyReturns().Points.Select(static p => p.Value).ToList())
+            .Select(item => (IReadOnlyList<double>)dates
+                .Select(date => dailyBySymbol[item.Symbol].TryGetValue(date, out var value) ? value : 0d)
+                .ToList())
             .ToList();
 
         var mu = returnStreams.Select(static r => r.Count > 0 ? r.Average() : 0.0).ToArray();

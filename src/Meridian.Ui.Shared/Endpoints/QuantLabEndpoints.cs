@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
@@ -59,11 +60,20 @@ public static class QuantLabEndpoints
                 return QuantLabUnavailable(jsonOptions);
             }
 
-            var parameters = request.Parameters ?? new Dictionary<string, object?>();
             try
             {
+                var compiler = services.GetService<IQuantScriptCompiler>();
+                var descriptors = compiler?.ExtractParameters(request.Source) ?? Array.Empty<ParameterDescriptor>();
+                var parameters = QuantRunParameterParser.Normalize(request.Parameters, descriptors);
                 var result = await runner.RunAsync(request.Source, parameters, ct).ConfigureAwait(false);
                 return Results.Json(QuantRunResponse.From(result), jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.Json(
+                    new { error = ex.Message },
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -109,7 +119,7 @@ public static class QuantLabEndpoints
                     Name: p.Name,
                     Label: p.Label,
                     TypeName: p.TypeName,
-                    DefaultValue: p.DefaultValue?.ToString(),
+                    DefaultValue: FormatParameterValue(p.DefaultValue),
                     Min: double.IsFinite(p.Min) ? p.Min : null,
                     Max: double.IsFinite(p.Max) ? p.Max : null,
                     Description: p.Description))
@@ -150,6 +160,14 @@ public static class QuantLabEndpoints
             },
             jsonOptions,
             statusCode: StatusCodes.Status503ServiceUnavailable);
+
+    private static string? FormatParameterValue(object? value) => value switch
+    {
+        null => null,
+        bool boolean => boolean ? "true" : "false",
+        IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+        _ => value.ToString()
+    };
 }
 
 /// <summary>Body of a POST to <c>/api/quant/run</c>.</summary>
@@ -198,7 +216,10 @@ public sealed record QuantTradeDto(
     string Side,
     decimal Quantity,
     decimal Price,
-    decimal Commission);
+    decimal Commission,
+    string FillId,
+    string OrderId,
+    int BacktestRunIndex);
 
 /// <summary>JSON-friendly description of a discovered script parameter.</summary>
 public sealed record QuantParameterDto(
@@ -228,6 +249,7 @@ public sealed record QuantRunResponse(
     string? RuntimeError,
     string ConsoleOutput,
     IReadOnlyList<QuantDiagnosticDto> CompilationErrors,
+    IReadOnlyList<QuantDiagnosticDto> CompilationWarnings,
     IReadOnlyList<QuantDiagnosticDto> RuntimeDiagnostics,
     IReadOnlyList<QuantMetricDto> Metrics,
     IReadOnlyList<QuantPlotDto> Plots,
@@ -245,6 +267,9 @@ public sealed record QuantRunResponse(
         CompilationErrors: result.CompilationErrors
             .Select(d => new QuantDiagnosticDto(d.Severity, d.Message, d.Line, d.Column))
             .ToArray(),
+        CompilationWarnings: (result.CompilationWarnings ?? Array.Empty<ScriptDiagnostic>())
+            .Select(d => new QuantDiagnosticDto(d.Severity, d.Message, d.Line, d.Column))
+            .ToArray(),
         RuntimeDiagnostics: result.RuntimeDiagnostics
             .Select(d => new QuantDiagnosticDto(d.Severity, d.Message, d.Line, d.Column))
             .ToArray(),
@@ -259,14 +284,17 @@ public sealed record QuantRunResponse(
                 Side: t.Side,
                 Quantity: t.Quantity,
                 Price: t.Price,
-                Commission: t.Commission))
+                Commission: t.Commission,
+                FillId: t.FillId.ToString("D"),
+                OrderId: t.OrderId.ToString("D"),
+                BacktestRunIndex: t.BacktestRunIndex))
             .ToArray(),
         RuntimeParameters: result.RuntimeParameters
             .Select(p => new QuantParameterDto(
                 Name: p.Name,
                 Label: p.Label,
                 TypeName: p.TypeName,
-                DefaultValue: p.DefaultValue?.ToString(),
+                DefaultValue: FormatParameterValue(p.DefaultValue),
                 Min: double.IsFinite(p.Min) ? p.Min : null,
                 Max: double.IsFinite(p.Max) ? p.Max : null,
                 Description: p.Description))
@@ -281,11 +309,20 @@ public sealed record QuantRunResponse(
         RuntimeError: message,
         ConsoleOutput: string.Empty,
         CompilationErrors: Array.Empty<QuantDiagnosticDto>(),
+        CompilationWarnings: Array.Empty<QuantDiagnosticDto>(),
         RuntimeDiagnostics: Array.Empty<QuantDiagnosticDto>(),
         Metrics: Array.Empty<QuantMetricDto>(),
         Plots: Array.Empty<QuantPlotDto>(),
         Trades: Array.Empty<QuantTradeDto>(),
         RuntimeParameters: Array.Empty<QuantParameterDto>());
+
+    private static string? FormatParameterValue(object? value) => value switch
+    {
+        null => null,
+        bool boolean => boolean ? "true" : "false",
+        IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+        _ => value.ToString()
+    };
 
     private static QuantPlotDto MapPlot(PlotRequest plot)
     {
@@ -329,6 +366,100 @@ public sealed record QuantRunResponse(
             Candlestick: candlestick,
             HeatmapData: heatmap,
             HeatmapLabels: plot.HeatmapLabels);
+    }
+}
+
+internal static class QuantRunParameterParser
+{
+    internal static IReadOnlyDictionary<string, object?> Normalize(
+        IReadOnlyDictionary<string, object?>? parameters,
+        IReadOnlyList<ParameterDescriptor> descriptors)
+    {
+        var descriptorTypes = descriptors
+            .Where(static descriptor => !string.IsNullOrWhiteSpace(descriptor.Name))
+            .GroupBy(static descriptor => descriptor.Name, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(static group => group.Key, static group => group.First().TypeName, StringComparer.OrdinalIgnoreCase);
+        var normalized = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var (name, suppliedValue) in parameters ?? new Dictionary<string, object?>())
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("QuantScript parameter names cannot be empty.", nameof(parameters));
+
+            try
+            {
+                normalized[name] = descriptorTypes.TryGetValue(name, out var typeName)
+                    ? ParseKnownValue(suppliedValue, typeName)
+                    : ParseScalarValue(suppliedValue);
+            }
+            catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException or JsonException)
+            {
+                throw new ArgumentException(
+                    $"QuantScript parameter '{name}' is malformed or outside the range of its declared type.",
+                    nameof(parameters),
+                    ex);
+            }
+        }
+
+        return normalized;
+    }
+
+    private static object? ParseKnownValue(object? value, string? typeName)
+    {
+        var scalar = ParseScalarValue(value, preserveNumericText: true);
+        if (scalar is null)
+            throw new InvalidCastException("Declared parameters cannot be null overrides.");
+
+        var text = scalar switch
+        {
+            string stringValue => stringValue,
+            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+            _ => scalar.ToString() ?? string.Empty
+        };
+
+        return (typeName ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "int" or "int32" => int.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture),
+            "long" or "int64" => long.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture),
+            "float" or "single" => ParseFiniteSingle(text),
+            "double" => ParseFiniteDouble(text),
+            "decimal" => decimal.Parse(text, NumberStyles.Float, CultureInfo.InvariantCulture),
+            "bool" or "boolean" => scalar is bool boolean ? boolean : bool.Parse(text),
+            "string" => scalar as string ?? throw new InvalidCastException("String parameters require a JSON string."),
+            _ => ParseScalarValue(value)
+        };
+    }
+
+    private static object? ParseScalarValue(object? value, bool preserveNumericText = false)
+    {
+        if (value is not JsonElement element)
+            return value;
+
+        return element.ValueKind switch
+        {
+            JsonValueKind.Null or JsonValueKind.Undefined => null,
+            JsonValueKind.String => element.GetString(),
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.Number when preserveNumericText => element.GetRawText(),
+            JsonValueKind.Number when element.TryGetInt32(out var intValue) => intValue,
+            JsonValueKind.Number when element.TryGetInt64(out var longValue) => longValue,
+            JsonValueKind.Number when element.TryGetDecimal(out var decimalValue) => decimalValue,
+            JsonValueKind.Number when element.TryGetDouble(out var doubleValue) && double.IsFinite(doubleValue) => doubleValue,
+            _ => throw new JsonException("QuantScript parameters must be scalar JSON values.")
+        };
+    }
+
+    private static float ParseFiniteSingle(string value)
+    {
+        var parsed = float.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+        return float.IsFinite(parsed) ? parsed : throw new OverflowException("The value must be finite.");
+    }
+
+    private static double ParseFiniteDouble(string value)
+    {
+        var parsed = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+        return double.IsFinite(parsed) ? parsed : throw new OverflowException("The value must be finite.");
     }
 }
 

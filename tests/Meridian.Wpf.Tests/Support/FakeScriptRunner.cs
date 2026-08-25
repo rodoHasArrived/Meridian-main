@@ -6,6 +6,7 @@ namespace Meridian.Wpf.Tests.Support;
 internal sealed class FakeScriptRunner : IScriptRunner
 {
     private ScriptRunResult? _result;
+    private Queue<ScriptRunResult>? _results;
     private Exception? _exception;
 
     public string? LastSource { get; private set; }
@@ -15,6 +16,12 @@ internal sealed class FakeScriptRunner : IScriptRunner
     public FakeScriptRunner SetResult(ScriptRunResult result)
     {
         _result = result;
+        return this;
+    }
+
+    public FakeScriptRunner SetResults(params ScriptRunResult[] results)
+    {
+        _results = new Queue<ScriptRunResult>(results);
         return this;
     }
 
@@ -38,7 +45,10 @@ internal sealed class FakeScriptRunner : IScriptRunner
             throw _exception;
         }
 
-        return Task.FromResult(_result ?? BuildDefault(source));
+        return Task.FromResult(
+            _results is { Count: > 0 }
+                ? _results.Dequeue()
+                : _result ?? BuildDefault(source));
     }
 
     public Task<ScriptRunResult> ContinueWithAsync(

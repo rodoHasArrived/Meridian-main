@@ -29,12 +29,12 @@ internal sealed class DelistingMonitor(DelistingPolicy policy, decimal haircutPe
     /// <summary>
     /// Runs the day-end delisting sweep: any open position whose symbol has produced no events for
     /// more than the grace period is closed at the last observed price adjusted by the haircut
-    /// (longs receive less, shorts cover higher). Pending orders on liquidated symbols are cancelled.
+    /// (longs receive less, shorts cover higher). Working orders on liquidated symbols are cancelled.
     /// </summary>
     public void ProcessDayEnd(
         DateOnly date,
         SimulatedPortfolio portfolio,
-        List<Order> pendingOrders,
+        BacktestContext context,
         List<FillEvent> allFills,
         ILogger logger)
     {
@@ -75,7 +75,7 @@ internal sealed class DelistingMonitor(DelistingPolicy policy, decimal haircutPe
 
                 try
                 {
-                    portfolio.ProcessFill(fill);
+                    fill = portfolio.ProcessFill(fill);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -98,7 +98,7 @@ internal sealed class DelistingMonitor(DelistingPolicy policy, decimal haircutPe
 
         if (liquidatedSymbols is { Count: > 0 })
         {
-            pendingOrders.RemoveAll(order => liquidatedSymbols.Contains(order.Symbol));
+            context.RemoveWorkingOrders(order => liquidatedSymbols.Contains(order.Symbol));
         }
     }
 }

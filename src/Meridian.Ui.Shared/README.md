@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-08-11
+last_reviewed: 2026-08-18
 ---
 
 # src/Meridian.Ui.Shared
@@ -1126,6 +1126,12 @@ completion or prevent result rehydration.
 `BacktestStudioRunOrchestrator` remains outside host composition. Strategy Designer
 requires exactly one captured result and its production compiler currently captures none, so that
 endpoint fails closed and is not W6 closure evidence.
+Quant Lab endpoint parameters preserve exact `Int64` and `Decimal` values by accepting canonical
+JSON scalar strings as well as directly representable scalars, then validating and converting known
+runtime types before invoking the script runner. Invalid, null, lossy, or out-of-range supplied
+values fail closed instead of being forwarded as missing parameters. Trade results retain fill id,
+order id, and multi-backtest run index, and successful runs retain compiler warnings separately from
+errors for both workstation clients.
 Single-family-office workstation contracts live in `Contracts/FamilyOfficeContracts.cs` with a
 matching `Serialization/FamilyOfficeJsonContext.cs` source-generated JSON context. The shared
 `FamilyOfficeReadService` assembles the workstation overview from fund-structure, fund-account,

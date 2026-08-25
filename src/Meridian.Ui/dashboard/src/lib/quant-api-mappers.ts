@@ -29,7 +29,7 @@ export function mapQuantRunResponseToCellResult(
     output.push({ kind: "metric", text: `${metric.label}: ${metric.value}`, tone: "default" });
   }
 
-  for (const diagnostic of [...response.compilationErrors, ...response.runtimeDiagnostics]) {
+  for (const diagnostic of [...response.compilationErrors, ...response.compilationWarnings, ...response.runtimeDiagnostics]) {
     output.push({
       kind: "error",
       text: diagnostic.line > 0
@@ -63,4 +63,3 @@ export function quantDataIntervalMinutes(interval: DataFetchRequest["interval"])
       return 1440;
   }
 }
-

@@ -308,6 +308,47 @@ public sealed class FillModelExpansionTests
     }
 
     [Fact]
+    public void OrderBookFillModel_FillOrKill_ConsumesAggregateLiquidityAcrossLevels()
+    {
+        var model = new OrderBookFillModel(new FixedCommissionModel(0m));
+        var order = new Order(
+            Guid.NewGuid(), "SPY", OrderType.Market, 300L, null, null, DateTimeOffset.UtcNow,
+            TimeInForce: TimeInForce.FillOrKill,
+            AllowPartialFills: false);
+        var evt = MakeMultiLevelLobEvent("SPY", [(410m, 150L), (411m, 200L)]);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().HaveCount(2);
+        result.Fills.Select(static fill => fill.FilledQuantity).Should().Equal(150L, 150L);
+        result.Fills.Select(static fill => fill.FillPrice).Should().Equal(410m, 411m);
+        result.UpdatedOrder.FilledQuantity.Should().Be(300L);
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.Filled);
+        result.RemoveOrder.Should().BeTrue();
+    }
+
+    [Fact]
+    public void OrderBookFillModel_NonPartialOrder_WaitsUntilAggregateLiquidityIsSufficient()
+    {
+        var model = new OrderBookFillModel(new FixedCommissionModel(0m));
+        var order = new Order(
+            Guid.NewGuid(), "SPY", OrderType.Market, 300L, null, null, DateTimeOffset.UtcNow,
+            AllowPartialFills: false);
+        var insufficient = MakeMultiLevelLobEvent("SPY", [(410m, 100L), (411m, 100L)]);
+        var sufficient = MakeMultiLevelLobEvent("SPY", [(410m, 150L), (411m, 200L)]);
+
+        var waiting = model.TryFill(order, insufficient);
+        var filled = model.TryFill(waiting.UpdatedOrder, sufficient);
+
+        waiting.Fills.Should().BeEmpty();
+        waiting.RemoveOrder.Should().BeFalse();
+        waiting.UpdatedOrder.Status.Should().Be(OrderStatus.Pending);
+        filled.Fills.Select(static fill => fill.FilledQuantity).Should().Equal(150L, 150L);
+        filled.UpdatedOrder.Status.Should().Be(OrderStatus.Filled);
+        filled.RemoveOrder.Should().BeTrue();
+    }
+
+    [Fact]
     public void OrderBookFillModel_WrongSymbol_ReturnsNoFill()
     {
         // buy SPY, LOBSnapshot for AAPL → symbol mismatch → no fill

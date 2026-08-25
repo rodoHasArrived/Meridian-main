@@ -93,7 +93,9 @@ internal sealed class BarMidpointFillModel(
         }
 
         var fillQuantitySigned = isBuy ? fillableAbsolute : -fillableAbsolute;
-        var commission = commissionModel.Calculate(order.Symbol, fillQuantitySigned, fillPrice);
+        var commission = commissionModel
+            .Quote(order.OrderId, order.Symbol, fillQuantitySigned, fillPrice)
+            .Amount;
         var fill = new FillEvent(
             Guid.NewGuid(),
             order.OrderId,

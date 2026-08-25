@@ -6,7 +6,7 @@ module_id: SRC-QUANTSCRIPT
 path: src/Meridian.QuantScript
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-05-20
+last_reviewed: 2026-08-18
 ---
 
 # src/Meridian.QuantScript
@@ -44,6 +44,28 @@ timestamps, and GUIDs; arbitrary host objects and delegates fail closed at the b
 Notebook continuations replay prior successful source cells in a fresh worker, so a timeout,
 cancellation, or worker crash cannot leave a live Roslyn session in the host. Replay can repeat
 external side effects from earlier cells; notebook authors should keep setup cells deterministic.
+
+### Runtime contract correctness
+
+`BacktestProxy` maps its fill-model choice and typed execution, timing, liquidity, impact, slippage,
+and commission controls into the SDK `BacktestRequest`; negative slippage or market-impact costs
+fail closed. Omitted commission rates use kind-specific defaults: 0.005 per share, 5 basis points
+for percentage commissions, and zero for free execution; participation rates are restricted to the
+zero-to-one interval. A proxy instance rejects overlapping runs,
+and its result-aware completion callback runs only after the matching `BacktestResult` exists.
+Trade projections preserve fill id, order id, and multi-backtest run index through in-process and
+worker execution.
+
+Supplied `Param<T>` values fail closed when null, malformed, lossy, out of range, or not representable
+by the requested type; defaults apply only when a parameter was not supplied. Compiler warnings are
+retained on successful compilation, cached executions, and notebook continuations, and empty
+notebook cells normalize to comments so they remain valid replay inputs.
+
+Portfolio analytics align return streams by `DateOnly`. Correlation, covariance, and efficient
+frontier calculations use date intersection by default, with explicit zero-return alignment when a
+caller chooses it, and custom portfolio weights must provide exact symbol coverage, remain finite,
+and sum exactly to one within the documented tolerance. Negative weights remain valid for long-short
+portfolios.
 
 The host admits at most two concurrent workers and eight queued requests by default. It kills the
 complete child tree on cancellation, timeout, protocol/output violation, aggregate memory/CPU/process

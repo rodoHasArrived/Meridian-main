@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-08-04
+last_reviewed: 2026-08-18
 ---
 
 # src/Meridian.Ui/dashboard
@@ -982,6 +982,11 @@ Strategy wording while retained `Research*` DTO and component names remain compa
 Strategy Builder promotion-review warnings use risk/control wording in the browser view model,
 matching the shared strategy-service validation copy while retained cell kinds remain compatibility
 inputs.
+Quant Lab derives its parameter editor from the active source descriptor, removes stale values when
+source changes, and blocks invalid values before a run. `Int64` and `Decimal` parameters travel as
+canonical strings, with BigInt-backed integer validation preventing JavaScript number truncation;
+runtime descriptors remain source-gated. Successful execution renders compiler warnings separately
+from errors, and trade rows preserve fill id, order id, and multi-backtest run index.
 The host-composed W6 browser path is the Covered Call form in
 `covered-call-screen.view-model.ts`. Before calling the Covered Call API it requires operator
 acceptance text as a future review requirement and at least one bounded, strict

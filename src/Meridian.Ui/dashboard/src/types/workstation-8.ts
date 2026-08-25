@@ -221,6 +221,9 @@ export interface QuantTrade {
   quantity: number;
   price: number;
   commission: number;
+  fillId: string;
+  orderId: string;
+  backtestRunIndex: number;
 }
 
 export interface QuantParameter {
@@ -241,6 +244,7 @@ export interface QuantRunResponse {
   runtimeError: string | null;
   consoleOutput: string;
   compilationErrors: QuantDiagnostic[];
+  compilationWarnings: QuantDiagnostic[];
   runtimeDiagnostics: QuantDiagnostic[];
   metrics: QuantMetric[];
   plots: QuantPlot[];

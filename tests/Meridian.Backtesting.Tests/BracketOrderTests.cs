@@ -21,7 +21,7 @@ public sealed class BracketOrderTests
             LimitPrice: 100m,
             AccountId: "broker-1"));
 
-        var queuedOrder = ctx.DrainPendingOrders().Should().ContainSingle().Subject;
+        var queuedOrder = ctx.GetWorkingOrdersSnapshot().Should().ContainSingle().Subject;
         queuedOrder.OrderId.Should().Be(orderId);
         queuedOrder.Type.Should().Be(OrderType.Limit);
         queuedOrder.LimitPrice.Should().Be(100m);
@@ -63,7 +63,7 @@ public sealed class BracketOrderTests
 
         ctx.CancelContingentOrders(parentOrderId);
 
-        var remaining = ctx.DrainPendingOrders();
+        var remaining = ctx.GetWorkingOrdersSnapshot();
         remaining.Should().ContainSingle(order => order.OrderId == unrelatedOrderId);
     }
 
@@ -143,13 +143,63 @@ public sealed class BracketOrderTests
             OcoGroupId: ocoGroupId,
             ParentOrderId: filledOrder.ParentOrderId);
 
-        var pendingOrders = new List<Order> { filledOrder, siblingOrder };
+        var context = CreateContext();
+        context.AddWorkingOrders([filledOrder, siblingOrder]);
         var partialFill = new FillEvent(Guid.NewGuid(), filledOrder.OrderId, "SPY", -4L, 110m, 0m, DateTimeOffset.UtcNow);
 
-        ContingentOrderManager.ReconcileOcoSiblings(pendingOrders, filledOrder, partialFill);
+        ContingentOrderManager.ReconcileOcoSiblings(context, filledOrder, partialFill);
 
-        pendingOrders[1].Quantity.Should().Be(-6L);
-        pendingOrders[1].Status.Should().Be(OrderStatus.Pending);
+        var sibling = context.GetWorkingOrdersSnapshot().Single(order => order.OrderId == siblingOrder.OrderId);
+        sibling.Quantity.Should().Be(-6L);
+        sibling.Status.Should().Be(OrderStatus.Pending);
+    }
+
+    [Fact]
+    public void ReconcileOcoSiblings_WhenSiblingWasPartiallyFilled_PreservesItsOpenRemainder()
+    {
+        var ocoGroupId = Guid.NewGuid();
+        var parentOrderId = Guid.NewGuid();
+        var filledOrder = new Order(
+            Guid.NewGuid(),
+            "SPY",
+            OrderType.Limit,
+            -10L,
+            110m,
+            null,
+            DateTimeOffset.UtcNow,
+            OcoGroupId: ocoGroupId,
+            ParentOrderId: parentOrderId);
+        var partiallyFilledSibling = new Order(
+            Guid.NewGuid(),
+            "SPY",
+            OrderType.StopMarket,
+            -10L,
+            null,
+            95m,
+            DateTimeOffset.UtcNow,
+            Status: OrderStatus.PartiallyFilled,
+            FilledQuantity: -4L,
+            OcoGroupId: ocoGroupId,
+            ParentOrderId: parentOrderId);
+
+        var context = CreateContext();
+        context.AddWorkingOrders([filledOrder, partiallyFilledSibling]);
+        var newFill = new FillEvent(
+            Guid.NewGuid(),
+            filledOrder.OrderId,
+            "SPY",
+            -2L,
+            110m,
+            0m,
+            DateTimeOffset.UtcNow);
+
+        ContingentOrderManager.ReconcileOcoSiblings(context, filledOrder, newFill);
+
+        var sibling = context.GetWorkingOrdersSnapshot()
+            .Single(order => order.OrderId == partiallyFilledSibling.OrderId);
+        sibling.Quantity.Should().Be(-8L, "the total target includes its four already-filled shares");
+        sibling.FilledQuantity.Should().Be(-4L);
+        sibling.RemainingQuantity.Should().Be(4L, "only the newly filled two shares reduce its open exposure");
     }
 
     [Fact]
@@ -178,12 +228,13 @@ public sealed class BracketOrderTests
             OcoGroupId: ocoGroupId,
             ParentOrderId: parentOrderId);
 
-        var pendingOrders = new List<Order> { filledOrder, siblingOrder };
+        var context = CreateContext();
+        context.AddWorkingOrders([filledOrder, siblingOrder]);
         var fullFill = new FillEvent(Guid.NewGuid(), filledOrder.OrderId, "SPY", -10L, 110m, 0m, DateTimeOffset.UtcNow);
 
-        ContingentOrderManager.ReconcileOcoSiblings(pendingOrders, filledOrder, fullFill);
+        ContingentOrderManager.ReconcileOcoSiblings(context, filledOrder, fullFill);
 
-        pendingOrders[1].Status.Should().Be(OrderStatus.Cancelled);
+        context.GetWorkingOrdersSnapshot().Should().NotContain(order => order.OrderId == siblingOrder.OrderId);
     }
 
     private static BacktestContext CreateContext()
@@ -203,9 +254,6 @@ public sealed class BracketOrderTests
 
     private static void InjectPendingOrders(BacktestContext ctx, params Order[] orders)
     {
-        var field = typeof(BacktestContext).GetField("_pendingOrders", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-        field.Should().NotBeNull();
-        var pendingOrders = field!.GetValue(ctx).Should().BeAssignableTo<List<Order>>().Subject;
-        pendingOrders.AddRange(orders);
+        ctx.AddWorkingOrders(orders);
     }
 }

@@ -44,6 +44,50 @@ public sealed class CorporateActionAdjustmentServiceTests
     }
 
     [Fact]
+    public async Task PrepareAsync_HistoricalTickerMiss_FallsBackToCurrentIdentity()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResults(null, securityId);
+        _mockQueryService.SetCorporateActions([]);
+        var asOf = new DateTimeOffset(2024, 12, 31, 23, 59, 59, TimeSpan.Zero);
+        var bars = new[] { CreateBar("RENAMED", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m) };
+
+        await _service.PrepareAsync(bars, "RENAMED", asOf);
+
+        _mockResolver.Requests.Should().HaveCount(2);
+        _mockResolver.Requests[0].AsOfUtc.Should().Be(asOf);
+        _mockResolver.Requests[1].AsOfUtc.Should().BeAfter(asOf);
+        _mockQueryService.GetCorporateActionsCallCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task PrepareAsync_RevisionRecordedAfterBoundary_UsesKnownSplitTerms()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+        var asOf = new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero);
+        var original = new CorporateActionDto(
+            Guid.NewGuid(), securityId, "StockSplit", new DateOnly(2024, 2, 1), null,
+            null, null, 2m, null, null, null, null, null, null);
+        var amendment = original with
+        {
+            CorpActId = Guid.NewGuid(),
+            SplitRatio = 4m,
+            SupersedesCorpActId = original.CorpActId
+        };
+        CorporateActionRevisionMetadata.SetRecordedAtUtc(original, asOf.AddDays(-1));
+        CorporateActionRevisionMetadata.SetRecordedAtUtc(amendment, asOf.AddDays(1));
+        _mockQueryService.SetCorporateActions([original, amendment]);
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 2), 100m, 100m, 100m, 100m, 1_000);
+
+        var plan = await _service.PrepareAsync([bar], "SPY", asOf);
+        var adjusted = plan.Apply(bar);
+
+        adjusted.Close.Should().Be(50m);
+        adjusted.Volume.Should().Be(2_000L);
+    }
+
+    [Fact]
     public async Task AdjustAsync_NoCorporateActions_ReturnsOriginalBars()
     {
         var securityId = Guid.NewGuid();
@@ -405,6 +449,79 @@ public sealed class CorporateActionAdjustmentServiceTests
         result[0].Volume.Should().Be(4000);
     }
 
+    [Fact]
+    public async Task PrepareAsync_UsesFullHistoryAndAppliesSameDateDividendFactorOnce()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+        var exDate = new DateOnly(2024, 2, 1);
+        _mockQueryService.SetCorporateActions([
+            new CorporateActionDto(Guid.NewGuid(), securityId, "Dividend", exDate, null, 1m, "USD", null, null, null, null, null, null, null),
+            new CorporateActionDto(Guid.NewGuid(), securityId, "Dividend", exDate, null, 1m, "USD", null, null, null, null, null, null, null)
+        ]);
+        var bars = new[]
+        {
+            CreateBar("SPY", new DateOnly(2024, 1, 30), 90m, 90m, 90m, 90m),
+            CreateBar("SPY", new DateOnly(2024, 1, 31), 100m, 100m, 100m, 100m),
+            CreateBar("SPY", exDate, 98m, 98m, 98m, 98m),
+        };
+        var asOf = new DateTimeOffset(2024, 12, 31, 23, 59, 59, TimeSpan.Zero);
+
+        var plan = await _service.PrepareAsync(bars, "SPY", asOf);
+
+        plan.AsOfUtc.Should().Be(asOf);
+        plan.BarCount.Should().Be(3);
+        plan.ContentVersion.Should().StartWith("sha256:");
+        plan.Apply(bars[0]).Close.Should().Be(88.2m,
+            "the combined $2 dividend uses the immediate pre-ex close of $100, producing one 0.98 factor");
+        plan.Apply(bars[1]).Close.Should().Be(98m);
+        plan.Apply(bars[2]).Close.Should().Be(98m, "the ex-date bar is not back-adjusted");
+        _mockResolver.LastRequest!.AsOfUtc.Should().Be(asOf);
+    }
+
+    [Fact]
+    public async Task PrepareAsync_ContentVersionIsStableForSameContentAndChangesWithHistory()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+        _mockQueryService.SetCorporateActions([
+            new CorporateActionDto(Guid.NewGuid(), securityId, "StockSplit", new DateOnly(2024, 2, 1), null, null, null, 2m, null, null, null, null, null, null)
+        ]);
+        var asOf = new DateTimeOffset(2024, 12, 31, 23, 59, 59, TimeSpan.Zero);
+        var original = new[] { CreateBar("SPY", new DateOnly(2024, 1, 31), 100m, 100m, 100m, 100m) };
+
+        var first = await _service.PrepareAsync(original, "SPY", asOf);
+        var second = await _service.PrepareAsync(original.ToArray(), "spy", asOf);
+        var changed = await _service.PrepareAsync(
+            [CreateBar("SPY", new DateOnly(2024, 1, 31), 101m, 101m, 101m, 101m)],
+            "SPY",
+            asOf);
+
+        second.ContentVersion.Should().Be(first.ContentVersion);
+        changed.ContentVersion.Should().NotBe(first.ContentVersion);
+    }
+
+    [Fact]
+    public async Task PrepareAsync_CacheIsCapped()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+        _mockQueryService.SetCorporateActions([]);
+        var service = new CorporateActionAdjustmentService(
+            _mockQueryService,
+            _mockResolver,
+            NullLogger<CorporateActionAdjustmentService>.Instance,
+            maxCachedPlans: 2);
+        var bars = new[] { CreateBar("SPY", new DateOnly(2024, 1, 31), 100m, 100m, 100m, 100m) };
+        var asOf = new DateTimeOffset(2024, 12, 31, 23, 59, 59, TimeSpan.Zero);
+
+        await service.PrepareAsync(bars, "SPY", asOf);
+        await service.PrepareAsync(bars, "QQQ", asOf);
+        await service.PrepareAsync(bars, "IWM", asOf);
+
+        service.CachedPlanCount.Should().Be(2);
+    }
+
     private static HistoricalBar CreateBar(
         string symbol,
         DateOnly date,
@@ -442,15 +559,34 @@ public sealed class CorporateActionAdjustmentServiceTests
     private sealed class MockSecurityResolver : ISecurityResolver
     {
         private Guid? _result;
+        private readonly Queue<Guid?> _results = new();
 
         public int ResolveCallCount { get; private set; }
 
-        public void SetResolveResult(Guid? result) => _result = result;
+        public ResolveSecurityRequest? LastRequest { get; private set; }
+
+        public List<ResolveSecurityRequest> Requests { get; } = [];
+
+        public void SetResolveResult(Guid? result)
+        {
+            _results.Clear();
+            _result = result;
+        }
+
+        public void SetResolveResults(params Guid?[] results)
+        {
+            _results.Clear();
+            foreach (var result in results)
+                _results.Enqueue(result);
+            _result = results.LastOrDefault();
+        }
 
         public Task<Guid?> ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default)
         {
             ResolveCallCount++;
-            return Task.FromResult(_result);
+            LastRequest = request;
+            Requests.Add(request);
+            return Task.FromResult(_results.Count > 0 ? _results.Dequeue() : _result);
         }
     }
 

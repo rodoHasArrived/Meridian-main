@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-08-04
+last_reviewed: 2026-08-18
 ---
 
 # src/Meridian.Storage
@@ -48,7 +48,11 @@ lookup paths, and evidence trails those layers rely on.
 - `Etl/` - ETL staging, audit, reject, and local JSON job-definition stores.
 - `Interfaces/` and `Sinks/` - contracts and implementations that receive data to be saved.
 - `Store/`, `Policies/`, and `Replay/` - JSONL market-data storage, rules for using it, and readers
-  that can play saved data back. `JsonFileIBDataResultStore` requires tenant/company scope on writes
+  that can play saved data back. Replay converts physical JSONL and compressed JSONL partitions into
+  fixed-size sorted runs, then performs bounded 16-way merge passes by full UTC ticks with stable
+  file/line ties. Late-arriving records remain replayable without retaining the complete history in
+  memory, while malformed and null records fail closed with file/line evidence.
+  `JsonFileIBDataResultStore` requires tenant/company scope on writes
   and queries, keys matching result identities by that scope, and excludes unscoped legacy rows
   during restart hydration.
 - `Services/CanonicalSymbolRegistry.cs` - storage-backed canonical symbol resolver implementing
@@ -161,6 +165,11 @@ Storage sink flush behavior uses the Core-owned `Meridian.Core.Services.IFlushab
 than an Application service dependency. Saved records feed replay, packaging, exports, catalog
 lookup, lineage checks, quality scoring, and maintenance jobs.
 
+Replay readers validate each physical stream's monotonic timestamp contract and merge one buffered
+record per file. This preserves deterministic mixed bar, quote, trade, and depth chronology across
+the supported directory and flat layouts without materializing the whole dataset; callers must
+still budget one open stream per physical replay file.
+
 Backfill status and checkpoint sidecars are Storage-owned durable records published under
 `Meridian.Storage.Backfill`. They persist the shared Contracts-owned
 `Meridian.Contracts.Backfill` result payload plus per-symbol checkpoint and bar-count maps under
@@ -247,11 +256,6 @@ version, retained-by actor, and subject scope before append.
 The durable aggregate remains `JournalEntry` with balanced child `LedgerEntry` rows. Candidate
 journals, Asset Operations economic state, projection events, and balance snapshots are not accepted
 as alternate accounting facts.
-Retained journal aggregates are sealed at the posting transaction's deferred boundary. Parent and
-leg inserts share a transaction-scoped per-entry lock, and initial legs require a short-lived open
-marker owned by the parent transaction. A racing or later child therefore fails closed even from a
-repeatable-read snapshot that cannot observe a newly committed seal. Migration backfill holds both
-journal tables against writers until validation, sealing, and trigger installation complete.
 
 Ledger period close writes also fail closed for reviewed automation. `PostgresLedgerBookService`
 rejects assistant or automation-origin close requests before saving the period status, period-close
@@ -293,11 +297,8 @@ external GL, and customer-neutral scope values use the same trimmed durable shap
 period hydration and report filtering; it does not require a new journal column or position-balance
 table.
 `PostgresLedgerJournalStore.QueryAsync` provides the first durable journal-read seam for those
-line dimensions: callers can combine ledger-book, period, aggregate, account, posting-date,
-accounting-effective-date, and line-level dimension filters. Effective-date filters use retained
-`JournalEntryMetadata.EffectiveDate` with the UTC posting date only as a legacy fallback, so
-late-posted adjustments and reversals remain visible to period reconciliation. The store applies
-line-dimension filters against `journal_legs.dimensions` instead of
+line dimensions: callers can combine ledger-book, period, aggregate, account, date, and line-level
+dimension filters, and the store applies them against `journal_legs.dimensions` instead of
 guessing scope from account names or browser/WPF state. Empty queries fail before opening a
 connection so production journal reads stay explicitly scoped. Account and line-dimension filters
 first identify matching journal entries, then rehydrate every retained leg for those entries, so

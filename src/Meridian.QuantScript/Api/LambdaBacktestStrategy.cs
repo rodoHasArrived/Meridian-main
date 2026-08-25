@@ -19,7 +19,8 @@ internal sealed class LambdaBacktestStrategy : IBacktestStrategy
     private Action<FillEvent, IBacktestContext>? _onFill;
     private Action<DateOnly, IBacktestContext>? _onDayEnd;
     private Action<IBacktestContext, BacktestResult>? _onFinished;
-    private BacktestResult? _result;
+    private IBacktestContext? _finishedContext;
+    private bool _engineFinished;
 
     internal void SetOnInitialize(Action<IBacktestContext> handler) => _onInitialize = handler;
     internal void SetOnBar(Action<HistoricalBar, IBacktestContext> handler) => _onBar = handler;
@@ -29,7 +30,38 @@ internal sealed class LambdaBacktestStrategy : IBacktestStrategy
     internal void SetOnFill(Action<FillEvent, IBacktestContext> handler) => _onFill = handler;
     internal void SetOnDayEnd(Action<DateOnly, IBacktestContext> handler) => _onDayEnd = handler;
     internal void SetOnFinished(Action<IBacktestContext, BacktestResult> handler) => _onFinished = handler;
-    internal void SetResult(BacktestResult result) => _result = result;
+    internal void BeginRun()
+    {
+        _finishedContext = null;
+        _engineFinished = false;
+    }
+
+    internal void CompleteRun(BacktestResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        if (!_engineFinished || _finishedContext is null)
+        {
+            // The engine deliberately returns before constructing a context when its
+            // discovered universe is empty, so there is no lifecycle context to forward.
+            if (result.Universe.Count == 0)
+            {
+                AbortRun();
+                return;
+            }
+
+            throw new InvalidOperationException("The backtest engine did not complete the strategy lifecycle.");
+        }
+
+        _onFinished?.Invoke(_finishedContext, result);
+        _finishedContext = null;
+        _engineFinished = false;
+    }
+
+    internal void AbortRun()
+    {
+        _finishedContext = null;
+        _engineFinished = false;
+    }
 
     public void Initialize(IBacktestContext ctx) => _onInitialize?.Invoke(ctx);
     public void OnBar(HistoricalBar bar, IBacktestContext ctx) => _onBar?.Invoke(bar, ctx);
@@ -38,5 +70,9 @@ internal sealed class LambdaBacktestStrategy : IBacktestStrategy
     public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) => _onOrderBook?.Invoke(snapshot, ctx);
     public void OnOrderFill(FillEvent fill, IBacktestContext ctx) => _onFill?.Invoke(fill, ctx);
     public void OnDayEnd(DateOnly date, IBacktestContext ctx) => _onDayEnd?.Invoke(date, ctx);
-    public void OnFinished(IBacktestContext ctx) => _onFinished?.Invoke(ctx, _result!);
+    public void OnFinished(IBacktestContext ctx)
+    {
+        _finishedContext = ctx ?? throw new ArgumentNullException(nameof(ctx));
+        _engineFinished = true;
+    }
 }

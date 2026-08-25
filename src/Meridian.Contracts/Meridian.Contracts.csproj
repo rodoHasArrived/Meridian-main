@@ -1,4 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Meridian.Backtesting.Tests" />
+    <InternalsVisibleTo Include="Meridian.Storage" />
+    <InternalsVisibleTo Include="Meridian.Tests" />
+  </ItemGroup>
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

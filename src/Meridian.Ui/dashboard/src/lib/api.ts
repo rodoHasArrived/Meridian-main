@@ -3934,7 +3934,7 @@ export function runQuantScript(request: import("@/types").QuantRunRequest) {
 
 export async function executeCell(request: CellExecuteRequest): Promise<CellExecuteResult> {
   const response = await runQuantScript({
-    source: request.source,
+    source: request.source.trim().length > 0 ? request.source : "// Empty notebook cell",
     parameters: quantContextToParameters(request.context)
   });
 

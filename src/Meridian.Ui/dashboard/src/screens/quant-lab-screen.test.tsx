@@ -26,6 +26,7 @@ const successfulRun: QuantRunResponse = {
   runtimeError: null,
   consoleOutput: "Hello from the Quant Lab.\n",
   compilationErrors: [],
+  compilationWarnings: [],
   runtimeDiagnostics: [],
   metrics: [{ label: "answer", value: "42" }],
   plots: [
@@ -54,6 +55,7 @@ const noEvidenceSuccessfulRun: QuantRunResponse = {
   runtimeError: null,
   consoleOutput: "",
   compilationErrors: [],
+  compilationWarnings: [],
   runtimeDiagnostics: [],
   metrics: [],
   plots: [],
@@ -71,7 +73,10 @@ const successfulRunWithTrades: QuantRunResponse = {
       side: "buy",
       quantity: 10,
       price: 512.35,
-      commission: 1.25
+      commission: 1.25,
+      fillId: "fill-1",
+      orderId: "order-1",
+      backtestRunIndex: 0
     },
     {
       timestamp: "2026-01-02T15:45:00Z",
@@ -79,7 +84,10 @@ const successfulRunWithTrades: QuantRunResponse = {
       side: "sell",
       quantity: 10,
       price: 514.1,
-      commission: 1.25
+      commission: 1.25,
+      fillId: "fill-2",
+      orderId: "order-2",
+      backtestRunIndex: 0
     }
   ]
 };
@@ -94,6 +102,7 @@ const failedRun: QuantRunResponse = {
   compilationErrors: [
     { severity: "Error", message: "missing semicolon", line: 1, column: 1 }
   ],
+  compilationWarnings: [],
   runtimeDiagnostics: [],
   metrics: [],
   plots: [],
@@ -159,7 +168,7 @@ describe("QuantLabScreen", () => {
 
   it("labels run evidence when the editor changes before the run completes", async () => {
     const deferredRun = createDeferred<QuantRunResponse>();
-    vi.spyOn(api, "runQuantScript").mockReturnValue(deferredRun.promise);
+    const runSpy = vi.spyOn(api, "runQuantScript").mockReturnValue(deferredRun.promise);
 
     const user = userEvent.setup();
     renderWithRouter(<QuantLabScreen />);
@@ -168,7 +177,10 @@ describe("QuantLabScreen", () => {
     const editor = screen.getByLabelText("Script source") as HTMLTextAreaElement;
     await user.clear(editor);
     await user.type(editor, "Print(\"submitted\");");
-    await user.click(screen.getByRole("button", { name: /Run script/i }));
+    const runButton = screen.getByRole("button", { name: /Run script/i });
+    await waitFor(() => expect(runButton).toBeEnabled());
+    await user.click(runButton);
+    await waitFor(() => expect(runSpy).toHaveBeenCalledTimes(1));
 
     await user.clear(editor);
     await user.type(editor, "Print(\"edited\");");

@@ -67,6 +67,25 @@ public sealed class CorporateActionEffectiveStateProjectorTests
     }
 
     [Fact]
+    public void Project_AmendmentRecordedAfterAsOf_PreservesKnownRevision()
+    {
+        var original = MakeAction("Split", exDate: new DateOnly(2026, 8, 14), splitRatio: 2m);
+        var amendment = MakeAction("Split", exDate: new DateOnly(2026, 8, 14), splitRatio: 4m) with
+        {
+            SupersedesCorpActId = original.CorpActId
+        };
+        CorporateActionRevisionMetadata.SetRecordedAtUtc(original, AsOf.AddDays(-1));
+        CorporateActionRevisionMetadata.SetRecordedAtUtc(amendment, AsOf.AddDays(1));
+
+        var state = CorporateActionEffectiveStateProjector.Project([original, amendment], AsOf)
+            .Should().ContainSingle().Subject;
+
+        state.Effective.CorpActId.Should().Be(original.CorpActId);
+        state.Effective.SplitRatio.Should().Be(2m);
+        state.Timeline.Should().ContainSingle();
+    }
+
+    [Fact]
     public void Project_CancelledChain_ReportsCancelledAndDropsFromEffectiveActions()
     {
         var original = MakeAction("Dividend", exDate: new DateOnly(2026, 8, 14), dividendPerShare: 0.24m);

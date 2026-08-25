@@ -326,6 +326,8 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         result.Should().NotBeNull("RunAsync must complete normally");
         result.Fills.Should().BeEmpty(
             "the short-sell fill was rejected by the account rule; no fills should be recorded");
+        strategy.FillCallbacks.Should().BeEmpty(
+            "portfolio-rejected fill candidates must never reach strategy callbacks");
     }
 
     [Fact]
@@ -357,6 +359,358 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
 
         result.Fills.Sum(static fill => fill.FilledQuantity).Should().Be(20,
             "the first accepted slice should keep the order pending so remaining quantity can fill later");
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenEveryProposedFillIsRejected_GtcOrderRemainsWorking()
+    {
+        WriteCustomBarJsonl(
+            "AAPL",
+            (new DateOnly(2024, 1, 2), 100m, 100m, 100m, 100m, 1_000),
+            (new DateOnly(2024, 1, 3), 1m, 1m, 1m, 1m, 1_000));
+
+        var cashOnlyAccount = new FinancialAccount(
+            BacktestDefaults.DefaultBrokerageAccountId,
+            "Cash Brokerage",
+            FinancialAccountKind.Brokerage,
+            InitialCash: 50m,
+            Rules: new FinancialAccountRules(AllowMargin: false, AllowShortSelling: true));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 3),
+            DataRoot: _dataRoot,
+            Accounts: [cashOnlyAccount],
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(
+            request,
+            new SubmitOnceStrategy(new OrderRequest(
+                "AAPL",
+                1L,
+                OrderType.Market,
+                TimeInForce: TimeInForce.GoodTilCancelled)));
+
+        result.Fills.Should().ContainSingle();
+        result.Fills[0].FilledAt.UtcDateTime.Date.Should().Be(new DateTime(2024, 1, 3));
+        result.Fills[0].FilledQuantity.Should().Be(1L,
+            "the rejected first attempt must not advance or remove the authoritative working order");
+    }
+
+    [Fact]
+    public async Task RunAsync_CancelOrder_RemovesAnAlreadyWorkingOrder()
+    {
+        WriteCustomBarJsonl(
+            "AAPL",
+            (new DateOnly(2024, 1, 2), 100m, 105m, 95m, 100m, 1_000),
+            (new DateOnly(2024, 1, 3), 100m, 105m, 95m, 100m, 1_000),
+            (new DateOnly(2024, 1, 4), 10m, 15m, 5m, 10m, 1_000));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 4),
+            DataRoot: _dataRoot,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(request, new CancelWorkingOrderOnSecondBarStrategy());
+
+        result.Fills.Should().BeEmpty(
+            "the GTC limit order was cancelled before the later bar crossed its limit");
+    }
+
+    [Fact]
+    public async Task RunAsync_CancelContingentOrdersFromFillCallback_RemovesAttachedExits()
+    {
+        WriteMultiLevelLobJsonl(
+            "AAPL",
+            (new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero),
+                [(99m, 1_000L)],
+                [(100m, 4L), (101m, 6L)]),
+            (new DateTimeOffset(2024, 1, 2, 14, 30, 1, TimeSpan.Zero),
+                [(120m, 1_000L)],
+                [(121m, 1_000L)]));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(request, new CancelBracketExitsOnEntryFillStrategy());
+
+        result.Fills.Should().HaveCount(2, "the entry walked two order-book levels");
+        result.Fills.Should().OnlyContain(static fill => fill.FilledQuantity > 0,
+            "the first entry-fill callback cancelled every contingent slice before the next snapshot");
+        result.Fills.Sum(static fill => fill.FilledQuantity).Should().Be(10L);
+    }
+
+    [Fact]
+    public async Task RunAsync_ImmediateOrCancelPartialFill_DoesNotFillRemainderLater()
+    {
+        WriteLobJsonl("SPY",
+            (new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero), 100m, 40L),
+            (new DateTimeOffset(2024, 1, 2, 14, 30, 1, TimeSpan.Zero), 100m, 100L));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(
+            request,
+            new SubmitOnceStrategy(new OrderRequest(
+                "SPY",
+                100L,
+                OrderType.Market,
+                TimeInForce: TimeInForce.ImmediateOrCancel,
+                ExecutionModel: ExecutionModel.OrderBook)));
+
+        result.Fills.Sum(static fill => fill.FilledQuantity).Should().Be(40L);
+        result.Fills.Should().ContainSingle(
+            "the unfilled IOC remainder is terminal and cannot consume the later snapshot");
+    }
+
+    [Fact]
+    public async Task RunAsync_FillOrKillWithInsufficientDepth_DoesNotFillOnLaterSnapshot()
+    {
+        WriteLobJsonl("SPY",
+            (new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero), 100m, 40L),
+            (new DateTimeOffset(2024, 1, 2, 14, 30, 1, TimeSpan.Zero), 100m, 100L));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(
+            request,
+            new SubmitOnceStrategy(new OrderRequest(
+                "SPY",
+                100L,
+                OrderType.Market,
+                TimeInForce: TimeInForce.FillOrKill,
+                ExecutionModel: ExecutionModel.OrderBook)));
+
+        result.Fills.Should().BeEmpty(
+            "an FOK order cancelled against the first snapshot cannot become eligible later");
+    }
+
+    [Fact]
+    public async Task RunAsync_FillOrKillBatchRejectedOnLaterSlice_AcceptsNoSlices()
+    {
+        WriteMultiLevelLobJsonl(
+            "SPY",
+            (new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero),
+                [(99m, 1_000L)],
+                [(100m, 1L), (101m, 1L)]));
+
+        var cashOnlyAccount = new FinancialAccount(
+            BacktestDefaults.DefaultBrokerageAccountId,
+            "Cash Brokerage",
+            FinancialAccountKind.Brokerage,
+            InitialCash: 150m,
+            Rules: new FinancialAccountRules(AllowMargin: false, AllowShortSelling: true));
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            Accounts: [cashOnlyAccount],
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(
+            request,
+            new SubmitOnceStrategy(new OrderRequest(
+                "SPY",
+                2L,
+                OrderType.Market,
+                TimeInForce: TimeInForce.FillOrKill,
+                ExecutionModel: ExecutionModel.OrderBook)));
+
+        result.Fills.Should().BeEmpty(
+            "the second slice violates the cash rule, so the complete FOK batch must roll back");
+        result.Snapshots.Should().ContainSingle();
+        result.Snapshots[0].Accounts[BacktestDefaults.DefaultBrokerageAccountId]
+            .Cash.Should().Be(150m);
+    }
+
+    [Fact]
+    public async Task RunAsync_FillOrKillCompleteProposal_WithDefaultPartialFlag_FillsAtomically()
+    {
+        WriteMultiLevelLobJsonl(
+            "SPY",
+            (new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero),
+                [(99m, 1_000L)],
+                [(100m, 1L), (101m, 1L)]));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(
+            request,
+            new SubmitOnceStrategy(new OrderRequest(
+                "SPY",
+                2L,
+                OrderType.Market,
+                TimeInForce: TimeInForce.FillOrKill,
+                ExecutionModel: ExecutionModel.OrderBook)));
+
+        result.Fills.Should().HaveCount(2);
+        result.Fills.Sum(static fill => fill.FilledQuantity).Should().Be(2L,
+            "FOK requires atomic handling even when AllowPartialFills retains its default value");
+    }
+
+    [Fact]
+    public async Task RunAsync_NonPartialBatchRejectedOnLaterSlice_AcceptsNoSlices()
+    {
+        WriteMultiLevelLobJsonl(
+            "SPY",
+            (new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero),
+                [(99m, 1_000L)],
+                [(100m, 1L), (101m, 1L)]));
+
+        var cashOnlyAccount = new FinancialAccount(
+            BacktestDefaults.DefaultBrokerageAccountId,
+            "Cash Brokerage",
+            FinancialAccountKind.Brokerage,
+            InitialCash: 150m,
+            Rules: new FinancialAccountRules(AllowMargin: false, AllowShortSelling: true));
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            Accounts: [cashOnlyAccount],
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(
+            request,
+            new SubmitOnceStrategy(new OrderRequest(
+                "SPY",
+                2L,
+                OrderType.Market,
+                TimeInForce: TimeInForce.GoodTilCancelled,
+                AllowPartialFills: false,
+                ExecutionModel: ExecutionModel.OrderBook)));
+
+        result.Fills.Should().BeEmpty(
+            "a non-partial order must roll back every slice when any slice violates account rules");
+        result.Snapshots.Should().ContainSingle();
+        result.Snapshots[0].Accounts[BacktestDefaults.DefaultBrokerageAccountId]
+            .Cash.Should().Be(150m);
+    }
+
+    [Fact]
+    public async Task RunAsync_NonPartialMarketImpactLimitProposalMustBeComplete()
+    {
+        WriteCustomBarJsonl(
+            "AAPL",
+            (new DateOnly(2024, 1, 2), 100m, 110m, 90m, 100m, 1_000));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(
+            request,
+            new SubmitOnceStrategy(new OrderRequest(
+                "AAPL",
+                500L,
+                OrderType.Limit,
+                LimitPrice: 104m,
+                TimeInForce: TimeInForce.GoodTilCancelled,
+                AllowPartialFills: false,
+                ExecutionModel: ExecutionModel.MarketImpact)));
+
+        result.Fills.Should().BeEmpty(
+            "a non-partial limit order cannot accept only the market-impact slices below its limit");
+    }
+
+    [Fact]
+    public async Task RunAsync_FillOrKillBarProposalCannotComplete_DiscardsPartialProposal()
+    {
+        WriteCustomBarJsonl(
+            "AAPL",
+            (new DateOnly(2024, 1, 2), 100m, 105m, 95m, 100m, 40));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            MaxParticipationRate: 1m,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(
+            request,
+            new SubmitOnceStrategy(new OrderRequest(
+                "AAPL",
+                100L,
+                OrderType.Market,
+                TimeInForce: TimeInForce.FillOrKill,
+                ExecutionModel: ExecutionModel.BarMidpoint)));
+
+        result.Fills.Should().BeEmpty(
+            "FOK is enforced centrally even when a fill model proposes a partial slice");
+    }
+
+    [Fact]
+    public async Task RunAsync_ImmediateOrCancelBarPartialFill_CancelsRemainderCentrally()
+    {
+        WriteCustomBarJsonl(
+            "AAPL",
+            (new DateOnly(2024, 1, 2), 100m, 105m, 95m, 100m, 40),
+            (new DateOnly(2024, 1, 3), 100m, 105m, 95m, 100m, 100));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 3),
+            DataRoot: _dataRoot,
+            MaxParticipationRate: 1m,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(
+            request,
+            new SubmitOnceStrategy(new OrderRequest(
+                "AAPL",
+                100L,
+                OrderType.Market,
+                TimeInForce: TimeInForce.ImmediateOrCancel,
+                ExecutionModel: ExecutionModel.BarMidpoint)));
+
+        result.Fills.Should().ContainSingle();
+        result.Fills[0].FilledQuantity.Should().Be(40L,
+            "the second bar cannot fill the terminal IOC remainder");
+    }
+
+    [Fact]
+    public async Task RunAsync_DayOrderExpiresBeforeLaterSessionCrossesItsLimit()
+    {
+        WriteCustomBarJsonl(
+            "AAPL",
+            (new DateOnly(2024, 1, 2), 100m, 105m, 95m, 100m, 1_000),
+            (new DateOnly(2024, 1, 3), 10m, 15m, 5m, 10m, 1_000));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 3),
+            DataRoot: _dataRoot,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(
+            request,
+            new SubmitOnceStrategy(new OrderRequest(
+                "AAPL",
+                10L,
+                OrderType.Limit,
+                LimitPrice: 50m,
+                TimeInForce: TimeInForce.Day)));
+
+        result.Fills.Should().BeEmpty("the Day order expired at the end of its submission day");
     }
 
     // ------------------------------------------------------------------ //
@@ -442,6 +796,50 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         bar.Open.Should().Be(100m, "price should be halved by the 2:1 split adjustment (200 / 2)");
         bar.Close.Should().Be(100m, "close should also be halved");
         bar.Volume.Should().Be(2_000_000L, "volume should be doubled by the split adjustment");
+    }
+
+    [Fact]
+    public async Task RunAsync_CorporateActions_PreparesCompleteSeriesOnceAtPinnedAsOfAndAppliesPlan()
+    {
+        WriteBarJsonl(
+            "AAPL",
+            new DateOnly(2024, 1, 2),
+            new DateOnly(2024, 1, 4),
+            basePrice: 200m,
+            dailyGain: 4m);
+
+        var adjustment = new StubCorporateActionAdjustmentService(factor: 2m);
+        var catalog = new StorageCatalogService(_dataRoot, new StorageOptions());
+        var engine = new BacktestEngine(
+            NullLogger<BacktestEngine>.Instance,
+            catalog,
+            securityMasterQueryService: null,
+            corporateActionAdjustment: adjustment);
+        var strategy = new PriceCapturingStrategy();
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 4),
+            DataRoot: _dataRoot,
+            AdjustForCorporateActions: true);
+
+        await engine.RunAsync(request, strategy);
+
+        adjustment.PrepareCallCount.Should().Be(1);
+        adjustment.CallCount.Should().Be(1, "the compatibility batch adjustment runs once during preparation");
+        adjustment.PreparedTicker.Should().Be("AAPL");
+        adjustment.PreparedAsOfUtc.Should().Be(new DateTimeOffset(
+            request.To.ToDateTime(TimeOnly.MaxValue),
+            TimeSpan.Zero));
+        adjustment.PreparedBars.Should().HaveCount(3);
+        adjustment.PreparedBars.Select(static bar => bar.SessionDate).Should().Equal(
+            new DateOnly(2024, 1, 2),
+            new DateOnly(2024, 1, 3),
+            new DateOnly(2024, 1, 4));
+
+        strategy.ReceivedBars.Should().HaveCount(3);
+        strategy.ReceivedBars.Select(static bar => bar.Open).Should().Equal(100m, 102m, 104m);
+        strategy.ReceivedBars.Should().OnlyContain(static bar => bar.Volume == 2_000_000L,
+            "the prepared immutable plan is applied to every bar in the execution replay");
     }
 
     [Fact]
@@ -568,6 +966,81 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
         }
     }
+
+    private void WriteLobJsonl(
+        string symbol,
+        params (DateTimeOffset Timestamp, decimal AskPrice, long AskQuantity)[] snapshots)
+    {
+        var symbolDir = Path.Combine(_dataRoot, symbol.ToUpperInvariant());
+        Directory.CreateDirectory(symbolDir);
+        var filePath = Path.Combine(
+            symbolDir,
+            $"{symbol}_lob_{DateOnly.FromDateTime(snapshots[0].Timestamp.UtcDateTime):yyyy-MM-dd}.jsonl");
+
+        using var writer = new StreamWriter(filePath);
+        var sequence = 1L;
+        foreach (var snapshot in snapshots)
+        {
+            var payload = new LOBSnapshot(
+                snapshot.Timestamp,
+                symbol,
+                Bids: [new OrderBookLevel(OrderBookSide.Bid, 0, snapshot.AskPrice - 1m, 1_000m)],
+                Asks: [new OrderBookLevel(OrderBookSide.Ask, 0, snapshot.AskPrice, snapshot.AskQuantity)],
+                SequenceNumber: sequence);
+            var evt = MarketEvent.L2Snapshot(
+                snapshot.Timestamp,
+                symbol,
+                payload,
+                source: "test",
+                seq: sequence++);
+            writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
+        }
+    }
+
+    private void WriteMultiLevelLobJsonl(
+        string symbol,
+        params (
+            DateTimeOffset Timestamp,
+            (decimal Price, long Quantity)[] Bids,
+            (decimal Price, long Quantity)[] Asks)[] snapshots)
+    {
+        var symbolDir = Path.Combine(_dataRoot, symbol.ToUpperInvariant());
+        Directory.CreateDirectory(symbolDir);
+        var filePath = Path.Combine(
+            symbolDir,
+            $"{symbol}_lob_{DateOnly.FromDateTime(snapshots[0].Timestamp.UtcDateTime):yyyy-MM-dd}.jsonl");
+
+        using var writer = new StreamWriter(filePath);
+        var sequence = 1L;
+        foreach (var snapshot in snapshots)
+        {
+            var payload = new LOBSnapshot(
+                snapshot.Timestamp,
+                symbol,
+                Bids: snapshot.Bids
+                    .Select((level, index) => new OrderBookLevel(
+                        OrderBookSide.Bid,
+                        (ushort)index,
+                        level.Price,
+                        level.Quantity))
+                    .ToArray(),
+                Asks: snapshot.Asks
+                    .Select((level, index) => new OrderBookLevel(
+                        OrderBookSide.Ask,
+                        (ushort)index,
+                        level.Price,
+                        level.Quantity))
+                    .ToArray(),
+                SequenceNumber: sequence);
+            var evt = MarketEvent.L2Snapshot(
+                snapshot.Timestamp,
+                symbol,
+                payload,
+                source: "test",
+                seq: sequence++);
+            writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
+        }
+    }
 }
 
 // ------------------------------------------------------------------ //
@@ -673,6 +1146,29 @@ file sealed class PriceCapturingStrategy : IBacktestStrategy
 file sealed class StubCorporateActionAdjustmentService(decimal factor) : ICorporateActionAdjustmentService
 {
     public int CallCount { get; private set; }
+    public int PrepareCallCount { get; private set; }
+    public IReadOnlyList<HistoricalBar> PreparedBars { get; private set; } = [];
+    public string? PreparedTicker { get; private set; }
+    public DateTimeOffset? PreparedAsOfUtc { get; private set; }
+
+    public async Task<CorporateActionAdjustmentPlan> PrepareAsync(
+        IReadOnlyList<HistoricalBar> bars,
+        string ticker,
+        DateTimeOffset asOfUtc,
+        CancellationToken ct = default)
+    {
+        PrepareCallCount++;
+        PreparedBars = bars.ToArray();
+        PreparedTicker = ticker;
+        PreparedAsOfUtc = asOfUtc;
+
+        var adjusted = await AdjustAsync(bars, ticker, ct);
+        return CorporateActionAdjustmentPlan.FromLegacyAdjustedBars(
+            ticker,
+            asOfUtc,
+            bars,
+            adjusted);
+    }
 
     public Task<IReadOnlyList<HistoricalBar>> AdjustAsync(
         IReadOnlyList<HistoricalBar> bars,
@@ -705,6 +1201,7 @@ file sealed class ShortFirstBarStrategy(string symbol, long quantity) : IBacktes
     private bool _shorted;
 
     public string Name => "ShortFirstBar";
+    public List<FillEvent> FillCallbacks { get; } = [];
 
     public void Initialize(IBacktestContext ctx) { }
     public void OnTrade(Trade trade, IBacktestContext ctx) { }
@@ -720,7 +1217,7 @@ file sealed class ShortFirstBarStrategy(string symbol, long quantity) : IBacktes
     }
 
     public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) { }
-    public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
+    public void OnOrderFill(FillEvent fill, IBacktestContext ctx) => FillCallbacks.Add(fill);
     public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
     public void OnFinished(IBacktestContext ctx) { }
 }
@@ -753,4 +1250,107 @@ file sealed class BuyFirstBarWithMarketImpactGtcStrategy(string symbol, long qua
     public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
     public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
     public void OnFinished(IBacktestContext ctx) { }
+}
+
+file sealed class SubmitOnceStrategy(OrderRequest request) : IBacktestStrategy
+{
+    private bool _submitted;
+
+    public string Name => "SubmitOnce";
+
+    public void Initialize(IBacktestContext ctx) { }
+    public void OnTrade(Trade trade, IBacktestContext ctx) => Submit(ctx);
+    public void OnQuote(BboQuotePayload quote, IBacktestContext ctx) => Submit(ctx);
+    public void OnBar(HistoricalBar bar, IBacktestContext ctx) => Submit(ctx);
+    public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) => Submit(ctx);
+    public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
+    public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
+    public void OnFinished(IBacktestContext ctx) { }
+
+    private void Submit(IBacktestContext context)
+    {
+        if (_submitted)
+            return;
+
+        context.PlaceOrder(request);
+        _submitted = true;
+    }
+}
+
+file sealed class CancelWorkingOrderOnSecondBarStrategy : IBacktestStrategy
+{
+    private Guid _orderId;
+    private int _barCount;
+
+    public string Name => "CancelWorkingOrderOnSecondBar";
+
+    public void Initialize(IBacktestContext ctx) { }
+    public void OnTrade(Trade trade, IBacktestContext ctx) { }
+    public void OnQuote(BboQuotePayload quote, IBacktestContext ctx) { }
+
+    public void OnBar(HistoricalBar bar, IBacktestContext ctx)
+    {
+        _barCount++;
+        if (_barCount == 1)
+        {
+            _orderId = ctx.PlaceOrder(new OrderRequest(
+                bar.Symbol,
+                10L,
+                OrderType.Limit,
+                LimitPrice: 50m,
+                TimeInForce: TimeInForce.GoodTilCancelled));
+        }
+        else if (_barCount == 2)
+        {
+            ctx.CancelOrder(_orderId);
+        }
+    }
+
+    public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) { }
+    public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
+    public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
+    public void OnFinished(IBacktestContext ctx) { }
+}
+
+file sealed class CancelBracketExitsOnEntryFillStrategy : IBacktestStrategy
+{
+    private Guid _entryOrderId;
+    private bool _cancelledContingents;
+
+    public string Name => "CancelBracketExitsOnEntryFill";
+
+    public void Initialize(IBacktestContext ctx) { }
+    public void OnTrade(Trade trade, IBacktestContext ctx) { }
+    public void OnQuote(BboQuotePayload quote, IBacktestContext ctx) { }
+
+    public void OnBar(HistoricalBar bar, IBacktestContext ctx) => SubmitBracket(bar.Symbol, ctx);
+
+    public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) => SubmitBracket(snapshot.Symbol, ctx);
+
+    public void OnOrderFill(FillEvent fill, IBacktestContext ctx)
+    {
+        if (fill.OrderId != _entryOrderId || _cancelledContingents)
+            return;
+
+        ctx.CancelContingentOrders(_entryOrderId);
+        _cancelledContingents = true;
+    }
+
+    public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
+    public void OnFinished(IBacktestContext ctx) { }
+
+    private void SubmitBracket(string symbol, IBacktestContext context)
+    {
+        if (_entryOrderId != Guid.Empty)
+            return;
+
+        _entryOrderId = context.PlaceBracketOrder(new BracketOrderRequest(
+            symbol,
+            10L,
+            OrderType.Market,
+            TakeProfitPrice: 110m,
+            StopLossPrice: 90m,
+            TimeInForce: TimeInForce.GoodTilCancelled,
+            ExecutionModel: ExecutionModel.OrderBook));
+    }
 }
