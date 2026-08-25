@@ -1449,6 +1449,30 @@ describe("accounting-screen view model", () => {
     expect(result.current.transactionLabView.canPreview).toBe(true);
   });
 
+  it("computes the balance control from the whole basis, not the filtered rows", () => {
+    // The control answers "does this book tie", which is a property of the book. Summing only the
+    // rows an account search left visible declared the book out of balance by the value of
+    // everything filtered out, and told the operator to resolve a variance that does not exist.
+    const unfiltered = buildAccountingTrialBalanceViewState({
+      runId: "run-42",
+      rows: trialBalanceLines,
+      loading: false,
+      error: null
+    });
+
+    const filtered = buildAccountingTrialBalanceViewState({
+      runId: "run-42",
+      rows: trialBalanceLines,
+      accountFilter: "Cash",
+      loading: false,
+      error: null
+    });
+
+    expect(filtered.rows.length).toBeLessThan(unfiltered.rows.length);
+    expect(filtered.basisVariance).toBe(unfiltered.basisVariance);
+    expect(filtered.isBasisOutOfBalance).toBe(unfiltered.isBasisOutOfBalance);
+  });
+
   it("derives trial-balance table rows, labels, and status announcements", () => {
     const state = buildAccountingTrialBalanceViewState({
       runId: "run-42",
@@ -1521,7 +1545,12 @@ describe("accounting-screen view model", () => {
     expect(state.selectedDetail?.supportingDocuments).toEqual(expect.arrayContaining([
       expect.objectContaining({ label: "Run review packet", href: "/api/workstation/runs/run-42/review-packet" }),
       expect.objectContaining({ label: "Source event evidence", href: "/accounting/audit?sourceEventId=evt-cash-1" }),
-      expect.objectContaining({ label: "Journal entry evidence", href: "/accounting/ledger?journalEntryId=je-cash-1" }),
+      // The journal-entry detail screen, not the ledger explorer: the explorer never read a
+      // journalEntryId, so this link used to drop the entry it named.
+      expect.objectContaining({
+        label: "Journal entry evidence",
+        href: "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42"
+      }),
       expect.objectContaining({ label: "Approval evidence", href: "/accounting/approvals?approvalId=approval-cash-1" })
     ]));
     expect(state.rows[1]).toMatchObject({

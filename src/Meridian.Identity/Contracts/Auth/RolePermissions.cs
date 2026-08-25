@@ -34,10 +34,19 @@ public static class RolePermissions
         UserPermission.ViewReporting |
         UserPermission.ManageReporting |
         UserPermission.ApproveReporting |
-        UserPermission.DeliverReporting;
+        UserPermission.DeliverReporting |
+        UserPermission.ViewLedgerReports |
+        UserPermission.ManageLedgerReports |
+        UserPermission.ManageCompliance;
 
+    // Subtracted, not merely omitted: Developer is defined as Admin minus user administration, so
+    // every permission added to AdminPermissions lands here silently. ManageCompliance did exactly
+    // that. Before the split, compliance routes required ManageUsers and Developer was refused by
+    // all of them; inheriting the new grant would have let a Developer account file and decide
+    // approval requests, extract the audit chain, and read access reviews — the opposite of what a
+    // least-privilege split is for.
     private const UserPermission DeveloperPermissions =
-        AdminPermissions & ~UserPermission.ManageUsers;
+        AdminPermissions & ~(UserPermission.ManageUsers | UserPermission.ManageCompliance);
 
     private const UserPermission TradeDeskPermissions =
         UserPermission.ViewMarketData |
@@ -72,7 +81,9 @@ public static class RolePermissions
         UserPermission.ViewReporting |
         UserPermission.ManageReporting |
         UserPermission.ApproveReporting |
-        UserPermission.DeliverReporting;
+        UserPermission.DeliverReporting |
+        UserPermission.ViewLedgerReports |
+        UserPermission.ManageLedgerReports;
 
     private const UserPermission FundAccountantPermissions =
         UserPermission.ViewTrades |
@@ -83,7 +94,9 @@ public static class RolePermissions
         UserPermission.ManageFundStructure |
         UserPermission.ViewReporting |
         UserPermission.ManageReporting |
-        UserPermission.DeliverReporting;
+        UserPermission.DeliverReporting |
+        UserPermission.ViewLedgerReports |
+        UserPermission.ManageLedgerReports;
 
     private const UserPermission ReportingAnalystPermissions =
         UserPermission.ViewAnalytics |
@@ -91,7 +104,8 @@ public static class RolePermissions
         UserPermission.ViewStrategies |
         UserPermission.ViewSecurityMaster |
         UserPermission.ViewReporting |
-        UserPermission.ManageReporting;
+        UserPermission.ManageReporting |
+        UserPermission.ViewLedgerReports;
 
     private const UserPermission ControllerPermissions =
         UserPermission.ViewTrades |
@@ -103,7 +117,9 @@ public static class RolePermissions
         UserPermission.ViewReporting |
         UserPermission.ManageReporting |
         UserPermission.ApproveReporting |
-        UserPermission.DeliverReporting;
+        UserPermission.DeliverReporting |
+        UserPermission.ViewLedgerReports |
+        UserPermission.ManageLedgerReports;
 
     private const UserPermission CompliancePermissions =
         UserPermission.ViewTrades |
@@ -113,7 +129,10 @@ public static class RolePermissions
         UserPermission.ViewDirectLending |
         UserPermission.ViewReporting |
         UserPermission.ApproveReporting |
-        UserPermission.DeliverReporting;
+        UserPermission.DeliverReporting |
+        // The compliance surface used to gate on ManageUsers, so a compliance officer
+        // could only file an approval request by also holding user administration.
+        UserPermission.ManageCompliance;
 
     private const UserPermission ExecutivePermissions =
         UserPermission.ViewMarketData |
@@ -312,6 +331,8 @@ public static class RolePermissions
         UserPermission.ViewDirectLending or UserPermission.ManageDirectLending => "Direct lending",
         UserPermission.ManageFundStructure => "Fund structure",
         UserPermission.ViewReporting or UserPermission.ManageReporting or UserPermission.ApproveReporting or UserPermission.DeliverReporting => "Reporting",
+        UserPermission.ViewLedgerReports or UserPermission.ManageLedgerReports => "Ledger and fund accounting",
+        UserPermission.ManageCompliance => "Compliance",
         _ => "Other"
     };
 
@@ -344,6 +365,9 @@ public static class RolePermissions
         UserPermission.ManageReporting => "Create and manage reporting templates, schedules, runs, and work packages.",
         UserPermission.ApproveReporting => "Approve, reject, publish, restate, and archive governed report packs.",
         UserPermission.DeliverReporting => "Deliver report packs and record delivery failures or retry evidence.",
+        UserPermission.ViewLedgerReports => "Read the governed ledger: trial balance, P&L, periods, and posted journal entries.",
+        UserPermission.ManageLedgerReports => "Operate the governed ledger: post entries, close periods, configure accounting, and run journal automation.",
+        UserPermission.ManageCompliance => "File and decide compliance approvals, run access reviews, and extract the audit chain.",
         _ => permission.ToString()
     };
 }

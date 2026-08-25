@@ -3525,7 +3525,7 @@
       ]
     }
   ],
-  "fingerprint": "7011d359979059bbaca203fbcbf1eb397c61be3f9a8ba89575e00ef47728faa6",
+  "fingerprint": "10aaf4984e5dfd2d0e6aaea096ee1391da43ed07f60dda119ad10f4f464caad3",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5673,7 +5673,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "5551d83850663fd95657ac3630cb3747d006db4c2b9c1e3d11fe3920e1d63204",
+      "fingerprint": "d0f9d7129a6d5796ca6a9f43a5792832a5db29fba99d5a74919adffe7cbc4a93",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -6647,7 +6647,7 @@
       "contract_sets": [
         "identity-access-contracts"
       ],
-      "fingerprint": "666c9ad81cb252aa71c7ff73211b394c9c8db433dcfab6ded52fa01b5c862597",
+      "fingerprint": "d288e36f339e4c0db4ddb80cc85ad88b2762bad27e08d0dd93ab636c00255da7",
       "mapped_schemas": [
         "identity_access"
       ],
@@ -244418,7 +244418,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "5b991658baecb9ba105dc79d5290be1aba6a37e675adb5c2d493a6359fc60670",
+      "fingerprint": "6b668a76f65ad4258e9942d2e9bbc25c2ce88b0e36ac1796dec7c69b01c584ef",
       "full_name": "Meridian.Contracts.Workstation.FinancialRecordExplorerGraphEdgeDto",
       "id": "Meridian.Contracts.Workstation.FinancialRecordExplorerGraphEdgeDto",
       "kind": "record",
@@ -244435,7 +244435,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 125,
+          "source_line": 134,
           "type": "string"
         },
         {
@@ -244449,7 +244449,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 123,
+          "source_line": 132,
           "type": "string"
         },
         {
@@ -244463,7 +244463,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 124,
+          "source_line": 133,
           "type": "string"
         },
         {
@@ -244478,7 +244478,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "FinancialRecordExplorerTone",
-          "source_line": 126,
+          "source_line": 135,
           "type": "FinancialRecordExplorerTone"
         }
       ],
@@ -244490,12 +244490,12 @@
         "Meridian.Contracts.Workstation.FinancialRecordExplorerTone"
       ],
       "source": {
-        "line": 122,
+        "line": 131,
         "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
       },
       "sources": [
         {
-          "line": 122,
+          "line": 131,
           "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
         }
       ],
@@ -244511,7 +244511,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "3764ea35c903fd93e5a924ce1960704ab43583c907179a98e82a8f6c09f5ea12",
+      "fingerprint": "7f0e9fa36881e799637f3af98e450ef2f6ce140f7e2591f27418aeaaa97e389e",
       "full_name": "Meridian.Contracts.Workstation.FinancialRecordExplorerGraphNodeDto",
       "id": "Meridian.Contracts.Workstation.FinancialRecordExplorerGraphNodeDto",
       "kind": "record",
@@ -244529,7 +244529,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 120,
+          "source_line": 129,
           "type": "string"
         },
         {
@@ -244543,7 +244543,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 117,
+          "source_line": 126,
           "type": "string"
         },
         {
@@ -244557,7 +244557,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 116,
+          "source_line": 125,
           "type": "string"
         },
         {
@@ -244571,7 +244571,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 118,
+          "source_line": 127,
           "type": "string"
         },
         {
@@ -244586,7 +244586,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "FinancialRecordExplorerTone",
-          "source_line": 119,
+          "source_line": 128,
           "type": "FinancialRecordExplorerTone"
         }
       ],
@@ -244598,12 +244598,12 @@
         "Meridian.Contracts.Workstation.FinancialRecordExplorerTone"
       ],
       "source": {
-        "line": 115,
+        "line": 124,
         "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
       },
       "sources": [
         {
-          "line": 115,
+          "line": 124,
           "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
         }
       ],
@@ -244619,7 +244619,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "58eadbcc72715d383126d7fced6eae837badd87a3ca97c42e98c696100fbccc2",
+      "fingerprint": "d52a01312bbb1e769651d170f3a23ab291a5eca3c3bcfb32d31c25843d8fcb9a",
       "full_name": "Meridian.Contracts.Workstation.FinancialRecordExplorerProofActionDto",
       "id": "Meridian.Contracts.Workstation.FinancialRecordExplorerProofActionDto",
       "kind": "record",
@@ -244636,7 +244636,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 103,
+          "source_line": 112,
           "type": "string"
         },
         {
@@ -244650,7 +244650,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 105,
+          "source_line": 114,
           "type": "string"
         },
         {
@@ -244665,7 +244665,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 108,
+          "source_line": 117,
           "type": "string"
         },
         {
@@ -244679,7 +244679,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 106,
+          "source_line": 115,
           "type": "string"
         },
         {
@@ -244694,7 +244694,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 107,
+          "source_line": 116,
           "type": "bool"
         },
         {
@@ -244708,7 +244708,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 104,
+          "source_line": 113,
           "type": "string"
         },
         {
@@ -244723,7 +244723,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "FinancialRecordExplorerTone",
-          "source_line": 109,
+          "source_line": 118,
           "type": "FinancialRecordExplorerTone"
         }
       ],
@@ -244735,12 +244735,12 @@
         "Meridian.Contracts.Workstation.FinancialRecordExplorerTone"
       ],
       "source": {
-        "line": 102,
+        "line": 111,
         "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
       },
       "sources": [
         {
-          "line": 102,
+          "line": 111,
           "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
         }
       ],
@@ -244837,7 +244837,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "bc4efa7e30d2a029860f6b432cc36b625ce2ad8378dbf30ba15a250b7faf4410",
+      "fingerprint": "064d11acc9af8ee9c2abed6a54b285355414012326af5e76ffc62b21ec28d9cd",
       "full_name": "Meridian.Contracts.Workstation.FinancialRecordExplorerRecordGraphDto",
       "id": "Meridian.Contracts.Workstation.FinancialRecordExplorerRecordGraphDto",
       "kind": "record",
@@ -244854,7 +244854,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<FinancialRecordExplorerGraphEdgeDto>",
-          "source_line": 113,
+          "source_line": 122,
           "type": "IReadOnlyList<FinancialRecordExplorerGraphEdgeDto>"
         },
         {
@@ -244868,7 +244868,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<FinancialRecordExplorerGraphNodeDto>",
-          "source_line": 112,
+          "source_line": 121,
           "type": "IReadOnlyList<FinancialRecordExplorerGraphNodeDto>"
         }
       ],
@@ -244881,12 +244881,12 @@
         "Meridian.Contracts.Workstation.FinancialRecordExplorerGraphNodeDto"
       ],
       "source": {
-        "line": 111,
+        "line": 120,
         "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
       },
       "sources": [
         {
-          "line": 111,
+          "line": 120,
           "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
         }
       ],
@@ -244902,7 +244902,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "c90ada01ba72e90b14e55f5e3a3ce7ef5278cbc5a7eafaab9573bb345cc161df",
+      "fingerprint": "ac49fd018ec3a9c489420f574ac16f7de453223eaf7fe94d7635418a726de095",
       "full_name": "Meridian.Contracts.Workstation.FinancialRecordExplorerRelationshipDto",
       "id": "Meridian.Contracts.Workstation.FinancialRecordExplorerRelationshipDto",
       "kind": "record",
@@ -244919,7 +244919,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 131,
+          "source_line": 140,
           "type": "string"
         },
         {
@@ -244934,7 +244934,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 132,
+          "source_line": 141,
           "type": "string"
         },
         {
@@ -244948,7 +244948,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 130,
+          "source_line": 139,
           "type": "string"
         },
         {
@@ -244962,7 +244962,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 129,
+          "source_line": 138,
           "type": "string"
         },
         {
@@ -244977,7 +244977,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "FinancialRecordExplorerTone",
-          "source_line": 133,
+          "source_line": 142,
           "type": "FinancialRecordExplorerTone"
         }
       ],
@@ -244989,12 +244989,12 @@
         "Meridian.Contracts.Workstation.FinancialRecordExplorerTone"
       ],
       "source": {
-        "line": 128,
+        "line": 137,
         "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
       },
       "sources": [
         {
-          "line": 128,
+          "line": 137,
           "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
         }
       ],
@@ -245010,7 +245010,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "dfb7f380097b5eb6b8adeb25aa878688407dd7790865d5a0bd3f80783966a549",
+      "fingerprint": "d8d70101248b38c8faad36dcb4ee8c19b445159f653e45244ebc95ee01acf086",
       "full_name": "Meridian.Contracts.Workstation.FinancialRecordExplorerRowDto",
       "id": "Meridian.Contracts.Workstation.FinancialRecordExplorerRowDto",
       "kind": "record",
@@ -245027,7 +245027,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<FinancialRecordExplorerCellDto>",
-          "source_line": 86,
+          "source_line": 94,
           "type": "IReadOnlyList<FinancialRecordExplorerCellDto>"
         },
         {
@@ -245041,7 +245041,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "FinancialRecordExplorerSelectedRecordDto",
-          "source_line": 87,
+          "source_line": 95,
           "type": "FinancialRecordExplorerSelectedRecordDto"
         },
         {
@@ -245055,7 +245055,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 82,
+          "source_line": 90,
           "type": "string"
         },
         {
@@ -245069,7 +245069,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 80,
+          "source_line": 88,
           "type": "string"
         },
         {
@@ -245083,7 +245083,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 81,
+          "source_line": 89,
           "type": "string"
         },
         {
@@ -245097,8 +245097,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 83,
+          "source_line": 91,
           "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceRunId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 96,
+          "type": "string?"
         },
         {
           "collection": false,
@@ -245111,7 +245126,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 84,
+          "source_line": 92,
           "type": "string"
         },
         {
@@ -245125,7 +245140,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "FinancialRecordExplorerTone",
-          "source_line": 85,
+          "source_line": 93,
           "type": "FinancialRecordExplorerTone"
         }
       ],
@@ -245139,12 +245154,12 @@
         "Meridian.Contracts.Workstation.FinancialRecordExplorerTone"
       ],
       "source": {
-        "line": 79,
+        "line": 87,
         "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
       },
       "sources": [
         {
-          "line": 79,
+          "line": 87,
           "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
         }
       ],
@@ -245310,7 +245325,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "12b19023f25be0657152c3663be9fd77f52bf8a2d9621a3e415b7b76f19b5af0",
+      "fingerprint": "a9612be32b396c3ea3d30bd91e4482d896f535f6dee263d4375e491d716e1c8b",
       "full_name": "Meridian.Contracts.Workstation.FinancialRecordExplorerSavedViewSaveRequestDto",
       "id": "Meridian.Contracts.Workstation.FinancialRecordExplorerSavedViewSaveRequestDto",
       "kind": "record",
@@ -245328,7 +245343,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 140,
+          "source_line": 149,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -245342,7 +245357,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 137,
+          "source_line": 146,
           "type": "string"
         },
         {
@@ -245356,7 +245371,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<FinancialRecordExplorerFilterDto>",
-          "source_line": 139,
+          "source_line": 148,
           "type": "IReadOnlyList<FinancialRecordExplorerFilterDto>"
         },
         {
@@ -245370,7 +245385,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 136,
+          "source_line": 145,
           "type": "string"
         },
         {
@@ -245384,7 +245399,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 138,
+          "source_line": 147,
           "type": "string"
         }
       ],
@@ -245396,12 +245411,12 @@
         "Meridian.Contracts.Workstation.FinancialRecordExplorerFilterDto"
       ],
       "source": {
-        "line": 135,
+        "line": 144,
         "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
       },
       "sources": [
         {
-          "line": 135,
+          "line": 144,
           "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
         }
       ],
@@ -245496,7 +245511,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "8fe331fca695977ac0e8f5f435175c6c10305fd37caffe154ce111bf1874dbe6",
+      "fingerprint": "8dcdf421349af74af052423e1a1fe6f079b7a836a224a168e429b067a2f34031",
       "full_name": "Meridian.Contracts.Workstation.FinancialRecordExplorerSelectedRecordDto",
       "id": "Meridian.Contracts.Workstation.FinancialRecordExplorerSelectedRecordDto",
       "kind": "record",
@@ -245513,7 +245528,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 94,
+          "source_line": 103,
           "type": "string"
         },
         {
@@ -245527,7 +245542,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<FinancialRecordExplorerSummaryItemDto>",
-          "source_line": 96,
+          "source_line": 105,
           "type": "IReadOnlyList<FinancialRecordExplorerSummaryItemDto>"
         },
         {
@@ -245542,7 +245557,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 100,
+          "source_line": 109,
           "type": "string"
         },
         {
@@ -245556,7 +245571,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<FinancialRecordExplorerRelationshipDto>",
-          "source_line": 99,
+          "source_line": 108,
           "type": "IReadOnlyList<FinancialRecordExplorerRelationshipDto>"
         },
         {
@@ -245570,7 +245585,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<FinancialRecordExplorerProofActionDto>",
-          "source_line": 97,
+          "source_line": 106,
           "type": "IReadOnlyList<FinancialRecordExplorerProofActionDto>"
         },
         {
@@ -245584,7 +245599,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 90,
+          "source_line": 99,
           "type": "string"
         },
         {
@@ -245598,7 +245613,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 91,
+          "source_line": 100,
           "type": "string"
         },
         {
@@ -245612,7 +245627,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 93,
+          "source_line": 102,
           "type": "string"
         },
         {
@@ -245626,7 +245641,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 92,
+          "source_line": 101,
           "type": "string"
         },
         {
@@ -245640,7 +245655,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "FinancialRecordExplorerTone",
-          "source_line": 95,
+          "source_line": 104,
           "type": "FinancialRecordExplorerTone"
         },
         {
@@ -245654,7 +245669,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<FinancialRecordExplorerRelationshipDto>",
-          "source_line": 98,
+          "source_line": 107,
           "type": "IReadOnlyList<FinancialRecordExplorerRelationshipDto>"
         }
       ],
@@ -245669,12 +245684,12 @@
         "Meridian.Contracts.Workstation.FinancialRecordExplorerTone"
       ],
       "source": {
-        "line": 89,
+        "line": 98,
         "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
       },
       "sources": [
         {
-          "line": 89,
+          "line": 98,
           "path": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs"
         }
       ],
@@ -363791,7 +363806,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "b36222d85c7f86a2cde4ef4083edd1d1ccdffa1ddda3cc75cf54a58dbda135d0",
+      "fingerprint": "9e5e5761c599a1788307c2940d0d69354b265e015e05cd3224276bc663bdaa09",
       "full_name": "Meridian.Identity.Auth.PermissionCatalogItemDto",
       "id": "Meridian.Identity.Auth.PermissionCatalogItemDto",
       "kind": "record",
@@ -363810,7 +363825,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 374,
+          "source_line": 398,
           "type": "string"
         },
         {
@@ -363824,7 +363839,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 373,
+          "source_line": 397,
           "type": "string"
         },
         {
@@ -363838,7 +363853,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 371,
+          "source_line": 395,
           "type": "string"
         },
         {
@@ -363852,7 +363867,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 372,
+          "source_line": 396,
           "type": "long"
         }
       ],
@@ -363862,12 +363877,12 @@
       "qualified_name": "Meridian.Identity.Auth.PermissionCatalogItemDto",
       "references": [],
       "source": {
-        "line": 370,
+        "line": 394,
         "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
       },
       "sources": [
         {
-          "line": 370,
+          "line": 394,
           "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
         }
       ],
@@ -363885,7 +363900,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "7fd1e1b8935324cc466f18046dd69034336bebf4b51d62bb1ac9159f79c71cec",
+      "fingerprint": "041c7bef2a6f1729885ed1f12d7b5986119ca08e97d338da7866225339ee59a9",
       "full_name": "Meridian.Identity.Auth.RolePermissionCatalogDto",
       "id": "Meridian.Identity.Auth.RolePermissionCatalogDto",
       "kind": "record",
@@ -363904,7 +363919,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<PermissionCatalogItemDto>",
-          "source_line": 353,
+          "source_line": 377,
           "type": "IReadOnlyList<PermissionCatalogItemDto>"
         },
         {
@@ -363918,7 +363933,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<RolePermissionProfileDto>",
-          "source_line": 352,
+          "source_line": 376,
           "type": "IReadOnlyList<RolePermissionProfileDto>"
         }
       ],
@@ -363931,12 +363946,12 @@
         "Meridian.Identity.Auth.RolePermissionProfileDto"
       ],
       "source": {
-        "line": 351,
+        "line": 375,
         "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
       },
       "sources": [
         {
-          "line": 351,
+          "line": 375,
           "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
         }
       ],
@@ -363954,7 +363969,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "04e1c013d0950fd96199a3c51d2e79c14173f777a2670911056acb59dbc1ed8f",
+      "fingerprint": "6cd96695358019807c93fd976e9b45f1734f90600d7c791757b496560295a3ae",
       "full_name": "Meridian.Identity.Auth.RolePermissionProfileAuditEventDto",
       "id": "Meridian.Identity.Auth.RolePermissionProfileAuditEventDto",
       "kind": "record",
@@ -363973,7 +363988,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 395,
+          "source_line": 419,
           "type": "string"
         },
         {
@@ -363987,7 +364002,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 392,
+          "source_line": 416,
           "type": "string"
         },
         {
@@ -364001,7 +364016,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 399,
+          "source_line": 423,
           "type": "string"
         },
         {
@@ -364015,7 +364030,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 397,
+          "source_line": 421,
           "type": "string"
         },
         {
@@ -364029,7 +364044,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 393,
+          "source_line": 417,
           "type": "string"
         },
         {
@@ -364043,7 +364058,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 394,
+          "source_line": 418,
           "type": "DateTimeOffset"
         },
         {
@@ -364057,7 +364072,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 401,
+          "source_line": 425,
           "type": "long"
         },
         {
@@ -364071,7 +364086,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 400,
+          "source_line": 424,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -364085,7 +364100,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 398,
+          "source_line": 422,
           "type": "string"
         },
         {
@@ -364099,7 +364114,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 396,
+          "source_line": 420,
           "type": "string"
         }
       ],
@@ -364109,12 +364124,12 @@
       "qualified_name": "Meridian.Identity.Auth.RolePermissionProfileAuditEventDto",
       "references": [],
       "source": {
-        "line": 391,
+        "line": 415,
         "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
       },
       "sources": [
         {
-          "line": 391,
+          "line": 415,
           "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
         }
       ],
@@ -364132,7 +364147,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "536871036ee5c932719fd8ede676e81f16712f57a30cd70302e6d0b552f4243d",
+      "fingerprint": "634d459063789eb53f6cf0202f64b433dc6369db374edfeae77014ab75813c3a",
       "full_name": "Meridian.Identity.Auth.RolePermissionProfileDto",
       "id": "Meridian.Identity.Auth.RolePermissionProfileDto",
       "kind": "record",
@@ -364152,7 +364167,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 362,
+          "source_line": 386,
           "type": "string?"
         },
         {
@@ -364167,7 +364182,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 364,
+          "source_line": 388,
           "type": "DateTimeOffset?"
         },
         {
@@ -364182,7 +364197,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 363,
+          "source_line": 387,
           "type": "string?"
         },
         {
@@ -364196,7 +364211,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 358,
+          "source_line": 382,
           "type": "string"
         },
         {
@@ -364210,7 +364225,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 357,
+          "source_line": 381,
           "type": "string"
         },
         {
@@ -364224,7 +364239,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 359,
+          "source_line": 383,
           "type": "bool"
         },
         {
@@ -364239,7 +364254,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 368,
+          "source_line": 392,
           "type": "string?"
         },
         {
@@ -364254,7 +364269,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 367,
+          "source_line": 391,
           "type": "string?"
         },
         {
@@ -364268,7 +364283,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 361,
+          "source_line": 385,
           "type": "long"
         },
         {
@@ -364282,7 +364297,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 360,
+          "source_line": 384,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -364296,7 +364311,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 356,
+          "source_line": 380,
           "type": "string"
         },
         {
@@ -364311,7 +364326,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 366,
+          "source_line": 390,
           "type": "DateTimeOffset?"
         },
         {
@@ -364326,7 +364341,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 365,
+          "source_line": 389,
           "type": "string?"
         }
       ],
@@ -364336,12 +364351,12 @@
       "qualified_name": "Meridian.Identity.Auth.RolePermissionProfileDto",
       "references": [],
       "source": {
-        "line": 355,
+        "line": 379,
         "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
       },
       "sources": [
         {
-          "line": 355,
+          "line": 379,
           "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
         }
       ],
@@ -364359,7 +364374,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e605512359f263a7e1731992372fd1e1d94afe1c5f036a9b40bff7d0caed5ba2",
+      "fingerprint": "71ed0fd098c4e89f5d7740f164f2b7cc3cafb0b039a8ef8f3c9d0ec4fa7ce482",
       "full_name": "Meridian.Identity.Auth.RolePermissionProfileUpsertRequestDto",
       "id": "Meridian.Identity.Auth.RolePermissionProfileUpsertRequestDto",
       "kind": "record",
@@ -364378,7 +364393,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 380,
+          "source_line": 404,
           "type": "string"
         },
         {
@@ -364393,7 +364408,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 384,
+          "source_line": 408,
           "type": "string?"
         },
         {
@@ -364407,7 +364422,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 379,
+          "source_line": 403,
           "type": "string?"
         },
         {
@@ -364421,7 +364436,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 378,
+          "source_line": 402,
           "type": "string"
         },
         {
@@ -364435,7 +364450,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 381,
+          "source_line": 405,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -364449,7 +364464,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 377,
+          "source_line": 401,
           "type": "string"
         },
         {
@@ -364463,7 +364478,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 383,
+          "source_line": 407,
           "type": "string"
         },
         {
@@ -364477,7 +364492,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 382,
+          "source_line": 406,
           "type": "string"
         }
       ],
@@ -364487,12 +364502,12 @@
       "qualified_name": "Meridian.Identity.Auth.RolePermissionProfileUpsertRequestDto",
       "references": [],
       "source": {
-        "line": 376,
+        "line": 400,
         "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
       },
       "sources": [
         {
-          "line": 376,
+          "line": 400,
           "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
         }
       ],
@@ -364510,7 +364525,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "879352dde8361d05b7ad1bf485de0c1471b6bd84f4f79300e9b74c1ad21788fa",
+      "fingerprint": "1dae6797ba6e4a096a90237ef23774de564637cc15fe6ed5f6eea41ca4b69144",
       "full_name": "Meridian.Identity.Auth.RolePermissionProfileUpsertResultDto",
       "id": "Meridian.Identity.Auth.RolePermissionProfileUpsertResultDto",
       "kind": "record",
@@ -364529,7 +364544,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "RolePermissionProfileAuditEventDto",
-          "source_line": 389,
+          "source_line": 413,
           "type": "RolePermissionProfileAuditEventDto"
         },
         {
@@ -364543,7 +364558,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "RolePermissionCatalogDto",
-          "source_line": 388,
+          "source_line": 412,
           "type": "RolePermissionCatalogDto"
         },
         {
@@ -364557,7 +364572,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "RolePermissionProfileDto",
-          "source_line": 387,
+          "source_line": 411,
           "type": "RolePermissionProfileDto"
         }
       ],
@@ -364571,12 +364586,12 @@
         "Meridian.Identity.Auth.RolePermissionProfileDto"
       ],
       "source": {
-        "line": 386,
+        "line": 410,
         "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
       },
       "sources": [
         {
-          "line": 386,
+          "line": 410,
           "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
         }
       ],
@@ -367256,9 +367271,27 @@
           "name": "DeliverReporting",
           "source_line": 103,
           "value": "1L<<26"
+        },
+        {
+          "explicit_value": true,
+          "name": "ViewLedgerReports",
+          "source_line": 111,
+          "value": "1L<<27"
+        },
+        {
+          "explicit_value": true,
+          "name": "ManageLedgerReports",
+          "source_line": 114,
+          "value": "1L<<28"
+        },
+        {
+          "explicit_value": true,
+          "name": "ManageCompliance",
+          "source_line": 118,
+          "value": "1L<<29"
         }
       ],
-      "fingerprint": "43fd11d0845e33664dbcb5377558f7da5bd1d5e1ba9c828451a1f0bad4124d47",
+      "fingerprint": "1377259d28726e1bbe9d0f181068d6425326a57d6dcd1965b697de05c071d80f",
       "full_name": "Meridian.Identity.Auth.UserPermission",
       "id": "Meridian.Identity.Auth.UserPermission",
       "kind": "enum",
