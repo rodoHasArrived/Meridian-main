@@ -37,7 +37,7 @@ import {
   requireSuccessfulReconciliationCasework,
   type AccountingReconciliationServices
 } from "./reconciliation-casework-outcome";
-import { formatBytes, formatCount, formatCurrency, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
+import { formatBytes, formatCount, formatCurrency, formatCurrencyForCode, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
 import {
   buildSecurityConflictAction, buildSecurityIdentityAliasRow, buildSecurityIdentityIdentifierRow,
   formatConflictDate, formatFinanceFacingSourceSummary, formatSecurityConflictField, formatSecurityDate,
@@ -5146,7 +5146,8 @@ export function buildAccountingTrialBalanceViewState({
   accountFilter = "",
   loading,
   error,
-  scopeLabel = null
+  scopeLabel = null,
+  currency = null
 }: {
   runId: string | null;
   rows: LedgerTrialBalanceLine[];
@@ -5157,6 +5158,8 @@ export function buildAccountingTrialBalanceViewState({
   error: string | ApiErrorDisplay | null;
   /** Overrides the scope wording in labels; defaults to the strategy-run phrasing. */
   scopeLabel?: string | null;
+  /** The book's base currency, when these rows come from a posted book rather than a run. */
+  currency?: string | null;
 }): AccountingTrialBalanceViewState {
   const detailPanelId = "trial-balance-account-detail";
   const runLabel = scopeLabel?.trim() || (runId ? "the selected ledger run" : "the current ledger selection");
@@ -5167,7 +5170,7 @@ export function buildAccountingTrialBalanceViewState({
   const bridge = buildBasisBridgeViewState(normalizedRows, resolvedBasis, runLabel);
   const basisRows = normalizedRows
     .filter((line) => line.accountingBasis === resolvedBasis)
-    .map((line) => buildTrialBalanceRow(line, detailPanelId));
+    .map((line) => buildTrialBalanceRow(line, detailPanelId, currency));
   const accountFilterOptions = buildLedgerAccountFilterOptions(basisRows, normalizedAccountFilter);
   const basisVariance = basisRows.reduce((total, row) => total + row.balance, 0);
   const rawRows = basisRows.filter((row) => ledgerAccountRowMatchesFilter(row, normalizedAccountFilter));
@@ -5313,14 +5316,16 @@ type BasisAwareLedgerTrialBalanceLine = LedgerTrialBalanceLine & {
 
 function buildTrialBalanceRow(
   line: BasisAwareLedgerTrialBalanceLine,
-  detailPanelId: string
+  detailPanelId: string,
+  currency: string | null = null
 ): AccountingTrialBalanceRowViewModel {
   const accountLabel = line.accountName.trim() || "Unnamed account";
   const accountTypeLabel = line.accountType.trim() || "Unclassified";
   const basisName = accountingBasisDisplayName(line.accountingBasis);
   const basisLabel = `${basisName} basis`;
   const policyLabel = `${line.accountingPolicyId}/${line.accountingPolicyVersion}`;
-  const balanceLabel = formatCurrency(line.balance);
+  // Posted balances are in the book's base currency; the bare formatter prefixes a dollar sign.
+  const balanceLabel = currency ? formatCurrencyForCode(line.balance, currency) : formatCurrency(line.balance);
   const entryCountLabel = line.entryCount.toLocaleString();
   const securityLabel = line.security?.primaryIdentifier?.trim() || line.symbol?.trim() || line.security?.displayName.trim() || null;
   const dimensionLabels = buildLedgerDimensionLabels(line);

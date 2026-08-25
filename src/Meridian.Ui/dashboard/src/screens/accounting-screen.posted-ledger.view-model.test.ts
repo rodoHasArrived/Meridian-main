@@ -208,6 +208,46 @@ describe("buildAccountingPostedLedgerViewState", () => {
 });
 
 describe("buildPostedLedgerPnlViewState", () => {
+  it("scopes revenue and expense to the selected basis instead of summing every projection", () => {
+    // The endpoint aggregates across every basis the period holds, so a GAAP trial balance used to
+    // sit beside a P&L that had added Primary and GAAP together.
+    const pnl = makePnl({
+      revenueLines: [
+        makeLine({ accountName: "Fees", accountType: "Revenue", balance: 1000, accountingBasis: "Primary" }),
+        makeLine({ accountName: "Fees", accountType: "Revenue", balance: 900, accountingBasis: "Gaap" })
+      ],
+      expenseLines: [
+        makeLine({ accountName: "Admin", accountType: "Expense", balance: 400, accountingBasis: "Primary" }),
+        makeLine({ accountName: "Admin", accountType: "Expense", balance: 300, accountingBasis: "Gaap" })
+      ]
+    });
+
+    const gaap = buildPostedLedgerPnlViewState({
+      pnl,
+      loading: false,
+      error: null,
+      periodLabel: "July 2026",
+      selectedBasis: "Gaap"
+    });
+
+    expect(gaap.items.find((item) => item.id === "revenue")?.value).toContain("900");
+    expect(gaap.items.find((item) => item.id === "expenses")?.value).toContain("300");
+    // 900 - 300, not the cross-basis 1,900 - 700.
+    expect(gaap.items.find((item) => item.id === "net-income")?.value).toContain("600");
+  });
+
+  it("labels posted amounts in the book's base currency", () => {
+    const view = buildPostedLedgerPnlViewState({
+      pnl: makePnl({ revenueLines: [makeLine({ accountType: "Revenue", balance: 1000 })] }),
+      loading: false,
+      error: null,
+      periodLabel: "July 2026",
+      baseCurrency: "EUR"
+    });
+
+    expect(view.items.find((item) => item.id === "revenue")?.value).not.toContain("$");
+  });
+
   it("flags open breaks and negative net income", () => {
     const view = buildPostedLedgerPnlViewState({
       pnl: makePnl({ netIncome: -100, openBreakCount: 3, signoffStatus: "Pending" }),

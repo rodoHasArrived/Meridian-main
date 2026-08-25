@@ -17,7 +17,7 @@ import type {
   LedgerPostedJournalEntry,
   LedgerTrialBalanceLine
 } from "@/types";
-import { formatCurrency, formatSignedCurrency } from "./accounting-screen.formatting";
+import { formatCurrency, formatCurrencyForCode, formatSignedCurrency } from "./accounting-screen.formatting";
 import {
   DEFAULT_ACCOUNTING_BASIS,
   resolveAvailableAccountingBasis
@@ -228,12 +228,22 @@ export function buildPostedLedgerPnlViewState({
   pnl,
   loading,
   error,
-  periodLabel
+  periodLabel,
+  selectedBasis = DEFAULT_ACCOUNTING_BASIS,
+  baseCurrency = null
 }: {
   pnl: LedgerPeriodPnlSummary | null;
   loading: boolean;
   error: ApiErrorDisplay | null;
   periodLabel: string | null;
+  /**
+   * The basis the trial balance beside this panel is showing. The endpoint aggregates revenue and
+   * expense across every basis the period holds, so without this a GAAP trial balance sat next to
+   * a P&L that double-counted Primary and GAAP together.
+   */
+  selectedBasis?: AccountingBasisKind;
+  /** The book's base currency; posted amounts are in book units, not dollars. */
+  baseCurrency?: string | null;
 }): PostedLedgerPnlViewState {
   const description = periodLabel
     ? `Revenue, expense, and net-income totals from the posted journal for ${periodLabel}.`
@@ -267,19 +277,39 @@ export function buildPostedLedgerPnlViewState({
     };
   }
 
+  // The endpoint's totalRevenue and totalExpenses are plain sums of the lines it returns, so the
+  // same sums over the basis-filtered lines reproduce them exactly for a single-basis period and
+  // scope them correctly for a mixed one. Net income is derived the way the server derives its own
+  // realized figures -- revenue less expenses -- because the endpoint's netIncome is a period-level
+  // value that cannot be attributed to one basis.
+  const inBasis = (line: LedgerPeriodTrialBalanceLine) =>
+    (line.accountingBasis ?? DEFAULT_ACCOUNTING_BASIS) === selectedBasis;
+  const sumBalances = (lines: LedgerPeriodTrialBalanceLine[]) =>
+    lines.filter(inBasis).reduce((total, line) => total + line.balance, 0);
+
+  const hasLineDetail = pnl.revenueLines.length > 0 || pnl.expenseLines.length > 0;
+  const totalRevenue = hasLineDetail ? sumBalances(pnl.revenueLines) : pnl.totalRevenue;
+  const totalExpenses = hasLineDetail ? sumBalances(pnl.expenseLines) : pnl.totalExpenses;
+  const netIncome = hasLineDetail ? totalRevenue - totalExpenses : pnl.netIncome;
+
+  const money = (value: number) =>
+    baseCurrency ? formatCurrencyForCode(value, baseCurrency) : formatCurrency(value);
+  const signedMoney = (value: number) =>
+    baseCurrency ? `${value > 0 ? "+" : ""}${formatCurrencyForCode(value, baseCurrency)}` : formatSignedCurrency(value);
+
   const items: PostedLedgerPnlItemViewModel[] = [
-    { id: "revenue", label: "Total revenue", value: formatCurrency(pnl.totalRevenue), tone: "default" },
-    { id: "expenses", label: "Total expenses", value: formatCurrency(pnl.totalExpenses), tone: "default" },
+    { id: "revenue", label: "Total revenue", value: money(totalRevenue), tone: "default" },
+    { id: "expenses", label: "Total expenses", value: money(totalExpenses), tone: "default" },
     {
       id: "net-income",
       label: "Net income",
-      value: formatSignedCurrency(pnl.netIncome),
-      tone: pnl.netIncome < 0 ? "danger" : pnl.netIncome > 0 ? "success" : "default"
+      value: signedMoney(netIncome),
+      tone: netIncome < 0 ? "danger" : netIncome > 0 ? "success" : "default"
     },
     {
       id: "variance",
       label: "Period-on-period variance",
-      value: pnl.periodOnPeriodVariance === null ? "No prior period" : formatSignedCurrency(pnl.periodOnPeriodVariance),
+      value: pnl.periodOnPeriodVariance === null ? "No prior period" : signedMoney(pnl.periodOnPeriodVariance),
       tone: "default"
     },
     {
@@ -368,7 +398,9 @@ export function buildAccountingPostedLedgerViewState({
     accountFilter,
     loading: trialBalanceLoading,
     error: trialBalanceError,
-    scopeLabel
+    scopeLabel,
+    // These rows are a posted book's, so their balances carry the book's base currency.
+    currency: baseCurrency
   });
   const trialBalance: AccountingTrialBalanceViewState = {
     ...base,
@@ -402,7 +434,14 @@ export function buildAccountingPostedLedgerViewState({
     bookOptions,
     baseCurrency,
     trialBalance,
-    pnl: buildPostedLedgerPnlViewState({ pnl, loading: pnlLoading, error: pnlError, periodLabel })
+    pnl: buildPostedLedgerPnlViewState({
+      pnl,
+      loading: pnlLoading,
+      error: pnlError,
+      periodLabel,
+      selectedBasis,
+      baseCurrency
+    })
   };
 }
 

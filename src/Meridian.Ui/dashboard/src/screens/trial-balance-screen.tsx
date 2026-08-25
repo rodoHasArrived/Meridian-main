@@ -389,6 +389,9 @@ export function TrialBalanceScreen() {
                   rows={postedLedger.view.trialBalance.rows}
                   selectedRowId={postedLedger.view.trialBalance.selectedRowId}
                   caption={postedLedger.view.trialBalance.tableLabel}
+                  // Posted balances are in the book's own units. The table defaults to USD, so
+                  // without this a EUR or GBP book's debits and credits were labelled as dollars.
+                  currency={postedCurrency ?? ""}
                   onRowSelect={(line) => postedLedger.selectTrialBalanceRow(line.rowId)}
                 />
               )
