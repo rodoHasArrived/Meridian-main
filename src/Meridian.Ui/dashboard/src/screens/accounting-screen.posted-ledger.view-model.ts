@@ -263,68 +263,27 @@ export interface AccountingPostedLedgerViewModel {
   applyRoutePeriod: (periodId: string) => void;
 }
 
-/**
- * Ledger books in the order both workstations present them: by display name, with a stable id
- * tie-break.
- *
- * Mirrors <c>PostedLedgerProjection.SortBooks</c> exactly. Taking the store's own order here
- * instead meant the browser's default book followed `fund_profile_id, display_name,
- * ledger_book_id` while the desktop's followed display name alone, so in a multi-fund deployment
- * the two co-equal views of the same governed ledger opened on different books — and therefore
- * different periods and figures — for the same operator in the same session.
- */
-export function sortLedgerBooks(books: readonly LedgerBook[]): LedgerBook[] {
-  const name = (book: LedgerBook) => book.displayName.trim() || book.ledgerBookId;
-  return [...books].sort((left, right) =>
-    compareOrdinalIgnoreCase(name(left), name(right))
-    || compareOrdinalIgnoreCase(left.ledgerBookId, right.ledgerBookId));
-}
+/** GUID textual form: hex digits and hyphens, and nothing else with a case mapping. */
+const GUID_TEXT = /^[0-9a-fA-F-]+$/;
 
 /**
- * Ordinal, case-insensitive, locale-independent — the same decision
- * <c>StringComparer.OrdinalIgnoreCase</c> makes on the desktop.
+ * Ledger ids travel as GUIDs, whose textual form is case-insensitive: the API and .NET `Guid`
+ * treat "AA…" and "aa…" as the same id, so a link written in upper case names the same period.
  *
- * `localeCompare` was not equivalent: it collates by the operator's locale, so two books named
- * "Álpha" and "Zulu" can order differently in the browser than on the desktop, and differently
- * for two operators in different locales. That would reintroduce the very divergence this
- * ordering exists to remove — a locale-dependent default book, and therefore a locale-dependent
- * default period and set of figures.
- *
- * The desktop's tie-break is `Guid.CompareTo`, which orders by .NET's Guid byte groups rather
- * than by the textual form; the ids only decide between books whose display names are already
- * equal, so the residual disagreement is confined to that case.
+ * Case-insensitivity is claimed only for text that is actually GUID-shaped, where it is exact
+ * rather than approximate: hex digits and hyphens have no case mapping outside `a`-`f`/`A`-`F`,
+ * so ASCII folding is the whole of the job. Anything else must match exactly. Folding it with
+ * `toUpperCase()` instead would apply full Unicode case mapping, which does not agree with the
+ * .NET comparer that decides the same question on the server.
  */
-function compareOrdinalIgnoreCase(left: string, right: string): number {
-  const upperLeft = toSimpleUpperCase(left);
-  const upperRight = toSimpleUpperCase(right);
-  return upperLeft < upperRight ? -1 : upperLeft > upperRight ? 1 : 0;
-}
-
-/**
- * Simple, one-to-one uppercase folding — what <c>char.ToUpperInvariant</c> does, and what
- * <c>StringComparer.OrdinalIgnoreCase</c> is built on.
- *
- * `String.prototype.toUpperCase()` is not that: it applies full Unicode case mapping, which
- * expands some code units into several. "ß" becomes "SS", so a book named "ß Fund" folded equal
- * to one named "SS Fund" and the browser fell through to the id tie-break while the desktop kept
- * ordering them by their distinct names — the same cross-workstation divergence in default book
- * and figures, one layer down. A code unit with no single-character uppercase is left as it is,
- * which is exactly what the .NET mapping does.
- */
-function toSimpleUpperCase(value: string): string {
-  let folded = "";
-  for (const codeUnit of value) {
-    const upper = codeUnit.toUpperCase();
-    folded += upper.length === codeUnit.length ? upper : codeUnit;
+function periodIdsMatch(left: string, right: string): boolean {
+  if (left === right) {
+    return true;
   }
 
-  return folded;
-}
-
-/** Ledger ids travel as GUIDs, whose textual form is case-insensitive: the API and .NET `Guid`
- * treat "AA…" and "aa…" as the same id, so a link written in upper case names the same period. */
-function periodIdsMatch(left: string, right: string): boolean {
-  return compareOrdinalIgnoreCase(left, right) === 0;
+  return GUID_TEXT.test(left)
+    && GUID_TEXT.test(right)
+    && left.toLowerCase() === right.toLowerCase();
 }
 
 export function sortLedgerPeriodsDescending(periods: LedgerPeriod[]): LedgerPeriod[] {
@@ -808,9 +767,15 @@ export function useAccountingPostedLedgerViewModel(
     setBooksErrorText(null);
     setBooksLoading(true);
     services.getBooks()
-      .then((unsorted) => {
+      .then((rows) => {
         if (cancelled) return;
-        const rows = sortLedgerBooks(unsorted);
+        // Served in the canonical order (LedgerBookOrdering) and consumed as sent. Re-sorting
+        // here is what made the two workstations disagree: the order is decided by
+        // StringComparer.OrdinalIgnoreCase over names and Guid order over ids, and neither can be
+        // reproduced in a browser — JavaScript has no simple-uppercase mapping, its case data is a
+        // different Unicode version from the runtime's, and Guid orders by .NET's byte groups
+        // rather than by the textual form. `rows[0]` is the default book, so a re-sort that
+        // disagreed anywhere put the two lanes on different books, periods and figures.
         setBooks(rows);
         setBooksSettled(true);
         if (rows.length === 0) {

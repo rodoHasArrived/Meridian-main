@@ -1,5 +1,6 @@
 using System.Globalization;
 using Meridian.Contracts.Ledger;
+using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Ui.Services.Services.Accounting;
 
@@ -207,12 +208,16 @@ public static class PostedLedgerProjection
         }
     }
 
-    /// <summary>Books newest-usable first: by display name, with a stable id tie-break.</summary>
+    /// <summary>
+    /// Books newest-usable first: by display name, with a stable id tie-break.
+    /// <para>
+    /// Defers to <see cref="LedgerBookOrdering"/>, which the books route already applied before
+    /// serving. Re-sorting an already-canonical list is a no-op; what matters is that there is one
+    /// definition of the order rather than one per client.
+    /// </para>
+    /// </summary>
     public static IReadOnlyList<LedgerBookDto> SortBooks(IEnumerable<LedgerBookDto>? books)
-        => books?
-            .OrderBy(book => book.DisplayName, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(book => book.LedgerBookId)
-            .ToList() ?? [];
+        => LedgerBookOrdering.Sort(books);
 
     /// <summary>
     /// The book a freshly opened surface should show. There is no notion of a "default" book in
