@@ -1425,6 +1425,43 @@ public sealed class StrategyRunStoreTests
         }
     }
 
+    [Fact]
+    public async Task DurableStore_AcceptsRealismBoundHashWhenNoRealismCaptured()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+
+            // The Quant Lab endpoint records without a realism descriptor. The recorder still
+            // stamps a v4 digest, so the store must be able to recompute v4 for a null-realism
+            // entry - otherwise every such recording is rejected and swallowed as a silent null.
+            var entry = StrategyRunEntry.Start(
+                "strategy-no-realism",
+                "No Realism",
+                RunType.Backtest,
+                "run-no-realism",
+                datasetReference: null,
+                feedReference: null,
+                engine: "MeridianNative",
+                parameterSet: null);
+
+            entry = entry with { InputHashSha256 = StrategyRunEntry.ComputeRealismBoundInputHash(entry) };
+
+            await store.RecordRunAsync(entry);
+
+            var replayed = await new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot))
+                .GetRunByIdAsync("run-no-realism");
+
+            replayed.Should().NotBeNull();
+            replayed!.InputHashSha256.Should().Be(entry.InputHashSha256.ToLowerInvariant());
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
     private static string CreateDataRoot()
     {
         var path = Path.Combine(

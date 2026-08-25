@@ -445,10 +445,10 @@ public sealed class StrategyRunStore : IStrategyRepository
                 entry.InputHashSha256,
                 evidenceBoundInputHash,
                 StringComparison.OrdinalIgnoreCase) &&
-            !(realismBoundInputHash is not null && string.Equals(
+            !string.Equals(
                 entry.InputHashSha256,
                 realismBoundInputHash,
-                StringComparison.OrdinalIgnoreCase)) &&
+                StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(
                 entry.InputHashSha256,
                 legacyInputHash,
@@ -774,7 +774,7 @@ public sealed class StrategyRunStore : IStrategyRepository
         var v2InputHash = ComputeV2InputHash(entry);
         var legacyInputHash = ComputeLegacyInputHash(entry);
         var realismBoundInputHash = ComputeRealismBoundInputHash(entry);
-        var matchesRealismBound = realismBoundInputHash is not null &&
+        var matchesRealismBound =
             string.Equals(entry.InputHashSha256, realismBoundInputHash, StringComparison.OrdinalIgnoreCase);
         if (!string.IsNullOrWhiteSpace(entry.InputHashSha256) &&
             !string.Equals(entry.InputHashSha256, inputHash, StringComparison.OrdinalIgnoreCase) &&
@@ -791,7 +791,7 @@ public sealed class StrategyRunStore : IStrategyRepository
         // A v4 realism-bound hash is strictly more specific than the canonical v3 digest, so it is
         // retained verbatim. Overwriting it with the v3 recomputation would silently discard the
         // execution-realism settings the caller asked to bind into run identity.
-        var retainedInputHash = matchesRealismBound ? realismBoundInputHash! : inputHash;
+        var retainedInputHash = matchesRealismBound ? realismBoundInputHash : inputHash;
 
         return entry with
         {
@@ -1127,10 +1127,14 @@ public sealed class StrategyRunStore : IStrategyRepository
     /// <see langword="null"/> when the entry carries no realism descriptor, so entries written
     /// before realism was captured keep validating against the earlier schemes.
     /// </summary>
-    private static string? ComputeRealismBoundInputHash(StrategyRunEntry entry) =>
-        entry.ExecutionRealism is null
-            ? null
-            : StrategyRunEntry.ComputeRealismBoundInputHash(entry);
+    /// <summary>
+    /// Recomputes the v4 realism-bound hash from the entry's retained inputs. Computed for every
+    /// entry, not only those carrying a realism descriptor: a caller may legitimately record a v4
+    /// digest with no realism captured, and refusing to recompute that case would reject the very
+    /// hash the recorder produced.
+    /// </summary>
+    private static string ComputeRealismBoundInputHash(StrategyRunEntry entry) =>
+        StrategyRunEntry.ComputeRealismBoundInputHash(entry);
 
     private static string ComputeV2InputHash(StrategyRunEntry entry) =>
         StrategyRunEntry.ComputeInputHash(

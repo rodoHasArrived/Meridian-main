@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
@@ -167,15 +168,35 @@ public static class QuantLabEndpoints
             return;
         }
 
-        var descriptor = new ResearchRunDescriptor(
-            StrategyId: request.StrategyId,
-            StrategyName: string.IsNullOrWhiteSpace(request.StrategyName)
-                ? request.StrategyId
-                : request.StrategyName,
-            CorrelationId: request.CorrelationId);
+        var strategyName = string.IsNullOrWhiteSpace(request.StrategyName)
+            ? request.StrategyId
+            : request.StrategyName;
 
-        foreach (var backtest in result.CapturedBacktests)
+        // Scope comes from authenticated middleware, never the request body. An entry that
+        // declares neither tenant nor company is treated as a legacy unscoped run and becomes
+        // visible under every scope, so omitting it would leak one tenant's research into another's
+        // run lists, comparisons, and promotion paths.
+        var scope = services.GetService<IWorkstationTenantContextAccessor>() is { } accessor &&
+            accessor.TryGetCurrent(out var trusted)
+                ? trusted
+                : null;
+
+        for (var index = 0; index < result.CapturedBacktests.Count; index++)
         {
+            var backtest = result.CapturedBacktests[index];
+
+            // One descriptor per captured backtest. A single script can run several backtests with
+            // different symbols, windows, cash, and fill settings; reusing one identity for all of
+            // them gave materially different experiments the same input hash. The realism
+            // descriptor and the per-run inputs come from the backtest's own request.
+            var descriptor = new ResearchRunDescriptor(
+                StrategyId: request.StrategyId,
+                StrategyName: strategyName,
+                CorrelationId: BuildCorrelationId(request.CorrelationId, index),
+                DatasetReference: backtest.Request.DataRoot,
+                ParameterSet: BuildParameterSet(backtest, index, scope),
+                ExecutionRealism: backtest.Request.ToRealismDescriptor());
+
             try
             {
                 await recorder.RecordAsync(descriptor, backtest, ct).ConfigureAwait(false);
@@ -194,6 +215,55 @@ public static class QuantLabEndpoints
                         Meridian.Execution.Logging.LogSanitizer.Sanitize(request.StrategyId));
             }
         }
+    }
+
+    private const string WorkstationTenantParameterKey = "workstationTenantId";
+    private const string WorkstationCompanyParameterKey = "workstationCompanyId";
+
+    /// <summary>
+    /// Distinguishes each captured backtest within one script execution so two runs from the same
+    /// cell are not conflated in lineage.
+    /// </summary>
+    private static string? BuildCorrelationId(string? requestCorrelationId, int index) =>
+        string.IsNullOrWhiteSpace(requestCorrelationId)
+            ? null
+            : $"{requestCorrelationId}#backtest:{index}";
+
+    /// <summary>
+    /// Retains the per-run inputs that distinguish one captured backtest from another, plus the
+    /// trusted workstation scope that governs run visibility.
+    /// </summary>
+    private static IReadOnlyDictionary<string, string> BuildParameterSet(
+        BacktestResult backtest,
+        int index,
+        WorkstationTenantContext? scope)
+    {
+        var parameters = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["captureIndex"] = index.ToString(CultureInfo.InvariantCulture),
+            ["from"] = backtest.Request.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            ["to"] = backtest.Request.To.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            ["initialCash"] = backtest.Request.InitialCash.ToString(CultureInfo.InvariantCulture)
+        };
+
+        if (backtest.Request.Symbols is { Count: > 0 })
+        {
+            parameters["symbols"] = string.Join(
+                ',',
+                backtest.Request.Symbols.OrderBy(static symbol => symbol, StringComparer.Ordinal));
+        }
+
+        if (!string.IsNullOrWhiteSpace(scope?.TenantId))
+        {
+            parameters[WorkstationTenantParameterKey] = scope.TenantId!;
+        }
+
+        if (!string.IsNullOrWhiteSpace(scope?.CompanyId))
+        {
+            parameters[WorkstationCompanyParameterKey] = scope.CompanyId!;
+        }
+
+        return parameters;
     }
 
     private static bool HasQuantLabExecutionPermission(HttpContext context)
