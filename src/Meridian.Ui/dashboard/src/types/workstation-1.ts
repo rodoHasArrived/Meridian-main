@@ -325,6 +325,12 @@ export interface FinancialRecordExplorerRowDto {
   tone: FinancialRecordExplorerTone;
   cells: FinancialRecordExplorerCellDto[];
   detail: FinancialRecordExplorerSelectedRecordDto;
+  /**
+   * The strategy run this row's record belongs to, when it has one. Row ids are composite and
+   * record-scoped (a ledger row is one account within one run), so never take a row id apart to
+   * recover the run. Null for record types with no owning run.
+   */
+  sourceRunId?: string | null;
 }
 
 export interface FinancialRecordExplorerSelectedRecordDto {

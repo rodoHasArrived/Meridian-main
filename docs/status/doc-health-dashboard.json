@@ -1,11 +1,11 @@
 {
   "total_files": 657,
-  "total_lines": 133793,
+  "total_lines": 133851,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 250,
-  "average_lines": 203.6,
+  "average_lines": 203.7,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2033,7 +2033,7 @@
     },
     {
       "path": "docs/development/wpf-web-ui-alignment-plan.md",
-      "line_count": 198,
+      "line_count": 199,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2625,7 +2625,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10562,
+      "line_count": 10574,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3505,7 +3505,7 @@
     },
     {
       "path": "docs/screenshots/desktop/README.md",
-      "line_count": 113,
+      "line_count": 114,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3633,7 +3633,7 @@
     },
     {
       "path": "docs/security/security-remediation-backlog.md",
-      "line_count": 122,
+      "line_count": 166,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

@@ -323,7 +323,8 @@ describe("workspace nav view model", () => {
       "/strategy/covered-call",
       "/strategy/promotions",
       "/strategy/lab",
-      "/strategy/quant-lab"
+      "/strategy/quant-lab",
+      "/strategy/run-ledger"
     ]);
     expect(strategy?.subItems.find((item) => item.route === "/strategy/covered-call")).toMatchObject({
       label: "Covered call",
