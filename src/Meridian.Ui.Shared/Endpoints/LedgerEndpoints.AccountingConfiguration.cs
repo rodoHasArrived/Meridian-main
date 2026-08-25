@@ -34,8 +34,8 @@ public static partial class LedgerEndpoints
                 .ConfigureAwait(false);
             return Results.Json(workspace, jsonOptions);
         })
-        .WithName("GetAccountingConfiguration").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
-        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("GetAccountingConfiguration").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -63,7 +63,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("UpsertAccountingConfigurationChartNode").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("UpsertAccountingConfigurationChartNode").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -94,7 +94,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("UpsertAccountingConfigurationTemplate").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("UpsertAccountingConfigurationTemplate").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -125,7 +125,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("UpsertAccountingConfigurationPostingRule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("UpsertAccountingConfigurationPostingRule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -192,7 +192,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("UpsertAccountingConfigurationPostingRuleTestCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("UpsertAccountingConfigurationPostingRuleTestCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -227,7 +227,7 @@ public static partial class LedgerEndpoints
             }, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("PreviewAccountingConfigurationTemplate").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("PreviewAccountingConfigurationTemplate").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingJournalTemplatePreviewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
@@ -269,7 +269,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("DryRunAccountingConfigurationPostingRule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("DryRunAccountingConfigurationPostingRule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<RuleDryRunResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -312,7 +312,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("BuildAccountingConfigurationPostingRuleCandidate").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("BuildAccountingConfigurationPostingRuleCandidate").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<PostingRuleJournalCandidateResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -363,7 +363,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("ProjectAssetAccountingEventSpine").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("ProjectAssetAccountingEventSpine").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AssetAccountingEventSpineAppendResultDto>(StatusCodes.Status200OK)
         .Produces<AssetAccountingEventSpineAppendResultDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
@@ -462,7 +462,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("BuildAssetAccountingEventSpinePostingCandidate").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("BuildAssetAccountingEventSpinePostingCandidate").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AssetAccountingPostingCandidateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -564,7 +564,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("BuildAccountingConfigurationPostingRuleProjectionSet").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("BuildAccountingConfigurationPostingRuleProjectionSet").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingBasisProjectionSetDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -605,7 +605,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("ExecuteAccountingConfigurationPostingRuleTests").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("ExecuteAccountingConfigurationPostingRuleTests").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingRuleTestSuiteResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -669,8 +669,8 @@ public static partial class LedgerEndpoints
                 .ConfigureAwait(false);
             return Results.Json(audit, jsonOptions);
         })
-        .WithName("ListAccountingConfigurationAudit").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
-        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("ListAccountingConfigurationAudit").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<IReadOnlyList<AccountingActionAuditEventDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);

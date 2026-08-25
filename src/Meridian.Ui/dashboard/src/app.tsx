@@ -141,6 +141,7 @@ const EntitySetupWizard = lazy(() => import("@/features/fund-structure/entity-se
 const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: memo(module.PortfolioScreen) })));
 const CoveredCallScreen = lazy(() => import("@/screens/covered-call-screen").then((module) => ({ default: module.CoveredCallScreen })));
 const QuantLabScreen = lazy(() => import("@/screens/quant-lab-screen").then((module) => ({ default: module.QuantLabScreen })));
+const StrategyRunLedgerScreen = lazy(() => import("@/screens/strategy-run-ledger-screen").then((module) => ({ default: module.StrategyRunLedgerScreen })));
 const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: memo(module.ReportingScreen) })));
 const StrategyScreen = lazy(() => import("@/screens/strategy-screen").then((module) => ({ default: memo(module.StrategyScreen) })));
 const StrategyDesignerScreen = lazy(() => import("@/screens/strategy-designer-screen").then((module) => ({ default: module.StrategyDesignerScreen })));
@@ -848,6 +849,7 @@ function AppShell({
                   <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
                   <Route path="/strategy/formula-workbench" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
+                  <Route path="/strategy/run-ledger" element={<StrategyRunLedgerScreen />} />
                   <Route path="/strategy/*" element={<StrategyScreen data={strategy} />} />
                   <Route path="/data/quotes" element={<MarketDataScreen />} />
                   <Route path="/data/watchlist" element={<LegacyWorkspaceRedirect />} />

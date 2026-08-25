@@ -88,6 +88,10 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddTransient<Meridian.Wpf.Views.SecurityPassportEditorPage>();
         services.AddSingleton<ISecurityAssetProfileWorkflowClient, SecurityAssetProfileWorkflowClient>();
         services.AddSingleton<IOperationsControlCenterClient, OperationsControlCenterClient>();
+        // The posted journal is server-owned: ILedgerBookService is registered only by the
+        // server-side storage composition and resolves null in this process, so the desktop
+        // reads the governed book over the shared workstation API like the browser does.
+        services.AddSingleton<ILedgerReportsApiClient, LedgerReportsApiClient>();
         services.AddSingleton<IFundReconciliationWorkbenchService, FundReconciliationWorkbenchService>();
         services.AddSingleton<IStatementReconciliationWorkbenchService, StatementReconciliationWorkbenchService>();
         services.TryAddSingleton<AccountingPostingService>();
@@ -309,6 +313,11 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         // when the shared client is absent from the composition.
         services.AddTransient(static sp => new OperationsContinuityViewModel(
             sp.GetService<IOperationsControlCenterClient>()));
+        // Same posture for the posted ledger: without the client the page says so rather than
+        // rendering an empty book.
+        services.AddTransient(static sp => new PostedLedgerViewModel(
+            sp.GetService<ILedgerReportsApiClient>()));
+        services.AddTransient<PostedLedgerPage>();
     }
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Capability.Pages;

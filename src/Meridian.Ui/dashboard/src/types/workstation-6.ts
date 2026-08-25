@@ -1058,6 +1058,42 @@ export interface LedgerPeriodTrialBalanceLine {
   dimensions?: LedgerDimensionSet | null;
 }
 
+/**
+ * A posted journal entry for a ledger period
+ * (`GET /api/ledger/periods/{periodId}/journal-entries`). This is the immutable book's
+ * own entry, distinct from the strategy run's `LedgerJournalLine` evidence row.
+ */
+/** One posting line of a governed journal entry (`LedgerJournalEntryLineDto`). */
+export interface LedgerPostedJournalEntryLine {
+  entryId: string;
+  journalEntryId: string;
+  timestamp: string;
+  accountName: string;
+  accountType: string;
+  symbol?: string | null;
+  financialAccountId?: string | null;
+  debit: number;
+  credit: number;
+  description: string;
+  dimensions?: LedgerDimensionSet | null;
+}
+
+export interface LedgerPostedJournalEntry {
+  journalEntryId: string;
+  periodId: string;
+  ledgerBookId: string | null;
+  timestamp: string;
+  description: string;
+  totalDebits: number;
+  totalCredits: number;
+  isBalanced: boolean;
+  lines: LedgerPostedJournalEntryLine[];
+  accountingBasis?: AccountingBasisKind;
+  // No entry-level `dimensions`: LedgerJournalEntryDto declares none. Posting dimensions belong to
+  // LedgerJournalEntryLineDto, so an entry's scope has to be derived from its lines and only
+  // exists when they agree — see resolvePostedEntryDimensions.
+}
+
 /** P&L summary of the posted journal for a closed ledger period (`GET /api/ledger/periods/{periodId}/pnl-summary`). */
 export interface LedgerPeriodPnlSummary {
   periodId: string;

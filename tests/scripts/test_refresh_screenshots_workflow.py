@@ -368,7 +368,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         # that no longer renders.
         # 78 after adding W03O (web-accounting-capital-calls) for the new
         # /accounting/capital-calls issuance screen.
-        self.assertEqual(78, len(captures))
+        self.assertEqual(79, len(captures))
         self.assertNotIn("W05E", captures)
         self.assertEqual("/data/import", captures["W06I"].get("path"))
         self.assertEqual("/data/operations", captures["W06J"].get("path"))
