@@ -995,8 +995,14 @@ close-management product can tell.
    (`IPosition.cs:67`) in all three sites.
    Carrying scale is not enough: multiplying by it is. Replay also has an independent ownership gap:
    the same three sites omit `ownerAccountId`. Persist the owning fund or join
-   `OrderState.FundAccountId` through order identity at every restore and projection site, and cover
-   both scaled economics and restored fund attribution in regression tests. (§3, §4)
+   `OrderState.FundAccountId` (`Models.cs:257`) through order identity at every restore and projection
+   site, and cover both scaled economics and restored fund attribution in regression tests.
+   **Do not assert a uniform 1/100 anywhere in that coverage.** An option session's P&L and total
+   return are off by exactly the multiplier, but its equity is correct at entry and wrong only in the
+   flattering direction on losses, its Sharpe merely drifts, and excess liquidity distorts
+   nonlinearly — see §4 for the per-metric breakdown. A regression test asserting one uniform factor
+   would encode the wrong number, which is the error round 26 corrected. Third consecutive review to
+   find this class in a new subsystem. (§3, §4)
 4. **Gate the catalogs against each other — with predicates that actually bite.** An
    existential check ("some role can reach it") is useless here: Admin, Developer, and Accounting
    satisfy it while `FundAccountant` and `Controller` stay locked out, so the defect passes. Three
@@ -1184,17 +1190,17 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Thirty-six rounds of automated review challenged **105 claims** across this document. Every one was checked
-against the code, **all 105 held**, and the findings above are the corrected text. **Eleven more were
+Thirty-seven rounds of automated review challenged **109 claims** across this document. Every one was checked
+against the code, **all 109 held**, and the findings above are the corrected text. **Twelve more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
 in the published artifact, an unresolvable file path in §8, the artifact's refuted cost-basis remedy,
-the second addendum's miscited compliance gate lines, and a sentence round 35 left mangled in §2 — and each is recorded as a row below,
+the second addendum's miscited compliance gate lines, a sentence round 35 left mangled in §2, and a round-17 block header that never footed — and each is recorded as a row below,
 marked *(self-detected)*. A further self-initiated pass, numbered round 31 below, is **absent from the table on purpose**: every correction it made was
 wrong and was retracted in round 32, so it contributes no rows and its number is left as a gap
 rather than silently reused.
-The table therefore holds **116 rows: 105 raised by review, 11 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **121 rows: 109 raised by review, 12 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1422,7 +1428,7 @@ inference that a nullable field means an unchecked field. That is the same one-s
 round-7 lesson names, applied to a type declaration instead of a code path — and it produced a
 finding that was directionally reasonable and materially wrong about the risk.
 
-**Round 17 — three, and every one is this document's own stale dependent text:**
+**Round 17 — three from review, two self-detected, and every one is this document's own stale dependent text:**
 
 | Claim | Why it was wrong | Corrected in |
 | --- | --- | --- |
@@ -1433,8 +1439,8 @@ finding that was directionally reasonable and materially wrong about the risk.
 | *(self-detected)* §3's own bolded lead sentence said the multiplier "never reaches portfolio economics on any path" | Round 14 added its qualifying paragraph directly beneath this sentence and never corrected the sentence itself | §3 lead |
 
 Three rounds ago the reviewer was finding defects in the codebase. This round it found none — all
-three items are places where a correction landed in one part of this document and a dependent
-sentence elsewhere was left standing. That is the failure this section exists to record, and it has
+three review-raised items, and the two found here, are places where a correction landed in one part
+of this document and a dependent sentence elsewhere was left standing. That is the failure this section exists to record, and it has
 now happened often enough to be the document's most reliable defect: **corrections propagate to the
 text being corrected and to the summary, and stop there.** The cross-surface grep adopted in round 8
 catches restated *phrases*; it does not catch a *conclusion* restated in different words two sections
@@ -1845,6 +1851,31 @@ rows, `verify-docs` checks drift and line counts, and neither reads for grammar.
 citation in that round against source and never re-read the paragraph I had edited. The
 cheap protection is the obvious one and I was not doing it — read the whole paragraph after replacing
 part of it, not just the replacement.
+
+**Round 38 — four from review, one self-detected; the review-raised four were again applied from
+outside this session, in `afba6143`:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| §4's improvement: "define one instrument-scale value object… and **delete** the three parallel representations" | Read on its own it reintroduces exactly the schema and canonical-hash work round 36 removed. §3 had already established that `ExecutionReport.OptionContract.Multiplier` is persisted, cloned and nullable, so reusing it avoids the migration; replacing it restores both the migration and a duplicate source of truth. §4 was never updated to match | §4 improvement — reuse and populate the existing field, add scale only where none exists (`FillEvent`) |
+| Improvement #3 covered scale and omitted **ownership** | §3 establishes independently that all three reconstruction sites drop `ownerAccountId` and neither durable record persists it, so every fund-scoped fill restores unattributed. A remediation checklist that fixes only scale can be declared complete while fund-scoped replay stays corrupt — two independent gaps at the same three sites, and the priority list carried one | Improvement #3 — ownership added as an independent requirement, joining `OrderState.FundAccountId` (`Models.cs:257`) where not persisted |
+| "**Every** dark asset in §5 and §6 should be activated this way" | Turns §6's reference-based inventory into a UI backlog, which §6 itself rules out two hundred lines earlier: the count is a discovery tool, not a work estimate, it includes deliberately server-to-server and diagnostic routes, and several others need server contracts before a screen is usable. The strengths section contradicted the section it was summarising | Strengths — narrowed to verified operator-facing, activation-ready capabilities |
+| The round-37 block header said "three from review" over a table holding **four** review rows | I added the `b53f9cc2` row to that block and updated the global totals without touching the block header. The mechanical check I had just strengthened validated the document-wide arithmetic and never looked at a per-round header | Round-37 header — and the checker now validates every block header against its own rows |
+| *(self-detected)* Round 17's block header said "**three**" over a table holding **five** rows | Found by the per-block check added above, on its first run. Three review-raised plus two self-detected, and the prose below it also said "all three items". **It has been wrong since round 17 — twenty-one rounds, none of which noticed** — in the block whose own subject is a corrections total that did not foot | Round-17 header and its following paragraph |
+
+The last two rows are the same failure one level apart, and together they say something the global
+check could not: **arithmetic that foots in aggregate can be wrong in every part.** The document-wide
+totals have been correct and mechanically verified for several rounds while a block header inside
+them was wrong for twenty-one. A checker that validates the number you were thinking about is a
+check on your attention, not on the artifact — so the check now enumerates every count claim it can
+find, global and per-block, rather than the ones I remembered to assert.
+
+Four of these five were applied by `afba6143`, an outside commit, which again left the ledger to this
+session. One substantive loss in that commit is restored here: it dropped improvement #3's warning
+that the multiplier error is **not** a uniform 1/100 across metrics. That warning exists because
+round 26 corrected exactly that mistake — equity is right at entry and wrong only on losses, Sharpe
+drifts, excess liquidity distorts nonlinearly — and without it an implementer writing the regression
+tests the same paragraph asks for would encode the wrong number.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
