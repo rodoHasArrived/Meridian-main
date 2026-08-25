@@ -374,34 +374,68 @@ representations. Until instrument scale is a single modeled concept rather than 
 by convention, this class of bug will keep reappearing at each new seam — as it has now for three
 consecutive reviews.
 
-## 5. The fund-economics kernel is a closed island — second consecutive review at zero consumers
+## 5. The fund-administration lane is dark — 80 of 231 ledger types reach no consumer
 
-Measured across all of `src/`:
+Measured across all of `src/`. A type counts as reaching a consumer if it is named outside
+`src/Meridian.Ledger/`, or if a type that *is* so named declares a public member returning it — so a
+result record only ever bound to `var` is not miscounted as dark:
 
-| Type | Consumers in `src/` | Reachable from either client |
+| | Count | Share |
 | --- | --- | --- |
-| `ShareClassUnitRegisterProjector` (`:54`) | **0** | no |
-| `NavPerUnitCalculator` | 1 — only the projector above | no |
-| `EqualizationCalculator` | 1 — only the projector above | no |
-| `MultiCurrencyLedgerTranslator` (`:6`) | **0** | no |
+| Public types in `Meridian.Ledger` | 231 | |
+| Named by a consumer outside the assembly | 133 | 57.6% |
+| Reachable only through a live producer | 18 | 7.8% |
+| **Reaching no consumer at all** | **80** | **34.6%** |
 
-The identifier `NavPerUnit` does not appear anywhere in `src/Meridian.Ui.Shared`,
-`src/Meridian.Ui.Services`, or `src/Meridian.Ui/dashboard`. NAV per unit — the number a fund
-administrator exists to produce, and the input every LP statement depends on — cannot be computed by
-any operator action. Neither can equalization, the high-water mark, the unit register, or FX
-revaluation at period close.
+**45 of those 80 are directly exercised by tests.** They are built, validated, and unwired: the work
+to activate them is plumbing, not construction.
 
-The prior review offered two activation options and asked for one. **Capital-call issuance shipped**
-— `CapitalCallFundingIntake.cs:236` reaches `CapitalCallDraftFactory.BuildCapitalCallFundingDraft`,
-with a governed journal intake and a browser screen (`8b50a6b7`, `c0e5160e`, `4ab5df03`). That is
-real, and it is the pattern to copy. The alternative was skipped, so the NAV lane enters its second
-consecutive review at zero consumers.
+The dark set is not scattered across the assembly — it is the fund-administration lane, nearly
+whole:
+
+| Concern | Dark types |
+| --- | --- |
+| Waterfall, preferred return, carried interest, clawback | 16 |
+| Partnership, capital call, contribution, drawdown | 12 |
+| Report-pack lifecycle, signature, restatement, scheduling | 9 |
+| Depreciation and fixed assets | 9 |
+| Share-class units, NAV per unit, unit transactions | 6 |
+| Multi-currency translation | 6 |
+| Tax lots, wash sale, tax character | 6 |
+| Shadow NAV validation | 5 |
+| Financial statements, cash flow, period close, retained earnings | 4 |
+| Equalization | 3 |
+
+Concerns overlap, so that column does not sum to 80. `FundEconomicsJournalFactory` — the type named
+for the concern — is itself dark.
+
+The four types named in the previous round still measure exactly as reported:
+`ShareClassUnitRegisterProjector` (`:54`) and `MultiCurrencyLedgerTranslator` (`:6`) at zero
+consumers, `NavPerUnitCalculator` and `EqualizationCalculator` at one each — the projector, which is
+itself dark. The identifier `NavPerUnit` appears nowhere in `src/Meridian.Ui.Shared`,
+`src/Meridian.Ui.Services`, or `src/Meridian.Ui/dashboard`, under that name or any alias; the
+`unitPrice` locals in `AggregatePortfolioExposureProvider` are per-contract instrument pricing, and
+`ReportingPartnersCapitalSource` contains no unit arithmetic at all. There is no hand-rolled
+duplicate either. NAV per unit — the number a fund administrator exists to produce, and the input
+every LP statement depends on — cannot be computed by any operator action. Neither can equalization,
+the high-water mark, the unit register, or FX revaluation at period close.
+
+The kernel as a whole is **not** a closed island, and this section's own title claimed it was for
+twenty-three rounds while the paragraph below said the opposite. Capital-call issuance shipped —
+`CapitalCallFundingIntake.cs:236` reaches `CapitalCallDraftFactory.BuildCapitalCallFundingDraft`,
+with a governed journal intake and a browser screen (`8b50a6b7`, `c0e5160e`, `4ab5df03`), and
+`CapitalCallFundingIntake.cs:53` calls that same factory "the fund-economics kernel" in as many
+words. That is real, it is the pattern to copy, and it is why 57.6% of the assembly is live. The
+prior review offered two activation options and asked for one; the other was skipped, so the NAV
+lane enters its second consecutive review at zero consumers.
 
 **Improvement.** Wire NAV-per-unit + the unit register through the same path capital-call issuance
 just proved: valuation lane → `ShareClassUnitRegisterProjector` → governed journal intake → a
-Portfolio or Accounting panel. It is the highest-value dark asset in the repository, and the
-plumbing it needs was built and validated six commits ago. If it will not be wired this cycle,
-`W9-NAV-006` should not read `ready_for_acceptance`.
+Portfolio or Accounting panel. The scheduling half of that lane already exists
+(`DailyValuationScheduler` in `Meridian.Ui.Shared`) and stops short of the projector. It is the
+highest-value dark asset in the repository, and the plumbing it needs was built and validated in the
+commits above. If it will not be wired this cycle, `W9-NAV-006` should not read
+`ready_for_acceptance`.
 
 ## 6. 29% of the shared API surface is reachable by no operator client
 
@@ -786,7 +820,11 @@ close-management product can tell.
    (§1, §5, §6)
 5. **Activate NAV per unit end-to-end.** Valuation → `ShareClassUnitRegisterProjector` → governed
    journal intake → an operator panel, following the path capital-call issuance just proved. Highest
-   value-per-line change available, and the plumbing is already validated. (§5)
+   value-per-line change available, and the plumbing is already validated. It is also the first
+   instance of a much larger pattern: **80 of 231** public `Meridian.Ledger` types reach no consumer,
+   **45 of them already covered by tests**. Each wiring reuses the same four-step path, so treat this
+   as the template for the waterfall/carry (16 dark types) and partners'-capital (12) clusters
+   behind it, not as a one-off. (§5)
 6. **Put the supported platform in the merge gate — noting the naive fix does not work.**
    `needs:` resolves only job IDs within the same workflow, and `verify-desktop` is a lane-manifest
    ID, not a job: the Windows validation is the `desktop` job in the separate
@@ -858,12 +896,13 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Twenty-three rounds of automated review challenged **66 claims** across this document. Every one was checked
-against the code, **all 66 held**, and the findings above are the corrected text. **Four more were
+Twenty-four rounds of automated review challenged **66 claims** across this document. Every one was checked
+against the code, **all 66 held**, and the findings above are the corrected text. **Six more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
-claim, and §3's own lead sentence — and each is recorded as a row below, marked *(self-detected)*.
-The table therefore holds **70 rows: 66 raised by review, 4 found here.** Noted here because a review that demands evidence discipline
+claim, §3's own lead sentence, §5's title, and §5's four-type undercount — and each is recorded as a
+row below, marked *(self-detected)*.
+The table therefore holds **72 rows: 66 raised by review, 6 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1229,6 +1268,23 @@ The first row is the round-20 lesson recurring in the same file, three rounds la
 asserted what the `exit_criteria:` four lines below say **without reading them**. "Reading a file for
 the fact you came to find is not reading it" was written into this document as a lesson in round 20
 and violated in round 21, against the same file and the same item.
+
+**Round 24 — two, both self-detected, and the first is the round-22 pattern in a section heading:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| *(self-detected)* §5's title: "The fund-economics kernel is a closed island" | The same section's body says capital-call issuance shipped through `CapitalCallDraftFactory`, and `CapitalCallFundingIntake.cs:53` calls that factory "the fund-economics kernel" in as many words. Measured: **133 of 231** public `Meridian.Ledger` types are consumed outside the assembly. The kernel is 57.6% live; it is the *fund-administration lane* inside it that is dark. The heading contradicted its own paragraph for twenty-three rounds | §5 retitled and remeasured |
+| *(self-detected)* §5 quantified the dark surface as four types | The measured set is **80 of 231** — units, equalization, waterfall, carry, shadow NAV, multi-currency, partners' capital, depreciation, tax lots, report-pack lifecycle. The four named types were a sample presented as the finding, understating it roughly twentyfold | §5 measurement table |
+
+Both were found by re-measuring §5's existential claim rather than re-reading its prose — the same
+method that caught rounds 9 and 22. The first measurement pass produced **98** dark types and was
+wrong: it counted a type as dark whenever its name was absent outside `Meridian.Ledger`, which
+misses a result record returned by a live producer and only ever bound to `var`. A hand check found
+`LedgerFinancialStatements` reachable through `LedgerFinancialStatementBuilder`, whose two consumers
+include `ReportingPartnersCapitalSource` in the UI layer. The producer-aware re-run found 18 such
+types and reported 80. A second script bug — a regex that silently matched nothing and returned "0
+reachable" — was caught only because a control assertion required the hand-verified reachable type
+to appear in the output. Neither error would have been visible in the prose.
 
 The second row is the more instructive failure. Round 21 fixed test (a) by pointing it at the
 projected payload — correct, and it fixed a real defect — but pointed it at the *wrong* payload
