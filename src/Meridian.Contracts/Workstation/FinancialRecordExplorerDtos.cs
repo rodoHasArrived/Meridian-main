@@ -84,7 +84,14 @@ public sealed record FinancialRecordExplorerRowDto(
     string Status,
     FinancialRecordExplorerTone Tone,
     IReadOnlyList<FinancialRecordExplorerCellDto> Cells,
-    FinancialRecordExplorerSelectedRecordDto Detail);
+    FinancialRecordExplorerSelectedRecordDto Detail,
+    /// <summary>
+    /// The strategy run this row's record belongs to, when it has one. Row ids are composite and
+    /// record-scoped (a ledger row is one account within one run), so a caller that needs the run
+    /// itself — to load its trial balance, say — must not take the row id apart to find it.
+    /// Null for record types with no owning run.
+    /// </summary>
+    string? SourceRunId = null);
 
 public sealed record FinancialRecordExplorerSelectedRecordDto(
     string RecordId,

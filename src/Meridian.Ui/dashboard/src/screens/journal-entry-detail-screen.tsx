@@ -14,7 +14,7 @@ import { toLedgerJournalLine } from "@/screens/accounting-screen.posted-ledger.v
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { buildJournalEntryDetailViewState } from "@/screens/journal-entry-detail-screen.view-model";
-import type { LedgerJournalLine, ManualJournalEntryDraft } from "@/types";
+import type { LedgerJournalLine, LedgerPostedJournalEntry, ManualJournalEntryDraft } from "@/types";
 
 export function JournalEntryDetailScreen() {
   const [searchParams] = useSearchParams();
@@ -27,6 +27,7 @@ export function JournalEntryDetailScreen() {
 
   const [draft, setDraft] = useState<ManualJournalEntryDraft | null>(null);
   const [journalLine, setJournalLine] = useState<LedgerJournalLine | null>(null);
+  const [postedEntry, setPostedEntry] = useState<LedgerPostedJournalEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState<string | null>(null);
   const [reloadVersion, setReloadVersion] = useState(0);
@@ -35,6 +36,7 @@ export function JournalEntryDetailScreen() {
     if (!journalEntryId) {
       setDraft(null);
       setJournalLine(null);
+      setPostedEntry(null);
       setErrorText(null);
       setLoading(false);
       return;
@@ -60,18 +62,32 @@ export function JournalEntryDetailScreen() {
 
         // A period scope means the posted journal is the authority; a run scope means the
         // simulation's. They are different books, so never fall back from one to the other.
-        const lookup = periodId
-          ? getLedgerPeriodJournalEntries(periodId).then((entries) => entries.map(toLedgerJournalLine))
-          : runId
-            ? getRunLedgerJournal(runId)
-            : null;
+        if (periodId) {
+          return getLedgerPeriodJournalEntries(periodId)
+            .then((entries) => {
+              if (cancelled) {
+                return;
+              }
 
-        if (!lookup) {
+              // Keep the whole entry: it carries the posting lines, and reducing it to the
+              // summary shape here is what made posted drill-throughs render as "summary only".
+              const matched = entries.find((entry) => entry.journalEntryId === journalEntryId) ?? null;
+              setPostedEntry(matched);
+              setJournalLine(matched ? toLedgerJournalLine(matched) : null);
+            })
+            .finally(() => {
+              if (!cancelled) {
+                setLoading(false);
+              }
+            });
+        }
+
+        if (!runId) {
           setLoading(false);
           return;
         }
 
-        return lookup
+        return getRunLedgerJournal(runId)
           .then((lines) => {
             if (!cancelled) {
               setJournalLine(lines.find((line) => line.journalEntryId === journalEntryId) ?? null);
@@ -87,6 +103,7 @@ export function JournalEntryDetailScreen() {
         if (!cancelled) {
           setDraft(null);
           setJournalLine(null);
+          setPostedEntry(null);
           setErrorText("The journal-entry record could not be loaded from the governed workbench. No posting detail is shown until the source responds.");
           setLoading(false);
         }
@@ -153,7 +170,7 @@ export function JournalEntryDetailScreen() {
     );
   }
 
-  const view = buildJournalEntryDetailViewState({ journalEntryId, draft, journalLine });
+  const view = buildJournalEntryDetailViewState({ journalEntryId, draft, journalLine, postedEntry });
   const technicalSummaryFields = view.summaryFields.filter((field) => ["Journal entry", "Fund", "Ledger book"].includes(field.label));
   const operationalSummaryFields = view.summaryFields.filter((field) => !technicalSummaryFields.includes(field));
 

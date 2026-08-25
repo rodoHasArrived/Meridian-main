@@ -112,9 +112,13 @@ describe("StrategyRunLedgerScreen", () => {
       summaryItems: [],
       filters: [],
       columns: [],
+      // Real shape: rows are ledger *accounts*, one per account per run, with composite record
+      // ids. Two rows below share a run — the selector must dedupe by sourceRunId and must never
+      // offer a record id as if it were a run id.
       rows: [
-        { recordId: "run-42", recordType: "LedgerRun", label: "Run 42", source: "", status: "", tone: "neutral", cells: [], detail: null },
-        { recordId: "run-43", recordType: "LedgerRun", label: "Run 43", source: "", status: "", tone: "neutral", cells: [], detail: null }
+        { recordId: "ledger:run-42:0", recordType: "ledger", label: "Cash", source: "Run 42", status: "Asset", tone: "neutral", cells: [], detail: null, sourceRunId: "run-42" },
+        { recordId: "ledger:run-42:1", recordType: "ledger", label: "Payable", source: "Run 42", status: "Liability", tone: "neutral", cells: [], detail: null, sourceRunId: "run-42" },
+        { recordId: "ledger:run-43:0", recordType: "ledger", label: "Cash", source: "Run 43", status: "Asset", tone: "neutral", cells: [], detail: null, sourceRunId: "run-43" }
       ],
       selectedRecord: null,
       proofActions: [],
@@ -125,6 +129,10 @@ describe("StrategyRunLedgerScreen", () => {
 
     const selector = await screen.findByLabelText("Strategy run", { selector: "select" });
     expect(selector).toBeInTheDocument();
+
+    const runOptions = screen.getAllByRole("option").filter((option) => (option as HTMLOptionElement).value !== "");
+    // Deduped to one option per run, valued by the bare run id the run APIs expect.
+    expect(runOptions.map((option) => (option as HTMLOptionElement).value)).toEqual(["run-42", "run-43"]);
     expect(screen.getByRole("option", { name: "Run 42" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Run 43" })).toBeInTheDocument();
   });

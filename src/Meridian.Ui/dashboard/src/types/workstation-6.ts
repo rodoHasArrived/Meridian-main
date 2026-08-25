@@ -1063,6 +1063,21 @@ export interface LedgerPeriodTrialBalanceLine {
  * (`GET /api/ledger/periods/{periodId}/journal-entries`). This is the immutable book's
  * own entry, distinct from the strategy run's `LedgerJournalLine` evidence row.
  */
+/** One posting line of a governed journal entry (`LedgerJournalEntryLineDto`). */
+export interface LedgerPostedJournalEntryLine {
+  entryId: string;
+  journalEntryId: string;
+  timestamp: string;
+  accountName: string;
+  accountType: string;
+  symbol?: string | null;
+  financialAccountId?: string | null;
+  debit: number;
+  credit: number;
+  description: string;
+  dimensions?: LedgerDimensionSet | null;
+}
+
 export interface LedgerPostedJournalEntry {
   journalEntryId: string;
   periodId: string;
@@ -1072,7 +1087,7 @@ export interface LedgerPostedJournalEntry {
   totalDebits: number;
   totalCredits: number;
   isBalanced: boolean;
-  lines: unknown[];
+  lines: LedgerPostedJournalEntryLine[];
   accountingBasis?: AccountingBasisKind;
   dimensions?: LedgerDimensionSet | null;
 }

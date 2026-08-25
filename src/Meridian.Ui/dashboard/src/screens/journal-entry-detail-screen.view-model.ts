@@ -1,6 +1,7 @@
 import type {
   JournalEntryLifecycleTransition,
   LedgerJournalLine,
+  LedgerPostedJournalEntry,
   ManualJournalEntryDraft,
   ManualJournalEntryStatus
 } from "@/types";
@@ -83,11 +84,18 @@ function buildLifecycleRow(transition: JournalEntryLifecycleTransition): Journal
 export function buildJournalEntryDetailViewState({
   journalEntryId,
   draft,
-  journalLine
+  journalLine,
+  postedEntry = null
 }: {
   journalEntryId: string;
   draft: ManualJournalEntryDraft | null;
   journalLine: LedgerJournalLine | null;
+  /**
+   * The governed period's own entry, when the drill-through came from a posted journal. It
+   * carries full posting lines, so a posted entry is not reduced to a summary that discards
+   * detail the response already contained.
+   */
+  postedEntry?: LedgerPostedJournalEntry | null;
 }): JournalEntryDetailViewState {
   if (draft) {
     const attachedEvidence = (draft.evidenceAttachments ?? []).map((attachment) => ({
@@ -136,6 +144,40 @@ export function buildJournalEntryDetailViewState({
       totalCredits: draft.totalCredits,
       lifecycle: (draft.lifecycleTransitions ?? []).map(buildLifecycleRow),
       evidence: [...attachedEvidence, ...linkedEvidence],
+      summaryOnlyNotice: null,
+      notFoundText: null
+    };
+  }
+
+  // A posted entry from the governed period carries its own lines; render them rather than
+  // reporting "summary only" over detail the response already returned.
+  if (postedEntry && postedEntry.lines.length > 0) {
+    return {
+      dataCompleteness: "full",
+      journalEntryId,
+      title: postedEntry.description || postedEntry.journalEntryId,
+      statusLabel: "Posted",
+      statusTone: "default",
+      summaryFields: [
+        { label: "Journal entry", value: postedEntry.journalEntryId },
+        { label: "Posted at", value: postedEntry.timestamp },
+        { label: "Ledger book", value: postedEntry.ledgerBookId ?? "Unassigned" },
+        { label: "Basis", value: postedEntry.accountingBasis ?? "Primary" },
+        { label: "Line count", value: String(postedEntry.lines.length) }
+      ],
+      currency: "USD",
+      lines: postedEntry.lines.map((line, index) => ({
+        lineId: line.entryId || `posted-line-${index + 1}`,
+        account: line.accountName,
+        debit: line.debit > 0 ? line.debit : undefined,
+        credit: line.credit > 0 ? line.credit : undefined,
+        description: line.description ?? null,
+        evidenceLink: null
+      })),
+      totalDebits: postedEntry.totalDebits,
+      totalCredits: postedEntry.totalCredits,
+      lifecycle: [],
+      evidence: [],
       summaryOnlyNotice: null,
       notFoundText: null
     };

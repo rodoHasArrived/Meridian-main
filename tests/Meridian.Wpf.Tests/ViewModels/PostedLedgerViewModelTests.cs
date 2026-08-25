@@ -297,6 +297,9 @@ public sealed class PostedLedgerViewModelTests
         // This is what the list's SelectedItem binding does. Before it was wired, moving the
         // highlight loaded nothing and every period but the default was unreachable.
         viewModel.SelectedPeriodRow = viewModel.Periods.Single(row => row.PeriodId == prior);
+        // The setter fires the command rather than awaiting it; await the command's own task so
+        // the assertion cannot race a continuation.
+        await (viewModel.SelectPeriodCommand.ExecutionTask ?? Task.CompletedTask);
 
         viewModel.SelectedPeriodId.Should().Be(prior);
         client.RequestedPeriodIds.Should().Contain(prior);

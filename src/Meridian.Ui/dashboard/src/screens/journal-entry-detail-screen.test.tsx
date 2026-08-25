@@ -193,14 +193,22 @@ describe("JournalEntryDetailScreen", () => {
         description: "Posted close entry",
         totalDebits: 500,
         totalCredits: 500,
-        lines: [],
+        isBalanced: true,
+        lines: [
+          { entryId: "e-1", journalEntryId: "je-posted-1", timestamp: "2026-06-30T00:00:00Z", accountName: "Cash", accountType: "Asset", debit: 500, credit: 0, description: "Sweep in" },
+          { entryId: "e-2", journalEntryId: "je-posted-1", timestamp: "2026-06-30T00:00:00Z", accountName: "Suspense", accountType: "Asset", debit: 0, credit: 500, description: "Sweep out" }
+        ],
         dimensions: null
       }
     ] as never);
 
     await renderScreen("/accounting/journal-entries/detail?journalEntryId=je-posted-1&periodId=period-7");
 
-    expect(await screen.findByRole("heading", { name: "Posting summary" })).toBeInTheDocument();
+    // The period response already carried full posting lines; the drill-through must render them
+    // rather than reporting "summary only" over detail it was handed.
+    expect(await screen.findByRole("table")).toBeInTheDocument();
+    expect(screen.getByText("Sweep in")).toBeInTheDocument();
+    expect(screen.queryByText("Summary-only entry")).not.toBeInTheDocument();
     expect(ledgerReportsApi.getLedgerPeriodJournalEntries).toHaveBeenCalledWith("period-7");
     expect(screen.queryByRole("heading", { name: "Journal entry not found" })).not.toBeInTheDocument();
     // The posted journal and a strategy run are different books; a period scope must never

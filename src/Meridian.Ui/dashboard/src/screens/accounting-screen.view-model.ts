@@ -5224,13 +5224,14 @@ export function buildAccountingTrialBalanceViewState({
 export function buildAccountingLedgerJournalEvidenceViewState({
   runId,
   rows,
-  dimensionFilter = ""
+  dimensionFilter = "", scopeLabel = null
 }: {
   runId: string | null;
   rows: LedgerJournalLine[];
   dimensionFilter?: string | null;
+  scopeLabel?: string | null; // overrides the run phrasing: the posted journal is period-scoped
 }): AccountingLedgerJournalEvidenceViewState {
-  const runLabel = runId ? "the selected ledger run" : "the current ledger selection";
+  const runLabel = scopeLabel?.trim() || (runId ? "the selected ledger run" : "the current ledger selection");
   const normalizedFilter = normalizeLedgerAccountFilter(dimensionFilter);
   const journalRows = rows
     .map(buildLedgerJournalEvidenceRow)

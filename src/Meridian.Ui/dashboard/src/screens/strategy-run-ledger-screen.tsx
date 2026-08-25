@@ -145,15 +145,21 @@ export function StrategyRunLedgerScreen() {
   );
 
   // The Strategy nav opens this screen with no ?runId=, and the screen deliberately requests
-  // nothing without one. Without a way to choose a run in-screen that is a dead end, so the
-  // explorer's own records — the ledger runs — become the selector.
-  const runOptions = useMemo(
-    () => (explorer?.rows ?? []).map((row) => ({
-      id: row.recordId,
-      label: row.label?.trim() || row.recordId
-    })),
-    [explorer]
-  );
+  // nothing without one, so it needs a way to choose a run in-screen.
+  //
+  // The explorer's rows are ledger *accounts*, not runs — one row per account per run, with a
+  // composite record id. Read the run from each row's sourceRunId and dedupe; never split the
+  // record id, which would send "ledger:<runId>:<index>" to an API expecting a bare run id.
+  const runOptions = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const row of explorer?.rows ?? []) {
+      const runId = row.sourceRunId?.trim();
+      if (!runId || seen.has(runId)) continue;
+      seen.set(runId, row.source?.trim() || runId);
+    }
+
+    return [...seen].map(([id, label]) => ({ id, label }));
+  }, [explorer]);
 
   function selectRun(nextRunId: string) {
     const next = new URLSearchParams(searchParams);

@@ -22,15 +22,15 @@ import { buildAccountingLedgerJournalEvidenceViewState } from "@/screens/account
 import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
 import { buildTrialBalanceAccountTreeNodes, trialBalanceAccountTreeCode } from "@/screens/trial-balance-screen.view-model";
 import type { AccountingLedgerJournalEvidenceViewState } from "@/screens/accounting-screen.view-model";
-import type { AccountingWorkspaceResponse } from "@/types";
-
-interface TrialBalanceScreenProps {
-  data: AccountingWorkspaceResponse | null;
-}
 
 type TrialBalanceViewMode = "table" | "hierarchy";
 
-export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
+/**
+ * Reads only the governed posted journal. It takes no aggregate accounting-workspace payload:
+ * every value on screen comes from this screen's own /api/ledger/* requests, and accepting one
+ * previously meant an unrelated request's failure blanked a book that had loaded fine.
+ */
+export function TrialBalanceScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<TrialBalanceViewMode>("table");
   const entityScope = "All entities";
@@ -74,9 +74,15 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
   const journalEvidence: AccountingLedgerJournalEvidenceViewState = useMemo(
     () => buildAccountingLedgerJournalEvidenceViewState({
       runId: selectedPeriodId,
-      rows: journalLines
+      rows: journalLines,
+      // These entries are posted to a fund period, not produced by a strategy run. Without this
+      // the shared builder calls them "the selected ledger run" — the exact conflation this
+      // screen was repointed to end.
+      scopeLabel: selectedPeriodLabel
+        ? `the posted journal for period ${selectedPeriodLabel}`
+        : "the posted journal"
     }),
-    [journalLines, selectedPeriodId]
+    [journalLines, selectedPeriodId, selectedPeriodLabel]
   );
 
   const treeNodes: AccountNode[] = useMemo(
@@ -105,7 +111,11 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
     return Array.from(seen.entries()).map(([securityId, label]) => ({ securityId, label }));
   }, [postedLedger.view.trialBalance.rows]);
 
-  if (!data) {
+  // Deliberately not gated on the aggregate accounting-workspace payload any more: every value
+  // this screen renders now comes from the posted-ledger hook's own /api/ledger/* requests. Gating
+  // on `data` meant a partial outage of the unrelated workspace request hid a perfectly good
+  // posted book indefinitely.
+  if (postedLedger.view.periodSelector.loading && periodOptions.length === 0) {
     return (
       <Card
         className="panel-surface"
@@ -116,7 +126,7 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
       >
         <CardHeader>
           <CardTitle id="trial-balance-loading-title">Loading Trial Balance</CardTitle>
-          <CardDescription>Waiting for accounting workspace data.</CardDescription>
+          <CardDescription>Reading the fund's ledger periods.</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -387,7 +397,7 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
         </CardHeader>
         <CardContent>
           {journalLoading ? (
-            <p className="text-sm text-muted-foreground">Loading journal entries for this run.</p>
+            <p className="text-sm text-muted-foreground">Loading posted journal entries for this period.</p>
           ) : journalErrorText ? (
             <StatusBanner role="alert" tone="warning" title="Journal lineage unavailable" detail={journalErrorText} />
           ) : journalEvidence.hasRows ? (

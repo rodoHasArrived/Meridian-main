@@ -623,7 +623,7 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
         ) : null}
       </TabPanel>
       <TabPanel>
-        {view === "trial-balance" ? <TrialBalanceScreen data={data} /> : null}
+        {view === "trial-balance" ? <TrialBalanceScreen /> : null}
       </TabPanel>
     </Tabs>
   );

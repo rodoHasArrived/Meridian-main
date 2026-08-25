@@ -438,7 +438,7 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         var defaultPeriodId = PostedLedgerProjection.ResolveDefaultPeriodId(periods);
         if (defaultPeriodId is null)
         {
-            StatusText = $"{SelectedBookLabel} has no ledger periods yet.";
+            StatusText = $"No ledger periods exist yet for {SelectedBookLabel}. Create a period to start the governed book.";
             return;
         }
 
@@ -477,6 +477,15 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         PeriodNotice = string.Empty;
         TrialBalanceErrorText = string.Empty;
         PnlErrorText = string.Empty;
+        // The label above already reads as the new period, and the grid and metrics are always
+        // bound, so the outgoing period's figures must go before the requests start — otherwise
+        // they are presented as the new period for the whole load, and forever if it hangs.
+        TrialBalance.Clear();
+        PnlMetrics.Clear();
+        Bases.Clear();
+        _postedLines = [];
+        BalanceSummaryText = "Trial balance not loaded.";
+        IsOutOfBalance = false;
 
         if (_client is null)
         {

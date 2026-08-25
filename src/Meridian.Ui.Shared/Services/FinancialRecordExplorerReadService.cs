@@ -1208,7 +1208,8 @@ public sealed partial class FinancialRecordExplorerReadService
                 new("accountId", DisplayDimension(line.Dimensions?.AccountId), line.Dimensions?.AccountId ?? string.Empty),
                 new("source", ledger.LedgerReference)
             ],
-            detail);
+            detail,
+            SourceRunId: run.RunId);
     }
 
     private static void AddDimensionFilters(

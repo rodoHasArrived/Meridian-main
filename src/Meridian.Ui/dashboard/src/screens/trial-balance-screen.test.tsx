@@ -4,7 +4,6 @@ import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type {
-  AccountingWorkspaceResponse,
   LedgerPeriod,
   LedgerPeriodPnlSummary,
   LedgerPeriodTrialBalanceLine,
@@ -33,29 +32,6 @@ vi.mock("@/lib/ledger-reports-api", () => ({
 
 const PERIOD_ID = "11111111-1111-1111-1111-111111111111";
 const PRIOR_PERIOD_ID = "22222222-2222-2222-2222-222222222222";
-
-const data: AccountingWorkspaceResponse = {
-  metrics: [],
-  reconciliationQueue: [],
-  breakQueue: [],
-  cashFlow: {
-    totalCash: 0,
-    totalLedgerCash: 0,
-    netVariance: 0,
-    totalFinancing: 0,
-    runsWithCashSignals: 0,
-    runsWithCashVariance: 0,
-    tone: "success",
-    summary: "No cash-flow signals."
-  },
-  reporting: {
-    profileCount: 0,
-    recommendedProfiles: [],
-    profiles: [],
-    reportPackTargets: [],
-    summary: "No reporting profiles."
-  }
-};
 
 function makePeriod(overrides: Partial<LedgerPeriod> = {}): LedgerPeriod {
   return {
@@ -121,7 +97,10 @@ const postedEntries: LedgerPostedJournalEntry[] = [
     totalDebits: 500,
     totalCredits: 500,
     isBalanced: true,
-    lines: [{}, {}]
+    lines: [
+      { entryId: "e-1", journalEntryId: "je-1", timestamp: "2026-06-30T00:00:00Z", accountName: "Cash", accountType: "Asset", debit: 500, credit: 0, description: "Sweep in" },
+      { entryId: "e-2", journalEntryId: "je-1", timestamp: "2026-06-30T00:00:00Z", accountName: "Suspense", accountType: "Asset", debit: 0, credit: 500, description: "Sweep out" }
+    ]
   }
 ];
 
@@ -155,7 +134,7 @@ function primeHappyPath(lines: LedgerPeriodTrialBalanceLine[] = postedLines) {
 }
 
 async function renderTrialBalanceScreen(initialEntry = "/accounting/ledger?view=trial-balance") {
-  const result = renderWithRouter(<TrialBalanceScreen data={data} />, { initialEntries: [initialEntry] });
+  const result = renderWithRouter(<TrialBalanceScreen />, { initialEntries: [initialEntry] });
   await waitForAsyncEffects();
   return result;
 }
@@ -165,12 +144,16 @@ beforeEach(() => {
 });
 
 describe("TrialBalanceScreen", () => {
-  it("renders a loading state while accounting workspace data is unavailable", async () => {
+  it("renders the posted book even when the accounting workspace payload is absent", async () => {
+    // The screen's figures all come from its own /api/ledger/* requests now. It used to blank
+    // itself whenever the unrelated aggregate workspace payload was null, which hid a perfectly
+    // good posted book during a partial outage of a request it no longer depends on.
     primeHappyPath();
-    renderWithRouter(<TrialBalanceScreen data={null} />, { initialEntries: ["/accounting/ledger?view=trial-balance"] });
+    renderWithRouter(<TrialBalanceScreen />, { initialEntries: ["/accounting/ledger?view=trial-balance"] });
     await waitForAsyncEffects();
 
-    expect(screen.getByRole("status", { name: "Loading Trial Balance" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Trial Balance" })).toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "Loading Trial Balance" })).not.toBeInTheDocument();
   });
 
   it("explains how to start the governed book when no ledger period exists", async () => {
