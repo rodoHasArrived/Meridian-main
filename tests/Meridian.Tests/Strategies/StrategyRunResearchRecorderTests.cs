@@ -204,4 +204,22 @@ public sealed class StrategyRunResearchRecorderTests
 
         await act.Should().ThrowAsync<OperationCanceledException>();
     }
+
+    [Fact]
+    public async Task RecordAsync_DerivesRunDurationFromElapsedTime()
+    {
+        var recorder = CreateRecorder(out var store);
+        var elapsed = TimeSpan.FromMinutes(7);
+        var result = Result() with { ElapsedTime = elapsed };
+
+        var runId = await recorder.RecordAsync(new ResearchRunDescriptor("strat-1", "Momentum"), result);
+
+        runId.Should().NotBeNull();
+        var recorded = await store.GetRunByIdAsync(runId!);
+        recorded.Should().NotBeNull();
+
+        // Recording happens after the engine finishes, so without deriving the start from the
+        // run's own elapsed time a seven-minute backtest is retained as near-instantaneous.
+        (recorded!.EndedAt - recorded.StartedAt).Should().BeCloseTo(elapsed, TimeSpan.FromSeconds(5));
+    }
 }

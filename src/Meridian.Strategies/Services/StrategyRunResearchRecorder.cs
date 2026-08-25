@@ -1,4 +1,5 @@
 using Meridian.Backtesting.Sdk;
+using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Storage;
 using Microsoft.Extensions.Logging;
@@ -6,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace Meridian.Strategies.Services;
 
 /// <summary>
-/// Records research-originated backtests into <see cref="StrategyRunStore"/> so that a run produced
+/// Records research-originated backtests into the configured <see cref="IStrategyRepository"/> so a run produced
 /// in a scripting surface carries the same lineage as one launched from the Studio.
 /// </summary>
 /// <remarks>
@@ -22,7 +23,7 @@ namespace Meridian.Strategies.Services;
 /// </para>
 /// </remarks>
 public sealed class StrategyRunResearchRecorder(
-    StrategyRunStore store,
+    IStrategyRepository store,
     ILogger<StrategyRunResearchRecorder> logger) : IResearchRunRecorder
 {
     /// <inheritdoc />
@@ -68,7 +69,16 @@ public sealed class StrategyRunResearchRecorder(
 
         try
         {
-            await store.RecordRunAsync(entry.Complete(result), ct).ConfigureAwait(false);
+            // The engine has already finished by the time the host records it, so Start/Complete
+            // would otherwise stamp a multi-minute backtest as near-zero duration and sort it by
+            // persistence time. Derive the real start from the run's own elapsed time.
+            var completed = entry.Complete(result);
+            var startedAt = completed.EndedAt is { } endedAt && result.ElapsedTime > TimeSpan.Zero
+                ? endedAt - result.ElapsedTime
+                : completed.StartedAt;
+            completed = completed with { StartedAt = startedAt };
+
+            await store.RecordRunAsync(completed, ct).ConfigureAwait(false);
             // Preserve raw lineage in storage; sanitize caller-controlled metadata only at the log boundary.
             logger.LogInformation(
                 "Recorded research backtest {RunId} for strategy {StrategyId} (correlation {CorrelationId})",
