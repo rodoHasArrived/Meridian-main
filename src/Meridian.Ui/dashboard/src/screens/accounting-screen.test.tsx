@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
+import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
@@ -39,6 +40,12 @@ import type {
   SessionInfo
 } from "@/types";
 import { requireFirst, requirePresent } from "@/test/fixtures";
+
+vi.mock("@/lib/ledger-reports-api", () => ({
+  getLedgerPeriods: vi.fn().mockResolvedValue([]),
+  getLedgerPeriodTrialBalance: vi.fn().mockResolvedValue([]),
+  getLedgerPeriodPnlSummary: vi.fn().mockResolvedValue(null)
+}));
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -196,9 +203,6 @@ vi.mock("@/lib/api", async () => {
     reviewReconciliationBreak: vi.fn(),
     runAnalysisExport: vi.fn(),
     getRunTrialBalance: vi.fn().mockResolvedValue([]),
-    getLedgerPeriods: vi.fn().mockResolvedValue([]),
-    getLedgerPeriodTrialBalance: vi.fn().mockResolvedValue([]),
-    getLedgerPeriodPnlSummary: vi.fn().mockResolvedValue(null),
     getAccountingSystemProviders: vi.fn().mockResolvedValue([]),
     previewAccountingSystemImport: vi.fn(),
     getLatestAccountingSystemImport: vi.fn().mockResolvedValue(null),
@@ -4692,7 +4696,7 @@ describe("AccountingScreen", () => {
   });
 
   it("reads the posted journal for the Accounting trial balance and labels the run explorer as a simulation artifact", async () => {
-    vi.mocked(api.getLedgerPeriods).mockResolvedValueOnce([
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValueOnce([
       {
         periodId: "11111111-1111-1111-1111-111111111111",
         ledgerBookId: "22222222-2222-2222-2222-222222222222",
@@ -4707,7 +4711,7 @@ describe("AccountingScreen", () => {
         version: 1
       }
     ]);
-    vi.mocked(api.getLedgerPeriodTrialBalance).mockResolvedValueOnce([
+    vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValueOnce([
       {
         accountName: "Cash - Operating",
         accountType: "Asset",
@@ -4720,7 +4724,7 @@ describe("AccountingScreen", () => {
         accountingBasis: "Primary"
       }
     ]);
-    vi.mocked(api.getLedgerPeriodPnlSummary).mockResolvedValueOnce({
+    vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockResolvedValueOnce({
       periodId: "11111111-1111-1111-1111-111111111111",
       ledgerBookId: "22222222-2222-2222-2222-222222222222",
       fiscalYear: 2026,
@@ -4745,9 +4749,9 @@ describe("AccountingScreen", () => {
       name: "Primary trial balance lines for the posted journal for period July 2026"
     });
     expect(postedTable).toBeInTheDocument();
-    expect(api.getLedgerPeriods).toHaveBeenCalled();
-    expect(api.getLedgerPeriodTrialBalance).toHaveBeenCalledWith("11111111-1111-1111-1111-111111111111");
-    expect(api.getLedgerPeriodPnlSummary).toHaveBeenCalledWith("11111111-1111-1111-1111-111111111111");
+    expect(ledgerReportsApi.getLedgerPeriods).toHaveBeenCalled();
+    expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith("11111111-1111-1111-1111-111111111111");
+    expect(ledgerReportsApi.getLedgerPeriodPnlSummary).toHaveBeenCalledWith("11111111-1111-1111-1111-111111111111");
     expect(screen.getByText("Source: posted journal")).toBeInTheDocument();
     expect(screen.getByText("Signed off")).toBeInTheDocument();
 

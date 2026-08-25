@@ -5136,8 +5136,7 @@ export function buildAccountingTrialBalanceViewState({
   accountFilter = "",
   loading,
   error,
-  scopeLabel = null,
-  detailPanelId = "trial-balance-account-detail"
+  scopeLabel = null
 }: {
   runId: string | null;
   rows: LedgerTrialBalanceLine[];
@@ -5148,8 +5147,8 @@ export function buildAccountingTrialBalanceViewState({
   error: string | ApiErrorDisplay | null;
   /** Overrides the scope wording in labels; defaults to the strategy-run phrasing. */
   scopeLabel?: string | null;
-  detailPanelId?: string;
 }): AccountingTrialBalanceViewState {
+  const detailPanelId = "trial-balance-account-detail";
   const runLabel = scopeLabel?.trim() || (runId ? "the selected ledger run" : "the current ledger selection");
   const resolvedBasis = normalizeAccountingBasis(selectedBasis);
   const normalizedAccountFilter = normalizeLedgerAccountFilter(accountFilter);
@@ -5726,11 +5725,7 @@ function normalizeTrialBalanceLine(line: LedgerTrialBalanceLine): BasisAwareLedg
   };
 }
 
-export function buildGovernanceTrialBalanceViewState(
-  options: Parameters<typeof buildAccountingTrialBalanceViewState>[0]
-): AccountingTrialBalanceViewState {
-  return buildAccountingTrialBalanceViewState(options);
-}
+export const buildGovernanceTrialBalanceViewState = buildAccountingTrialBalanceViewState;
 
 function normalizeAccountingBasis(value: AccountingBasisKind | null | undefined): AccountingBasisKind {
   return ACCOUNTING_BASIS_OPTIONS.some((option) => option.id === value)

@@ -46,8 +46,7 @@ import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization
 import { accountingToolingBadgeVariant, accountingToolingBorderClass, cashFlowBadgeClass, cashFlowTextClass, reportingBadgeClass } from "@/screens/accounting-screen.styles";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import { CapitalAccountWorkbenchPanel } from "@/screens/accounting-screen.capital-account-workbench-panel";
-import { AccountingPostedLedgerSection } from "@/screens/accounting-screen.posted-ledger-panel";
-import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
+import { AccountingPostedLedgerSection, LEDGER_EXPLORER_SAVED_VIEWS } from "@/screens/accounting-screen.posted-ledger-panel";
 import { CorporateActionsPanel } from "@/screens/accounting-screen.corporate-actions-panel";
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
 import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels";
@@ -1648,7 +1647,6 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
   const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
   const reconciliation = useAccountingReconciliationViewModel(data, workstream, undefined, accountingSystemReconciliation, operatorIdentity);
-  const postedLedger = useAccountingPostedLedgerViewModel(workstream);
   const selectedBreakPrimaryFields = reconciliation.selectedDetail?.fields.filter((field) => [
     "Variance",
     "Owner",
@@ -2893,9 +2891,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         </section>
       ) : null}
 
-      {sectionVisibility.showLedgerExplorer ? (
-        <AccountingPostedLedgerSection viewModel={postedLedger} />
-      ) : null}
+      {sectionVisibility.showLedgerExplorer ? <AccountingPostedLedgerSection workstream={workstream} /> : null}
 
       {sectionVisibility.showLedgerExplorer && selectedReconciliation ? (
         <FinancialRecordExplorerShell
@@ -2910,24 +2906,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
             { id: "run", label: "Reconciliation run", value: selectedReconciliation.strategyName },
             { id: "run-id", label: "Run ID", value: selectedReconciliation.runId }
           ]}
-          savedViews={[
-            {
-              id: "controller-review",
-              label: "Controller review",
-              detail: "Default ledger explorer view for trial balance, proof drawer, approvals, and report usage.",
-              active: true
-            },
-            {
-              id: "exceptions",
-              label: "Exceptions",
-              detail: "Focuses the ledger grid on unreconciled accounts, blockers, and missing evidence."
-            },
-            {
-              id: "report-usage",
-              label: "Report usage",
-              detail: "Keeps journal, ledger line, and report export proof paths visible together."
-            }
-          ]}
+          savedViews={LEDGER_EXPLORER_SAVED_VIEWS}
           summaryItems={[
             { id: "rows", label: "Rows", value: reconciliation.trialBalanceView.filteredRowCountLabel },
             { id: "basis", label: "Basis", value: reconciliation.trialBalanceView.basisOptions.find((option) => option.isSelected)?.label ?? "Primary" },

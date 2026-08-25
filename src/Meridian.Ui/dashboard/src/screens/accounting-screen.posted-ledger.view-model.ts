@@ -3,7 +3,7 @@ import {
   getLedgerPeriodPnlSummary,
   getLedgerPeriods,
   getLedgerPeriodTrialBalance
-} from "@/lib/api";
+} from "@/lib/ledger-reports-api";
 import { describeApiError, isApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import type {
   AccountingBasisKind,
@@ -304,20 +304,23 @@ export function buildAccountingPostedLedgerViewState({
     ? `the posted journal for period ${periodLabel}`
     : "the posted journal";
 
+  const base = buildAccountingTrialBalanceViewState({
+    runId: null,
+    rows: trialBalanceRows,
+    selectedRowId,
+    selectedBasis,
+    accountFilter,
+    loading: trialBalanceLoading,
+    error: trialBalanceError,
+    scopeLabel
+  });
   const trialBalance: AccountingTrialBalanceViewState = {
-    ...buildAccountingTrialBalanceViewState({
-      runId: null,
-      rows: trialBalanceRows,
-      selectedRowId,
-      selectedBasis,
-      accountFilter,
-      loading: trialBalanceLoading,
-      error: trialBalanceError,
-      scopeLabel,
-      detailPanelId: POSTED_LEDGER_DETAIL_PANEL_ID
-    }),
-    // Distinct copy from the strategy-run explorer's panel so the two surfaces
-    // never read as the same book (and stay independently addressable in tests).
+    ...base,
+    // Distinct copy and a distinct detail-panel id from the strategy-run explorer's
+    // panel so the two surfaces never read as the same book (and both can render
+    // on the ledger workstream without colliding aria ids or test queries).
+    detailPanelId: POSTED_LEDGER_DETAIL_PANEL_ID,
+    rows: base.rows.map((row) => ({ ...row, detailPanelId: POSTED_LEDGER_DETAIL_PANEL_ID })),
     emptyTitle: "No posted trial balance lines",
     accountFilterLabel: "Filter posted-journal GL accounts",
     detailEmptyAriaLabel: "No posted-journal trial-balance account selected"

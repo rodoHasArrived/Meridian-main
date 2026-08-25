@@ -9,13 +9,40 @@ import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "
 import { TrialBalanceTable } from "@/components/accounting";
 import { cn } from "@/lib/utils";
 import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
-import type { AccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
+import type { FinancialRecordExplorerSavedView } from "@/components/meridian/financial-record-explorer";
+import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
+import type { AccountingWorkstream } from "@/screens/accounting-screen.task-mode-view-model";
+
+/**
+ * Static saved views for the strategy-run ledger explorer that renders below the
+ * posted-journal panel on the ledger workstream. Hosted here rather than inline in
+ * accounting-screen.tsx per the file-size ratchet.
+ */
+export const LEDGER_EXPLORER_SAVED_VIEWS: FinancialRecordExplorerSavedView[] = [
+  {
+    id: "controller-review",
+    label: "Controller review",
+    detail: "Default ledger explorer view for trial balance, proof drawer, approvals, and report usage.",
+    active: true
+  },
+  {
+    id: "exceptions",
+    label: "Exceptions",
+    detail: "Focuses the ledger grid on unreconciled accounts, blockers, and missing evidence."
+  },
+  {
+    id: "report-usage",
+    label: "Report usage",
+    detail: "Keeps journal, ledger line, and report export proof paths visible together."
+  }
+];
 
 /**
  * The Accounting workstream's primary ledger surface: trial balance and P&L read
  * from the posted journal (the governed book of record), scoped by ledger period.
  */
-export function AccountingPostedLedgerSection({ viewModel }: { viewModel: AccountingPostedLedgerViewModel }) {
+export function AccountingPostedLedgerSection({ workstream }: { workstream: AccountingWorkstream }) {
+  const viewModel = useAccountingPostedLedgerViewModel(workstream);
   const { view } = viewModel;
 
   return (
