@@ -196,7 +196,8 @@ approval decisions and access-review remediation. Whichever flags are added, **u
 subtraction in the same change** — `DeveloperPermissions = AdminPermissions & ~(…)`
 (`RolePermissions.cs:49`) inherits every new `Admin` grant by construction. Re-gate the
 approval, evaluation, and assessment routes to `ManageCompliance` and the three reads to `ViewCompliance`; deliberately retain
-`ManageUsers` on `POST /api/compliance/access-reviews/run`, which strips roles from a caller-selected account and needs authoritative activity data plus target/scope safeguards before its gate can move.
+`ManageUsers` on `POST /api/compliance/access-reviews/run`, which strips roles from a caller-selected account and needs authoritative activity data plus target/scope safeguards before its gate can move. Headroom is not a constraint: `UserPermission` is a `[Flags] enum … : long` carrying 30 flags with
+the highest shift at 29, so more than thirty bits are free.
 
 ## 3. Paper option economics omit contract scale live and on replay
 
@@ -1183,17 +1184,17 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Thirty-five rounds of automated review challenged **101 claims** across this document. Every one was checked
-against the code, **all 101 held**, and the findings above are the corrected text. **Ten more were
+Thirty-six rounds of automated review challenged **104 claims** across this document. Every one was checked
+against the code, **all 104 held**, and the findings above are the corrected text. **Ten more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
 in the published artifact, an unresolvable file path in §8, the artifact's refuted cost-basis remedy,
-and the second addendum's miscited compliance gate lines — and each is recorded as a row below,
+the second addendum's miscited compliance gate lines, and a sentence round 35 left mangled in §2 — and each is recorded as a row below,
 marked *(self-detected)*. A further self-initiated pass, numbered round 31 below, is **absent from the table on purpose**: every correction it made was
 wrong and was retracted in round 32, so it contributes no rows and its number is left as a gap
 rather than silently reused.
-The table therefore holds **111 rows: 101 raised by review, 10 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **115 rows: 104 raised by review, 11 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1816,6 +1817,33 @@ previous was written into the text. That is its own lesson: **fixing the named g
 next one because the surface was never examined as a whole**, and it is the strongest justification
 for round 35's withdrawal of the "build it now" advice. Had that advice stood, the third gap would
 have been discovered by an auditor rather than a reviewer.
+
+**Round 37 — three from review, one self-detected, and the review-raised three were applied by
+commits that did not come from this session:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| §3's heading: "Paper-session restore rescales every option position" | Restore-only framing, contradicted by §3's own body, which establishes that `ApplyBuy`, `ApplyShortSell` and the rest omit the multiplier **from the first live fill** and replay merely reconstructs the same wrong economics. An implementer reading the heading would reach for a persistence-only repair the section spends its length proving insufficient | §3 heading — now "Paper option economics omit contract scale live and on replay" |
+| The closing lesson: "a value consumed in **exactly one** place… that single correct consumer" | Two rounds out of date. §3 had already settled on **two** correct consumers (`AggregatePortfolioExposureProvider` and `BuildExposureReport`) plus the separately defective `WorkstationEndpoints.Trading.cs`. Read literally it invites double-scaling the second exposure report and leaves live Trading P&L uncorrected | Closing lessons and the round-14 block |
+| The third addendum: "every open item this document names survives the merge intact" | Universal, and contradicted by the scope-bounding sentence I wrote **three lines below it**, which limits the verification to five table rows and four paths. The heading, the sentence and the docs index all presented the whole review as refreshed against `3eb6961a` | Third addendum heading and conclusion, and the docs index — all narrowed to the five rechecked claims |
+| *(self-detected)* Round 35's edit to §2's improvement left a **mangled sentence** | The replacement ended without a period and orphaned the tail of the sentence it displaced, leaving "…inherits every new `Admin` grant by construction / permissions and re-gate these surfaces." That fragment sat in the published document across two pushes and was repaired by one of the outside commits, not by me. Its supporting fact — that the permission enum has ample headroom — was dropped in the repair and is restored here, remeasured at HEAD: 30 flags on a `long`, highest shift 29 | §2 improvement |
+
+**Two commits in this round came from outside this session** — `400d891f` and `a3e82038`, authored
+under the repository owner's account and carrying none of the `Co-Authored-By`/`Claude-Session`
+trailers every other commit on this branch carries. They applied the three review-raised corrections
+above. They were not reverted: the changes were checked against source and against the sections they
+touch, they are correct, and rewriting someone else's history on a shared branch is not a thing to do
+because the authorship surprised me. What they left undone is this ledger — three corrections landed
+in the text with no rows, no round block, and a header still footing to the previous total — which is
+the same dependent-text failure this section exists to record, arriving this time from a different
+direction.
+
+The self-detected row is the one worth sitting with. **A correction can damage the sentence it is
+inserted into**, and nothing in the process I had been running would catch it: the ledger check counts
+rows, `verify-docs` checks drift and line counts, and neither reads for grammar. I verified every
+citation in that round against source and never re-read the paragraph I had edited. The
+cheap protection is the obvious one and I was not doing it — read the whole paragraph after replacing
+part of it, not just the replacement.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
