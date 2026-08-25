@@ -32,7 +32,14 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     live status stays in the roadmap registry. `W10-MARK-001` and `W10-SEAM-001` are pulled forward
     ahead of the W9 close-out because they serve the release gate
 - Treat the following as dated working design inputs, not canonical status sources:
-  - [Adversarial Program Review (2026-08-24)](adversarial-program-review-2026-08-24.md) — latest
+  - [Adversarial Program Review (2026-08-25)](adversarial-program-review-2026-08-25.md) — latest
+    independent whole-program adverse review; re-tests the 2026-08-24 open items against the 39
+    commits landed since, then extends into cross-catalog consistency between the authorization
+    model, the shared API surface, and the client surface — finding the governed trial balance
+    and P&L unreachable from either client while the screen that carries their name reads the
+    strategy-run ledger and denies the `FundAccountant` and `Controller` roles, and measuring 43%
+    of route constants as reachable from neither operator client
+  - [Adversarial Program Review (2026-08-24)](adversarial-program-review-2026-08-24.md) —
     independent whole-program adverse review; re-tests every headline finding of the 2026-08-18
     pass against the 218 commits landed since, verifies the three built-but-dead flagship fixes
     and the authorization burn-down as genuinely wired, documents the instance-vs-class
