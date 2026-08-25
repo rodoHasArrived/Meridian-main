@@ -35,10 +35,13 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
   - [Adversarial Program Review (2026-08-25)](adversarial-program-review-2026-08-25.md) — latest
     independent whole-program adverse review; re-tests the 2026-08-24 open items against the 39
     commits landed since, then extends into cross-catalog consistency between the authorization
-    model, the shared API surface, and the client surface — finding the governed trial balance
-    and P&L unreachable from either client while the screen that carries their name reads the
-    strategy-run ledger and denies the `FundAccountant` and `Controller` roles, and measuring 43%
-    of route constants as reachable from neither operator client
+    model, the shared API surface, and the client surface. Findings are anchored at `e232ece1`;
+    the document's addendum records that PR #2824 has since wired the posted-journal trial balance
+    and P&L into `AccountingPostedLedgerSection`, so **that half is no longer current state**. What
+    remains open is the run-scoped panel still bound on `ViewStrategies` (which `FundAccountant` and
+    `Controller` do not hold), the `ManageDirectLending` permission overload the new panel depends
+    on, the option contract multiplier that never reaches portfolio economics, and 43% of route
+    constants reachable from neither operator client
   - [Adversarial Program Review (2026-08-24)](adversarial-program-review-2026-08-24.md) —
     independent whole-program adverse review; re-tests every headline finding of the 2026-08-18
     pass against the 218 commits landed since, verifies the three built-but-dead flagship fixes

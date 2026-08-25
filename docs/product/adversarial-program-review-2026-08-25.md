@@ -153,47 +153,47 @@ room. This is a small, mechanical change that removes a real blocker to any mult
 ## 3. Paper-session restore rescales every option position
 
 The 2026-08-24 review flagged the missing `ContractMultiplier` on the durable fill record. It is
-still open, and the consequence is larger than "replay is wrong": it corrupts **restore**.
+still open — and tracing it end to end shows the defect is larger than "the durable record drops it".
+**The multiplier never reaches portfolio economics on any path, live or restored.**
 
-`PaperTradingPortfolio.ApplyFill` carries the correct signature —
-`ApplyFill(accountId, report, ownerAccountId, contractMultiplier = 1m, usesFaceValuePercentageOfPar = false)`
-(`PaperTradingPortfolio.cs:443-448`). Exactly one call site in the estate passes real values:
-`OrderManagementSystem.cs:1534`, which reads `_orderContractMultipliers`.
+`PaperTradingPortfolio.ApplyFill` carries the multiplier
+(`PaperTradingPortfolio.cs:443-448`), and exactly one call site passes a real value:
+`OrderManagementSystem.cs:1534`, reading `_orderContractMultipliers`. But follow where that value
+goes. `ApplyFillToAccount` forwards it to a single destination —
+`pos.AttributeFill(ownerAccountId, signedQty, contractMultiplier)` (`:639`) — and `AttributeFill`
+only records it as metadata and tracks per-owner quantities (`:1289-1300`). The economic paths
+receive price and quantity alone: `ApplyBuy` computes `var notional = qty * price` (`:620`), and
+cost basis, cash, margin borrow, and `pos.MarketPrice = price` all follow from that. No multiplier
+enters any of them.
 
-All three call sites inside `PaperSessionPersistenceService` take the defaults:
+So a paper session holding 10 SPY calls at $2.50 is booked at **$25 of exposure from the very first
+live fill**, not on restore. `ContractMultiplier` is attribution metadata that looks like an economic
+input and is never used as one.
 
-| Line | Path | Multiplier used |
-| --- | --- | --- |
-| `:159` | **session restore on startup** | `1m` |
-| `:820` | `ReplaySessionAsync` | `1m` |
-| `:1190` | candidate portfolio projection | `1m` |
+That reframes the persistence gap rather than erasing it. All three
+`PaperSessionPersistenceService` call sites — `:159` (session restore on startup), `:820`
+(`ReplaySessionAsync`), `:1190` (candidate projection) — still take the `1m` default, so the
+restored book additionally loses the attribution metadata and the per-owner split that depends on
+it, and `VerifyReplayAsync` (`:835`) compares two books that agree only because both are wrong the
+same way. A continuity proof that passes because live and replay share a defect is not a proof.
 
-So a paper session holding 10 SPY calls filled at $2.50 restores as $25 of exposure instead of
-$2,500. `VerifyReplayAsync` (`PaperSessionPersistenceService.cs:835`) — the operator's continuity
-proof, and the feature whose whole purpose is to demonstrate that sessions survive restarts —
-compares live state against replay state. For an options session it either reports a false mismatch,
-or restore has already rescaled live state so both agree and it falsely passes. Neither outcome is a
-proof.
-
-**Scope: options only.** Fixed income is *not* affected, and the contrast is the point.
+**Scope: options only.** Fixed income is *not* affected, and the contrast is the whole lesson.
 `ExecutionReport` carries `UsesFaceValuePercentageOfPar` as a first-class persisted field
 (`Models.cs:186`), `CloneExecutionReport` preserves it, and `ApplyFill` reads it off the record
-regardless of the parameter — `var faceValueSizing = usesFaceValuePercentageOfPar ||
-report.UsesFaceValuePercentageOfPar` (`PaperTradingPortfolio.cs:469`). Percent-of-par therefore
-survives every restore path, because the convention lives **on the record** instead of in an
-argument. The contract multiplier has no such field, so it survives only where a caller happens to
-pass it. One convention was modeled; the other was not — and only the unmodeled one breaks.
+regardless of the parameter (`PaperTradingPortfolio.cs:469`) — then applies it to the price before
+any cash or cost-basis math runs. Percent-of-par is modeled *and consumed*. The contract multiplier
+is neither: it has no field on the record, and even when passed it is routed to metadata instead of
+into the arithmetic.
 
-The data needed is already on the record: `ExecutionReport.OptionContract.Multiplier`
-(`Models.cs:119`) is present on every fill the persistence layer clones, and
-`OrderManagementSystem.RiskOutcomes.cs:324` already contains the parsing logic
-(`ResolveContractMultiplier`, defaulting options to `100m`). The fix is to call it at the three
-restore sites, or better, to give `ContractMultiplier` the same first-class treatment
-`UsesFaceValuePercentageOfPar` already has.
-
-**Improvement.** Promote both to `ExecutionReport` fields (JSON-ignored when default, preserving
-existing content hashes — the pattern `ChildOrders` already uses at `Models.cs:170-174`). A durable
-record that cannot reconstruct its own economics is not a durable record.
+**Improvement — two changes, and the second matters more.** First, apply the multiplier in the
+economic paths so a contract's notional is `qty × price × multiplier` for cash, cost basis, margin,
+and market value; without this, any persistence fix leaves live option economics wrong. Second, give
+`ContractMultiplier` the first-class record treatment `UsesFaceValuePercentageOfPar` already has
+(JSON-ignored when default, preserving existing content hashes — the `ChildOrders` pattern at
+`Models.cs:170-174`), so no reconstruction path can drop it. `ResolveContractMultiplier`
+(`OrderManagementSystem.RiskOutcomes.cs:324`) already derives the value; the gap is that nothing
+downstream multiplies by it. A field that is carried but never used is worse than a missing one — it
+reads, to every subsequent reviewer, as though the concern were already handled.
 
 ## 4. The percent-of-par fix landed; the contract multiplier one parameter away did not
 
@@ -288,12 +288,24 @@ Largest dark groups (routes unreachable from either client):
 | `/api/backfill` | 20 | — |
 | `/api/fund-structure` | 17 | — |
 | `/api/lean` | 16 | — |
-| `/api/compliance` | 8 | access reviews, approval requests and decisions, action evaluation, audit extract, control attestation |
 
-Two of these deserve naming on their own. The **compliance** surface
-(`ComplianceEndpoints.cs:15-117`) is complete, permission-guarded, and backed by
-`ImmutableAuditLogService` — an entire governance capability with no operator path, in a product
-whose promise is governed proof. The **data-quality** surface is different in kind: the aggregate
+**One inventory, stated precisely.** The 862 constants are the denominator, and every group above is
+counted inside it. The **compliance** surface is *not*: its eight endpoints are registered as string
+literals in `ComplianceEndpoints.cs:15-117` and never enter `UiApiRoutes.cs` or the generated
+mirror, so they are out-of-catalog and must be reported separately rather than folded into the 43%.
+Their absence from the catalog is itself a finding — a route that never becomes a constant is
+invisible to the drift gate that keeps the mirror honest, so no tooling can notice it has no client.
+
+Counted on its own terms, the compliance surface is a complete, permission-guarded governance
+capability with no operator path, in a product whose promise is governed proof. Its **evidence
+durability is uneven**, and any activation work has to fix that first: only `actions/evaluate`,
+`audit/extract`, and `controls/attestation` touch `ImmutableAuditLogService`
+(`ComplianceEndpoints.cs:52,66,70`); approval requests and decisions live in
+`FileComplianceApprovalStore`, a JSON snapshot rewritten in place (`ComplianceApprovalStore.cs:247-250`)
+— durable but mutable, not append-only; and access reviews are held in a plain
+`List<AccessReviewRecord>` (`AccessReviewService.cs:94-95`) that is empty after restart. Wiring a UI
+onto the approval and access-review routes as they stand would present retention and tamper-evidence
+the storage does not provide. The **data-quality** surface is different in kind: the aggregate
 `/api/quality/dashboard` *is* wired — the Data workspace renders its composite health, gap, anomaly,
 and completeness evidence through `data-screen.data-quality.view-model.ts` — while the 31 per-symbol
 and per-dimension drill-downs behind it have no consumer. So the operator can see that a symbol is
@@ -442,10 +454,13 @@ close-management product can tell.
 6. **Put the supported platform in the merge gate.** Add `verify-desktop` to `quality-gate`'s
    `needs`, and promote the bootstrap and role-authorization Integration suites into the required
    lane. (§7)
-7. **Surface the data-quality and compliance evidence that already exists.** 31 quality endpoints and
-   8 compliance endpoints are built, guarded, and invisible. For a product whose promise is "prove the
-   number," these are the proof — and they are the cheapest large value uplift on this list, because
-   the servers are done. (§6)
+7. **Surface the evidence that already exists — after checking each surface can bear the weight.**
+   31 quality drill-downs sit behind a dashboard that is already wired, so those are genuinely
+   cheap: the servers are done and the operator path exists to hang them from. The 8 compliance
+   endpoints are not cheap in the same way — three write to the immutable audit log, approvals live
+   in a rewritable snapshot, and access reviews do not survive restart, so durable retention has to
+   land *before* a UI presents them as governed proof. Register them as route constants too, so the
+   drift gate can see them. (§6)
 8. **Stop the UI lying by omission.** `RegionErrorState` on the reconciliation queue, break detail,
    and close cockpit; SSE fan-out for break/approval/inbox mutations instead of 60s polls. (§8)
 9. **Close the small governed gaps.** Wire period reopen; make `MarketTradeUpdate.Source` required;
@@ -481,9 +496,11 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-An automated reviewer challenged seven claims in the first draft of this document. All seven were
-checked against the code, **all seven held**, and the findings above are the corrected text. Recorded
-here because a review that demands evidence discipline owes the same discipline about its own errors:
+Two rounds of automated review challenged eleven claims across this document. Every one was checked
+against the code, **all eleven held**, and the findings above are the corrected text. Recorded here
+because a review that demands evidence discipline owes the same discipline about its own errors.
+
+**Round 1 — seven claims:**
 
 | Claim as first written | Why it was wrong | Corrected in |
 | --- | --- | --- |
@@ -495,10 +512,23 @@ here because a review that demands evidence discipline owes the same discipline 
 | "`windows-desktop-build.yml` runs no `dotnet test`" | It runs `validate-wpf-dev.ps1` without `-BuildOnly`, which does run the WPF and supervisor suites. The defect is gating, not coverage | §7 |
 | "A truncated write means silent total state loss" | Saves go through `AtomicFileWriter.WriteAsync`, which prevents exactly that. The fail-quiet loader is still real; the scenario was not | §9 |
 
-The core findings survive in narrowed form; two — the role-access table and the fixed-income
-claim — were materially wrong as first stated and are now rewritten rather than softened. The method
-lesson generalizes: **a permission gate read in isolation predicts the wrong access**, which is the
-same intersection error the document accuses the codebase of, committed while describing it.
+**Round 2 — four more, on the corrected text:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "Restore rescales a previously correct $2,500 option position" | The live book was never correct. `ApplyFillToAccount` routes the multiplier only to `AttributeFill` metadata; `ApplyBuy` computes `qty * price` with no multiplier, so option economics are wrong from the first live fill. The proposed persistence-only remedy would not have fixed it | §3 — rewritten, remedy expanded |
+| `/api/compliance` counted among the 862 route constants | Those eight endpoints are string literals never registered in `UiApiRoutes.cs`; including them mixed two inventories and made the 43% non-reproducible | §6 |
+| Compliance surface "backed by `ImmutableAuditLogService`" | Only three of eight routes touch it; approvals use a rewritable JSON snapshot and access reviews an in-memory list emptied on restart | §6, improvement #7 |
+| Index entry describing the posted trial balance as unreachable | True at `e232ece1`, stale after PR #2824 merged into this branch | `docs/product/README.md` |
+
+The core findings survive, several in sharper form. Three were materially wrong as first stated — the
+role-access table, the fixed-income claim, and the multiplier's blast radius — and are rewritten
+rather than softened; the multiplier correction made the defect *larger* and the original remedy
+insufficient. Two method lessons generalize. **A permission gate read in isolation predicts the wrong
+access** — the same intersection error this document accuses the codebase of, committed while
+describing it. And **a value that is carried but never consumed reads as handled**: `ContractMultiplier`
+is threaded through three layers and multiplied by nothing, which is why four consecutive reviews,
+this one included, mistook plumbing for correctness.
 
 ## Addendum — remediation landed while this review was in flight
 
