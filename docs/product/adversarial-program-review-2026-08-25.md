@@ -812,9 +812,16 @@ change outside its filters that breaks WPF is compiled by nothing at all.
 The .NET lane additionally filters `--filter "Category!=Integration&Category!=Performance"`
 (`scripts/ci.sh:161`), excluding **70 integration test files** — among them
 `InitialAccountBootstrapEndpointTests`, `AuthEndpointTests`,
-`MutationAuthorizationGuardMiddlewareTests`, and `RoleAuthorizationTests`. The suites that verify the
-first mile and the authorization model are precisely the ones the merge gate does not run — and
-authorization is where §1 and §2 live.
+`MutationAuthorizationGuardMiddlewareTests`, and `RoleAuthorizationTests`. **What is missing is the
+HTTP mile, not the permission model.** `RolePermissionsTests` carries no `Category` trait and sits in
+`Meridian.Tests.Application.Auth`, so the required lane *does* run it and it *does* assert role-to-permission
+grants directly — an earlier version of this paragraph said the gate cannot fail on the authorization
+model, which overstates the gap and would drive duplicate unit coverage instead of the integration
+coverage actually absent. What the gate never exercises is authorization *as an endpoint behaves*:
+first-run bootstrap, login and session, the mutation guard middleware, and role-to-route enforcement.
+That distinction matters here more than most, because §1's defect is invisible to a permission-model
+test by construction — the lockout is a withheld-as-empty payload, and every permission assertion
+passes while it happens.
 
 **Improvement.** *Not* by adding `verify-desktop` to `quality-gate`'s `needs` list — an earlier draft
 of this block said exactly that, and it cannot work: `needs:` resolves only job IDs within one
@@ -942,11 +949,14 @@ close-management product can tell.
 
 1. **Finish reconnecting the accounting lane to its own roles.** PR #2824 already did the first
    half — the posted journal's trial balance and P&L now render in
-   `AccountingPostedLedgerSection`. What remains: retire the run-scoped panel from Accounting (or
-   relabel it a Strategy-run artifact and move it there), so the screen stops showing two books
-   under one name; and re-gate the accounting artifact on a **ledger-specific read permission**
-   (`ViewLedgerReports` from improvement #2), so the roles that own the records stop being served an
-   empty queue in place of their runs. **Do not close it by granting `ViewStrategies`** — that flag
+   `AccountingPostedLedgerSection`. **Both halves of this item have since landed** — the run-scoped
+   explorer moved to `/strategy/run-ledger`, with a comment at `accounting-screen.tsx:2865-2869`
+   recording why, and the ledger reads are gated on `ViewLedgerReports`
+   (`LedgerEndpoints.cs:52,185`) — so what remains is narrower and different: **delete the leftover
+   `AccountDetailScreen` run binding**, and **enforce assigned-fund authorization**, which is the
+   cross-fund exposure improvement #2 describes and the only part of this item that is still a live
+   defect. Do not re-do the two landed halves. The reasoning below is kept because the trap it rules
+   out is still live for anyone re-deriving the gate. **Do not close it by granting `ViewStrategies`** — that flag
    gates eleven endpoint files,
    among them `CoveredCallEndpoints`, `LeanEndpoints`, `QuantLabEndpoints`, `PromotionEndpoints` and
    `StrategyLifecycleEndpoints`, so it would hand both personas covered-call results, Lean
@@ -1042,6 +1052,20 @@ close-management product can tell.
    book while `GrossValue` stays unscaled and a *profitable option sale* drives the subtraction
    negative — turning a silent 1/100 error on the book of record into a hard posting failure.
    The two must move together, and the durable event's persistence and replay contract with them.
+
+   **And scale is not the only thing that event is missing — the journal misclassifies short-side
+   activity today, before any multiplier work.** `TradeExecutedEvent` carries `Side` and no
+   *position effect*: nothing on the record says whether a fill opens or closes a long or a short.
+   `BuildTradeJournal` branches on `Side` first, handling **every** buy at `:604-608` — debit
+   `Securities`, credit `Cash` — before it ever inspects `RealizedPnl`. So a **buy-to-cover never
+   posts its gain or loss at all**, however profitable; the realized result silently disappears from
+   the ledger. In the other direction a **sell-to-open** carries `RealizedPnl == 0`, falls to the
+   final `else`, and credits the long `Securities` account rather than a short payable — the same
+   account a closing sale credits, for an economically opposite event. A fill that crosses zero
+   needs two sets of legs, close then open, and there is no way to express that on the record as it
+   stands. Carry position effect on the durable event, or split journal-ready legs from the
+   portfolio mutation — otherwise the multiplier migration corrects the **amounts** on entries whose
+   **classification** is still wrong, which is the harder error to find later.
    **Do not assert a uniform 1/100 anywhere in that coverage.** An option session's P&L and total
    return are off by exactly the multiplier, but its equity is correct at entry and wrong only in the
    flattering direction on losses, its Sharpe merely drifts, and excess liquidity distorts
@@ -1238,8 +1262,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Thirty-eight rounds of automated review challenged **112 claims** across this document. Every one was checked
-against the code, **all 112 held**, and the findings above are the corrected text. **Twelve more were
+Thirty-nine rounds of automated review challenged **115 claims** across this document. Every one was checked
+against the code, **all 115 held**, and the findings above are the corrected text. **Twelve more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
@@ -1248,7 +1272,7 @@ the second addendum's miscited compliance gate lines, a sentence round 35 left m
 marked *(self-detected)*. A further self-initiated pass, numbered round 31 below, is **absent from the table on purpose**: every correction it made was
 wrong and was retracted in round 32, so it contributes no rows and its number is left as a gap
 rather than silently reused.
-The table therefore holds **124 rows: 112 raised by review, 12 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **127 rows: 115 raised by review, 12 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1951,6 +1975,30 @@ here, for the same reason the unregistered-constant scale was in round 34 — fi
 verb-aware inventory this row is asking for, and a grep would produce a number that only looked like
 one. **A correct principle can arrive with a wrong instance, and upholding it means saying which is
 which.**
+
+**Round 40 — three from review, and the first genuinely new codebase defect in several rounds:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| Improvement #3's checklist, again — scaling `TradeExecutedEvent` is enough to fix the journal | It is not, because the journal is **already misclassifying short-side activity**, before any multiplier work. The event carries `Side` and no *position effect*, and `BuildTradeJournal` branches on `Side` first: **every** buy is handled at `:604-608` before `RealizedPnl` is inspected, so a **buy-to-cover never posts its gain or loss**; and a **sell-to-open** carries `RealizedPnl == 0`, falls to the final `else`, and credits the long `Securities` account rather than a short payable. A cross-zero fill needs close-then-open legs the record cannot express | Improvement #3 — position effect added as a requirement beside scale |
+| §7: "the suites that verify the first mile and **the authorization model** are precisely the ones the merge gate does not run" | Overstated. `RolePermissionsTests` carries no `Category` trait and sits in `Meridian.Tests.Application.Auth`, so the required lane runs it and it asserts role-to-permission grants directly. The genuine gap is authorization **as an endpoint behaves** — bootstrap, login/session, the mutation guard, role-to-route enforcement. Left as written it would drive duplicate unit coverage instead of the integration coverage actually missing | §7 — narrowed to the HTTP mile |
+| Improvement #1's "what remains": retire the run-scoped panel, and re-gate on `ViewLedgerReports` | **Both landed**, as this document's own second addendum records and the tree confirms — the explorer moved to `/strategy/run-ledger` with a comment at `accounting-screen.tsx:2865-2869`, and `LedgerEndpoints.cs:52,185` gates on `ViewLedgerReports`. An implementer would have redone two completed changes while the genuinely open work — the leftover `AccountDetailScreen` binding and assigned-fund authorization — sat below it | Improvement #1 — rewritten to the open work |
+
+The first row is the one to read twice. Every multiplier finding for six rounds has been about
+**amounts**; this one is about **classification**, and it is independent of the multiplier entirely —
+a short book's realized results are being dropped from the ledger today. It surfaced only because
+round 39 forced attention onto `TradeExecutedEvent`, which is the third time in this review that
+examining a remedy has turned up a defect the original finding never touched. The generalization
+worth keeping: **a record that omits a distinction its consumer needs will be given one by the
+consumer's control flow**, and `BuildTradeJournal` supplies it by branching on `Side` — a proxy for
+position effect that is right for a long book and wrong for a short one.
+
+The third row is the round-30 pattern for the fifth time: **a remediation note recorded that the
+world changed, and a recommendation assuming the old world stayed standing.** The rule adopted then
+said to re-read every recommendation whenever an addendum lands. That rule is now in the check-in
+brief and was still not enough here, because improvement #1's text was not *about* the addendum's
+subject in any way a grep for its terms would surface. The only reliable form is re-reading the
+prioritized list in full — which is what the second row's fix and this one both came from.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
