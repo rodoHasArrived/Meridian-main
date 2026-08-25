@@ -95,6 +95,7 @@ export function resolvePostedEntryDimensions(entry: LedgerPostedJournalEntry): L
  * posted book can reuse the journal-lineage panels the run-scoped ledger built.
  */
 export function toLedgerJournalLine(entry: LedgerPostedJournalEntry): LedgerJournalLine {
+  const dimensions = resolvePostedEntryDimensions(entry);
   return {
     journalEntryId: entry.journalEntryId,
     timestamp: entry.timestamp,
@@ -102,7 +103,12 @@ export function toLedgerJournalLine(entry: LedgerPostedJournalEntry): LedgerJour
     totalDebits: entry.totalDebits,
     totalCredits: entry.totalCredits,
     lineCount: Array.isArray(entry.lines) ? entry.lines.length : 0,
-    dimensions: resolvePostedEntryDimensions(entry)
+    dimensions,
+    // Derived, not left null: consumers fall back to "all entities" on a null scope, which is an
+    // affirmative claim about an entry that may be scoped to exactly one. Null here means the
+    // entry's lines do not agree on an entity, which is not the same as spanning all of them.
+    entityScopeId: dimensions?.entityId ?? null,
+    entityScopeDisplayName: dimensions?.entityId ?? null
   };
 }
 
@@ -196,6 +202,17 @@ export interface AccountingPostedLedgerViewState {
   bookOptions: PostedLedgerBookOption[];
   /** The selected book's base currency; posted amounts are in book units, not USD. */
   baseCurrency: string | null;
+  /**
+   * The fund-structure node the selected book is attached to. Dropping it left surfaces labelling
+   * an entity-scoped governed balance as an all-entity one.
+   */
+  bookScopeLabel: string | null;
+  /**
+   * When the selected period's closed summary completed. Retained on the P&L response, so a
+   * surface that claims no as-of timestamp was kept is asserting an evidence gap that is not
+   * there.
+   */
+  periodCompletedAt: string | null;
   trialBalance: AccountingTrialBalanceViewState;
   pnl: PostedLedgerPnlViewState;
 }
@@ -213,6 +230,23 @@ export interface AccountingPostedLedgerViewModel {
   journalErrorText: string | null;
   selectedPeriodId: string | null;
   selectedPeriodLabel: string | null;
+}
+
+/**
+ * Ledger books in the order both workstations present them: by display name, with a stable id
+ * tie-break.
+ *
+ * Mirrors <c>PostedLedgerProjection.SortBooks</c> exactly. Taking the store's own order here
+ * instead meant the browser's default book followed `fund_profile_id, display_name,
+ * ledger_book_id` while the desktop's followed display name alone, so in a multi-fund deployment
+ * the two co-equal views of the same governed ledger opened on different books — and therefore
+ * different periods and figures — for the same operator in the same session.
+ */
+export function sortLedgerBooks(books: readonly LedgerBook[]): LedgerBook[] {
+  return [...books].sort((left, right) =>
+    (left.displayName.trim() || left.ledgerBookId)
+      .localeCompare(right.displayName.trim() || right.ledgerBookId, undefined, { sensitivity: "accent" })
+    || left.ledgerBookId.localeCompare(right.ledgerBookId));
 }
 
 export function sortLedgerPeriodsDescending(periods: LedgerPeriod[]): LedgerPeriod[] {
@@ -455,6 +489,7 @@ export function buildAccountingPostedLedgerViewState({
   accountFilter,
   selectedBookLabel,
   baseCurrency,
+  bookScopeLabel = null,
   bookOptions
 }: {
   periods: LedgerPeriod[];
@@ -478,6 +513,7 @@ export function buildAccountingPostedLedgerViewState({
   selectedBookLabel: string | null;
   baseCurrency: string | null;
   bookOptions: PostedLedgerBookOption[];
+  bookScopeLabel?: string | null;
 }): AccountingPostedLedgerViewState {
   const selectedPeriod = periods.find((period) => period.periodId === selectedPeriodId) ?? null;
   const periodLabel = selectedPeriod
@@ -536,6 +572,8 @@ export function buildAccountingPostedLedgerViewState({
     selectedBookLabel,
     bookOptions,
     baseCurrency,
+    bookScopeLabel,
+    periodCompletedAt: pnl?.completedAt ?? null,
     trialBalance,
     pnl: buildPostedLedgerPnlViewState({
       pnl,
@@ -610,8 +648,9 @@ export function useAccountingPostedLedgerViewModel(
     setBooksErrorText(null);
     setBooksLoading(true);
     services.getBooks()
-      .then((rows) => {
+      .then((unsorted) => {
         if (cancelled) return;
+        const rows = sortLedgerBooks(unsorted);
         setBooks(rows);
         if (rows.length === 0) {
           // No book means no scope for anything below, and the period effect will not run to
@@ -852,6 +891,12 @@ export function useAccountingPostedLedgerViewModel(
   );
   const selectedBookLabel = selectedBook ? (selectedBook.displayName.trim() || selectedBook.ledgerBookId) : null;
   const baseCurrency = selectedBook?.baseCurrency?.trim() || null;
+  // The book names the fund-structure node it belongs to. Surfaces that dropped it fell back to
+  // "All entities", which is an affirmative claim about a book scoped to exactly one.
+  const bookScopeLabel = selectedBook
+    ? [selectedBook.fundStructureNodeKind?.trim(), selectedBook.fundProfileId?.trim()]
+      .filter(Boolean).join(" · ") || null
+    : null;
   const bookOptions = useMemo<PostedLedgerBookOption[]>(
     () => books.map((book) => ({
       id: book.ledgerBookId,
@@ -896,12 +941,14 @@ export function useAccountingPostedLedgerViewModel(
       accountFilter,
       selectedBookLabel,
       baseCurrency,
+      bookScopeLabel,
       bookOptions
     }),
     [
       accountFilter,
       baseCurrency,
       bookOptions,
+      bookScopeLabel,
       booksErrorText,
       booksLoading,
       selectedBookLabel,

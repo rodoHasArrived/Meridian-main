@@ -1572,7 +1572,7 @@ describe("accounting-screen view model", () => {
       statusVariant: "danger"
     });
     expect(selectedFinancing.selectedDetail?.fields).toEqual(expect.arrayContaining([
-      { label: "Dimensions", value: "No fund, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, or external GL dimensions are attached." },
+      { label: "Dimensions", value: "No ledger dimensions are attached to this row." },
       { label: "Journal entries", value: "No journal entry references linked" },
       { label: "Source events", value: "No source events linked" },
       { label: "Approvals", value: "No approvals linked" }
@@ -1657,7 +1657,7 @@ describe("accounting-screen view model", () => {
     expect(state.rows[1]).toMatchObject({
       rowId: "journal-unscoped",
       dimensionLabel: "No dimensions",
-      dimensionDetailLabel: "No fund, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, or external GL dimensions are attached."
+      dimensionDetailLabel: "No ledger dimensions are attached to this row."
     });
 
     const filtered = buildAccountingLedgerJournalEvidenceViewState({

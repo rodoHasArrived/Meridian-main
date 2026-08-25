@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { formatCurrency } from "@/lib/format";
+import { formatCurrencyForCode } from "@/screens/accounting-screen.formatting";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -419,26 +420,6 @@ const LEDGER_EXPLORER_TABS = [
 export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const view = searchParams.get("view") === "trial-balance" ? "trial-balance" : "ledger";
-  const [searchText, setSearchText] = useState("");
-  const postedLedger = useAccountingPostedLedgerViewModel("ledger", undefined, { includeJournal: true });
-  const journalLines = postedLedger.journalLines;
-  const loading = postedLedger.journalLoading;
-
-  const filteredRows = useMemo(() => {
-    const needle = searchText.trim().toLowerCase();
-    if (!needle) {
-      return journalLines;
-    }
-    return journalLines.filter((line) => [
-      line.journalEntryId,
-      line.description,
-      line.accountScopeDisplayName,
-      line.entityScopeDisplayName,
-      line.dimensions?.instrumentId,
-      String(line.totalDebits),
-      String(line.totalCredits)
-    ].some((value) => String(value ?? "").toLowerCase().includes(needle)));
-  }, [journalLines, searchText]);
 
   return (
     <Tabs
@@ -455,7 +436,55 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
       }}
     >
       <TabPanel>
-        {view === "ledger" ? (
+        {/*
+          Mounted only on its own tab. Held in this component unconditionally, its posted-ledger
+          hook stayed live while the trial-balance tab rendered TrialBalanceScreen -- which creates
+          its own -- so the tab issued two copies of book discovery, period discovery, trial
+          balance, P&L, and the full-period journal for a panel that was not on screen.
+        */}
+        {view === "ledger" ? <PostedLedgerJournalTab /> : null}
+      </TabPanel>
+      <TabPanel>
+        {view === "trial-balance" ? <TrialBalanceScreen /> : null}
+      </TabPanel>
+    </Tabs>
+  );
+}
+
+/** The Ledger tab's own body, so its requests belong to the tab that renders them. */
+function PostedLedgerJournalTab() {
+  const [searchText, setSearchText] = useState("");
+  const postedLedger = useAccountingPostedLedgerViewModel("ledger", undefined, { includeJournal: true });
+  const journalLines = postedLedger.journalLines;
+  const loading = postedLedger.journalLoading;
+
+  const baseCurrency = postedLedger.view.baseCurrency;
+  // The trial balance on the sibling tab is labelled in the book's base currency; these are the
+  // same governed debits and credits, so they carry it too rather than defaulting to dollars.
+  const postedMoney = (value: number) =>
+    (baseCurrency ? formatCurrencyForCode(value, baseCurrency) : formatCurrency(value));
+
+  const filteredRows = useMemo(() => {
+    const needle = searchText.trim().toLowerCase();
+    if (!needle) {
+      return journalLines;
+    }
+    return journalLines.filter((line) => [
+      line.journalEntryId,
+      line.description,
+      line.accountScopeDisplayName,
+      line.entityScopeDisplayName,
+      // The retained dimensions, not only the derived display names: an entry scoped to an entity
+      // or fund was otherwise impossible to find by the id it is actually tagged with.
+      line.dimensions?.entityId,
+      line.dimensions?.fundId,
+      line.dimensions?.instrumentId,
+      String(line.totalDebits),
+      String(line.totalCredits)
+    ].some((value) => String(value ?? "").toLowerCase().includes(needle)));
+  }, [journalLines, searchText]);
+
+  return (
     <div className="space-y-4">
       <Card className="panel-surface">
         <CardHeader>
@@ -526,7 +555,6 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
                   <th className="px-3 py-2" scope="col">Entity</th>
                   <th className="px-3 py-2" scope="col">Source</th>
                   <th className="px-3 py-2" scope="col">Status</th>
-                  <th className="px-3 py-2" scope="col">Evidence status</th>
                 </tr>
               </thead>
               <tbody>
@@ -545,16 +573,15 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
                       </Link>
                     </td>
                     <td className="px-3 py-2">{line.accountScopeDisplayName ?? "Multiple accounts"}</td>
-                    <td className="px-3 py-2 text-right font-mono">{formatCurrency(line.totalDebits)}</td>
-                    <td className="px-3 py-2 text-right font-mono">{formatCurrency(line.totalCredits)}</td>
-                    <td className="px-3 py-2">{line.entityScopeDisplayName ?? "All entities"}</td>
+                    <td className="px-3 py-2 text-right font-mono">{postedMoney(line.totalDebits)}</td>
+                    <td className="px-3 py-2 text-right font-mono">{postedMoney(line.totalCredits)}</td>
+                    <td className="px-3 py-2">{line.entityScopeDisplayName ?? "Not scoped to one entity"}</td>
                     <td className="px-3 py-2">{line.description || "Ledger posting"}</td>
                     <td className="px-3 py-2">Posted</td>
-                    <td className="px-3 py-2">{line.lineCount > 0 ? "Linked" : "Needs evidence"}</td>
                   </tr>
                 )) : (
                   <tr>
-                    <td className="px-3 py-4 text-muted-foreground" colSpan={9}>
+                    <td className="px-3 py-4 text-muted-foreground" colSpan={8}>
                       {postedLedger.view.periodSelector.options.length === 0
                         ? "No ledger periods exist yet. Create a ledger book and period in Accounting → Configure to start the governed book."
                         : "No posted entries match the current search."}
@@ -576,12 +603,6 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
         </CardContent>
       </Card>
     </div>
-        ) : null}
-      </TabPanel>
-      <TabPanel>
-        {view === "trial-balance" ? <TrialBalanceScreen /> : null}
-      </TabPanel>
-    </Tabs>
   );
 }
 

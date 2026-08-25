@@ -7,6 +7,7 @@ import {
   collectPostedLedgerRelatedSecurities,
   resolveDefaultPostedLedgerPeriodId,
   resolvePostedEntryDimensions,
+  sortLedgerBooks,
   sortLedgerPeriodsDescending,
   toLedgerJournalLine,
   toTrialBalanceLine,
@@ -171,6 +172,30 @@ function makePostedEntry(overrides: Partial<LedgerPostedJournalEntry> = {}): Led
   };
 }
 
+describe("sortLedgerBooks", () => {
+  it("orders by display name with a stable id tie-break, matching the desktop projection", () => {
+    // Taking the store's own order meant the browser default followed
+    // `fund_profile_id, display_name, ledger_book_id` while the desktop followed display name
+    // alone, so the two co-equal views of the same ledger opened on different books.
+    const sorted = sortLedgerBooks([
+      makeBook({ ledgerBookId: "book-z", displayName: "Zeta Fund" }),
+      makeBook({ ledgerBookId: "book-b", displayName: "Alpha Fund" }),
+      makeBook({ ledgerBookId: "book-a", displayName: "Alpha Fund" })
+    ]);
+
+    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-a", "book-b", "book-z"]);
+  });
+
+  it("falls back to the id for a book with no display name", () => {
+    const sorted = sortLedgerBooks([
+      makeBook({ ledgerBookId: "zzz", displayName: "   " }),
+      makeBook({ ledgerBookId: "book-m", displayName: "Master Fund" })
+    ]);
+
+    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-m", "zzz"]);
+  });
+});
+
 describe("resolvePostedEntryDimensions", () => {
   it("reports the shared scope when every line was posted to it", () => {
     // LedgerJournalEntryDto declares no dimensions of its own. Reading `entry.dimensions` meant
@@ -186,6 +211,25 @@ describe("resolvePostedEntryDimensions", () => {
 
     expect(resolvePostedEntryDimensions(entry)).toEqual(dimensions);
     expect(toLedgerJournalLine(entry).dimensions).toEqual(dimensions);
+  });
+
+  it("names the entry's entity scope so consumers do not claim it spans every entity", () => {
+    // Consumers fall back to "all entities" on a null scope, which is an affirmative claim about
+    // an entry posted to exactly one.
+    const scoped = makePostedEntry({
+      lines: [makePostedEntryLine({ dimensions: { entityId: "entity-lux" } })]
+    });
+    expect(toLedgerJournalLine(scoped).entityScopeDisplayName).toBe("entity-lux");
+    expect(toLedgerJournalLine(scoped).entityScopeId).toBe("entity-lux");
+
+    // Lines that disagree have no single entity, which is not the same as spanning all of them.
+    const mixed = makePostedEntry({
+      lines: [
+        makePostedEntryLine({ entryId: "entry-1", dimensions: { entityId: "entity-lux" } }),
+        makePostedEntryLine({ entryId: "entry-2", debit: 0, credit: 1200, dimensions: { entityId: "entity-cay" } })
+      ]
+    });
+    expect(toLedgerJournalLine(mixed).entityScopeDisplayName).toBeNull();
   });
 
   it("reports no scope for an entry whose lines disagree", () => {
@@ -604,7 +648,7 @@ describe("useAccountingPostedLedgerViewModel", () => {
     const services = makeServices({
       getBooks: vi.fn().mockResolvedValue([
         makeBook(),
-        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Feeder Fund" })
+        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Zulu Feeder Fund" })
       ]),
       getTrialBalance: vi.fn().mockResolvedValue([makeLine()])
     });
@@ -630,7 +674,7 @@ describe("useAccountingPostedLedgerViewModel", () => {
     const services = makeServices({
       getBooks: vi.fn().mockResolvedValue([
         makeBook(),
-        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Feeder Fund" })
+        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Zulu Feeder Fund" })
       ]),
       getTrialBalance: vi.fn().mockResolvedValue([makeLine()])
     });

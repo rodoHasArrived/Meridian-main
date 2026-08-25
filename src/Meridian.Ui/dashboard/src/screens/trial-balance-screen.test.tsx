@@ -182,7 +182,9 @@ describe("TrialBalanceScreen", () => {
     expect(ledgerReportsApi.getLedgerPeriodJournalEntries).toHaveBeenCalledWith(PERIOD_ID);
     expect(screen.getByText("Posted journal")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Trial balance scope" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("All entities");
+    // Derived from the selected book's fund-structure node. This asserted the hard-coded
+    // "All entities" — an affirmative claim about a book scoped to exactly one fund.
+    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("Fund · fund-alpha");
     // The scope card names the book actually in scope, not a fixed "Primary GL": the card asks
     // operators to confirm the book before drill-through, so it must not label another book's
     // balances as the primary one.
@@ -258,6 +260,31 @@ describe("TrialBalanceScreen", () => {
     expect(ledgerReportsApi.getLedgerPeriods).toHaveBeenCalledWith({ ledgerBookId: FEEDER_BOOK_ID });
     expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(FEEDER_PERIOD_ID);
     expect(screen.getByLabelText("Period", { selector: "select" })).toHaveValue(FEEDER_PERIOD_ID);
+  });
+
+  it("reports the retained closed-summary timestamp instead of claiming none was kept", async () => {
+    // The P&L response carries completedAt for every closed period, yet freshness was hard-coded
+    // to "Needs review — no as-of timestamp was retained", asserting an evidence gap that is not
+    // there on a perfectly good governed summary.
+    primeHappyPath();
+
+    await renderTrialBalanceScreen(`/accounting/ledger?view=trial-balance&periodId=${PERIOD_ID}`);
+    await waitForAsyncEffects();
+
+    expect(screen.queryByText("No trial-balance as-of timestamp was retained.")).not.toBeInTheDocument();
+    expect(screen.getByText("Closed-period summary completion retained with the posted journal.")).toBeInTheDocument();
+  });
+
+  it("names the selected book's fund scope rather than claiming every entity", async () => {
+    primeHappyPath();
+
+    await renderTrialBalanceScreen(`/accounting/ledger?view=trial-balance&periodId=${PERIOD_ID}`);
+    await waitForAsyncEffects();
+
+    // The book is attached to a fund-structure node; "All entities" was an affirmative claim
+    // about a book scoped to exactly one.
+    expect(screen.getAllByText((_, node) => (node?.textContent ?? "").includes("Fund · fund-alpha")).length)
+      .toBeGreaterThan(0);
   });
 
   it("switches basis and narrows rows with the account filter", async () => {

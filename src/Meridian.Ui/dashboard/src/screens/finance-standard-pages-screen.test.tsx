@@ -381,6 +381,65 @@ describe("finance standard pages", () => {
     );
   });
 
+  it("labels posted amounts in the book's currency and claims no evidence it does not have", async () => {
+    // Two misstatements on a governed book of record: the debits and credits were formatted in
+    // dollars beside a trial balance in the book's own currency, and the evidence column asserted
+    // "Linked" from lineCount — which counts debit and credit lines, not evidence.
+    mockPostedBook();
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([{
+      ledgerBookId: LEDGER_BOOK_ID,
+      fundProfileId: "fund-alpha",
+      fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+      fundStructureNodeKind: "Fund",
+      displayName: "Feeder Fund",
+      baseCurrency: "EUR",
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+      accountingBasis: "Primary",
+      accountingPolicyId: "legacy-v1",
+      accountingPolicyVersion: "legacy-v1"
+    }] as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([
+      {
+        journalEntryId: "je-cash-1",
+        periodId: LEDGER_PERIOD_ID,
+        ledgerBookId: LEDGER_BOOK_ID,
+        timestamp: "2026-07-31T00:00:00Z",
+        description: "Cash sweep",
+        totalDebits: 500,
+        totalCredits: 500,
+        isBalanced: true,
+        lines: [
+          {
+            entryId: "entry-1",
+            journalEntryId: "je-cash-1",
+            timestamp: "2026-07-31T00:00:00Z",
+            accountName: "Cash",
+            accountType: "Asset",
+            symbol: null,
+            financialAccountId: "1000",
+            debit: 500,
+            credit: 0,
+            description: "Cash sweep",
+            dimensions: { entityId: "entity-lux" }
+          }
+        ]
+      }
+    ] as never);
+
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+
+    const table = await screen.findByRole("table", { name: "Ledger Explorer results" });
+    expect(table).not.toHaveTextContent("Evidence status");
+    expect(table).not.toHaveTextContent("Linked");
+    expect(table).toHaveTextContent("€500");
+    expect(table).not.toHaveTextContent("$500");
+    // The entry's lines agree on an entity, so the column names it rather than claiming the entry
+    // spans every entity.
+    expect(table).toHaveTextContent("entity-lux");
+    expect(table).not.toHaveTextContent("All entities");
+  });
+
   it("offers no ledger filter it does not apply", async () => {
     // "Unposted", "Reversals", "Manual JEs" and "System Generated" changed a label and nothing
     // else, and the results header reported the unfiltered count as that view's. On a governed

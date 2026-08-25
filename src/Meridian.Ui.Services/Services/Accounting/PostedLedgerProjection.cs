@@ -145,31 +145,53 @@ public static class PostedLedgerProjection
             return string.Empty;
         }
 
-        var parts = new[]
-        {
-            dimensions.OrganizationId,
-            dimensions.FundId,
-            dimensions.EntityId,
-            dimensions.PortfolioId,
-            dimensions.SleeveId,
-            dimensions.StrategyId,
-            dimensions.CostCenterId,
-            dimensions.CounterpartyId,
-            dimensions.InvestorId,
-            dimensions.CapitalAccountId,
-            dimensions.TaxLotId
-        }.Where(part => !string.IsNullOrWhiteSpace(part)).Select(part => part!.Trim()).ToList();
+        // Every dimension LedgerDimensionSetDto declares, in the canonical order the browser
+        // workstation's buildLedgerDimensionLabels also uses. Enumerating a subset meant two rows
+        // differing only by an omitted dimension -- instrument, position, book, account, customer,
+        // vendor or project -- rendered an identical scope, and a row scoped by an omitted
+        // dimension alone rendered none at all. Named rather than positional: with eighteen
+        // possible dimensions a bare value cannot be told from the one beside it.
+        var parts = new List<string>();
+        AppendDimension(parts, "Organization", dimensions.OrganizationId);
+        AppendDimension(parts, "Fund", dimensions.FundId);
+        AppendDimension(parts, "Entity", dimensions.EntityId);
+        AppendDimension(parts, "Portfolio", dimensions.PortfolioId);
+        AppendDimension(parts, "Book", dimensions.BookId);
+        AppendDimension(parts, "Sleeve", dimensions.SleeveId);
+        AppendDimension(parts, "Strategy", dimensions.StrategyId);
+        AppendDimension(parts, "Investor", dimensions.InvestorId);
+        AppendDimension(parts, "Capital account", dimensions.CapitalAccountId);
+        AppendDimension(parts, "Customer", dimensions.CustomerId);
+        AppendDimension(parts, "Vendor", dimensions.VendorId);
+        AppendDimension(parts, "Project", dimensions.ProjectId);
+        AppendDimension(parts, "Account", dimensions.AccountId);
+        AppendDimension(parts, "Instrument", dimensions.InstrumentId?.ToString());
+        AppendDimension(parts, "Position", dimensions.PositionId?.ToString());
+        AppendDimension(parts, "Tax lot", dimensions.TaxLotId);
+        AppendDimension(parts, "Cost center", dimensions.CostCenterId);
+        AppendDimension(parts, "Counterparty", dimensions.CounterpartyId);
 
-        // External GL dimensions are operator-defined, so they are named rather than positional.
+        // External GL dimensions are operator-defined, so they carry the operator's own key.
         if (dimensions.ExternalGlDimensions is { Count: > 0 })
         {
-            parts.AddRange(dimensions.ExternalGlDimensions
+            foreach (var pair in dimensions.ExternalGlDimensions
                 .Where(pair => !string.IsNullOrWhiteSpace(pair.Value))
-                .OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
-                .Select(pair => $"{pair.Key.Trim()}={pair.Value.Trim()}"));
+                .OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                AppendDimension(parts, $"External {pair.Key.Trim()}", pair.Value);
+            }
         }
 
         return string.Join(" · ", parts);
+    }
+
+    private static void AppendDimension(List<string> parts, string label, string? value)
+    {
+        var normalized = value?.Trim();
+        if (!string.IsNullOrEmpty(normalized))
+        {
+            parts.Add($"{label}: {normalized}");
+        }
     }
 
     /// <summary>Books newest-usable first: by display name, with a stable id tie-break.</summary>

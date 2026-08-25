@@ -272,6 +272,40 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     /// <summary>
+    /// The picker is bounded so it stays a picker, but a run named explicitly must still resolve
+    /// past that bound — otherwise the explorer answers for a newer run while the screen's own
+    /// trial-balance and journal requests use the one the URL asked for, recombining evidence
+    /// from two different runs.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ShouldResolveARunOutsideThePickerBound()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        // One past the 50-run candidate bound, so the requested run cannot be reached through the
+        // candidate list alone.
+        for (var index = 0; index <= 50; index++)
+        {
+            await store.RecordRunAsync(BuildActivePaperRun($"explorer-ledger-bounded-{index:D3}", withBreaks: false) with
+            {
+                FundProfileId = "fund-core"
+            });
+        }
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            $"/api/workstation/financial-record-explorers/ledger?filter={Uri.EscapeDataString("run:explorer-ledger-bounded-000")}",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        explorer!.SavedViews.Should().HaveCountLessThanOrEqualTo(50, "the picker stays bounded");
+        explorer.SourceState.Should().Contain("explorer-ledger-bounded-000");
+        explorer.Rows.Should().OnlyContain(row => row.SourceRunId == "explorer-ledger-bounded-000");
+    }
+
+    /// <summary>
     /// A run id can arrive from a bookmark long after the run was pruned, or name another tenant's
     /// run. Neither may leave the screen with nothing where a readable ledger exists, and neither
     /// may serve the named run: the explorer resolves against the caller's own runs and names the

@@ -718,11 +718,15 @@ public sealed partial class FinancialRecordExplorerReadService
         var readScope = new StrategyRunReadScope(fundScope.TenantId, fundScope.CompanyId);
         if (requestedRunId is not null)
         {
-            // Resolved against the candidate list, not taken on trust: the list is already
-            // ownership-checked, so a run id naming another tenant's run simply is not in it and
-            // falls through to this caller's own newest run.
+            // Resolved by its own ownership check rather than by membership of the candidate list.
+            // The list is bounded so the picker stays a picker, and a tenant with more retained
+            // runs than that bound would otherwise have a perfectly valid deep link fall through
+            // to a newer run -- while the screen's own trial-balance and journal requests still
+            // used the run the URL asked for, recombining evidence from two different runs.
             var requested = candidates.FirstOrDefault(run =>
-                string.Equals(run.RunId, requestedRunId, StringComparison.OrdinalIgnoreCase));
+                string.Equals(run.RunId, requestedRunId, StringComparison.OrdinalIgnoreCase))
+                ?? await TryResolveRunOutsideCandidatesAsync(readService, fundScope, readScope, requestedRunId, ct)
+                    .ConfigureAwait(false);
             if (requested is not null)
             {
                 var detail = await readService.GetRunDetailAsync(requested.RunId, readScope, ct).ConfigureAwait(false);
@@ -743,6 +747,34 @@ public sealed partial class FinancialRecordExplorerReadService
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// A run named explicitly but sitting past the picker's bound. Read through the same tenant
+    /// read scope and put through the same fund-ownership check the candidate list applies, so
+    /// widening the reachable set here does not widen what any caller may read.
+    /// </summary>
+    private async Task<StrategyRunSummary?> TryResolveRunOutsideCandidatesAsync(
+        StrategyRunReadService readService,
+        FundOwnershipScope fundScope,
+        StrategyRunReadScope readScope,
+        string requestedRunId,
+        CancellationToken ct)
+    {
+        var runs = await readService
+            .GetRunsAsync(strategyId: null, runType: null, readScope, ct)
+            .ConfigureAwait(false);
+
+        var requested = runs.FirstOrDefault(run =>
+            string.Equals(run.RunId, requestedRunId, StringComparison.OrdinalIgnoreCase));
+        if (requested is null || string.IsNullOrWhiteSpace(requested.LedgerReference))
+        {
+            return null;
+        }
+
+        return await IsRunOwnedByScopeAsync(requested, fundScope, ct).ConfigureAwait(false)
+            ? requested
+            : null;
     }
 
     /// <summary>

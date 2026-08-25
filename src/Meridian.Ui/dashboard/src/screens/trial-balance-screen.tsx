@@ -6,6 +6,7 @@ import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "
 import { TrialBalanceTable } from "@/components/accounting/TrialBalanceTable";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
+import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,7 +37,6 @@ type TrialBalanceViewMode = "table" | "hierarchy";
 export function TrialBalanceScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<TrialBalanceViewMode>("table");
-  const entityScope = "All entities";
   const ledgerBook = "Primary GL";
 
   // The trial balance is the fund's book of record, so it reads the posted journal by
@@ -136,9 +136,12 @@ export function TrialBalanceScreen() {
       // screen was repointed to end.
       scopeLabel: selectedPeriodLabel
         ? `the posted journal for period ${selectedPeriodLabel}`
-        : "the posted journal"
+        : "the posted journal",
+      // The trial balance on this same page is labelled in the book's base currency; without this
+      // its journal evidence labelled the same governed debits and credits in dollars.
+      currency: postedLedger.view.baseCurrency
     }),
-    [journalLines, selectedPeriodId, selectedPeriodLabel]
+    [journalLines, postedLedger.view.baseCurrency, selectedPeriodId, selectedPeriodLabel]
   );
 
   const treeNodes: AccountNode[] = useMemo(
@@ -256,7 +259,19 @@ export function TrialBalanceScreen() {
       ? new Intl.NumberFormat("en-US", { style: "currency", currency: postedCurrency }).format(value)
       : new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(value);
 
+  // The selected book names the fund-structure node it belongs to. Hard-coding "All entities"
+  // presented an entity-scoped governed balance as an all-entity one.
+  const entityScope = postedLedger.view.bookScopeLabel ?? "All entities";
   const trialBalanceScope = `${entityScope} · ${postedLedger.view.selectedBookLabel ?? ledgerBook} · ${selectedPeriodLabel ?? "No period selected"}`;
+
+  // Retained on the closed-period summary. Claiming none was kept asserted an evidence gap that
+  // is not there, and left freshness permanently "needs review" on a perfectly good period.
+  const periodCompletedAt = postedLedger.view.periodCompletedAt;
+  const freshness = postedLedger.view.trialBalance.state === "loading"
+    ? { value: "Loading", detail: undefined, tone: "review" as const }
+    : periodCompletedAt
+      ? { value: formatDateTimeLabel(periodCompletedAt), detail: "Closed-period summary completion retained with the posted journal.", tone: "ready" as const }
+      : { value: "Needs review", detail: "No trial-balance as-of timestamp was retained.", tone: "review" as const };
 
   return (
     <ScreenLayout
@@ -298,7 +313,7 @@ export function TrialBalanceScreen() {
       <OperationalTrustSummary
         source={{ value: "Posted journal", tone: postedLedger.view.trialBalance.state === "error" ? "blocked" : "ready" }}
         scope={{ value: selectedPeriodLabel ?? "No period selected", detail: selectedBasisLabel, tone: selectedPeriodId ? "ready" : "unknown" }}
-        freshness={{ value: postedLedger.view.trialBalance.state === "loading" ? "Loading" : "Needs review", detail: postedLedger.view.trialBalance.state === "loading" ? undefined : "No trial-balance as-of timestamp was retained.", tone: "review" }}
+        freshness={freshness}
         completeness={{ value: isTrialBalanceOutOfBalance ? `${postedLedger.view.trialBalance.filteredRowCountLabel} · out by ${formatPostedAmount(Math.abs(trialBalanceVariance))}` : postedLedger.view.trialBalance.filteredRowCountLabel, tone: postedLedger.view.trialBalance.hasRows && !isTrialBalanceOutOfBalance ? "ready" : "review" }}
         blocker={postedLedger.view.trialBalance.errorText
           ? { value: "Trial balance unavailable", detail: postedLedger.view.trialBalance.errorText, tone: "blocked" }
