@@ -785,7 +785,14 @@ close-management product can tell.
    the read/write split on both: a single `ManageCompliance` would re-create the same defect one
    level down, forcing an auditor who only reads `/audit/extract`, `/controls/attestation`, and
    `GET /access-reviews` to also hold authority over approval decisions and access-review
-   remediation. This is what makes a least-privilege multi-user deployment possible at all. (§2)
+   remediation. **One route is a deliberate exception and must keep `ManageUsers`:**
+   `POST /api/compliance/access-reviews/run` (`ComplianceEndpoints.cs:101-121`) strips roles from the
+   account named in its body and decides dormancy from a caller-supplied `LastUsedAtUtc`, so a caller
+   can remove every role from any account, an administrator included. That is user administration
+   whatever surface it sits on; re-gating it to a compliance grant would be a privilege *expansion*.
+   It needs authoritative activity data and target/scope safeguards before it can move. Read
+   "stop using `ManageUsers` as the compliance grant" as applying to the read and approval routes,
+   not to this mutation. This is what makes a least-privilege multi-user deployment possible at all. (§2)
 3. **Make instrument scale a modeled concept, once.** One value object carrying multiplier and price
    convention, on `ExecutionReport` and `FillEvent` — and *consumed* in **every** transaction branch,
    not a subset: `ApplyBuy`, `ApplySellLong`, `ApplyShortSell` and `ApplyCoverShort` (the last two
@@ -899,8 +906,12 @@ close-management product can tell.
    on the discovery contract, and access reviews on durable retention; those two wait. Register them as route constants too, so the
    drift gate can see them. (§6)
 8. **Fix the freshness gap; standardize the error vocabulary second.** The demonstrated defect is
-   staleness — break casework, approvals, and close readiness do not refresh after a mutation, so
-   route them over the existing SSE fan-out instead of 60-second polls. The error work is *not*
+   staleness, and only **break casework** is established as unbounded: `usePollingInterval` does not
+   cover Accounting, so a second operator's assignment stays invisible until a manual refresh.
+   Approvals are *bounded* — `useGovernedApprovalsViewModel` polls every 15s
+   (`trading-screen.governed-approvals.ts:47,101-112`) — so they are stale, not frozen, and close
+   readiness was never traced either way. Route break casework over the existing SSE fan-out first;
+   approvals are a smaller win and close readiness needs evidence before it is scoped at all. The error work is *not*
    restoring missing failure semantics: the reconciliation panel, trial balance, and close cockpit
    already render their failures. Consolidating those bespoke blocks onto `RegionErrorState` is
    visual standardization — worth doing so operators learn one vocabulary for "this failed", but
@@ -943,14 +954,14 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Twenty-eight rounds of automated review challenged **79 claims** across this document. Every one was checked
-against the code, **all 79 held**, and the findings above are the corrected text. **Nine more were
+Twenty-nine rounds of automated review challenged **82 claims** across this document. Every one was checked
+against the code, **all 82 held**, and the findings above are the corrected text. **Nine more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
 in the published artifact, and an unresolvable file path in §8, and the artifact's refuted cost-basis remedy — and each is recorded as a
 row below, marked *(self-detected)*.
-The table therefore holds **88 rows: 79 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **91 rows: 82 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1390,6 +1401,21 @@ crediting it too readily. Two were errors I had the evidence for and contradicte
 The habit that would have caught both is the one this document keeps rediscovering: **read what is
 beside the line you came for, and check a new claim against the corrections you have already made.**
 
+**Round 29 — three, and all three are a round-28 correction that reached one place and not its twin:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| Improvement #2: "stop using … `ManageUsers` as the compliance grant" | Round 28 established that `POST /api/compliance/access-reviews/run` keeps `ManageUsers` deliberately, and the addendum was corrected to protect it — but improvement #2, the block an implementer actually works from, still carried the unqualified instruction. Followed literally it moves a role-stripping mutation to compliance officers: a privilege *expansion* produced by a least-privilege remedy | Improvement #2 — exception carved out explicitly |
+| The addendum's remaining work: "re-gate **the two** read-only compliance routes" | There are three: `audit/extract` (`:66`), `controls/attestation` (`:70`) and `GET /access-reviews` (`:123`). Improvement #2's own auditor sentence already listed all three, so the document under- and over-counted the same set two hundred lines apart. The third route was in the grep output the round-28 correction was written from | Second addendum |
+| Improvement #8: "break casework, approvals, and close readiness do not refresh after a mutation" | §8 was corrected rounds ago to say approvals poll every 15s (bounded, not frozen) and that close readiness was never traced. Improvement #8 kept the originalthree-way claim, overstating the defect and mis-scoping the SSE work | Improvement #8 — scoped to break casework |
+
+Every one of these is the pattern named one round earlier, and named as the dominant failure mode two
+rounds before that: the correction lands in the section that was challenged and not in the parallel
+text that repeats the claim. Knowing the pattern has not been enough to stop committing it. The
+mechanical remedy, applied from here: after correcting any claim, grep the whole document for the
+*subject* of that claim — `ManageUsers`, "close readiness", a route count — and read every hit, rather
+than trusting that the challenged location was the only one.
+
 Both were found by re-measuring §5's existential claim rather than re-reading its prose — the same
 method that caught rounds 9 and 22. The first measurement pass produced **98** dark types and was
 wrong: it counted a type as dark whenever its name was absent outside `Meridian.Ledger`, which
@@ -1594,7 +1620,8 @@ ledger because four of them overstated how much was closed.
 
 So the remaining work on §1 and §2 is: an assigned-fund selector with scoped authorization on the
 ledger read routes; delete the `AccountDetailScreen` run binding and the leftover reconciliation
-fetch; add `ViewCompliance` and re-gate the two read-only compliance routes to it, leaving
+fetch; add `ViewCompliance` and re-gate the **three** read-only compliance routes to it —
+`audit/extract` (`:66`), `controls/attestation` (`:70`) and `GET /access-reviews` (`:123`) — leaving
 `access-reviews/run` on `ManageUsers`. The lockout §1 describes is resolved for the *posted* book —
 which is the book those roles own — and the `ViewStrategies` gate on the run queue is now the
 correct behaviour rather than the defect.
