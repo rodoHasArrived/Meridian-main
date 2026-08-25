@@ -125,10 +125,28 @@ which is the computed expression `AdminPermissions & ~UserPermission.ManageUsers
 | --- | --- | --- | --- |
 | Admin · Developer · Accounting | yes | **yes** | **yes** |
 | TradeDesk · Analysis · ReportingAnalyst · Executive | yes | **yes** | no |
-| **FundAccountant** (`:77-86`) | yes | **no — 403** | **yes** |
-| **Controller** (`:96-106`) | yes | **no — 403** | **yes** |
+| **FundAccountant** (`:77-86`) | yes | **no — withheld, see below** | **yes** |
+| **Controller** (`:96-106`) | yes | **no — withheld, see below** | **yes** |
 | Compliance | yes | no | no |
 | ReadOnly (`:129-133`) | **no** | — | — |
+
+**The lockout does not surface as a 403, and that is worse.** Earlier versions of this table said
+`FundAccountant` and `Controller` receive a 403 on the run-scoped trial balance. They do not — they
+never issue the request. `ResolveAccountingWorkspaceReadScope` sets `StrategyRuns` only for
+`ViewStrategies | ManageStrategies` (`WorkstationEndpoints.AccountingWorkspace.cs:255-258`), and the
+accounting payload then returns `ReconciliationQueue: Array.Empty<WorkstationAccountingRunRecord>()`
+when that scope is false (`:132-137`) — under a comment stating the queue is "withheld exactly as the
+empty-run branch above renders them, so a caller without run authority sees the shape the workspace
+already has when there is nothing to show". The browser derives its selection from that queue
+(`accounting-screen.view-model.ts:3875-3892`), finds nothing, and returns before ever calling
+`getRunTrialBalance` (`:4007-4019`).
+
+So the operator sees **an empty reconciliation queue that is indistinguishable from having no runs**.
+A 403 is at least an error a UI can render; a withheld-as-empty projection tells the accountant
+their fund has nothing to reconcile. That is the same defect class as §8's "no breaks" versus
+"request failed", sitting at the centre of §1 — and it means the role-to-surface test in improvement
+#4 cannot check permission sets alone. It has to assert on the **projected payload**, because the
+permissions are working exactly as written and the damage is in what the projection substitutes.
 
 The interesting shape is not a single locked-out role but a **split**: the trading, analysis, and
 reporting roles reach only the strategy-run book; the two roles that own the fund's records reach only
@@ -677,8 +695,9 @@ close-management product can tell.
    `AccountingPostedLedgerSection`. What remains: retire the run-scoped panel from Accounting (or
    relabel it a Strategy-run artifact and move it there), so the screen stops showing two books
    under one name; and re-gate the accounting artifact on a **ledger-specific read permission**
-   (`ViewLedgerReports` from improvement #2), so the roles that own the records stop receiving a 403.
-   **Do not close the 403 by granting `ViewStrategies`** — that flag gates eleven endpoint files,
+   (`ViewLedgerReports` from improvement #2), so the roles that own the records stop being served an
+   empty queue in place of their runs. **Do not close it by granting `ViewStrategies`** — that flag
+   gates eleven endpoint files,
    among them `CoveredCallEndpoints`, `LeanEndpoints`, `QuantLabEndpoints`, `PromotionEndpoints` and
    `StrategyLifecycleEndpoints`, so it would hand both personas covered-call results, Lean
    configuration and algorithm history, strategy-designer drafts, run fills and attribution, and the
@@ -715,21 +734,31 @@ close-management product can tell.
    existential check ("some role can reach it") is useless here: Admin, Developer, and Accounting
    satisfy it while `FundAccountant` and `Controller` stay locked out, so the defect passes. Three
    tests that do bite: (a) a declared **role-to-surface expectation table** — `FundAccountant` and
-   `Controller` must reach the Accounting trial balance and P&L — asserted against the workspace ∩
-   leaf intersection, so a persona lockout fails the build; (b) every route
-   constant must be referenced by a client or appear on a declared headless allowlist — this is the
-   only one of the three that would have caught the unconsumed posted-ledger routes, since no
-   workspace links to them and no role check can see them; (c) the dark
-   count must not grow. These three catch §1, §6, and §9's unreconciled reopen routes
+   `Controller` must reach the Accounting trial balance and P&L — asserted **against the projected
+   payload, not the permission sets**, because §1's lockout is a withheld-as-empty
+   `ReconciliationQueue` rather than a denial: every gate passes and the operator still sees nothing;
+   (b) every route constant must be reachable **transitively from a mounted route or view**, or
+   appear on a declared headless allowlist — *reference alone is not enough*, since the three dead
+   quality wrappers in §6 are referenced by `lib/api.ts` and called by nothing, so a
+   reference-only check would certify part of the very dark surface it exists to find. This is
+   still the only one of the three that would have caught the unconsumed posted-ledger routes, since
+   no workspace links to them and no role check can see them; (c) the dark count must not grow,
+   measured the same transitive way so the baseline and the gate agree. These three catch §1, §6, and §9's unreconciled reopen routes
    automatically — but **not
    §5**, and the reason is worth stating because it exposes a limit of this whole review's thesis.
    The NAV kernel has no route constant and no endpoint registration:
    `ShareClassUnitRegisterProjector` and `NavPerUnitCalculator` appear only in
    `src/Meridian.Ledger/`, its README, their tests, and planning docs. A cross-catalog test can
    detect that catalogs *disagree*; it is blind to a capability absent from all of them. Catching §5
-   needs a fourth, different invariant: a **declared-capability-to-surface** check that reads the
-   roadmap register's shipped domain capabilities and fails when one has no registered route and no
-   client consumer. (§1, §5, §6)
+   needs a fourth, different invariant: a **declared-capability-to-surface** check that fails when a
+   declared capability has no registered route and no client consumer. Scope it carefully, because
+   the obvious scoping misses the case it was built for: `W9-NAV-006` is **not** `done` — it is
+   `status: ready_for_acceptance` with `evidence_posture: implementation_complete`
+   (`docs/roadmap/data/roadmap-items.yml`), and the roadmap decision log reserves `done` until
+   operator acceptance. A gate reading only *shipped* capabilities would stay green on the NAV kernel
+   until after the acceptance it is supposed to inform. It must include **acceptance candidates whose
+   exit criteria or evidence claim a runnable operator surface** — which is exactly what
+   `W9-NAV-006`'s criteria do. (§1, §5, §6)
 5. **Activate NAV per unit end-to-end.** Valuation → `ShareClassUnitRegisterProjector` → governed
    journal intake → an operator panel, following the path capital-call issuance just proved. Highest
    value-per-line change available, and the plumbing is already validated. (§5)
@@ -804,12 +833,12 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Twenty rounds of automated review challenged **60 claims** across this document. Every one was checked
-against the code, **all 60 held**, and the findings above are the corrected text. **Four more were
+Twenty-one rounds of automated review challenged **63 claims** across this document. Every one was checked
+against the code, **all 63 held**, and the findings above are the corrected text. **Four more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, and §3's own lead sentence — and each is recorded as a row below, marked *(self-detected)*.
-The table therefore holds **64 rows: 60 raised by review, 4 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **67 rows: 63 raised by review, 4 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1123,6 +1152,29 @@ the provenance test, and in round 18 to cite line 29's exclusion list — and ne
 finding itself has survived all three versions unchanged: **WPF is not compiled on the lane that
 gates the merge.**
 
+**Round 21 — three, all about the proposed gates, and one rewrites §1's mechanism:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| `FundAccountant` and `Controller` receive a **403** on the run-scoped trial balance | They never issue the request. `ResolveAccountingWorkspaceReadScope` sets `StrategyRuns` only for `ViewStrategies\|ManageStrategies` (`:255-258`), and the payload substitutes `Array.Empty<WorkstationAccountingRunRecord>()` for `ReconciliationQueue` when that scope is false (`:132-137`). The browser derives selection from that queue, finds nothing, and returns before calling `getRunTrialBalance`. The operator sees an empty queue indistinguishable from "no runs" | §1 table and a new mechanism paragraph |
+| Test (b): "every route constant must be **referenced** by a client" | Reference is the false-positive this document already demonstrated: the three dead quality wrappers are referenced by `lib/api.ts` and called by nothing. §6's caveat says the real gate needs transitive reachability from mounted routes; improvement #4's spec never said so, and as written would certify part of the dark surface it exists to catch | Improvement #4 (b) and (c) |
+| The capability gate reads "the roadmap register's **shipped** domain capabilities" | `W9-NAV-006` is `ready_for_acceptance` with `evidence_posture: implementation_complete`, not `done`, and the roadmap reserves `done` until operator acceptance. A shipped-only gate stays green on the NAV kernel until after the acceptance it exists to inform — the one capability it was designed for | Improvement #4's fourth invariant |
+
+The first row is the most consequential correction in the last ten rounds, because §1 is the
+headline and the 403 has been in its table since the first draft — through twenty rounds that
+scrutinised the permission matrix repeatedly and never asked what the endpoint *returns* to a role
+that fails the scope check. The answer is worse than a denial: the queue is withheld and replaced
+with an empty array, which the UI renders as "nothing to reconcile". An accountant is not told they
+lack access; they are told their fund is clean. That is §8's "no breaks means request failed" defect
+appearing at the centre of §1, and it went unnoticed because the whole section was framed around
+authorization rather than projection.
+
+The other two share a shape worth naming: **all three proposed gates were specified loosely enough
+to pass on the exact defects they were written for.** Test (b) accepts a reference from a dead
+wrapper; the capability check reads a status the target item does not have; and test (a) checked
+permissions when the failure is in the payload. A gate that would not have caught the finding that
+motivated it is not a gate, and this document has now produced three of them.
+
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
 remedies — and are rewritten rather than softened; the multiplier correction made the defect
@@ -1213,7 +1265,7 @@ the client and scoped authorization on the routes.
   `accounting-screen.view-model.ts:2940` still reads
   `getTrialBalance: (runId) => getRunTrialBalance(runId)` — the exact line §1 cites — still gated on
   `ViewStrategies`. The Accounting screen now carries *two* trial balances over two different books,
-  and the accounting roles still receive a 403 on one of them.
+  and the accounting roles still get an empty reconciliation queue in place of one of them.
 
   The panel was not left untouched, though, and the change made one thing worse. PR #2824 retitled
   it "Strategy Run Ledger Explorer" and added two labels that are **factually wrong for live runs**:
