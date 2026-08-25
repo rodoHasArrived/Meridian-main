@@ -581,9 +581,15 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Two rounds of automated review challenged eleven claims across this document. Every one was checked
-against the code, **all eleven held**, and the findings above are the corrected text. Recorded here
+Seven rounds of automated review challenged **27 claims** across this document. Every one was checked
+against the code, **all 27 held**, and the findings above are the corrected text. Recorded here
 because a review that demands evidence discipline owes the same discipline about its own errors.
+
+This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
+while the table below it grew to seven. The section documenting a failure to keep dependent text in
+sync was out of sync — the seventh instance of that pattern in this document, and the one that best
+explains why the remedy is a mechanical grep of every surface rather than an intention to be
+careful.
 
 **Round 1 — seven claims:**
 
