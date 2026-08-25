@@ -26,6 +26,17 @@ public sealed class PortfolioBuilderTests
     }
 
     [Fact]
+    public void EqualWeight_CaseEquivalentSymbols_Throws()
+    {
+        var upper = TestPriceSeriesBuilder.Build("SPY", 30);
+        var lower = TestPriceSeriesBuilder.Build("spy", 30);
+
+        var act = () => PortfolioBuilder.EqualWeight(upper, lower);
+
+        act.Should().Throw<ArgumentException>().WithMessage("*supplied more than once*");
+    }
+
+    [Fact]
     public void Returns_DefaultsToDateIntersection_AndZeroReturnUsesUnion()
     {
         var first = TestPriceSeriesBuilder.Build("A", 4, startDate: new DateOnly(2024, 1, 1));
@@ -78,6 +89,18 @@ public sealed class PortfolioBuilderTests
         var result = PortfolioBuilder.EfficientFrontier(constraints, s);
 
         result.Weights["SPY"].Should().BeApproximately(1.0, 1e-10);
+    }
+
+    [Fact]
+    public void EfficientFrontier_CaseEquivalentSymbols_Throws()
+    {
+        var upper = TestPriceSeriesBuilder.Build("SPY", 30);
+        var lower = TestPriceSeriesBuilder.Build("spy", 30);
+        var constraints = new EfficientFrontierConstraints { TargetReturn = 0.0 };
+
+        var act = () => PortfolioBuilder.EfficientFrontier(constraints, upper, lower);
+
+        act.Should().Throw<ArgumentException>().WithMessage("*supplied more than once*");
     }
 
     [Fact]

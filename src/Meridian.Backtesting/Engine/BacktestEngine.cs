@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.FillModels;
 using Meridian.Backtesting.Metrics;
@@ -6,6 +8,7 @@ using Meridian.Backtesting.Portfolio;
 using Meridian.Contracts.Backtesting;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
+using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage.Replay;
 using Meridian.Storage.Services;
@@ -245,7 +248,7 @@ public sealed class BacktestEngine(
             .ToArray();
     }
 
-    private async Task<IReadOnlyList<IAsyncEnumerable<MarketEvent>>> BuildSymbolStreamsAsync(
+    private Task<IReadOnlyList<IAsyncEnumerable<MarketEvent>>> BuildSymbolStreamsAsync(
         IReadOnlyList<string> replaySymbols,
         BacktestRequest request,
         CancellationToken ct)
@@ -257,13 +260,50 @@ public sealed class BacktestEngine(
             if (!Directory.Exists(symbolRoot))
                 symbolRoot = request.DataRoot;  // flat layout fallback
 
-            CorporateActionAdjustmentPlan? adjustmentPlan = null;
             if (request.AdjustForCorporateActions && corporateActionAdjustment != null)
             {
-                // Adjustment factors (especially cash dividends) require the complete requested
-                // price series. The first pass retains bars only, prepares one immutable plan at
-                // the request's pinned as-of boundary, and then closes every replay reader.
-                var historicalBars = new List<HistoricalBar>();
+                streams.Add(CapturePrepareAndReplayAsync(symbolRoot, symbol, request, ct));
+                continue;
+            }
+
+            var replayReader = new JsonlReplayer(symbolRoot);
+            var symbolStream = FilterBySymbolAndDate(
+                replayReader.ReadEventsAsync(ct),
+                symbol,
+                request.From,
+                request.To,
+                ct);
+            streams.Add(symbolStream);
+        }
+
+        return Task.FromResult<IReadOnlyList<IAsyncEnumerable<MarketEvent>>>(streams);
+    }
+
+    /// <summary>
+    /// Captures the exact filtered replay used to prepare a corporate-action plan, then executes
+    /// from that immutable snapshot so concurrently appended or replaced partitions cannot make
+    /// preparation and execution observe different market data.
+    /// </summary>
+    private async IAsyncEnumerable<MarketEvent> CapturePrepareAndReplayAsync(
+        string symbolRoot,
+        string symbol,
+        BacktestRequest request,
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        var snapshotPath = Path.Combine(
+            Path.GetTempPath(),
+            $"meridian-backtest-snapshot-{Guid.NewGuid():N}.jsonl");
+        try
+        {
+            var historicalBars = new List<HistoricalBar>();
+            await using (var writer = new StreamWriter(new FileStream(
+                             snapshotPath,
+                             FileMode.CreateNew,
+                             FileAccess.Write,
+                             FileShare.None,
+                             4096,
+                             useAsync: true)))
+            {
                 var preparationReader = new JsonlReplayer(symbolRoot);
                 await foreach (var evt in FilterBySymbolAndDate(
                                    preparationReader.ReadEventsAsync(ct),
@@ -274,32 +314,33 @@ public sealed class BacktestEngine(
                 {
                     if (evt.Payload is HistoricalBar bar)
                         historicalBars.Add(bar);
-                }
 
-                var asOfUtc = new DateTimeOffset(
-                    request.To.ToDateTime(TimeOnly.MaxValue),
-                    TimeSpan.Zero);
-                adjustmentPlan = await corporateActionAdjustment
-                    .PrepareAsync(historicalBars, symbol, asOfUtc, ct)
-                    .ConfigureAwait(false);
+                    var json = JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions);
+                    await writer.WriteLineAsync(json.AsMemory(), ct).ConfigureAwait(false);
+                }
             }
 
-            // Open a fresh replay for the execution pass. The immutable plan avoids repeated
-            // Security Master queries and ensures every bar uses the same content version.
-            var replayReader = new JsonlReplayer(symbolRoot);
-            var symbolStream = FilterBySymbolAndDate(
-                replayReader.ReadEventsAsync(ct),
-                symbol,
-                request.From,
-                request.To,
-                ct);
-            if (adjustmentPlan is not null)
-                symbolStream = ApplyCorporateActionPlanAsync(symbolStream, symbol, adjustmentPlan, ct);
-
-            streams.Add(symbolStream);
+            var asOfUtc = new DateTimeOffset(
+                request.To.ToDateTime(TimeOnly.MaxValue),
+                TimeSpan.Zero);
+            var adjustmentPlan = await corporateActionAdjustment!
+                .PrepareAsync(historicalBars, symbol, asOfUtc, ct)
+                .ConfigureAwait(false);
+            var snapshotReader = new JsonlReplayer(snapshotPath);
+            await foreach (var evt in ApplyCorporateActionPlanAsync(
+                               snapshotReader.ReadEventsAsync(ct),
+                               symbol,
+                               adjustmentPlan,
+                               ct).ConfigureAwait(false))
+            {
+                yield return evt;
+            }
         }
-
-        return streams;
+        finally
+        {
+            if (File.Exists(snapshotPath))
+                File.Delete(snapshotPath);
+        }
     }
 
     /// <summary>

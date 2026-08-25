@@ -164,8 +164,9 @@ public static class PortfolioBuilder
         ArgumentNullException.ThrowIfNull(series);
         if (series.Length == 0)
             throw new ArgumentException("At least one series is required", nameof(series));
+        EnsureUniqueSymbols(series);
         var w = 1.0 / series.Length;
-        var weights = series.ToDictionary(s => s.Symbol, _ => w);
+        var weights = series.ToDictionary(s => s.Symbol, _ => w, StringComparer.OrdinalIgnoreCase);
         return new PortfolioResult(weights, series);
     }
 
@@ -178,13 +179,7 @@ public static class PortfolioBuilder
         if (series.Length == 0)
             throw new ArgumentException("At least one series is required", nameof(series));
 
-        var symbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in series)
-        {
-            ArgumentNullException.ThrowIfNull(item);
-            if (!symbols.Add(item.Symbol))
-                throw new ArgumentException($"Series symbol '{item.Symbol}' was supplied more than once.", nameof(series));
-        }
+        var symbols = EnsureUniqueSymbols(series);
 
         if (weights.Count != symbols.Count ||
             weights.Keys.Any(key => !symbols.Contains(key)) ||
@@ -233,6 +228,7 @@ public static class PortfolioBuilder
         ArgumentNullException.ThrowIfNull(series);
         if (series.Length == 0)
             throw new ArgumentException("At least one series is required", nameof(series));
+        EnsureUniqueSymbols(series);
 
         if (series.Length == 1)
             return new PortfolioResult(new Dictionary<string, double> { [series[0].Symbol] = 1.0 }, series);
@@ -262,9 +258,22 @@ public static class PortfolioBuilder
 
         var weights = series
             .Zip(rawWeights, static (s, w) => (s.Symbol, w))
-            .ToDictionary(static t => t.Symbol, static t => t.w);
+            .ToDictionary(static t => t.Symbol, static t => t.w, StringComparer.OrdinalIgnoreCase);
 
         return new PortfolioResult(weights, series);
+    }
+
+    private static HashSet<string> EnsureUniqueSymbols(IReadOnlyList<PriceSeries> series)
+    {
+        var symbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in series)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+            if (!symbols.Add(item.Symbol))
+                throw new ArgumentException($"Series symbol '{item.Symbol}' was supplied more than once.", nameof(series));
+        }
+
+        return symbols;
     }
 }
 

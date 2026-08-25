@@ -96,8 +96,9 @@ Studio UX remains deferred.
   only after an accepted fill. Per-order minimums and maximums therefore apply once across partial
   slices, while rejected fills do not consume commission state and terminal orders release their
   accumulator entries.
-- Corporate-action projections apply only revisions known at the requested as-of time, so a later
-  amendment or cancellation cannot rewrite an earlier backtest's split or distribution economics.
+- Corporate-action projections apply only revisions known at the requested as-of time and actions
+  effective by that boundary, so a later amendment, cancellation, or future ex-date cannot rewrite
+  an earlier backtest's split or distribution economics.
 - Metrics use resolved account opening cash, external investor opening/terminal flows for XIRR, and
   a consistent 365-day calendar basis for snapshots, financing accruals, rolling metrics, and
   walk-forward aggregation. Internal trade, fee, interest, and corporate-action settlements remain
@@ -135,10 +136,11 @@ Studio UX remains deferred.
   single-stream fast path, stable stream ties, cancellation, monotonicity checks, and deterministic
   enumerator disposal.
 - Corporate-action adjustment prepares one immutable, content-versioned plan per symbol and run,
-  pinned to the request end date and built from the complete bar history. The engine performs a
-  bars-only first replay pass, then streams the second pass through `plan.Apply`; the concrete plan
-  retains actions and adjustment factors rather than the mixed event window, and its shared cache is
-  bounded.
+  pinned to the request end date and built from the complete bar history. The engine captures the
+  exact filtered event stream while preparing the plan, then executes through `plan.Apply` from that
+  temporary immutable snapshot; concurrent partition replacement or append cannot split preparation
+  and execution across different market-data versions. The concrete plan retains actions and
+  adjustment factors rather than the mixed event window, and its shared cache is bounded.
 
 ## Diagrams
 

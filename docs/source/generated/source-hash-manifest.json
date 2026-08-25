@@ -16,8 +16,8 @@
       "id": "SRC-BACKTESTING",
       "path": "src/Meridian.Backtesting",
       "readme": "src/Meridian.Backtesting/README.md",
-      "readme_hash": "c3649bb746d616ecd9fe8a1571d5627817cd06daf65d74e30fe0ebaf541386bd",
-      "source_hash": "59ddb7a2db664a0500469c7364e3504fa0add44d83c8dbcc818883bc4e012f82"
+      "readme_hash": "8779903c20b7641dde03e22858f82f875bdab2029e134e52f1108e48eda5f33e",
+      "source_hash": "1e411382430133386f608e14ede6af0096b0dad0701956028ce41f1cbbe0cef0"
     },
     {
       "id": "SRC-BACKTESTING-SDK",
@@ -233,8 +233,8 @@
       "id": "SRC-QUANTSCRIPT",
       "path": "src/Meridian.QuantScript",
       "readme": "src/Meridian.QuantScript/README.md",
-      "readme_hash": "8009571157f66fe3a83df31212de6bf9e6761816f4a3f3b10e340b8d0bbfdf1f",
-      "source_hash": "32c2f45df07e2ab7ee8343ff939e2c6303a355a783edf1f8fb61f95ffcdb74e7"
+      "readme_hash": "1f82f4404e2fd854c34d3a7f3a0fdf4dec3879e01e392daa0e5f68be746f9ac1",
+      "source_hash": "8ef06ac44fad010b3ddc875a373a2369caa5c6257e5470da5aa023521d87586d"
     },
     {
       "id": "SRC-RISK",
@@ -247,8 +247,8 @@
       "id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
-      "readme_hash": "092907256a38b7100b4ec7c751b0c13bbd1c5d08e967a4fab68a323bca985cc4",
-      "source_hash": "a9cdf5e5415853fc78592b2271dc3839c3fe857a410a5d224635a10f8fc2cfa6"
+      "readme_hash": "e515db174b7bb3c86aa4e097f5c0ca2769e92d4e06b0e7ce56b1cad42a767094",
+      "source_hash": "44ddf76caa0167528a41f6bd258c4b3960c71f0f1bf6630f5fac393ced3fc7b3"
     },
     {
       "id": "SRC-STRATEGIES",
@@ -261,8 +261,8 @@
       "id": "SRC-UI",
       "path": "src/Meridian.Ui",
       "readme": "src/Meridian.Ui/README.md",
-      "readme_hash": "f38cef5e746955ff8f7773dacd08a89238835b99b538f245d3704eddcc70de0e",
-      "source_hash": "016725da786182c286f4a803df07d7e2c9e80c51453af0684c123ea9f87bc43c"
+      "readme_hash": "f27c36eabdc544d07e8a92cf9175dd18a046f60deffaf7bc4e962b88c35c8d89",
+      "source_hash": "742353dc081a9197720e8732000a3a21a17d47cfd97f1b9adc9aea5cba04653b"
     },
     {
       "id": "SRC-UI-DASHBOARD",

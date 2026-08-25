@@ -62,6 +62,9 @@ Browser navigation and command-palette root commands canonicalize supplied works
 `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` so legacy
 root names stay compatibility aliases. App-shell evidence timeline labels follow the same rule when
 overview events arrive with retained source names.
+Quant Lab transports Int64 and Decimal overrides as canonical strings and compares decimal limits
+without binary floating-point conversion. Successful compiler warnings retain warning tone without
+using the notebook error marker.
 
 ## Diagrams
 

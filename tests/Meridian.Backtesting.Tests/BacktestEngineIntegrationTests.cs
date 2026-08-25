@@ -843,6 +843,34 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
     }
 
     [Fact]
+    public async Task RunAsync_CorporateActions_ExecutesFromThePreparedMarketDataSnapshot()
+    {
+        WriteBarJsonl("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 2), basePrice: 200m);
+        var sourcePath = Path.Combine(_dataRoot, "AAPL", "AAPL_bars_2024-01-02.jsonl");
+        var adjustment = new StubCorporateActionAdjustmentService(
+            factor: 2m,
+            onPrepare: () => File.WriteAllText(sourcePath, string.Empty));
+        var catalog = new StorageCatalogService(_dataRoot, new StorageOptions());
+        var engine = new BacktestEngine(
+            NullLogger<BacktestEngine>.Instance,
+            catalog,
+            securityMasterQueryService: null,
+            corporateActionAdjustment: adjustment);
+        var strategy = new PriceCapturingStrategy();
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            AdjustForCorporateActions: true);
+
+        await engine.RunAsync(request, strategy);
+
+        strategy.ReceivedBars.Should().ContainSingle();
+        strategy.ReceivedBars[0].Open.Should().Be(100m,
+            "execution must use the same captured bar that was supplied during preparation");
+    }
+
+    [Fact]
     public async Task RunAsync_WithAdjustForCorporateActionsFalse_StrategyReceivesOriginalPrices()
     {
         // Write bars with pre-split price of 200
@@ -1143,7 +1171,7 @@ file sealed class PriceCapturingStrategy : IBacktestStrategy
 /// Stub <see cref="ICorporateActionAdjustmentService"/> that divides all bar prices by a
 /// configurable split <paramref name="factor"/> and multiplies volume by the same factor.
 /// </summary>
-file sealed class StubCorporateActionAdjustmentService(decimal factor) : ICorporateActionAdjustmentService
+file sealed class StubCorporateActionAdjustmentService(decimal factor, Action? onPrepare = null) : ICorporateActionAdjustmentService
 {
     public int CallCount { get; private set; }
     public int PrepareCallCount { get; private set; }
@@ -1161,6 +1189,7 @@ file sealed class StubCorporateActionAdjustmentService(decimal factor) : ICorpor
         PreparedBars = bars.ToArray();
         PreparedTicker = ticker;
         PreparedAsOfUtc = asOfUtc;
+        onPrepare?.Invoke();
 
         var adjusted = await AdjustAsync(bars, ticker, ct);
         return CorporateActionAdjustmentPlan.FromLegacyAdjustedBars(

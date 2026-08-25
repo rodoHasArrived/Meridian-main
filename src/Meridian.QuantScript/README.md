@@ -65,7 +65,8 @@ Portfolio analytics align return streams by `DateOnly`. Correlation, covariance,
 frontier calculations use date intersection by default, with explicit zero-return alignment when a
 caller chooses it, and custom portfolio weights must provide exact symbol coverage, remain finite,
 and sum exactly to one within the documented tolerance. Negative weights remain valid for long-short
-portfolios.
+portfolios. All portfolio builders reject case-equivalent duplicate symbols before constructing
+weights or aligning returns.
 
 The host admits at most two concurrent workers and eight queued requests by default. It kills the
 complete child tree on cancellation, timeout, protocol/output violation, aggregate memory/CPU/process

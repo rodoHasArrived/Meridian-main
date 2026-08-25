@@ -13,9 +13,7 @@ public sealed class JsonlReplayer
 {
     internal const int SortRunRecordLimit = 4096;
     internal const int MaxMergeReaders = 16;
-    private const int MaxConcurrentMerges = 4;
     private const int MaxConcurrentPartitionReaders = 128;
-    private static readonly SemaphoreSlim MergeSlots = new(MaxConcurrentMerges, MaxConcurrentMerges);
     private static readonly SemaphoreSlim PartitionReaderSlots = new(
         MaxConcurrentPartitionReaders,
         MaxConcurrentPartitionReaders);
@@ -63,9 +61,13 @@ public sealed class JsonlReplayer
             if (chunk.Count > 0)
                 await FlushRunAsync(chunk, runs, spoolDirectory, ct).ConfigureAwait(false);
 
-            // Collapse excess runs in bounded fan-in passes. Four merges may proceed concurrently,
-            // and each holds at most sixteen reader slots, leaving capacity for source readers.
-            while (runs.Count > MaxMergeReaders)
+            if (runs.Count == 0)
+                yield break;
+
+            // Collapse to a single run in bounded fan-in passes. Intermediate merges complete
+            // before any replay record is yielded, so no global reader slot is held while a
+            // multi-symbol merge primes another symbol stream.
+            while (runs.Count > 1)
             {
                 var nextRuns = new List<string>();
                 for (var offset = 0; offset < runs.Count; offset += MaxMergeReaders)
@@ -80,7 +82,8 @@ public sealed class JsonlReplayer
                 runs = nextRuns;
             }
 
-            await foreach (var record in MergeRunsAsync(runs, ct).ConfigureAwait(false))
+            await foreach (var record in ReadSpoolRunAsync(runs[0], ct, acquireReaderSlot: false)
+                               .ConfigureAwait(false))
                 yield return record.Event;
         }
         finally
@@ -143,14 +146,13 @@ public sealed class JsonlReplayer
         if (runs.Count == 0)
             yield break;
 
-        await MergeSlots.WaitAsync(ct).ConfigureAwait(false);
         var enumerators = new IAsyncEnumerator<ReplayRecord>?[runs.Count];
         var heap = new PriorityQueue<int, ReplayRecord>(runs.Count, ReplayRecordComparer.Instance);
         try
         {
             for (var index = 0; index < runs.Count; index++)
             {
-                var enumerator = ReadSpoolRunAsync(runs[index], ct).GetAsyncEnumerator(ct);
+                var enumerator = ReadSpoolRunAsync(runs[index], ct, acquireReaderSlot: true).GetAsyncEnumerator(ct);
                 enumerators[index] = enumerator;
                 if (await enumerator.MoveNextAsync().ConfigureAwait(false))
                     heap.Enqueue(index, enumerator.Current);
@@ -173,15 +175,16 @@ public sealed class JsonlReplayer
                 if (enumerator is not null)
                     await enumerator.DisposeAsync().ConfigureAwait(false);
             }
-            MergeSlots.Release();
         }
     }
 
     private static async IAsyncEnumerable<ReplayRecord> ReadSpoolRunAsync(
         string path,
-        [EnumeratorCancellation] CancellationToken ct)
+        [EnumeratorCancellation] CancellationToken ct,
+        bool acquireReaderSlot)
     {
-        await PartitionReaderSlots.WaitAsync(ct).ConfigureAwait(false);
+        if (acquireReaderSlot)
+            await PartitionReaderSlots.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             await using var stream = new FileStream(
@@ -205,7 +208,8 @@ public sealed class JsonlReplayer
         }
         finally
         {
-            PartitionReaderSlots.Release();
+            if (acquireReaderSlot)
+                PartitionReaderSlots.Release();
         }
     }
 

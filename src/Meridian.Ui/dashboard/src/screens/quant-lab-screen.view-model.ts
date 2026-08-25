@@ -530,7 +530,7 @@ export function buildQuantParameters(
       }
       case "decimal": {
         const canonical = canonicalDecimal(raw, parameter.label);
-        assertQuantParameterBounds(parameter, Number(canonical));
+        assertDecimalParameterBounds(parameter, canonical);
         result[parameter.name] = canonical;
         break;
       }
@@ -594,6 +594,50 @@ function assertInt64ParameterBounds(parameter: QuantParameter, value: bigint): v
     throw new Error(`${parameter.label} must be at least ${parameter.min.toString()}.`);
   }
   if (parameter.max !== null && value > BigInt(Math.floor(parameter.max))) {
+    throw new Error(`${parameter.label} must be at most ${parameter.max.toString()}.`);
+  }
+}
+
+interface ExactDecimal {
+  coefficient: bigint;
+  scale: number;
+}
+
+function parseExactDecimal(raw: string): ExactDecimal {
+  const match = /^([+-]?)(\d+)(?:\.(\d+))?(?:e([+-]?\d+))?$/i.exec(raw);
+  if (!match) {
+    throw new Error(`Invalid decimal bound '${raw}'.`);
+  }
+
+  const fraction = match[3] ?? "";
+  const exponent = Number(match[4] ?? "0");
+  let coefficient = BigInt(`${match[2]}${fraction}`);
+  if (match[1] === "-") {
+    coefficient = -coefficient;
+  }
+  let scale = fraction.length - exponent;
+  if (scale < 0) {
+    coefficient *= 10n ** BigInt(-scale);
+    scale = 0;
+  }
+  return { coefficient, scale };
+}
+
+function compareExactDecimals(left: ExactDecimal, right: ExactDecimal): number {
+  const scale = Math.max(left.scale, right.scale);
+  const leftCoefficient = left.coefficient * 10n ** BigInt(scale - left.scale);
+  const rightCoefficient = right.coefficient * 10n ** BigInt(scale - right.scale);
+  return leftCoefficient < rightCoefficient ? -1 : leftCoefficient > rightCoefficient ? 1 : 0;
+}
+
+function assertDecimalParameterBounds(parameter: QuantParameter, canonical: string): void {
+  const value = parseExactDecimal(canonical);
+  if (parameter.min !== null && Number.isFinite(parameter.min) &&
+      compareExactDecimals(value, parseExactDecimal(parameter.min.toString())) < 0) {
+    throw new Error(`${parameter.label} must be at least ${parameter.min.toString()}.`);
+  }
+  if (parameter.max !== null && Number.isFinite(parameter.max) &&
+      compareExactDecimals(value, parseExactDecimal(parameter.max.toString())) > 0) {
     throw new Error(`${parameter.label} must be at most ${parameter.max.toString()}.`);
   }
 }

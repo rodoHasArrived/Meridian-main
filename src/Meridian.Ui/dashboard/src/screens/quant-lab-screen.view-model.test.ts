@@ -46,6 +46,16 @@ const boolParameter: QuantParameter = {
   max: null
 };
 
+const largeDecimalParameter: QuantParameter = {
+  name: "notional",
+  label: "Notional",
+  typeName: "decimal",
+  defaultValue: null,
+  description: null,
+  min: null,
+  max: 9007199254740992
+};
+
 const successfulRunState: QuantRunState = {
   phase: "ready",
   error: null,
@@ -212,6 +222,13 @@ describe("Quant Lab view model helpers", () => {
 
     expect(() => buildQuantParameters([parameter], { large: "9007199254740993" }))
       .toThrow(/at most 9007199254740992/);
+  });
+
+  it("checks Decimal bounds without losing precision", () => {
+    expect(() => buildQuantParameters(
+      [largeDecimalParameter],
+      { notional: "9007199254740993" }
+    )).toThrow(/at most 9007199254740992/);
   });
 
   it("prunes values for parameters no longer present in source", () => {

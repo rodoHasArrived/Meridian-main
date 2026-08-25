@@ -169,8 +169,10 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
 
         // Fold supersede chains and drop cancellations so adjustment math sees each
         // action's latest terms exactly once.
+        var effectiveThrough = DateOnly.FromDateTime(asOfUtc.UtcDateTime);
         return CorporateActionEffectiveStateProjector
             .ProjectEffectiveActions(actions, asOfUtc)
+            .Where(action => action.ExDate <= effectiveThrough)
             .OrderBy(static a => a.ExDate)
             .ThenBy(static a => a.CorpActId)
             .ToArray();

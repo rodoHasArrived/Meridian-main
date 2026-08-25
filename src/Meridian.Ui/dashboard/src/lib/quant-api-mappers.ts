@@ -29,13 +29,23 @@ export function mapQuantRunResponseToCellResult(
     output.push({ kind: "metric", text: `${metric.label}: ${metric.value}`, tone: "default" });
   }
 
-  for (const diagnostic of [...response.compilationErrors, ...response.compilationWarnings, ...response.runtimeDiagnostics]) {
+  for (const diagnostic of [...response.compilationErrors, ...response.runtimeDiagnostics]) {
     output.push({
-      kind: "error",
+      kind: diagnostic.severity.toLowerCase() === "warning" ? "console" : "error",
       text: diagnostic.line > 0
         ? `${diagnostic.severity}: ${diagnostic.message} (${diagnostic.line}:${diagnostic.column})`
         : `${diagnostic.severity}: ${diagnostic.message}`,
       tone: diagnostic.severity.toLowerCase() === "warning" ? "warning" : "danger"
+    });
+  }
+
+  for (const diagnostic of response.compilationWarnings) {
+    output.push({
+      kind: "console",
+      text: diagnostic.line > 0
+        ? `${diagnostic.severity}: ${diagnostic.message} (${diagnostic.line}:${diagnostic.column})`
+        : `${diagnostic.severity}: ${diagnostic.message}`,
+      tone: "warning"
     });
   }
 
