@@ -206,8 +206,22 @@ entries at the unscaled figure: `ApplyShortSell` credits `Cash` and `ShortSecuri
 in-memory book.
 
 So a paper session holding 10 SPY calls at $2.50 is booked at **$25 of exposure from the very first
-live fill**, not on restore. `ContractMultiplier` is attribution metadata that looks like an economic
-input and is never used as one.
+live fill**, not on restore.
+
+**One downstream path does consume it, and the remedy must not touch that one.**
+`PaperPosition.ToExecutionPosition` preserves the multiplier (`:1324`),
+`AggregatePortfolioService.SplitByOwner` carries it into each contribution, and
+`AggregatePortfolioExposureProvider` multiplies by it explicitly —
+`var price = unitPrice * (contribution.ContractMultiplier > 0m ? contribution.ContractMultiplier : 1m)`
+(`AggregatePortfolioExposureProvider.cs:571-582`), under a comment making precisely this section's
+argument: "an option position of 100 contracts at a $5 premium is $50k of exposure, not $500".
+**Aggregate pre-trade exposure is therefore already correct**, and a remediation applied
+indiscriminately would scale it twice. The defective consumers are the paper book's own cash, cost
+basis, P&L and account snapshots, and the two margin models — not everything downstream.
+
+So the accurate statement is narrower than "carried but never used": `ContractMultiplier` is
+consumed by exactly one aggregate risk projection and ignored by the transaction and valuation paths
+that produce the numbers an operator reads.
 
 That reframes the persistence gap rather than erasing it. All three
 `PaperSessionPersistenceService` call sites — `:159` (session restore on startup), `:820`
@@ -240,9 +254,12 @@ onward as separate values). Multiplying at storage while leaving those consumers
 $250,000 of exposure for ten $2.50 calls instead of $2,500 — a 100× error in the opposite direction.
 Keep lot and average prices in per-unit terms; migrate every consumer together or not at all.
 Second, give `ContractMultiplier` a persisted field so no reconstruction path can drop it. `ResolveContractMultiplier`
-(`OrderManagementSystem.RiskOutcomes.cs:324`) already derives the value; the gap is that nothing
-downstream multiplies by it. A field that is carried but never used is worse than a missing one — it
-reads, to every subsequent reviewer, as though the concern were already handled.
+(`OrderManagementSystem.RiskOutcomes.cs:324`) already derives the value; the gap is that the
+transaction, valuation and margin paths do not multiply by it. **Scope the fix to those** — the
+aggregate exposure provider already applies it (`:571-582`) and scaling it again would overstate
+pre-trade exposure by the multiplier, the same double-count the cost-basis caveat above warns about.
+A field consumed in one projection and ignored in the rest is worse than a missing one: it reads, to
+every subsequent reviewer, as though the concern were already handled.
 
 ## 4. The percent-of-par fix landed; the contract multiplier one parameter away did not
 
@@ -701,8 +718,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Thirteen rounds of automated review challenged **45 claims** across this document. Every one was checked
-against the code, **all 45 held**, and the findings above are the corrected text. Two more — the
+Fourteen rounds of automated review challenged **46 claims** across this document. Every one was checked
+against the code, **all 46 held**, and the findings above are the corrected text. Two more — the
 quality-route count, wrong at 31 in three places, and a refuted remedy still standing in §1 — were
 caught by re-measuring and re-reading rather than by a reviewer, and are recorded with them. Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
@@ -878,15 +895,39 @@ it replaced: an unlabelled panel invites the question "which book is this?", whi
 wrong label forecloses it. A reviewer who only re-checked the claims it had already made would have
 recorded the panel as unchanged and missed it — which is what this document did until round 13.
 
+**Round 14 — one, and it is the only round where a remedy would have broken working code:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "Nothing downstream multiplies by `ContractMultiplier`" | One path does. `ToExecutionPosition` preserves it (`:1324`), `AggregatePortfolioService.SplitByOwner` carries it into each contribution, and `AggregatePortfolioExposureProvider` computes `unitPrice * contribution.ContractMultiplier` (`:571-582`) under a comment making this section's own argument. **Aggregate pre-trade exposure is already correct**, so a remediation applied indiscriminately would scale it twice | §3, improvement #3, and the method lesson that rested on it |
+
+Every previous round corrected a claim. This one corrects a *remedy that would have introduced a
+defect* — scaling a path that is already right, overstating pre-trade exposure by the multiplier.
+That is a different and more serious category, and it is the second time this same provider has
+caught the same over-generalization: round 5 ruled out multiplying stored cost basis *because*
+`AggregatePortfolioExposureProvider` already multiplies it. That correction landed in the cost-basis
+caveat and never propagated to the sweeping "nothing multiplies by it" sentence three paragraphs
+above — so the document held the specific fact and the contradicting generalization simultaneously
+for nine rounds.
+
+It also sharpens the method lesson rather than weakening it. "A value carried but never consumed
+reads as handled" was the wrong formulation; the true one is worse. **A value consumed in exactly one
+place and ignored everywhere else reads as handled everywhere**, because the first grep finds it
+being multiplied and the search stops. That single correct consumer is what let this defect survive
+four consecutive reviews.
+
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
 remedies — and are rewritten rather than softened; the multiplier correction made the defect
 *larger* and the original remedy insufficient, and both the catalog test and the CI `needs` change
 were unimplementable as specified. Three method lessons generalize. **A permission gate read in isolation predicts the wrong
 access** — the same intersection error this document accuses the codebase of, committed while
-describing it. And **a value that is carried but never consumed reads as handled**: `ContractMultiplier`
-is threaded through three layers and multiplied by nothing, which is why four consecutive reviews,
-this one included, mistook plumbing for correctness. And third: **correcting one section without
+describing it. And **a value consumed in one place and ignored in the rest reads as handled everywhere**:
+`ContractMultiplier` is threaded through three layers, applied correctly by
+`AggregatePortfolioExposureProvider`, and ignored by every transaction, valuation and margin path —
+which is why four consecutive reviews, this one included, mistook partial plumbing for correctness.
+The single correct consumer is what makes the defect so durable: anyone who greps for the identifier
+finds it being multiplied and stops looking. And third: **correcting one section without
 re-reading the sections that depend on it introduces fresh contradictions** — round 2's narrowing of
 §4 was refuted by §3, which the same commit had just rewritten; round 3's replacement then
 overcorrected past the evidence, and round 4 had to pull it back. Seven of the nine findings in
