@@ -50,30 +50,82 @@ export function TrialBalanceScreen() {
   // Depend on the stable callback, never on the view-model object: the hook returns a fresh
   // object every render, so an object dependency would re-run this effect forever.
   const selectPeriod = postedLedger.selectPeriod;
+  const selectBook = postedLedger.selectBook;
+  const bookOptions = postedLedger.view.bookOptions;
+  const selectedBookId = bookOptions.find((option) => option.isSelected)?.id ?? null;
 
-  // Apply each distinct ?periodId= exactly once. Comparing against current state instead
-  // would fight the view model whenever it declines a period that is not in the loaded set:
-  // it resets to the default, this effect re-applies the URL value, and neither settles.
+  // A deep link names a book and a period, and the two have to settle before the URL is written
+  // back — otherwise the write below stamps the default selection over the link's own values
+  // before they have been applied, and the two effects trade edits without converging.
+  const requestedBookId = searchParams.get("ledgerBookId");
+  const requestedPeriodId = searchParams.get("periodId");
+  // Only a book this deployment actually has can be waited for; anything else resolves to "no
+  // book requested" so a stale bookmark still opens the screen on its default.
+  const resolvedRequestedBookId = requestedBookId && bookOptions.some((option) => option.id === requestedBookId)
+    ? requestedBookId
+    : null;
+
+  const appliedBookIdRef = useRef<string | null>(null);
   const appliedPeriodIdRef = useRef<string | null>(null);
+
   useEffect(() => {
-    const requestedPeriodId = searchParams.get("periodId");
+    // Books have to have landed before a requested one can be judged present or absent.
+    if (!requestedBookId || requestedBookId === appliedBookIdRef.current || bookOptions.length === 0) {
+      return;
+    }
+
+    appliedBookIdRef.current = requestedBookId;
+    if (resolvedRequestedBookId) {
+      selectBook(resolvedRequestedBookId);
+    }
+  }, [bookOptions, requestedBookId, resolvedRequestedBookId, selectBook]);
+
+  // Applied only once the requested book is the selected one: periods are scoped to the book, so
+  // judging a period against the previous book's set would decline a perfectly good link and land
+  // silently on that book's default — a deep link opening a different period than it named.
+  useEffect(() => {
     if (!requestedPeriodId || requestedPeriodId === appliedPeriodIdRef.current) {
       return;
     }
 
-    appliedPeriodIdRef.current = requestedPeriodId;
-    selectPeriod(requestedPeriodId);
-  }, [searchParams, selectPeriod]);
+    if (resolvedRequestedBookId && resolvedRequestedBookId !== selectedBookId) {
+      return;
+    }
 
+    if (periodOptions.length === 0) {
+      return;
+    }
+
+    appliedPeriodIdRef.current = requestedPeriodId;
+    if (periodOptions.some((option) => option.id === requestedPeriodId)) {
+      selectPeriod(requestedPeriodId);
+    }
+  }, [periodOptions, requestedPeriodId, resolvedRequestedBookId, selectPeriod, selectedBookId]);
+
+  // The book goes into the URL with the period. Without it a link named a period but not the book
+  // it belongs to, so reopening it resolved against whichever book sorts first.
   useEffect(() => {
-    if (!selectedPeriodId || searchParams.get("periodId") === selectedPeriodId) {
+    const bookPending = requestedBookId !== null && requestedBookId !== appliedBookIdRef.current;
+    const periodPending = requestedPeriodId !== null && requestedPeriodId !== appliedPeriodIdRef.current;
+    if (bookPending || periodPending) {
+      return;
+    }
+
+    const periodMatches = !selectedPeriodId || searchParams.get("periodId") === selectedPeriodId;
+    const bookMatches = !selectedBookId || searchParams.get("ledgerBookId") === selectedBookId;
+    if (periodMatches && bookMatches) {
       return;
     }
 
     const nextParams = new URLSearchParams(searchParams);
-    nextParams.set("periodId", selectedPeriodId);
+    if (selectedBookId) {
+      nextParams.set("ledgerBookId", selectedBookId);
+    }
+    if (selectedPeriodId) {
+      nextParams.set("periodId", selectedPeriodId);
+    }
     setSearchParams(nextParams, { replace: true });
-  }, [searchParams, selectedPeriodId, setSearchParams]);
+  }, [requestedBookId, requestedPeriodId, searchParams, selectedBookId, selectedPeriodId, setSearchParams]);
 
   const journalEvidence: AccountingLedgerJournalEvidenceViewState = useMemo(
     () => buildAccountingLedgerJournalEvidenceViewState({

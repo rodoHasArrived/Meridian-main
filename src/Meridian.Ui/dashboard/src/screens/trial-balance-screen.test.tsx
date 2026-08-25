@@ -207,6 +207,59 @@ describe("TrialBalanceScreen", () => {
     expect(screen.getByLabelText("Period", { selector: "select" })).toHaveValue(PRIOR_PERIOD_ID);
   });
 
+  it("opens a period in a book other than the first, which the periodId alone cannot name", async () => {
+    // Periods are scoped to the selected book, and the initial load takes the first book in
+    // display order. A link carrying only the period was declined against that book's set and
+    // landed silently on its default -- a deep link opening a different period than it named.
+    const FEEDER_BOOK_ID = "00000000-0000-0000-0000-0000000000cc";
+    const FEEDER_PERIOD_ID = "33333333-3333-3333-3333-333333333333";
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([
+      {
+        ledgerBookId: "00000000-0000-0000-0000-0000000000aa",
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+        fundStructureNodeKind: "Fund",
+        displayName: "Alpha Master Fund",
+        baseCurrency: "USD",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
+        accountingBasis: "Primary",
+        accountingPolicyId: "legacy-v1",
+        accountingPolicyVersion: "legacy-v1"
+      },
+      {
+        ledgerBookId: FEEDER_BOOK_ID,
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+        fundStructureNodeKind: "Fund",
+        displayName: "Beta Feeder Fund",
+        baseCurrency: "EUR",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
+        accountingBasis: "Primary",
+        accountingPolicyId: "legacy-v1",
+        accountingPolicyVersion: "legacy-v1"
+      }
+    ] as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockImplementation((query) =>
+      Promise.resolve(query?.ledgerBookId === FEEDER_BOOK_ID
+        ? [makePeriod({ periodId: FEEDER_PERIOD_ID, ledgerBookId: FEEDER_BOOK_ID, periodNo: 6, label: "June 2026" })]
+        : [makePeriod()]) as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValue(postedLines);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockResolvedValue(makePnl());
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue(postedEntries);
+
+    await renderTrialBalanceScreen(
+      `/accounting/ledger?view=trial-balance&ledgerBookId=${FEEDER_BOOK_ID}&periodId=${FEEDER_PERIOD_ID}`
+    );
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    expect(ledgerReportsApi.getLedgerPeriods).toHaveBeenCalledWith({ ledgerBookId: FEEDER_BOOK_ID });
+    expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(FEEDER_PERIOD_ID);
+    expect(screen.getByLabelText("Period", { selector: "select" })).toHaveValue(FEEDER_PERIOD_ID);
+  });
+
   it("switches basis and narrows rows with the account filter", async () => {
     primeHappyPath();
     const user = userEvent.setup();
