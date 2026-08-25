@@ -29,7 +29,7 @@ export function usePostedLedgerRouteScope(
   active = true
 ): void {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { selectBook, selectPeriod, selectedPeriodId, periodsSettled } = postedLedger;
+  const { selectBook, selectPeriod, selectedPeriodId, periodsSettled, booksSettled } = postedLedger;
   const bookOptions = postedLedger.view.bookOptions;
   const periodOptions = postedLedger.view.periodSelector.options;
   const selectedBookId = bookOptions.find((option) => option.isSelected)?.id ?? null;
@@ -123,6 +123,16 @@ export function usePostedLedgerRouteScope(
       return;
     }
 
+    // Book discovery gates every scope below it, so until a successful response has landed there
+    // is no scope on screen to write and nothing that could justify overwriting the link's own
+    // values. A transient books outage clears the selections while the applied ids still match the
+    // query, so neither gate below blocked the write and periodId was deleted -- an outage that
+    // established nothing about the period permanently damaging a valid bookmark. Same rule as the
+    // period request: only a successful response is an answer.
+    if (!booksSettled) {
+      return;
+    }
+
     const bookPending = requestedBookId !== null && requestedBookId !== appliedBookId;
     const periodPending = requestedPeriodId !== null && requestedPeriodId !== appliedPeriodId;
     if (bookPending || periodPending) {
@@ -156,6 +166,7 @@ export function usePostedLedgerRouteScope(
     active,
     appliedBookId,
     appliedPeriodId,
+    booksSettled,
     requestedBookId,
     requestedPeriodId,
     searchParams,

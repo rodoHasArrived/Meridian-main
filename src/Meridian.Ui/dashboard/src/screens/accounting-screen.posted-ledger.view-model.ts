@@ -255,6 +255,8 @@ export interface AccountingPostedLedgerViewModel {
   selectedPeriodLabel: string | null;
   /** True once the selected book's period request has come back successfully. */
   periodsSettled: boolean;
+  /** True once the ledger books request has come back successfully. */
+  booksSettled: boolean;
 }
 
 /**
@@ -687,6 +689,10 @@ export function useAccountingPostedLedgerViewModel(
   // selector reporting "no ledger periods exist yet -- create a ledger book" while the books
   // request was still in flight: an instruction to create accounting data, during a load.
   const [booksLoading, setBooksLoading] = useState(false);
+  // Whether a successful books response has landed. Same distinction the period settlement makes,
+  // for the same reason: an empty book list left by an outage says nothing about what this
+  // deployment holds, and acting on it as though it did destroys the operator's link.
+  const [booksSettled, setBooksSettled] = useState(false);
   // Which book's period request has finished SUCCESSFULLY. A caller cannot tell "no periods yet"
   // from "no periods at all" by watching the loading flags: between books landing and the period
   // effect setting its own flag there is a render where nothing is loading and the list is still
@@ -786,6 +792,7 @@ export function useAccountingPostedLedgerViewModel(
         if (cancelled) return;
         const rows = sortLedgerBooks(unsorted);
         setBooks(rows);
+        setBooksSettled(true);
         if (rows.length === 0) {
           // No book means no scope for anything below, and the period effect will not run to
           // clear it.
@@ -802,6 +809,8 @@ export function useAccountingPostedLedgerViewModel(
       .catch((err) => {
         if (cancelled) return;
         setBooks([]);
+        // Deliberately not settled, so nothing downstream reads this empty list as an answer.
+        setBooksSettled(false);
         setSelectedBookId(null);
         // The previous book's periods, balances and P&L are book-scoped, and the label and base
         // currency that named them come off the selected book -- so leaving them rendered a book's
@@ -1171,6 +1180,12 @@ export function useAccountingPostedLedgerViewModel(
      * alone leaves the request unresolved forever on a book that genuinely has no periods. A
      * failed request does not settle it: an empty list from an outage says nothing about the book.
      */
-    periodsSettled
+    periodsSettled,
+    /**
+     * True once the books request has come back successfully. Book discovery gates every scope
+     * below it, so a consumer that writes the scope somewhere durable -- the URL -- has to be able
+     * to tell "this deployment has no books" from "the books request failed".
+     */
+    booksSettled
   };
 }

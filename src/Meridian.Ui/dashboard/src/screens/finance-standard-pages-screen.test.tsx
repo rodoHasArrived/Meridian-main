@@ -1,5 +1,6 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactElement } from "react";
+import { useLocation } from "react-router-dom";
 import * as api from "@/lib/api";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import {
@@ -12,7 +13,7 @@ import {
   ReportRunDetailScreen
 } from "@/screens/finance-standard-pages-screen";
 import { requireFirst } from "@/test/fixtures";
-import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type { AccountingWorkspaceResponse } from "@/types";
 
 vi.mock("@/lib/api", async () => {
@@ -163,6 +164,25 @@ async function renderPage(node: ReactElement, route: string) {
   const result = renderWithRouter(node, { initialEntries: [route] });
   await waitForAsyncEffects();
   return result;
+}
+
+/**
+ * Renders the ledger explorer alongside a probe publishing the live query string, so a test can
+ * assert what a copied or refreshed link would actually carry after an interaction.
+ */
+function renderLedgerExplorerWithLocation(initialEntry: string): () => string {
+  function LocationProbe() {
+    return <output data-testid="route-search">{useLocation().search}</output>;
+  }
+
+  render(
+    <TestMemoryRouter initialEntries={[initialEntry]}>
+      <LedgerExplorerScreen data={data} />
+      <LocationProbe />
+    </TestMemoryRouter>
+  );
+
+  return () => screen.getByTestId("route-search").textContent ?? "";
 }
 
 describe("finance standard pages", () => {
@@ -811,6 +831,33 @@ describe("finance standard pages", () => {
 
     expect((document.getElementById("ledger-period-select") as HTMLSelectElement | null)?.value).toBe("");
     expect(screen.queryByText("Cash sweep")).not.toBeInTheDocument();
+  });
+
+  it("keeps the deep link when book discovery fails on a returning tab", async () => {
+    // A books outage clears every selection, but the applied ids still matched the query values,
+    // so neither pending gate blocked the write-back and periodId was deleted. Book discovery
+    // establishes nothing about whether the period exists, so an outage there must not damage an
+    // otherwise valid bookmark -- the same rule the period request already follows.
+    mockPostedBook();
+
+    const search = renderLedgerExplorerWithLocation(
+      `/accounting/ledger?ledgerBookId=${LEDGER_BOOK_ID}&periodId=${LEDGER_PERIOD_ID}`
+    );
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+    expect(search()).toContain(LEDGER_PERIOD_ID);
+
+    // The books endpoint goes down while the tab is idle.
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockRejectedValue(new Error("Ledger books are unavailable."));
+    fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
+    await waitForAsyncEffects();
+    fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    // The link survives to be retried.
+    expect(search()).toContain(LEDGER_BOOK_ID);
+    expect(search()).toContain(LEDGER_PERIOD_ID);
   });
 
   it("offers no ledger filter it does not apply", async () => {
