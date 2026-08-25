@@ -1,11 +1,11 @@
 {
   "total_files": 656,
-  "total_lines": 132277,
+  "total_lines": 132291,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 239,
-  "average_lines": 201.6,
+  "average_lines": 201.7,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -3625,7 +3625,7 @@
     },
     {
       "path": "docs/security/security-remediation-backlog.md",
-      "line_count": 138,
+      "line_count": 152,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
