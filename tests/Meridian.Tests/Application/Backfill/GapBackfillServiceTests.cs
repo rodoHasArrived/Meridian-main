@@ -1,8 +1,11 @@
 using FluentAssertions;
 using Meridian.Application.Backfill;
 using Meridian.Application.Scheduling;
+using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Resilience;
+using Meridian.Tests.TestHelpers;
 using Xunit;
 using Meridian.Contracts.Backfill;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
@@ -162,6 +165,77 @@ public sealed class GapBackfillServiceTests
         var request = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         request.Symbols.Should().BeEquivalentTo(["SPY", "QQQ"]);
+    }
+
+    // ── integrity disclosure for skipped sub-threshold gaps ───────────────────
+
+    [Fact]
+    public void OnReconnectionGap_GapBelowMinimum_DisclosesSkippedWindowOnTape()
+    {
+        var publisher = new TestMarketEventPublisher();
+        var svc = new GapBackfillService(
+            (req, ct) => Task.FromResult(SuccessResult(req)),
+            subscribedSymbols: () => ["AAPL", "MSFT"],
+            minimumGap: TimeSpan.FromSeconds(30),
+            integrityPublisher: publisher);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
+        var reconnectedAt = DateTimeOffset.UtcNow;
+        var disconnectedAt = reconnectedAt.AddSeconds(-5);
+
+        // The sub-threshold skip path publishes synchronously before returning.
+        source.Raise(new ReconnectionGap("polygon", disconnectedAt, reconnectedAt, ReconnectAttempts: 1));
+
+        svc.GapBackfillsTriggered.Should().Be(0, "the marker discloses the hole; it must not trigger backfill");
+        publisher.PublishedEvents.Should().HaveCount(2);
+        publisher.PublishedEvents.Should().OnlyContain(e => e.Type == MarketEventType.Integrity);
+        publisher.PublishedEvents.Should().OnlyContain(e => e.Source == "polygon",
+            "the marker must carry the real provider whose feed dropped");
+        publisher.PublishedEvents.Select(e => e.Symbol).Should().BeEquivalentTo(["AAPL", "MSFT"]);
+        var integrity = publisher.PublishedEvents[0].Payload.Should().BeOfType<IntegrityEvent>().Subject;
+        integrity.ErrorCode.Should().Be(1009);
+        integrity.Description.Should().Contain("below remediation floor");
+        integrity.Description.Should().Contain(disconnectedAt.ToString("O"));
+        integrity.Description.Should().Contain(reconnectedAt.ToString("O"));
+    }
+
+    [Fact]
+    public async Task OnReconnectionGap_GapExceedsMinimum_DoesNotPublishSkipMarker()
+    {
+        var publisher = new TestMarketEventPublisher();
+        var tcs = new TaskCompletionSource<bool>();
+        var svc = new GapBackfillService(
+            async (req, ct) => { await Task.Yield(); tcs.TrySetResult(true); return SuccessResult(req); },
+            subscribedSymbols: () => ["AAPL"],
+            minimumGap: TimeSpan.FromSeconds(10),
+            integrityPublisher: publisher);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
+
+        source.Raise(MakeGap(TimeSpan.FromSeconds(60)));
+
+        await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        publisher.PublishedEvents.Should().BeEmpty(
+            "a remediated gap is not a coverage hole and must not be falsely disclosed as one");
+    }
+
+    [Fact]
+    public void OnReconnectionGap_GapBelowMinimum_MarkerPublishFailure_FailsOpen()
+    {
+        var publisher = new ThrowingMarketEventPublisher();
+        var svc = new GapBackfillService(
+            (req, ct) => Task.FromResult(SuccessResult(req)),
+            subscribedSymbols: () => ["AAPL"],
+            minimumGap: TimeSpan.FromSeconds(30),
+            integrityPublisher: publisher);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
+
+        var act = () => source.Raise(MakeGap(TimeSpan.FromSeconds(5)));
+
+        act.Should().NotThrow("integrity disclosure must fail open around the gap-handling path");
+        publisher.Attempts.Should().BeGreaterThan(0, "the publish must actually have been attempted");
+        svc.GapBackfillsTriggered.Should().Be(0);
     }
 
     // ── success / failure counters ────────────────────────────────────────────

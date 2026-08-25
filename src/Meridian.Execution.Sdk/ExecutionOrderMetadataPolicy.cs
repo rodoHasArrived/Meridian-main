@@ -26,7 +26,7 @@ public static class ExecutionOrderMetadataPolicy
         "live_promotion_audit_reference"
     ];
 
-    private static readonly string[] BrokerAccountAndOverrideKeys =
+    private static readonly string[] ServerOwnedRoutingKeys =
     [
         "broker_account_id",
         "brokerAccountId",
@@ -50,11 +50,11 @@ public static class ExecutionOrderMetadataPolicy
         IReadOnlyDictionary<string, string>? metadata) =>
         RemoveKeys(metadata, ClientRejectedKeys);
 
-    public static OrderRequest RemoveBrokerAccountAndOverrideKeys(OrderRequest request)
+    public static OrderRequest RemoveServerOwnedRoutingKeys(OrderRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var sanitized = RemoveKeys(request.Metadata, BrokerAccountAndOverrideKeys);
+        var sanitized = RemoveKeys(request.Metadata, ServerOwnedRoutingKeys);
         return ReferenceEquals(sanitized, request.Metadata)
             ? request
             : request with { Metadata = sanitized };

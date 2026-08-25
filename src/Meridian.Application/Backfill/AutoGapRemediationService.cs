@@ -4,6 +4,7 @@ using System.Net.Http;
 using Meridian.Core.Logging;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Scheduling;
+using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Resilience;
 using Serilog;
@@ -318,6 +319,7 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
     private readonly BackfillRemediationSlaEvaluator _slaEvaluator;
     private readonly SemaphoreSlim _concurrencyGate;
     private readonly DataQualityMonitoringService? _qualityMonitoringService;
+    private readonly IMarketEventPublisher? _integrityPublisher;
 
     // Graceful-shutdown tracking for background (event-driven) remediation tasks. New work observes
     // _shutdownCts, and Dispose drains in-flight tasks before releasing resources. _lifecycleLock
@@ -335,11 +337,13 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
         DataQualityMonitoringService? qualityMonitoringService = null,
         AutoGapRemediationPolicy? policy = null,
         ILogger? log = null,
-        BackfillRemediationSlaPolicy? slaPolicy = null)
+        BackfillRemediationSlaPolicy? slaPolicy = null,
+        IMarketEventPublisher? integrityPublisher = null)
     {
         _backfillGateway = backfillGateway;
         _history = history;
         _qualityMonitoringService = qualityMonitoringService;
+        _integrityPublisher = integrityPublisher;
         _policy = policy ?? AutoGapRemediationPolicy.Default;
         _slaPolicy = slaPolicy ?? BackfillRemediationSlaPolicy.Default;
         _log = log ?? LoggingSetup.ForContext<AutoGapRemediationService>();
@@ -465,6 +469,7 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
                 gap.ProviderName,
                 gap.Duration,
                 _policy.MinimumGapDuration);
+            PublishSkippedReconnectionGapMarkers(gap, symbols);
             return Task.FromResult(AutoRemediationOutcome.Skipped);
         }
 
@@ -607,6 +612,49 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
 
     /// <summary>Configured minimum duration for all automatic gap remediation signals.</summary>
     public TimeSpan MinimumGapDuration => _policy.MinimumGapDuration;
+
+    /// <summary>
+    /// Discloses a deliberately unremediated sub-threshold reconnection gap on the market-event
+    /// tape, one marker per affected symbol, stamped with the real provider that dropped the feed.
+    /// Publication is strictly best-effort: a marker failure must never change the remediation
+    /// decision, so failures are logged at Warning and swallowed (fail-open).
+    /// </summary>
+    private void PublishSkippedReconnectionGapMarkers(ReconnectionGap gap, IReadOnlyList<string> symbols)
+    {
+        if (_integrityPublisher is null)
+        {
+            return;
+        }
+
+        try
+        {
+            foreach (var symbol in symbols)
+            {
+                if (string.IsNullOrWhiteSpace(symbol))
+                {
+                    continue;
+                }
+
+                var integrity = IntegrityEvent.UnremediatedCoverageGap(
+                    gap.ReconnectedAt,
+                    symbol,
+                    gap.ProviderName,
+                    gap.DisconnectedAt,
+                    gap.ReconnectedAt,
+                    "below remediation floor");
+                _integrityPublisher.TryPublish(
+                    MarketEvent.Integrity(gap.ReconnectedAt, symbol, integrity, gap.ProviderName));
+            }
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(
+                ex,
+                "Failed to publish unremediated-gap integrity markers for {Provider} covering {SymbolCount} symbol(s)",
+                gap.ProviderName,
+                symbols.Count);
+        }
+    }
 
     private void OnQualityGapDetected(QualityDataGap gap)
     {

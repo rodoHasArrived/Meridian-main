@@ -584,6 +584,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
                 LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(safeRequest.Symbol), safeRequest.Side, safeRequest.Quantity, updatedState.Status);
 
+            // A bracket/OCO submission spawns broker-side child legs with their own order ids.
+            // Registering them here makes their execution reports land on tracked state instead
+            // of being dropped as "not tracked", and puts them in the book a kill-switch sweep
+            // enumerates.
+            RegisterGatewayChildOrders(orderId, updatedState, report);
+
             // Once the broker has acknowledged a fill, its accounting handoff is authoritative.
             // Caller cancellation, paper-session persistence, or audit failures must never run
             // first and leave a broker fill without durable posting/fallback state.
@@ -1307,6 +1313,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private static bool IsTerminal(OrderStatus status) =>
         status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired;
 
+
     /// <summary>
     /// Long-running consumer of <see cref="IExecutionGateway.StreamExecutionReportsAsync"/>.
     /// Applies asynchronous reports (partial fills, rejects, cancels from a live broker) to
@@ -1403,6 +1410,14 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 _logger.LogWarning(
                     "Received execution report for order {OrderId} ({ReportType}, {Status}) not tracked by this OMS",
                     LogSanitizer.Sanitize(report.OrderId), report.ReportType, report.OrderStatus);
+            }
+            else
+            {
+                // Gateways that acknowledge asynchronously deliver bracket child legs on the
+                // report stream rather than on the submit return; register them from here too so
+                // both delivery shapes end with the children tracked. TryRegisterOrder makes a
+                // second sighting of the same child a no-op.
+                RegisterGatewayChildOrders(orderId!, updatedState, report);
             }
 
             if (isFillReport)

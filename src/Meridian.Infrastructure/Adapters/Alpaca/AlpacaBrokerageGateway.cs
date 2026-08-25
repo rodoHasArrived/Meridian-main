@@ -239,6 +239,12 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
             OrderQuantity = request.Quantity,
             GatewayOrderId = order?.Id,
             Timestamp = order?.CreatedAt ?? DateTimeOffset.UtcNow,
+            // A bracket/OCO submission comes back with server-created child legs carrying their
+            // own order ids. Surfacing them on the acknowledgement lets the OMS register them as
+            // tracked orders instead of dropping their execution reports as untracked.
+            ChildOrders = order?.Legs is { Length: > 0 } childLegs
+                ? childLegs.Select(MapBrokerOrder).ToList().AsReadOnly()
+                : null,
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
         return report;
@@ -415,7 +421,11 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     public async Task<IReadOnlyList<BrokerOrder>> GetOpenOrdersAsync(CancellationToken ct = default)
     {
         using var client = CreateHttpClient();
-        var response = await client.GetAsync($"{BaseUrl}/v2/orders?status=open", ct).ConfigureAwait(false);
+
+        // nested=true so bracket/OCO child legs are returned under their parents regardless of
+        // how the flat listing treats held legs; they are flattened below so the kill-switch
+        // sweep and reconciliation see every order the broker is actually working.
+        var response = await client.GetAsync($"{BaseUrl}/v2/orders?status=open&nested=true", ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         var orders = await response.Content.ReadFromJsonAsync(
@@ -424,21 +434,53 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         if (orders is null)
             return Array.Empty<BrokerOrder>();
 
-        return orders.Select(o => new BrokerOrder
+        var flattened = new List<BrokerOrder>();
+        var seenOrderIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var order in orders)
         {
-            OrderId = o.Id ?? string.Empty,
-            ClientOrderId = o.ClientOrderId,
-            Symbol = o.Symbol ?? string.Empty,
-            Side = o.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
-            Type = ParseOrderType(o.Type),
-            Quantity = ParseDecimal(o.Qty),
-            FilledQuantity = ParseDecimal(o.FilledQty),
-            LimitPrice = string.IsNullOrEmpty(o.LimitPrice) ? null : ParseDecimal(o.LimitPrice),
-            StopPrice = string.IsNullOrEmpty(o.StopPrice) ? null : ParseDecimal(o.StopPrice),
-            Status = MapAlpacaStatus(o.Status),
-            CreatedAt = o.CreatedAt ?? DateTimeOffset.UtcNow,
-        }).ToList().AsReadOnly();
+            AppendOrderWithLegs(order, flattened, seenOrderIds);
+        }
+
+        return flattened.AsReadOnly();
     }
+
+    private static void AppendOrderWithLegs(
+        AlpacaOrderResponse order,
+        List<BrokerOrder> orders,
+        HashSet<string> seenOrderIds)
+    {
+        if (order.Id is { Length: > 0 } && !seenOrderIds.Add(order.Id))
+        {
+            return;
+        }
+
+        orders.Add(MapBrokerOrder(order));
+
+        if (order.Legs is not { Length: > 0 } legs)
+        {
+            return;
+        }
+
+        foreach (var leg in legs)
+        {
+            AppendOrderWithLegs(leg, orders, seenOrderIds);
+        }
+    }
+
+    private static BrokerOrder MapBrokerOrder(AlpacaOrderResponse o) => new()
+    {
+        OrderId = o.Id ?? string.Empty,
+        ClientOrderId = o.ClientOrderId,
+        Symbol = o.Symbol ?? string.Empty,
+        Side = o.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
+        Type = ParseOrderType(o.Type),
+        Quantity = ParseDecimal(o.Qty),
+        FilledQuantity = ParseDecimal(o.FilledQty),
+        LimitPrice = string.IsNullOrEmpty(o.LimitPrice) ? null : ParseDecimal(o.LimitPrice),
+        StopPrice = string.IsNullOrEmpty(o.StopPrice) ? null : ParseDecimal(o.StopPrice),
+        Status = MapAlpacaStatus(o.Status),
+        CreatedAt = o.CreatedAt ?? DateTimeOffset.UtcNow,
+    };
 
     /// <inheritdoc />
     public async Task<BrokerHealthStatus> CheckHealthAsync(CancellationToken ct = default)
@@ -1798,6 +1840,13 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         [JsonPropertyName("canceled_at")] public DateTimeOffset? CanceledAt { get; set; }
         [JsonPropertyName("expired_at")] public DateTimeOffset? ExpiredAt { get; set; }
         [JsonPropertyName("failed_at")] public DateTimeOffset? FailedAt { get; set; }
+
+        /// <summary>
+        /// Child orders nested under a bracket/OCO/OTO parent — full order objects with their own
+        /// ids, returned on submit and on nested order listings. Dropping them is how TP/SL legs
+        /// become invisible to the OMS and to the kill-switch sweep.
+        /// </summary>
+        [JsonPropertyName("legs")] public AlpacaOrderResponse[]? Legs { get; set; }
     }
 
     internal sealed class AlpacaAccountResponse

@@ -170,7 +170,7 @@ public sealed class WorkstationStreamEndpointTests
                     AskPrice: 450.05m,
                     AskSize: 200,
                     StreamId: "TEST",
-                    Venue: "NYSE"));
+                    Venue: "NYSE", Source: "TEST"));
             }
 
             builder.Services.AddSingleton(collector);

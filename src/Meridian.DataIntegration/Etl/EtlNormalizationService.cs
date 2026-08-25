@@ -117,7 +117,7 @@ public sealed class EtlNormalizationService
                 : record.RecordIndex;
 
             var trade = new Trade(timestamp, symbol!, price, size, aggressor, seq, record.SourceFileName, venue);
-            var evt = MarketEvent.Trade(timestamp, symbol!, trade, seq, definition.LogicalSourceName).StampReceiveTime(timestamp);
+            var evt = MarketEvent.Trade(timestamp, symbol!, trade, definition.LogicalSourceName, seq).StampReceiveTime(timestamp);
             evt = _canonicalizer.Canonicalize(evt, ct);
 
             return ValueTask.FromResult(new NormalizationOutcome

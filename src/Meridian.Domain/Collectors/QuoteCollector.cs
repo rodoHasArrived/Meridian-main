@@ -36,8 +36,27 @@ public sealed class QuoteCollector : IQuoteStateStore
             return;
 
         using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("quote-collector", "quote", update.Symbol);
+
+        // The collector is a shared singleton serving every active adapter, so provenance
+        // must arrive per event. Reject sourceless updates loudly instead of silently
+        // attributing them to a default vendor.
+        if (MarketDataSources.IsMissing(update.Source))
+        {
+            var integrity = IntegrityEvent.MissingSource(
+                update.Timestamp,
+                update.Symbol,
+                "quote",
+                update.SequenceNumber ?? 0,
+                update.StreamId,
+                update.Venue);
+
+            _publisher.TryPublish(MarketEvent.Integrity(
+                update.Timestamp, update.Symbol, integrity, MarketDataSources.Unknown));
+            return;
+        }
+
         var payload = Upsert(update);
-        _publisher.TryPublish(MarketEvent.BboQuote(payload.Timestamp, payload.Symbol, payload));
+        _publisher.TryPublish(MarketEvent.BboQuote(payload.Timestamp, payload.Symbol, payload, update.Source!));
     }
 
     public bool TryGet(string symbol, out BboQuotePayload? quote)
@@ -52,10 +71,24 @@ public sealed class QuoteCollector : IQuoteStateStore
 
         var symbolId = new SymbolId(update.Symbol);
 
-        // We keep our own monotonically increasing per-symbol sequence for quotes.
-        var nextSeq = _seq.AddOrUpdate(symbolId, _ => 1, (_, v) => v + 1);
+        // Preserve the provider's own quote sequence when the feed supplies one — quote-stream
+        // gap detection is only meaningful against real provider sequences. Fall back to a
+        // locally assigned monotonic per-symbol counter only when the provider genuinely does
+        // not sequence its quotes, and mark which regime produced the number on the payload.
+        long seq;
+        bool isProviderSequence;
+        if (update.SequenceNumber is > 0)
+        {
+            seq = update.SequenceNumber.Value;
+            isProviderSequence = true;
+        }
+        else
+        {
+            seq = _seq.AddOrUpdate(symbolId, _ => 1, (_, v) => v + 1);
+            isProviderSequence = false;
+        }
 
-        var payload = BboQuotePayload.FromUpdate(update, nextSeq);
+        var payload = BboQuotePayload.FromUpdate(update, seq, isProviderSequence);
         _latest[symbolId] = payload;
 
         // Fan-out signal for out-of-band consumers (UI quote stream). Guarded at the

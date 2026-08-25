@@ -539,7 +539,7 @@ public class MarketDepthCollectorTests
             Side: OrderBookSide.Bid,
             Price: 450.00m,
             Size: 100,
-            MarketMaker: "GSCO");
+            MarketMaker: "GSCO", Source: "TEST");
 
         // Act
         _collector.OnDepth(update);
@@ -573,7 +573,7 @@ public class MarketDepthCollectorTests
             MarketMaker: null,
             SequenceNumber: sequenceNumber,
             StreamId: "TEST",
-            Venue: "NYSE");
+            Venue: "NYSE", Source: "TEST");
     }
 
     #endregion

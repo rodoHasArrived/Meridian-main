@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "ba190aaed61171a4d4319eac1d79871920c771acac113dd176aac144fa118e8a",
+      "fingerprint": "f145fbf34af59f4cfc0778e847a43876e69cf5a272510dc49505df16278cc84d",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -613,6 +613,7 @@
         "Meridian.Contracts.Domain.HistoricalBarDto",
         "Meridian.Contracts.Domain.IntegrityEventDto",
         "Meridian.Contracts.Domain.IPositionSnapshotStore",
+        "Meridian.Contracts.Domain.MarketDataSources",
         "Meridian.Contracts.Domain.MarketStateValues",
         "Meridian.Contracts.Domain.Models.AdjustedHistoricalBar",
         "Meridian.Contracts.Domain.Models.AggregateBarPayload",
@@ -3524,7 +3525,7 @@
       ]
     }
   ],
-  "fingerprint": "4894f3f01096dcdcdbb9621aec79f0a5faa5149111a9763f24d9f24657ae85f1",
+  "fingerprint": "7011d359979059bbaca203fbcbf1eb397c61be3f9a8ba89575e00ef47728faa6",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4303,7 +4304,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "86754e4004dc40a7572a56b45732a7a40f12a5fa31d94a7bfa46bdc74d54df29",
+      "fingerprint": "de50f5f069379a91b52415793ce328586d76a8847b1c0b092250851aa00a4684",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Domain",
       "object_ids": [
@@ -4314,6 +4315,7 @@
         "Meridian.Contracts.Domain.HistoricalBarDto",
         "Meridian.Contracts.Domain.IntegrityEventDto",
         "Meridian.Contracts.Domain.IPositionSnapshotStore",
+        "Meridian.Contracts.Domain.MarketDataSources",
         "Meridian.Contracts.Domain.MarketStateValues",
         "Meridian.Contracts.Domain.OrderBookLevelDto",
         "Meridian.Contracts.Domain.OrderBookSideValues",
@@ -4376,7 +4378,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "1ced157c46f5e89a5f3c7947f7e8da511bcf688eb33bb2747f0363d698f80f4e",
+      "fingerprint": "78d5cab164834fd9fe97ba6871e3e12cb32e999fd5906b6f648a24e501d56ac6",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Domain.Models",
       "object_ids": [
@@ -88957,6 +88959,39 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
+      "fingerprint": "149684385ecb7f3f915e04f82b88ba94f31e6c936cd2fd1f8f8820e41b17b971",
+      "full_name": "Meridian.Contracts.Domain.MarketDataSources",
+      "id": "Meridian.Contracts.Domain.MarketDataSources",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "MarketDataSources",
+      "namespace": "Meridian.Contracts.Domain",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Domain.MarketDataSources",
+      "references": [],
+      "source": {
+        "line": 11,
+        "path": "src/Meridian.Contracts/Domain/MarketDataSources.cs"
+      },
+      "sources": [
+        {
+          "line": 11,
+          "path": "src/Meridian.Contracts/Domain/MarketDataSources.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
       "fingerprint": "e82b9678515a2535601cadd0532765e26eee5a07516b01d2b187dfe5b25207b8",
       "full_name": "Meridian.Contracts.Domain.MarketStateValues",
       "id": "Meridian.Contracts.Domain.MarketStateValues",
@@ -89648,7 +89683,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "6a3881e2b61bb3748206a23fbf6270ad30d7ef925d4daca773fa219826616136",
+      "fingerprint": "6324e22d7c521c5174cd8759d15dff4d9e19b09fb78a85a4293993d1524dfb0d",
       "full_name": "Meridian.Contracts.Domain.Models.BboQuotePayload",
       "id": "Meridian.Contracts.Domain.Models.BboQuotePayload",
       "kind": "record",
@@ -89665,7 +89700,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 13,
+          "source_line": 20,
           "type": "decimal"
         },
         {
@@ -89679,7 +89714,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 14,
+          "source_line": 21,
           "type": "long"
         },
         {
@@ -89693,7 +89728,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 11,
+          "source_line": 18,
           "type": "decimal"
         },
         {
@@ -89707,8 +89742,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 12,
+          "source_line": 19,
           "type": "long"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "false",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsProviderSequence",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 27,
+          "type": "bool"
         },
         {
           "collection": false,
@@ -89721,7 +89771,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 15,
+          "source_line": 22,
           "type": "decimal?"
         },
         {
@@ -89735,7 +89785,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 17,
+          "source_line": 24,
           "type": "long"
         },
         {
@@ -89749,7 +89799,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 16,
+          "source_line": 23,
           "type": "decimal?"
         },
         {
@@ -89764,7 +89814,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 18,
+          "source_line": 25,
           "type": "string?"
         },
         {
@@ -89778,7 +89828,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 10,
+          "source_line": 17,
           "type": "string"
         },
         {
@@ -89792,7 +89842,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 9,
+          "source_line": 16,
           "type": "DateTimeOffset"
         },
         {
@@ -89807,7 +89857,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 19,
+          "source_line": 26,
           "type": "string?"
         }
       ],
@@ -89819,12 +89869,12 @@
         "Meridian.Contracts.Domain.Events.MarketEventPayload"
       ],
       "source": {
-        "line": 8,
+        "line": 15,
         "path": "src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs"
       },
       "sources": [
         {
-          "line": 8,
+          "line": 15,
           "path": "src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs"
         }
       ],
@@ -90383,7 +90433,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "4bca716fb08390581e1fe6cd5b999d4520f199b9e901310a0cf7a2ba82774c88",
+      "fingerprint": "36710c75242932f3043a6c19b915708b3469cf559536415dbd024848c3125632",
       "full_name": "Meridian.Contracts.Domain.Models.HistoricalBar",
       "id": "Meridian.Contracts.Domain.Models.HistoricalBar",
       "kind": "record",
@@ -90416,6 +90466,20 @@
           "raw_type": "decimal",
           "source_line": 28,
           "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsAdjusted",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "bool?",
+          "source_line": 61,
+          "type": "bool?"
         },
         {
           "collection": false,
@@ -91380,7 +91444,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "0a68372c487ad75888c8297d3df61fb4e3afbfc24b4a755731d1b24f0f65fa27",
+      "fingerprint": "d1e2e18780c4176f1b183df12d3bbc711ffec75f4fb46782544a797b1b108f99",
       "full_name": "Meridian.Contracts.Domain.Models.MarketQuoteUpdate",
       "id": "Meridian.Contracts.Domain.Models.MarketQuoteUpdate",
       "kind": "record",
@@ -91397,7 +91461,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 11,
+          "source_line": 21,
           "type": "decimal"
         },
         {
@@ -91411,7 +91475,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 12,
+          "source_line": 22,
           "type": "long"
         },
         {
@@ -91425,7 +91489,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 9,
+          "source_line": 19,
           "type": "decimal"
         },
         {
@@ -91439,7 +91503,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 10,
+          "source_line": 20,
           "type": "long"
         },
         {
@@ -91454,8 +91518,23 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "long?",
-          "source_line": 13,
+          "source_line": 23,
           "type": "long?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Source",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 26,
+          "type": "string?"
         },
         {
           "collection": false,
@@ -91469,7 +91548,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 14,
+          "source_line": 24,
           "type": "string?"
         },
         {
@@ -91483,7 +91562,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 8,
+          "source_line": 18,
           "type": "string"
         },
         {
@@ -91497,7 +91576,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 7,
+          "source_line": 17,
           "type": "DateTimeOffset"
         },
         {
@@ -91512,7 +91591,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 15,
+          "source_line": 25,
           "type": "string?"
         }
       ],
@@ -91522,12 +91601,12 @@
       "qualified_name": "Meridian.Contracts.Domain.Models.MarketQuoteUpdate",
       "references": [],
       "source": {
-        "line": 6,
+        "line": 16,
         "path": "src/Meridian.Contracts/Domain/Models/MarketQuoteUpdate.cs"
       },
       "sources": [
         {
-          "line": 6,
+          "line": 16,
           "path": "src/Meridian.Contracts/Domain/Models/MarketQuoteUpdate.cs"
         }
       ],

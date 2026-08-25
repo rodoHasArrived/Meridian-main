@@ -667,6 +667,15 @@
       "sha256": "15d77e46ad9cbce7728ed988170c9d70a2c5491b53c937b145171b983d39b1f8"
     },
     {
+      "filename": "V_ledger_030__journal_immutability.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_030__journal_immutability.sql",
+      "schema": "ledger",
+      "sha256": "f53862bdd253083aeda0698b80c81cbc38bf9782aff6e9d47317f696f00ef4f0"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -893,7 +902,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "a8e1504a04cd309dbafdfbc5c9c947ddc535b1d9d3203135dbd4bf0b9bda09ff",
+  "fingerprint": "595d650fab9e31e4530c02496d2acc18a047e955aee21da23bef610d8d9530cb",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1131,12 +1140,33 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 99,
+    "files": 100,
     "migration_sets": 10,
-    "waivers": 1,
+    "waivers": 4,
     "warnings": 0
   },
   "waivers": [
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_030__journal_immutability.sql",
+      "reason": "DROP TRIGGER IF EXISTS immediately before each CREATE TRIGGER is the ledger set's reapply-idempotence idiom (drift policy: reapply), mirroring V_ledger_027. Nothing existing is removed on first apply.",
+      "review_after": "2027-02-01",
+      "rule_id": "migration-drop-object"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_030__journal_immutability.sql",
+      "reason": "Deliberate hardening, not data loss: the unnamed on-delete-cascade FK from journal_legs to journal_entries is dropped and immediately re-created as a plain NO ACTION FK in the same transaction, so an entry delete can no longer vaporize legs. No column or data is removed.",
+      "review_after": "2027-02-01",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_030__journal_immutability.sql",
+      "reason": "The lexical TRUNCATE match is the migration's own BEFORE TRUNCATE guard trigger - the statement that REJECTS truncation of the journal tables. The migration truncates nothing.",
+      "review_after": "2027-02-01",
+      "rule_id": "migration-truncate"
+    },
     {
       "category": "removed_migrations",
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/026_security_operator_override_approval_trail.sql",

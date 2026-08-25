@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using Meridian.Core.Config;
 using Meridian.Core.Logging;
+using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -32,6 +33,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
     private readonly ILogger _log = LoggingSetup.ForContext<FailoverAwareMarketDataClient>();
     private readonly Dictionary<string, IMarketDataClient> _providers;
     private readonly StreamingFailoverService _failoverService;
+    private readonly IMarketEventPublisher? _integrityPublisher;
     private readonly string _ruleId;
     private readonly SemaphoreSlim _switchLock = new(1, 1);
     private readonly CancellationTokenSource _cts = new();
@@ -74,16 +76,21 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
     /// <param name="failoverService">The failover orchestrator.</param>
     /// <param name="ruleId">The failover rule ID this client corresponds to.</param>
     /// <param name="initialProviderId">The provider ID to start with (typically the primary).</param>
+    /// <param name="integrityPublisher">Optional publisher used to disclose completed provider
+    /// switches (and their coverage-uncertain windows) on the market-event tape. Compositions
+    /// without a pipeline omit it and behave exactly as before.</param>
     public FailoverAwareMarketDataClient(
         Dictionary<string, IMarketDataClient> providers,
         StreamingFailoverService failoverService,
         string ruleId,
-        string initialProviderId)
+        string initialProviderId,
+        IMarketEventPublisher? integrityPublisher = null)
     {
         ArgumentNullException.ThrowIfNull(providers);
 
         _providers = NormalizeProviders(providers);
         _failoverService = failoverService ?? throw new ArgumentNullException(nameof(failoverService));
+        _integrityPublisher = integrityPublisher;
         _ruleId = ruleId;
 
         var initialKey = ProviderIdentity.NormalizeId(initialProviderId);
@@ -530,6 +537,18 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
             var previousId = _activeProviderId;
             var previousClient = _activeClient;
 
+            // Coverage-uncertain window start: if the active feed is already down, uncertainty
+            // began at the disconnect; otherwise (forced/recovery switch off a live feed) it
+            // begins now, as the hand-off starts.
+            var switchStartedAt = DateTimeOffset.UtcNow;
+            DateTimeOffset uncertainFrom;
+            lock (_diagnosticsSync)
+            {
+                uncertainFrom = !_isConnected && _lastDisconnectedAt.HasValue
+                    ? _lastDisconnectedAt.Value
+                    : switchStartedAt;
+            }
+
             _log.Information("Switching streaming provider: {From} -> {To}", previousId, newProviderKey);
             UpdateDiagnostics(
                 ProviderConnectionLifecycleState.Reconnecting,
@@ -545,6 +564,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
                 // guarantees additions are either included in the hand-off snapshot or applied to
                 // the new active provider, and removals cannot be resurrected by replacement IDs.
                 var transitionCommitted = false;
+                IReadOnlyList<string> affectedSymbols = Array.Empty<string>();
                 lock (_subscriptionGate)
                 {
                     ct.ThrowIfCancellationRequested();
@@ -559,8 +579,17 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
                         ReplaceSubscriptions(_tradeSubIds, subscriptions.Trades);
                     });
 
-                    if (!transitionCommitted)
+                    if (transitionCommitted)
+                    {
+                        affectedSymbols = subscriptions.Depth.Keys
+                            .Concat(subscriptions.Trades.Keys)
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .ToArray();
+                    }
+                    else
+                    {
                         ReleasePreparedSubscriptions(newClient, subscriptions);
+                    }
                 }
 
                 if (!transitionCommitted)
@@ -580,6 +609,17 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
                     RefreshDiagnosticsFromActiveProvider();
                     return;
                 }
+
+                // Re-subscription is complete and the hand-off is committed: the
+                // coverage-uncertain window closes here. Disclose the switch on the tape.
+                var uncertainTo = DateTimeOffset.UtcNow;
+                PublishFailoverMarkers(
+                    previousId,
+                    newProviderKey,
+                    transition.Reason,
+                    uncertainFrom,
+                    uncertainTo,
+                    affectedSymbols);
 
                 UpdateDiagnostics(
                     ProviderConnectionLifecycleState.Connected,
@@ -652,6 +692,56 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
             isConnected: true,
             connectedAt: DateTimeOffset.UtcNow);
         _log.Information("Failover connect succeeded to {ProviderId}", _activeProviderId);
+    }
+
+    /// <summary>
+    /// Discloses a committed provider hand-off on the market-event tape: from-provider,
+    /// to-provider, transition reason, and the coverage-uncertain window between losing the old
+    /// feed and completing re-subscription on the new one. One marker is published per affected
+    /// symbol (or a single SYSTEM marker when nothing is subscribed), stamped with the real
+    /// from-provider identity — the provider whose coverage the window belongs to. Publication is
+    /// strictly best-effort: a marker failure must never break or roll back the failover itself,
+    /// so failures are logged at Warning and swallowed (fail-open).
+    /// </summary>
+    private void PublishFailoverMarkers(
+        string fromProviderId,
+        string toProviderId,
+        string reason,
+        DateTimeOffset uncertainFrom,
+        DateTimeOffset uncertainTo,
+        IReadOnlyList<string> affectedSymbols)
+    {
+        if (_integrityPublisher is null)
+            return;
+
+        try
+        {
+            var symbols = affectedSymbols.Count > 0
+                ? affectedSymbols
+                : new[] { "SYSTEM" };
+            foreach (var symbol in symbols)
+            {
+                var integrity = IntegrityEvent.ProviderFailover(
+                    uncertainTo,
+                    symbol,
+                    fromProviderId,
+                    toProviderId,
+                    reason,
+                    uncertainFrom,
+                    uncertainTo);
+                _integrityPublisher.TryPublish(
+                    MarketEvent.Integrity(uncertainTo, symbol, integrity, fromProviderId));
+            }
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(
+                ex,
+                "Failed to publish provider-failover integrity markers for {From} -> {To} on rule {RuleId}",
+                fromProviderId,
+                toProviderId,
+                _ruleId);
+        }
     }
 
     private static Dictionary<string, IMarketDataClient> NormalizeProviders(

@@ -7,6 +7,7 @@ using Meridian.Domain.Events;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Policies;
 using Meridian.Storage.Replay;
+using Prometheus;
 using Serilog;
 
 namespace Meridian.Storage.Store;
@@ -20,12 +21,42 @@ namespace Meridian.Storage.Store;
 public sealed class JsonlMarketDataStore : IMarketDataStore
 {
     private static readonly ILogger Log = LoggingSetup.ForContext<JsonlMarketDataStore>();
+
+    // Read-side corruption observability. Read-time discoveries cannot honestly become
+    // MarketEvents (there is no ingress pipeline at read, and republishing stored corruption
+    // as fresh events would re-stamp it with a synthetic provenance), so the smallest honest
+    // mechanism is the one WriteAheadLog already established for recovery-time corruption:
+    // process-wide Prometheus counters plus per-store counts surfaced as properties, with the
+    // skip itself logged at Warning instead of Debug.
+    private static readonly Counter StoreReadMalformedLinesTotal = Metrics.CreateCounter(
+        "mdc_store_read_malformed_lines_total",
+        "Total number of malformed JSONL lines skipped while reading the market data store");
+
+    private static readonly Counter StoreReadTruncatedTailsTotal = Metrics.CreateCounter(
+        "mdc_store_read_truncated_tails_total",
+        "Total number of truncated compressed file tails encountered while reading the market data store");
+
     private readonly string _root;
+    private long _malformedLinesSkipped;
+    private long _truncatedTailsDetected;
 
     public JsonlMarketDataStore(string root)
     {
         _root = root ?? throw new ArgumentNullException(nameof(root));
     }
+
+    /// <summary>
+    /// Number of malformed JSONL lines this store instance has skipped while reading.
+    /// A non-zero value means query results are incomplete relative to the bytes on disk.
+    /// </summary>
+    public long MalformedLinesSkipped => Interlocked.Read(ref _malformedLinesSkipped);
+
+    /// <summary>
+    /// Number of truncated compressed file tails this store instance has stopped at while
+    /// reading. Each one means a file's final block was torn (e.g. by a crash mid-append) and
+    /// events past the tear were unrecoverable.
+    /// </summary>
+    public long TruncatedTailsDetected => Interlocked.Read(ref _truncatedTailsDetected);
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<MarketEvent> QueryAsync(
@@ -82,7 +113,7 @@ public sealed class JsonlMarketDataStore : IMarketDataStore
                    StringComparison.OrdinalIgnoreCase);
     }
 
-    private static async IAsyncEnumerable<MarketEvent> ReadFileAsync(
+    private async IAsyncEnumerable<MarketEvent> ReadFileAsync(
         string file,
         [EnumeratorCancellation] CancellationToken ct)
     {
@@ -95,12 +126,14 @@ public sealed class JsonlMarketDataStore : IMarketDataStore
         Stream stream = CompressedJsonlStream.Decompress(fs, file);
 
         using var reader = new StreamReader(stream);
+        var lineNumber = 0;
         while (true)
         {
             ct.ThrowIfCancellationRequested();
             var line = await ReadLineOrEndAtTruncatedTailAsync(reader, file, ct).ConfigureAwait(false);
             if (line is null)
                 break;
+            lineNumber++;
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 
@@ -112,7 +145,16 @@ public sealed class JsonlMarketDataStore : IMarketDataStore
             }
             catch (JsonException ex)
             {
-                Log.Debug(ex, "Skipping malformed JSONL line in {File}", file);
+                // Read-time corruption discovery: the line is unrecoverable and query results
+                // are now incomplete relative to the bytes on disk, so this is a Warning with
+                // counters, never a silently swallowed Debug entry.
+                Interlocked.Increment(ref _malformedLinesSkipped);
+                StoreReadMalformedLinesTotal.Inc();
+                Log.Warning(
+                    ex,
+                    "Skipping malformed JSONL line {LineNumber} in {File}; query results are incomplete for this file",
+                    lineNumber,
+                    file);
             }
 
             if (evt is not null)
@@ -122,8 +164,9 @@ public sealed class JsonlMarketDataStore : IMarketDataStore
 
     // A crash while the sink appends a compressed batch can leave a torn trailing gzip member;
     // the decoder throws InvalidDataException mid-read. Every complete earlier member has
-    // already been yielded, so treat the torn tail as end-of-file rather than failing the query.
-    private static async ValueTask<string?> ReadLineOrEndAtTruncatedTailAsync(
+    // already been yielded, so treat the torn tail as end-of-file rather than failing the query —
+    // but count and log it: events past the tear existed and are unrecoverable.
+    private async ValueTask<string?> ReadLineOrEndAtTruncatedTailAsync(
         StreamReader reader,
         string file,
         CancellationToken ct)
@@ -134,6 +177,8 @@ public sealed class JsonlMarketDataStore : IMarketDataStore
         }
         catch (InvalidDataException ex)
         {
+            Interlocked.Increment(ref _truncatedTailsDetected);
+            StoreReadTruncatedTailsTotal.Inc();
             Log.Warning(ex, "Truncated compressed tail in {File}; stopping at the last complete block", file);
             return null;
         }

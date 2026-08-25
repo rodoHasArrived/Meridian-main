@@ -538,6 +538,145 @@ public sealed class AlpacaBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task SubmitOrderAsync_BracketResponseWithLegs_SurfacesChildOrdersOnTheAck()
+    {
+        // Alpaca's bracket submit response nests the server-created TP/SL legs, each a full order
+        // with its own ids. Dropping them was how bracket children became invisible to the OMS
+        // and to the kill-switch sweep.
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() },
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildJson(new
+                {
+                    id = "parent-1",
+                    client_order_id = "client-parent",
+                    symbol = "SPY",
+                    side = "buy",
+                    type = "market",
+                    qty = "100",
+                    filled_qty = "0",
+                    status = "accepted",
+                    created_at = "2024-01-15T10:00:00Z",
+                    legs = new object[]
+                    {
+                        new
+                        {
+                            id = "leg-tp",
+                            client_order_id = "client-tp",
+                            symbol = "SPY",
+                            side = "sell",
+                            type = "limit",
+                            qty = "100",
+                            filled_qty = "0",
+                            limit_price = "301",
+                            status = "held",
+                            created_at = "2024-01-15T10:00:00Z"
+                        },
+                        new
+                        {
+                            id = "leg-sl",
+                            client_order_id = "client-sl",
+                            symbol = "SPY",
+                            side = "sell",
+                            type = "stop",
+                            qty = "100",
+                            filled_qty = "0",
+                            stop_price = "299",
+                            status = "held",
+                            created_at = "2024-01-15T10:00:00Z"
+                        }
+                    }
+                })
+            },
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        var report = await sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "SPY",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 100m,
+            TimeInForce = TimeInForce.GoodTilCancelled,
+            Metadata = new Dictionary<string, string>
+            {
+                ["order_class"] = "bracket",
+                ["take_profit.limit_price"] = "301",
+                ["stop_loss.stop_price"] = "299",
+            },
+        }, cts.Token);
+
+        report.ChildOrders.Should().NotBeNull();
+        report.ChildOrders.Should().HaveCount(2);
+
+        var takeProfit = report.ChildOrders![0];
+        takeProfit.OrderId.Should().Be("leg-tp");
+        takeProfit.ClientOrderId.Should().Be("client-tp");
+        takeProfit.Side.Should().Be(OrderSide.Sell);
+        takeProfit.LimitPrice.Should().Be(301m);
+        takeProfit.Status.Should().Be(
+            OrderStatus.PendingNew,
+            "a held leg is a working order the sweep must not skip");
+
+        var stopLoss = report.ChildOrders![1];
+        stopLoss.OrderId.Should().Be("leg-sl");
+        stopLoss.ClientOrderId.Should().Be("client-sl");
+        stopLoss.StopPrice.Should().Be(299m);
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task GetOpenOrdersAsync_RequestsNestedOrders_AndFlattensChildLegsIntoTheList()
+    {
+        string? capturedQuery = null;
+        var sut = CreateSut(new CapturingStubHandler(
+            req => capturedQuery = req.RequestUri?.PathAndQuery,
+            _ => BuildJson(new object[]
+            {
+                new
+                {
+                    id = "parent-1",
+                    client_order_id = "client-parent",
+                    symbol = "SPY",
+                    side = "buy",
+                    type = "market",
+                    qty = "100",
+                    filled_qty = "0",
+                    status = "accepted",
+                    created_at = "2024-01-15T10:00:00Z",
+                    legs = new object[]
+                    {
+                        new
+                        {
+                            id = "leg-tp",
+                            client_order_id = "client-tp",
+                            symbol = "SPY",
+                            side = "sell",
+                            type = "limit",
+                            qty = "100",
+                            filled_qty = "0",
+                            limit_price = "301",
+                            status = "held",
+                            created_at = "2024-01-15T10:00:00Z"
+                        }
+                    }
+                }
+            })));
+
+        var orders = await sut.GetOpenOrdersAsync();
+
+        capturedQuery.Should().Contain("nested=true",
+            "the broker book must include bracket children, or the kill-switch sweep never sees them");
+        orders.Should().HaveCount(2, "the nested leg is flattened into the open-order list");
+        orders.Select(o => o.OrderId).Should().Contain(new[] { "parent-1", "leg-tp" });
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
     public async Task SubmitOrderAsync_TrailingStop_SerializesTrailPrice()
     {
         string? capturedBody = null;

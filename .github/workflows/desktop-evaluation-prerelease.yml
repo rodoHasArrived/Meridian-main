@@ -220,9 +220,115 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  # The MSIX above is the desktop shell alone: no lifecycle supervisor, no bundled database, no
+  # first-account bootstrap. An evaluator who has nothing but the MSIX lands on required auth with
+  # zero accounts. Meridian-Setup.exe is the artifact that actually solves the first mile - it
+  # bundles the workstation host, desktop shell, supervisor, and a PostgreSQL runtime, and its
+  # first run opens the browser bootstrap to create the first account - so the evaluation
+  # prerelease attaches it too. x64 only: PostgreSQL publishes no Windows ARM64 server build.
+  package-consumer-setup:
+    name: package-evaluation-consumer-setup (win-x64)
+    needs: preflight
+    runs-on: windows-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.4.0
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: "24"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-desktop-installer-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-desktop-installer-
+            ${{ runner.os }}-nuget-
+
+      # Same payload source as the production installer lane: the hosted image's own PostgreSQL.
+      - name: Materialize the PostgreSQL payload
+        shell: pwsh
+        run: |
+          $postgres = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction Stop |
+            Where-Object { $_.Name -match '^\d+' } |
+            Sort-Object { [int]($_.Name -replace '^(\d+).*$', '$1') } -Descending | Select-Object -First 1
+          if ($null -eq $postgres) { throw 'The hosted Windows runner has no PostgreSQL runtime to bundle.' }
+          $payload = 'artifacts/postgresql-payload/win-x64'
+          New-Item -ItemType Directory -Path $payload -Force | Out-Null
+          Copy-Item -Path (Join-Path $postgres.FullName '*') -Destination $payload -Recurse -Force
+
+      # Unsigned on purpose: this is the same posture the MSIX discloses. An evaluation build has
+      # no verified publisher identity, and pretending otherwise with a throwaway Authenticode
+      # signature would not change what SmartScreen tells the user. The checksum is the integrity
+      # story.
+      - name: Build the consumer package
+        shell: pwsh
+        run: |
+          pwsh ./build/scripts/install/build-consumer-setup.ps1 `
+            -PostgreSqlPayloadRoot artifacts/postgresql-payload `
+            -Runtimes @('win-x64')
+
+      - name: Generate consumer setup SBOM, checksum, and evidence
+        shell: pwsh
+        run: |
+          python build/scripts/ci/generate-release-evidence-manifest.py `
+            --project consumer-setup `
+            --runtime windows `
+            --artifact-root artifacts/consumer-setup `
+            --output artifacts/consumer-setup/release-evidence.json `
+            --workflow-run-id '${{ github.run_id }}' `
+            --validation-lane verify-evaluation-preflight `
+            --validation-lane package-evaluation-consumer-setup
+
+          dotnet tool install --global Microsoft.Sbom.DotNetTool --version 4.1.5
+          pwsh ./build/scripts/publish/generate-sbom.ps1 `
+            -BuildDropPath artifacts/consumer-setup `
+            -BuildComponentPath . `
+            -PackageName Meridian-Consumer-Setup-Evaluation `
+            -PackageVersion '${{ inputs.version }}'
+          $generated = Get-ChildItem artifacts/consumer-setup/_manifest -Filter manifest.spdx.json -File -Recurse | Select-Object -First 1
+          if ($null -eq $generated) { throw "Microsoft SBOM Tool did not emit manifest.spdx.json." }
+
+          # Release asset names are flat and must be unique across every job that feeds the
+          # publish step, so the consumer files carry distinct names instead of reusing
+          # SHA256SUMS/sbom.spdx.json from the MSIX jobs.
+          $staging = 'artifacts/evaluation/consumer-setup'
+          New-Item -ItemType Directory -Path $staging -Force | Out-Null
+          Copy-Item artifacts/consumer-setup/Meridian-Setup.exe -Destination $staging -ErrorAction Stop
+          Copy-Item -LiteralPath $generated.FullName -Destination (Join-Path $staging 'consumer-setup.sbom.spdx.json') -Force
+          Copy-Item artifacts/consumer-setup/release-evidence.json -Destination (Join-Path $staging 'consumer-setup-release-evidence.json') -Force
+          $hash = (Get-FileHash -LiteralPath (Join-Path $staging 'Meridian-Setup.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  Meridian-Setup.exe" | Set-Content -LiteralPath (Join-Path $staging 'Meridian-Setup.exe.sha256') -Encoding ascii
+
+      - name: Upload the consumer setup artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: meridian-evaluation-consumer-setup-${{ github.run_id }}
+          path: artifacts/evaluation/consumer-setup/
+          if-no-files-found: error
+          retention-days: 30
+
   publish:
     name: publish-evaluation-prerelease
-    needs: package
+    needs: [package, package-consumer-setup]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -249,7 +355,26 @@ jobs:
           release gate in the Implementation and Readiness Tracker requires every `P0` row to be
           complete on one release commit, and that has not happened.
 
-          ### Installing
+          ### The easiest install: `Meridian-Setup.exe` (x64)
+
+          The one-click consumer setup bundles the workstation host, the desktop shell, the
+          lifecycle supervisor, and a PostgreSQL runtime. Its first run opens your browser at the
+          setup page so you create the first operator account before anything else — no
+          environment variables, no hand-written password hashes.
+
+          It is **unsigned**, deliberately: an evaluation build has no verified publisher
+          identity either way, and SmartScreen will say so ("More info" → "Run anyway"). Verify
+          the download first:
+
+          ```powershell
+          (Get-FileHash .\Meridian-Setup.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          # compare against Meridian-Setup.exe.sha256
+          ```
+
+          There is no ARM64 consumer setup because PostgreSQL publishes no Windows ARM64 server
+          build; on ARM64 use the MSIX below or run from source.
+
+          ### Installing the MSIX
 
           Each architecture ships an `.msix` and the public half of the certificate that signed it.
           Windows will not install an MSIX whose publisher it does not trust, so you have to trust
@@ -305,3 +430,7 @@ jobs:
             artifacts/evaluation/**/*.cer
             artifacts/evaluation/**/SHA256SUMS
             artifacts/evaluation/**/sbom.spdx.json
+            artifacts/evaluation/**/Meridian-Setup.exe
+            artifacts/evaluation/**/Meridian-Setup.exe.sha256
+            artifacts/evaluation/**/consumer-setup.sbom.spdx.json
+            artifacts/evaluation/**/consumer-setup-release-evidence.json

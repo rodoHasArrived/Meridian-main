@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Events;
 using Meridian.Contracts.Domain.Models;
@@ -6,13 +7,20 @@ using Meridian.Domain.Models;
 
 namespace Meridian.Domain.Events;
 
+/// <remarks>
+/// <see cref="Source"/> carries the real provider identity of the event. The factory
+/// methods below require it explicitly — there is deliberately no per-vendor default, so a
+/// publish path can never silently attribute one provider's data to another. The record's
+/// own positional default is the honest <see cref="MarketDataSources.Unknown"/> sentinel,
+/// kept only for direct construction/deserialization compatibility.
+/// </remarks>
 public sealed record MarketEvent(
     DateTimeOffset Timestamp,
     string Symbol,
     MarketEventType Type,
     Contracts.Domain.Events.MarketEventPayload Payload,
     long Sequence = 0,
-    string Source = "IB",
+    string Source = MarketDataSources.Unknown,
     byte SchemaVersion = 1,
     MarketEventTier Tier = MarketEventTier.Raw,
     DateTimeOffset? ExchangeTimestamp = null,
@@ -29,29 +37,29 @@ public sealed record MarketEvent(
     string? ParentSpanId = null
 )
 {
-    public static MarketEvent Trade(DateTimeOffset ts, string symbol, Trade trade, long seq = 0, string source = "IB")
+    public static MarketEvent Trade(DateTimeOffset ts, string symbol, Trade trade, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.Trade, trade, seq == 0 ? trade.SequenceNumber : seq, source);
 
-    public static MarketEvent L2Snapshot(DateTimeOffset ts, string symbol, LOBSnapshot snap, long seq = 0, string source = "IB")
+    public static MarketEvent L2Snapshot(DateTimeOffset ts, string symbol, LOBSnapshot snap, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.L2Snapshot, snap, seq == 0 ? snap.SequenceNumber : seq, source);
 
-    public static MarketEvent BboQuote(DateTimeOffset ts, string symbol, BboQuotePayload quote, long seq = 0, string source = "ALPACA")
+    public static MarketEvent BboQuote(DateTimeOffset ts, string symbol, BboQuotePayload quote, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.BboQuote, quote, seq == 0 ? quote.SequenceNumber : seq, source);
 
-    public static MarketEvent L2SnapshotPayload(DateTimeOffset ts, string symbol, L2SnapshotPayload payload, long seq = 0, string source = "IB")
+    public static MarketEvent L2SnapshotPayload(DateTimeOffset ts, string symbol, L2SnapshotPayload payload, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.L2Snapshot, payload, seq == 0 ? payload.SequenceNumber : seq, source);
 
-    public static MarketEvent OrderFlow(DateTimeOffset ts, string symbol, OrderFlowStatistics stats, long seq = 0, string source = "IB")
+    public static MarketEvent OrderFlow(DateTimeOffset ts, string symbol, OrderFlowStatistics stats, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.OrderFlow, stats, seq == 0 ? stats.SequenceNumber : seq, source);
 
-    public static MarketEvent Integrity(DateTimeOffset ts, string symbol, IntegrityEvent integrity, long seq = 0, string source = "IB")
+    public static MarketEvent Integrity(DateTimeOffset ts, string symbol, IntegrityEvent integrity, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.Integrity, integrity, seq == 0 ? integrity.SequenceNumber : seq, source);
 
-    public static MarketEvent DepthIntegrity(DateTimeOffset ts, string symbol, DepthIntegrityEvent integrity, long seq = 0, string source = "IB")
+    public static MarketEvent DepthIntegrity(DateTimeOffset ts, string symbol, DepthIntegrityEvent integrity, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.Integrity, integrity, seq == 0 ? integrity.SequenceNumber : seq, source);
 
 
-    public static MarketEvent ResyncRequested(DateTimeOffset ts, string symbol, string reason, string? streamId = null, string? venue = null, long seq = 0, string source = "IB")
+    public static MarketEvent ResyncRequested(DateTimeOffset ts, string symbol, string reason, string source, string? streamId = null, string? venue = null, long seq = 0)
     {
         var payload = new IntegrityEvent(
             Timestamp: ts,
@@ -65,13 +73,13 @@ public sealed record MarketEvent(
 
         return new(ts, symbol, MarketEventType.Integrity, payload, seq, source);
     }
-    public static MarketEvent Heartbeat(DateTimeOffset ts, string source = "IB")
+    public static MarketEvent Heartbeat(DateTimeOffset ts, string source)
         => new(ts, "SYSTEM", MarketEventType.Heartbeat, new Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload(), Sequence: 0, Source: source);
 
-    public static MarketEvent HistoricalBar(DateTimeOffset ts, string symbol, HistoricalBar bar, long seq = 0, string source = "stooq")
+    public static MarketEvent HistoricalBar(DateTimeOffset ts, string symbol, HistoricalBar bar, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.HistoricalBar, bar, seq == 0 ? bar.SequenceNumber : seq, source);
 
-    public static MarketEvent AggregateBar(DateTimeOffset ts, string symbol, Domain.Models.AggregateBar bar, long seq = 0, string source = "Polygon")
+    public static MarketEvent AggregateBar(DateTimeOffset ts, string symbol, Domain.Models.AggregateBar bar, string source, long seq = 0)
     {
         var payload = new Contracts.Domain.Models.AggregateBarPayload(
             Symbol: bar.Symbol,
@@ -91,34 +99,34 @@ public sealed record MarketEvent(
         return new(ts, symbol, MarketEventType.AggregateBar, payload, seq == 0 ? bar.SequenceNumber : seq, source);
     }
 
-    public static MarketEvent OptionQuote(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OptionQuote quote, long seq = 0, string source = "IB")
+    public static MarketEvent OptionQuote(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OptionQuote quote, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.OptionQuote, quote, seq == 0 ? quote.SequenceNumber : seq, source);
 
-    public static MarketEvent OptionTrade(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OptionTrade trade, long seq = 0, string source = "IB")
+    public static MarketEvent OptionTrade(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OptionTrade trade, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.OptionTrade, trade, seq == 0 ? trade.SequenceNumber : seq, source);
 
-    public static MarketEvent OptionGreeks(DateTimeOffset ts, string symbol, GreeksSnapshot greeks, long seq = 0, string source = "IB")
+    public static MarketEvent OptionGreeks(DateTimeOffset ts, string symbol, GreeksSnapshot greeks, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.OptionGreeks, greeks, seq == 0 ? greeks.SequenceNumber : seq, source);
 
-    public static MarketEvent OptionChain(DateTimeOffset ts, string underlyingSymbol, OptionChainSnapshot chain, long seq = 0, string source = "IB")
+    public static MarketEvent OptionChain(DateTimeOffset ts, string underlyingSymbol, OptionChainSnapshot chain, string source, long seq = 0)
         => new(ts, underlyingSymbol, MarketEventType.OptionChain, chain, seq == 0 ? chain.SequenceNumber : seq, source);
 
-    public static MarketEvent OpenInterest(DateTimeOffset ts, string symbol, OpenInterestUpdate oi, long seq = 0, string source = "IB")
+    public static MarketEvent OpenInterest(DateTimeOffset ts, string symbol, OpenInterestUpdate oi, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.OpenInterest, oi, seq == 0 ? oi.SequenceNumber : seq, source);
 
-    public static MarketEvent OrderAdd(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderAdd order, long seq = 0, string source = "IB")
+    public static MarketEvent OrderAdd(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderAdd order, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.OrderAdd, order, seq == 0 ? order.SequenceNumber : seq, source);
 
-    public static MarketEvent OrderModify(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderModify modify, long seq = 0, string source = "IB")
+    public static MarketEvent OrderModify(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderModify modify, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.OrderModify, modify, seq == 0 ? modify.SequenceNumber : seq, source);
 
-    public static MarketEvent OrderCancel(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderCancel cancel, long seq = 0, string source = "IB")
+    public static MarketEvent OrderCancel(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderCancel cancel, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.OrderCancel, cancel, seq == 0 ? cancel.SequenceNumber : seq, source);
 
-    public static MarketEvent OrderExecute(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderExecute execute, long seq = 0, string source = "IB")
+    public static MarketEvent OrderExecute(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderExecute execute, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.OrderExecute, execute, seq == 0 ? execute.SequenceNumber : seq, source);
 
-    public static MarketEvent OrderReplace(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderReplace replace, long seq = 0, string source = "IB")
+    public static MarketEvent OrderReplace(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderReplace replace, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.OrderReplace, replace, seq == 0 ? replace.SequenceNumber : seq, source);
 
     /// <summary>
