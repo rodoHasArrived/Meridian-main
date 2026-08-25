@@ -208,8 +208,9 @@ only records it as metadata and tracks per-owner quantities (`:1289-1300`). The 
 receive price and quantity alone, and that is true of **every** transaction branch, not just the
 long ones: `ApplyBuy` computes `var notional = qty * price` (`:620`); `ApplyShortSell` computes
 `var proceeds = qty * price` (`:822`); `ApplyCoverShort` computes `var coverCost = coverQty * price`
-(`:753`) and derives `realised` from it. Cost basis, cash, margin borrow, and
-`pos.MarketPrice = price` all follow. The projections are unscaled too —
+(`:753`) and derives `realised` from it. Cash, margin borrow, and
+`pos.MarketPrice = price` all follow from the same unscaled figures. (Cost basis follows too, but
+correctly: it is a per-unit entry price and is *supposed* to stay unscaled — see the improvement.) The projections are unscaled too —
 `PaperPosition.UnrealisedPnl` is `(MarketPrice - CostBasis) * Quantity` (`:1128`), which sums into
 `AccountState.UnrealisedPnl` (`:1039`) and from there into every account snapshot (`:1081`). No
 multiplier enters any of them.
@@ -241,8 +242,13 @@ live fill**, not on restore.
    result is operator-facing: the WPF `AggregatePortfolioViewModel` consumes it (`:246`).
 
 **Both exposure projections are therefore already correct**, and a remediation applied
-indiscriminately would scale them twice. The defective consumers are the paper book's own cash, cost
-basis, P&L and account snapshots, and the two margin models — not everything downstream.
+indiscriminately would scale them twice. The defective consumers are the paper book's own cash,
+P&L and account snapshots, and the two margin models — not everything downstream. **Stored cost
+basis is not among them.** `AverageCostBasis` is a per-unit entry price whose consumers already apply
+the multiplier themselves, so scaling it at storage is the 100× error in the opposite direction that
+the improvement below rules out explicitly. Naming it here contradicted that remedy thirty-four lines
+later, and an implementer following this inventory would have introduced the defect the remedy exists
+to prevent.
 
 The count here has now been wrong twice in the same direction. The original text said *nothing*
 consumes the multiplier; round 14 corrected that to *one*; this is the second. Each correction was
@@ -896,14 +902,14 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Twenty-four rounds of automated review challenged **66 claims** across this document. Every one was checked
-against the code, **all 66 held**, and the findings above are the corrected text. **Eight more were
+Twenty-five rounds of automated review challenged **67 claims** across this document. Every one was checked
+against the code, **all 67 held**, and the findings above are the corrected text. **Nine more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
-in the published artifact, and an unresolvable file path in §8 — and each is recorded as a
+in the published artifact, and an unresolvable file path in §8, and the artifact's refuted cost-basis remedy — and each is recorded as a
 row below, marked *(self-detected)*.
-The table therefore holds **74 rows: 66 raised by review, 8 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **76 rows: 67 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1278,6 +1284,20 @@ and violated in round 21, against the same file and the same item.
 | *(self-detected)* §5 quantified the dark surface as four types | The measured set is **80 of 231** — units, equalization, waterfall, carry, shadow NAV, multi-currency, partners' capital, depreciation, tax lots, report-pack lifecycle. The four named types were a sample presented as the finding, understating it roughly twentyfold | §5 measurement table |
 | *(self-detected)* The published artifact still said the accounting surfaces "fall back to empty values on failure, rendering 'no breaks' and 'request failed' identically" | §8 retracted that two rounds earlier — the reconciliation panel and close cockpit both render `view.errorText`, and `AsyncRegion` composes `RegionErrorState`. The artifact's own corrections table already carried a row recording the retraction, so it logged the fix and never applied it to its body or to its ranked item #7 | Artifact §8 and ranked item 7 |
 | *(self-detected)* §8 cited `close-cockpit-panels.tsx:177,457` | No file of that name exists; it is `accounting-screen.close-cockpit-panels.tsx`. Both line references are correct, so the claim held while the path did not resolve | §8 citation |
+
+**Round 25 — two, and both are the round-5 correction failing to reach a surface it should have:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| §3's inventory: "the defective consumers are the paper book's own cash, **cost basis**, P&L and account snapshots, and the two margin models" | Cost basis is not defective. `AverageCostBasis` is a FIFO-weighted per-unit entry price (`ExecutionPosition.cs:14`) and its consumers already apply the multiplier — `OptionPosition.cs:57` and `FuturePosition.cs:61` both compute `(mark − basis) × contracts × ContractMultiplier`, and `AggregatePortfolioService.cs:174-179` passes basis and multiplier onward separately. §3's own improvement rules this out thirty-four lines later in bold. An implementer following the inventory would have introduced the 100× error the remedy exists to prevent | §3 inventory and the descriptive list above it |
+| *(self-detected)* The published artifact's §3 improvement still read "apply the multiplier … for cash, **cost basis**, margin, and market value" | That is the round-5 instruction verbatim, refuted twenty rounds ago — and the artifact's own corrections table carries the row recording the refutation. The second time in two rounds that the artifact logged a correction and never applied it to its body | Artifact §3 improvement |
+
+Round 5 ruled out multiplying stored cost basis. Twenty rounds later the refuted instruction was
+still live in the artifact's remedy, and the document's own inventory still listed cost basis as
+defective — the correction reached the document's improvement block and neither of the two places
+that tell an implementer what to change. The review comment anchored at the one line in this document
+where "cost basis" is split across a line break, which is why every prior grep for the phrase missed
+it. A sweep is only as good as the string it searches for; this one needed the *concept*.
 
 Both were found by re-measuring §5's existential claim rather than re-reading its prose — the same
 method that caught rounds 9 and 22. The first measurement pass produced **98** dark types and was
