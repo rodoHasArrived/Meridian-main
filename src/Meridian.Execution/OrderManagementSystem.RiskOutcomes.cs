@@ -186,7 +186,7 @@ public sealed partial class OrderManagementSystem
     /// Strips server-owned routing keys a caller must not supply, then copies the metadata once,
     /// before anything reads it.
     /// <para>
-    /// <see cref="ExecutionOrderMetadataPolicy.RemoveBrokerAccountAndOverrideKeys"/> hands back the
+    /// <see cref="ExecutionOrderMetadataPolicy.RemoveServerOwnedRoutingKeys"/> hands back the
     /// original request when there is nothing to strip, so without the copy the sanitized request's
     /// metadata <em>is</em> the caller's dictionary — and an in-process caller can hold a mutable one
     /// across the awaits in placement. Sizing capability, risk validation, retained state, and
@@ -198,7 +198,7 @@ public sealed partial class OrderManagementSystem
     /// </summary>
     private OrderRequest SanitizeAndSnapshotRequest(OrderRequest request, string orderId)
     {
-        var safeRequest = ExecutionOrderMetadataPolicy.RemoveBrokerAccountAndOverrideKeys(request);
+        var safeRequest = ExecutionOrderMetadataPolicy.RemoveServerOwnedRoutingKeys(request);
         if (!ReferenceEquals(safeRequest, request))
         {
             _logger.LogWarning(
