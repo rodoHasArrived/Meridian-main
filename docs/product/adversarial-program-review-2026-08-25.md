@@ -1185,7 +1185,7 @@ close-management product can tell.
 ## Corrections applied after automated review
 
 Thirty-six rounds of automated review challenged **104 claims** across this document. Every one was checked
-against the code, **all 104 held**, and the findings above are the corrected text. **Ten more were
+against the code, **all 104 held**, and the findings above are the corrected text. **Eleven more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
