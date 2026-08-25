@@ -52,7 +52,7 @@ and it is invisible to every gate the repository runs, because no gate compares 
 
 | Prior open item | State now | Evidence |
 | --- | --- | --- |
-| Reconciliation transaction population | **Landed** | `3c11be3e` projects posted journals into the transaction population; `LedgerJournalInternalTransactionSource.cs:76-93` carries FITID identity |
+| Reconciliation transaction population | **Landed** | `3c11be3e` projects posted journals into the transaction population; `LedgerJournalInternalTransactionSource.cs:254,414` carries FITID identity |
 | Broker-truthful kill-switch sweep | **Landed** | `af05058f` sweeps the union of tracked and broker books; `ExecutionReport.ChildOrders` added (`Models.cs:166-174`) and registered (`OrderManagementSystem.ChildOrders.cs:61-84`) |
 | Journal immutability at the database | **Landed** | `V_ledger_030__journal_immutability.sql` |
 | Release attachment | **Landed** | tag `eval-v0.1.0-eval.1`; `8e9b11c3` attaches consumer setup to the evaluation prerelease |
@@ -205,7 +205,7 @@ paper book's own economics, live or restored.**
 
 `PaperTradingPortfolio.ApplyFill` carries the multiplier
 (`PaperTradingPortfolio.cs:443-448`), and exactly one call site passes a real value:
-`OrderManagementSystem.cs:1534`, reading `_orderContractMultipliers`. But follow where that value
+`OrderManagementSystem.cs:1487-1494`, reading `_orderContractMultipliers`. But follow where that value
 goes. `ApplyFillToAccount` forwards it to a single destination —
 `pos.AttributeFill(ownerAccountId, signedQty, contractMultiplier)` (`:639`) — and `AttributeFill`
 only records it as metadata and tracks per-owner quantities (`:1289-1300`). The economic paths
@@ -957,14 +957,14 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Thirty rounds of automated review challenged **83 claims** across this document. Every one was checked
-against the code, **all 83 held**, and the findings above are the corrected text. **Nine more were
+Thirty-one rounds of automated review challenged **83 claims** across this document. Every one was checked
+against the code, **all 83 held**, and the findings above are the corrected text. **Twelve more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
 in the published artifact, and an unresolvable file path in §8, and the artifact's refuted cost-basis remedy — and each is recorded as a
 row below, marked *(self-detected)*.
-The table therefore holds **92 rows: 83 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **95 rows: 83 raised by review, 12 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1432,6 +1432,16 @@ above the sentence that was being edited. The lesson is narrower and more useful
 text": **when an addendum records that the world changed, every recommendation that assumes the old
 world is now wrong, including the ones that were not challenged.** A remediation note is not an
 append-only log; it invalidates instructions elsewhere in the same document.
+
+**Round 31 — three, all self-detected, and all caused by a merge rather than by reasoning:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| *(self-detected)* `MarketTradeUpdate.cs:33` | `main` advanced to `eed9987f` and added `SequenceStreamId`/`SequenceSessionDate` above it. `Source` is unchanged and still `string? Source = null`, but it now sits at **`:41`**. The finding holds; the pointer did not | §9 and the re-test table |
+| *(self-detected)* `OrderManagementSystem.cs:1534` — "exactly one call site passes a real value" | Line 1534 is now a bare brace. The `_orderContractMultipliers.TryGetValue` read moved to **`:1494`**, inside the `ApplyFill` call at `:1487`. This is load-bearing for §3: the whole multiplier finding turns on that single live call site, and its citation no longer resolved | §3 — now `:1487-1494` |
+| *(self-detected)* `LedgerJournalInternalTransactionSource.cs:76-93` — "carries FITID identity" | That range is now the XML doc comment *describing* FITID derivation, not the code doing it (`:254`, `:414`). The claim survives; the evidence pointer had drifted onto prose | Re-test table — now `:254,414` |
+
+Found by asking, after merging 8 commits, which of this document's `file:line` citations point into files the merge touched: five did, and three had moved. **Every anchored citation in a review is a hostage to the next merge**, and nothing in the document's own discipline catches it — the claims were all still true, so no contradiction sweep would fire. The check that does work is mechanical and cheap: diff the merge for touched source files, grep the document for each basename, and re-resolve every hit. It belongs in the routine after any merge, not only when something looks wrong.
 
 Both were found by re-measuring §5's existential claim rather than re-reading its prose — the same
 method that caught rounds 9 and 22. The first measurement pass produced **98** dark types and was
