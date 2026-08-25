@@ -34,10 +34,11 @@ finds the layer underneath it:
 > authoritative number has no screen, and whose flagship accounting screen reads a different book
 > than the one the accounting subsystem was built to prove.**
 
-The single sharpest expression of it: **a `ReadOnly` user can open Accounting → Trial Balance. The
-`FundAccountant` and the `Controller` cannot.** And the numbers on that screen are the strategy
-run's ledger, not the fund's posted book — because the endpoint that serves the posted book's trial
-balance has no client at all.
+The single sharpest expression of it: **the two ledgers an operator can reach are split across
+disjoint role sets, and neither set is the one the screen is named for.** The trading, analysis, and
+reporting roles can open the Accounting screen's trial balance — but it reads the *strategy run's*
+ledger. `FundAccountant` and `Controller` hold the permissions for the *posted* book and are refused
+that screen. And the endpoint that serves the posted book's trial balance had no client at all.
 
 That is not a wiring gap one seam over from a fix. It is a category error at the product's centre,
 and it is invisible to every gate the repository runs, because no gate compares the three catalogs.
@@ -52,7 +53,7 @@ and it is invisible to every gate the repository runs, because no gate compares 
 | Release attachment | **Landed** | tag `eval-v0.1.0-eval.1`; `8e9b11c3` attaches consumer setup to the evaluation prerelease |
 | Provenance at the ingress seam | **Partial** | `2361152c` threads real provider identity; the contract still permits an un-sourced print — `MarketTradeUpdate.cs:33` is `string? Source = null` |
 | Fund-economics activation | **Partial — the named alternative was skipped** | capital-call issuance wired (`CapitalCallFundingIntake.cs:236`); NAV-per-unit + unit register still at zero consumers |
-| `ContractMultiplier` on the durable fill record | **Open** | §1 below — and now demonstrably corrupting session restore |
+| `ContractMultiplier` on the durable fill record | **Open** | §3 below — and now demonstrably corrupting option session restore |
 | WPF state un-fork / desktop test job in the gate | **Open** | §7 below |
 
 ## 1. The accounting workstation reads the wrong book, and the accountants are locked out of it
@@ -92,26 +93,29 @@ The two most fundamental outputs of a general ledger — the trial balance and t
 unreachable from either operator client.
 
 **(c) The roles that own the book are denied the screen that exists.** The run-scoped endpoint gates
-on `ViewStrategies | ManageStrategies` (`WorkstationEndpoints.cs:2405`). Measured against
-`RolePermissions.cs`:
+on `ViewStrategies | ManageStrategies` (`WorkstationEndpoints.cs:2405`), but a leaf gate alone does
+not decide what an operator can reach. Effective access is the **intersection** of the workspace
+payload gate
+(`/api/workstation/accounting`, admitting `ViewTrades | ViewDirectLending | ManageDirectLending |
+ViewSecurityMaster | ModifySecurityMaster | AdminMaintenance`, `WorkstationEndpoints.cs:453`) and the
+leaf-route gate. Evaluated that way against `RolePermissions.cs` — including `DeveloperPermissions`,
+which is the computed expression `AdminPermissions & ~UserPermission.ManageUsers` (`:39-40`):
 
-| Role | `ViewStrategies` | Can open Accounting → Trial Balance |
-| --- | --- | --- |
-| Admin | yes | yes |
-| TradeDesk | yes | yes |
-| Analysis | yes | yes |
-| Accounting | yes | yes |
-| ReportingAnalyst | yes | yes |
-| Executive | yes | yes |
-| **ReadOnly** (`:129-133`) | **yes** | **yes** |
-| **FundAccountant** (`:77-86`) | **no** | **no — 403** |
-| **Controller** (`:96-106`) | **no** | **no — 403** |
-| **Compliance** | no | no |
-| Developer | no | no |
+| Role | Accounting workspace | Run-scoped trial balance | Posted-journal trial balance |
+| --- | --- | --- | --- |
+| Admin · Developer · Accounting | yes | **yes** | **yes** |
+| TradeDesk · Analysis · ReportingAnalyst · Executive | yes | **yes** | no |
+| **FundAccountant** (`:77-86`) | yes | **no — 403** | **yes** |
+| **Controller** (`:96-106`) | yes | **no — 403** | **yes** |
+| Compliance | yes | no | no |
+| ReadOnly (`:129-133`) | **no** | — | — |
 
-A minimal read-only account can see the trial balance. The Fund Accountant — described in the role
-catalog as owning "fund-accounting evidence for assigned funds" — receives a 403. So does the
-Controller who signs the close.
+The interesting shape is not a single locked-out role but a **split**: the trading, analysis, and
+reporting roles reach only the simulation book; the two roles that own the fund's records reach only
+the posted book; and outside Admin, Developer, and Accounting no role can see both. The Fund
+Accountant — described in the role catalog as owning "fund-accounting evidence for assigned funds" —
+passes the workspace gate and is then refused the screen's trial balance. So is the Controller who
+signs the close.
 
 **Why it compounds:** the two halves are exactly swapped. The endpoint the UI calls excludes the
 accounting roles. The endpoint the accounting roles *can* call (`AdminMaintenance |
@@ -146,7 +150,7 @@ an approval request.
 permissions and re-gate these surfaces. The permission enum has 27 flags in a `long` — there is ample
 room. This is a small, mechanical change that removes a real blocker to any multi-user deployment.
 
-## 3. Paper-session durability rescales every option and fixed-income position on restart
+## 3. Paper-session restore rescales every option position
 
 The 2026-08-24 review flagged the missing `ContractMultiplier` on the durable fill record. It is
 still open, and the consequence is larger than "replay is wrong": it corrupts **restore**.
@@ -165,18 +169,27 @@ All three call sites inside `PaperSessionPersistenceService` take the defaults:
 | `:1190` | candidate portfolio projection | `1m` |
 
 So a paper session holding 10 SPY calls filled at $2.50 restores as $25 of exposure instead of
-$2,500, and a fixed-income position restores at 100× its cash. `VerifyReplayAsync`
-(`PaperSessionPersistenceService.cs:835`) — the operator's continuity proof, and the feature whose
-whole purpose is to demonstrate that sessions survive restarts — compares live state against replay
-state. For any derivative session it either reports a false mismatch, or restore has already
-rescaled live state so both agree and it falsely passes. Neither outcome is a proof.
+$2,500. `VerifyReplayAsync` (`PaperSessionPersistenceService.cs:835`) — the operator's continuity
+proof, and the feature whose whole purpose is to demonstrate that sessions survive restarts —
+compares live state against replay state. For an options session it either reports a false mismatch,
+or restore has already rescaled live state so both agree and it falsely passes. Neither outcome is a
+proof.
+
+**Scope: options only.** Fixed income is *not* affected, and the contrast is the point.
+`ExecutionReport` carries `UsesFaceValuePercentageOfPar` as a first-class persisted field
+(`Models.cs:186`), `CloneExecutionReport` preserves it, and `ApplyFill` reads it off the record
+regardless of the parameter — `var faceValueSizing = usesFaceValuePercentageOfPar ||
+report.UsesFaceValuePercentageOfPar` (`PaperTradingPortfolio.cs:469`). Percent-of-par therefore
+survives every restore path, because the convention lives **on the record** instead of in an
+argument. The contract multiplier has no such field, so it survives only where a caller happens to
+pass it. One convention was modeled; the other was not — and only the unmodeled one breaks.
 
 The data needed is already on the record: `ExecutionReport.OptionContract.Multiplier`
 (`Models.cs:119`) is present on every fill the persistence layer clones, and
 `OrderManagementSystem.RiskOutcomes.cs:324` already contains the parsing logic
 (`ResolveContractMultiplier`, defaulting options to `100m`). The fix is to call it at the three
-restore sites, or to promote `ContractMultiplier` and the percent-of-par flag to first-class fields
-on `ExecutionReport` so no reconstruction path can drop them.
+restore sites, or better, to give `ContractMultiplier` the same first-class treatment
+`UsesFaceValuePercentageOfPar` already has.
 
 **Improvement.** Promote both to `ExecutionReport` fields (JSON-ignored when default, preserving
 existing content hashes — the pattern `ChildOrders` already uses at `Models.cs:170-174`). A durable
@@ -194,10 +207,20 @@ var effectivePrice = usesFaceValuePercentageOfPar ? fill.FillPrice / 100m : fill
 var tradeCashFlow = new TradeCashFlow(..., Amount: -(fill.FilledQuantity * effectivePrice), ...);
 ```
 
-There is no multiplier parameter. A live option fill books 1/100 of its cash into every derived
-metric — realized P&L, drawdown, Sharpe, commission ratio. The underlying `FillEvent`
-(`Meridian.Backtesting.Sdk/FillEvent.cs:4-18`) carries neither a multiplier nor a percent-of-par
-flag, so the record cannot express the distinction even if the caller knew it.
+There is no multiplier parameter, so a live option fill books 1/100 of its cash. The underlying
+`FillEvent` (`Meridian.Backtesting.Sdk/FillEvent.cs:4-18`) carries neither a multiplier nor a
+percent-of-par flag, so the record cannot express the distinction even if the caller knew it.
+
+**What this does and does not corrupt.** The headline session metrics are safe: `Build(finalEquity,
+…)` derives net P&L and total return from the passed-in equity (`:131-132`), drawdown from the
+`RecordEquity` peak/observation series (`:96-105`), Sharpe from equity-derived daily returns, and
+commissions from an independent `_totalCommissions` accumulator — and the paper portfolio behind that
+equity *is* multiplier-aware, because the OMS applies `_orderContractMultipliers` on the live path.
+What the missing multiplier corrupts is the per-trade record: the emitted `TradeCashFlow`
+(`:55-61`) and the retained `FillEvent` list, i.e. the trade-level cash attribution, any
+cash-flow-derived analytics such as TWR/IRR, and the fill log an operator or auditor reads back.
+That is narrower than session-level P&L and still wrong in the place a proof-of-the-number product
+can least afford it.
 
 This is the same defect shape as §3, in a third subsystem. Three subsystems now model instrument
 scale differently: `ExecutionPosition.ContractMultiplier` (`ExecutionPosition.cs:42`), the
@@ -270,8 +293,12 @@ Largest dark groups (routes unreachable from either client):
 Two of these deserve naming on their own. The **compliance** surface
 (`ComplianceEndpoints.cs:15-117`) is complete, permission-guarded, and backed by
 `ImmutableAuditLogService` — an entire governance capability with no operator path, in a product
-whose promise is governed proof. The **data-quality** surface is 31 endpoints deep — exactly the
-evidence a "can I trust this number?" product should be surfacing — and the operator sees none of it.
+whose promise is governed proof. The **data-quality** surface is different in kind: the aggregate
+`/api/quality/dashboard` *is* wired — the Data workspace renders its composite health, gap, anomaly,
+and completeness evidence through `data-screen.data-quality.view-model.ts` — while the 31 per-symbol
+and per-dimension drill-downs behind it have no consumer. So the operator can see that a symbol is
+unhealthy and cannot open the evidence that says why. That is a depth gap, not an invisible
+capability, and it should be scoped as one.
 
 *Caveat on the method:* some dark routes are legitimately server-to-server or diagnostic, and a
 handful of paths are reached through composed URL builders my scan would miss. Spot checks confirmed
@@ -311,8 +338,15 @@ needs:
 
 So the desktop workstation — a co-equal UI lane, and the client for the only platform ADR-019
 supports (Windows 11 x64) — compiles to an empty stub in the gate. **A change that breaks WPF
-compilation merges green.** `windows-desktop-build.yml` exists but is path-filtered and runs no
-`dotnet test`.
+compilation merges green.**
+
+The desktop lane is not untested, and the gap is narrower than "no Windows tests": for changes
+matching its path filters, `windows-desktop-build.yml:132-139` runs
+`scripts/dev/validate-wpf-dev.ps1` without `-BuildOnly`, and that script executes `dotnet test`
+against `Meridian.Wpf.Tests` (`:226-252`) plus, under `-IncludeSupervisorTests`, the
+lifecycle-supervisor suite. The defect is the *gating*, not the coverage: that workflow is
+path-filtered and absent from `quality-gate`'s `needs`, so its result never blocks a merge, and a
+change outside its filters that breaks WPF is compiled by nothing at all.
 
 The .NET lane additionally filters `--filter "Category!=Integration&Category!=Performance"`
 (`scripts/ci.sh:161`), excluding **70 integration test files** — among them
@@ -338,14 +372,19 @@ The surfaces where staleness actually costs an operator money still poll:
 - lifecycle control — 5s (`lifecycle-control-panel.tsx:57`)
 
 Break casework, approvals, and close-readiness do not refresh after a mutation elsewhere in the app,
-so two operators working the same close see divergent state for up to a minute. `RegionErrorState` —
-the built, correct error surface — appears in **3** non-test files across ~120 screen modules; the
-rest still fall back to empty values on failure, which renders "no breaks" and "zero breaks"
-identically.
+so two operators working the same close see divergent state for up to a minute. That staleness, not
+error handling, is the finding here: the accounting surfaces **do** surface failures — the
+reconciliation panel renders `view.errorText` (`accounting-screen.reconciliation-panels.tsx:106-118`),
+the close cockpit does the same (`close-cockpit-panels.tsx:177,457`), and the trial balance carries a
+structured `ApiErrorDisplay`. `RegionErrorState` appears directly in only 3 non-test modules, but it
+is also composed by `AsyncRegion` (`async-region.tsx:95,109`), so a raw import count understates
+adoption and is not evidence that the rest collapse failures into empty data.
 
 **Improvement.** Route break, approval, and inbox mutations over the existing SSE fan-out rather than
-adding polls, and adopt `RegionErrorState` on the reconciliation queue, break detail, and close
-cockpit first. An empty grid that means "request failed" is the single most expensive UI lie a
+adding polls. On errors the remaining work is consistency rather than absence: three different
+primitives (`RegionErrorState`, `StatusBanner`, bespoke `errorText` blocks) express the same state,
+so an operator learns three visual vocabularies for "this failed". An empty grid that means "request
+failed" is the single most expensive UI lie a
 close-management product can tell.
 
 ## 9. Smaller findings worth fixing cheaply
@@ -364,8 +403,13 @@ close-management product can tell.
   gate correctly forbids the in-memory profile in Production. But the file-backed loader discards the
   whole governance working set on a malformed snapshot and continues
   (`InMemoryFundStructureService.Persistence.cs:79-88`) — it logs a warning and starts empty. For the
-  local/dev profile the README recommends to evaluators, a truncated write means silent total state
-  loss on next start.
+  Writes themselves are safe — `JsonFileFundStructureStateStore.SaveAsync` goes through
+  `AtomicFileWriter.WriteAsync` (`:16`), which syncs a temp file and renames, so an interrupted write
+  cannot truncate the target. The exposure is everything *outside* that seam: external corruption,
+  a partial restore, a hand-edited or half-copied data root, a filesystem fault. Any of those turns
+  the whole governance working set into an empty one, announced by a warning line. Fail closed on a
+  snapshot that exists but will not parse, rather than starting empty and letting the operator
+  discover it downstream.
 - **Very large files concentrate risk.** `AccountingConfigureViewModel.cs` (5,356 lines),
   `SecurityMasterWorkbenchQueryService.cs` (4,738), `FundOperationsWorkspaceReadService.cs` (4,646),
   `WorkstationEndpoints.cs` (4,201). §1's defect lives inside a 5,900-line view model, which is a
@@ -434,6 +478,27 @@ close-management product can tell.
 - **Capital-call issuance is the model to copy.** Kernel → governed intake → approval queue → operator
   screen → screenshot catalog, in one cycle, with tests. Every dark asset in §5 and §6 should be
   activated this way.
+
+## Corrections applied after automated review
+
+An automated reviewer challenged seven claims in the first draft of this document. All seven were
+checked against the code, **all seven held**, and the findings above are the corrected text. Recorded
+here because a review that demands evidence discipline owes the same discipline about its own errors:
+
+| Claim as first written | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "A `ReadOnly` user can open Accounting → Trial Balance" | `ReadOnly` holds none of the `/api/workstation/accounting` admission permissions, so it never reaches the screen. Effective access is workspace ∩ leaf, not the leaf gate alone | §1(c) |
+| `Developer` marked as lacking `ViewStrategies` | `DeveloperPermissions` is the computed expression `AdminPermissions & ~ManageUsers` (`RolePermissions.cs:39-40`); the first pass parsed only `\|`-joined literals and mis-read it | §1(c) |
+| "A fixed-income position restores at 100× its cash" | `ExecutionReport.UsesFaceValuePercentageOfPar` is a persisted field and `ApplyFill` reads it off the record (`PaperTradingPortfolio.cs:469`); percent-of-par survives restore. Only the multiplier defect is real | §3 |
+| Missing multiplier corrupts "realized P&L, drawdown, Sharpe, commission ratio" | Those derive from equity observations and an independent commission accumulator, not from the fill cash flow. The corruption is trade-level | §4 |
+| "The operator sees none of" the data-quality surface | `/api/quality/dashboard` is wired into the Data workspace; the 31 drill-downs behind it are what lack consumers | §6 |
+| "`windows-desktop-build.yml` runs no `dotnet test`" | It runs `validate-wpf-dev.ps1` without `-BuildOnly`, which does run the WPF and supervisor suites. The defect is gating, not coverage | §7 |
+| "A truncated write means silent total state loss" | Saves go through `AtomicFileWriter.WriteAsync`, which prevents exactly that. The fail-quiet loader is still real; the scenario was not | §9 |
+
+The core findings survive in narrowed form; two — the role-access table and the fixed-income
+claim — were materially wrong as first stated and are now rewritten rather than softened. The method
+lesson generalizes: **a permission gate read in isolation predicts the wrong access**, which is the
+same intersection error the document accuses the codebase of, committed while describing it.
 
 ## Addendum — remediation landed while this review was in flight
 
