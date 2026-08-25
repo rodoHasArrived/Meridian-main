@@ -2,13 +2,13 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 21.3,
-  "endpoint_coverage_percent": 32.9,
+  "score_percent": 21.2,
+  "endpoint_coverage_percent": 32.8,
   "contract_coverage_percent": 3.9,
   "summary": {
-    "endpoint_count": 627,
+    "endpoint_count": 628,
     "documented_endpoint_count": 206,
-    "undocumented_endpoint_count": 421,
+    "undocumented_endpoint_count": 422,
     "workstation_contract_count": 917,
     "documented_workstation_contract_count": 36,
     "undocumented_workstation_contract_count": 881
@@ -2320,8 +2320,14 @@
     },
     {
       "method": "POST",
-      "path": "/api/ledger/journal-automation/period-close-intake",
+      "path": "/api/ledger/journal-automation/capital-call-funding-intake",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:610",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/journal-automation/period-close-intake",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:653",
       "documented": false
     },
     {

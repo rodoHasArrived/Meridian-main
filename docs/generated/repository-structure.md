@@ -4431,6 +4431,7 @@ Meridian-main
 │   │   │   ├── FutureDetails.cs
 │   │   │   ├── OptionDetails.cs
 │   │   │   └── OptionGreeks.cs
+│   │   ├── BracketOrderMetadata.cs
 │   │   ├── BrokerageConfiguration.cs
 │   │   ├── BrokerageOrderPlacementGate.cs
 │   │   ├── BrokerageValidationEvaluator.cs
@@ -5372,6 +5373,7 @@ Meridian-main
 │   │   └── StatementReconciliationReportAuthorityContracts.cs
 │   ├── Meridian.Risk
 │   │   ├── Rules
+│   │   │   ├── BracketChildLimbRule.cs
 │   │   │   ├── DrawdownCircuitBreaker.cs
 │   │   │   ├── FatFingerRule.cs
 │   │   │   ├── GrossExposureRule.cs
@@ -6227,6 +6229,7 @@ Meridian-main
 │   │   │   │   │   │   ├── store.tsx
 │   │   │   │   │   │   └── types.ts
 │   │   │   │   │   ├── api
+│   │   │   │   │   │   ├── capital-call-issuance.api.ts
 │   │   │   │   │   │   ├── covered-call.api.test.ts
 │   │   │   │   │   │   ├── covered-call.api.ts
 │   │   │   │   │   │   ├── data-operations-assurance.api.ts
@@ -6416,6 +6419,10 @@ Meridian-main
 │   │   │   │   │   ├── asset-detail-screen.tsx
 │   │   │   │   │   ├── asset-detail-screen.view-model.test.ts
 │   │   │   │   │   ├── asset-detail-screen.view-model.ts
+│   │   │   │   │   ├── capital-call-issuance-screen.test.tsx
+│   │   │   │   │   ├── capital-call-issuance-screen.tsx
+│   │   │   │   │   ├── capital-call-issuance-screen.view-model.test.ts
+│   │   │   │   │   ├── capital-call-issuance-screen.view-model.ts
 │   │   │   │   │   ├── cash-ladder-screen.tsx
 │   │   │   │   │   ├── cash-ladder-screen.view-model.test.ts
 │   │   │   │   │   ├── cash-ladder-screen.view-model.ts
@@ -7092,6 +7099,7 @@ Meridian-main
 │   │   │   ├── BrokerageConnectionService.cs
 │   │   │   ├── BrokeragePortfolioSyncService.cs
 │   │   │   ├── CapitalAccountWorkbenchService.cs
+│   │   │   ├── CapitalCallFundingIntake.cs
 │   │   │   ├── CapitalCallIssuanceIntake.cs
 │   │   │   ├── CashOperationsOrchestratorService.cs
 │   │   │   ├── CashSyncOrchestrationService.cs
@@ -9560,6 +9568,7 @@ Meridian-main
 │   │   │   ├── ReportSnapshotDiffEngineTests.cs
 │   │   │   └── ReportWriterGridEngineTests.cs
 │   │   ├── Risk
+│   │   │   ├── BracketChildLimbRuleTests.cs
 │   │   │   ├── CompositeRiskValidatorTests.cs
 │   │   │   ├── DrawdownCircuitBreakerTests.cs
 │   │   │   ├── EnforcedRiskValidatorCompositionTests.cs
@@ -9715,6 +9724,7 @@ Meridian-main
 │   │   │   ├── JsonFileSnapshotStoreTests.cs
 │   │   │   ├── JsonlAppendStreamTests.cs
 │   │   │   ├── JsonlBatchWriteTests.cs
+│   │   │   ├── JsonlMarketDataStoreCorruptionTests.cs
 │   │   │   ├── JsonlMarketDataStoreSymbolPathTests.cs
 │   │   │   ├── JsonlReplayerTests.cs
 │   │   │   ├── LedgerBookServiceTests.cs
@@ -9817,7 +9827,8 @@ Meridian-main
 │   │   │   ├── RecordingLogger.cs
 │   │   │   ├── SignalingMarketEventPublisher.cs
 │   │   │   ├── StubHttpMessageHandler.cs
-│   │   │   └── TestMarketEventPublisher.cs
+│   │   │   ├── TestMarketEventPublisher.cs
+│   │   │   └── ThrowingMarketEventPublisher.cs
 │   │   ├── Testing
 │   │   │   └── TestArtifactDirectory.cs
 │   │   ├── TestSupport
@@ -9867,6 +9878,7 @@ Meridian-main
 │   │   │   ├── BrokerageConnectionEndpointsTests.cs
 │   │   │   ├── BrokeragePortfolioSyncServiceTests.cs
 │   │   │   ├── CapitalAccountWorkbenchServiceTests.cs
+│   │   │   ├── CapitalCallFundingIntakeTests.cs
 │   │   │   ├── CapitalCallIssuanceIntakeTests.cs
 │   │   │   ├── CashOperationsOrchestratorServiceTests.cs
 │   │   │   ├── CollateralExposureServiceTests.cs
