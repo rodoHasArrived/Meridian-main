@@ -2374,6 +2374,16 @@ export interface AccountingTrialBalanceViewState {
   state: AccountingTrialBalanceState;
   rows: AccountingTrialBalanceRowViewModel[];
   hasRows: boolean;
+  /**
+   * Signed sum of the whole selected basis, independent of the account filter.
+   *
+   * The balance control answers "does this book tie", which is a property of the book, not of
+   * whatever subset an operator has searched for. Summing the filtered rows instead declared the
+   * book out of balance by the value of everything filtered out, and told the operator to resolve
+   * a variance that does not exist before approving or reporting.
+   */
+  basisVariance: number;
+  isBasisOutOfBalance: boolean;
   selectedRowId: string | null;
   detailPanelId: string;
   selectedDetail: AccountingTrialBalanceDetailViewState | null;
@@ -5159,6 +5169,7 @@ export function buildAccountingTrialBalanceViewState({
     .filter((line) => line.accountingBasis === resolvedBasis)
     .map((line) => buildTrialBalanceRow(line, detailPanelId));
   const accountFilterOptions = buildLedgerAccountFilterOptions(basisRows, normalizedAccountFilter);
+  const basisVariance = basisRows.reduce((total, row) => total + row.balance, 0);
   const rawRows = basisRows.filter((row) => ledgerAccountRowMatchesFilter(row, normalizedAccountFilter));
   const hasRows = rawRows.length > 0;
   const resolvedSelectedRowId = rawRows.some((row) => row.rowId === selectedRowId)
@@ -5200,6 +5211,8 @@ export function buildAccountingTrialBalanceViewState({
     state,
     rows: viewRows,
     hasRows,
+    basisVariance,
+    isBasisOutOfBalance: Math.abs(basisVariance) > 0.005,
     selectedRowId: resolvedSelectedRowId,
     detailPanelId,
     selectedDetail: selectedRow ? buildTrialBalanceDetail(selectedRow, runLabel, runId) : null,

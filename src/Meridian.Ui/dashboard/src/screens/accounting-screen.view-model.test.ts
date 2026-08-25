@@ -1449,6 +1449,30 @@ describe("accounting-screen view model", () => {
     expect(result.current.transactionLabView.canPreview).toBe(true);
   });
 
+  it("computes the balance control from the whole basis, not the filtered rows", () => {
+    // The control answers "does this book tie", which is a property of the book. Summing only the
+    // rows an account search left visible declared the book out of balance by the value of
+    // everything filtered out, and told the operator to resolve a variance that does not exist.
+    const unfiltered = buildAccountingTrialBalanceViewState({
+      runId: "run-42",
+      rows: trialBalanceLines,
+      loading: false,
+      error: null
+    });
+
+    const filtered = buildAccountingTrialBalanceViewState({
+      runId: "run-42",
+      rows: trialBalanceLines,
+      accountFilter: "Cash",
+      loading: false,
+      error: null
+    });
+
+    expect(filtered.rows.length).toBeLessThan(unfiltered.rows.length);
+    expect(filtered.basisVariance).toBe(unfiltered.basisVariance);
+    expect(filtered.isBasisOutOfBalance).toBe(unfiltered.isBasisOutOfBalance);
+  });
+
   it("derives trial-balance table rows, labels, and status announcements", () => {
     const state = buildAccountingTrialBalanceViewState({
       runId: "run-42",

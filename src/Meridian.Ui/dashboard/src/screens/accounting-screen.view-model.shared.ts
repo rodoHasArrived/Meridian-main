@@ -1,8 +1,34 @@
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type { ApiErrorDisplay } from "@/lib/api-errors";
-import type { AccountingBasisKind, PrivateCapitalFundEventLedgerRecord } from "@/types";
+import type {
+  AccountingBasisKind,
+  LedgerTrialBalanceLine,
+  PrivateCapitalFundEventLedgerRecord
+} from "@/types";
 
 export const DEFAULT_ACCOUNTING_BASIS: AccountingBasisKind = "Primary";
+
+/**
+ * The basis to select for a trial balance that has just loaded.
+ *
+ * The builders render exactly one basis and filter the rest out, so the selection has to name a
+ * basis the response actually carries. Keeping the previous choice hides an incoming Primary-only
+ * set; resetting to Primary hides an incoming GAAP- or tax-only one. Prefer Primary when it is
+ * present — it is what an operator expects to land on — and otherwise fall back to whichever basis
+ * the rows are keyed on. Rows with no basis normalize to Primary downstream, so they count as
+ * Primary here too.
+ *
+ * Shared by the posted ledger and the strategy run ledger: both hit the same failure from opposite
+ * directions, and a second copy would drift.
+ */
+export function resolveAvailableAccountingBasis(rows: LedgerTrialBalanceLine[]): AccountingBasisKind {
+  const present = new Set(rows.map((row) => row.accountingBasis ?? DEFAULT_ACCOUNTING_BASIS));
+  if (present.size === 0 || present.has(DEFAULT_ACCOUNTING_BASIS)) {
+    return DEFAULT_ACCOUNTING_BASIS;
+  }
+
+  return [...present][0];
+}
 
 export function normalizeQueryValue(value: string | null): string | null {
   const normalized = value?.trim();

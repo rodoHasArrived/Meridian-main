@@ -360,6 +360,59 @@ describe("useAccountingPostedLedgerViewModel", () => {
     });
   });
 
+  it("selects a basis the incoming period actually carries", async () => {
+    // Carrying GAAP across a period change filtered every row out of a Primary-only period, and
+    // the period read as having no trial balance even though it loaded successfully.
+    const older = makePeriod({ periodId: "22222222-2222-2222-2222-222222222222", periodNo: 6, label: "June 2026" });
+    const closed = makePeriod();
+    const getTrialBalance = vi.fn()
+      .mockResolvedValueOnce([makeLine({ accountingBasis: "Gaap" })])
+      .mockResolvedValueOnce([makeLine({ accountingBasis: "Primary" })]);
+    const services = makeServices({
+      getPeriods: vi.fn().mockResolvedValue([closed, older]),
+      getTrialBalance
+    });
+    const { result } = renderHook(() => useAccountingPostedLedgerViewModel("ledger", services));
+
+    await waitFor(() => {
+      expect(result.current.view.trialBalance.selectedBasis).toBe("Gaap");
+    });
+
+    act(() => {
+      result.current.selectPeriod(older.periodId);
+    });
+
+    await waitFor(() => {
+      expect(result.current.view.trialBalance.selectedBasis).toBe("Primary");
+    });
+    expect(result.current.view.trialBalance.hasRows).toBe(true);
+  });
+
+  it("drops the outgoing book's periods and figures when another book is selected", async () => {
+    // Clearing only selectedPeriodId left book A's periods in place, so the validation effect
+    // immediately re-picked A's default and loaded its figures under B's label and currency.
+    const services = makeServices({
+      getBooks: vi.fn().mockResolvedValue([
+        makeBook(),
+        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Feeder Fund" })
+      ]),
+      getTrialBalance: vi.fn().mockResolvedValue([makeLine()])
+    });
+    const { result } = renderHook(() => useAccountingPostedLedgerViewModel("ledger", services));
+
+    await waitFor(() => {
+      expect(result.current.view.trialBalance.hasRows).toBe(true);
+    });
+
+    act(() => {
+      result.current.selectBook("00000000-0000-0000-0000-0000000000cc");
+    });
+
+    expect(result.current.view.periodSelector.options).toHaveLength(0);
+    expect(result.current.view.trialBalance.hasRows).toBe(false);
+    expect(result.current.journalLines).toHaveLength(0);
+  });
+
   it("leaves the posted journal unrequested for a consumer that does not render it", async () => {
     // AccountingPostedLedgerSection destructures only `view`. The journal route returns a
     // period's entries in full, so fetching it for that panel downloads a production month's

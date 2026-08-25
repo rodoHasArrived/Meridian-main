@@ -18,7 +18,10 @@ import type {
   LedgerTrialBalanceLine
 } from "@/types";
 import { formatCurrency, formatSignedCurrency } from "./accounting-screen.formatting";
-import { DEFAULT_ACCOUNTING_BASIS } from "./accounting-screen.view-model.shared";
+import {
+  DEFAULT_ACCOUNTING_BASIS,
+  resolveAvailableAccountingBasis
+} from "./accounting-screen.view-model.shared";
 import {
   buildAccountingTrialBalanceViewState,
   type AccountingTrialBalanceViewState
@@ -548,7 +551,12 @@ export function useAccountingPostedLedgerViewModel(
     services.getTrialBalance(selectedPeriodId)
       .then((rows) => {
         if (!cancelled) {
-          setTrialBalanceRows(rows.map(toTrialBalanceLine));
+          const lines = rows.map(toTrialBalanceLine);
+          setTrialBalanceRows(lines);
+          // Resolved from the rows themselves. Carrying GAAP or Tax across a period change filters
+          // every row out of a period that only holds Primary, and the period reads as having no
+          // trial balance even though it loaded successfully.
+          setSelectedBasis(resolveAvailableAccountingBasis(lines));
         }
       })
       .catch((err) => {
@@ -677,6 +685,16 @@ export function useAccountingPostedLedgerViewModel(
     // The incoming book's periods are a different set entirely; keeping the outgoing selection
     // would request a period that does not belong to it.
     setSelectedPeriodId(null);
+    // Clearing the id alone was not enough: the periods array still held book A's, so the
+    // selection-validation effect immediately re-picked A's default and loaded its figures under
+    // B's label and currency -- and left them there indefinitely if B's period request hung.
+    setPeriods([]);
+    setPeriodNotice(null);
+    setTrialBalanceRows([]);
+    setPnl(null);
+    setJournalLines([]);
+    setJournalErrorText(null);
+    setSelectedRowId(null);
   }, []);
 
   const view = useMemo(

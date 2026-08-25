@@ -17,7 +17,10 @@ import {
   buildAccountingLedgerJournalEvidenceViewState,
   buildAccountingTrialBalanceViewState
 } from "@/screens/accounting-screen.view-model";
-import { DEFAULT_ACCOUNTING_BASIS } from "@/screens/accounting-screen.view-model.shared";
+import {
+  DEFAULT_ACCOUNTING_BASIS,
+  resolveAvailableAccountingBasis
+} from "@/screens/accounting-screen.view-model.shared";
 import type {
   AccountingBasisKind,
   FinancialRecordExplorerDto,
@@ -33,25 +36,6 @@ import type {
  * (adversarial-program-review-2026-08-25 §1). The fund's posted journal now owns the Accounting
  * ledger surface; run evidence belongs next to the runs that produced it.
  */
-/**
- * The basis to select for a run that has just loaded.
- *
- * The trial-balance builder renders exactly one basis and filters the rest out, so the selection
- * has to name a basis the run actually carries. Keeping the outgoing run's choice hides an
- * incoming Primary-only run; resetting to Primary hides an incoming GAAP- or tax-only one. Prefer
- * Primary when the run has it — it is the basis an operator expects to land on — and otherwise
- * fall back to whichever basis the returned rows are keyed on. Rows with no basis are normalized
- * to Primary downstream, so they count as Primary here too.
- */
-function resolveRunAccountingBasis(rows: LedgerTrialBalanceLine[]): AccountingBasisKind {
-  const present = new Set(rows.map((row) => row.accountingBasis ?? DEFAULT_ACCOUNTING_BASIS));
-  if (present.size === 0 || present.has(DEFAULT_ACCOUNTING_BASIS)) {
-    return DEFAULT_ACCOUNTING_BASIS;
-  }
-
-  return [...present][0];
-}
-
 export function StrategyRunLedgerScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const runId = searchParams.get("runId")?.trim() || null;
@@ -65,7 +49,7 @@ export function StrategyRunLedgerScreen() {
   const [journalLines, setJournalLines] = useState<LedgerJournalLine[]>([]);
   const [journalLoading, setJournalLoading] = useState(false);
   const [journalErrorText, setJournalErrorText] = useState<string | null>(null);
-  // Resolved from each run's own rows once they arrive; see resolveRunAccountingBasis. The
+  // Resolved from each run's own rows once they arrive; see resolveAvailableAccountingBasis. The
   // builder filters to exactly one basis, so this cannot be left on the outgoing run's choice
   // and cannot be pinned to Primary either.
   const [selectedBasis, setSelectedBasis] = useState<AccountingBasisKind>(DEFAULT_ACCOUNTING_BASIS);
@@ -119,8 +103,8 @@ export function StrategyRunLedgerScreen() {
         if (!cancelled) {
           setTrialBalanceRows(rows);
           // Resolved from the rows themselves rather than reset to a fixed basis: see
-          // resolveRunAccountingBasis for why neither keeping nor pinning the selection works.
-          setSelectedBasis(resolveRunAccountingBasis(rows));
+          // resolveAvailableAccountingBasis for why neither keeping nor pinning the selection works.
+          setSelectedBasis(resolveAvailableAccountingBasis(rows));
         }
       })
       .catch((err) => {

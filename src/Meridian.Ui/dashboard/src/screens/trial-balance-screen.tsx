@@ -170,8 +170,11 @@ export function TrialBalanceScreen() {
 
   const selectedBasisLabel =
     postedLedger.view.trialBalance.basisOptions.find((option) => option.isSelected)?.label ?? "—";
-  const trialBalanceVariance = postedLedger.view.trialBalance.rows.reduce((total, row) => total + row.balance, 0);
-  const isTrialBalanceOutOfBalance = postedLedger.view.trialBalance.hasRows && Math.abs(trialBalanceVariance) > 0.005;
+  // From the whole selected basis, not the filtered rows on screen: whether the book ties is a
+  // property of the book. Summing what an account search left visible reported the book out of
+  // balance by the value of everything filtered out.
+  const trialBalanceVariance = postedLedger.view.trialBalance.basisVariance;
+  const isTrialBalanceOutOfBalance = postedLedger.view.trialBalance.isBasisOutOfBalance;
 
   // Focus zone — ≤4 signals of "what needs my attention on this period right now".
   const focusSignals: FocusSignal[] = [
