@@ -213,10 +213,16 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
     private string _detailSecurityIssuesText = "0";
     private string _matchSelectionText = "Select at least one ledger entry and one source-data row to match.";
     private string _breakQueueEmptyStateText = "No strategy-run breaks are queued for this fund.";
+    private string _breakQueueSourceEmptyStateText = "No strategy-run breaks are queued for this fund.";
     private string _nextBestActionText = "Select a break to view the recommended next action.";
     private string _blockerReasonText = "No blocker is selected.";
     private string _evidenceLinksText = "Evidence links appear after selecting a break.";
     private string _runsEmptyStateText = "No reconciliation runs are available for this fund.";
+    private string _runsSourceEmptyStateText = "No reconciliation runs are available for this fund.";
+    private bool _hasReadAvailabilityNotice;
+    private WorkstationStateModel _readAvailabilityState = WorkstationStateModel.Empty(
+        "Reconciliation availability not loaded",
+        "Select a fund profile and refresh to verify reconciliation availability.");
     private WorkstationStateModel _accountingSignifierState = WorkstationStateModel.Empty(
         "Select reconciliation evidence",
         "Choose a break queue item or reconciliation run to see lifecycle, sign-off, evidence, and recovery posture.",
@@ -260,10 +266,14 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
     public string DetailSecurityIssuesText { get => _detailSecurityIssuesText; set => SetProperty(ref _detailSecurityIssuesText, value); }
     public string MatchSelectionText { get => _matchSelectionText; set => SetProperty(ref _matchSelectionText, value); }
     public string BreakQueueEmptyStateText { get => _breakQueueEmptyStateText; set => SetProperty(ref _breakQueueEmptyStateText, value); }
+    public string BreakQueueSourceEmptyStateText { get => _breakQueueSourceEmptyStateText; set => SetProperty(ref _breakQueueSourceEmptyStateText, value); }
     public string NextBestActionText { get => _nextBestActionText; set => SetProperty(ref _nextBestActionText, value); }
     public string BlockerReasonText { get => _blockerReasonText; set => SetProperty(ref _blockerReasonText, value); }
     public string EvidenceLinksText { get => _evidenceLinksText; set => SetProperty(ref _evidenceLinksText, value); }
     public string RunsEmptyStateText { get => _runsEmptyStateText; set => SetProperty(ref _runsEmptyStateText, value); }
+    public string RunsSourceEmptyStateText { get => _runsSourceEmptyStateText; set => SetProperty(ref _runsSourceEmptyStateText, value); }
+    public bool HasReadAvailabilityNotice { get => _hasReadAvailabilityNotice; set => SetProperty(ref _hasReadAvailabilityNotice, value); }
+    public WorkstationStateModel ReadAvailabilityState { get => _readAvailabilityState; set => SetProperty(ref _readAvailabilityState, value); }
     public WorkstationStateModel AccountingSignifierState { get => _accountingSignifierState; set => SetProperty(ref _accountingSignifierState, value); }
     public WorkstationStateModel GovernanceSignifierState { get => AccountingSignifierState; set => AccountingSignifierState = value; }
     public StatementRunWorkbenchRow? SelectedStatementRun { get => _selectedStatementRun; set => SetProperty(ref _selectedStatementRun, value); }

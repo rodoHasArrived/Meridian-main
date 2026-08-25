@@ -17,6 +17,18 @@
       "rule_id": "migration-truncate",
       "reason": "The lexical TRUNCATE match is the migration's own BEFORE TRUNCATE guard trigger - the statement that REJECTS truncation of the journal tables. The migration truncates nothing.",
       "review_after": "2027-02-01"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_031__journal_aggregate_seal.sql",
+      "rule_id": "migration-drop-object",
+      "reason": "DROP TRIGGER IF EXISTS immediately before each CREATE TRIGGER is the ledger set's reapply-idempotence idiom (drift policy: reapply), matching V030. Nothing existing is removed on first apply.",
+      "review_after": "2027-02-01"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_031__journal_aggregate_seal.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE match is the migration's own BEFORE TRUNCATE guard trigger, which rejects truncation of the journal integrity tables. The migration truncates nothing.",
+      "review_after": "2027-02-01"
     }
   ],
   "removed_migrations": [

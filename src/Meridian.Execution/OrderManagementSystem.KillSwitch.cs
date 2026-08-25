@@ -54,7 +54,7 @@ public sealed partial class OrderManagementSystem
         // does not cover. The snapshot is taken before anything is cancelled so it reflects the
         // pre-sweep book, and deduplication is by order id, so an order present in both views is
         // cancelled exactly once, through the tracked path that owns its state.
-        var (brokerResidualOrders, brokerViewError) =
+        var (brokerResidualOrders, brokerCancellationIds, brokerViewError) =
             await SnapshotBrokerResidualOrdersAsync(sweepTargets, sweepToken).ConfigureAwait(false);
 
         _logger.LogInformation(
@@ -83,6 +83,7 @@ public sealed partial class OrderManagementSystem
         // merely losing a count.
         var cancelled = 0;
         var gate = new Lock();
+        var confirmedCancellations = new List<ConfirmedCancellation>();
         var parallelOptions = new ParallelOptions
         {
             CancellationToken = sweepToken,
@@ -98,9 +99,12 @@ public sealed partial class OrderManagementSystem
                 // has to say so per order. Letting it escape would abandon the remaining orders
                 // mid-sweep and report the whole kill switch as failed on one broker's fault.
                 KillSwitchSweepFailure? failure;
+                var gatewayOrderId = brokerCancellationIds.TryGetValue(order.OrderId, out var brokerOrderId)
+                    ? brokerOrderId
+                    : null;
                 try
                 {
-                    var result = await CancelOrderCoreAsync(order.OrderId, token).ConfigureAwait(false);
+                    var result = await CancelOrderCoreAsync(order.OrderId, token, gatewayOrderId).ConfigureAwait(false);
                     failure = result.Success
                         ? null
                         : new KillSwitchSweepFailure(
@@ -122,6 +126,14 @@ public sealed partial class OrderManagementSystem
                     else
                     {
                         cancelled++;
+                        var confirmedBrokerOrderId = gatewayOrderId;
+                        if (string.IsNullOrWhiteSpace(confirmedBrokerOrderId))
+                        {
+                            _orderBrokerIds.TryGetValue(order.OrderId, out confirmedBrokerOrderId);
+                        }
+                        confirmedCancellations.Add(new ConfirmedCancellation(
+                            order.OrderId,
+                            confirmedBrokerOrderId));
                     }
                 }
             }).ConfigureAwait(false);
@@ -148,9 +160,61 @@ public sealed partial class OrderManagementSystem
                         else
                         {
                             cancelled++;
+                            confirmedCancellations.Add(new ConfirmedCancellation(
+                                order.ClientOrderId ?? order.OrderId,
+                                order.OrderId));
                         }
                     }
                 }).ConfigureAwait(false);
+        }
+
+        // A cancellation response is not proof that the broker book converged. Re-enumerate the
+        // fully paginated working book after every request has settled: rows that survived (or
+        // appeared during the sweep) make Completed impossible, and a failed verification makes
+        // the broker view explicitly unavailable.
+        var (survivingBrokerOrders, convergenceError) =
+            await SnapshotWorkingBrokerOrdersAsync(sweepToken).ConfigureAwait(false);
+        if (convergenceError is not null)
+        {
+            brokerViewError = convergenceError;
+        }
+        else
+        {
+            // A successful final enumeration supersedes an earlier transient listing failure: it
+            // establishes the broker's current open book, which is the kill switch's exit criterion.
+            brokerViewError = null;
+            foreach (var survivor in survivingBrokerOrders)
+            {
+                var confirmedIndex = confirmedCancellations.FindIndex(confirmed =>
+                    (confirmed.BrokerOrderId is { Length: > 0 } brokerOrderId
+                     && string.Equals(brokerOrderId, survivor.OrderId, StringComparison.Ordinal))
+                    || string.Equals(confirmed.LocalOrderId, survivor.ClientOrderId, StringComparison.Ordinal));
+                if (confirmedIndex >= 0)
+                {
+                    confirmedCancellations.RemoveAt(confirmedIndex);
+                    cancelled = Math.Max(0, cancelled - 1);
+                }
+
+                var failureOrderId = survivor.ClientOrderId is { Length: > 0 } clientOrderId
+                    && sweepTargets.Any(target => string.Equals(
+                        target.OrderId,
+                        clientOrderId,
+                        StringComparison.Ordinal))
+                        ? clientOrderId
+                        : survivor.OrderId;
+                if (failures.Any(failure =>
+                    string.Equals(failure.OrderId, failureOrderId, StringComparison.Ordinal)
+                    || string.Equals(failure.OrderId, survivor.OrderId, StringComparison.Ordinal)
+                    || string.Equals(failure.OrderId, survivor.ClientOrderId, StringComparison.Ordinal)))
+                {
+                    continue;
+                }
+
+                failures.Add(new KillSwitchSweepFailure(
+                    failureOrderId,
+                    survivor.Symbol,
+                    $"Broker verification still reports the order as {survivor.Status}."));
+            }
         }
 
         var sweep = KillSwitchSweepResult.From(
@@ -178,7 +242,8 @@ public sealed partial class OrderManagementSystem
 
     /// <summary>
     /// Snapshots the broker's own open-order book and returns the orders the in-memory sweep will
-    /// not cover, plus the enumeration error when the broker view could not be established.
+    /// not cover, the broker-assigned cancellation ids for tracked orders, plus the enumeration
+    /// error when the broker view could not be established.
     /// <para>
     /// An enumeration failure must not abort the in-memory sweep — a broker that cannot list its
     /// book may still accept cancellations — but it is returned rather than swallowed, because
@@ -186,7 +251,10 @@ public sealed partial class OrderManagementSystem
     /// kill switch is asked, and the sweep outcome has to carry which one this was.
     /// </para>
     /// </summary>
-    private async Task<(IReadOnlyList<BrokerOrder> ResidualOrders, string? EnumerationError)> SnapshotBrokerResidualOrdersAsync(
+    private async Task<(
+        IReadOnlyList<BrokerOrder> ResidualOrders,
+        IReadOnlyDictionary<string, string> BrokerCancellationIds,
+        string? EnumerationError)> SnapshotBrokerResidualOrdersAsync(
         IReadOnlyList<OrderState> sweepTargets,
         CancellationToken ct)
     {
@@ -195,7 +263,7 @@ public sealed partial class OrderManagementSystem
             // The gateway keeps no broker-side book of its own (paper gateways execute
             // in-process), so the in-memory view is the whole book by construction rather than
             // by assumption.
-            return (Array.Empty<BrokerOrder>(), null);
+            return (Array.Empty<BrokerOrder>(), new Dictionary<string, string>(StringComparer.Ordinal), null);
         }
 
         IReadOnlyList<BrokerOrder> brokerOpenOrders;
@@ -209,19 +277,33 @@ public sealed partial class OrderManagementSystem
             _logger.LogError(
                 exception,
                 "Cancel-all could not enumerate the broker's open orders; the sweep covers only the in-memory book");
-            return (Array.Empty<BrokerOrder>(), exception.Message);
+            return (
+                Array.Empty<BrokerOrder>(),
+                new Dictionary<string, string>(StringComparer.Ordinal),
+                exception.Message);
         }
 
         if (brokerOpenOrders.Count == 0)
         {
-            return (Array.Empty<BrokerOrder>(), null);
+            return (Array.Empty<BrokerOrder>(), new Dictionary<string, string>(StringComparer.Ordinal), null);
         }
 
         var trackedIds = new HashSet<string>(
             sweepTargets.Select(static order => order.OrderId),
             StringComparer.Ordinal);
+        var trackedByBrokerId = sweepTargets
+            .Select(order => _orderBrokerIds.TryGetValue(order.OrderId, out var brokerOrderId)
+                ? (order.OrderId, BrokerOrderId: brokerOrderId)
+                : (order.OrderId, BrokerOrderId: (string?)null))
+            .Where(static mapping => !string.IsNullOrWhiteSpace(mapping.BrokerOrderId))
+            .GroupBy(static mapping => mapping.BrokerOrderId!, StringComparer.Ordinal)
+            .Where(static group => group.Count() == 1)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Single().OrderId,
+                StringComparer.Ordinal);
 
-        return (brokerOpenOrders
+        var activeBrokerOrders = brokerOpenOrders
             // Defensive: GetOpenOrdersAsync should already return only working orders, but a
             // terminal row slipping through would make the sweep report a failure over an order
             // that cannot fill.
@@ -230,12 +312,36 @@ public sealed partial class OrderManagementSystem
                 or OrderStatus.PartiallyFilled
                 or OrderStatus.PendingCancel)
             .DistinctBy(static order => order.OrderId, StringComparer.Ordinal)
-            // Deduped on both ids: the OMS registers orders under the client order id it handed
-            // the broker, while some gateways key their book by their own order id. An order the
-            // in-memory sweep already targets is cancelled there, once.
-            .Where(order => !(order.ClientOrderId is { Length: > 0 } clientOrderId && trackedIds.Contains(clientOrderId))
-                && !trackedIds.Contains(order.OrderId))
-            .ToList(), null);
+            .ToList();
+
+        var residualOrders = new List<BrokerOrder>();
+        var brokerCancellationIds = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var brokerOrder in activeBrokerOrders)
+        {
+            // The OMS keys tracked state by the client id it submitted, while Alpaca's DELETE
+            // endpoint accepts only the broker UUID. Keep the broker row out of the residual
+            // sweep, but carry its broker-assigned id into the tracked cancellation path instead
+            // of silently falling back to the client id that matched it.
+            var trackedOrderId = brokerOrder.ClientOrderId is { Length: > 0 } clientOrderId
+                && trackedIds.Contains(clientOrderId)
+                    ? clientOrderId
+                    : trackedByBrokerId.TryGetValue(brokerOrder.OrderId, out var brokerMappedOrderId)
+                        ? brokerMappedOrderId
+                        : null;
+
+            if (trackedOrderId is null)
+            {
+                residualOrders.Add(brokerOrder);
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(brokerOrder.OrderId))
+            {
+                brokerCancellationIds.TryAdd(trackedOrderId, brokerOrder.OrderId);
+            }
+        }
+
+        return (residualOrders, brokerCancellationIds, null);
     }
 
     /// <summary>
@@ -249,7 +355,11 @@ public sealed partial class OrderManagementSystem
         ExecutionReport? report = null;
         try
         {
-            report = await _gateway.CancelOrderAsync(order.OrderId, ct).ConfigureAwait(false);
+            report = await CancelAtGatewayAsync(
+                new OrderCancellationIdentifier(
+                    order.OrderId,
+                    OrderCancellationIdentifierKind.BrokerOrderId),
+                ct).ConfigureAwait(false);
             failure = report.OrderStatus is OrderStatus.Cancelled
                 ? null
                 : new KillSwitchSweepFailure(
@@ -287,6 +397,39 @@ public sealed partial class OrderManagementSystem
 
         return failure;
     }
+
+    private async Task<(IReadOnlyList<BrokerOrder> WorkingOrders, string? EnumerationError)>
+        SnapshotWorkingBrokerOrdersAsync(CancellationToken ct)
+    {
+        if (_gateway is not IBrokerageGateway brokerage)
+        {
+            return (Array.Empty<BrokerOrder>(), null);
+        }
+
+        try
+        {
+            var brokerOrders = await brokerage.GetOpenOrdersAsync(ct).ConfigureAwait(false)
+                ?? Array.Empty<BrokerOrder>();
+            return (
+                brokerOrders
+                    .Where(static order => order.Status is OrderStatus.PendingNew
+                        or OrderStatus.Accepted
+                        or OrderStatus.PartiallyFilled
+                        or OrderStatus.PendingCancel)
+                    .DistinctBy(static order => order.OrderId, StringComparer.Ordinal)
+                    .ToList(),
+                null);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Cancel-all could not verify the broker's open-order book after cancellation");
+            return (Array.Empty<BrokerOrder>(), exception.Message);
+        }
+    }
+
+    private readonly record struct ConfirmedCancellation(string LocalOrderId, string? BrokerOrderId);
 
     /// <summary>
     /// Withdraws every parked governed escalation, returning the ones that could not be withdrawn.

@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `95c2bab84ea4`
+- Source fingerprint: `3d71d03fcf71`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `98`
 - Open automated tasks: `6`
@@ -256,7 +256,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as FundPortfolio (FundLedgerPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-portfolio.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +4 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +5 more.
 
 #### Fund accounts (`FundAccounts`)
 
@@ -298,7 +298,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as FundLedger (FundLedgerPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-ledger.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +13 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +14 more.
 
 #### Operations continuity (`OperationsContinuity`)
 
@@ -338,7 +338,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as FundReconciliation (FundLedgerPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-reconciliation.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +16 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +17 more.
 
 #### Fund banking (`FundBanking`)
 
@@ -346,7 +346,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as FundBanking (FundLedgerPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-banking.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +3 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +4 more.
 
 #### Fund cash and financing (`FundCashFinancing`)
 
@@ -354,7 +354,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as FundCashFinancing (FundLedgerPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-cash-financing.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +4 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +5 more.
 
 #### Accounting configure (`FundAccountingConfigure`)
 
@@ -378,7 +378,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as FundTrialBalance (FundLedgerPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-trial-balance.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +9 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more.
 
 #### Ledger explorer (`LedgerExplorer`)
 
@@ -394,7 +394,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as FundAuditTrail (FundLedgerPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-audit-trail.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +13 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +14 more.
 
 #### Security and instrument explorer (`SecurityInstrumentExplorer`)
 
@@ -420,7 +420,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as FundReportPack (FundLedgerPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-report-pack.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +12 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +13 more.
 
 #### Report run status (`ReportRunStatus`)
 

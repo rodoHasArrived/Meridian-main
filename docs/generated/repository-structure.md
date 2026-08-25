@@ -4415,6 +4415,7 @@ Meridian-main
 │   │   ├── Meridian.Execution.csproj
 │   │   ├── OrderManagementSystem.AccountingHandoff.cs
 │   │   ├── OrderManagementSystem.Audit.cs
+│   │   ├── OrderManagementSystem.Cancellation.cs
 │   │   ├── OrderManagementSystem.ChildOrders.cs
 │   │   ├── OrderManagementSystem.cs
 │   │   ├── OrderManagementSystem.ExecutionReportSubscriptions.cs
@@ -4442,6 +4443,7 @@ Meridian-main
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IExecutionGatewayModeProvider.cs
+│   │   ├── IExplicitOrderCancellationGateway.cs
 │   │   ├── IFaceValueOrderSizingGateway.cs
 │   │   ├── INotionalOrderSizingGateway.cs
 │   │   ├── IOrderManager.cs
@@ -4723,6 +4725,7 @@ Meridian-main
 │   │   ├── Adapters
 │   │   │   ├── Alpaca
 │   │   │   │   ├── AlpacaAssetStreamAdapters.cs
+│   │   │   │   ├── AlpacaBrokerageGateway.Cancellation.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.cs
 │   │   │   │   ├── AlpacaConstants.cs
 │   │   │   │   ├── AlpacaCorporateActionProvider.cs
@@ -5541,7 +5544,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_027__atomic_tax_lot_posting.sql
 │   │   │   │   ├── V_ledger_028__wash_sale_activation.sql
 │   │   │   │   ├── V_ledger_029__journal_leg_currency_backfill.sql
-│   │   │   │   └── V_ledger_030__journal_immutability.sql
+│   │   │   │   ├── V_ledger_030__journal_immutability.sql
+│   │   │   │   └── V_ledger_031__journal_aggregate_seal.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -7686,6 +7690,7 @@ Meridian-main
 │   │   │   ├── FundLedgerViewModel.cs
 │   │   │   ├── FundLedgerViewModel.PrivateCapitalCloseScope.cs
 │   │   │   ├── FundLedgerViewModel.Reconciliation.cs
+│   │   │   ├── FundLedgerViewModel.ReconciliationAvailability.cs
 │   │   │   ├── FundLedgerViewModel.ReviewedAutomation.cs
 │   │   │   ├── FundLedgerViewModel.Sections.cs
 │   │   │   ├── FundLedgerViewModel.StatementReconciliation.cs
@@ -10259,6 +10264,7 @@ Meridian-main
 │   │   │   ├── ExportPresetsViewModelTests.cs
 │   │   │   ├── FinancialRecordExplorerViewModelTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
+│   │   │   ├── FundLedgerReconciliationReadStateTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
 │   │   │   ├── FundStructureSetupViewModelTests.cs
 │   │   │   ├── HomeWorkspaceViewModelTests.cs
