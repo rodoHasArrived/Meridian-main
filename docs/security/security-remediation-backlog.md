@@ -121,6 +121,20 @@ This backlog converts the threat-model residual concerns into tracked remediatio
 - **Target date:** **gated on a multi-tenant deployment decision** (as SEC-005).
 - **Done evidence:** PR adding the tenant stamp + extract predicate, with tests; threat-model update reclassifying the residual.
 
+### SEC-007 — The ledger book, period, and report routes return every book when the caller supplies no fund scope
+- **Affected module/path:** `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs` (`GET /api/ledger/books`, `/api/ledger/periods`, and the period-scoped trial-balance, P&L, and journal routes); `src/Meridian.Ui.Shared/Endpoints/FundProfileScopeEndpointFilters.cs`.
+- **Risk rating:** **Low–Medium** (deployment-conditional cross-company information disclosure; **not reachable** under the single-company-per-deployment boundary SEC-005 documents).
+- **What it is:** `RequireFundProfileTenantScope` evaluates only `fundProfileId` values the caller actually supplies, and skips a blank or absent scope by design. A request with no `fundProfileId` therefore reaches `ListBooksAsync` with a null fund filter and returns every stored book, including foreign fund and book ids; those ids can then be used against the period, trial-balance, P&L, and journal routes, which resolve ids without an ownership check of their own. This is the documented fail-open posture of the SEC-005 slice-3 filter, not a regression in it — the filter's own summary states that a blank fund, an unscoped caller, and an unavailable registry all pass through.
+- **Why this surfaced now:** the 2026-08-25 review's least-privilege split added `ViewLedgerReports` to these routes, and the browser and WPF posted-ledger clients call `/api/ledger/books` unscoped to populate the book selector. Neither changes the filter's behaviour, but together they widen who reaches the unscoped read and make it a routine call rather than an unused one. The grant is correct — reading the posted book is a ledger-reporting function — so the scope is the gap, as in SEC-006.
+- **Current security boundary (documented, relied upon):** the same one SEC-005 and SEC-006 rest on — one company per deployment, `TenantId == CompanyId`, multi-tenant separation design-stage rather than realized. In a single-company deployment every stored book belongs to the only company, so an unscoped list discloses nothing cross-company.
+- **Required code/tests to close:**
+  - Resolve the caller's tenant server-side and filter `ListBooksAsync`/`ListPeriodsAsync` by it rather than by the optional query parameter, so an absent `fundProfileId` narrows to the caller's own funds instead of widening to all of them.
+  - Validate book and period ownership inside the period-scoped routes, so a leaked id cannot be replayed against the trial-balance, P&L, or journal endpoints.
+  - Regression test proving a company-B book is absent from a company-A caller's unscoped list, and that a company-B `periodId` is refused rather than resolved.
+- **Owner:** `@platform-security` + `@fund-operations`.
+- **Target date:** **gated on a multi-tenant deployment decision** (as SEC-005).
+- **Done evidence:** PR adding the server-resolved tenant filter and the ownership checks, with tests; threat-model update reclassifying the residual.
+
 ## Threat-model traceability
 
 | Backlog ID | Threat-model section | Threat-model source lines | Residual concern excerpt |
