@@ -79,13 +79,27 @@ export function JournalEntryDetailScreen() {
       };
     }
 
+    // Unlike periodId, runId does not choose the source: a manual draft is routinely reached with
+    // a runId on the query for the "Back to Run Ledger" link, and the draft is still the record.
+    // So the workbench is asked first and a matching draft still wins. What must not happen is the
+    // workbench deciding the whole screen when it refuses: it authorizes on the manual-journal
+    // permissions, a ViewStrategies-only operator is refused there, and the run journal route does
+    // authorize them. Treating that refusal as "no draft" rather than as fatal lets the run lookup
+    // below answer for exactly those operators, who previously saw an unavailable-workbench error
+    // for a run journal they could in fact read.
+    let workbenchUnavailable = false;
+
     getManualJournalEntryWorkbench({})
-      .then((workbench) => {
+      .then((workbench) => workbench.drafts.find((candidate) => candidate.journalEntryId === journalEntryId) ?? null)
+      .catch(() => {
+        workbenchUnavailable = true;
+        return null;
+      })
+      .then((matchedDraft) => {
         if (cancelled) {
           return;
         }
 
-        const matchedDraft = workbench.drafts.find((candidate) => candidate.journalEntryId === journalEntryId) ?? null;
         setDraft(matchedDraft);
 
         if (matchedDraft) {
@@ -93,31 +107,34 @@ export function JournalEntryDetailScreen() {
           return;
         }
 
-        if (!runId) {
-          setLoading(false);
-          return;
+        if (runId) {
+          return getRunLedgerJournal(runId)
+            .then((lines) => {
+              if (!cancelled) {
+                setJournalLine(lines.find((line) => line.journalEntryId === journalEntryId) ?? null);
+              }
+            })
+            .catch(() => {
+              if (!cancelled) {
+                setErrorText("The run journal could not be loaded. No posting detail is shown until the source responds.");
+              }
+            })
+            .finally(() => {
+              if (!cancelled) {
+                setLoading(false);
+              }
+            });
         }
 
-        return getRunLedgerJournal(runId)
-          .then((lines) => {
-            if (!cancelled) {
-              setJournalLine(lines.find((line) => line.journalEntryId === journalEntryId) ?? null);
-            }
-          })
-          .finally(() => {
-            if (!cancelled) {
-              setLoading(false);
-            }
-          });
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setDraft(null);
+        // Only report the workbench as the failure when it actually failed and nothing else could
+        // answer. A workbench that responded and simply held no such draft is not an error.
+        if (workbenchUnavailable) {
           setJournalLine(null);
           setPostedEntry(null);
           setErrorText("The journal-entry record could not be loaded from the governed workbench. No posting detail is shown until the source responds.");
-          setLoading(false);
         }
+
+        setLoading(false);
       });
 
     return () => {

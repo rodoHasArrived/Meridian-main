@@ -213,6 +213,30 @@ class DocumentedMemberParsingTests(unittest.TestCase):
         self.assertIn("plain", members)
         self.assertTrue(members["documented"]["nullable"])
 
+    def test_member_documented_with_a_semicolon_in_its_jsdoc_is_parsed(self):
+        # A JSDoc block is prose and may contain a semicolon. Splitting members on ";" before
+        # stripping comments cut such a block in two, leaving fragments with no closing "*/" for
+        # the strip to match, so the member fell out of the comparison entirely -- the silent pass
+        # this gate was fixed to stop, reintroduced by punctuation.
+        source = """
+        export interface Sample {
+          plain: string;
+          /** First clause; second clause. */
+          documented: string;
+          /**
+           * Multi-line; with a semicolon in the prose.
+           */
+          alsoDocumented?: number | null;
+        }
+        """
+
+        members = MODULE.parse_typescript_interface(source, "Sample")
+
+        self.assertIsNotNone(members)
+        self.assertEqual({"plain", "documented", "alsoDocumented"}, set(members))
+        self.assertEqual("string", members["documented"]["type"])
+        self.assertTrue(members["alsoDocumented"]["nullable"])
+
     def test_member_with_a_leading_line_comment_is_parsed(self):
         source = """
         export interface Sample {

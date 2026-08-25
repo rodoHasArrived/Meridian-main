@@ -133,14 +133,19 @@ def parse_typescript_interface(source: str, interface_name: str) -> dict[str, di
     if body is None:
         return None
 
+    # Strip comments from the whole body before splitting, not from each fragment afterwards. A
+    # JSDoc block is not required to be semicolon-free -- "/** First clause; second clause. */" is
+    # ordinary prose -- and splitting first cuts such a comment in two. Neither half then carries a
+    # matching /* ... */ pair for a per-fragment strip to remove, so the fragment survives, fails
+    # the member pattern, and the documented member disappears from the comparison. That is the
+    # same silent pass this gate was fixed to stop: a documented contract member invisible to the
+    # check rather than compared against its C# counterpart.
+    body = re.sub(r"/\*.*?\*/", "", body, flags=re.DOTALL)
+    body = re.sub(r"//.*$", "", body, flags=re.MULTILINE)
+
     members: dict[str, dict] = {}
     for line in split_top_level(body, ";"):
         entry = line.strip()
-        # Strip comments before testing for emptiness: a member documented with a JSDoc block was
-        # previously skipped wholesale, so any documented contract member was invisible to this
-        # gate rather than compared -- a silent pass, not a failure.
-        entry = re.sub(r"/\*.*?\*/", "", entry, flags=re.DOTALL)
-        entry = re.sub(r"//.*$", "", entry, flags=re.MULTILINE).strip()
         if not entry:
             continue
         member_match = re.match(r"^([A-Za-z_$][\w$]*)(\?)?\s*:\s*(.+)$", entry, flags=re.DOTALL)

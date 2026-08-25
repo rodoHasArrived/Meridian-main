@@ -166,6 +166,20 @@ describe("JournalEntryDetailScreen", () => {
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 
+  it("still resolves a run entry when the manual workbench refuses the caller", async () => {
+    // A ViewStrategies-only operator is refused by the manual workbench but authorized on the run
+    // journal. The workbench's rejection must not decide the screen, or the run's own evidence is
+    // reported as an unavailable workbench record to the very operators it is meant for.
+    vi.mocked(api.getManualJournalEntryWorkbench).mockRejectedValueOnce(new Error("forbidden"));
+    vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce([journalLine]);
+
+    await renderScreen("/accounting/journal-entries/detail?journalEntryId=je-posted-1&runId=run-42");
+
+    expect(await screen.findByText("Summary-only entry")).toBeInTheDocument();
+    expect(api.getRunLedgerJournal).toHaveBeenCalledWith("run-42");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
   it("renders a not-found state when the entry cannot be located anywhere", async () => {
     vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(workbench);
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce([]);
