@@ -25,6 +25,7 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
     private bool _isDisposed;
     private bool _hasLoaded;
     private int _loadRevision;
+    private int _periodRevision;
     private bool _isRefreshing;
     private Guid? _selectedPeriodId;
     private string _selectedPeriodLabel = "No period selected";
@@ -493,11 +494,21 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
             return;
         }
 
+        // A refresh and a selection (or two selections) share one page-level token, so an older
+        // request can complete last and overwrite the period the operator is actually looking at.
+        // Stamp each selection and drop any result whose selection has been superseded.
+        var revision = ++_periodRevision;
+
         try
         {
             var trialBalanceTask = _client.GetTrialBalanceAsync(periodId, ct);
             var pnlTask = _client.GetPnlSummaryAsync(periodId, ct);
             await Task.WhenAll(trialBalanceTask, pnlTask).ConfigureAwait(true);
+
+            if (revision != _periodRevision)
+            {
+                return;
+            }
 
             ApplyTrialBalance(await trialBalanceTask.ConfigureAwait(true));
             ApplyPnl(await pnlTask.ConfigureAwait(true));
@@ -509,6 +520,11 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         }
         catch (Exception ex)
         {
+            if (revision != _periodRevision)
+            {
+                return;
+            }
+
             TrialBalance.Clear();
             PnlMetrics.Clear();
             TrialBalanceErrorText = ex.Message;

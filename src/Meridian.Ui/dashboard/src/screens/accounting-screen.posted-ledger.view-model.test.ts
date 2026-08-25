@@ -163,7 +163,9 @@ describe("buildAccountingPostedLedgerViewState", () => {
       selectedRowId: null,
       selectedBasis: "Primary",
       accountFilter: "",
-      selectedBookLabel: "Master Fund"
+      selectedBookLabel: "Master Fund",
+      booksErrorText: null,
+      baseCurrency: "USD"
     });
 
     expect(view.trialBalance.description).toContain("the posted journal for period July 2026");
@@ -192,7 +194,9 @@ describe("buildAccountingPostedLedgerViewState", () => {
       selectedRowId: null,
       selectedBasis: "Primary",
       accountFilter: "",
-      selectedBookLabel: "Master Fund"
+      selectedBookLabel: "Master Fund",
+      booksErrorText: null,
+      baseCurrency: "USD"
     });
 
     expect(view.periodSelector.emptyText).toContain("No ledger periods exist yet");

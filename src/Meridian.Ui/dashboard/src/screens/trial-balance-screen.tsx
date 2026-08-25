@@ -175,6 +175,14 @@ export function TrialBalanceScreen() {
   const visibleJournalRows = journalEvidence.rows.slice(0, journalRenderLimit);
   const hiddenJournalRowCount = journalEvidence.rows.length - visibleJournalRows.length;
 
+  // Posted balances are in the book's own base currency. The simulation screen this was adapted
+  // from assumed USD; a EUR book's imbalance must not be labelled with a dollar sign.
+  const postedCurrency = postedLedger.view.baseCurrency;
+  const formatPostedAmount = (value: number) =>
+    postedCurrency
+      ? new Intl.NumberFormat("en-US", { style: "currency", currency: postedCurrency }).format(value)
+      : new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(value);
+
   const trialBalanceScope = `${entityScope} · ${postedLedger.view.selectedBookLabel ?? ledgerBook} · ${selectedPeriodLabel ?? "No period selected"}`;
 
   return (
@@ -215,7 +223,7 @@ export function TrialBalanceScreen() {
         source={{ value: "Posted journal", tone: postedLedger.view.trialBalance.state === "error" ? "blocked" : "ready" }}
         scope={{ value: selectedPeriodLabel ?? "No period selected", detail: selectedBasisLabel, tone: selectedPeriodId ? "ready" : "unknown" }}
         freshness={{ value: postedLedger.view.trialBalance.state === "loading" ? "Loading" : "Needs review", detail: postedLedger.view.trialBalance.state === "loading" ? undefined : "No trial-balance as-of timestamp was retained.", tone: "review" }}
-        completeness={{ value: isTrialBalanceOutOfBalance ? `${postedLedger.view.trialBalance.filteredRowCountLabel} · out by ${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Math.abs(trialBalanceVariance))}` : postedLedger.view.trialBalance.filteredRowCountLabel, tone: postedLedger.view.trialBalance.hasRows && !isTrialBalanceOutOfBalance ? "ready" : "review" }}
+        completeness={{ value: isTrialBalanceOutOfBalance ? `${postedLedger.view.trialBalance.filteredRowCountLabel} · out by ${formatPostedAmount(Math.abs(trialBalanceVariance))}` : postedLedger.view.trialBalance.filteredRowCountLabel, tone: postedLedger.view.trialBalance.hasRows && !isTrialBalanceOutOfBalance ? "ready" : "review" }}
         blocker={postedLedger.view.trialBalance.errorText
           ? { value: "Trial balance unavailable", detail: postedLedger.view.trialBalance.errorText, tone: "blocked" }
           : isTrialBalanceOutOfBalance

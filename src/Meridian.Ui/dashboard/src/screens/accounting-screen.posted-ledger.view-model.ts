@@ -115,6 +115,8 @@ export interface AccountingPostedLedgerViewState {
   periodNotice: string | null;
   /** The ledger book these periods belong to, so a multi-book deployment names its subject. */
   selectedBookLabel: string | null;
+  /** The selected book's base currency; posted amounts are in book units, not USD. */
+  baseCurrency: string | null;
   trialBalance: AccountingTrialBalanceViewState;
   pnl: PostedLedgerPnlViewState;
 }
@@ -302,6 +304,7 @@ export function buildAccountingPostedLedgerViewState({
   periods,
   periodsLoading,
   periodsError,
+  booksErrorText,
   selectedPeriodId,
   periodNotice,
   trialBalanceRows,
@@ -313,11 +316,13 @@ export function buildAccountingPostedLedgerViewState({
   selectedRowId,
   selectedBasis,
   accountFilter,
-  selectedBookLabel
+  selectedBookLabel,
+  baseCurrency
 }: {
   periods: LedgerPeriod[];
   periodsLoading: boolean;
   periodsError: ApiErrorDisplay | null;
+  booksErrorText: string | null;
   selectedPeriodId: string | null;
   periodNotice: string | null;
   trialBalanceRows: LedgerTrialBalanceLine[];
@@ -331,6 +336,7 @@ export function buildAccountingPostedLedgerViewState({
   accountFilter: string;
   /** Names the book the periods below belong to; null until the books land. */
   selectedBookLabel: string | null;
+  baseCurrency: string | null;
 }): AccountingPostedLedgerViewState {
   const selectedPeriod = periods.find((period) => period.periodId === selectedPeriodId) ?? null;
   const periodLabel = selectedPeriod
@@ -371,7 +377,7 @@ export function buildAccountingPostedLedgerViewState({
       options: buildPostedLedgerPeriodOptions(periods, selectedPeriodId),
       loading: periodsLoading,
       loadingText: periodsLoading ? "Loading ledger periods." : null,
-      errorText: periodsError?.summary ?? null,
+      errorText: booksErrorText ?? periodsError?.summary ?? null,
       errorDetails: periodsError?.details ?? [],
       emptyText: periodsLoading || periodsError || periods.length > 0
         ? null
@@ -379,6 +385,7 @@ export function buildAccountingPostedLedgerViewState({
     },
     periodNotice,
     selectedBookLabel,
+    baseCurrency,
     trialBalance,
     pnl: buildPostedLedgerPnlViewState({ pnl, loading: pnlLoading, error: pnlError, periodLabel })
   };
@@ -390,6 +397,7 @@ export function useAccountingPostedLedgerViewModel(
 ): AccountingPostedLedgerViewModel {
   const [books, setBooks] = useState<LedgerBook[]>([]);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+  const [booksErrorText, setBooksErrorText] = useState<string | null>(null);
   const [periods, setPeriods] = useState<LedgerPeriod[]>([]);
   const [periodsLoading, setPeriodsLoading] = useState(false);
   const [periodsError, setPeriodsError] = useState<ApiErrorDisplay | null>(null);
@@ -414,6 +422,7 @@ export function useAccountingPostedLedgerViewModel(
     }
 
     let cancelled = false;
+    setBooksErrorText(null);
     services.getBooks()
       .then((rows) => {
         if (cancelled) return;
@@ -426,11 +435,14 @@ export function useAccountingPostedLedgerViewModel(
             ? current
             : rows[0]?.ledgerBookId ?? null);
       })
-      .catch(() => {
-        if (!cancelled) {
-          setBooks([]);
-          setSelectedBookId(null);
-        }
+      .catch((err) => {
+        if (cancelled) return;
+        setBooks([]);
+        setSelectedBookId(null);
+        // Without this the period effect simply never runs and the screen renders its ordinary
+        // "no ledger periods exist yet" empty state, telling operators to create accounting data
+        // during what is actually an API outage.
+        setBooksErrorText(describeApiError(err, "Ledger books failed to load.").summary);
       });
 
     return () => {
@@ -628,16 +640,19 @@ export function useAccountingPostedLedgerViewModel(
     setSelectedRowId(null);
   }, []);
 
-  const selectedBookLabel = useMemo(() => {
-    const book = books.find((candidate) => candidate.ledgerBookId === selectedBookId);
-    return book ? (book.displayName.trim() || book.ledgerBookId) : null;
-  }, [books, selectedBookId]);
+  const selectedBook = useMemo(
+    () => books.find((candidate) => candidate.ledgerBookId === selectedBookId) ?? null,
+    [books, selectedBookId]
+  );
+  const selectedBookLabel = selectedBook ? (selectedBook.displayName.trim() || selectedBook.ledgerBookId) : null;
+  const baseCurrency = selectedBook?.baseCurrency?.trim() || null;
 
   const view = useMemo(
     () => buildAccountingPostedLedgerViewState({
       periods,
       periodsLoading,
       periodsError,
+      booksErrorText,
       selectedPeriodId,
       periodNotice,
       trialBalanceRows,
@@ -649,10 +664,13 @@ export function useAccountingPostedLedgerViewModel(
       selectedRowId,
       selectedBasis,
       accountFilter,
-      selectedBookLabel
+      selectedBookLabel,
+      baseCurrency
     }),
     [
       accountFilter,
+      baseCurrency,
+      booksErrorText,
       selectedBookLabel,
       periodNotice,
       periods,
