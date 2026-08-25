@@ -11,7 +11,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
-import { getOperationsCloseCalendar, getRunLedgerJournal, getRunTrialBalance } from "@/lib/api";
+import { getOperationsCloseCalendar, getRunTrialBalance } from "@/lib/api";
 import {
   normalizeReportingWorkspace,
   type ReportingWorkspacePayload
@@ -21,6 +21,7 @@ import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.vi
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
+import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
 import {
   buildTemplateRows,
   hasRetainedReportingAsOfDate,
@@ -30,7 +31,6 @@ import {
 } from "@/screens/reporting-screen.view-model";
 import type {
   AccountingWorkspaceResponse,
-  LedgerJournalLine,
   LedgerTrialBalanceLine,
   OperationsCloseCalendar,
   OperationsCloseCalendarItem
@@ -381,10 +381,10 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
       </Card>
       <div className="flex flex-wrap gap-2">
         <Button asChild size="sm" variant="outline">
-          <Link to={workstationRouteWithQuery("accountingLedger", { view: "trial-balance", runId: requestedRunId || null })}>Back to Trial Balance</Link>
+          <Link to={workstationRouteWithQuery("strategyRunLedger", { runId: requestedRunId || null })}>Back to Run Ledger</Link>
         </Button>
         <Button asChild size="sm" variant="outline">
-          <Link to={workstationRouteWithQuery("accountingLedger", { runId: requestedRunId || null })}>Open ledger activity</Link>
+          <Link to={workstationRouteWithQuery("strategyRunLedger", { runId: requestedRunId || null })}>Open run ledger activity</Link>
         </Button>
         {account?.sourceJournalEntryId ? (
           <Button asChild size="sm" variant="outline">
@@ -406,47 +406,23 @@ const LEDGER_EXPLORER_TABS = [
   { id: "trial-balance", label: "Trial balance" }
 ];
 
-export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
+/**
+ * Accounting's canonical ledger surface.
+ *
+ * Both tabs read the fund's posted journal. The Ledger tab used to load
+ * <c>getRunLedgerJournal</c> for whichever strategy run happened to head the reconciliation
+ * queue — a simulation artifact, rendered under the name an operator reads as the book of record,
+ * on the very screen the workspace links to as "Validate the ledger"
+ * (adversarial-program-review-2026-08-25 §1). Run evidence lives in the strategy run ledger
+ * explorer under Strategy.
+ */
+export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const view = searchParams.get("view") === "trial-balance" ? "trial-balance" : "ledger";
-  const runs = readRecordArray(asRecord(data), "reconciliationQueue");
-  const selectedRunId = searchParams.get("runId") ?? readString(runs[0] ?? null, "runId", "");
   const [searchText, setSearchText] = useState("");
-  const [savedView, setSavedView] = useState("Selected run");
-  const [statusFilter, setStatusFilter] = useState("All statuses");
-  const [sourceTypeFilter, setSourceTypeFilter] = useState("All source types");
-  const [journalLines, setJournalLines] = useState<LedgerJournalLine[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!selectedRunId || view !== "ledger") {
-      setJournalLines([]);
-      return;
-    }
-
-    let cancelled = false;
-    setLoading(true);
-    getRunLedgerJournal(selectedRunId)
-      .then((lines) => {
-        if (!cancelled) {
-          setJournalLines(lines);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setJournalLines([]);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedRunId, view]);
+  const postedLedger = useAccountingPostedLedgerViewModel("ledger", undefined, { includeJournal: true });
+  const journalLines = postedLedger.journalLines;
+  const loading = postedLedger.journalLoading;
 
   const filteredRows = useMemo(() => {
     const needle = searchText.trim().toLowerCase();
@@ -496,58 +472,30 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
               placeholder="Cash, $120,500, AAPL, cash sweep"
             />
           </FormRow>
-          <FormRow label="Run / period" labelFor="ledger-run-select">
+          <FormRow label="Ledger book" labelFor="ledger-book-select">
             <Select
-              id="ledger-run-select"
-              value={selectedRunId}
-              onChange={(event) => setSearchParams({ runId: event.target.value })}
+              id="ledger-book-select"
+              value={postedLedger.view.bookOptions.find((option) => option.isSelected)?.id ?? ""}
+              onChange={(event) => postedLedger.selectBook(event.target.value)}
             >
-              {runs.length > 0 ? runs.map((run) => (
-                <option key={readString(run, "runId", "run")} value={readString(run, "runId", "")}>
-                  {readString(run, "strategyName", readString(run, "runId", "Ledger run"))}
-                </option>
-              )) : <option value="">No run available</option>}
+              {postedLedger.view.bookOptions.length > 0 ? postedLedger.view.bookOptions.map((option) => (
+                <option key={option.id} value={option.id}>{option.label} · {option.baseCurrency}</option>
+              )) : <option value="">No ledger book available</option>}
             </Select>
           </FormRow>
-          <FormRow label="Status" labelFor="ledger-status-filter">
-            <Select id="ledger-status-filter" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-              <option>All statuses</option>
-              <option>Posted</option>
-              <option>Unposted</option>
-              <option>Reversed</option>
+          <FormRow label="Ledger period" labelFor="ledger-period-select">
+            <Select
+              id="ledger-period-select"
+              value={postedLedger.selectedPeriodId ?? ""}
+              onChange={(event) => postedLedger.selectPeriod(event.target.value)}
+            >
+              {postedLedger.view.periodSelector.options.length > 0
+                ? postedLedger.view.periodSelector.options.map((option) => (
+                  <option key={option.id} value={option.id}>{option.label} · {option.statusLabel}</option>
+                ))
+                : <option value="">No ledger period available</option>}
             </Select>
           </FormRow>
-          <FormRow label="Source type" labelFor="ledger-source-filter">
-            <Select id="ledger-source-filter" value={sourceTypeFilter} onChange={(event) => setSourceTypeFilter(event.target.value)}>
-              <option>All source types</option>
-              <option>Manual JEs</option>
-              <option>System Generated</option>
-              <option>Reversals</option>
-            </Select>
-          </FormRow>
-        </CardContent>
-      </Card>
-
-      <Card className="panel-surface">
-        <CardHeader>
-          <CardTitle>Saved views</CardTitle>
-          <CardDescription>Use standard accounting cuts before drilling into Journal Entry Detail.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Saved ledger views">
-            {["Selected run", "Unposted", "Reversals", "Manual JEs", "System Generated"].map((view) => (
-              <Button
-                key={view}
-                type="button"
-                size="sm"
-                variant={savedView === view ? "default" : "outline"}
-                aria-pressed={savedView === view}
-                onClick={() => setSavedView(view)}
-              >
-                {view}
-              </Button>
-            ))}
-          </div>
         </CardContent>
       </Card>
 
@@ -555,7 +503,13 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <CardTitle>Ledger search results</CardTitle>
-            <CardDescription>{loading ? "Loading ledger rows." : `${filteredRows.length} row(s) for ${savedView}.`}</CardDescription>
+            <CardDescription>
+              {loading
+                ? "Loading the posted journal."
+                : postedLedger.journalErrorText
+                  ? postedLedger.journalErrorText
+                  : `${filteredRows.length} posted entry(ies)${postedLedger.selectedPeriodLabel ? ` for ${postedLedger.selectedPeriodLabel}` : ""}.`}
+            </CardDescription>
           </div>
           <Badge variant={filteredRows.length > 0 ? "success" : "outline"}>{filteredRows.length}</Badge>
         </CardHeader>
@@ -584,7 +538,7 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
                         className="font-semibold text-primary underline-offset-2 hover:underline"
                         to={workstationRouteWithQuery("accountingJournalEntryDetail", {
                           journalEntryId: line.journalEntryId,
-                          runId: selectedRunId || null
+                          periodId: postedLedger.selectedPeriodId
                         })}
                       >
                         Open journal detail
@@ -601,7 +555,9 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
                 )) : (
                   <tr>
                     <td className="px-3 py-4 text-muted-foreground" colSpan={9}>
-                      No ledger rows match the current search and filters.
+                      {postedLedger.view.periodSelector.options.length === 0
+                        ? "No ledger periods exist yet. Create a ledger book and period in Accounting → Configure to start the governed book."
+                        : "No posted entries match the current search."}
                     </td>
                   </tr>
                 )}
@@ -623,7 +579,7 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
         ) : null}
       </TabPanel>
       <TabPanel>
-        {view === "trial-balance" ? <TrialBalanceScreen data={data} /> : null}
+        {view === "trial-balance" ? <TrialBalanceScreen /> : null}
       </TabPanel>
     </Tabs>
   );

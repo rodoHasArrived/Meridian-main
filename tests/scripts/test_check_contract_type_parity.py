@@ -186,5 +186,69 @@ class ContractTypeParityTests(unittest.TestCase):
         )
 
 
+class DocumentedMemberParsingTests(unittest.TestCase):
+    """A documented member must be compared, not skipped.
+
+    The parser split the interface body on ";" and dropped any chunk starting with a comment, so a
+    member carrying a JSDoc block was invisible to the gate — it passed silently rather than being
+    checked, which is the one failure mode a drift gate cannot afford.
+    """
+
+    def test_member_with_a_jsdoc_block_is_parsed(self):
+        source = """
+        export interface Sample {
+          plain: string;
+          /**
+           * Explains the member, across
+           * several lines.
+           */
+          documented?: string | null;
+        }
+        """
+
+        members = MODULE.parse_typescript_interface(source, "Sample")
+
+        self.assertIsNotNone(members)
+        self.assertIn("documented", members)
+        self.assertIn("plain", members)
+        self.assertTrue(members["documented"]["nullable"])
+
+    def test_member_documented_with_a_semicolon_in_its_jsdoc_is_parsed(self):
+        # A JSDoc block is prose and may contain a semicolon. Splitting members on ";" before
+        # stripping comments cut such a block in two, leaving fragments with no closing "*/" for
+        # the strip to match, so the member fell out of the comparison entirely -- the silent pass
+        # this gate was fixed to stop, reintroduced by punctuation.
+        source = """
+        export interface Sample {
+          plain: string;
+          /** First clause; second clause. */
+          documented: string;
+          /**
+           * Multi-line; with a semicolon in the prose.
+           */
+          alsoDocumented?: number | null;
+        }
+        """
+
+        members = MODULE.parse_typescript_interface(source, "Sample")
+
+        self.assertIsNotNone(members)
+        self.assertEqual({"plain", "documented", "alsoDocumented"}, set(members))
+        self.assertEqual("string", members["documented"]["type"])
+        self.assertTrue(members["alsoDocumented"]["nullable"])
+
+    def test_member_with_a_leading_line_comment_is_parsed(self):
+        source = """
+        export interface Sample {
+          // explains the member
+          documented: string;
+        }
+        """
+
+        members = MODULE.parse_typescript_interface(source, "Sample")
+
+        self.assertIsNotNone(members)
+        self.assertIn("documented", members)
+
 if __name__ == "__main__":
     unittest.main()

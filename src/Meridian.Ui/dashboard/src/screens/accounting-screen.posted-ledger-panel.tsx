@@ -57,6 +57,38 @@ export function AccountingPostedLedgerSection({ workstream }: { workstream: Acco
         </CardHeader>
         <CardContent>
           <span className="sr-only" aria-live="polite">{view.trialBalance.statusAnnouncement}</span>
+          {/*
+            The shared view state has carried bookOptions since the posted ledger became
+            book-scoped, but this panel rendered neither the options nor the book's name. On the
+            canonical Accounting ledger surface that left every book after the first unreachable
+            in a multi-book deployment, and the balances on screen unattributed. Chips rather than
+            a dropdown, to match the period selector directly below.
+          */}
+          {view.bookOptions.length > 1 ? (
+            <div className="mb-4" role="group" aria-label="Ledger book">
+              <div className="mb-1 text-xs font-semibold text-muted-foreground">Ledger book</div>
+              <div className="flex flex-wrap gap-2">
+                {view.bookOptions.map((option) => (
+                  <Button
+                    key={option.id}
+                    type="button"
+                    size="sm"
+                    variant={option.isSelected ? "default" : "outline"}
+                    aria-pressed={option.isSelected}
+                    aria-label={`${option.label}, base currency ${option.baseCurrency}`}
+                    onClick={() => viewModel.selectBook(option.id)}
+                  >
+                    <span>{option.label}</span>
+                    <span className="ml-2 font-mono text-[10px] opacity-75">{option.baseCurrency}</span>
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ) : view.selectedBookLabel ? (
+            <div className="mb-4 text-xs text-muted-foreground">
+              Ledger book: <span className="font-semibold text-foreground">{view.selectedBookLabel}</span>
+            </div>
+          ) : null}
           <div className="mb-4" role="group" aria-label={view.periodSelector.label}>
             <div className="mb-1 text-xs font-semibold text-muted-foreground">{view.periodSelector.label}</div>
             {view.periodSelector.errorText ? (

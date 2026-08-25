@@ -1,19 +1,30 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  getLedgerPeriodJournalEntries,
   getLedgerPeriodPnlSummary,
+  getLedgerBooks,
   getLedgerPeriods,
   getLedgerPeriodTrialBalance
 } from "@/lib/ledger-reports-api";
 import { describeApiError, isApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import type {
   AccountingBasisKind,
+  LedgerBook,
+  LedgerDimensionSet,
+  LedgerJournalLine,
   LedgerPeriod,
   LedgerPeriodPnlSummary,
   LedgerPeriodTrialBalanceLine,
+  LedgerPostedJournalEntry,
   LedgerTrialBalanceLine
 } from "@/types";
-import { formatCurrency, formatSignedCurrency } from "./accounting-screen.formatting";
-import { DEFAULT_ACCOUNTING_BASIS } from "./accounting-screen.view-model.shared";
+import { formatCurrency, formatCurrencyForCode, formatSignedCurrency } from "./accounting-screen.formatting";
+import {
+  countAvailableAccountingBases,
+  DEFAULT_ACCOUNTING_BASIS,
+  resolveAvailableAccountingBasis
+} from "./accounting-screen.view-model.shared";
+import { accountingBasisDisplayName } from "./accounting-screen.basis-bridge.view-model";
 import {
   buildAccountingTrialBalanceViewState,
   type AccountingTrialBalanceViewState
@@ -30,16 +41,101 @@ import type { AccountingWorkstream } from "./accounting-screen.task-mode-view-mo
  */
 
 export interface AccountingPostedLedgerServices {
-  getPeriods: () => Promise<LedgerPeriod[]>;
+  getBooks: () => Promise<LedgerBook[]>;
+  getPeriods: (query?: { ledgerBookId?: string | null }) => Promise<LedgerPeriod[]>;
   getTrialBalance: (periodId: string) => Promise<LedgerPeriodTrialBalanceLine[]>;
   getPnlSummary: (periodId: string) => Promise<LedgerPeriodPnlSummary>;
+  getJournalEntries: (periodId: string) => Promise<LedgerPostedJournalEntry[]>;
 }
 
 const defaultAccountingPostedLedgerServices: AccountingPostedLedgerServices = {
-  getPeriods: () => getLedgerPeriods(),
+  getBooks: () => getLedgerBooks(),
+  getPeriods: (query) => getLedgerPeriods(query ?? {}),
   getTrialBalance: (periodId) => getLedgerPeriodTrialBalance(periodId),
-  getPnlSummary: (periodId) => getLedgerPeriodPnlSummary(periodId)
+  getPnlSummary: (periodId) => getLedgerPeriodPnlSummary(periodId),
+  getJournalEntries: (periodId) => getLedgerPeriodJournalEntries(periodId)
 };
+
+/** Stable key for a dimension set, used only to test two sets for equality. */
+function ledgerDimensionSetKey(dimensions: LedgerDimensionSet): string {
+  const entries = Object.entries(dimensions as Record<string, unknown>)
+    .filter(([, value]) => value !== null && value !== undefined)
+    .map(([key, value]) => [
+      key,
+      typeof value === "object"
+        ? JSON.stringify(Object.entries(value as Record<string, string>).sort(([a], [b]) => a.localeCompare(b)))
+        : String(value)
+    ] as const)
+    .sort(([a], [b]) => a.localeCompare(b));
+  return JSON.stringify(entries);
+}
+
+/**
+ * The dimension scope of a journal entry as a whole, which is only meaningful when every one of
+ * its lines was posted to the same scope. `LedgerJournalEntryDto` carries no dimensions of its
+ * own — they live on `LedgerJournalEntryLineDto` — so an entry that spans scopes has no single
+ * one to name, and saying otherwise would attribute a mixed entry to whichever line came first.
+ */
+export function resolvePostedEntryDimensions(entry: LedgerPostedJournalEntry): LedgerDimensionSet | null {
+  const lines = Array.isArray(entry.lines) ? entry.lines : [];
+  const scoped = lines.map((line) => line.dimensions ?? null);
+  if (scoped.length === 0 || scoped.some((dimensions) => dimensions === null)) {
+    return null;
+  }
+
+  const first = scoped[0] as LedgerDimensionSet;
+  const key = ledgerDimensionSetKey(first);
+  return scoped.every((dimensions) => ledgerDimensionSetKey(dimensions as LedgerDimensionSet) === key)
+    ? first
+    : null;
+}
+
+/**
+ * Maps a posted journal entry onto the shared ledger-journal evidence row so the
+ * posted book can reuse the journal-lineage panels the run-scoped ledger built.
+ */
+export function toLedgerJournalLine(entry: LedgerPostedJournalEntry): LedgerJournalLine {
+  return {
+    journalEntryId: entry.journalEntryId,
+    timestamp: entry.timestamp,
+    description: entry.description,
+    totalDebits: entry.totalDebits,
+    totalCredits: entry.totalCredits,
+    lineCount: Array.isArray(entry.lines) ? entry.lines.length : 0,
+    dimensions: resolvePostedEntryDimensions(entry)
+  };
+}
+
+/** One instrument reachable from a posted trial balance, for the related-securities drill-through. */
+export interface PostedLedgerRelatedSecurity {
+  securityId: string;
+  label: string;
+}
+
+/**
+ * The instruments a posted trial balance touches.
+ * <p>
+ * `LedgerPeriodTrialBalanceLineDto` carries no security reference — the posted book identifies an
+ * instrument through `Dimensions.InstrumentId`, which the posting spine asserts is the Security
+ * Master id — so keying strictly on `security.securityId` found nothing on a posted period and the
+ * drill-through was permanently empty. Both are read here, in that order.
+ * </p>
+ */
+export function collectPostedLedgerRelatedSecurities(
+  rows: readonly Pick<LedgerTrialBalanceLine, "security" | "symbol" | "dimensions">[]
+): PostedLedgerRelatedSecurity[] {
+  const seen = new Map<string, string>();
+  for (const row of rows) {
+    const securityId = row.security?.securityId?.trim() || row.dimensions?.instrumentId?.trim();
+    if (!securityId || seen.has(securityId)) {
+      continue;
+    }
+
+    seen.set(securityId, row.security?.displayName?.trim() || row.symbol?.trim() || securityId);
+  }
+
+  return Array.from(seen.entries()).map(([securityId, label]) => ({ securityId, label }));
+}
 
 export const POSTED_LEDGER_DETAIL_PANEL_ID = "posted-ledger-account-detail";
 
@@ -81,6 +177,13 @@ export interface PostedLedgerPnlViewState {
   errorText: string | null;
 }
 
+export interface PostedLedgerBookOption {
+  id: string;
+  label: string;
+  baseCurrency: string;
+  isSelected: boolean;
+}
+
 export interface AccountingPostedLedgerViewState {
   title: string;
   description: string;
@@ -88,16 +191,28 @@ export interface AccountingPostedLedgerViewState {
   periodSelector: PostedLedgerPeriodSelectorViewState;
   /** Non-error explanation shown when the selected period has no closed summary yet. */
   periodNotice: string | null;
+  /** The ledger book these periods belong to, so a multi-book deployment names its subject. */
+  selectedBookLabel: string | null;
+  bookOptions: PostedLedgerBookOption[];
+  /** The selected book's base currency; posted amounts are in book units, not USD. */
+  baseCurrency: string | null;
   trialBalance: AccountingTrialBalanceViewState;
   pnl: PostedLedgerPnlViewState;
 }
 
 export interface AccountingPostedLedgerViewModel {
   view: AccountingPostedLedgerViewState;
+  selectBook: (ledgerBookId: string) => void;
   selectPeriod: (periodId: string) => void;
   selectBasis: (basis: AccountingBasisKind) => void;
   updateAccountFilter: (value: string) => void;
   selectTrialBalanceRow: (rowId: string | null) => void;
+  /** Posted journal entries for the selected period, in the shared evidence-row shape. */
+  journalLines: LedgerJournalLine[];
+  journalLoading: boolean;
+  journalErrorText: string | null;
+  selectedPeriodId: string | null;
+  selectedPeriodLabel: string | null;
 }
 
 export function sortLedgerPeriodsDescending(periods: LedgerPeriod[]): LedgerPeriod[] {
@@ -181,12 +296,29 @@ export function buildPostedLedgerPnlViewState({
   pnl,
   loading,
   error,
-  periodLabel
+  periodLabel,
+  selectedBasis = DEFAULT_ACCOUNTING_BASIS,
+  baseCurrency = null,
+  availableBasisCount = 1
 }: {
   pnl: LedgerPeriodPnlSummary | null;
   loading: boolean;
   error: ApiErrorDisplay | null;
   periodLabel: string | null;
+  /**
+   * The basis the trial balance beside this panel is showing. The endpoint aggregates revenue and
+   * expense across every basis the period holds, so without this a GAAP trial balance sat next to
+   * a P&L that double-counted Primary and GAAP together.
+   */
+  selectedBasis?: AccountingBasisKind;
+  /** The book's base currency; posted amounts are in book units, not dollars. */
+  baseCurrency?: string | null;
+  /**
+   * How many accounting bases the selected period holds. The variance below is a period-level
+   * figure derived across all of them and cannot be split, so on a mixed period it has to be
+   * labelled rather than left to read as the selected basis's own.
+   */
+  availableBasisCount?: number;
 }): PostedLedgerPnlViewState {
   const description = periodLabel
     ? `Revenue, expense, and net-income totals from the posted journal for ${periodLabel}.`
@@ -220,19 +352,46 @@ export function buildPostedLedgerPnlViewState({
     };
   }
 
+  // The endpoint's totalRevenue and totalExpenses are plain sums of the lines it returns, so the
+  // same sums over the basis-filtered lines reproduce them exactly for a single-basis period and
+  // scope them correctly for a mixed one. Net income is derived the way the server derives its own
+  // realized figures -- revenue less expenses -- because the endpoint's netIncome is a period-level
+  // value that cannot be attributed to one basis.
+  const inBasis = (line: LedgerPeriodTrialBalanceLine) =>
+    (line.accountingBasis ?? DEFAULT_ACCOUNTING_BASIS) === selectedBasis;
+  const sumBalances = (lines: LedgerPeriodTrialBalanceLine[]) =>
+    lines.filter(inBasis).reduce((total, line) => total + line.balance, 0);
+
+  const hasLineDetail = pnl.revenueLines.length > 0 || pnl.expenseLines.length > 0;
+  const totalRevenue = hasLineDetail ? sumBalances(pnl.revenueLines) : pnl.totalRevenue;
+  const totalExpenses = hasLineDetail ? sumBalances(pnl.expenseLines) : pnl.totalExpenses;
+  const netIncome = hasLineDetail ? totalRevenue - totalExpenses : pnl.netIncome;
+
+  const money = (value: number) =>
+    baseCurrency ? formatCurrencyForCode(value, baseCurrency) : formatCurrency(value);
+  const signedMoney = (value: number) =>
+    baseCurrency ? `${value > 0 ? "+" : ""}${formatCurrencyForCode(value, baseCurrency)}` : formatSignedCurrency(value);
+
   const items: PostedLedgerPnlItemViewModel[] = [
-    { id: "revenue", label: "Total revenue", value: formatCurrency(pnl.totalRevenue), tone: "default" },
-    { id: "expenses", label: "Total expenses", value: formatCurrency(pnl.totalExpenses), tone: "default" },
+    { id: "revenue", label: "Total revenue", value: money(totalRevenue), tone: "default" },
+    { id: "expenses", label: "Total expenses", value: money(totalExpenses), tone: "default" },
     {
       id: "net-income",
       label: "Net income",
-      value: formatSignedCurrency(pnl.netIncome),
-      tone: pnl.netIncome < 0 ? "danger" : pnl.netIncome > 0 ? "success" : "default"
+      value: signedMoney(netIncome),
+      tone: netIncome < 0 ? "danger" : netIncome > 0 ? "success" : "default"
     },
     {
       id: "variance",
       label: "Period-on-period variance",
-      value: pnl.periodOnPeriodVariance === null ? "No prior period" : formatSignedCurrency(pnl.periodOnPeriodVariance),
+      // Carried through, not recomputed: the endpoint derives it across every basis the period
+      // holds. Scoping the totals above without saying so left a basis-scoped net income sitting
+      // beside a cross-basis variance as though they were one set of figures.
+      value: pnl.periodOnPeriodVariance === null
+        ? "No prior period"
+        : availableBasisCount > 1
+          ? `${signedMoney(pnl.periodOnPeriodVariance)} (all bases)`
+          : signedMoney(pnl.periodOnPeriodVariance),
       tone: "default"
     },
     {
@@ -242,6 +401,18 @@ export function buildPostedLedgerPnlViewState({
       tone: pnl.openBreakCount > 0 ? "warning" : "success"
     }
   ];
+
+  // A period whose summary carried no revenue or expense line detail leaves nothing to scope by,
+  // so the endpoint's cross-basis totals are all there is. Say so rather than presenting them as
+  // the selected basis's own.
+  if (availableBasisCount > 1 && !hasLineDetail) {
+    items.push({
+      id: "basis-scope",
+      label: "Basis scope",
+      value: `Period total across all ${availableBasisCount} bases, not ${accountingBasisDisplayName(selectedBasis)} alone`,
+      tone: "warning"
+    });
+  }
 
   const signoffLabel = pnl.signoffStatus === "NotRequired" ? "Sign-off not required"
     : pnl.signoffStatus === "Pending" ? "Sign-off pending"
@@ -269,6 +440,8 @@ export function buildAccountingPostedLedgerViewState({
   periods,
   periodsLoading,
   periodsError,
+  booksErrorText,
+  booksLoading = false,
   selectedPeriodId,
   periodNotice,
   trialBalanceRows,
@@ -279,11 +452,17 @@ export function buildAccountingPostedLedgerViewState({
   pnlError,
   selectedRowId,
   selectedBasis,
-  accountFilter
+  accountFilter,
+  selectedBookLabel,
+  baseCurrency,
+  bookOptions
 }: {
   periods: LedgerPeriod[];
   periodsLoading: boolean;
   periodsError: ApiErrorDisplay | null;
+  booksErrorText: string | null;
+  /** Book discovery gates every request below it, so it reads as loading on the period selector. */
+  booksLoading?: boolean;
   selectedPeriodId: string | null;
   periodNotice: string | null;
   trialBalanceRows: LedgerTrialBalanceLine[];
@@ -295,6 +474,10 @@ export function buildAccountingPostedLedgerViewState({
   selectedRowId: string | null;
   selectedBasis: AccountingBasisKind;
   accountFilter: string;
+  /** Names the book the periods below belong to; null until the books land. */
+  selectedBookLabel: string | null;
+  baseCurrency: string | null;
+  bookOptions: PostedLedgerBookOption[];
 }): AccountingPostedLedgerViewState {
   const selectedPeriod = periods.find((period) => period.periodId === selectedPeriodId) ?? null;
   const periodLabel = selectedPeriod
@@ -312,7 +495,11 @@ export function buildAccountingPostedLedgerViewState({
     accountFilter,
     loading: trialBalanceLoading,
     error: trialBalanceError,
-    scopeLabel
+    scopeLabel,
+    // These rows are a posted book's, so their balances carry the book's base currency.
+    currency: baseCurrency,
+    // And their journal evidence resolves by period, not by run.
+    periodId: selectedPeriodId
   });
   const trialBalance: AccountingTrialBalanceViewState = {
     ...base,
@@ -333,24 +520,50 @@ export function buildAccountingPostedLedgerViewState({
     periodSelector: {
       label: "Ledger period",
       options: buildPostedLedgerPeriodOptions(periods, selectedPeriodId),
-      loading: periodsLoading,
-      loadingText: periodsLoading ? "Loading ledger periods." : null,
-      errorText: periodsError?.summary ?? null,
+      loading: periodsLoading || booksLoading,
+      loadingText: booksLoading
+        ? "Loading ledger books."
+        : periodsLoading ? "Loading ledger periods." : null,
+      errorText: booksErrorText ?? periodsError?.summary ?? null,
       errorDetails: periodsError?.details ?? [],
-      emptyText: periodsLoading || periodsError || periods.length > 0
+      // "Create a ledger book" is an instruction, and it must not appear while the request that
+      // would have found one is still in flight or has failed.
+      emptyText: periodsLoading || booksLoading || periodsError || booksErrorText || periods.length > 0
         ? null
         : "No ledger periods exist yet. Create a ledger book and period in Accounting → Configure to start the governed book."
     },
     periodNotice,
+    selectedBookLabel,
+    bookOptions,
+    baseCurrency,
     trialBalance,
-    pnl: buildPostedLedgerPnlViewState({ pnl, loading: pnlLoading, error: pnlError, periodLabel })
+    pnl: buildPostedLedgerPnlViewState({
+      pnl,
+      loading: pnlLoading,
+      error: pnlError,
+      periodLabel,
+      selectedBasis,
+      baseCurrency,
+      availableBasisCount: countAvailableAccountingBases(trialBalanceRows)
+    })
   };
 }
 
 export function useAccountingPostedLedgerViewModel(
   workstream: AccountingWorkstream,
-  services: AccountingPostedLedgerServices = defaultAccountingPostedLedgerServices
+  services: AccountingPostedLedgerServices = defaultAccountingPostedLedgerServices,
+  // Opt-in because the journal is the one request here whose cost scales with the size of the
+  // book: a production month's posted entries are returned in full. Only a consumer that renders
+  // them should pay for them. AccountingPostedLedgerSection does not, so it does not ask.
+  { includeJournal = false }: { includeJournal?: boolean } = {}
 ): AccountingPostedLedgerViewModel {
+  const [books, setBooks] = useState<LedgerBook[]>([]);
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+  const [booksErrorText, setBooksErrorText] = useState<string | null>(null);
+  // Book discovery gates every request below it, so an untracked one left the period
+  // selector reporting "no ledger periods exist yet -- create a ledger book" while the books
+  // request was still in flight: an instruction to create accounting data, during a load.
+  const [booksLoading, setBooksLoading] = useState(false);
   const [periods, setPeriods] = useState<LedgerPeriod[]>([]);
   const [periodsLoading, setPeriodsLoading] = useState(false);
   const [periodsError, setPeriodsError] = useState<ApiErrorDisplay | null>(null);
@@ -365,6 +578,28 @@ export function useAccountingPostedLedgerViewModel(
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [selectedBasis, setSelectedBasis] = useState<AccountingBasisKind>(DEFAULT_ACCOUNTING_BASIS);
   const [accountFilter, setAccountFilter] = useState("");
+  const [journalLines, setJournalLines] = useState<LedgerJournalLine[]>([]);
+  const [journalLoading, setJournalLoading] = useState(false);
+  const [journalErrorText, setJournalErrorText] = useState<string | null>(null);
+
+  /**
+   * Drops everything that only means something within one ledger book. The book label and base
+   * currency come off the selected book, so figures left behind after it goes render unlabelled
+   * and read as belonging to whatever book is chosen next.
+   */
+  const clearBookScopedState = useCallback(() => {
+    setSelectedPeriodId(null);
+    // Clearing the id alone was not enough: the periods array still held book A's, so the
+    // selection-validation effect immediately re-picked A's default and loaded its figures under
+    // B's label and currency -- and left them there indefinitely if B's period request hung.
+    setPeriods([]);
+    setPeriodNotice(null);
+    setTrialBalanceRows([]);
+    setPnl(null);
+    setJournalLines([]);
+    setJournalErrorText(null);
+    setSelectedRowId(null);
+  }, []);
 
   useEffect(() => {
     if (workstream !== "ledger") {
@@ -372,10 +607,60 @@ export function useAccountingPostedLedgerViewModel(
     }
 
     let cancelled = false;
+    setBooksErrorText(null);
+    setBooksLoading(true);
+    services.getBooks()
+      .then((rows) => {
+        if (cancelled) return;
+        setBooks(rows);
+        if (rows.length === 0) {
+          // No book means no scope for anything below, and the period effect will not run to
+          // clear it.
+          clearBookScopedState();
+        }
+        // Scope to one book before any period is chosen. Unscoped, the period list spans every
+        // book and the default lands on whichever book owns the globally latest closed period —
+        // presented under this panel's fixed scope label as though it were the only book.
+        setSelectedBookId((current) =>
+          current !== null && rows.some((book) => book.ledgerBookId === current)
+            ? current
+            : rows[0]?.ledgerBookId ?? null);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setBooks([]);
+        setSelectedBookId(null);
+        // The previous book's periods, balances and P&L are book-scoped, and the label and base
+        // currency that named them come off the selected book -- so leaving them rendered a book's
+        // figures with nothing saying whose they were, indefinitely, since the period effect does
+        // not run without a selected book. The desktop workstation drops them for the same reason.
+        clearBookScopedState();
+        // Without this the period effect simply never runs and the screen renders its ordinary
+        // "no ledger periods exist yet" empty state, telling operators to create accounting data
+        // during what is actually an API outage.
+        setBooksErrorText(describeApiError(err, "Ledger books failed to load.").summary);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setBooksLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [clearBookScopedState, services, workstream]);
+
+  useEffect(() => {
+    if (workstream !== "ledger" || selectedBookId === null) {
+      return;
+    }
+
+    let cancelled = false;
     setPeriodsLoading(true);
     setPeriodsError(null);
 
-    services.getPeriods()
+    services.getPeriods({ ledgerBookId: selectedBookId })
       .then((rows) => {
         if (!cancelled) {
           setPeriods(rows);
@@ -396,9 +681,16 @@ export function useAccountingPostedLedgerViewModel(
     return () => {
       cancelled = true;
     };
-  }, [services, workstream]);
+  }, [selectedBookId, services, workstream]);
 
   useEffect(() => {
+    // Nothing to validate a selection against until the periods land. Resetting here would
+    // clobber a caller-supplied selection (a deep link's ?periodId=) on the first render and
+    // fight whoever re-applies it.
+    if (periods.length === 0) {
+      return;
+    }
+
     const hasSelection = selectedPeriodId !== null &&
       periods.some((period) => period.periodId === selectedPeriodId);
     if (hasSelection) {
@@ -421,6 +713,12 @@ export function useAccountingPostedLedgerViewModel(
     }
 
     let cancelled = false;
+    // Drop the outgoing period's figures before requesting the new one. The period label and
+    // scope re-render from selectedPeriodId immediately, and the trial-balance view state counts
+    // retained rows as "ready" even while loading, so keeping them would present one period's
+    // balances under another period's name — indefinitely if the request never settles.
+    setTrialBalanceRows([]);
+    setPnl(null);
     setTrialBalanceLoading(true);
     setTrialBalanceError(null);
     setPnlLoading(true);
@@ -435,7 +733,12 @@ export function useAccountingPostedLedgerViewModel(
     services.getTrialBalance(selectedPeriodId)
       .then((rows) => {
         if (!cancelled) {
-          setTrialBalanceRows(rows.map(toTrialBalanceLine));
+          const lines = rows.map(toTrialBalanceLine);
+          setTrialBalanceRows(lines);
+          // Resolved from the rows themselves. Carrying GAAP or Tax across a period change filters
+          // every row out of a period that only holds Primary, and the period reads as having no
+          // trial balance even though it loaded successfully.
+          setSelectedBasis(resolveAvailableAccountingBasis(lines));
         }
       })
       .catch((err) => {
@@ -485,6 +788,49 @@ export function useAccountingPostedLedgerViewModel(
     };
   }, [selectedPeriodId, services, workstream]);
 
+  useEffect(() => {
+    if (!includeJournal || !selectedPeriodId || workstream !== "ledger") {
+      setJournalLines([]);
+      setJournalErrorText(null);
+      setJournalLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    // Same reason as the trial balance above: these entries are the outgoing period's evidence.
+    setJournalLines([]);
+    setJournalLoading(true);
+    setJournalErrorText(null);
+
+    services.getJournalEntries(selectedPeriodId)
+      .then((entries) => {
+        if (!cancelled) {
+          setJournalLines(entries.map(toLedgerJournalLine));
+        }
+      })
+      .catch((err) => {
+        if (cancelled) {
+          return;
+        }
+
+        setJournalLines([]);
+        // A period with no closed summary has no posted entries to show yet; that is a
+        // state, not a failure, and the period notice already explains it.
+        setJournalErrorText(isApiError(err) && err.status === 404
+          ? null
+          : describeApiError(err, "Posted journal entries failed to load.").summary);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setJournalLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedPeriodId, services, workstream, includeJournal]);
+
   const selectPeriod = useCallback((periodId: string) => {
     setSelectedPeriodId(periodId);
     setSelectedRowId(null);
@@ -500,11 +846,43 @@ export function useAccountingPostedLedgerViewModel(
     setSelectedRowId(null);
   }, []);
 
+  const selectedBook = useMemo(
+    () => books.find((candidate) => candidate.ledgerBookId === selectedBookId) ?? null,
+    [books, selectedBookId]
+  );
+  const selectedBookLabel = selectedBook ? (selectedBook.displayName.trim() || selectedBook.ledgerBookId) : null;
+  const baseCurrency = selectedBook?.baseCurrency?.trim() || null;
+  const bookOptions = useMemo<PostedLedgerBookOption[]>(
+    () => books.map((book) => ({
+      id: book.ledgerBookId,
+      label: book.displayName.trim() || book.ledgerBookId,
+      baseCurrency: book.baseCurrency,
+      isSelected: book.ledgerBookId === selectedBookId
+    })),
+    [books, selectedBookId]
+  );
+
+  const selectBook = useCallback((ledgerBookId: string) => {
+    // Re-selecting the book already on screen is not a scope change. setSelectedBookId would be a
+    // no-op for an unchanged id, so the period effect would never re-run, while the clearing below
+    // had already emptied the ledger -- leaving the panel blank until another book was chosen.
+    if (ledgerBookId === selectedBookId) {
+      return;
+    }
+
+    setSelectedBookId(ledgerBookId);
+    // The incoming book's periods are a different set entirely; keeping the outgoing selection
+    // would request a period that does not belong to it.
+    clearBookScopedState();
+  }, [clearBookScopedState, selectedBookId]);
+
   const view = useMemo(
     () => buildAccountingPostedLedgerViewState({
       periods,
       periodsLoading,
       periodsError,
+      booksErrorText,
+      booksLoading,
       selectedPeriodId,
       periodNotice,
       trialBalanceRows,
@@ -515,10 +893,18 @@ export function useAccountingPostedLedgerViewModel(
       pnlError,
       selectedRowId,
       selectedBasis,
-      accountFilter
+      accountFilter,
+      selectedBookLabel,
+      baseCurrency,
+      bookOptions
     }),
     [
       accountFilter,
+      baseCurrency,
+      bookOptions,
+      booksErrorText,
+      booksLoading,
+      selectedBookLabel,
       periodNotice,
       periods,
       periodsError,
@@ -535,11 +921,22 @@ export function useAccountingPostedLedgerViewModel(
     ]
   );
 
+  const selectedPeriodLabel = useMemo(() => {
+    const period = periods.find((candidate) => candidate.periodId === selectedPeriodId);
+    return period ? (period.label.trim() || `FY${period.fiscalYear} P${period.periodNo}`) : null;
+  }, [periods, selectedPeriodId]);
+
   return {
     view,
+    selectBook,
     selectPeriod,
     selectBasis,
     updateAccountFilter,
-    selectTrialBalanceRow: setSelectedRowId
+    selectTrialBalanceRow: setSelectedRowId,
+    journalLines,
+    journalLoading,
+    journalErrorText,
+    selectedPeriodId,
+    selectedPeriodLabel
   };
 }

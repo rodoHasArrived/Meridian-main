@@ -15,10 +15,10 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `6fbe151c82f8`
+- Source fingerprint: `95c2bab84ea4`
 - Baseline date for open Gantt tasks: `2026-06-17`
-- Registered WPF screens: `97`
-- Open automated tasks: `5`
+- Registered WPF screens: `98`
+- Open automated tasks: `6`
 
 ## Workspace Summary
 
@@ -26,7 +26,7 @@ This tracker is generated from the live WPF shell registry, the maintained deskt
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Trading | 6 | 5 | 1 | 0 | 6 | 6 | 0 |
 | Portfolio | 9 | 4 | 4 | 1 | 9 | 9 | 0 |
-| Accounting | 15 | 7 | 8 | 0 | 14 | 15 | 1 |
+| Accounting | 16 | 8 | 8 | 0 | 14 | 16 | 2 |
 | Reporting | 10 | 7 | 3 | 0 | 8 | 10 | 2 |
 | Strategy | 14 | 6 | 3 | 3 | 13 | 14 | 1 |
 | Data | 25 | 6 | 9 | 10 | 25 | 25 | 0 |
@@ -65,6 +65,7 @@ gantt
     Operations continuity Needs screenshot :crit, active, accounting_operationscontinuity, 2026-06-17, 3d
     Run ledger evidence :done, accounting_runledger, 2026-06-26, 1d
     Run cash flow evidence :done, accounting_runcashflow, 2026-06-26, 1d
+    Posted ledger Needs screenshot :crit, active, accounting_postedledger, 2026-06-17, 3d
     Fund reconciliation evidence :done, accounting_fundreconciliation, 2026-06-26, 1d
     Fund banking evidence :done, accounting_fundbanking, 2026-06-26, 1d
     Fund cash and financing evidence :done, accounting_fundcashfinancing, 2026-06-26, 1d
@@ -322,6 +323,14 @@ gantt
 - [x] Registered in the WPF shell registry as RunCashFlow (RunCashFlowPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-cash-flow.png (2026-06-26).
 - [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs, +2 more.
+
+#### Posted ledger (`PostedLedger`)
+
+- Workspace section: `Fund Ops`; visibility: `Primary`; page class: `PostedLedgerPage`.
+- Status: `Needs screenshot`.
+- [x] Registered in the WPF shell registry as PostedLedger (PostedLedgerPage).
+- [ ] Capture a fixture-mode desktop screenshot for PostedLedger or record an explicit non-capture decision.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/PostedLedgerViewModelTests.cs.
 
 #### Fund reconciliation (`FundReconciliation`)
 

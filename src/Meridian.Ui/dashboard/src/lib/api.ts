@@ -475,6 +475,7 @@ import {
   workstationExtensibilityTenantTemplateReadinessEndpoint,
   workstationAssetOperationsEndpoint,
   workstationFinancialRecordExplorerEndpoint,
+  type ExplorerFilterSelection,
   workstationFinancialRecordExplorerRecordEndpoint,
   workstationFinancialRecordExplorerSavedViewsEndpoint,
   workstationFinancialOperationsCommandCenterEndpoint,
@@ -1892,19 +1893,16 @@ export function previewDataUploadWorkbook(
   );
 }
 
-export function getDataOperationsWorkspace(options: ApiRequestOptions = {}) {
-  return getDataWorkspace(options);
-}
-
 export function getAccountingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<AccountingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.accounting, options);
 }
 
 export function getFinancialRecordExplorer(
   explorerId: FinancialRecordExplorerId,
-  options: ApiRequestOptions = {}
+  options: ApiRequestOptions = {},
+  filters: readonly ExplorerFilterSelection[] = []
 ) {
-  return getJson<FinancialRecordExplorerDto>(workstationFinancialRecordExplorerEndpoint(explorerId), options);
+  return getJson<FinancialRecordExplorerDto>(workstationFinancialRecordExplorerEndpoint(explorerId, filters), options);
 }
 
 export function getFinancialRecordExplorerRecord(

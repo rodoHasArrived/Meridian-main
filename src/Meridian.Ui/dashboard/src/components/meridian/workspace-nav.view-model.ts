@@ -116,7 +116,8 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Covered call", route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall },
     { label: "Promotions", route: WORKSTATION_ROUTE_CATALOG.strategyPromotions },
     { label: "Strategy Lab", route: WORKSTATION_ROUTE_CATALOG.strategyLab },
-    { label: "Quant Lab", route: WORKSTATION_ROUTE_CATALOG.strategyQuantLab }
+    { label: "Quant Lab", route: WORKSTATION_ROUTE_CATALOG.strategyQuantLab },
+    { label: "Run Ledger Explorer", route: WORKSTATION_ROUTE_CATALOG.strategyRunLedger }
   ],
   data: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.data, match: "exact" },
