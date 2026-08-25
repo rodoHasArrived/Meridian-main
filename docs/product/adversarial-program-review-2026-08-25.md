@@ -8,8 +8,9 @@ user can reach, trust, and finish — and where improvement would raise end-user
 **Method:** a fresh pass over the wired code paths at commit `e232ece1`, re-testing the open items
 from `adversarial-program-review-2026-08-24.md` against the 39 commits landed since, then extending
 into three catalogs the prior passes treated separately: the **authorization model**, the **shared
-API surface**, and the **client surface**. Route reachability was measured mechanically across both
-operator clients. The browser workstation suite was executed locally (269 test files, green). Every
+API surface**, and the **client surface**. Route reachability was measured mechanically across all
+three client layers — the browser workstation, `src/Meridian.Wpf`, and the shared
+`src/Meridian.Ui.Services` clients the desktop calls through. The browser workstation suite was executed locally (269 test files, green). Every
 finding is anchored to `file:line` at `e232ece1`.
 
 > This review is deliberately critical; a strengths section gives fair credit at the end. It builds
@@ -197,11 +198,15 @@ is neither: it has no field on the record, and even when passed it is routed to 
 into the arithmetic.
 
 **Improvement — two changes, and the second matters more.** First, apply the multiplier in the
-economic paths so a contract's notional is `qty × price × multiplier` for cash, cost basis, margin,
-and market value; without this, any persistence fix leaves live option economics wrong. Second, give
-`ContractMultiplier` the first-class record treatment `UsesFaceValuePercentageOfPar` already has
-(JSON-ignored when default, preserving existing content hashes — the `ChildOrders` pattern at
-`Models.cs:170-174`), so no reconstruction path can drop it. `ResolveContractMultiplier`
+economic paths so a contract's notional is `qty × price × multiplier` for **monetary amounts only**:
+cash, proceeds, realized/unrealized P&L, margin, and market value. *Not* cost basis — the stored
+`AverageCostBasis` is documented as a FIFO-weighted **entry price** (`ExecutionPosition.cs:14`) and
+downstream consumers already apply the multiplier themselves (`OptionPosition.cs:57`,
+`FuturePosition.cs:61`, and `AggregatePortfolioService.cs:174-179`, which passes price and multiplier
+onward as separate values). Multiplying at storage while leaving those consumers alone would report
+$250,000 of exposure for ten $2.50 calls instead of $2,500 — a 100× error in the opposite direction.
+Keep lot and average prices in per-unit terms; migrate every consumer together or not at all.
+Second, give `ContractMultiplier` a persisted field so no reconstruction path can drop it. `ResolveContractMultiplier`
 (`OrderManagementSystem.RiskOutcomes.cs:324`) already derives the value; the gap is that nothing
 downstream multiplies by it. A field that is carried but never used is worse than a missing one — it
 reads, to every subsequent reviewer, as though the concern were already handled.
@@ -286,38 +291,47 @@ Portfolio or Accounting panel. It is the highest-value dark asset in the reposit
 plumbing it needs was built and validated six commits ago. If it will not be wired this cycle,
 `W9-NAV-006` should not read `ready_for_acceptance`.
 
-## 6. 43% of the shared API surface is reachable by neither operator client
+## 6. 29% of the shared API surface is reachable by no operator client
 
 Method: the generated route catalog (`src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts`,
 mirrored from `src/Meridian.Contracts/Api/UiApiRoutes.cs`) declares **862** route constants. Each was
-checked for a reference — by constant name or by literal path — in non-test browser workstation
-sources and in `src/Meridian.Wpf`.
+checked for a reference — by constant name or literal path — across all **three** client layers:
+the browser workstation, `src/Meridian.Wpf`, and `src/Meridian.Ui.Services`, the shared API-client
+layer the desktop calls through.
 
-- Referenced by the browser workstation: **462** (54%)
-- Dark to the browser: **400** (46%)
-- **Dark to both clients: 374 (43%)**
+| Layer | Routes reached |
+| --- | --- |
+| Browser workstation | 465 |
+| `src/Meridian.Ui.Services` (shared clients) | 203 |
+| `src/Meridian.Wpf` | 121 |
+| **Union — reachable by some client** | **612** |
+| **Dark to all three** | **250 (29%)** |
 
-WPF rescues 26 routes. That number is itself a statement about the parity lane: the desktop
-workstation is not covering meaningful ground the browser does not.
+> **Correction.** The first version of this section reported 43% (374 routes) because the scan omitted
+> `src/Meridian.Ui.Services` entirely. That layer alone accounts for 122 of the routes previously
+> counted dark — including **all 16 `/api/lean` routes**, which the earlier table listed as
+> unreachable and which are in fact consumed by `LeanIntegrationService`. The corrected figure, 29%,
+> happens to match what the 2026-08-24 review measured; the earlier claim that the ratio had grown
+> was an artifact of a worse method, not a real regression. A measurement that omits a client layer
+> does not overstate the problem slightly — it manufactures a trend.
 
 Largest dark groups (routes unreachable from either client):
 
-| Group | Dark routes | What is unreachable |
+| Group | Dark | What is unreachable |
 | --- | --- | --- |
-| `/api/quality` | 31 | anomalies, completeness, gaps, drops, latency, cross-provider comparison, per-symbol health |
 | `/api/workstation` | 33 | assorted read models |
-| `/api/storage` | 24 | — |
+| `/api/quality` | 27 | per-symbol and per-dimension drill-downs behind the wired dashboard |
 | `/api/security-master` | 24 | — |
-| `/api/providers` | 23 | — |
-| `/api/ledger` | 21 | trial balance, P&L, period journal entries, posting-rule candidates, asset-accounting projections |
-| `/api/backfill` | 20 | — |
+| `/api/ledger` | 19 | period journal entries, posting-rule candidates, asset-accounting projections |
 | `/api/fund-structure` | 17 | — |
-| `/api/lean` | 16 | — |
+| `/api/providers` | 13 | — |
+| `/api/execution` · `/api/messaging` · `/api/options` | 11 each | — |
+| `/api/backfill` · `/api/config` | 9 each | — |
 
 **One inventory, stated precisely.** The 862 constants are the denominator, and every group above is
 counted inside it. The **compliance** surface is *not*: its eight endpoints are registered as string
 literals in `ComplianceEndpoints.cs:15-117` and never enter `UiApiRoutes.cs` or the generated
-mirror, so they are out-of-catalog and must be reported separately rather than folded into the 43%.
+mirror, so they are out-of-catalog and must be reported separately rather than folded into the 29%.
 Their absence from the catalog is itself a finding — a route that never becomes a constant is
 invisible to the drift gate that keeps the mirror honest, so no tooling can notice it has no client.
 
@@ -338,11 +352,11 @@ unhealthy and cannot open the evidence that says why. That is a depth gap, not a
 capability, and it should be scoped as one.
 
 *Caveat on the method:* some dark routes are legitimately server-to-server or diagnostic, and a
-handful of paths are reached through composed URL builders my scan would miss. Spot checks confirmed
+handful of paths are reached through composed URL builders the scan would miss. Spot checks confirmed
 both directions: `/api/reconciliation/exceptions` looked dark but is the direct-lending lane whose
 workstation equivalent *is* wired, while the five ledger reporting routes in §1 were confirmed dark
-by direct grep. Treat 43% as a well-founded estimate of the same phenomenon the prior review measured
-at 29%, not as an exact count.
+by direct grep. Treat 29% as a well-founded estimate, not an exact count — and note that the first
+attempt at this number was wrong by half because it enumerated two client layers out of three.
 
 **Improvement.** Add the orphan-export structural test the backlog already specifies, with a
 declared allowlist for intentionally headless routes, and fail CI when the unallowed dark count
@@ -589,6 +603,14 @@ because a review that demands evidence discipline owes the same discipline about
 | "Net P&L, total return, drawdown, and Sharpe all inherit the 1/100 scale" | Overcorrected in the opposite direction from round 2. Equity is cash + positions and cash is intact, so equity is not 1/100 of correct; and Sharpe is `mean / stdDev`, which a *uniform* scale would cancel — the real effect is nonlinear distortion, which is worse than a clean scale because it looks plausible | §4 — replaced with a per-metric table |
 | Addendum marking "§1(a) and §1(b)" fixed | Only (b) was. §1(a) is the run-scoped binding, which the same addendum confirms is still mounted — so the label contradicted the paragraph four lines below it | Addendum |
 
+**Round 5 — three more, including the headline statistic:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| **"43% of routes are dark"** | The scan enumerated two client layers out of three, omitting `src/Meridian.Ui.Services` — the shared API-client layer the desktop calls through. That layer reaches 203 routes, 122 of which were counted dark, **including all 16 `/api/lean` routes** listed as unreachable. True figure: **250 of 862, 29%** | §6 — remeasured |
+| "Apply the multiplier to cash, **cost basis**, margin, and market value" | `AverageCostBasis` is a per-unit entry price and consumers apply the multiplier themselves (`OptionPosition.cs:57`, `AggregatePortfolioService.cs:174-179`). Multiplying at storage would report $250,000 for ten $2.50 calls — a 100× error the other way | §3 |
+| "JSON-ignore when default, as `ChildOrders` does" | Neither existing pattern transfers. `ChildOrders` is `WhenWritingNull` on a nullable reference; `UsesFaceValuePercentageOfPar` is `WhenWritingDefault` on a `bool` whose semantic default *is* the CLR default. A `decimal` with semantic default `1m` matches neither, so every legacy record would gain `contractMultiplier: 1` and change its hash | §3 |
+
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
 remedies — and are rewritten rather than softened; the multiplier correction made the defect
@@ -607,6 +629,16 @@ The §4 blast radius alone was mis-stated three times — too narrow, too broad,
 enumerated per metric. That is the same failure the document diagnoses in the codebase: each fix was
 correct about the line it touched and wrong about the line next to it. Writing about a defect class
 turns out to be no protection against committing it.
+
+Round 5 adds a fourth lesson, and it is the one that should outlive this document. **The headline
+statistic was wrong by half because the measurement enumerated two client layers out of three.** The
+review's whole thesis is that a system fails when nobody checks one catalog against another — and its
+central number was produced by a scan that silently omitted a catalog. It reported a *worsening*
+trend (29% → 43%) that never existed. An unvalidated measurement does not merely mis-size a problem;
+it invents one, and then everything built on it — the group table, the CI gate proposal, the
+"cheapest uplift" ranking — inherits the error. Any structural test proposed in improvement #4 must
+therefore enumerate its own inputs explicitly and fail when a client layer is added that it does not
+know about.
 
 ## Addendum — remediation landed while this review was in flight
 
