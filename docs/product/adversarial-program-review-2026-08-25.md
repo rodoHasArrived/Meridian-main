@@ -35,11 +35,15 @@ finds the layer underneath it:
 > authoritative number has no screen, and whose flagship accounting screen reads a different book
 > than the one the accounting subsystem was built to prove.**
 
-The single sharpest expression of it: **the two ledgers an operator can reach are split across
-disjoint role sets, and neither set is the one the screen is named for.** The trading, analysis, and
-reporting roles can open the Accounting screen's trial balance — but it reads the *strategy run's*
-ledger. `FundAccountant` and `Controller` hold the permissions for the *posted* book and are refused
-that screen. And the endpoint that serves the posted book's trial balance had no client at all.
+The single sharpest expression of it: **the two roles named for owning the fund's books are the ones
+refused the screen that shows a trial balance.** `FundAccountant` and `Controller` hold the
+permissions for the *posted* book and are denied the Accounting screen's panel, which reads the
+*strategy run's* ledger and gates on `ViewStrategies`. Trading, Analysis, ReportingAnalyst and
+Executive see only that simulation book; Compliance sees neither. Admin, Developer and Accounting do
+reach both — so the split is not clean, and calling the role sets "disjoint" (as an earlier draft of
+this line did) overstates a matrix that shows otherwise. The defect is a persona lockout at the
+centre of the accounting lane, not a partition. And the endpoint serving the posted book's trial
+balance had no client at all.
 
 That is not a wiring gap one seam over from a fix. It is a category error at the product's centre,
 and it is invisible to every gate the repository runs, because no gate compares the three catalogs.
@@ -249,12 +253,13 @@ for a cash account, zero commission, 10 calls at $2.50 against $100,000 of start
 | Portfolio equity **after a move** | Deviates by 99% of unrealised P&L, and **overstated on losses**: at a $2.00 mark, $99,995 against a correct $99,500 |
 | Net P&L, total return | **Exactly 1/100** ($−5 against $−500) |
 | Drawdown | ≈1/100, since both the peak and the trough carry the same 1/100 P&L error over a nearly-correct cash base |
-| Sharpe (`mean / stdDev`) | **Approximately correct in a pure-option book** — daily returns are uniformly 1/100 (−0.005% against −0.5%), and a uniform factor cancels in the ratio. Distorted only in a *mixed* book, where equities scale correctly and options do not, so the factor is non-uniform |
+| Sharpe (`mean / stdDev * √252`, `:143`) | **Distorted, and not by a clean factor.** `RecordDayEnd` divides each change by the *previous* equity, and the two books' denominators diverge as P&L accumulates — buggy is `cash + P&L`, correct is `cash + 100×P&L`. Over a six-mark series the per-day ratio drifts (0.010000, 0.009950, 0.010049, 0.009901, 0.010148) and `mean/stdDev` lands **17.9% below** correct. Preserved only while cumulative option P&L stays negligible against initial cash — not because the book is pure-option |
 | Commissions | Unaffected — already dollar amounts, accumulated independently |
 
 So the damage is severe where it is easiest to miss: an options session's realized P&L is off by two
-orders of magnitude while its *equity looks plausible* and its *Sharpe looks fine*. The metrics an
-operator would use to sanity-check the book are the ones the defect leaves intact.
+orders of magnitude while its **equity still looks plausible** — right at entry, and wrong in the
+*flattering* direction on losses. Sharpe is wrong too, but by a drifting amount rather than a
+recognisable factor, which is worse than either being right or being obviously broken.
 
 This review has now mis-stated that blast radius **four times**: too narrow (round 2), too broad
 (round 3), wrongly reversed on equity and Sharpe (round 4), and only correct once the paired cash leg
@@ -361,12 +366,18 @@ and per-dimension drill-downs behind it have no consumer. So the operator can se
 unhealthy and cannot open the evidence that says why. That is a depth gap, not an invisible
 capability, and it should be scoped as one.
 
-*Caveat on the method:* some dark routes are legitimately server-to-server or diagnostic, and a
-handful of paths are reached through composed URL builders the scan would miss. Spot checks confirmed
-both directions: `/api/reconciliation/exceptions` looked dark but is the direct-lending lane whose
-workstation equivalent *is* wired, while the five ledger reporting routes in §1 were confirmed dark
-by direct grep. Treat 29% as a well-founded estimate, not an exact count — and note that the first
-attempt at this number was wrong by half because it enumerated two client layers out of three.
+*Caveat on the method, and it cuts one way:* this measures **reference**, not operator reach. A route
+counts as reached if any client-layer file names it — including a wrapper nothing calls. Three
+browser exports prove the gap: `getQualityCompleteness`, `getQualityGaps` and `getQualityAnomalies`
+have **zero call sites outside `lib/api.ts`**, yet their routes are counted as reached. So **29% is a
+lower bound on the dark surface, not an estimate of it**; the true figure is higher by however many
+wrappers are themselves dead. Establishing it needs transitive reachability from mounted routes and
+views — which is precisely what the CI gate in improvement #4 would have to compute, so the
+measurement debt and the gate are the same piece of work. Separately, some dark routes are
+legitimately server-to-server or diagnostic, and a few paths are reached through composed URL
+builders the scan would miss. Spot checks confirmed both directions. And note the first attempt at
+this number was wrong by half in the *other* direction, because it enumerated two client layers out
+of three.
 
 **Improvement.** Add the orphan-export structural test the backlog already specifies, with a
 declared allowlist for intentionally headless routes, and fail CI when the unallowed dark count
@@ -503,9 +514,10 @@ close-management product can tell.
 3. **Make instrument scale a modeled concept, once.** One value object carrying multiplier and price
    convention, on `ExecutionReport` and `FillEvent` — and *consumed* in `ApplyBuy`/`ApplySellLong`,
    `PaperPosition.MarketValue`, and the three restore sites in `PaperSessionPersistenceService`.
-   Carrying it is not the fix; multiplying by it is. Until then every option session's equity, P&L,
-   drawdown, and Sharpe are 1/100-scaled. Third consecutive review to find this class in a new
-   subsystem. (§3, §4)
+   Carrying it is not the fix; multiplying by it is. Until then an option session's P&L and total
+   return are off by the multiplier, its equity is wrong in the flattering direction on losses, and
+   its Sharpe drifts — see §4 for the per-metric breakdown, which is *not* a uniform 1/100. Third
+   consecutive review to find this class in a new subsystem. (§3, §4)
 4. **Gate the catalogs against each other — with predicates that actually bite.** An
    existential check ("some role can reach it") is useless here: Admin, Developer, and Accounting
    satisfy it while `FundAccountant` and `Controller` stay locked out, so the defect passes. Three
@@ -581,8 +593,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Seven rounds of automated review challenged **27 claims** across this document. Every one was checked
-against the code, **all 27 held**, and the findings above are the corrected text. Recorded here
+Eight rounds of automated review challenged **30 claims** across this document. Every one was checked
+against the code, **all 30 held**, and the findings above are the corrected text. Recorded here
 because a review that demands evidence discipline owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
