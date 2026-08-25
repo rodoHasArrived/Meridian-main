@@ -188,7 +188,11 @@ The same overload appears in compliance: `/api/compliance/approval-requests` gat
 (`ComplianceEndpoints.cs:24`), so a compliance officer must hold user-administration rights to file
 an approval request.
 
-**Improvement.** Introduce `ViewLedgerReports` / `ManageLedgerReports` and `ManageCompliance`
+**Improvement.** Introduce `ViewLedgerReports` / `ManageLedgerReports` and
+`ViewCompliance` / `ManageCompliance` — the read/write split matters on both, because a single
+`ManageCompliance` re-creates this very overload one level down: an auditor who only reads
+`/audit/extract`, `/controls/attestation` and `GET /access-reviews` would also gain authority over
+approval decisions and access-review remediation
 permissions and re-gate these surfaces. The permission enum has 27 flags in a `long` — there is ample
 room. This is a small, mechanical change that removes a real blocker to any multi-user deployment.
 
@@ -422,8 +426,14 @@ itself dark. The identifier `NavPerUnit` appears nowhere in `src/Meridian.Ui.Sha
 `src/Meridian.Ui.Services`, or `src/Meridian.Ui/dashboard`, under that name or any alias; the
 `unitPrice` locals in `AggregatePortfolioExposureProvider` are per-contract instrument pricing, and
 `ReportingPartnersCapitalSource` contains no unit arithmetic at all. There is no hand-rolled
-duplicate either. NAV per unit — the number a fund administrator exists to produce, and the input
-every LP statement depends on — cannot be computed by any operator action. Neither can equalization,
+duplicate either. NAV per unit — the number a fund administrator exists to produce for a
+unitized vehicle, and the input every *share-class* LP statement depends on — cannot be computed by
+any operator action. The qualifier is load-bearing: a partnership or capital-account fund does not
+need it. `ReportingPartnersCapitalSource` builds the certified partners-capital statement from ledger
+balances, contributions, distributions and allocations with no unit arithmetic at all, and
+`PartnersCapitalStatementLayout:61` takes a total `NetAssetValue` rather than a per-unit one. An
+earlier draft said *every* LP statement, which would have pushed unit-register work into
+non-unitized fund workflows that are already served. Neither can equalization,
 the high-water mark, the unit register, or FX revaluation at period close.
 
 The kernel as a whole is **not** a closed island, and this section's own title claimed it was for
@@ -727,6 +737,16 @@ close-management product can tell.
   the whole governance working set into an empty one, announced by a warning line. Fail closed on a
   snapshot that exists but will not parse, rather than starting empty and letting the operator
   discover it downstream.
+- **The doc-health TODO counter counts prose, and this document proves it.** The generated
+  dashboard assigns `docs/product/adversarial-program-review-2026-08-25.md` a `todo_count` of **4**.
+  This document contains no actionable documentation TODO. Three of the four come from one sentence
+  that merely *names* the markers — "Zero `NotImplementedException` and 4 TODO/FIXME/HACK markers" —
+  and the fourth from a link whose target is called `implementation-todo-list.md`. Those four inflate
+  the repository aggregate and feed the TODO-density term of the published health score, so a
+  document that adds no debt measurably lowers the number. The counter should ignore matches inside
+  code spans, link targets and link text, or mark them separately from real markers. Cheap to fix and
+  worth fixing before the metric is used to argue anything, because the failure is self-reinforcing:
+  writing *about* documentation debt registers as incurring it.
 - **Very large files concentrate risk.** `AccountingConfigureViewModel.cs` (5,356 lines),
   `SecurityMasterWorkbenchQueryService.cs` (4,738), `FundOperationsWorkspaceReadService.cs` (4,646),
   `WorkstationEndpoints.cs` (4,201). §1's defect lives inside a 5,900-line view model, which is a
@@ -748,7 +768,13 @@ close-management product can tell.
    Strategy workspace. It is also self-defeating alongside the first half of this item: once the
    run-scoped panel leaves Accounting, accountants need no strategy grant at all. An earlier draft
    said simply "grant them the permissions their screens require", which read literally means
-   exactly the over-grant this note now rules out. Until this lands, the flagship persona still
+   exactly the over-grant this note now rules out. **There are two run-scoped surfaces under
+   Accounting, not one**, and moving only the reconciliation panel leaves the second in place:
+   `app.tsx:828` mounts `AccountDetailScreen` at `/accounting/accounts/detail`, and that screen
+   derives a reconciliation `runId` and calls `getRunTrialBalance`
+   (`finance-standard-pages-screen.tsx:299`). This document's own addendum already noted that second
+   screen; the remedy did not, so following it as written would declare the work complete with
+   Accounting still serving the wrong book. Until this lands, the flagship persona still
    cannot open half of the flagship screen. (§1, §2)
 2. **Split the overloaded permissions — and split the replacements too.** Add
    `ViewLedgerReports`/`ManageLedgerReports` and `ViewCompliance`/`ManageCompliance`; stop using
@@ -765,8 +791,15 @@ close-management product can tell.
    `PaperSessionPersistenceService`, **and both margin models** — `RegTMarginModel:93,135` and
    `PortfolioMarginModel:55-57,93-97` compute notional, maintenance and the stressed legs from
    `position.Quantity * price` and never read the `ContractMultiplier` that
-   `PaperPosition.ToExecutionPosition` already hands them, so margin requirements and
-   excess-liquidity checks stay at 1/100 even after every transaction branch is fixed. That is a
+   `PaperPosition.ToExecutionPosition` already hands them, so notional and maintenance margin stay at
+   1/100 even after every transaction branch is fixed. **Excess liquidity does not** — and a
+   regression test asserting it would encode the wrong number. Both models compute it as
+   `portfolioEquity - maintenanceMargin` (`RegTMarginModel:114,162`, `PortfolioMarginModel:71,115`)
+   over a `portfolioEquity` that adds the *unscaled* notional or long market value to a *full-dollar*
+   cash balance (`RegTMarginModel:155`, `PortfolioMarginModel:108`). Mixing a 1/100 term with an
+   intact one distorts the result nonlinearly, and it can land either high or low depending on the
+   cash-to-position ratio. This is the §4 Sharpe error in a second subsystem: a uniform factor
+   asserted over an expression that is not uniformly scaled. That is a
    *separate* margin path from the short-sale collateral in §3: one is `pos.MarginBorrowed` inside
    the portfolio, the other is the `IMarginModel` requirement computed over it. Both need the
    multiplier, and both need regression coverage.
@@ -854,8 +887,13 @@ close-management product can tell.
    exactly **one** route writes to the immutable audit log (`actions/evaluate`, via
    `auditLog.Append` at `ComplianceEndpoints.cs:61`); `audit/extract` and `controls/attestation`
    only read it (`GetAll`/`VerifyIntegrity`); approvals live in an atomically-replaced but mutable
-   snapshot; and access reviews do not survive restart. A list/read contract and durable retention
-   both have to land *before* a UI presents any of it as governed proof. Register them as route constants too, so the
+   snapshot; and access reviews do not survive restart. **Split the activation by route group rather
+   than gating all eight behind both fixes.** `audit/extract` and `controls/attestation` read the
+   durable log that `actions/evaluate` appends to — and production composition does supply a
+   persisted path (`UiServer.cs:307` registers `ImmutableAuditLogService` with a JSONL file under the
+   data root, after `AddWorkstationSharedServices`' in-memory `TryAddSingleton`, so the durable
+   instance is the one resolved). Those two surfaces can be built now. The approver queue is blocked
+   on the discovery contract, and access reviews on durable retention; those two wait. Register them as route constants too, so the
    drift gate can see them. (§6)
 8. **Fix the freshness gap; standardize the error vocabulary second.** The demonstrated defect is
    staleness — break casework, approvals, and close readiness do not refresh after a mutation, so
@@ -902,14 +940,14 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Twenty-five rounds of automated review challenged **67 claims** across this document. Every one was checked
-against the code, **all 67 held**, and the findings above are the corrected text. **Nine more were
+Twenty-six rounds of automated review challenged **73 claims** across this document. Every one was checked
+against the code, **all 73 held**, and the findings above are the corrected text. **Nine more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
 in the published artifact, and an unresolvable file path in §8, and the artifact's refuted cost-basis remedy — and each is recorded as a
 row below, marked *(self-detected)*.
-The table therefore holds **76 rows: 67 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **82 rows: 73 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1069,7 +1107,7 @@ defect this review opens by describing.
 
 | Claim | Why it was wrong | Corrected in |
 | --- | --- | --- |
-| The multiplier remedy still omitted the margin models | `RegTMarginModel:93,135` and `PortfolioMarginModel:55-57,93-97` compute notional, maintenance and stressed legs from `position.Quantity * price`, never reading the `ContractMultiplier` that `ToExecutionPosition` hands them. Margin requirements and excess-liquidity checks stay at 1/100 after every transaction branch is fixed — a *second* margin path, distinct from the short-sale collateral found in round 11 | Improvement #3 |
+| The multiplier remedy still omitted the margin models | `RegTMarginModel:93,135` and `PortfolioMarginModel:55-57,93-97` compute notional, maintenance and stressed legs from `position.Quantity * price`, never reading the `ContractMultiplier` that `ToExecutionPosition` hands them. Notional and maintenance margin stay at 1/100 after every transaction branch is fixed (excess liquidity is distorted nonlinearly instead — corrected in round 26) — a *second* margin path, distinct from the short-sale collateral found in round 11 | Improvement #3 |
 | "Governed period reopen is dark… an operator has no path to reopen" | The mounted `/accounting/operations-continuity` screen renders a governed reopen command and submits through `reopenOperationsContinuityWorkflow` (`:1464-1504,2263-2366`), with tests. The `LedgerCloseManagementPeriodReopen` route is unconsumed, but the capability is not dark. Prioritizing a reopen workflow would have duplicated one that exists | §9, improvement #9 |
 | The re-test table bundled "WPF state un-fork / desktop test job" as one **Open** item | The state half is **partial**: reconciliation posture no longer reads desktop-local state and the local fund lane carries a provenance badge (`AccountingFeatureModule.cs:53-59`), and the scheduler host loops now run server-side (`:196-202`). Bundling hid landed remediation and meant neither half was re-tested | Re-test table — split in two |
 | The docs index stated 250/862 as settled fact | §6 had been corrected to call 29% an estimate with unbounded error in both directions while the stakeholder-facing index still presented it flatly. The same dependent-text failure this section exists to record, on the surface the round-10 sweep had checked for the phrase "lower bound" and not for the unqualified number | `docs/product/README.md` |
@@ -1298,6 +1336,25 @@ defective — the correction reached the document's improvement block and neithe
 that tell an implementer what to change. The review comment anchored at the one line in this document
 where "cost basis" is split across a line break, which is why every prior grep for the phrase missed
 it. A sweep is only as good as the string it searches for; this one needed the *concept*.
+
+**Round 26 — six, all raised by review and all upheld; three are corrections that reached the
+summary and never the section:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "Margin requirements and **excess-liquidity checks** stay at 1/100" | Notional and maintenance margin do; excess liquidity does not. Both models compute it as `portfolioEquity − maintenanceMargin` (`RegTMarginModel:114,162`, `PortfolioMarginModel:71,115`) over a `portfolioEquity` that adds the unscaled notional or long market value to a **full-dollar** cash balance (`:155`, `:108`). Mixing a 1/100 term with an intact one distorts nonlinearly and can land high or low. A regression test written to this instruction would assert the wrong number — the §4 Sharpe error repeated in a second subsystem | Improvement #3 and its round-13 ledger row |
+| §2's own remedy still proposed a single `ManageCompliance` | The priority list had already been corrected to `ViewCompliance`/`ManageCompliance`, and the ledger row recording that correction was already in this table — but §2's improvement block was never updated, so the two instructions conflicted. An auditor reading `/audit/extract` would gain authority over approval decisions | §2 improvement |
+| "the input **every LP statement** depends on" | Only unitized ones. `ReportingPartnersCapitalSource` builds the certified partners-capital statement from balances, contributions, distributions and allocations with no unit arithmetic, and `PartnersCapitalStatementLayout:61` takes a total `NetAssetValue`. The overstatement would push unit-register work into non-unitized fund workflows that are already served. Round 24 established the *absence* of unit arithmetic there and drew the opposite inference from it | §5 |
+| Improvement #1 moves "the run-scoped panel" | There are two run-scoped surfaces under Accounting. `app.tsx:828` mounts `AccountDetailScreen` at `/accounting/accounts/detail`, which derives a reconciliation `runId` and calls `getRunTrialBalance` (`finance-standard-pages-screen.tsx:299`). This document's own addendum names that screen; the remedy did not, so following it would declare the work done with Accounting still serving the wrong book | Improvement #1 |
+| "A list/read contract and durable retention both have to land *before* a UI presents any of it" | Over-defers two usable surfaces. `audit/extract` and `controls/attestation` read the durable log `actions/evaluate` appends to, and production composition supplies a persisted JSONL path (`UiServer.cs:307`, registered after `AddWorkstationSharedServices`' in-memory `TryAddSingleton`, so the durable instance is the one resolved). Only the approver queue and access reviews are blocked | Improvement #7 — split by route group |
+| The regenerated dashboard gives this document `todo_count: 4` | It contains no actionable TODO. Three matches come from the sentence that merely *names* `TODO/FIXME/HACK` and one from a link to `implementation-todo-list.md`, so writing about documentation debt registers as incurring it, and the aggregate and health score inherit it | Recorded as a new §9 finding, not silently regenerated away |
+
+Three of these six — the compliance permission split, the second run-scoped screen, and the
+cost-basis inventory one round earlier — are the same failure: a correction landed in the prioritized
+list, the addendum, or the ledger, and never in the section that tells an implementer what to change.
+The summary is not the deliverable; the section is. Every future correction has to be applied to the
+originating block *first*, then propagated outward, because the reverse order leaves the authoritative
+text wrong while the document reads as though it were fixed.
 
 Both were found by re-measuring §5's existential claim rather than re-reading its prose — the same
 method that caught rounds 9 and 22. The first measurement pass produced **98** dark types and was
