@@ -943,14 +943,14 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Twenty-seven rounds of automated review challenged **74 claims** across this document. Every one was checked
-against the code, **all 74 held**, and the findings above are the corrected text. **Nine more were
+Twenty-eight rounds of automated review challenged **79 claims** across this document. Every one was checked
+against the code, **all 79 held**, and the findings above are the corrected text. **Nine more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
 in the published artifact, and an unresolvable file path in §8, and the artifact's refuted cost-basis remedy — and each is recorded as a
 row below, marked *(self-detected)*.
-The table therefore holds **83 rows: 74 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **88 rows: 79 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1373,6 +1373,23 @@ the *classes* of incidental match, and let the dashboard hold the count. General
 generated metric about the artifact doing the quoting.** The same trap would catch a line count, a
 file count, or a health score cited inside the document those figures measure.
 
+**Round 28 — five, all on the second addendum, written forty minutes earlier:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "`RequireFundProfileTenantScope` closes the fund-scoping defect" | It is a **cross-tenant** gate, not an assigned-fund one, and **fail-open by design** — its own summary says a blank fund, an unscoped caller, an unattributed fund or an unavailable registry all pass (`FundProfileScopeEndpointFilters.cs:8-18`), and it evaluates nothing unless a `fundProfileId` query value is supplied (`:59-91`). `getLedgerBooks()`/`getLedgerPeriods()` supply none. Recording this as closed would have retired the assigned-fund selector work | Second addendum — moved to *still open* |
+| "Neither Accounting-side surface was retired… there are now **three**" | The explorer *was* retired: `accounting-screen.tsx:2865` renders the posted-ledger section with a comment recording the move, and `accounting-screen.test.tsx:4671-4675` asserts its heading is absent. One operator-facing run surface remains, not three. I grepped for the call site and never asked whether it still rendered — the round-7 and round-15 lesson, third occurrence | Second addendum — one surface, plus a leftover fetch named as cleanup |
+| "every route in `ComplianceEndpoints.cs` gates on `ManageCompliance`" | `POST /api/compliance/access-reviews/run` requires `ManageUsers` (`:101-121`), deliberately, with a six-line comment explaining that it strips roles from an arbitrary account on a caller-supplied date. **That comment was in the grep output I wrote the claim from.** Re-gating it to a compliance grant would be a privilege expansion | Second addendum — exception stated and protected |
+| Remaining work included "stop withholding the queue on a strategy permission" | `ReconciliationQueue` carries strategy-run records served to `ViewStrategies`/`ManageStrategies` alone. Once the run bindings are gone the accounting roles do not need it, and un-withholding would expose strategy data to roles without the permission. **This is the error round 23 corrected in improvement #4's test (a), reintroduced five rounds later** | Second addendum — withholding affirmed as correct |
+| `docs/product/README.md` still called `ManageDirectLending` the overload "the new panel depends on" | The panel's reads now accept `ViewLedgerReports`, which both accounting roles hold. The grant is still accepted and should still be removed, but it is not load-bearing. Stale within an hour of the addendum that superseded it | `docs/product/README.md` |
+
+Four of the five overstated how much the merge closed, which is the opposite of this document's usual
+failure direction and worth noting: writing an addendum about someone else's remediation invites
+crediting it too readily. Two were errors I had the evidence for and contradicted anyway — the
+`ManageUsers` comment sat in my own grep output, and the queue claim had been corrected once already.
+The habit that would have caught both is the one this document keeps rediscovering: **read what is
+beside the line you came for, and check a new claim against the corrections you have already made.**
+
 Both were found by re-measuring §5's existential claim rather than re-reading its prose — the same
 method that caught rounds 9 and 22. The first measurement pass produced **98** dark types and was
 wrong: it counted a type as dark whenever its name was absent outside `Meridian.Ledger`, which
@@ -1518,46 +1535,69 @@ the remaining work.
 
 ### Second addendum — `main` at `bb43e0e6`, 35 further commits
 
-`main` advanced again while this PR was open and is merged into this branch. Substantial remediation
-of §1 and §2 has landed, and it is worth stating precisely what is closed and what is not, because
-the half that landed is the half that does not remove the defect.
+`main` advanced again while this PR was open and is merged into this branch. Real remediation of §1
+and §2 landed. **The first version of this addendum got five things wrong about it** and was
+corrected in round 28; what follows is the verified state, and the errors are recorded in the
+ledger because four of them overstated how much was closed.
 
 **Landed, and correct:**
 
-- **The ledger permission split exists.** `ViewLedgerReports` (`UserPermission.cs:111`) and
-  `ManageLedgerReports` (`:114`) are real flags, and `LedgerEndpoints.cs` uses them as a genuine
-  read/write split — reads accept `ViewLedgerReports` (`:52,75,185,311,361,386`), writes require
-  `ManageLedgerReports` (`:103,146,213,264`). `FundAccountant` now holds both.
-- **Fund scoping landed on the read routes.** `RequireFundProfileTenantScope` (`:53,186`) closes the
-  "any holder reads every fund's posted book" defect this review found in PR #2824.
-- **A Strategy-side home for the run ledger exists.** `StrategyRunLedgerScreen` is mounted at
-  `/strategy/run-ledger` (`app.tsx:852`) and calls `getRunTrialBalance` and `getRunLedgerJournal`
-  (`:109,131`) — exactly the destination improvement #1 named.
+- **The ledger permission split exists and is used as one.** `ViewLedgerReports`
+  (`UserPermission.cs:111`) and `ManageLedgerReports` (`:114`) are real flags, and
+  `LedgerEndpoints.cs` applies them as a genuine read/write split — reads accept `ViewLedgerReports`
+  (`:52,75,185,311,361,386`), writes require `ManageLedgerReports` (`:103,146,213,264`). Both
+  `FundAccountant` and `Controller` hold the read flag. **The posted-ledger panel no longer depends
+  on `ManageDirectLending`**; that grant is still *accepted* on those routes and should still be
+  removed, but it is no longer load-bearing.
+- **The run-scoped explorer was retired from Accounting.** `accounting-screen.tsx:2865` renders
+  `AccountingPostedLedgerSection` in its place, with a comment recording the move, and
+  `accounting-screen.test.tsx:4671-4675` asserts the "Strategy Run Ledger Explorer" heading is
+  absent. `/accounting/ledger` now uses `useAccountingPostedLedgerViewModel`
+  (`finance-standard-pages-screen.tsx:409-425`). `StrategyRunLedgerScreen` is mounted at
+  `/strategy/run-ledger` (`app.tsx:852`). This is improvement #1's first half, done as specified.
 
-**Not landed — and these are the parts that actually close the finding:**
+**Still open, stated precisely:**
 
-- **The lockout is unchanged.** `WorkstationEndpoints.AccountingWorkspace.cs:132` still withholds
-  `ReconciliationQueue` on `readScope.StrategyRuns`, still computed from
-  `ViewStrategies|ManageStrategies` at `:255`. `FundAccountant` and `Controller` still receive an
-  empty queue indistinguishable from a clean fund.
-- **Neither Accounting-side surface was retired.** `accounting-screen.view-model.ts:2954` still binds
-  `getTrialBalance: (runId) => getRunTrialBalance(runId)`, and `AccountDetailScreen` still calls it
-  (`finance-standard-pages-screen.tsx:299`). The Strategy screen was added *alongside* them, not
-  migrated. So there are now **three** run-scoped trial-balance surfaces where there were two, and
-  the "two books, one screen name" ambiguity inside Accounting is untouched.
-- **`ViewCompliance` does not exist.** Only `ManageCompliance` (`:118`) was added, and every route in
-  `ComplianceEndpoints.cs` gates on it (`:24,46,64,68,83,99,124`) — including the read-only
-  `audit/extract` and `controls/attestation`. This is the exact outcome §2's remedy rules out: an
-  auditor who only reads is handed authority over approval decisions. The implementation took the
-  version of §2 that predates this document's round-26 correction, which is the strongest available
-  argument for that correction having been worth making.
+- **Assigned-fund scoping is *not* closed.** `RequireFundProfileTenantScope` is a **cross-tenant**
+  ownership gate, not an assigned-fund one, and it is **fail-open by design** — its own summary says
+  so (`FundProfileScopeEndpointFilters.cs:8-18`): a blank fund, a caller with no tenant scope, an
+  unattributed fund or an unavailable registry all pass through, and the filter only evaluates
+  anything when a `fundProfileId` query value is supplied (`:59-91`). `getLedgerBooks()` and
+  `getLedgerPeriods()` supply none (`ledger-reports-api.ts:23-29`), and the period trial-balance and
+  P&L routes carry no equivalent resource check. In a shared tenant a `FundAccountant` can still
+  enumerate and open funds outside their assignment. The assigned-fund selector and scoped
+  authorization remain necessary work.
+- **One operator-facing run-scoped surface remains**, not two: `AccountDetailScreen` at
+  `/accounting/accounts/detail` still calls `getRunTrialBalance`
+  (`finance-standard-pages-screen.tsx:299`). Separately, `accounting-screen.view-model.ts:2954`
+  still binds `getTrialBalance` and the effect at `:4021-4033` still *fetches* a run trial balance
+  when the ledger workstream has a selected reconciliation — leftover wiring behind a retired UI, so
+  a cleanup rather than an operator-visible defect.
+- **`ViewCompliance` does not exist.** Only `ManageCompliance` (`:118`) was added, and the read-only
+  `audit/extract` and `controls/attestation` gate on it (`ComplianceEndpoints.cs:64,68`), so an
+  auditor who only reads is handed authority over approval decisions — the outcome §2's remedy rules
+  out. **One route is a deliberate exception and must stay one:**
+  `POST /api/compliance/access-reviews/run` requires `ManageUsers` (`:101-121`), with a comment
+  explaining why — it strips roles from the account named in the body and decides dormancy from a
+  caller-supplied `LastUsedAtUtc`, so a caller can remove every role from any account, an
+  administrator included. That is user administration whatever it is filed under. Re-gating it to a
+  compliance grant would be a privilege *expansion*; it needs authoritative activity data and
+  target/scope safeguards first.
+- **The withheld queue is correct and should stay withheld.** `ReconciliationQueue` carries
+  strategy-run records (`WorkstationEndpoints.AccountingWorkspace.cs:128-146`), which the run routes
+  serve to `ViewStrategies`/`ManageStrategies` alone. Once the remaining run-ledger binding is gone,
+  `FundAccountant` and `Controller` have no need of it, and un-withholding it would expose strategy
+  data to roles without the permission — contradicting improvement #4's requirement that the run
+  explorer be absent from Accounting. **The first version of this addendum listed "stop withholding
+  the queue" as remaining work, which is the same error round 23 corrected in improvement #4's test
+  (a), reintroduced five rounds later.**
 
-The pattern is worth naming, because it is the same one this review found in the code. Adding the
-correct destination does not remove the incorrect one; a migration that only creates the new surface
-leaves both live, and the operator-visible defect — an accountant reading a strategy run's book under
-a screen called Accounting — persists until the old binding is deleted. **Improvements #1 and #2
-should be read as still open**, with their remaining work now smaller and precisely bounded: delete
-two client bindings, stop withholding the queue on a strategy permission, and add `ViewCompliance`.
+So the remaining work on §1 and §2 is: an assigned-fund selector with scoped authorization on the
+ledger read routes; delete the `AccountDetailScreen` run binding and the leftover reconciliation
+fetch; add `ViewCompliance` and re-gate the two read-only compliance routes to it, leaving
+`access-reviews/run` on `ManageUsers`. The lockout §1 describes is resolved for the *posted* book —
+which is the book those roles own — and the `ViewStrategies` gate on the run queue is now the
+correct behaviour rather than the defect.
 
 ## Relationship to existing planning
 

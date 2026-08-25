@@ -37,10 +37,13 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     commits landed since, then extends into cross-catalog consistency between the authorization
     model, the shared API surface, and the client surface. Findings are anchored at `e232ece1`;
     the document's addendum records that PR #2824 has since wired the posted-journal trial balance
-    and P&L into `AccountingPostedLedgerSection`, so **that half is no longer current state**. What
-    remains open is the run-scoped panel still bound on `ViewStrategies` (which `FundAccountant` and
-    `Controller` do not hold), the `ManageDirectLending` permission overload the new panel depends
-    on, the option contract multiplier that reaches the two exposure projections but none of the
+    and P&L into `AccountingPostedLedgerSection`, so **that half is no longer current state**. A
+    second addendum records `main` at `bb43e0e6`: the `ViewLedgerReports`/`ManageLedgerReports` split
+    landed and the posted-ledger panel no longer depends on `ManageDirectLending`, and the run-scoped
+    explorer was retired from Accounting to `/strategy/run-ledger`. What remains open is
+    assigned-fund scoping (the new tenant filter is cross-tenant and fail-open, and the client sends
+    no fund id), one run-scoped binding under `/accounting/accounts/detail`, the missing
+    `ViewCompliance` read grant, the option contract multiplier that reaches the two exposure projections but none of the
     paper transaction, valuation, persistence or margin paths, and an estimated 29%
     of route constants (250 of 862) referenced by no client layer — a reference-based measure the
     review itself qualifies as an estimate with error in both directions, not a settled count
