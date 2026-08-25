@@ -30,6 +30,18 @@ export function resolveAvailableAccountingBasis(rows: LedgerTrialBalanceLine[]):
   return [...present][0];
 }
 
+/**
+ * How many accounting bases a trial balance actually carries.
+ *
+ * A surface renders one basis at a time, so anything derived across all of them — the endpoint's
+ * period totals, its period-on-period variance — means something different from the rows on
+ * screen the moment this is greater than one, and has to be labelled rather than presented as the
+ * selected basis's own. Rows with no basis normalize to Primary, matching the builders.
+ */
+export function countAvailableAccountingBases(rows: readonly Pick<LedgerTrialBalanceLine, "accountingBasis">[]): number {
+  return new Set(rows.map((row) => row.accountingBasis ?? DEFAULT_ACCOUNTING_BASIS)).size;
+}
+
 export function normalizeQueryValue(value: string | null): string | null {
   const normalized = value?.trim();
   return normalized ? normalized : null;

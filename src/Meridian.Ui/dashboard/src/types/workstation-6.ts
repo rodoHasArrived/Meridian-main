@@ -1089,7 +1089,9 @@ export interface LedgerPostedJournalEntry {
   isBalanced: boolean;
   lines: LedgerPostedJournalEntryLine[];
   accountingBasis?: AccountingBasisKind;
-  dimensions?: LedgerDimensionSet | null;
+  // No entry-level `dimensions`: LedgerJournalEntryDto declares none. Posting dimensions belong to
+  // LedgerJournalEntryLineDto, so an entry's scope has to be derived from its lines and only
+  // exists when they agree — see resolvePostedEntryDimensions.
 }
 
 /** P&L summary of the posted journal for a closed ledger period (`GET /api/ledger/periods/{periodId}/pnl-summary`). */

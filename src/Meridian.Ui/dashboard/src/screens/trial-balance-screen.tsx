@@ -19,7 +19,10 @@ import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import { buildAccountingLedgerJournalEvidenceViewState } from "@/screens/accounting-screen.view-model";
-import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
+import {
+  collectPostedLedgerRelatedSecurities,
+  useAccountingPostedLedgerViewModel
+} from "@/screens/accounting-screen.posted-ledger.view-model";
 import { buildTrialBalanceAccountTreeNodes, trialBalanceAccountTreeCode } from "@/screens/trial-balance-screen.view-model";
 import type { AccountingLedgerJournalEvidenceViewState } from "@/screens/accounting-screen.view-model";
 
@@ -101,16 +104,10 @@ export function TrialBalanceScreen() {
   const shouldVirtualizeTrialBalance =
     postedLedger.view.trialBalance.rows.length > DENSE_VIRTUALIZATION_THRESHOLD;
 
-  const relatedSecurities = useMemo(() => {
-    const seen = new Map<string, string>();
-    for (const row of postedLedger.view.trialBalance.rows) {
-      const securityId = row.security?.securityId;
-      if (securityId && !seen.has(securityId)) {
-        seen.set(securityId, row.security?.displayName.trim() || row.symbol?.trim() || securityId);
-      }
-    }
-    return Array.from(seen.entries()).map(([securityId, label]) => ({ securityId, label }));
-  }, [postedLedger.view.trialBalance.rows]);
+  const relatedSecurities = useMemo(
+    () => collectPostedLedgerRelatedSecurities(postedLedger.view.trialBalance.rows),
+    [postedLedger.view.trialBalance.rows]
+  );
 
   // Hoisted above the early returns below. A book with no periods still has to offer the book
   // picker: without it an operator whose default book is empty or failing has no way to reach

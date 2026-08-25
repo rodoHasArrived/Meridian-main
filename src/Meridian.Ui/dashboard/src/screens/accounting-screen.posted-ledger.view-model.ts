@@ -10,6 +10,7 @@ import { describeApiError, isApiError, type ApiErrorDisplay } from "@/lib/api-er
 import type {
   AccountingBasisKind,
   LedgerBook,
+  LedgerDimensionSet,
   LedgerJournalLine,
   LedgerPeriod,
   LedgerPeriodPnlSummary,
@@ -19,9 +20,11 @@ import type {
 } from "@/types";
 import { formatCurrency, formatCurrencyForCode, formatSignedCurrency } from "./accounting-screen.formatting";
 import {
+  countAvailableAccountingBases,
   DEFAULT_ACCOUNTING_BASIS,
   resolveAvailableAccountingBasis
 } from "./accounting-screen.view-model.shared";
+import { accountingBasisDisplayName } from "./accounting-screen.basis-bridge.view-model";
 import {
   buildAccountingTrialBalanceViewState,
   type AccountingTrialBalanceViewState
@@ -53,6 +56,40 @@ const defaultAccountingPostedLedgerServices: AccountingPostedLedgerServices = {
   getJournalEntries: (periodId) => getLedgerPeriodJournalEntries(periodId)
 };
 
+/** Stable key for a dimension set, used only to test two sets for equality. */
+function ledgerDimensionSetKey(dimensions: LedgerDimensionSet): string {
+  const entries = Object.entries(dimensions as Record<string, unknown>)
+    .filter(([, value]) => value !== null && value !== undefined)
+    .map(([key, value]) => [
+      key,
+      typeof value === "object"
+        ? JSON.stringify(Object.entries(value as Record<string, string>).sort(([a], [b]) => a.localeCompare(b)))
+        : String(value)
+    ] as const)
+    .sort(([a], [b]) => a.localeCompare(b));
+  return JSON.stringify(entries);
+}
+
+/**
+ * The dimension scope of a journal entry as a whole, which is only meaningful when every one of
+ * its lines was posted to the same scope. `LedgerJournalEntryDto` carries no dimensions of its
+ * own — they live on `LedgerJournalEntryLineDto` — so an entry that spans scopes has no single
+ * one to name, and saying otherwise would attribute a mixed entry to whichever line came first.
+ */
+export function resolvePostedEntryDimensions(entry: LedgerPostedJournalEntry): LedgerDimensionSet | null {
+  const lines = Array.isArray(entry.lines) ? entry.lines : [];
+  const scoped = lines.map((line) => line.dimensions ?? null);
+  if (scoped.length === 0 || scoped.some((dimensions) => dimensions === null)) {
+    return null;
+  }
+
+  const first = scoped[0] as LedgerDimensionSet;
+  const key = ledgerDimensionSetKey(first);
+  return scoped.every((dimensions) => ledgerDimensionSetKey(dimensions as LedgerDimensionSet) === key)
+    ? first
+    : null;
+}
+
 /**
  * Maps a posted journal entry onto the shared ledger-journal evidence row so the
  * posted book can reuse the journal-lineage panels the run-scoped ledger built.
@@ -65,8 +102,39 @@ export function toLedgerJournalLine(entry: LedgerPostedJournalEntry): LedgerJour
     totalDebits: entry.totalDebits,
     totalCredits: entry.totalCredits,
     lineCount: Array.isArray(entry.lines) ? entry.lines.length : 0,
-    dimensions: entry.dimensions ?? null
+    dimensions: resolvePostedEntryDimensions(entry)
   };
+}
+
+/** One instrument reachable from a posted trial balance, for the related-securities drill-through. */
+export interface PostedLedgerRelatedSecurity {
+  securityId: string;
+  label: string;
+}
+
+/**
+ * The instruments a posted trial balance touches.
+ * <p>
+ * `LedgerPeriodTrialBalanceLineDto` carries no security reference — the posted book identifies an
+ * instrument through `Dimensions.InstrumentId`, which the posting spine asserts is the Security
+ * Master id — so keying strictly on `security.securityId` found nothing on a posted period and the
+ * drill-through was permanently empty. Both are read here, in that order.
+ * </p>
+ */
+export function collectPostedLedgerRelatedSecurities(
+  rows: readonly Pick<LedgerTrialBalanceLine, "security" | "symbol" | "dimensions">[]
+): PostedLedgerRelatedSecurity[] {
+  const seen = new Map<string, string>();
+  for (const row of rows) {
+    const securityId = row.security?.securityId?.trim() || row.dimensions?.instrumentId?.trim();
+    if (!securityId || seen.has(securityId)) {
+      continue;
+    }
+
+    seen.set(securityId, row.security?.displayName?.trim() || row.symbol?.trim() || securityId);
+  }
+
+  return Array.from(seen.entries()).map(([securityId, label]) => ({ securityId, label }));
 }
 
 export const POSTED_LEDGER_DETAIL_PANEL_ID = "posted-ledger-account-detail";
@@ -230,7 +298,8 @@ export function buildPostedLedgerPnlViewState({
   error,
   periodLabel,
   selectedBasis = DEFAULT_ACCOUNTING_BASIS,
-  baseCurrency = null
+  baseCurrency = null,
+  availableBasisCount = 1
 }: {
   pnl: LedgerPeriodPnlSummary | null;
   loading: boolean;
@@ -244,6 +313,12 @@ export function buildPostedLedgerPnlViewState({
   selectedBasis?: AccountingBasisKind;
   /** The book's base currency; posted amounts are in book units, not dollars. */
   baseCurrency?: string | null;
+  /**
+   * How many accounting bases the selected period holds. The variance below is a period-level
+   * figure derived across all of them and cannot be split, so on a mixed period it has to be
+   * labelled rather than left to read as the selected basis's own.
+   */
+  availableBasisCount?: number;
 }): PostedLedgerPnlViewState {
   const description = periodLabel
     ? `Revenue, expense, and net-income totals from the posted journal for ${periodLabel}.`
@@ -309,7 +384,14 @@ export function buildPostedLedgerPnlViewState({
     {
       id: "variance",
       label: "Period-on-period variance",
-      value: pnl.periodOnPeriodVariance === null ? "No prior period" : signedMoney(pnl.periodOnPeriodVariance),
+      // Carried through, not recomputed: the endpoint derives it across every basis the period
+      // holds. Scoping the totals above without saying so left a basis-scoped net income sitting
+      // beside a cross-basis variance as though they were one set of figures.
+      value: pnl.periodOnPeriodVariance === null
+        ? "No prior period"
+        : availableBasisCount > 1
+          ? `${signedMoney(pnl.periodOnPeriodVariance)} (all bases)`
+          : signedMoney(pnl.periodOnPeriodVariance),
       tone: "default"
     },
     {
@@ -319,6 +401,18 @@ export function buildPostedLedgerPnlViewState({
       tone: pnl.openBreakCount > 0 ? "warning" : "success"
     }
   ];
+
+  // A period whose summary carried no revenue or expense line detail leaves nothing to scope by,
+  // so the endpoint's cross-basis totals are all there is. Say so rather than presenting them as
+  // the selected basis's own.
+  if (availableBasisCount > 1 && !hasLineDetail) {
+    items.push({
+      id: "basis-scope",
+      label: "Basis scope",
+      value: `Period total across all ${availableBasisCount} bases, not ${accountingBasisDisplayName(selectedBasis)} alone`,
+      tone: "warning"
+    });
+  }
 
   const signoffLabel = pnl.signoffStatus === "NotRequired" ? "Sign-off not required"
     : pnl.signoffStatus === "Pending" ? "Sign-off pending"
@@ -440,7 +534,8 @@ export function buildAccountingPostedLedgerViewState({
       error: pnlError,
       periodLabel,
       selectedBasis,
-      baseCurrency
+      baseCurrency,
+      availableBasisCount: countAvailableAccountingBases(trialBalanceRows)
     })
   };
 }

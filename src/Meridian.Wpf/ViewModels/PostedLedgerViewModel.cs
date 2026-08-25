@@ -48,6 +48,8 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
     // The period's posted lines as returned, retained so switching basis re-projects without a
     // refetch. All bases arrive together; they are different projections of the same accounts.
     private IReadOnlyList<LedgerPeriodTrialBalanceLineDto> _postedLines = [];
+    // Retained so a basis change can re-project the P&L, exactly as it re-projects the grid.
+    private LedgerPeriodPnlSummaryDto? _postedPnl;
     private AccountingBasisKindDto _selectedBasis = AccountingBasisKindDto.Primary;
     private PostedLedgerBasisRow? _selectedBasisRow;
 
@@ -201,6 +203,9 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
 
             SelectedBasis = value.Basis;
             ProjectTrialBalance();
+            // The P&L is basis-scoped too, so it re-projects with the grid. Leaving it meant
+            // switching to GAAP showed GAAP balances beside the previous basis's net income.
+            ProjectPnlMetrics();
         }
     }
 
@@ -412,7 +417,12 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
                 return;
             }
 
-            await SelectBookAsync(bookId.Value, ct).ConfigureAwait(true);
+            // The same rule as the book above, one level down: keeping the book but resetting to
+            // the latest closed period moved an operator reviewing June onto July without saying
+            // so. Only carried across a refresh of the same book -- switching books makes the
+            // outgoing period meaningless, and the default is right there.
+            var preferredPeriodId = bookId == SelectedBookId ? SelectedPeriodId : null;
+            await SelectBookAsync(bookId.Value, preferredPeriodId, ct).ConfigureAwait(true);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -458,12 +468,20 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         // balances back on screen under book B's label and currency.
         Bases.Clear();
         _postedLines = [];
+        _postedPnl = null;
         SelectedPeriodId = null;
         SelectedPeriodLabel = "No period selected";
         BalanceSummaryText = "Trial balance not loaded.";
     }
 
-    public async Task SelectBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+    public Task SelectBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+        => SelectBookAsync(ledgerBookId, preferredPeriodId: null, ct);
+
+    /// <summary>
+    /// Scopes the surface to one ledger book, landing on <paramref name="preferredPeriodId"/> when
+    /// that period belongs to the book and on the book's default period otherwise.
+    /// </summary>
+    private async Task SelectBookAsync(Guid ledgerBookId, Guid? preferredPeriodId, CancellationToken ct)
     {
         SelectedBookId = ledgerBookId;
         var book = Books.FirstOrDefault(row => row.LedgerBookId == ledgerBookId);
@@ -514,14 +532,19 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         var periods = PostedLedgerProjection.FilterPeriodsByBook(response.Data, ledgerBookId);
         ApplyPeriods(periods);
 
-        var defaultPeriodId = PostedLedgerProjection.ResolveDefaultPeriodId(periods);
-        if (defaultPeriodId is null)
+        // Checked against the book's own periods, not merely carried: a period that is no longer
+        // there -- reopened, deleted, or never this book's -- falls back to the default rather
+        // than leaving the surface pointed at nothing.
+        var periodId = preferredPeriodId is { } preferred && periods.Any(period => period.PeriodId == preferred)
+            ? preferred
+            : PostedLedgerProjection.ResolveDefaultPeriodId(periods);
+        if (periodId is null)
         {
             StatusText = $"No ledger periods exist yet for {SelectedBookLabel}. Create a period to start the governed book.";
             return;
         }
 
-        await SelectPeriodAsync(defaultPeriodId.Value, ct).ConfigureAwait(true);
+        await SelectPeriodAsync(periodId.Value, ct).ConfigureAwait(true);
     }
 
     private void ApplyBooks(IReadOnlyList<LedgerBookDto> books)
@@ -563,6 +586,7 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         PnlMetrics.Clear();
         Bases.Clear();
         _postedLines = [];
+        _postedPnl = null;
         BalanceSummaryText = "Trial balance not loaded.";
         IsOutOfBalance = false;
 
@@ -726,6 +750,7 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
     private void ApplyPnl(ApiResponse<LedgerPeriodPnlSummaryDto> response)
     {
         PnlMetrics.Clear();
+        _postedPnl = null;
 
         if (!response.Success || response.Data is null)
         {
@@ -744,32 +769,48 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
             return;
         }
 
-        var pnl = response.Data;
-        PnlMetrics.Add(new PostedLedgerMetricRow("Total revenue", PostedLedgerProjection.FormatAmount(pnl.TotalRevenue, BaseCurrency)));
-        PnlMetrics.Add(new PostedLedgerMetricRow("Total expenses", PostedLedgerProjection.FormatAmount(pnl.TotalExpenses, BaseCurrency)));
-        PnlMetrics.Add(new PostedLedgerMetricRow("Net income", PostedLedgerProjection.FormatAmount(pnl.NetIncome, BaseCurrency)));
+        _postedPnl = response.Data;
+        ProjectPnlMetrics();
+        SignoffText = PostedLedgerProjection.DescribeSignoffStatus(response.Data.SignoffStatus);
+    }
+
+    /// <summary>
+    /// Renders the P&amp;L for the selected basis, through the same projection the browser
+    /// workstation uses. The endpoint's totals sum every basis the period holds, so a GAAP trial
+    /// balance used to sit beside a P&amp;L that added Primary and GAAP together — and the two
+    /// clients disagreed about the same period's revenue.
+    /// </summary>
+    private void ProjectPnlMetrics()
+    {
+        PnlMetrics.Clear();
+        if (_postedPnl is not { } pnl)
+        {
+            return;
+        }
+
+        var projected = PostedLedgerProjection.ProjectPnl(pnl, SelectedBasis, Bases.Count);
+        PnlMetrics.Add(new PostedLedgerMetricRow("Total revenue", PostedLedgerProjection.FormatAmount(projected.TotalRevenue, BaseCurrency)));
+        PnlMetrics.Add(new PostedLedgerMetricRow("Total expenses", PostedLedgerProjection.FormatAmount(projected.TotalExpenses, BaseCurrency)));
+        PnlMetrics.Add(new PostedLedgerMetricRow("Net income", PostedLedgerProjection.FormatAmount(projected.NetIncome, BaseCurrency)));
         PnlMetrics.Add(new PostedLedgerMetricRow(
             "Period-on-period variance",
-            pnl.PeriodOnPeriodVariance is { } variance
+            projected.PeriodOnPeriodVariance is { } variance
                 ? PostedLedgerProjection.FormatAmount(variance, BaseCurrency)
+                    + (projected.IsVarianceBasisScoped ? string.Empty : " (all bases)")
                 : "No prior period"));
         PnlMetrics.Add(new PostedLedgerMetricRow(
             "Open breaks",
             pnl.OpenBreakCount.ToString(CultureInfo.CurrentCulture)));
 
-        // The endpoint's totals are the period aggregate across every accounting basis, while the
-        // grid above shows one. Say so rather than letting a GAAP trial balance sit silently
-        // beside a Primary-or-double-counted P&L. Recomputing per basis is the server's to do --
-        // it owns the sign convention these totals are derived under, and inventing that here is
-        // precisely the kind of guess a ledger surface must not make.
-        if (Bases.Count > 1)
+        // A period whose summary carried no revenue or expense line detail leaves nothing to scope
+        // by, so the endpoint's cross-basis totals are all there is. Say so rather than presenting
+        // them as the selected basis's own.
+        if (Bases.Count > 1 && !projected.IsBasisScoped)
         {
             PnlMetrics.Add(new PostedLedgerMetricRow(
                 "Basis scope",
                 $"Period total across all {Bases.Count} bases, not {PostedLedgerProjection.DescribeBasis(SelectedBasis)} alone"));
         }
-
-        SignoffText = PostedLedgerProjection.DescribeSignoffStatus(pnl.SignoffStatus);
     }
 }
 

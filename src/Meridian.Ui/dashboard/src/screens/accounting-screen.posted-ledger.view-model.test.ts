@@ -4,8 +4,11 @@ import { ApiError } from "@/lib/api-errors";
 import {
   buildAccountingPostedLedgerViewState,
   buildPostedLedgerPnlViewState,
+  collectPostedLedgerRelatedSecurities,
   resolveDefaultPostedLedgerPeriodId,
+  resolvePostedEntryDimensions,
   sortLedgerPeriodsDescending,
+  toLedgerJournalLine,
   toTrialBalanceLine,
   useAccountingPostedLedgerViewModel,
   type AccountingPostedLedgerServices
@@ -134,6 +137,120 @@ describe("resolveDefaultPostedLedgerPeriodId", () => {
   });
 });
 
+function makePostedEntryLine(
+  overrides: Partial<LedgerPostedJournalEntry["lines"][number]> = {}
+): LedgerPostedJournalEntry["lines"][number] {
+  return {
+    entryId: "entry-1",
+    journalEntryId: "je-1",
+    timestamp: "2026-07-31T00:00:00Z",
+    accountName: "Cash",
+    accountType: "Asset",
+    symbol: null,
+    financialAccountId: "1000",
+    debit: 1200,
+    credit: 0,
+    description: "Management fee accrual",
+    ...overrides
+  };
+}
+
+function makePostedEntry(overrides: Partial<LedgerPostedJournalEntry> = {}): LedgerPostedJournalEntry {
+  return {
+    journalEntryId: "je-1",
+    periodId: "00000000-0000-0000-0000-000000000001",
+    ledgerBookId: "00000000-0000-0000-0000-0000000000aa",
+    timestamp: "2026-07-31T00:00:00Z",
+    description: "Management fee accrual",
+    totalDebits: 1200,
+    totalCredits: 1200,
+    isBalanced: true,
+    lines: [makePostedEntryLine()],
+    ...overrides
+  };
+}
+
+describe("resolvePostedEntryDimensions", () => {
+  it("reports the shared scope when every line was posted to it", () => {
+    // LedgerJournalEntryDto declares no dimensions of its own. Reading `entry.dimensions` meant
+    // the posted book's evidence rows were always unscoped, however precisely the lines were
+    // tagged.
+    const dimensions = { fundId: "fund-alpha", instrumentId: "sec-1" };
+    const entry = makePostedEntry({
+      lines: [
+        makePostedEntryLine({ entryId: "entry-1", dimensions }),
+        makePostedEntryLine({ entryId: "entry-2", debit: 0, credit: 1200, dimensions: { ...dimensions } })
+      ]
+    });
+
+    expect(resolvePostedEntryDimensions(entry)).toEqual(dimensions);
+    expect(toLedgerJournalLine(entry).dimensions).toEqual(dimensions);
+  });
+
+  it("reports no scope for an entry whose lines disagree", () => {
+    // Naming one line's scope as the entry's would attribute the whole entry to whichever line
+    // happened to come first.
+    const entry = makePostedEntry({
+      lines: [
+        makePostedEntryLine({ entryId: "entry-1", dimensions: { fundId: "fund-alpha" } }),
+        makePostedEntryLine({ entryId: "entry-2", debit: 0, credit: 1200, dimensions: { fundId: "fund-beta" } })
+      ]
+    });
+
+    expect(resolvePostedEntryDimensions(entry)).toBeNull();
+  });
+
+  it("reports no scope when a line carries none", () => {
+    const entry = makePostedEntry({
+      lines: [
+        makePostedEntryLine({ entryId: "entry-1", dimensions: { fundId: "fund-alpha" } }),
+        makePostedEntryLine({ entryId: "entry-2", debit: 0, credit: 1200 })
+      ]
+    });
+
+    expect(resolvePostedEntryDimensions(entry)).toBeNull();
+    expect(resolvePostedEntryDimensions(makePostedEntry({ lines: [] }))).toBeNull();
+  });
+});
+
+describe("collectPostedLedgerRelatedSecurities", () => {
+  it("reads the instrument dimension the posted book identifies a security by", () => {
+    // LedgerPeriodTrialBalanceLineDto carries no security reference, so keying strictly on
+    // security.securityId left the drill-through permanently empty on a posted period.
+    const related = collectPostedLedgerRelatedSecurities([
+      toTrialBalanceLine(makeLine({ symbol: "AAPL", dimensions: { instrumentId: "sec-1" } })),
+      toTrialBalanceLine(makeLine({ accountName: "Fees", symbol: null, dimensions: { instrumentId: "sec-1" } })),
+      toTrialBalanceLine(makeLine({ accountName: "Cash", symbol: null }))
+    ]);
+
+    expect(related).toEqual([{ securityId: "sec-1", label: "AAPL" }]);
+  });
+
+  it("prefers an explicit security reference over the dimension", () => {
+    const related = collectPostedLedgerRelatedSecurities([
+      {
+        symbol: "MSFT",
+        dimensions: { instrumentId: "sec-dimension" },
+        security: {
+          securityId: "sec-reference",
+          displayName: "Microsoft Corp",
+          assetClass: "Equity",
+          currency: "USD",
+          status: "Active",
+          primaryIdentifier: "MSFT",
+          subType: null
+        }
+      }
+    ]);
+
+    expect(related).toEqual([{ securityId: "sec-reference", label: "Microsoft Corp" }]);
+  });
+
+  it("returns nothing for rows that name no instrument at all", () => {
+    expect(collectPostedLedgerRelatedSecurities([toTrialBalanceLine(makeLine())])).toEqual([]);
+  });
+});
+
 describe("toTrialBalanceLine", () => {
   it("maps a posted-journal line into the shared trial-balance shape without a security reference", () => {
     const line = toTrialBalanceLine(makeLine({ ruleId: "rule-7", sourceJournalEntryId: "je-1" }));
@@ -246,6 +363,58 @@ describe("buildPostedLedgerPnlViewState", () => {
     });
 
     expect(view.items.find((item) => item.id === "revenue")?.value).not.toContain("$");
+  });
+
+  it("labels the period-on-period variance as cross-basis on a mixed period", () => {
+    // The endpoint derives the variance across every basis the period holds and it cannot be
+    // split. Scoping revenue and expense without saying so left a basis-scoped net income sitting
+    // beside a cross-basis variance as though they were one set of figures.
+    const pnl = makePnl({ periodOnPeriodVariance: 150 });
+
+    const mixed = buildPostedLedgerPnlViewState({
+      pnl,
+      loading: false,
+      error: null,
+      periodLabel: "July 2026",
+      availableBasisCount: 2
+    });
+    expect(mixed.items.find((item) => item.id === "variance")?.value).toContain("all bases");
+
+    const single = buildPostedLedgerPnlViewState({
+      pnl,
+      loading: false,
+      error: null,
+      periodLabel: "July 2026",
+      availableBasisCount: 1
+    });
+    expect(single.items.find((item) => item.id === "variance")?.value).not.toContain("all bases");
+  });
+
+  it("discloses cross-basis totals when the summary carries no line detail to scope by", () => {
+    const withoutDetail = buildPostedLedgerPnlViewState({
+      pnl: makePnl({ revenueLines: [], expenseLines: [] }),
+      loading: false,
+      error: null,
+      periodLabel: "July 2026",
+      selectedBasis: "Gaap",
+      availableBasisCount: 2
+    });
+    expect(withoutDetail.items.find((item) => item.id === "basis-scope")?.value)
+      .toContain("across all 2 bases");
+
+    // With line detail the totals are genuinely the selected basis's own, so there is nothing to
+    // disclose.
+    const withDetail = buildPostedLedgerPnlViewState({
+      pnl: makePnl({
+        revenueLines: [makeLine({ accountType: "Revenue", balance: 900, accountingBasis: "Gaap" })]
+      }),
+      loading: false,
+      error: null,
+      periodLabel: "July 2026",
+      selectedBasis: "Gaap",
+      availableBasisCount: 2
+    });
+    expect(withDetail.items.find((item) => item.id === "basis-scope")).toBeUndefined();
   });
 
   it("flags open breaks and negative net income", () => {

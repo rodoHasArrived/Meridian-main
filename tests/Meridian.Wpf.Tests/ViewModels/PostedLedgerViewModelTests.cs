@@ -425,6 +425,165 @@ public sealed class PostedLedgerViewModelTests
         client.RequestedPeriodIds.Should().Contain(prior);
     }
 
+    /// <summary>
+    /// A refresh reloads what is on screen; it does not change the subject. Keeping the book but
+    /// resetting to the latest closed period moved an operator reviewing June onto July with no
+    /// indication that the figures beneath them had changed.
+    /// </summary>
+    [Fact]
+    public async Task RefreshAsync_KeepsTheOperatorsSelectedPeriod_RatherThanReturningToTheLatest()
+    {
+        var latest = Guid.NewGuid();
+        var prior = Guid.NewGuid();
+        var client = new FakeLedgerReportsApiClient
+        {
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([
+                Period(latest),
+                Period(prior, periodNo: 6, label: "June 2026")
+            ]),
+            TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok([Line("Cash", 100m)]),
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(latest))
+        };
+
+        using var viewModel = new PostedLedgerViewModel(client);
+        await viewModel.RefreshAsync();
+        viewModel.SelectedPeriodId.Should().Be(latest);
+
+        await viewModel.SelectPeriodAsync(prior);
+        await viewModel.RefreshAsync();
+
+        viewModel.SelectedPeriodId.Should().Be(prior);
+        viewModel.SelectedPeriodLabel.Should().Be("June 2026");
+    }
+
+    /// <summary>
+    /// Checked against the book's own periods, not merely carried: a period that has been reopened
+    /// or removed must not leave the surface pointed at nothing.
+    /// </summary>
+    [Fact]
+    public async Task RefreshAsync_WhenTheSelectedPeriodIsGone_FallsBackToTheDefault()
+    {
+        var latest = Guid.NewGuid();
+        var prior = Guid.NewGuid();
+        var client = new FakeLedgerReportsApiClient
+        {
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([
+                Period(latest),
+                Period(prior, periodNo: 6, label: "June 2026")
+            ]),
+            TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok([Line("Cash", 100m)]),
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(latest))
+        };
+
+        using var viewModel = new PostedLedgerViewModel(client);
+        await viewModel.RefreshAsync();
+        await viewModel.SelectPeriodAsync(prior);
+
+        client.Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(latest)]);
+        await viewModel.RefreshAsync();
+
+        viewModel.SelectedPeriodId.Should().Be(latest);
+    }
+
+    /// <summary>
+    /// The endpoint's totals sum every basis the period holds. Rendering them beside a grid
+    /// filtered to one basis put a GAAP trial balance next to a P&amp;L that had added Primary and
+    /// GAAP revenue together — and made the desktop disagree with the browser workstation, which
+    /// scopes the same figures through the same projection.
+    /// </summary>
+    [Fact]
+    public async Task ThePnlIsScopedToTheSelectedBasis_AndReprojectsWhenItChanges()
+    {
+        var periodId = Guid.NewGuid();
+        var client = new FakeLedgerReportsApiClient
+        {
+            TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok([
+                Line("Cash", 100m),
+                Line("Cash", 90m) with { AccountingBasis = AccountingBasisKindDto.Gaap }
+            ]),
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(periodId)]),
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(periodId) with
+            {
+                RevenueLines =
+                [
+                    Line("Management fee", 500m) with { AccountType = "Revenue" },
+                    Line("Management fee", 400m) with { AccountType = "Revenue", AccountingBasis = AccountingBasisKindDto.Gaap }
+                ],
+                ExpenseLines =
+                [
+                    Line("Audit fee", 200m) with { AccountType = "Expense" },
+                    Line("Audit fee", 100m) with { AccountType = "Expense", AccountingBasis = AccountingBasisKindDto.Gaap }
+                ]
+            })
+        };
+
+        using var viewModel = new PostedLedgerViewModel(client);
+        await viewModel.RefreshAsync();
+
+        viewModel.SelectedBasis.Should().Be(AccountingBasisKindDto.Primary);
+        Metric(viewModel, "Total revenue").Should().Contain("500");
+        Metric(viewModel, "Net income").Should().Contain("300");
+
+        // Switching basis re-projects the P&L with the grid. Leaving it behind showed GAAP
+        // balances beside the previous basis's net income.
+        viewModel.SelectedBasisRow = viewModel.Bases.Single(basis => basis.Basis == AccountingBasisKindDto.Gaap);
+
+        Metric(viewModel, "Total revenue").Should().Contain("400");
+        Metric(viewModel, "Total expenses").Should().Contain("100");
+        Metric(viewModel, "Net income").Should().Contain("300");
+    }
+
+    /// <summary>
+    /// The variance is a period-level figure the endpoint derives across every basis and cannot be
+    /// split, so it is carried through unchanged — and labelled, rather than left to read as the
+    /// selected basis's own beside totals that are.
+    /// </summary>
+    [Fact]
+    public async Task TheVarianceIsLabelledCrossBasisOnAMixedPeriod()
+    {
+        var periodId = Guid.NewGuid();
+        var client = new FakeLedgerReportsApiClient
+        {
+            TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok([
+                Line("Cash", 100m),
+                Line("Cash", 90m) with { AccountingBasis = AccountingBasisKindDto.Gaap }
+            ]),
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(periodId)]),
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(periodId) with { PeriodOnPeriodVariance = 150m })
+        };
+
+        using var viewModel = new PostedLedgerViewModel(client);
+        await viewModel.RefreshAsync();
+
+        viewModel.Bases.Should().HaveCount(2);
+        Metric(viewModel, "Period-on-period variance").Should().Contain("all bases");
+    }
+
+    /// <summary>
+    /// A single-basis period has nothing to disclose: the endpoint's figures are the selected
+    /// basis's figures, and saying otherwise is noise on the surface an operator signs off from.
+    /// </summary>
+    [Fact]
+    public async Task ASingleBasisPeriodCarriesNoBasisCaveats()
+    {
+        var periodId = Guid.NewGuid();
+        var client = new FakeLedgerReportsApiClient
+        {
+            TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok([Line("Cash", 100m)]),
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(periodId)]),
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(periodId) with { PeriodOnPeriodVariance = 150m })
+        };
+
+        using var viewModel = new PostedLedgerViewModel(client);
+        await viewModel.RefreshAsync();
+
+        Metric(viewModel, "Period-on-period variance").Should().NotContain("all bases");
+        viewModel.PnlMetrics.Should().NotContain(metric => metric.Label == "Basis scope");
+    }
+
+    private static string Metric(PostedLedgerViewModel viewModel, string label)
+        => viewModel.PnlMetrics.Single(metric => metric.Label == label).Value;
+
     private sealed class FakeLedgerReportsApiClient : ILedgerReportsApiClient
     {
         public ApiResponse<List<LedgerPeriodDto>> Periods { get; set; }

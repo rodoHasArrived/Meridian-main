@@ -255,4 +255,73 @@ public static class PostedLedgerProjection
         AccountingBasisKindDto.Statutory => "Statutory",
         _ => basis.ToString()
     };
+
+    /// <summary>
+    /// The P&amp;L figures for one accounting basis, and whether each of them could actually be
+    /// attributed to that basis.
+    /// </summary>
+    /// <param name="TotalRevenue">Revenue for the selected basis.</param>
+    /// <param name="TotalExpenses">Expenses for the selected basis.</param>
+    /// <param name="NetIncome">Revenue less expenses for the selected basis.</param>
+    /// <param name="PeriodOnPeriodVariance">
+    /// The endpoint's variance, unchanged. It is a period-level figure derived across every basis
+    /// the period holds and cannot be split, so it is carried through rather than recomputed.
+    /// </param>
+    /// <param name="IsBasisScoped">
+    /// True when the totals above were summed from the period's own revenue and expense lines and
+    /// therefore mean the selected basis alone. False when the summary carried no line detail and
+    /// the endpoint's cross-basis totals are all there is.
+    /// </param>
+    /// <param name="IsVarianceBasisScoped">
+    /// False whenever the period holds more than one basis: the variance then spans bases while
+    /// the totals beside it do not, and a surface must say so rather than let the two read as one
+    /// set of figures.
+    /// </param>
+    public readonly record struct PostedLedgerPnlProjection(
+        decimal TotalRevenue,
+        decimal TotalExpenses,
+        decimal NetIncome,
+        decimal? PeriodOnPeriodVariance,
+        bool IsBasisScoped,
+        bool IsVarianceBasisScoped);
+
+    /// <summary>
+    /// Scopes a period's P&amp;L to one accounting basis.
+    /// <para>
+    /// The endpoint's <c>TotalRevenue</c> and <c>TotalExpenses</c> are plain sums of the lines it
+    /// returns, across every basis the period holds, so a GAAP trial balance sat beside a P&amp;L
+    /// that added Primary and GAAP together. Summing the same lines filtered to one basis
+    /// reproduces the endpoint's figures exactly for a single-basis period and scopes them
+    /// correctly for a mixed one. Net income is derived as revenue less expenses, the way the
+    /// server derives its own realized figures, because the endpoint's <c>NetIncome</c> is a
+    /// period-level value that cannot be attributed to one basis.
+    /// </para>
+    /// <para>
+    /// This is the desktop and browser workstations' shared definition of those figures: the two
+    /// clients showing different revenue for the same period and basis is the conflation this
+    /// exists to prevent.
+    /// </para>
+    /// </summary>
+    public static PostedLedgerPnlProjection ProjectPnl(
+        LedgerPeriodPnlSummaryDto summary,
+        AccountingBasisKindDto basis,
+        int availableBasisCount)
+    {
+        ArgumentNullException.ThrowIfNull(summary);
+
+        var revenueLines = summary.RevenueLines ?? [];
+        var expenseLines = summary.ExpenseLines ?? [];
+        var hasLineDetail = revenueLines.Count > 0 || expenseLines.Count > 0;
+
+        var totalRevenue = hasLineDetail ? SumBalances(FilterByBasis(revenueLines, basis)) : summary.TotalRevenue;
+        var totalExpenses = hasLineDetail ? SumBalances(FilterByBasis(expenseLines, basis)) : summary.TotalExpenses;
+
+        return new PostedLedgerPnlProjection(
+            totalRevenue,
+            totalExpenses,
+            hasLineDetail ? totalRevenue - totalExpenses : summary.NetIncome,
+            summary.PeriodOnPeriodVariance,
+            hasLineDetail,
+            availableBasisCount <= 1);
+    }
 }

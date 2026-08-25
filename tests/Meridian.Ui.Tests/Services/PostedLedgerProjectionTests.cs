@@ -386,4 +386,117 @@ public sealed class PostedLedgerProjectionTests
     [Fact]
     public void DescribeDimensionScope_WithNoDimensions_IsEmptySoTheColumnStaysBlank()
         => PostedLedgerProjection.DescribeDimensionScope(Line()).Should().BeEmpty();
+
+    // ── P&L basis scoping ────────────────────────────────────────────
+
+    private static LedgerPeriodPnlSummaryDto Pnl(
+        decimal totalRevenue = 0m,
+        decimal totalExpenses = 0m,
+        decimal netIncome = 0m,
+        decimal? variance = null,
+        IReadOnlyList<LedgerPeriodTrialBalanceLineDto>? revenueLines = null,
+        IReadOnlyList<LedgerPeriodTrialBalanceLineDto>? expenseLines = null)
+        => new(
+            PeriodId: Guid.Parse("00000001-0000-0000-0000-000000000001"),
+            LedgerBookId: Guid.Parse("00000002-0000-0000-0000-000000000002"),
+            FiscalYear: 2026,
+            PeriodNo: 7,
+            Label: "July 2026",
+            TotalRevenue: totalRevenue,
+            TotalExpenses: totalExpenses,
+            NetIncome: netIncome,
+            PeriodOnPeriodVariance: variance,
+            OpenBreakCount: 0,
+            SignoffStatus: LedgerPeriodSignoffStatusDto.SignedOff,
+            CompletedAt: DateTimeOffset.Parse("2026-08-02T00:00:00Z", CultureInfo.InvariantCulture),
+            RevenueLines: revenueLines ?? [],
+            ExpenseLines: expenseLines ?? []);
+
+    /// <summary>
+    /// The endpoint's totals sum every basis the period holds, so a GAAP trial balance sat beside
+    /// a P&amp;L that added Primary and GAAP revenue together.
+    /// </summary>
+    [Fact]
+    public void ProjectPnl_SumsOnlyTheSelectedBasis()
+    {
+        var summary = Pnl(
+            totalRevenue: 900m,
+            totalExpenses: 300m,
+            netIncome: 600m,
+            revenueLines:
+            [
+                Line("Management fee", "Revenue", 500m),
+                Line("Management fee", "Revenue", 400m, AccountingBasisKindDto.Gaap)
+            ],
+            expenseLines:
+            [
+                Line("Audit fee", "Expense", 200m),
+                Line("Audit fee", "Expense", 100m, AccountingBasisKindDto.Gaap)
+            ]);
+
+        var projected = PostedLedgerProjection.ProjectPnl(summary, AccountingBasisKindDto.Gaap, availableBasisCount: 2);
+
+        projected.TotalRevenue.Should().Be(400m);
+        projected.TotalExpenses.Should().Be(100m);
+        projected.NetIncome.Should().Be(300m);
+        projected.IsBasisScoped.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// A single-basis period must come back with exactly the endpoint's own figures: the same sum
+    /// over the same lines, so the scoping is invisible where there is nothing to scope.
+    /// </summary>
+    [Fact]
+    public void ProjectPnl_ReproducesTheEndpointFiguresForASingleBasisPeriod()
+    {
+        var summary = Pnl(
+            totalRevenue: 500m,
+            totalExpenses: 200m,
+            netIncome: 300m,
+            revenueLines: [Line("Management fee", "Revenue", 500m)],
+            expenseLines: [Line("Audit fee", "Expense", 200m)]);
+
+        var projected = PostedLedgerProjection.ProjectPnl(summary, AccountingBasisKindDto.Primary, availableBasisCount: 1);
+
+        projected.TotalRevenue.Should().Be(summary.TotalRevenue);
+        projected.TotalExpenses.Should().Be(summary.TotalExpenses);
+        projected.NetIncome.Should().Be(summary.NetIncome);
+        projected.IsVarianceBasisScoped.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// No line detail leaves nothing to scope by, so the endpoint's cross-basis totals are all
+    /// there is -- and the caller has to be told, rather than presenting them as one basis's own.
+    /// </summary>
+    [Fact]
+    public void ProjectPnl_WithNoLineDetail_FallsBackToTheEndpointTotalsAndSaysSo()
+    {
+        var summary = Pnl(totalRevenue: 900m, totalExpenses: 300m, netIncome: 600m);
+
+        var projected = PostedLedgerProjection.ProjectPnl(summary, AccountingBasisKindDto.Gaap, availableBasisCount: 2);
+
+        projected.TotalRevenue.Should().Be(900m);
+        projected.TotalExpenses.Should().Be(300m);
+        projected.NetIncome.Should().Be(600m);
+        projected.IsBasisScoped.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// The variance is a period-level figure derived across every basis, so it is carried through
+    /// unchanged and flagged as cross-basis whenever the period holds more than one.
+    /// </summary>
+    [Fact]
+    public void ProjectPnl_CarriesTheVarianceThroughAndFlagsItOnAMixedPeriod()
+    {
+        var summary = Pnl(
+            variance: 150m,
+            revenueLines: [Line("Management fee", "Revenue", 500m)]);
+
+        var mixed = PostedLedgerProjection.ProjectPnl(summary, AccountingBasisKindDto.Primary, availableBasisCount: 2);
+        mixed.PeriodOnPeriodVariance.Should().Be(150m);
+        mixed.IsVarianceBasisScoped.Should().BeFalse();
+
+        PostedLedgerProjection.ProjectPnl(summary, AccountingBasisKindDto.Primary, availableBasisCount: 1)
+            .IsVarianceBasisScoped.Should().BeTrue();
+    }
 }
