@@ -515,10 +515,18 @@ The .NET lane additionally filters `--filter "Category!=Integration&Category!=Pe
 first mile and the authorization model are precisely the ones the merge gate does not run — and
 authorization is where §1 and §2 live.
 
-**Improvement.** Add `verify-desktop` to the `quality-gate` `needs` list, and promote a first-mile
-subset of the Integration category (bootstrap + role authorization) into the required lane. A gate
-that cannot fail on the supported platform or on the authorization model is not measuring the
-product's supported surface.
+**Improvement.** *Not* by adding `verify-desktop` to `quality-gate`'s `needs` list — an earlier draft
+of this block said exactly that, and it cannot work: `needs:` resolves only job IDs within one
+workflow, `verify-desktop` is a lane-manifest ID rather than a job, and the Windows validation is the
+`desktop` job in a separate workflow. That was established in round 3 and stated correctly in
+improvement #6, but this block was never updated to match — the second time in this document a
+refuted remedy survived in the section that first proposed it while the summary carried the fix.
+The two viable options are to invoke the Windows job *from* `meridian-ci.yml` and add its real job ID
+to `needs`, or to make its emitted check required directly — verifying the context string first,
+since the workflow overrides the job's display name to `verify-desktop (build/test WPF)`. Also
+promote a first-mile subset of the Integration category (bootstrap + role authorization) into the
+required lane. A gate that cannot fail on the supported platform or on the authorization model is
+not measuring the product's supported surface.
 
 ## 8. Freshness is pushed where it is cheap and polled where it is expensive
 
@@ -555,17 +563,24 @@ close-management product can tell.
 
 ## 9. Smaller findings worth fixing cheaply
 
-- **Governed period reopen has two routes and only one is wired — the capability is not dark.**
-  `LedgerCloseManagementPeriodReopen` (`UiApiRoutes.cs:824`) has zero consumers in either client,
-  while plan, late adjustments, task sign-offs, evidence review, and period **lock** all use their
-  own routes. But an operator *can* reopen: the mounted `/accounting/operations-continuity` screen
-  renders a "Governed period reopen command" and submits incident, approval, justification, impact,
-  correlation and evidence through `reopenOperationsContinuityWorkflow`
-  (`operations-continuity-screen.tsx:1464-1504,2263-2366`; `app.tsx:824`), with test coverage. An
-  earlier draft of this bullet said there was "no path to reopen", which would have prioritized
-  building a workflow that already exists. The residual finding is narrower and is about the
-  *catalog*, not the operator: two reopen surfaces exist, the ledger-close one is unconsumed, and
-  nothing reconciles them — so a reader of the route catalog cannot tell which is authoritative.
+- **The wired reopen reopens a *workflow*, not an accounting period — and the difference is the
+  whole finding.** The mounted `/accounting/operations-continuity` screen does render a "Governed
+  period reopen command" and submit incident, approval, justification, impact, correlation and
+  evidence through `reopenOperationsContinuityWorkflow`
+  (`operations-continuity-screen.tsx:1464-1504,2263-2366`), with test coverage. But the endpoint it
+  reaches calls `IOperationsContinuityWorkflowService.ReopenWorkflowAsync` **directly**
+  (`WorkstationEndpoints.cs:1346-1354`), which transitions workflow state and nothing else. The real
+  ledger path is `AccountingCloseManagementService.cs:1295-1325`: it runs
+  `ReopenAndQueueClosingReversalsAsync` under the posting and consistency gates *first*, and only
+  then performs the same workflow transition. `LedgerCloseManagementPeriodReopen`
+  (`UiApiRoutes.cs:824`) — the route that reaches it — has zero consumers in either client.
+
+  So the operator-visible result is worse than a missing screen: the UI can report a **reopened
+  workflow while the ledger period and its closing entries remain locked**, with no indication that
+  the accounting half did not happen. An operator can lock a period from the workstation and still
+  has no governed path to reopen it. A previous draft of this bullet accepted a correction that the
+  capability "is not dark" on the strength of the client call site alone; tracing the endpoint shows
+  the original finding was substantially right.
 - **Provenance remains optional at the type level.** `MarketTradeUpdate.cs:33` is
   `string? Source = null`. The ingress threading landed; the contract still admits an un-sourced
   print, so the class of defect can be reintroduced by any new adapter. Making `Source` required is
@@ -683,9 +698,10 @@ close-management product can tell.
    already render their failures. Consolidating those bespoke blocks onto `RegionErrorState` is
    visual standardization — worth doing so operators learn one vocabulary for "this failed", but
    lower priority than the staleness it was previously bundled with. (§8)
-9. **Close the small governed gaps.** Reconcile the two period-reopen surfaces — the governed
-   workflow on `/accounting/operations-continuity` is wired, `LedgerCloseManagementPeriodReopen` is
-   not, and nothing says which is authoritative; make `MarketTradeUpdate.Source` required;
+9. **Close the small governed gaps.** Wire an operator path to *ledger period* reopen — the mounted
+   command reopens only the continuity workflow, leaving the period and its closing reversals locked,
+   and `LedgerCloseManagementPeriodReopen` (the route that runs the posting-gated path) has no
+   client; make `MarketTradeUpdate.Source` required;
    make the fund-structure snapshot loader fail loudly rather than starting empty. (§9)
 
 ## What is genuinely strong (do not regress it)
@@ -718,8 +734,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Fourteen rounds of automated review challenged **46 claims** across this document. Every one was checked
-against the code, **all 46 held**, and the findings above are the corrected text. Two more — the
+Fifteen rounds of automated review challenged **49 claims** across this document. Every one was checked
+against the code, **all 49 held**, and the findings above are the corrected text. Two more — the
 quality-route count, wrong at 31 in three places, and a refuted remedy still standing in §1 — were
 caught by re-measuring and re-reading rather than by a reviewer, and are recorded with them. Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
@@ -916,6 +932,27 @@ place and ignored everywhere else reads as handled everywhere**, because the fir
 being multiplied and the search stops. That single correct consumer is what let this defect survive
 four consecutive reviews.
 
+**Round 15 — three, one of which reverses a correction from round 13:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| §7's remedy still said "Add `verify-desktop` to the `quality-gate` `needs` list" | Round 3 established that `needs:` cannot cross workflow boundaries, and improvement #6 says so correctly — but §7's own remedy block was never updated. **Second occurrence of the identical structural failure**: a refuted remedy surviving in the section that first proposed it while the summary carries the fix (the first was §1's disjoint-permission test, caught in round 12) | §7 |
+| "The capability is not dark — an operator *can* reopen" (round 13's own correction) | The wired command calls `ReopenWorkflowAsync` **directly** (`WorkstationEndpoints.cs:1346-1354`), transitioning workflow state only. The ledger path (`AccountingCloseManagementService.cs:1295-1325`) runs `ReopenAndQueueClosingReversalsAsync` under the posting and consistency gates first. The UI can report a reopened workflow while the period and its closing entries stay locked | §9, improvement #9 — original finding substantially restored |
+| The addendum certified PR #2824's posted-ledger wiring as "the right fix, done the right way" | It is not fund-scoped. The client never sends `fundProfileId`, the periods route checks only `HasLedgerReadPermission`, the trial-balance and P&L routes carry a global `ManageDirectLending`, and `LedgerEndpoints.cs` makes **zero** `HasScopedPermissionAsync` calls. Any holder of that flag reads every fund's posted book | Addendum |
+
+The middle row is the one that costs this review most. Round 13 said the reopen capability existed;
+I verified the client call site, found `reopenOperationsContinuityWorkflow` wired with tests, and
+accepted it — **without tracing what the endpoint does**. It transitions a workflow and never touches
+the ledger. That is precisely the failure this document named as its own method lesson in round 7:
+*inference from one side of a seam is not evidence.* Round 7 committed it while making a claim; round
+13 committed it while **accepting a correction**, which is the harder case to notice, because a
+correction arrives with the authority of having caught you once already. Verifying a refutation
+deserves the same standard as verifying an assertion.
+
+The third row matters for a different reason: it is the second defect found in PR #2824's
+remediation, after the simulation mislabel in round 13. A fix landing mid-review has had two
+problems in two rounds, both found by re-examining the fix rather than the original finding.
+
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
 remedies — and are rewritten rather than softened; the multiplier correction made the defect
@@ -976,7 +1013,24 @@ ambiguity is *not* remediated. What did land: a new `src/Meridian.Ui/dashboard/s
 calls `/api/ledger/periods`, `…/{periodId}/trial-balance`, and `…/{periodId}/pnl-summary`, and a new
 `AccountingPostedLedgerSection` (`accounting-screen.posted-ledger-panel.tsx`, mounted at
 `accounting-screen.tsx:2894`) renders them. The posted journal's trial balance and P&L now reach an
-operator for the first time. That is the right fix, done the right way.
+operator for the first time. That is the right endpoint, reached the right way — **but it is not yet
+scoped to the funds a role is assigned.**
+
+`AccountingPostedLedgerSection` opens with `getLedgerPeriods()` and the client signature admits only
+`{ ledgerBookId?, status? }` (`ledger-reports-api.ts:19`) — no `fundProfileId`, though the endpoint
+accepts one (`LedgerEndpoints.cs:154`). Server-side the periods route checks only
+`HasLedgerReadPermission(context)` (`:161`), and the trial-balance and P&L routes carry
+`RequireAnyPermission(AdminMaintenance, ManageDirectLending)` (`:386,411,436`) — a **global flag with
+no fund dimension**. `LedgerEndpoints.cs` contains **zero** calls to
+`EndpointAuthorization.HasScopedPermissionAsync`, the mechanism `FundStructureEndpoints`,
+`ExecutionEndpoints` and `WorkstationEndpoints.StatementReconciliationReport` use for exactly this.
+
+So any holder of `ManageDirectLending` can enumerate and open **every fund's posted ledger**, not
+just the funds they are assigned. That compounds §2 rather than sitting beside it: the grant is
+already overloaded, and the new panel makes it a cross-fund read of the book of record. A
+`FundAccountant` "owning fund-accounting evidence for assigned funds" is precisely the persona this
+should bind, and it does not. Certifying this wiring as complete needs an assigned-fund selector on
+the client and scoped authorization on the routes.
 
 **The class survived, three ways** — the pattern this review's headline describes, one cycle later:
 
