@@ -185,9 +185,24 @@ still open — and tracing it end to end shows the defect is larger than "the du
 goes. `ApplyFillToAccount` forwards it to a single destination —
 `pos.AttributeFill(ownerAccountId, signedQty, contractMultiplier)` (`:639`) — and `AttributeFill`
 only records it as metadata and tracks per-owner quantities (`:1289-1300`). The economic paths
-receive price and quantity alone: `ApplyBuy` computes `var notional = qty * price` (`:620`), and
-cost basis, cash, margin borrow, and `pos.MarketPrice = price` all follow from that. No multiplier
-enters any of them.
+receive price and quantity alone, and that is true of **every** transaction branch, not just the
+long ones: `ApplyBuy` computes `var notional = qty * price` (`:620`); `ApplyShortSell` computes
+`var proceeds = qty * price` (`:822`); `ApplyCoverShort` computes `var coverCost = coverQty * price`
+(`:753`) and derives `realised` from it. Cost basis, cash, margin borrow, and
+`pos.MarketPrice = price` all follow. The projections are unscaled too —
+`PaperPosition.UnrealisedPnl` is `(MarketPrice - CostBasis) * Quantity` (`:1128`), which sums into
+`AccountState.UnrealisedPnl` (`:1039`) and from there into every account snapshot (`:1081`). No
+multiplier enters any of them.
+
+**The short side is worse, and in a way the long side is not.** On a Reg-T account `ApplyShortSell`
+sizes the collateral off that same unscaled figure — `additionalMargin = proceeds *
+(regt.ShortInitialRate - 1m)` and `pos.MarginBorrowed -= proceeds * regt.ShortInitialRate`
+(`:829-834`) — so a short option book posts **1/100 of the collateral it owes**, and the risk system
+reads a naked short as fully margined when it is not. Both short branches also post their ledger
+entries at the unscaled figure: `ApplyShortSell` credits `Cash` and `ShortSecuritiesPayable` with
+`proceeds` (`:847-851`), and `PostCoverShortEntry` posts `proceedsRemoved`, `coverCost` and
+`realised` (`:892-910`). The defect therefore reaches the double-entry ledger, not only the
+in-memory book.
 
 So a paper session holding 10 SPY calls at $2.50 is booked at **$25 of exposure from the very first
 live fill**, not on restore. `ContractMultiplier` is attribution metadata that looks like an economic
@@ -549,8 +564,11 @@ close-management product can tell.
    `GET /access-reviews` to also hold authority over approval decisions and access-review
    remediation. This is what makes a least-privilege multi-user deployment possible at all. (§2)
 3. **Make instrument scale a modeled concept, once.** One value object carrying multiplier and price
-   convention, on `ExecutionReport` and `FillEvent` — and *consumed* in `ApplyBuy`/`ApplySellLong`,
-   `PaperPosition.MarketValue`, and the three restore sites in `PaperSessionPersistenceService`.
+   convention, on `ExecutionReport` and `FillEvent` — and *consumed* in **every** transaction branch,
+   not a subset: `ApplyBuy`, `ApplySellLong`, `ApplyShortSell` and `ApplyCoverShort` (the last two
+   also feed Reg-T collateral and the ledger postings), the `MarketValue`/`SignedMarketValue`/
+   `UnrealisedPnl` projections on `PaperPosition`, and the three restore sites in
+   `PaperSessionPersistenceService`.
    Carrying it is not the fix; multiplying by it is. Until then an option session's P&L and total
    return are off by the multiplier, its equity is wrong in the flattering direction on losses, and
    its Sharpe drifts — see §4 for the per-metric breakdown, which is *not* a uniform 1/100. Third
@@ -638,8 +656,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Ten rounds of automated review challenged **35 claims** across this document. Every one was checked
-against the code, **all 35 held**, and the findings above are the corrected text. Two more — the
+Eleven rounds of automated review challenged **36 claims** across this document. Every one was checked
+against the code, **all 36 held**, and the findings above are the corrected text. Two more — the
 quality-route count, wrong at 31 in three places, and a refuted remedy still standing in §1 — were
 caught by re-measuring and re-reading rather than by a reviewer, and are recorded with them. Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
@@ -749,6 +767,27 @@ The self-detected one repeats the pattern this section exists to record: round 4
 existential test and the correction landed in improvement #4, while §1 — the section that first
 proposed it — kept it for six more rounds. Correcting the summary and leaving the source is the same
 failure as correcting the source and leaving the summary.
+
+**Round 11 — one, and it caught a remedy that was right about the sites it named:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| The multiplier remedy named `ApplyBuy`/`ApplySellLong` and `MarketValue` | The short branches carry the identical defect and were omitted: `ApplyShortSell` computes `proceeds = qty * price` (`:822`), `ApplyCoverShort` derives `coverCost` and `realised` the same way (`:753`), and `PaperPosition.UnrealisedPnl` (`:1128`) sums unscaled into every account snapshot. Implementing the list as written would have left short options wrong | §3, improvement #3 |
+
+Verifying it surfaced something the document had not said, and it is the sharpest consequence in §3.
+On the short side the unscaled figure sizes **Reg-T collateral** — `MarginBorrowed -= proceeds *
+ShortInitialRate` (`:829-834`) — so a short option book posts 1/100 of the collateral it owes and
+reads as fully margined while naked. Both short branches also post to the **double-entry ledger** at
+the unscaled figure (`:847-851`, `:892-910`), so the defect is not confined to the in-memory book.
+An under-collateralized short option book is a materially worse failure than a mis-stated P&L, and
+four reviews of this defect — including the three earlier rounds of this one — traced only the long
+path and never reached it.
+
+The lesson is narrower than the earlier ones and worth keeping separate: **an enumerated remedy
+inherits the blind spots of the trace that produced it.** §3 was built by following a long buy from
+`ApplyFillToAccount` to `AttributeFill`, so the remedy listed the sites that trace passed through.
+Every correction since has sharpened the *description* of the defect while leaving the *site list*
+exactly as the original walk left it.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
