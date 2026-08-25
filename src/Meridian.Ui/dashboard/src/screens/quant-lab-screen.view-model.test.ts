@@ -200,6 +200,20 @@ describe("Quant Lab view model helpers", () => {
       .toThrow(/Int64 range/);
   });
 
+  it("checks Int64 bounds without losing precision", () => {
+    const parameter: QuantParameter = {
+      ...numberParameter,
+      name: "large",
+      label: "Large",
+      typeName: "long",
+      min: null,
+      max: 9007199254740992
+    };
+
+    expect(() => buildQuantParameters([parameter], { large: "9007199254740993" }))
+      .toThrow(/at most 9007199254740992/);
+  });
+
   it("prunes values for parameters no longer present in source", () => {
     expect(reconcileQuantParameterValues(
       { lookback: "63", stale: "remove-me" },

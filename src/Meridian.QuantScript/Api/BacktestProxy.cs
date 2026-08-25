@@ -98,7 +98,13 @@ public sealed class BacktestProxy
         _marketImpactCoefficient = coefficient;
         return this;
     }
-    public BacktestProxy WithMaxParticipationRate(decimal rate) { _maxParticipationRate = rate; return this; }
+    public BacktestProxy WithMaxParticipationRate(decimal rate)
+    {
+        if (rate < 0m || rate > 1m)
+            throw new ArgumentOutOfRangeException(nameof(rate), rate, "Participation rate must be between zero and one.");
+        _maxParticipationRate = rate;
+        return this;
+    }
     public BacktestProxy WithOrderBookQueueAheadFraction(decimal fraction) { _orderBookQueueAheadFraction = fraction; return this; }
     public BacktestProxy WithFillTiming(FillTiming timing) { _fillTiming = timing; return this; }
     public BacktestProxy WithFillConservatism(FillConservatism conservatism) { _fillConservatism = conservatism; return this; }

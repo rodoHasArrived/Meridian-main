@@ -88,6 +88,18 @@ public sealed class BacktestProxyTests : IDisposable
         act.Should().Throw<ArgumentOutOfRangeException>().WithMessage("*cannot be negative*");
     }
 
+    [Theory]
+    [InlineData("-0.01")]
+    [InlineData("1.01")]
+    public void WithMaxParticipationRate_OutsideUnitInterval_FailsClosed(string rawRate)
+    {
+        var proxy = new BacktestProxy(null, new QuantScriptOptions());
+
+        var act = () => proxy.WithMaxParticipationRate(decimal.Parse(rawRate));
+
+        act.Should().Throw<ArgumentOutOfRangeException>().WithMessage("*between zero and one*");
+    }
+
     [Fact]
     public async Task RunAsync_OnFinishedReceivesTheCompletedMatchingResult()
     {

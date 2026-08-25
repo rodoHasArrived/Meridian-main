@@ -462,6 +462,27 @@ public sealed class ParameterViewModel : BindableBase
 
     private bool IsWithinNumericRange(object? value, out string? errorMessage)
     {
+        if (value is decimal or long or int or short or byte)
+        {
+            var exactValue = Convert.ToDecimal(value, CultureInfo.InvariantCulture);
+            var exactMin = Min <= (double)decimal.MinValue ? decimal.MinValue : (decimal)Min;
+            var exactMax = Max >= (double)decimal.MaxValue ? decimal.MaxValue : (decimal)Max;
+            if (exactValue < exactMin)
+            {
+                errorMessage = $"Value must be at least {Min.ToString(CultureInfo.InvariantCulture)}";
+                return false;
+            }
+
+            if (exactValue > exactMax)
+            {
+                errorMessage = $"Value must be at most {Max.ToString(CultureInfo.InvariantCulture)}";
+                return false;
+            }
+
+            errorMessage = null;
+            return true;
+        }
+
         var numericValue = Convert.ToDouble(value, CultureInfo.InvariantCulture);
         if (numericValue < Min)
         {

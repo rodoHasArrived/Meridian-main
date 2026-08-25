@@ -278,13 +278,7 @@ success. Assign, resolve, waive, and supersede commands therefore surface blocke
 failed persistence, retained evidence, and recovery guidance instead of inferring completion from an
 HTTP response or compatibility message. `CompletedWithWarnings` retains the successful mutation,
 refreshes the shared queue, and keeps its issues and recovery guidance visible; only `Blocked` or
-`Failed` suppresses the success path. Reconciliation reads distinguish a confirmed missing run
-record from a failed detail request: partial reads render a degraded notice, a complete detail-read
-outage renders an unavailable notice, and only a successful read with no known runs uses the
-verified empty state. Break-queue and calibration failures are also retained as unavailable instead
-of producing zero-count metrics or a synthesized `Ready` posture; overview and security-coverage
-counts are suppressed or marked as lower bounds whenever their detail population is incomplete.
-Strategy workspace composition resolves the durable
+`Failed` suppresses the success path. Strategy workspace composition resolves the durable
 strategy-run store and operational case-history store; lifecycle state, attempts, input hashes,
 artifacts, exceptions, and recovery events survive desktop restart rather than falling back to an
 in-memory production history.
@@ -666,7 +660,8 @@ RunMat Lab is a Strategy workspace tool; its visible page descriptions and code 
 QuantScript run-history handoffs use `CompareInStrategyCommand` for Strategy Runs comparison
 routing while preserving the existing button automation ID and run-detail navigation targets.
 The QuantScript parameter editor validates supported numeric and Boolean inputs before enabling Run;
-invalid, non-finite, or out-of-range values never become null fallbacks at the worker boundary.
+invalid, non-finite, or out-of-range values never become null fallbacks at the worker boundary, and
+integral/decimal bounds are compared without conversion through binary floating-point.
 Successful runs render compiler warnings separately from errors, and result/trade rows retain fill
 id, order id, and a run index that remains unique across multi-cell notebook execution for exact
 drill-through.

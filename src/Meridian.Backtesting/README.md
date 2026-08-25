@@ -128,9 +128,10 @@ Studio UX remains deferred.
 
 ## Benchmarks and performance
 
-- `JsonlReplayer` performs a k-way merge across physical JSONL and compressed JSONL files using full
-  UTC ticks plus stable file order. It fails closed with file/line evidence for malformed, null, or
-  per-file time-regressing records. `MultiSymbolMergeEnumerator` then uses a full-tick heap with a
+- `JsonlReplayer` reads physical JSONL and compressed JSONL partitions sequentially and orders their
+  records by full UTC ticks plus stable file/line ties, including late-arriving provider records. It
+  fails closed with file/line evidence for malformed or null records without retaining every source
+  handle. `MultiSymbolMergeEnumerator` then uses a full-tick heap with a
   single-stream fast path, stable stream ties, cancellation, monotonicity checks, and deterministic
   enumerator disposal.
 - Corporate-action adjustment prepares one immutable, content-versioned plan per symbol and run,

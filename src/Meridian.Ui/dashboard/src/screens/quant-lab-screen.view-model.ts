@@ -514,7 +514,7 @@ export function buildQuantParameters(
       }
       case "long": {
         const canonical = canonicalInt64(raw, parameter.label);
-        assertQuantParameterBounds(parameter, Number(canonical));
+        assertInt64ParameterBounds(parameter, BigInt(canonical));
         result[parameter.name] = canonical;
         break;
       }
@@ -585,6 +585,15 @@ function assertQuantParameterBounds(parameter: QuantParameter, value: number): v
     throw new Error(`${parameter.label} must be at least ${parameter.min.toString()}.`);
   }
   if (parameter.max !== null && value > parameter.max) {
+    throw new Error(`${parameter.label} must be at most ${parameter.max.toString()}.`);
+  }
+}
+
+function assertInt64ParameterBounds(parameter: QuantParameter, value: bigint): void {
+  if (parameter.min !== null && value < BigInt(Math.ceil(parameter.min))) {
+    throw new Error(`${parameter.label} must be at least ${parameter.min.toString()}.`);
+  }
+  if (parameter.max !== null && value > BigInt(Math.floor(parameter.max))) {
     throw new Error(`${parameter.label} must be at most ${parameter.max.toString()}.`);
   }
 }

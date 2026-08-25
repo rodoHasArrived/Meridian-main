@@ -98,7 +98,7 @@ public sealed class JsonlReplayerTests : IDisposable
     }
 
     [Fact]
-    public async Task ReadEventsAsync_WhenOneFileRegresses_FailsClosedWithFileAndLineEvidence()
+    public async Task ReadEventsAsync_WhenOneFileContainsLateArrival_ReordersByTimestamp()
     {
         var file = Path.Combine(_tempRoot, "regression.jsonl");
         var timestamp = new DateTimeOffset(2026, 1, 2, 14, 30, 0, TimeSpan.Zero);
@@ -107,10 +107,9 @@ public sealed class JsonlReplayerTests : IDisposable
             SerializeLine(BuildTradeAt("SPY", timestamp.AddTicks(2))) +
             SerializeLine(BuildTradeAt("SPY", timestamp.AddTicks(1))));
 
-        var act = async () => await ReadAllAsync(new JsonlReplayer(_tempRoot));
+        var result = await ReadAllAsync(new JsonlReplayer(_tempRoot));
 
-        await act.Should().ThrowAsync<InvalidDataException>()
-            .WithMessage("*regression.jsonl*line 2*line 1*");
+        result.Select(static evt => evt.Timestamp).Should().BeInAscendingOrder();
     }
 
     [Fact]
@@ -155,7 +154,7 @@ public sealed class JsonlReplayerTests : IDisposable
     }
 
     [Fact]
-    public async Task ReadEventsAsync_WhenPartitionCountExceedsReaderCap_FailsClosedAndReleasesReaders()
+    public async Task ReadEventsAsync_WhenPartitionCountExceedsFormerReaderCap_ReplaysAllPartitions()
     {
         for (var index = 0; index < 129; index++)
         {
@@ -163,14 +162,9 @@ public sealed class JsonlReplayerTests : IDisposable
             await File.WriteAllTextAsync(file, SerializeLine(BuildTrade($"S{index}", index + 1)));
         }
 
-        var act = async () => await ReadAllAsync(new JsonlReplayer(_tempRoot));
+        var replayed = await ReadAllAsync(new JsonlReplayer(_tempRoot));
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*128 concurrently open partition readers*");
-
-        var singleFile = Path.Combine(_tempRoot, "000.jsonl");
-        var replayed = await ReadAllAsync(new JsonlReplayer(singleFile));
-        replayed.Should().ContainSingle("the failed merge must release every acquired reader slot");
+        replayed.Should().HaveCount(129);
     }
 
     [Fact]

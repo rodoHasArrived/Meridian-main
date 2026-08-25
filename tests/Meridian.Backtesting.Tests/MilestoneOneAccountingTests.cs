@@ -11,6 +11,25 @@ namespace Meridian.Backtesting.Tests;
 public sealed class MilestoneOneAccountingTests
 {
     [Fact]
+    public void BuildTradeTickets_AssetEvent_PreservesBrokerageAccount()
+    {
+        var cashFlow = new AssetEventCashFlow(
+            DateTimeOffset.UtcNow,
+            10m,
+            "SPY",
+            AssetEventType.Dividend,
+            10L,
+            1m)
+        {
+            AccountId = "broker-a"
+        };
+
+        var ticket = BacktestEngine.BuildTradeTickets([cashFlow]).Should().ContainSingle().Subject;
+
+        ticket.AccountId.Should().Be("broker-a");
+    }
+
+    [Fact]
     public void Compute_ExplicitAccounts_UsesTheirCombinedOpeningCapital()
     {
         var from = new DateOnly(2023, 1, 1);

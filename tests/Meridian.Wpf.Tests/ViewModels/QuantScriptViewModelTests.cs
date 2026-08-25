@@ -355,6 +355,21 @@ public sealed class QuantScriptViewModelTests
     }
 
     [Fact]
+    public void ParameterViewModel_LongBounds_PreserveExactIntegerPrecision()
+    {
+        var parameter = new ParameterViewModel(
+            "large",
+            9_007_199_254_740_992L,
+            typeof(long),
+            max: 9_007_199_254_740_992d);
+
+        parameter.RawValue = "9007199254740993";
+
+        parameter.IsValid.Should().BeFalse();
+        parameter.ValidationMessage.Should().Contain("at most 9007199254740992");
+    }
+
+    [Fact]
     public async Task RunScriptCommand_EmptyNotebookCell_NormalizesToComment()
     {
         var runner = new FakeScriptRunner();

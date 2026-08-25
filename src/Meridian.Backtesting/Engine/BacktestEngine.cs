@@ -876,7 +876,7 @@ public sealed class BacktestEngine(
                 maximumPerOrder: request.CommissionMaximum)
         };
 
-    private static IReadOnlyList<TradeTicket> BuildTradeTickets(IReadOnlyList<CashFlowEntry> cashFlows)
+    internal static IReadOnlyList<TradeTicket> BuildTradeTickets(IReadOnlyList<CashFlowEntry> cashFlows)
     {
         var tickets = new List<TradeTicket>(cashFlows.Count);
 
@@ -916,7 +916,8 @@ public sealed class BacktestEngine(
                         BuildAssetEventNarrative(assetEvent),
                         assetEvent.Amount,
                         assetEvent.UnitsImpacted,
-                        assetEvent.CashPerShare));
+                        assetEvent.CashPerShare,
+                        assetEvent.AccountId));
                     break;
                 case DividendCashFlow dividend:
                     tickets.Add(new TradeTicket(

@@ -11,10 +11,6 @@ namespace Meridian.Storage.Replay;
 /// </summary>
 public sealed class JsonlReplayer
 {
-    internal const int MaxConcurrentPartitionReaders = 128;
-    private static readonly SemaphoreSlim PartitionReaderSlots = new(
-        MaxConcurrentPartitionReaders,
-        MaxConcurrentPartitionReaders);
     private readonly string _path;
 
     public JsonlReplayer(string path)
@@ -36,132 +32,84 @@ public sealed class JsonlReplayer
         if (files.Count == 0)
             yield break;
 
-        var enumerators = new IAsyncEnumerator<ReplayRecord>?[files.Count];
-        var heap = new PriorityQueue<int, (long UtcTicks, int FileIndex, long LineNumber)>(files.Count);
-
-        try
+        // Storage sinks accept late provider events and persist arrival order. Read one partition
+        // at a time so concurrent replays never compete for a fixed pool of retained file handles,
+        // then impose the canonical UTC/file/line order across the complete replay.
+        var records = new List<ReplayRecord>();
+        for (var fileIndex = 0; fileIndex < files.Count; fileIndex++)
         {
-            // A directory can contain overlapping daily, tiered, or compressed partitions. Prime
-            // one event from every physical source and merge those sources instead of concatenating
-            // file contents, which would make replay order depend on file names.
-            for (var fileIndex = 0; fileIndex < files.Count; fileIndex++)
+            ct.ThrowIfCancellationRequested();
+            await foreach (var record in ReadFileAsync(files[fileIndex], ct).ConfigureAwait(false))
             {
-                ct.ThrowIfCancellationRequested();
-                var enumerator = ReadFileAsync(files[fileIndex], ct).GetAsyncEnumerator(ct);
-                enumerators[fileIndex] = enumerator;
-
-                if (await enumerator.MoveNextAsync().ConfigureAwait(false))
-                    EnqueueCurrent(heap, enumerator.Current, fileIndex);
-            }
-
-            while (heap.Count > 0)
-            {
-                ct.ThrowIfCancellationRequested();
-
-                var fileIndex = heap.Dequeue();
-                var enumerator = enumerators[fileIndex]!;
-                yield return enumerator.Current.Event;
-
-                if (await enumerator.MoveNextAsync().ConfigureAwait(false))
-                    EnqueueCurrent(heap, enumerator.Current, fileIndex);
+                records.Add(record with { FileIndex = fileIndex });
             }
         }
-        finally
-        {
-            foreach (var enumerator in enumerators)
-            {
-                if (enumerator is not null)
-                    await enumerator.DisposeAsync().ConfigureAwait(false);
-            }
-        }
-    }
 
-    private static void EnqueueCurrent(
-        PriorityQueue<int, (long UtcTicks, int FileIndex, long LineNumber)> heap,
-        ReplayRecord record,
-        int fileIndex)
-    {
-        heap.Enqueue(
-            fileIndex,
-            (record.Event.Timestamp.UtcTicks, fileIndex, record.LineNumber));
+        records.Sort(static (left, right) =>
+        {
+            var timestampComparison = left.Event.Timestamp.UtcTicks.CompareTo(right.Event.Timestamp.UtcTicks);
+            if (timestampComparison != 0)
+                return timestampComparison;
+            var fileComparison = left.FileIndex.CompareTo(right.FileIndex);
+            return fileComparison != 0 ? fileComparison : left.LineNumber.CompareTo(right.LineNumber);
+        });
+
+        foreach (var record in records)
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return record.Event;
+        }
     }
 
     private static async IAsyncEnumerable<ReplayRecord> ReadFileAsync(
         string file,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        if (!await PartitionReaderSlots.WaitAsync(0, ct).ConfigureAwait(false))
+        await using var fs = new FileStream(
+            file,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete,
+            bufferSize: 4096,
+            useAsync: true);
+        // Shared codec detection (magic bytes, extension fallback) so this reader honors every
+        // compression suffix the storage policy can emit, not just gzip.
+        var stream = CompressedJsonlStream.Decompress(fs, file);
+
+        using var reader = new StreamReader(stream);
+        long lineNumber = 0;
+        while (true)
         {
-            throw new InvalidOperationException(
-                $"Replay requires more than {MaxConcurrentPartitionReaders} concurrently open partition readers. " +
-                "Reduce the replay partition set or consolidate old partitions before retrying.");
-        }
+            ct.ThrowIfCancellationRequested();
+            var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+            if (line is null)
+                yield break;
 
-        try
-        {
-            await using var fs = new FileStream(
-                file,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.ReadWrite | FileShare.Delete,
-                bufferSize: 4096,
-                useAsync: true);
-            // Shared codec detection (magic bytes, extension fallback) so this reader honors every
-            // compression suffix the storage policy can emit, not just gzip.
-            var stream = CompressedJsonlStream.Decompress(fs, file);
+            lineNumber++;
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
 
-            using var reader = new StreamReader(stream);
-            long lineNumber = 0;
-            long? previousUtcTicks = null;
-            long previousLineNumber = 0;
-
-            while (true)
+            MarketEvent? evt;
+            try
             {
-                ct.ThrowIfCancellationRequested();
-                var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
-                if (line is null)
-                    yield break;
-
-                lineNumber++;
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-
-                MarketEvent? evt;
-                try
-                {
-                    evt = JsonSerializer.Deserialize<MarketEvent>(line, MarketDataJsonContext.HighPerformanceOptions);
-                }
-                catch (JsonException ex)
-                {
-                    throw new InvalidDataException(
-                        $"Malformed JSONL record in replay file '{file}' at line {lineNumber}.",
-                        ex);
-                }
-
-                if (evt is null)
-                {
-                    throw new InvalidDataException(
-                        $"Null JSONL record in replay file '{file}' at line {lineNumber}.");
-                }
-
-                var utcTicks = evt.Timestamp.UtcTicks;
-                if (previousUtcTicks.HasValue && utcTicks < previousUtcTicks.Value)
-                {
-                    throw new InvalidDataException(
-                        $"Replay file '{file}' is not chronological: line {lineNumber} timestamp " +
-                        $"{evt.Timestamp:O} precedes line {previousLineNumber}.");
-                }
-
-                previousUtcTicks = utcTicks;
-                previousLineNumber = lineNumber;
-                yield return new ReplayRecord(evt, lineNumber);
+                evt = JsonSerializer.Deserialize<MarketEvent>(line, MarketDataJsonContext.HighPerformanceOptions);
             }
-        }
-        finally
-        {
-            PartitionReaderSlots.Release();
+            catch (JsonException ex)
+            {
+                throw new InvalidDataException(
+                    $"Malformed JSONL record in replay file '{file}' at line {lineNumber}.",
+                    ex);
+            }
+
+            if (evt is null)
+            {
+                throw new InvalidDataException(
+                    $"Null JSONL record in replay file '{file}' at line {lineNumber}.");
+            }
+
+            yield return new ReplayRecord(evt, lineNumber, FileIndex: 0);
         }
     }
 
-    private readonly record struct ReplayRecord(MarketEvent Event, long LineNumber);
+    private readonly record struct ReplayRecord(MarketEvent Event, long LineNumber, int FileIndex);
 }
