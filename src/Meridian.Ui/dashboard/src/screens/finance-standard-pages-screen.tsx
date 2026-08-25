@@ -612,8 +612,16 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
                 )) : (
                   <tr>
                     <td className="px-3 py-4 text-muted-foreground" colSpan={8}>
+                      {/* "Create a ledger book and period" is an instruction, and it must not be
+                          given during an outage: the selector above reports the API error, so
+                          hard-coding emptiness here told the operator to create accounting data
+                          and showed the failure that caused it, at the same time. The view state
+                          already distinguishes these -- emptyText is null while loading or failed. */}
                       {postedLedger.view.periodSelector.options.length === 0
-                        ? "No ledger periods exist yet. Create a ledger book and period in Accounting → Configure to start the governed book."
+                        ? (postedLedger.view.periodSelector.errorText
+                          ?? postedLedger.view.periodSelector.loadingText
+                          ?? postedLedger.view.periodSelector.emptyText
+                          ?? "No ledger periods are available for this accounting scope.")
                         : "No posted entries match the current search."}
                     </td>
                   </tr>

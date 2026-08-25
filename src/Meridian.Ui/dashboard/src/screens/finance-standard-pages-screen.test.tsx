@@ -944,6 +944,50 @@ describe("finance standard pages", () => {
     expect(search()).not.toContain(LEDGER_PERIOD_ID);
   });
 
+  it("does not restore a period the shared route has already given up", async () => {
+    // A sibling tab established that the book has no periods and dropped periodId from the route.
+    // The retained tab still held its old period, and with the route naming none there was nothing
+    // pending to block the write-back -- so it put the stale period back into the shared scope.
+    mockPostedBook();
+
+    const search = renderLedgerExplorerWithLocation(
+      `/accounting/ledger?ledgerBookId=${LEDGER_BOOK_ID}&periodId=${LEDGER_PERIOD_ID}`
+    );
+    await waitForAsyncEffects();
+    expect(search()).toContain(LEDGER_PERIOD_ID);
+
+    // The sibling tab discovers, authoritatively, that the book now has no periods.
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValue([] as never);
+    fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+    expect(search()).not.toContain(LEDGER_PERIOD_ID);
+
+    // Coming back, this tab cannot refresh, so it never gets an answer of its own -- and must not
+    // publish the period it is still holding over a route that has given it up.
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockRejectedValue(new Error("Ledger periods are unavailable."));
+    fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    expect(search()).not.toContain(LEDGER_PERIOD_ID);
+  });
+
+  it("does not tell the operator to create a ledger book during an outage", async () => {
+    // The empty-results cell hard-coded "create a ledger book and period" for any zero-option
+    // result. With the selector above now reporting the API error, an outage showed the failure
+    // and an instruction to create accounting data at the same time.
+    mockPostedBook();
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockRejectedValue(new Error("Ledger periods are unavailable."));
+
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    expect(screen.queryByText(/Create a ledger book and period/)).not.toBeInTheDocument();
+    expect(screen.getAllByText("Ledger periods are unavailable.").length).toBeGreaterThan(0);
+  });
+
   it("offers no ledger filter it does not apply", async () => {
     // "Unposted", "Reversals", "Manual JEs" and "System Generated" changed a label and nothing
     // else, and the results header reported the unfiltered count as that view's. On a governed

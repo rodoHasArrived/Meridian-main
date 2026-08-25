@@ -143,33 +143,45 @@ export function usePostedLedgerRouteScope(
       return;
     }
 
-    // Compared against what the URL actually says, in both directions: testing only
-    // "no selection means nothing to write" left a stale periodId in place for a book that has
-    // none, which is the case this has to clean up.
-    const periodMatches = selectedPeriodId
-      ? idsMatch(searchParams.get("periodId"), selectedPeriodId)
-      : searchParams.get("periodId") === null;
-    // Both directions, as with the period above: "nothing selected means nothing to write" left a
-    // ledgerBookId in the URL naming a book this deployment does not have. Reached only once books
-    // have settled, so no selection here means discovery answered that there is none.
-    const bookMatches = selectedBookId
-      ? idsMatch(searchParams.get("ledgerBookId"), selectedBookId)
+    // What the URL should say, then a comparison in both directions. Testing only "no selection
+    // means nothing to write" left a stale value in place both for a book with no periods and for
+    // a book this deployment does not have -- the two cases this has to clean up. Reached only
+    // once books have settled, so no book selected here means discovery answered that there is
+    // none.
+    const nextBookId = selectedBookId;
+    // A period id means nothing outside its book, so one naming a book this surface has moved off
+    // cannot stay whatever else is true.
+    const showsAnotherBook = nextBookId === null
+      || !idsMatch(searchParams.get("ledgerBookId"), nextBookId);
+
+    // The period is published only once this surface's OWN period request has settled. A retained
+    // tab comes back still holding the period it had, and a sibling may have established since
+    // that the book has none and dropped it from the route -- writing the held value then restored
+    // a period the shared scope had authoritatively given up. Until this tab has an answer of its
+    // own, what the URL already says about the period stands.
+    const nextPeriodId = periodsSettled
+      ? selectedPeriodId
+      : showsAnotherBook ? null : searchParams.get("periodId");
+
+    const bookMatches = nextBookId
+      ? idsMatch(searchParams.get("ledgerBookId"), nextBookId)
       : searchParams.get("ledgerBookId") === null;
+    const periodMatches = nextPeriodId
+      ? idsMatch(searchParams.get("periodId"), nextPeriodId)
+      : searchParams.get("periodId") === null;
     if (periodMatches && bookMatches) {
       return;
     }
 
     const nextParams = new URLSearchParams(searchParams);
-    if (selectedBookId) {
-      nextParams.set("ledgerBookId", selectedBookId);
+    if (nextBookId) {
+      nextParams.set("ledgerBookId", nextBookId);
     } else {
       nextParams.delete("ledgerBookId");
     }
-    if (selectedPeriodId) {
-      nextParams.set("periodId", selectedPeriodId);
+    if (nextPeriodId) {
+      nextParams.set("periodId", nextPeriodId);
     } else {
-      // The book on screen has no period. Leaving the outgoing one in the URL would name a scope
-      // this surface is not showing.
       nextParams.delete("periodId");
     }
     setSearchParams(nextParams, { replace: true });
@@ -178,6 +190,7 @@ export function usePostedLedgerRouteScope(
     appliedBookId,
     appliedPeriodId,
     booksSettled,
+    periodsSettled,
     requestedBookId,
     requestedPeriodId,
     searchParams,
