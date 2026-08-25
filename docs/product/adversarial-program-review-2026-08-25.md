@@ -737,16 +737,19 @@ close-management product can tell.
   the whole governance working set into an empty one, announced by a warning line. Fail closed on a
   snapshot that exists but will not parse, rather than starting empty and letting the operator
   discover it downstream.
-- **The doc-health TODO counter counts prose, and this document proves it.** The generated
-  dashboard assigns `docs/product/adversarial-program-review-2026-08-25.md` a `todo_count` of **4**.
-  This document contains no actionable documentation TODO. Three of the four come from one sentence
-  that merely *names* the markers — "Zero `NotImplementedException` and 4 TODO/FIXME/HACK markers" —
-  and the fourth from a link whose target is called `implementation-todo-list.md`. Those four inflate
-  the repository aggregate and feed the TODO-density term of the published health score, so a
-  document that adds no debt measurably lowers the number. The counter should ignore matches inside
-  code spans, link targets and link text, or mark them separately from real markers. Cheap to fix and
-  worth fixing before the metric is used to argue anything, because the failure is self-reinforcing:
-  writing *about* documentation debt registers as incurring it.
+- **The doc-health TODO counter counts prose, and this finding keeps proving it.** The generated
+  dashboard assigns this document a non-zero `todo_count` although it contains no actionable
+  documentation TODO. Every match is incidental: the sentence above that *names* the markers, the
+  link whose target is called `implementation-todo-list.md`, and — now — this finding's own
+  discussion of the counter. That last clause is the point. The first version of this paragraph
+  reported the count as 4 and attributed it to two sources; writing those two sentences added further
+  matches, and at commit `972c41ac` the regenerated dashboard read 16 for this file and 255
+  repository-wide. Both of those are historical measurements at a named commit, not current values —
+  rewriting this paragraph moved them again. **No current figure is quoted here on purpose**, because
+  any number stated in this paragraph is falsified by the paragraph stating it. A metric that a document changes merely by describing it is not measuring
+  documentation debt. The counter should ignore matches inside code spans, link targets and link
+  text, or record them separately from real markers; until it does, the TODO-density term of the
+  published health score is not a sound input to any argument.
 - **Very large files concentrate risk.** `AccountingConfigureViewModel.cs` (5,356 lines),
   `SecurityMasterWorkbenchQueryService.cs` (4,738), `FundOperationsWorkspaceReadService.cs` (4,646),
   `WorkstationEndpoints.cs` (4,201). §1's defect lives inside a 5,900-line view model, which is a
@@ -940,14 +943,14 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Twenty-six rounds of automated review challenged **73 claims** across this document. Every one was checked
-against the code, **all 73 held**, and the findings above are the corrected text. **Nine more were
+Twenty-seven rounds of automated review challenged **74 claims** across this document. Every one was checked
+against the code, **all 74 held**, and the findings above are the corrected text. **Nine more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
 in the published artifact, and an unresolvable file path in §8, and the artifact's refuted cost-basis remedy — and each is recorded as a
 row below, marked *(self-detected)*.
-The table therefore holds **82 rows: 73 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **83 rows: 74 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1347,7 +1350,7 @@ summary and never the section:**
 | "the input **every LP statement** depends on" | Only unitized ones. `ReportingPartnersCapitalSource` builds the certified partners-capital statement from balances, contributions, distributions and allocations with no unit arithmetic, and `PartnersCapitalStatementLayout:61` takes a total `NetAssetValue`. The overstatement would push unit-register work into non-unitized fund workflows that are already served. Round 24 established the *absence* of unit arithmetic there and drew the opposite inference from it | §5 |
 | Improvement #1 moves "the run-scoped panel" | There are two run-scoped surfaces under Accounting. `app.tsx:828` mounts `AccountDetailScreen` at `/accounting/accounts/detail`, which derives a reconciliation `runId` and calls `getRunTrialBalance` (`finance-standard-pages-screen.tsx:299`). This document's own addendum names that screen; the remedy did not, so following it would declare the work done with Accounting still serving the wrong book | Improvement #1 |
 | "A list/read contract and durable retention both have to land *before* a UI presents any of it" | Over-defers two usable surfaces. `audit/extract` and `controls/attestation` read the durable log `actions/evaluate` appends to, and production composition supplies a persisted JSONL path (`UiServer.cs:307`, registered after `AddWorkstationSharedServices`' in-memory `TryAddSingleton`, so the durable instance is the one resolved). Only the approver queue and access reviews are blocked | Improvement #7 — split by route group |
-| The regenerated dashboard gives this document `todo_count: 4` | It contains no actionable TODO. Three matches come from the sentence that merely *names* `TODO/FIXME/HACK` and one from a link to `implementation-todo-list.md`, so writing about documentation debt registers as incurring it, and the aggregate and health score inherit it | Recorded as a new §9 finding, not silently regenerated away |
+| The regenerated dashboard gives this document a non-zero `todo_count` | It contains no actionable TODO — the matches come from a sentence that merely *names* the markers and from a link target, so writing about documentation debt registers as incurring it, and the aggregate and health score inherit it | Recorded as a new §9 finding, not silently regenerated away |
 
 Three of these six — the compliance permission split, the second run-scoped screen, and the
 cost-basis inventory one round earlier — are the same failure: a correction landed in the prioritized
@@ -1355,6 +1358,20 @@ list, the addendum, or the ledger, and never in the section that tells an implem
 The summary is not the deliverable; the section is. Every future correction has to be applied to the
 originating block *first*, then propagated outward, because the reverse order leaves the authoritative
 text wrong while the document reads as though it were fixed.
+
+**Round 27 — one, and the finding falsified itself:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| §9's new TODO finding: "the dashboard assigns this document a `todo_count` of **4** … three from one sentence, the fourth from a link" | Both figures were stale by the time they were committed. Writing that paragraph — which names the markers repeatedly, quotes `implementation-todo-list.md`, and discusses `todo_count` — added twelve further matches, so at commit `972c41ac` the regenerated dashboard read **16** for this file and **255** repository-wide, not 4 and 243. Rewriting the finding moved them again, which is why both figures are now stated as measurements at a named commit rather than as current values | §9 — the figure is now deliberately omitted |
+
+This is the only round where a finding invalidated itself by being written. The defect is real and
+the mechanism was described correctly; the error was quoting a live measurement inside the document
+being measured, which is a fixed point that does not exist. The correction is not a better number —
+any number belongs to the draft before the sentence containing it. It is to state the mechanism and
+the *classes* of incidental match, and let the dashboard hold the count. Generalized: **never quote a
+generated metric about the artifact doing the quoting.** The same trap would catch a line count, a
+file count, or a health score cited inside the document those figures measure.
 
 Both were found by re-measuring §5's existential claim rather than re-reading its prose — the same
 method that caught rounds 9 and 22. The first measurement pass produced **98** dark types and was
