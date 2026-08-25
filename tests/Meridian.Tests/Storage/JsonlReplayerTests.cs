@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Core.Serialization;
@@ -165,6 +166,23 @@ public sealed class JsonlReplayerTests : IDisposable
         var replayed = await ReadAllAsync(new JsonlReplayer(_tempRoot));
 
         replayed.Should().HaveCount(129);
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_WhenLateArrivalsExceedSortRun_ReplaysInBoundedTimestampOrder()
+    {
+        var file = Path.Combine(_tempRoot, "late-arrivals.jsonl");
+        var start = new DateTimeOffset(2026, 1, 2, 14, 30, 0, TimeSpan.Zero);
+        var count = JsonlReplayer.SortRunRecordLimit + 7;
+        var content = new StringBuilder();
+        for (var index = count - 1; index >= 0; index--)
+            content.Append(SerializeLine(BuildTradeAt("SPY", start.AddTicks(index), index + 1L)));
+        await File.WriteAllTextAsync(file, content.ToString());
+
+        var replayed = await ReadAllAsync(new JsonlReplayer(file));
+
+        replayed.Should().HaveCount(count);
+        replayed.Select(static evt => evt.Timestamp).Should().BeInAscendingOrder();
     }
 
     [Fact]

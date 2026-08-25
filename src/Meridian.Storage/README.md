@@ -48,9 +48,10 @@ lookup paths, and evidence trails those layers rely on.
 - `Etl/` - ETL staging, audit, reject, and local JSON job-definition stores.
 - `Interfaces/` and `Sinks/` - contracts and implementations that receive data to be saved.
 - `Store/`, `Policies/`, and `Replay/` - JSONL market-data storage, rules for using it, and readers
-  that can play saved data back. Replay reads physical JSONL and compressed JSONL partitions one at
-  a time, then orders all records by full UTC ticks with stable file/line ties. Late-arriving records
-  remain replayable, while malformed and null records fail closed with file/line evidence.
+  that can play saved data back. Replay converts physical JSONL and compressed JSONL partitions into
+  fixed-size sorted runs, then performs bounded 16-way merge passes by full UTC ticks with stable
+  file/line ties. Late-arriving records remain replayable without retaining the complete history in
+  memory, while malformed and null records fail closed with file/line evidence.
   `JsonFileIBDataResultStore` requires tenant/company scope on writes
   and queries, keys matching result identities by that scope, and excludes unscoped legacy rows
   during restart hydration.

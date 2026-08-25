@@ -869,8 +869,9 @@ export function buildQuantTradeLedgerState(
 }
 
 export function buildQuantTradeRowId(trade: QuantTrade, index: number): string {
-  if (trade.fillId.trim()) {
-    return `quant-trade-${trade.fillId.trim().toLowerCase()}`;
+  const fillId = trade.fillId.trim().toLowerCase();
+  if (fillId && fillId !== "00000000-0000-0000-0000-000000000000") {
+    return `quant-trade-${fillId}`;
   }
   const raw = `${trade.timestamp}-${trade.symbol}-${trade.side}-${index}`;
   const stable = raw.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");

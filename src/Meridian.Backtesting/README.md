@@ -128,10 +128,10 @@ Studio UX remains deferred.
 
 ## Benchmarks and performance
 
-- `JsonlReplayer` reads physical JSONL and compressed JSONL partitions sequentially and orders their
-  records by full UTC ticks plus stable file/line ties, including late-arriving provider records. It
-  fails closed with file/line evidence for malformed or null records without retaining every source
-  handle. `MultiSymbolMergeEnumerator` then uses a full-tick heap with a
+- `JsonlReplayer` creates fixed-size sorted runs from physical JSONL and compressed JSONL partitions,
+  then uses bounded 16-way external merge passes with full UTC ticks plus stable file/line ties. Late
+  provider records remain replayable without retaining every source handle or the complete history
+  in memory. `MultiSymbolMergeEnumerator` then uses a full-tick heap with a
   single-stream fast path, stable stream ties, cancellation, monotonicity checks, and deterministic
   enumerator disposal.
 - Corporate-action adjustment prepares one immutable, content-versioned plan per symbol and run,

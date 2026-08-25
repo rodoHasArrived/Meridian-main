@@ -534,6 +534,20 @@ describe("Quant Lab view model helpers", () => {
     ]);
   });
 
+  it("uses unique fallback row IDs when fill lineage is the empty GUID", () => {
+    const trades = tradesOnlySuccessfulRunState.result!.trades.map((trade) => ({
+      ...trade,
+      fillId: "00000000-0000-0000-0000-000000000000"
+    }));
+
+    const rows = buildQuantTradeRows(trades);
+    const ledger = buildQuantTradeLedgerState(trades, rows[1]!.id);
+
+    expect(rows[0]!.id).not.toBe(rows[1]!.id);
+    expect(ledger.selectedRowId).toBe(rows[1]!.id);
+    expect(ledger.selectedDetail?.title).toBe("SPY Sell");
+  });
+
   it("ignores stale parameter extraction responses after the source changes", async () => {
     const firstRequest = createDeferred<QuantParametersResponse>();
     const secondRequest = createDeferred<QuantParametersResponse>();
