@@ -136,9 +136,13 @@ def parse_typescript_interface(source: str, interface_name: str) -> dict[str, di
     members: dict[str, dict] = {}
     for line in split_top_level(body, ";"):
         entry = line.strip()
-        if not entry or entry.startswith("//") or entry.startswith("/*"):
-            continue
+        # Strip comments before testing for emptiness: a member documented with a JSDoc block was
+        # previously skipped wholesale, so any documented contract member was invisible to this
+        # gate rather than compared -- a silent pass, not a failure.
+        entry = re.sub(r"/\*.*?\*/", "", entry, flags=re.DOTALL)
         entry = re.sub(r"//.*$", "", entry, flags=re.MULTILINE).strip()
+        if not entry:
+            continue
         member_match = re.match(r"^([A-Za-z_$][\w$]*)(\?)?\s*:\s*(.+)$", entry, flags=re.DOTALL)
         if member_match is None:
             continue

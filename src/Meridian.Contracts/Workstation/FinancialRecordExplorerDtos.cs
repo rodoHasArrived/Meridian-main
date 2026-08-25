@@ -76,6 +76,14 @@ public sealed record FinancialRecordExplorerCellDto(
     FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default,
     string LinkHref = "");
 
+/// <summary>
+/// One row of a financial-record explorer.
+/// </summary>
+/// <param name="SourceRunId">
+/// The strategy run this row's record belongs to, when it has one. Row ids are composite and
+/// record-scoped (a ledger row is one account within one run), so a caller that needs the run
+/// itself must not take the row id apart to recover it. Null for records with no owning run.
+/// </param>
 public sealed record FinancialRecordExplorerRowDto(
     string RecordId,
     string RecordType,
@@ -85,12 +93,6 @@ public sealed record FinancialRecordExplorerRowDto(
     FinancialRecordExplorerTone Tone,
     IReadOnlyList<FinancialRecordExplorerCellDto> Cells,
     FinancialRecordExplorerSelectedRecordDto Detail,
-    /// <summary>
-    /// The strategy run this row's record belongs to, when it has one. Row ids are composite and
-    /// record-scoped (a ledger row is one account within one run), so a caller that needs the run
-    /// itself — to load its trial balance, say — must not take the row id apart to find it.
-    /// Null for record types with no owning run.
-    /// </summary>
     string? SourceRunId = null);
 
 public sealed record FinancialRecordExplorerSelectedRecordDto(
