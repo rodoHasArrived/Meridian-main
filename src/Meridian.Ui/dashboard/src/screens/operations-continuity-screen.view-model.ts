@@ -653,7 +653,7 @@ export interface OperationsContinuityScreenViewModel {
 
 export interface OperationsContinuityScreenServices {
   listWorkflows: (
-    filters?: { fundAccountId?: string; periodId?: string; status?: string },
+    filters?: OperationsContinuityWorkflowFilters,
     options?: ApiRequestOptions
   ) => Promise<OperationsContinuityWorkflowSummary[]>;
   getWorkflow: (workflowId: string, options?: ApiRequestOptions) => Promise<OperationsContinuityWorkflow>;
@@ -665,6 +665,18 @@ export interface OperationsContinuityScreenServices {
     filters?: { fundAccountId?: string; periodId?: string },
     options?: ApiRequestOptions
   ) => Promise<OperationsCloseCalendar>;
+}
+
+export interface OperationsContinuityWorkflowFilters {
+  fundAccountId?: string;
+  ledgerBookId?: string;
+  periodId?: string;
+  status?: string;
+}
+
+export interface OperationsContinuityScreenSelection {
+  initialWorkflowId?: string | null;
+  filters?: OperationsContinuityWorkflowFilters;
 }
 
 export interface BuildOperationsContinuityScreenViewModelOptions {
@@ -681,6 +693,7 @@ export interface BuildOperationsContinuityScreenViewModelOptions {
   closeCockpitError?: string | null;
   error: string | null;
   detailError: string | null;
+  selectionBlocked?: boolean;
   refresh: () => Promise<void>;
   selectWorkflow: (workflowId: string) => void;
 }
@@ -693,8 +706,14 @@ const defaultServices: OperationsContinuityScreenServices = {
 };
 
 export function useOperationsContinuityScreenViewModel(
-  services: OperationsContinuityScreenServices = defaultServices
+  services: OperationsContinuityScreenServices = defaultServices,
+  selection: OperationsContinuityScreenSelection = {}
 ): OperationsContinuityScreenViewModel {
+  const initialWorkflowId = selection.initialWorkflowId?.trim() || null;
+  const fundAccountId = selection.filters?.fundAccountId?.trim() || undefined;
+  const ledgerBookId = selection.filters?.ledgerBookId?.trim() || undefined;
+  const periodId = selection.filters?.periodId?.trim() || undefined;
+  const status = selection.filters?.status?.trim() || undefined;
   const [workflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
   const [detail, setDetail] = useState<OperationsContinuityWorkflow | null>(null);
@@ -707,6 +726,7 @@ export function useOperationsContinuityScreenViewModel(
   const [closeCockpitLoading, setCloseCockpitLoading] = useState(false);
   const [closeCockpitError, setCloseCockpitError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectionError, setSelectionError] = useState<string | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const mountedRef = useRef(true);
   const listRevisionRef = useRef(0);
@@ -752,16 +772,46 @@ export function useOperationsContinuityScreenViewModel(
     listAbortRef.current = controller;
     setLoading(true);
     setError(null);
+    setSelectionError(null);
     setDetailError(null);
+    if (initialWorkflowId) {
+      setSelectedWorkflowId(null);
+      setDetail(null);
+    }
 
     try {
-      const rows = await services.listWorkflows({}, { signal: controller.signal });
+      const filters: OperationsContinuityWorkflowFilters = {
+        ...(fundAccountId ? { fundAccountId } : {}),
+        ...(ledgerBookId ? { ledgerBookId } : {}),
+        ...(periodId ? { periodId } : {}),
+        ...(status ? { status } : {})
+      };
+      const rows = await services.listWorkflows(filters, { signal: controller.signal });
       if (!mountedRef.current || listRevisionRef.current !== revision) {
         return;
       }
 
       const sorted = [...rows].sort(compareWorkflowSummaries);
       setWorkflows(sorted);
+      if (initialWorkflowId) {
+        if (sorted.some((workflow) => workflow.workflowId === initialWorkflowId)) {
+          setSelectedWorkflowId(initialWorkflowId);
+        } else {
+          const scopeLabel = [
+            ledgerBookId ? `ledger book ${ledgerBookId}` : null,
+            periodId ? `accounting period ${periodId}` : null
+          ].filter(Boolean).join(" and ");
+          setSelectionError(
+            `Requested trusted close workflow ${initialWorkflowId} is not available${scopeLabel ? ` for ${scopeLabel}` : " in this workstation scope"}.`
+          );
+          setSelectedWorkflowId(null);
+          setDetail(null);
+          setCloseCalendar(null);
+          setCloseCockpit(null);
+        }
+        return;
+      }
+
       setSelectedWorkflowId((current) => {
         if (current && sorted.some((workflow) => workflow.workflowId === current)) {
           return current;
@@ -788,7 +838,7 @@ export function useOperationsContinuityScreenViewModel(
         listAbortRef.current = null;
       }
     }
-  }, [services]);
+  }, [fundAccountId, initialWorkflowId, ledgerBookId, periodId, services, status]);
 
   useEffect(() => {
     void refresh();
@@ -835,11 +885,15 @@ export function useOperationsContinuityScreenViewModel(
   }, [selectedWorkflowId, services]);
 
   const closeCockpitScope = useMemo(() => {
+    if (selectionError) {
+      return null;
+    }
+
     return workflows.find((workflow) => workflow.workflowId === selectedWorkflowId) ?? workflows[0] ?? null;
-  }, [selectedWorkflowId, workflows]);
+  }, [selectedWorkflowId, selectionError, workflows]);
 
   useEffect(() => {
-    if (loading) {
+    if (loading || selectionError) {
       return;
     }
 
@@ -877,10 +931,10 @@ export function useOperationsContinuityScreenViewModel(
           closeCalendarAbortRef.current = null;
         }
       });
-  }, [closeCockpitScope, loading, services]);
+  }, [closeCockpitScope, loading, selectionError, services]);
 
   useEffect(() => {
-    if (loading) {
+    if (loading || selectionError) {
       return;
     }
 
@@ -918,7 +972,7 @@ export function useOperationsContinuityScreenViewModel(
           closeCockpitAbortRef.current = null;
         }
       });
-  }, [closeCockpitScope, loading, services]);
+  }, [closeCockpitScope, loading, selectionError, services]);
 
   const selectWorkflow = useCallback((workflowId: string) => {
     setSelectedWorkflowId(workflowId);
@@ -936,11 +990,12 @@ export function useOperationsContinuityScreenViewModel(
     closeCockpit,
     closeCockpitLoading,
     closeCockpitError,
-    error,
+    error: error ?? selectionError,
     detailError,
+    selectionBlocked: selectionError !== null,
     refresh,
     selectWorkflow
-  }), [closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, workflows]);
+  }), [closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, selectionError, workflows]);
 }
 
 export function buildOperationsContinuityScreenViewModel({
@@ -957,10 +1012,13 @@ export function buildOperationsContinuityScreenViewModel({
   closeCockpitError = null,
   error,
   detailError,
+  selectionBlocked = false,
   refresh,
   selectWorkflow
 }: BuildOperationsContinuityScreenViewModelOptions): OperationsContinuityScreenViewModel {
-  const selectedSummary = workflows.find((workflow) => workflow.workflowId === selectedWorkflowId) ?? workflows[0] ?? null;
+  const selectedSummary = selectionBlocked
+    ? null
+    : workflows.find((workflow) => workflow.workflowId === selectedWorkflowId) ?? workflows[0] ?? null;
   const effectiveDetail = detail?.workflowId === selectedSummary?.workflowId ? detail : null;
   const gateSource = effectiveDetail?.gates ?? selectedSummary?.gates ?? [];
   const nextAction = buildNextActionViewModel({

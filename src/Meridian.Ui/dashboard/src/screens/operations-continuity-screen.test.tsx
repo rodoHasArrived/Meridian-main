@@ -1845,6 +1845,69 @@ describe("OperationsContinuityScreen", () => {
     });
   });
 
+  it("opens the exact workflow requested by the trusted-close route", async () => {
+    const ledgerBookId = "5dca0d66-b576-44d9-a24a-9f2651bf163c";
+    const periodId = "44a5b4ac-7068-4775-8978-d76138a9428e";
+    const requested = {
+      ...summary,
+      workflowId: "8ef225db-4648-479a-9a3a-020cc6b9d53c",
+      periodId: "2026-04",
+      updatedAtUtc: "2026-05-08T13:00:00Z",
+      status: "Closed" as const,
+      gates: gates.map((gate) => ({ ...gate, status: "Passed" as const, blockers: [] }))
+    };
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, requested]);
+    vi.mocked(getOperationsContinuityWorkflow).mockImplementation(async (id) => ({
+      ...detail,
+      workflowId: id,
+      periodId: id === requested.workflowId ? "2026-04" : "2026-05",
+      status: id === requested.workflowId ? "Closed" : "LedgerPostingDraft"
+    }));
+
+    renderScreen(
+      `/accounting/operations-continuity?workflowId=${requested.workflowId}&ledgerBookId=${ledgerBookId}&periodId=${periodId}`
+    );
+
+    await waitFor(() => {
+      expect(getOperationsContinuityWorkflows).toHaveBeenCalledWith(
+        { ledgerBookId, periodId },
+        expect.objectContaining({ signal: expect.any(AbortSignal) })
+      );
+      expect(getOperationsContinuityWorkflow).toHaveBeenCalledWith(
+        requested.workflowId,
+        expect.objectContaining({ signal: expect.any(AbortSignal) })
+      );
+      expect(screen.getByText("2026-04 close workflow")).toBeInTheDocument();
+    });
+    expect(screen.getByRole("row", { name: /2026-04 operations continuity workflow/i }))
+      .toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("row", { name: /2026-05 operations continuity workflow/i }))
+      .toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("fails closed when the trusted-close workflow is absent from the requested scope", async () => {
+    const missingWorkflowId = "1f97e7a3-b777-4af7-b006-892687f7a1bf";
+    const ledgerBookId = "5dca0d66-b576-44d9-a24a-9f2651bf163c";
+    const periodId = "44a5b4ac-7068-4775-8978-d76138a9428e";
+
+    renderScreen(
+      `/accounting/operations-continuity?workflowId=${missingWorkflowId}&ledgerBookId=${ledgerBookId}&periodId=${periodId}`
+    );
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(`Requested trusted close workflow ${missingWorkflowId} is not available`);
+    expect(alert).toHaveTextContent(`ledger book ${ledgerBookId}`);
+    expect(alert).toHaveTextContent(`accounting period ${periodId}`);
+    expect(getOperationsContinuityWorkflows).toHaveBeenCalledWith(
+      { ledgerBookId, periodId },
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    );
+    expect(getOperationsContinuityWorkflow).not.toHaveBeenCalled();
+    expect(screen.queryByText("2026-05 close workflow")).not.toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /2026-05 operations continuity workflow/i }))
+      .toHaveAttribute("aria-expanded", "false");
+  });
+
   it("renders loading copy instead of an empty-workflows message during initial load", () => {
     vi.mocked(getOperationsContinuityWorkflows).mockReturnValue(new Promise<OperationsContinuityWorkflowSummary[]>(() => undefined));
     vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(detail);
@@ -1856,9 +1919,9 @@ describe("OperationsContinuityScreen", () => {
   });
 });
 
-function renderScreen() {
+function renderScreen(initialEntry = "/accounting/operations-continuity") {
   return render(
-    <MemoryRouter initialEntries={["/accounting/operations-continuity"]}>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
         <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
       </Routes>
