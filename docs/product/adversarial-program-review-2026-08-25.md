@@ -53,12 +53,17 @@ and it is invisible to every gate the repository runs, because no gate compares 
 | Release attachment | **Landed** | tag `eval-v0.1.0-eval.1`; `8e9b11c3` attaches consumer setup to the evaluation prerelease |
 | Provenance at the ingress seam | **Partial** | `2361152c` threads real provider identity; the contract still permits an un-sourced print — `MarketTradeUpdate.cs:33` is `string? Source = null` |
 | Fund-economics activation | **Partial — the named alternative was skipped** | capital-call issuance wired (`CapitalCallFundingIntake.cs:236`); NAV-per-unit + unit register still at zero consumers |
-| `ContractMultiplier` on the durable fill record | **Open** | §3 below — and now demonstrably corrupting option session restore |
+| `ContractMultiplier` on the durable fill record | **Open — and wider than reported** | §3–§4 below: the multiplier never reaches portfolio economics on any path, so option books are 1/100-scaled live as well as on restore |
 | WPF state un-fork / desktop test job in the gate | **Open** | §7 below |
 
 ## 1. The accounting workstation reads the wrong book, and the accountants are locked out of it
 
 This is the headline finding. It has three independently verified parts that compound.
+
+> **Superseded in part.** PR #2824 landed after this was written and wired the posted-journal trial
+> balance and P&L into a new `AccountingPostedLedgerSection`, so **(b) below is history, not current
+> state**. (a) and (c) still stand: the run-scoped panel remains wired on `ViewStrategies`, which
+> `FundAccountant` and `Controller` do not hold. See the addendum at the end for the verified split.
 
 **(a) The screen reads the simulation ledger.** Accounting → Trial Balance binds to
 `getTrialBalance: (runId) => getRunTrialBalance(runId)`
@@ -432,11 +437,13 @@ close-management product can tell.
 
 ## Prioritized improvement list (by end-user value uplift)
 
-1. **Reconnect the accounting lane to its own ledger, and to its own roles.** Point Accounting →
-   Trial Balance and P&L at the period/report endpoints over the posted journal; move the run-scoped
-   view under Strategy with an explicit label; grant `FundAccountant` and `Controller` the
-   permissions their screens require. Until this lands, the product's flagship persona cannot open
-   the product's flagship screen, and the number on it is not the fund's. (§1)
+1. **Finish reconnecting the accounting lane to its own roles.** PR #2824 already did the first
+   half — the posted journal's trial balance and P&L now render in
+   `AccountingPostedLedgerSection`. What remains: retire the run-scoped panel from Accounting (or
+   relabel it a Strategy-run artifact and move it there), so the screen stops showing two books
+   under one name; and grant `FundAccountant` and `Controller` the permissions their screens
+   require, so the roles that own the records stop receiving a 403 on one of them. Until that lands,
+   the flagship persona still cannot open half of the flagship screen. (§1)
 2. **Split the overloaded permissions — and split the replacements too.** Add
    `ViewLedgerReports`/`ManageLedgerReports` and `ViewCompliance`/`ManageCompliance`; stop using
    `ManageDirectLending` as the fund-accounting grant and `ManageUsers` as the compliance grant. Note
