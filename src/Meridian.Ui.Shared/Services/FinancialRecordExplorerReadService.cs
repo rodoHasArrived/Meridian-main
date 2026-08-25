@@ -236,12 +236,14 @@ public sealed partial class FinancialRecordExplorerReadService
         // reading an older run's trial balance saw that run's rows under the newest run's header,
         // proof links and scope.
         var requestedRunId = ReadRequestedRunId(query);
-        var candidates = await LoadLedgerRunCandidatesAsync(readService, fundScope, ct).ConfigureAwait(false);
+        var candidateSet = await LoadLedgerRunCandidatesAsync(readService, fundScope, requestedRunId, ct)
+            .ConfigureAwait(false);
+        var candidates = candidateSet.Candidates;
         var source = await TryLoadLedgerRunDetailAsync(
             readService,
             fundScope,
             candidates,
-            requestedRunId,
+            candidateSet.Requested,
             ct).ConfigureAwait(false);
         if (source is null)
         {
@@ -657,6 +659,15 @@ public sealed partial class FinancialRecordExplorerReadService
     }
 
     /// <summary>
+    /// One pass over the tenant's run history: the bounded picker list, and the run the caller
+    /// named when it is one they may read. <see cref="Requested"/> may also appear in
+    /// <see cref="Candidates"/> — it is only absent from the list when it sits past the bound.
+    /// </summary>
+    private readonly record struct LedgerRunCandidateSet(
+        IReadOnlyList<StrategyRunSummary> Candidates,
+        StrategyRunSummary? Requested);
+
+    /// <summary>
     /// The runs this caller may pick between, newest first.
     /// <para>
     /// Read from the run summaries alone: a run that retained a ledger names it in
@@ -664,10 +675,17 @@ public sealed partial class FinancialRecordExplorerReadService
     /// whose ledger turns out to hold no lines still selects — the explorer's empty state says so,
     /// which is honest, where omitting it would silently deny an operator a run they own.
     /// </para>
+    /// <para>
+    /// A run named explicitly is carried out of this same pass even when it sits past the bound.
+    /// Resolving it separately meant reading the tenant's entire run history a second time — and
+    /// reloading the promotion lookup with it — so an older deep link grew more expensive the more
+    /// run history the tenant retained.
+    /// </para>
     /// </summary>
-    private async Task<IReadOnlyList<StrategyRunSummary>> LoadLedgerRunCandidatesAsync(
+    private async Task<LedgerRunCandidateSet> LoadLedgerRunCandidatesAsync(
         StrategyRunReadService readService,
         FundOwnershipScope fundScope,
+        string? requestedRunId,
         CancellationToken ct)
     {
         var readScope = new StrategyRunReadScope(fundScope.TenantId, fundScope.CompanyId);
@@ -676,9 +694,20 @@ public sealed partial class FinancialRecordExplorerReadService
             .ConfigureAwait(false);
 
         var candidates = new List<StrategyRunSummary>();
+        StrategyRunSummary? requested = null;
         foreach (var run in runs)
         {
             if (string.IsNullOrWhiteSpace(run.LedgerReference))
+            {
+                continue;
+            }
+
+            var isRequested = requestedRunId is not null
+                && string.Equals(run.RunId, requestedRunId, StringComparison.OrdinalIgnoreCase);
+
+            // Past the bound only the run the caller named is still worth an ownership check.
+            // Nothing else can enter the picker, and each check is its own read.
+            if (candidates.Count >= LedgerRunCandidateLimit && !isRequested)
             {
                 continue;
             }
@@ -688,14 +717,23 @@ public sealed partial class FinancialRecordExplorerReadService
                 continue;
             }
 
-            candidates.Add(run);
-            if (candidates.Count >= LedgerRunCandidateLimit)
+            if (isRequested)
+            {
+                requested = run;
+            }
+
+            if (candidates.Count < LedgerRunCandidateLimit)
+            {
+                candidates.Add(run);
+            }
+
+            if (candidates.Count >= LedgerRunCandidateLimit && (requestedRunId is null || requested is not null))
             {
                 break;
             }
         }
 
-        return candidates;
+        return new LedgerRunCandidateSet(candidates, requested);
     }
 
     /// <summary>
@@ -712,28 +750,21 @@ public sealed partial class FinancialRecordExplorerReadService
         StrategyRunReadService readService,
         FundOwnershipScope fundScope,
         IReadOnlyList<StrategyRunSummary> candidates,
-        string? requestedRunId,
+        StrategyRunSummary? requestedRun,
         CancellationToken ct)
     {
         var readScope = new StrategyRunReadScope(fundScope.TenantId, fundScope.CompanyId);
-        if (requestedRunId is not null)
+        // Resolved by its own ownership check rather than by membership of the candidate list. The
+        // list is bounded so the picker stays a picker, and a tenant with more retained runs than
+        // that bound would otherwise have a perfectly valid deep link fall through to a newer run
+        // -- while the screen's own trial-balance and journal requests still used the run the URL
+        // asked for, recombining evidence from two different runs.
+        if (requestedRun is not null)
         {
-            // Resolved by its own ownership check rather than by membership of the candidate list.
-            // The list is bounded so the picker stays a picker, and a tenant with more retained
-            // runs than that bound would otherwise have a perfectly valid deep link fall through
-            // to a newer run -- while the screen's own trial-balance and journal requests still
-            // used the run the URL asked for, recombining evidence from two different runs.
-            var requested = candidates.FirstOrDefault(run =>
-                string.Equals(run.RunId, requestedRunId, StringComparison.OrdinalIgnoreCase))
-                ?? await TryResolveRunOutsideCandidatesAsync(readService, fundScope, readScope, requestedRunId, ct)
-                    .ConfigureAwait(false);
-            if (requested is not null)
+            var detail = await readService.GetRunDetailAsync(requestedRun.RunId, readScope, ct).ConfigureAwait(false);
+            if (detail?.Ledger?.TrialBalance.Count > 0)
             {
-                var detail = await readService.GetRunDetailAsync(requested.RunId, readScope, ct).ConfigureAwait(false);
-                if (detail?.Ledger?.TrialBalance.Count > 0)
-                {
-                    return detail;
-                }
+                return detail;
             }
         }
 
@@ -747,34 +778,6 @@ public sealed partial class FinancialRecordExplorerReadService
         }
 
         return null;
-    }
-
-    /// <summary>
-    /// A run named explicitly but sitting past the picker's bound. Read through the same tenant
-    /// read scope and put through the same fund-ownership check the candidate list applies, so
-    /// widening the reachable set here does not widen what any caller may read.
-    /// </summary>
-    private async Task<StrategyRunSummary?> TryResolveRunOutsideCandidatesAsync(
-        StrategyRunReadService readService,
-        FundOwnershipScope fundScope,
-        StrategyRunReadScope readScope,
-        string requestedRunId,
-        CancellationToken ct)
-    {
-        var runs = await readService
-            .GetRunsAsync(strategyId: null, runType: null, readScope, ct)
-            .ConfigureAwait(false);
-
-        var requested = runs.FirstOrDefault(run =>
-            string.Equals(run.RunId, requestedRunId, StringComparison.OrdinalIgnoreCase));
-        if (requested is null || string.IsNullOrWhiteSpace(requested.LedgerReference))
-        {
-            return null;
-        }
-
-        return await IsRunOwnedByScopeAsync(requested, fundScope, ct).ConfigureAwait(false)
-            ? requested
-            : null;
     }
 
     /// <summary>

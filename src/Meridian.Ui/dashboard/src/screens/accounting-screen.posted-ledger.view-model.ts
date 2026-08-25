@@ -678,6 +678,19 @@ export function useAccountingPostedLedgerViewModel(
   // empty. Only a successful response settles the question -- a failure leaves it open, because
   // an empty list from an outage means nothing about what the book holds.
   const [periodsLoadedForBookId, setPeriodsLoadedForBookId] = useState<string | null>(null);
+  // A tab that stays mounted while idle keeps its last successful period response. On the way back
+  // it refreshes -- and until that response lands, its cached list is not an authority on what the
+  // book holds: a sibling tab may have selected a period closed since. Left marked settled, route
+  // resolution judged the sibling's period against the stale list, rejected it, and wrote the old
+  // one back before the new response arrived.
+  //
+  // Reset during render rather than in an effect. Route resolution reads `periodsSettled` in the
+  // very commit `enabled` flips, and an effect's write lands one render too late to stop it.
+  const [settledWhileEnabled, setSettledWhileEnabled] = useState(enabled);
+  if (settledWhileEnabled !== enabled) {
+    setSettledWhileEnabled(enabled);
+    setPeriodsLoadedForBookId(null);
+  }
   const [periods, setPeriods] = useState<LedgerPeriod[]>([]);
   const [periodsLoading, setPeriodsLoading] = useState(false);
   const [periodsError, setPeriodsError] = useState<ApiErrorDisplay | null>(null);

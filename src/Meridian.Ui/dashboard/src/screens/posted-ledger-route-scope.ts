@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { AccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
 
@@ -43,30 +43,48 @@ export function usePostedLedgerRouteScope(
   // book requested" so a stale bookmark still opens the surface on its default.
   const resolvedRequestedBookId = bookOptions.find((option) => idsMatch(option.id, requestedBookId))?.id ?? null;
 
-  const appliedBookIdRef = useRef<string | null>(null);
-  const appliedPeriodIdRef = useRef<string | null>(null);
+  // State, not refs. The write-back effect below gates on these, and a ref cannot be an effect
+  // dependency: it never re-ran when the gate opened, so a link that resolved a moment late was
+  // simply never written back.
+  const [appliedBookId, setAppliedBookId] = useState<string | null>(null);
+  const [appliedPeriodId, setAppliedPeriodId] = useState<string | null>(null);
 
   useEffect(() => {
     // Books have to have landed before a requested one can be judged present or absent.
-    if (!active || !requestedBookId || requestedBookId === appliedBookIdRef.current || bookOptions.length === 0) {
+    if (!active || !requestedBookId || requestedBookId === appliedBookId || bookOptions.length === 0) {
       return;
     }
 
-    appliedBookIdRef.current = requestedBookId;
+    setAppliedBookId(requestedBookId);
     if (resolvedRequestedBookId) {
       selectBook(resolvedRequestedBookId);
     }
-  }, [active, bookOptions, requestedBookId, resolvedRequestedBookId, selectBook]);
+  }, [active, appliedBookId, bookOptions, requestedBookId, resolvedRequestedBookId, selectBook]);
 
   // Applied only once the requested book is the selected one: periods are scoped to the book, so
   // judging a period against the previous book's set would decline a perfectly good link and land
   // silently on that book's default — a deep link opening a different period than it named.
   useEffect(() => {
-    if (!active || !requestedPeriodId || requestedPeriodId === appliedPeriodIdRef.current) {
+    if (!active || !requestedPeriodId || requestedPeriodId === appliedPeriodId) {
       return;
     }
 
-    if (resolvedRequestedBookId && resolvedRequestedBookId !== selectedBookId) {
+    // The period belongs to the book the link named, so nothing about it can be judged until that
+    // book request has itself been resolved.
+    if (requestedBookId !== null && requestedBookId !== appliedBookId) {
+      return;
+    }
+
+    // The named book is not the one on screen — it is not in this deployment, or the operator has
+    // since chosen another. Either way the requested period belongs to a book nobody is looking
+    // at, so the request is over. Leaving it open blocked every later write-back: when the named
+    // book's periods failed to load and the operator moved to one that worked, the screen showed
+    // the new book under a URL still naming the failing one, and reopening the link went back to
+    // it. A book chosen by hand supersedes a link that could not be honoured.
+    const namedBookIsAbsent = requestedBookId !== null && resolvedRequestedBookId === null;
+    const movedOffNamedBook = resolvedRequestedBookId !== null && resolvedRequestedBookId !== selectedBookId;
+    if (namedBookIsAbsent || movedOffNamedBook) {
+      setAppliedPeriodId(requestedPeriodId);
       return;
     }
 
@@ -74,17 +92,29 @@ export function usePostedLedgerRouteScope(
     // periods at all is an answer, not a pending state: treating it as pending left the request
     // permanently unresolved, so the write-back below never ran and the URL kept naming the empty
     // book and its stale period even after the operator moved to a populated one — a copied or
-    // refreshed link then reopened the wrong scope.
+    // refreshed link then reopened the wrong scope. A request that FAILED is not such an answer,
+    // which is why this waits on a successful settle rather than on loading alone.
     if (!periodsSettled) {
       return;
     }
 
-    appliedPeriodIdRef.current = requestedPeriodId;
+    setAppliedPeriodId(requestedPeriodId);
     const matched = periodOptions.find((option) => idsMatch(option.id, requestedPeriodId));
     if (matched) {
       selectPeriod(matched.id);
     }
-  }, [active, periodOptions, periodsSettled, requestedPeriodId, resolvedRequestedBookId, selectPeriod, selectedBookId]);
+  }, [
+    active,
+    appliedBookId,
+    appliedPeriodId,
+    periodOptions,
+    periodsSettled,
+    requestedBookId,
+    requestedPeriodId,
+    resolvedRequestedBookId,
+    selectPeriod,
+    selectedBookId
+  ]);
 
   // The book goes into the URL with the period. Without it a link named a period but not the book
   // it belongs to, so reopening it resolved against whichever book sorts first.
@@ -93,8 +123,8 @@ export function usePostedLedgerRouteScope(
       return;
     }
 
-    const bookPending = requestedBookId !== null && requestedBookId !== appliedBookIdRef.current;
-    const periodPending = requestedPeriodId !== null && requestedPeriodId !== appliedPeriodIdRef.current;
+    const bookPending = requestedBookId !== null && requestedBookId !== appliedBookId;
+    const periodPending = requestedPeriodId !== null && requestedPeriodId !== appliedPeriodId;
     if (bookPending || periodPending) {
       return;
     }
@@ -122,5 +152,15 @@ export function usePostedLedgerRouteScope(
       nextParams.delete("periodId");
     }
     setSearchParams(nextParams, { replace: true });
-  }, [active, requestedBookId, requestedPeriodId, searchParams, selectedBookId, selectedPeriodId, setSearchParams]);
+  }, [
+    active,
+    appliedBookId,
+    appliedPeriodId,
+    requestedBookId,
+    requestedPeriodId,
+    searchParams,
+    selectedBookId,
+    selectedPeriodId,
+    setSearchParams
+  ]);
 }

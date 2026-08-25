@@ -504,6 +504,65 @@ describe("finance standard pages", () => {
     expect(journalBookSelect()?.value).toBe(FEEDER_BOOK_ID);
   });
 
+  it("waits for the returning tab's own period response before judging the sibling's selection", async () => {
+    // The retained tab keeps its last successful period list while idle, and the marker saying that
+    // list was authoritative survived with it. Coming back, route resolution judged the sibling
+    // tab's period against the STALE list -- rejected it, and wrote the old period back before the
+    // refresh landed, silently undoing the operator's selection on the way between tabs.
+    mockPostedBook();
+    const AUGUST_PERIOD_ID = "44444444-4444-4444-4444-444444444444";
+    const july = {
+      periodId: LEDGER_PERIOD_ID,
+      ledgerBookId: LEDGER_BOOK_ID,
+      fiscalYear: 2026,
+      periodNo: 7,
+      label: "July 2026",
+      startDate: "2026-07-01",
+      endDate: "2026-07-31",
+      status: "HardClosed",
+      openedAt: "2026-07-01T00:00:00Z",
+      closedAt: "2026-08-02T00:00:00Z",
+      version: 1
+    };
+    const august = {
+      ...july,
+      periodId: AUGUST_PERIOD_ID,
+      periodNo: 8,
+      label: "August 2026",
+      startDate: "2026-08-01",
+      endDate: "2026-08-31",
+      closedAt: "2026-09-02T00:00:00Z"
+    };
+    // August closes between the first tab's load and the second's, so only the later responses
+    // carry it -- which is exactly what makes the retained list stale.
+    vi.mocked(ledgerReportsApi.getLedgerPeriods)
+      .mockResolvedValueOnce([july] as never)
+      .mockResolvedValue([july, august] as never);
+
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+    await waitForAsyncEffects();
+
+    const journalPeriodSelect = () => document.getElementById("ledger-period-select") as HTMLSelectElement | null;
+    expect(journalPeriodSelect()?.value).toBe(LEDGER_PERIOD_ID);
+
+    fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
+    await waitForAsyncEffects();
+
+    // The operator picks the period that closed since, on the tab that can see it.
+    const trialBalancePeriodSelect =
+      document.getElementById("trial-balance-period-select") as HTMLSelectElement | null;
+    expect(trialBalancePeriodSelect).not.toBeNull();
+    fireEvent.change(trialBalancePeriodSelect!, { target: { value: AUGUST_PERIOD_ID } });
+    await waitForAsyncEffects();
+    expect(trialBalancePeriodSelect?.value).toBe(AUGUST_PERIOD_ID);
+
+    fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    expect(journalPeriodSelect()?.value).toBe(AUGUST_PERIOD_ID);
+  });
+
   it("offers no ledger filter it does not apply", async () => {
     // "Unposted", "Reversals", "Manual JEs" and "System Generated" changed a label and nothing
     // else, and the results header reported the unfiltered count as that view's. On a governed
