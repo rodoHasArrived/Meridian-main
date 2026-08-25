@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-24 (independent verification pass, post-resolution; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-08-25 (verification pass; independent verification pass 2026-08-24, post-resolution; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -49,6 +49,12 @@ risks that compound as new asset classes land.
 > it: no catalog-to-validator parity guard, and a CSV import path that fails for **every** asset
 > class because the parser never populates the terms payloads the create path requires. See
 > [Independent verification pass](#independent-verification-pass--2026-08-24-post-resolution).
+>
+> **Verification pass, 2026-08-25.** Re-read against `bb43e0e6`. Both surviving findings above are
+> still open; the pass adds why V2 escaped review (no test exercises the CSV path at all) and files
+> two further items — the workbench UI does not distinguish its merging from its annotation-only
+> field namespace, and the profile-backed class tables in `SecurityMasterService` duplicate catalog
+> data with no parity guard. See [Verification pass — 2026-08-25](#verification-pass--2026-08-25).
 
 ---
 
@@ -675,6 +681,109 @@ a non-envelope patch now refuses rather than silently discarding the requested v
 (`SecurityMasterService.cs:921-949`), and a repin resolves its class from the submitted envelope
 (`:88-107, 894-919`) — but the shape is unchanged and the hard-coded tables have grown. It stays
 part of the standing eleven-registry cost in finding 4 rather than a separate item.
+
+---
+
+## Verification pass — 2026-08-25
+
+Re-read against `bb43e0e6`. No code was changed by this pass and no tests were run.
+
+Only one commit has touched the Security Master since the resolution pass (`d7e81bd2`, the
+resolution itself), so the structural findings above stand as written. Both surviving findings from
+the independent verification pass are **still open at HEAD**; this pass adds evidence for why V2
+survived review, and files two items that earlier passes either did not reach or recorded as a note.
+
+### V1 — still open; the instance is closed, the guard is not
+
+Every one of the 26 catalog classes now has a validator arm in `DefaultAssetClassValidators.Create`
+(`AssetClassValidatorRegistry.cs:69-310`), so no record currently falls to the
+`SM_ASSET_CLASS_UNSUPPORTED` else-branch. But the parity **guard** is still absent:
+`AssetClassValidatorRegistry.SupportedAssetClasses` is referenced in exactly two places outside the
+registry — the error message it feeds (`SecurityValidationService.cs:128`) and
+`CorporateActionTypeDescriptorCatalogTests:113`, which is not a parity assertion. The catalog is
+locked to four other surfaces and not to this one. Unchanged, and still the cheapest durable item in
+this document.
+
+### V2 — still open, still reachable, and untested
+
+`SecurityMasterCsvParser.ParseRow` still validates `Name` and defaults `Currency`, then discards
+both, constructing its request with `CommonTerms` and `AssetSpecificTerms` hardcoded to `{}`
+(`SecurityMasterCsvParser.cs:143-155`). `SecurityMasterImportService` hands that straight to
+`CreateAsync` (`:164`), whose `ToCommonTerms` requires `displayName` and `currency`
+(`SecurityMasterMapping.cs:214-217`, throwing at `:698-701`). Every CSV row still fails at create
+time, for every asset class. The path is live on both UI lanes — `SecurityMasterViewModel.cs:37`
+(WPF) and `SecurityMasterEndpoints.cs:901` (web).
+
+**New evidence — the test suite cannot see this.** Both `SecurityMasterImportServiceTests` files
+construct the real `SecurityMasterCsvParser` and then never feed it CSV: each builds
+`CreateSecurityRequest` objects by hand with a well-formed `displayName`/`currency` payload and
+drives the service through the `.json` route
+(`tests/Meridian.Tests/SecurityMaster/SecurityMasterImportServiceTests.cs:52-88`;
+`tests/Meridian.Tests/Application/SecurityMaster/SecurityMasterImportServiceTests.cs:23-91`). There
+is no test anywhere that parses a CSV row and maps it through `SecurityMasterMapping`. The fix needs
+that end-to-end test as much as it needs the payload change — otherwise the same gap reopens.
+
+### V3 — the workbench UI does not distinguish its two surfaces, and its own example is the wrong one
+
+The two-surface contract is enforced precisely on the server.
+`EnsureFieldEditIsSchemaValidAsync` schema-validates and canonicalizes only paths under
+`assetSpecificTerms.`; any other path is **returned unchanged** for "the free annotation surface"
+(`SecurityMasterWorkbenchCommandService.cs:898-903`), and
+`ApprovedFieldEditCanonicalMergeHandler` merges only paths matching
+`TargetsAssetSpecificTerms` (`:81`). Everything else stays an overlay annotation by the documented
+D2 design.
+
+The browser editor exposes none of that. Field path is a free-text `<Input>` whose placeholder is
+`EconomicDefinition.Coupon` (`security-passport-editor.tsx:332`) — a path in the **annotation-only**
+namespace. An operator following the UI's own worked example runs the full Draft → Submitted →
+Approved → Published maker-checker cycle, with an independent reviewer and a justification, on a
+coupon correction that by design never reaches canonical terms, cash-flow projection, amortization,
+pricing, or NAV. Nothing in the editor labels the namespaces, constrains the input to the record's
+declared schema fields, or warns that the entered path will not merge.
+
+Finding 5 is closed as an architecture matter: the merge path exists and works. This is the
+operator-facing half that did not land with it, and it can produce a governed-but-inert correction
+that reads as applied. The fix is presentational, not architectural — drive the input from
+`SecurityAssetTermsSchema` for the record's asset class (the same table the server validates
+against), and mark annotation-only paths as such at entry.
+
+### V4 — the profile-backed class tables are hand-maintained and now provably derivable
+
+Recorded as "noted, not re-filed" last pass; this pass files it, because the duplication is now
+demonstrable rather than suspected. `SecurityMasterService` carries three hand-written string tables
+governing asset-class behavior:
+
+- `IsProfileBackedCustomAsset`'s seven-class allow-list (`:961-972`),
+- `KnownProfileAssetClasses`, profile id → asset class (`:981-989`),
+- `AssetClassMetadataKeywords`, class → accepted classification keywords (`:992-1000`).
+
+None is derived from a catalog and none is covered by a parity test — they sit below the four guards
+that protect the catalog's other surfaces. `KnownProfileAssetClasses` in particular duplicates data
+the profile catalog already holds: `SecurityAssetProfileCatalog.Profile(...)` takes the asset class
+as its third argument, so `structured-credit-io-po → StructuredCredit` is declared in both places
+(`SecurityAssetProfileCatalog.cs:74-76`). Adding a profile-backed alternative class today means
+editing all three tables inside an application service, with nothing failing at commit time if one
+is missed.
+
+Related, from the same catalog entry: the `structured-credit-io-po` profile still declares
+`factorSchedule` as a **required text** field (`SecurityAssetProfileCatalog.cs:84`) and declares no
+slot for the typed `factorScheduleEntries` that finding 8 established as canonical. Profile-backed
+structured-credit records are therefore still required to carry the free-text shape the typed
+schedule replaced.
+
+### Priorities after this pass
+
+1. **Fix the CSV import payload, with an end-to-end parser→create test.** The only live functional
+   break in the subsystem: an operator-reachable import path that fails every row on both UI lanes,
+   invisible to a test suite that constructs its requests by hand.
+2. **Add the catalog↔validator parity guard.** A fifth guard mirroring the four that exist; the
+   cheapest durable item here, unchanged for two passes.
+3. **Close the workbench UI's half of finding 5.** Schema-drive the field-path input and label the
+   annotation-only namespace, so a governed correction cannot silently be inert.
+4. **Derive or test-lock the profile-backed class tables**, and give the structured-credit profile a
+   typed factor-schedule field.
+5. *Standing, unchanged:* codec generation from `SecurityAssetTermsSchema`; relational projections
+   for the 15 private/alternative classes; valid-time term history.
 
 ---
 
