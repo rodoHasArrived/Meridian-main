@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 211,
-    "warning": 211
+    "total": 213,
+    "warning": 213
   },
   "failed": false,
   "findings": [
@@ -524,6 +524,26 @@
       },
       "message": "Business table ledger.journal_entries does not have a table comment.",
       "object": "ledger.journal_entries",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "journal_entry_integrity_seals"
+      },
+      "message": "Business table ledger.journal_entry_integrity_seals does not have a table comment.",
+      "object": "ledger.journal_entry_integrity_seals",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "journal_entry_open_postings"
+      },
+      "message": "Business table ledger.journal_entry_open_postings does not have a table comment.",
+      "object": "ledger.journal_entry_open_postings",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -2291,5 +2311,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "fecc7edd8c8b92a5a146e68754848cfd360e29f1e6b020a5745f1afbe802cb34"
+  "fingerprint": "90bbf89fb9a2a778bc81ca5b9e8f84e29ebf4fe053350bf0d282c833a522cc40"
 }

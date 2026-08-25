@@ -155,6 +155,15 @@ erDiagram
     ledger_journal_entries_global_sequence_seq {
         text catalogued_object
     }
+    ledger_journal_entry_integrity_seals {
+        uuid journal_entry_id PK,FK
+        integer leg_count
+        timestamp_with_time_zone sealed_at
+    }
+    ledger_journal_entry_open_postings {
+        uuid journal_entry_id PK,FK
+        xid8 opening_xid
+    }
     ledger_journal_leg_currency_affirmations {
         uuid affirmation_id PK
         uuid ledger_book_id FK
@@ -373,6 +382,8 @@ erDiagram
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_originating_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_disposal_mutation_batch_id_fkey"
     ledger_journal_entries ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_journal_entry_integrity_seals : "journal_entry_integrity_seals_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_journal_entry_open_postings : "journal_entry_open_postings_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_journal_legs : "fk_journal_legs_journal_entry"
     ledger_journal_entries ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lots : "tax_lots_source_journal_entry_id_fkey"
