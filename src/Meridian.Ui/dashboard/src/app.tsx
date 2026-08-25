@@ -130,6 +130,7 @@ const CloseCalendarScreen = lazy(() => import("@/screens/finance-standard-pages-
 const LedgerExplorerScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.LedgerExplorerScreen })));
 const ReconciliationMatchWorkbenchScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReconciliationMatchWorkbenchScreen })));
 const StatementImportScreen = lazy(() => import("@/screens/statement-import-screen").then((module) => ({ default: module.StatementImportScreen })));
+const CapitalCallIssuanceScreen = lazy(() => import("@/screens/capital-call-issuance-screen").then((module) => ({ default: module.CapitalCallIssuanceScreen })));
 const MarginControlCenterScreen = lazy(() => import("@/screens/margin-control-center-screen").then((module) => ({ default: module.MarginControlCenterScreen })));
 const ReportPreviewValidationScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReportPreviewValidationScreen })));
 const ReportRunDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReportRunDetailScreen })));
@@ -611,6 +612,7 @@ function AppShell({
   const dataRouteElement = (
     <DataScreen
       data={data}
+      session={session}
       providerConnections={providerConnections}
       providerReadiness={providerReadiness}
       providerRoutingConnections={providerRoutingConnections}
@@ -827,13 +829,14 @@ function AppShell({
                   <Route path="/accounting/journal-entries/detail" element={<JournalEntryDetailScreen />} />
                   <Route path="/accounting/reconciliation/match" element={<ReconciliationMatchWorkbenchScreen data={accounting} />} />
                   <Route path="/accounting/statement-import" element={<StatementImportScreen />} />
+                  <Route path="/accounting/capital-calls" element={<CapitalCallIssuanceScreen />} />
                   <Route path="/accounting/margin-control" element={<MarginControlCenterScreen />} />
                   <Route path="/accounting/close-calendar" element={<CloseCalendarScreen data={accounting} />} />
                   <Route path="/accounting/approvals/inbox" element={<ApprovalInboxScreen data={accounting} />} />
                   <Route path="/accounting/security-master/detail" element={<AssetDetailScreen />} />
                   <Route path="/accounting/evidence/detail" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/accounting/evidence" element={<LegacyWorkspaceRedirect />} />
-                  <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} />} />
+                  <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} session={session} />} />
                   <Route path="/reporting/operations-record" element={<OperationsRecordReleaseScreen data={data} reporting={reporting} />} />
                   <Route path="/reporting/library" element={<ReportLibraryScreen data={reporting} />} />
                   <Route path="/reporting/run" element={<ReportRunParametersScreen data={reporting} accounting={accounting} />} />

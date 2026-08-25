@@ -62,7 +62,7 @@ public static class ReplayEndpoints
 
             return Results.Json(new { files = files.Take(500), total = files.Count, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetReplayFiles")
+        .WithName("GetReplayFiles").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // Start replay - creates a replay session backed by JsonlReplayer
@@ -189,7 +189,7 @@ public static class ReplayEndpoints
                 elapsed = DateTimeOffset.UtcNow - session.StartedAt
             }, jsonOptions);
         })
-        .WithName("GetReplayStatus")
+        .WithName("GetReplayStatus").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(404);
 
@@ -270,7 +270,7 @@ public static class ReplayEndpoints
 
             return Results.Json(new { events, total = events.Count, filePath = resolvedFilePath }, jsonOptions);
         })
-        .WithName("PreviewReplayEvents")
+        .WithName("PreviewReplayEvents").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // Replay stats - returns file statistics using MemoryMappedJsonlReader
@@ -307,7 +307,7 @@ public static class ReplayEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetReplayStats")
+        .WithName("GetReplayStats").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
     }
 

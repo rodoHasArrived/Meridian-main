@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.TestSupport;
@@ -15,7 +16,6 @@ using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -76,11 +76,14 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
         _env.Capture(
             "MDC_AUTH_MODE",
             "MDC_API_KEY",
+            "MDC_ANONYMOUS_ROLE",
+            "MDC_ANONYMOUS_TENANT",
             "MDC_USERNAME",
             "MDC_PASSWORD_HASH",
             "MDC_USERS",
             "MDC_DISABLE_RATE_LIMIT",
             "MERIDIAN_USE_INMEMORY_GOVERNANCE",
+            DemoWorkspaceLayout.DemoModeEnvironmentVariable,
             "DOTNET_ENVIRONMENT",
             "ASPNETCORE_ENVIRONMENT",
             "LEAN_PATH",
@@ -94,11 +97,14 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
 
         Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "optional");
         Environment.SetEnvironmentVariable("MDC_API_KEY", null);
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", null);
         Environment.SetEnvironmentVariable("MDC_USERNAME", null);
         Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
         Environment.SetEnvironmentVariable("MDC_USERS", null);
         Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", "true");
         Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
+        Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, "true");
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Test");
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
         Environment.SetEnvironmentVariable("LEAN_PATH", null);
@@ -111,7 +117,12 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
         Directory.CreateDirectory(_tempRoot);
         var baseDataRoot = Path.Combine(_tempRoot, "data");
 
-        // Seed the isolated demo workspace exactly as `--seed-demo --seed-only` would.
+        // Seed the isolated demo workspace directly. This is NOT what `--seed-demo --seed-only`
+        // does end to end: this test then writes the demo config itself a few lines below, whereas
+        // the CLI has to produce it. Claiming equivalence here is how a real defect stayed hidden —
+        // seed-only returned before writing that config, so `--demo` refused to reopen a workspace
+        // it had just seeded. The clean-environment step in .github/workflows/demo-smoke.yml is
+        // what actually exercises the CLI contract.
         var seeder = new DemoWorkspaceSeeder(baseDataRoot);
         await seeder.SeedAsync();
 
@@ -134,18 +145,24 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
 
         _app = builder.Build();
         _providerCatalogLease = ProviderCatalogTestLease.Capture(_app.Services);
-        _app.Use(async (context, next) =>
-        {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "demo-smoke";
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.AdminMaintenance;
-            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = DemoTenantBlueprint.CompanyId;
-            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = DemoTenantBlueprint.TenantId;
-            await next();
-        });
+        _app.UseLoginSessionAuthentication();
         _app.MapWorkstationEndpoints(ServerJsonOptions);
+        _app.MapFirstRunEndpoints();
 
         await _app.StartAsync();
         _client = _app.GetTestClient();
+    }
+
+    [Theory]
+    [InlineData("/api/workstation/session")]
+    [InlineData("/api/workstation/workflows/presets")]
+    [InlineData("/api/workstation/settings/feature-capabilities")]
+    [InlineData("/api/workstation/first-run/")]
+    public async Task ReadOnlyDemoBootstrapRoutes_AcceptTheSeededLocalOperator(string route)
+    {
+        var response = await _client!.GetAsync(route);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]

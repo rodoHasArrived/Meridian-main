@@ -60,6 +60,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private readonly ConcurrentDictionary<ExecutionReport, ExecutionReport> _pendingFillReservations = new();
     // Contract multiplier per order id, for derivative fills.
     private readonly ConcurrentDictionary<string, decimal> _orderContractMultipliers = new(StringComparer.OrdinalIgnoreCase);
+    // Order ids the active gateway routes as face value priced as a percentage of par, so the
+    // fill booking path scales the clean price exactly as the pre-trade rails valued the order.
+    private readonly ConcurrentDictionary<string, bool> _orderFaceValueSizing = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentQueue<ExecutionReport> _completedFillReportOrder = new();
     private readonly object _disposeSync = new();
     private long _droppedExecutionReports;
@@ -504,6 +507,17 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 _orderContractMultipliers.TryRemove(orderId, out _);
             }
 
+            if (usesFaceValuePercentageOfPar)
+            {
+                _orderFaceValueSizing[orderId] = true;
+            }
+            else
+            {
+                // A terminal client-order id may be reused. Do not let a prior bond order's
+                // price scaling leak into fills for an equity replacement order.
+                _orderFaceValueSizing.TryRemove(orderId, out _);
+            }
+
             if (safeRequest.FundAccountId is { } fundAccountId)
             {
                 _orderFinancialAccountIds[orderId] = fundAccountId.ToString("D");
@@ -569,6 +583,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
 
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
                 LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(safeRequest.Symbol), safeRequest.Side, safeRequest.Quantity, updatedState.Status);
+
+            // A bracket/OCO submission spawns broker-side child legs with their own order ids.
+            // Registering them here makes their execution reports land on tracked state instead
+            // of being dropped as "not tracked", and puts them in the book a kill-switch sweep
+            // enumerates.
+            RegisterGatewayChildOrders(orderId, updatedState, report);
 
             // Once the broker has acknowledged a fill, its accounting handoff is authoritative.
             // Caller cancellation, paper-session persistence, or audit failures must never run
@@ -1293,6 +1313,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private static bool IsTerminal(OrderStatus status) =>
         status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired;
 
+
     /// <summary>
     /// Long-running consumer of <see cref="IExecutionGateway.StreamExecutionReportsAsync"/>.
     /// Applies asynchronous reports (partial fills, rejects, cancels from a live broker) to
@@ -1352,91 +1373,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         }
     }
 
-    private async Task ReplayRetainedAccountingHandoffsAsync(CancellationToken ct)
-    {
-        if (_tradeEventPublisher is null || _tradeFillHandoffFailureStore is null)
-            return;
-
-        IReadOnlyList<RetainedTradeFillHandoffFailure> retained;
-        try
-        {
-            retained = await _tradeFillHandoffFailureStore.LoadPendingAsync(ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            return;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogCritical(ex, "Could not load retained accounting handoff failures");
-            return;
-        }
-
-        foreach (var failure in retained)
-        {
-            if (ct.IsCancellationRequested)
-                return;
-            try
-            {
-                _tradeEventPublisher.Publish(failure.TradeEvent);
-                await _tradeFillHandoffFailureStore
-                    .MarkReplayedAsync(failure.TradeEvent.FillId, CancellationToken.None)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogCritical(
-                    ex,
-                    "Retained accounting handoff replay failed for fill {FillId}; the durable failure record remains pending",
-                    failure.TradeEvent.FillId);
-                try
-                {
-                    await _tradeFillHandoffFailureStore
-                        .RetainAsync(failure.TradeEvent, ex.Message, CancellationToken.None)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception retentionException)
-                {
-                    _logger.LogCritical(
-                        retentionException,
-                        "Could not update retained accounting handoff failure for fill {FillId}",
-                        failure.TradeEvent.FillId);
-                }
-            }
-        }
-    }
-
-    private async Task<bool> RetainAccountingHandoffFailureAsync(
-        TradeExecutedEvent tradeEvent,
-        Exception publisherFailure,
-        CancellationToken ct)
-    {
-        if (_tradeFillHandoffFailureStore is null)
-        {
-            _logger.LogCritical(
-                publisherFailure,
-                "Accounting publisher rejected fill {FillId} and no durable OMS handoff-failure store is configured",
-                tradeEvent.FillId);
-            return false;
-        }
-
-        try
-        {
-            await _tradeFillHandoffFailureStore
-                .RetainAsync(tradeEvent, publisherFailure.Message, ct)
-                .ConfigureAwait(false);
-            return true;
-        }
-        catch (Exception retentionFailure)
-        {
-            _logger.LogCritical(
-                retentionFailure,
-                "Accounting publisher and OMS failure-store retention both failed for fill {FillId}; the order path will fail closed",
-                tradeEvent.FillId);
-            return false;
-        }
-    }
-
     private async Task ProcessGatewayReportAsync(ExecutionReport report, CancellationToken ct)
     {
         var orderId = report.ClientOrderId ?? report.OrderId;
@@ -1474,6 +1410,14 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 _logger.LogWarning(
                     "Received execution report for order {OrderId} ({ReportType}, {Status}) not tracked by this OMS",
                     LogSanitizer.Sanitize(report.OrderId), report.ReportType, report.OrderStatus);
+            }
+            else
+            {
+                // Gateways that acknowledge asynchronously deliver bracket child legs on the
+                // report stream rather than on the submit return; register them from here too so
+                // both delivery shapes end with the children tracked. TryRegisterOrder makes a
+                // second sighting of the same child a no-op.
+                RegisterGatewayChildOrders(orderId!, updatedState, report);
             }
 
             if (isFillReport)
@@ -1535,6 +1479,19 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             var fillIncrement = incrementQuantity == report.FilledQuantity
                 ? report
                 : report with { FilledQuantity = incrementQuantity };
+
+            // Stamp the gateway-resolved sizing semantics onto the increment itself: the paper
+            // book, the accounting event, and the durable session record all consume this one
+            // report, and the session record is replayed after a restart when the sidecar
+            // dictionary no longer exists. The flag is not part of the canonical fill identity,
+            // so a replayed broker report still resolves to the same FillId.
+            if (!string.IsNullOrWhiteSpace(orderId)
+                && _orderFaceValueSizing.ContainsKey(orderId)
+                && !fillIncrement.UsesFaceValuePercentageOfPar)
+            {
+                fillIncrement = fillIncrement with { UsesFaceValuePercentageOfPar = true };
+            }
+
             progress = _fillProcessing.GetOrAdd(
                 report,
                 _ => new FillProcessingProgress(
@@ -1553,6 +1510,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 return;
 
             var fillIncrement = progress.FillIncrement;
+
+            // Gateway-resolved sizing semantics for this order: quantity routed as face value,
+            // price quoted as a percentage of par. Stamped onto the increment when its
+            // processing state was created, so the paper book, the accounting event, and the
+            // durable session record all read the same classification.
+            var usesFaceValuePercentageOfPar = fillIncrement.UsesFaceValuePercentageOfPar;
 
             if (!progress.PortfolioApplied)
             {
@@ -1577,7 +1540,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                         contractMultiplier: fillOrderId is not null
                             && _orderContractMultipliers.TryGetValue(fillOrderId, out var multiplier)
                             ? multiplier
-                            : 1m);
+                            : 1m,
+                        usesFaceValuePercentageOfPar: usesFaceValuePercentageOfPar);
                     progress.RealizedPnl = paperPortfolio.RealisedPnl - realisedPnlBefore;
                 }
 
@@ -1598,14 +1562,20 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                         progress.CumulativeFilledQuantity,
                         progress.RealizedPnl,
                         progress.NewCash,
-                        ResolveFinancialAccountId(orderId));
+                        ResolveFinancialAccountId(orderId),
+                        usesFaceValuePercentageOfPar);
                 }
 
                 if (_tradeEventPublisher is not null && progress.IsTrackedOrder)
                 {
                     try
                     {
-                        _tradeEventPublisher.Publish(progress.TradeEvent!);
+                        // Awaited, never the blocking Publish bridge: acceptance applies storage
+                        // backpressure and can wait unboundedly for the posting consumer to free
+                        // channel capacity. Blocking a pool thread there starves the very
+                        // consumer that has to drain it, so the fill path would stall instead of
+                        // failing closed.
+                        await _tradeEventPublisher.PublishAsync(progress.TradeEvent!).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -2037,6 +2007,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             _orderSessionIds.TryRemove(removableOrderId, out _);
             _orderFinancialAccountIds.TryRemove(removableOrderId, out _);
             _orderContractMultipliers.TryRemove(removableOrderId, out _);
+            _orderFaceValueSizing.TryRemove(removableOrderId, out _);
         }
     }
 

@@ -170,6 +170,22 @@ public static class ApiProblemDetails
                 ["service"] = service
             });
 
+    /// <summary>
+    /// The canonical 501 body for a mapped route whose capability has no real implementation
+    /// behind it. Keeping the route mapped and answering 501 is deliberate: clients get an honest
+    /// "this does not exist yet" instead of a 404 that reads as a wrong URL, and instead of a
+    /// fabricated 200.
+    /// </summary>
+    public static IResult NotImplemented(
+        HttpContext? context,
+        string detail = "This capability is not implemented.")
+        => Problem(
+            context,
+            StatusCodes.Status501NotImplemented,
+            ApiProblemTypes.NotImplemented,
+            "Not Implemented",
+            detail);
+
     public static IResult Timeout(HttpContext? context)
         => Problem(
             context,

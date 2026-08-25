@@ -42,7 +42,7 @@ public static class OptionsEndpoints
                 Count: expirations.Count,
                 Timestamp: DateTimeOffset.UtcNow), jsonOptions);
         })
-        .WithName("GetOptionsExpirations")
+        .WithName("GetOptionsExpirations").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(400)
         .Produces(503);
@@ -69,7 +69,7 @@ public static class OptionsEndpoints
                 Count: strikes.Count,
                 Timestamp: DateTimeOffset.UtcNow), jsonOptions);
         })
-        .WithName("GetOptionsStrikes")
+        .WithName("GetOptionsStrikes").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(400)
         .Produces(503);
@@ -126,7 +126,7 @@ public static class OptionsEndpoints
             var responses = chains.Select(MapChainToResponse).ToList();
             return Results.Json(responses, jsonOptions);
         })
-        .WithName("GetOptionsChains")
+        .WithName("GetOptionsChains").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(400)
         .Produces(404)
@@ -147,7 +147,7 @@ public static class OptionsEndpoints
 
             return Results.Json(dtos, jsonOptions);
         })
-        .WithName("GetOptionQuotesByUnderlying")
+        .WithName("GetOptionQuotesByUnderlying").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(400)
         .Produces(503);
@@ -176,7 +176,7 @@ public static class OptionsEndpoints
                 IsFallbackProvider: providerStatus.IsFallback,
                 ProviderStatusMessage: providerStatus.Message), jsonOptions);
         })
-        .WithName("GetOptionsSummary")
+        .WithName("GetOptionsSummary").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(503);
 
@@ -194,7 +194,7 @@ public static class OptionsEndpoints
                 Count: underlyings.Count,
                 Timestamp: DateTimeOffset.UtcNow), jsonOptions);
         })
-        .WithName("GetTrackedUnderlyings")
+        .WithName("GetTrackedUnderlyings").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(503);
 

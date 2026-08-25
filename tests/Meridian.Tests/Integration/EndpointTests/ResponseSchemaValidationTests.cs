@@ -18,15 +18,22 @@ public sealed class ResponseSchemaValidationTests : IDisposable, IClassFixture<E
     private readonly HttpClient _client;
     // SEC-001: /api/config reads now require a configuration permission.
     private readonly HttpClient _configClient;
+    // W9-GOV-008: /api/providers reads now require a platform permission.
+    private readonly HttpClient _providerReadClient;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public ResponseSchemaValidationTests(EndpointTestFixture fixture)
     {
         _client = fixture.Client;
         _configClient = fixture.CreatePermittedClient(UserPermission.ViewConfig, UserPermission.ModifyConfig);
+        _providerReadClient = fixture.CreateSessionClient(UserPermission.ViewDiagnostics);
     }
 
-    public void Dispose() => _configClient.Dispose();
+    public void Dispose()
+    {
+        _configClient.Dispose();
+        _providerReadClient.Dispose();
+    }
 
     #region /api/status schema
 
@@ -244,7 +251,19 @@ public sealed class ResponseSchemaValidationTests : IDisposable, IClassFixture<E
     private async Task<Dictionary<string, JsonElement>> GetJsonAsync(string url)
     {
         // SEC-001: configuration reads require ViewConfig/ModifyConfig — use the authorized client.
-        var client = url.StartsWith("/api/config", StringComparison.OrdinalIgnoreCase) ? _configClient : _client;
+        // W9-GOV-008: provider reads require a platform permission — likewise. The health family
+        // declares ViewDiagnostics; bare /api/health has no trailing slash and stays an open read.
+        // The runtime status family -- status, errors, back-pressure, connections -- declares the same
+        // operational permissions as the provider reads, because it carries connection state and the
+        // configured symbol set rather than the counters /metrics exposes.
+        var client = url.StartsWith("/api/config", StringComparison.OrdinalIgnoreCase) ? _configClient
+            : url.StartsWith("/api/providers", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
+            : url.StartsWith("/api/health/", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
+            : url.StartsWith("/api/status", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
+            : url.StartsWith("/api/errors", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
+            : url.StartsWith("/api/backpressure", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
+            : url.StartsWith("/api/connections", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
+            : _client;
         var response = await client.GetAsync(url);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         return await DeserializeResponseAsync(response);

@@ -16,14 +16,14 @@ public sealed class FillModelExpansionTests
 
     private static MarketEvent MakeBarEvent(string symbol, decimal open, decimal high, decimal low, decimal close) =>
         MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, symbol, new HistoricalBar(
-            symbol, DateOnly.FromDateTime(DateTime.Today), open, high, low, close, 100_000L, "test"));
+            symbol, DateOnly.FromDateTime(DateTime.Today), open, high, low, close, 100_000L, "test"), source: "TEST");
 
     private static MarketEvent MakeLobEvent(string symbol, decimal askPrice, long askQty, decimal? bidPrice = null, long bidQty = 1_000L) =>
         MarketEvent.L2Snapshot(DateTimeOffset.UtcNow, symbol, new LOBSnapshot(
             DateTimeOffset.UtcNow,
             symbol,
             Bids: [new OrderBookLevel(OrderBookSide.Bid, 0, bidPrice ?? askPrice - 0.01m, bidQty)],
-            Asks: [new OrderBookLevel(OrderBookSide.Ask, 0, askPrice, askQty)]));
+            Asks: [new OrderBookLevel(OrderBookSide.Ask, 0, askPrice, askQty)]), source: "TEST");
 
     private static MarketEvent MakeMultiLevelLobEvent(string symbol, IReadOnlyList<(decimal Price, long Qty)> askLevels, decimal bidPrice = 409m, long bidQty = 1_000L)
     {
@@ -35,7 +35,7 @@ public sealed class FillModelExpansionTests
             DateTimeOffset.UtcNow,
             symbol,
             Bids: bids,
-            Asks: asks));
+            Asks: asks), source: "TEST");
     }
 
     // =========================================================================
@@ -635,7 +635,7 @@ public sealed class FillModelExpansionTests
             AllowPartialFills: true);
         // Bar with Volume=1000 → 10 % cap = 100 shares
         var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", new HistoricalBar(
-            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"));
+            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"), source: "TEST");
 
         var result = model.TryFill(order, evt);
 
@@ -658,7 +658,7 @@ public sealed class FillModelExpansionTests
 
         var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 50L, null, null, DateTimeOffset.UtcNow);
         var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", new HistoricalBar(
-            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"));
+            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"), source: "TEST");
 
         var result = model.TryFill(order, evt);
 
@@ -680,7 +680,7 @@ public sealed class FillModelExpansionTests
         var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 500L, null, null, DateTimeOffset.UtcNow,
             AllowPartialFills: false);
         var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", new HistoricalBar(
-            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"));
+            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"), source: "TEST");
 
         var result = model.TryFill(order, evt);
 
@@ -701,7 +701,7 @@ public sealed class FillModelExpansionTests
         var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, -500L, null, null, DateTimeOffset.UtcNow,
             AllowPartialFills: true);
         var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", new HistoricalBar(
-            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"));
+            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"), source: "TEST");
 
         var result = model.TryFill(order, evt);
 
@@ -719,7 +719,7 @@ public sealed class FillModelExpansionTests
 
         var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 500L, null, null, DateTimeOffset.UtcNow);
         var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", new HistoricalBar(
-            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"));
+            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"), source: "TEST");
 
         var result = model.TryFill(order, evt);
 
@@ -741,7 +741,7 @@ public sealed class FillModelExpansionTests
         var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 100L, null, null, DateTimeOffset.UtcNow,
             AllowPartialFills: true);
         var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", new HistoricalBar(
-            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 0L, "test"));
+            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 0L, "test"), source: "TEST");
 
         var result = model.TryFill(order, evt);
 

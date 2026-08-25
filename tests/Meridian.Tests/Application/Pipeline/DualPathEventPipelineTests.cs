@@ -194,7 +194,7 @@ public class DualPathEventPipelineTests : IAsyncLifetime
     {
         var evt = MarketEvent.Integrity(
             DateTimeOffset.UtcNow, "SPY",
-            new IntegrityEvent(DateTimeOffset.UtcNow, "SPY", IntegritySeverity.Warning, "test", 0, 1));
+            new IntegrityEvent(DateTimeOffset.UtcNow, "SPY", IntegritySeverity.Warning, "test", 0, 1), source: "TEST");
 
         _pipeline.TryPublish(in evt);
 
@@ -208,7 +208,7 @@ public class DualPathEventPipelineTests : IAsyncLifetime
     [Fact]
     public async Task TryPublish_HeartbeatEvent_GoesToSlowPath()
     {
-        var evt = MarketEvent.Heartbeat(DateTimeOffset.UtcNow);
+        var evt = MarketEvent.Heartbeat(DateTimeOffset.UtcNow, "TEST");
         _pipeline.TryPublish(in evt);
 
         await WaitForSinkCount(1, timeout: TimeSpan.FromSeconds(5));
@@ -333,7 +333,7 @@ public class DualPathEventPipelineTests : IAsyncLifetime
     {
         _pipeline.TryPublish(CreateTradeEvent("SPY", seq: 1));
         _pipeline.TryPublish(CreateQuoteEvent("AAPL", seq: 2));
-        _pipeline.TryPublish(MarketEvent.Heartbeat(DateTimeOffset.UtcNow));
+        _pipeline.TryPublish(MarketEvent.Heartbeat(DateTimeOffset.UtcNow, "TEST"));
 
         await WaitForSinkCount(3, timeout: TimeSpan.FromSeconds(5));
 
@@ -819,7 +819,7 @@ public class DualPathEventPipelineTests : IAsyncLifetime
 
             var trade = CreateTradeEvent("SPY", 1);
             var quote = CreateQuoteEvent("SPY", 2);
-            var heartbeat = MarketEvent.Heartbeat(DateTimeOffset.UtcNow);
+            var heartbeat = MarketEvent.Heartbeat(DateTimeOffset.UtcNow, "TEST");
             var rawTrade = new RawTradeEvent(
                 DateTimeOffset.UtcNow.UtcTicks,
                 symbolId,
@@ -869,7 +869,7 @@ public class DualPathEventPipelineTests : IAsyncLifetime
             Size: 100L,
             Aggressor: AggressorSide.Buy,
             SequenceNumber: seq);
-        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, seq);
+        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, "TEST", seq);
     }
 
     private static MarketEvent CreateQuoteEvent(string symbol, int seq = 1)
@@ -882,7 +882,7 @@ public class DualPathEventPipelineTests : IAsyncLifetime
             askPrice: 100.10m,
             askSize: 100L,
             sequenceNumber: seq);
-        return MarketEvent.BboQuote(DateTimeOffset.UtcNow, symbol, quote, seq);
+        return MarketEvent.BboQuote(DateTimeOffset.UtcNow, symbol, quote, "TEST", seq);
     }
 
     private static void PublishHotPathBatch(

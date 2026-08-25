@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
+import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
@@ -35,20 +36,30 @@ import type {
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
   SecurityMasterConflict,
-  SecurityMasterTrustSnapshot
+  SecurityMasterTrustSnapshot,
+  SessionInfo
 } from "@/types";
 import { requireFirst, requirePresent } from "@/test/fixtures";
+
+vi.mock("@/lib/ledger-reports-api", () => ({
+  getLedgerPeriods: vi.fn().mockResolvedValue([]),
+  getLedgerPeriodTrialBalance: vi.fn().mockResolvedValue([]),
+  getLedgerPeriodPnlSummary: vi.fn().mockResolvedValue(null)
+}));
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   const createFinancialRecordExplorer = (explorerId: string) => ({
     explorerId,
-    title: explorerId === "security-instrument" ? "Security & Instrument Explorer" : "Ledger Explorer",
+    title: explorerId === "security-instrument" ? "Security & Instrument Explorer" : "Strategy Run Ledger Explorer",
     description: "Explore retained financial records and proof links.",
     sourceState: `Source-backed ${explorerId} projection from run run-42.`,
     isBlocked: false,
     blockedReason: "",
     scopeItems: [
+      ...(explorerId === "security-instrument"
+        ? []
+        : [{ label: "Ledger source", value: "Strategy run (simulation) — not the posted journal", tone: "Default" }]),
       { label: "Workstream", value: "Accounting", tone: "Info" },
       { label: "Source", value: explorerId === "security-instrument" ? "Security Master instruments" : "Journal entries and ledger detail", tone: "Default" }
     ],
@@ -4684,6 +4695,72 @@ describe("AccountingScreen", () => {
     expect(alert).toHaveTextContent("Fund account: Select a fund account before loading accounting evidence.");
   });
 
+  it("reads the posted journal for the Accounting trial balance and labels the run explorer as a simulation artifact", async () => {
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValueOnce([
+      {
+        periodId: "11111111-1111-1111-1111-111111111111",
+        ledgerBookId: "22222222-2222-2222-2222-222222222222",
+        fiscalYear: 2026,
+        periodNo: 7,
+        label: "July 2026",
+        startDate: "2026-07-01",
+        endDate: "2026-07-31",
+        status: "HardClosed",
+        openedAt: "2026-07-01T00:00:00Z",
+        closedAt: "2026-08-02T00:00:00Z",
+        version: 1
+      }
+    ]);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValueOnce([
+      {
+        accountName: "Cash - Operating",
+        accountType: "Asset",
+        symbol: null,
+        financialAccountId: "1000",
+        debitTotal: 125000,
+        creditTotal: 4500,
+        balance: 120500,
+        entryCount: 12,
+        accountingBasis: "Primary"
+      }
+    ]);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockResolvedValueOnce({
+      periodId: "11111111-1111-1111-1111-111111111111",
+      ledgerBookId: "22222222-2222-2222-2222-222222222222",
+      fiscalYear: 2026,
+      periodNo: 7,
+      label: "July 2026",
+      totalRevenue: 5000,
+      totalExpenses: 1800,
+      netIncome: 3200,
+      periodOnPeriodVariance: null,
+      openBreakCount: 0,
+      signoffStatus: "SignedOff",
+      completedAt: "2026-08-02T00:00:00Z",
+      revenueLines: [],
+      expenseLines: []
+    });
+
+    await renderAccountingScreen(data, "/accounting/ledger");
+
+    // The Accounting workstream's primary trial balance comes from the period-scoped
+    // posted-journal endpoints, not the strategy run's simulation ledger.
+    const postedTable = await screen.findByRole("region", {
+      name: "Primary trial balance lines for the posted journal for period July 2026"
+    });
+    expect(postedTable).toBeInTheDocument();
+    expect(ledgerReportsApi.getLedgerPeriods).toHaveBeenCalled();
+    expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith("11111111-1111-1111-1111-111111111111");
+    expect(ledgerReportsApi.getLedgerPeriodPnlSummary).toHaveBeenCalledWith("11111111-1111-1111-1111-111111111111");
+    expect(screen.getByText("Source: posted journal")).toBeInTheDocument();
+    expect(screen.getByText("Signed off")).toBeInTheDocument();
+
+    // The run-scoped explorer stays available but is explicitly labelled a
+    // simulation artifact so it can no longer masquerade as the fund's book.
+    expect(screen.getByRole("heading", { name: "Strategy Run Ledger Explorer" })).toBeInTheDocument();
+    expect(screen.getByText("Strategy run (simulation) — not the posted journal")).toBeInTheDocument();
+  });
+
   it("runs ledger reporting export through the POST mutation instead of a GET link", async () => {
     const user = userEvent.setup();
     vi.mocked(api.runAnalysisExport).mockResolvedValueOnce({
@@ -5382,13 +5459,13 @@ describe("AccountingScreen", () => {
     expect(screen.getByText(/Historical breaks have been worked through/)).toBeInTheDocument();
   });
 
-  it("assigns reconciliation breaks through the view model workflow", async () => {
+  it("assigns reconciliation breaks without a fabricated actor when no session identity is available", async () => {
     const user = userEvent.setup();
     const updatedBreak = {
       ...data.breakQueue[0],
       status: "InReview" as const,
-      assignedTo: "ops.gov",
-      reviewedBy: "ops.gov",
+      assignedTo: "ops-user",
+      reviewedBy: "ops-user",
       reviewedAt: "2026-01-01T00:05:00Z"
     };
 
@@ -5401,13 +5478,87 @@ describe("AccountingScreen", () => {
 
     await user.click(await screen.findByRole("button", { name: "Assign reconciliation break run-42:cash" }));
 
-    expect(api.reviewReconciliationBreak).toHaveBeenCalledWith({
-      breakId: "run-42:cash",
-      assignedTo: "ops.gov",
-      reviewedBy: "ops.gov"
-    });
+    expect(api.reviewReconciliationBreak).toHaveBeenCalledWith({ breakId: "run-42:cash" });
     const detail = await screen.findByRole("region", { name: "Reconciliation break detail for run-42:cash" });
     expect(within(detail).getByText("InReview")).toBeInTheDocument();
+  });
+
+  it("sends the session operator identity when assigning reconciliation breaks", async () => {
+    const user = userEvent.setup();
+    const session: SessionInfo = {
+      displayName: "Avery Chen",
+      role: "Fund operations",
+      environment: "paper",
+      activeWorkspace: "accounting",
+      commandCount: 3
+    };
+    const updatedBreak = {
+      ...data.breakQueue[0],
+      status: "InReview" as const,
+      assignedTo: "Avery Chen",
+      reviewedBy: "Avery Chen",
+      reviewedAt: "2026-01-01T00:05:00Z"
+    };
+
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
+    vi.mocked(api.reviewReconciliationBreak).mockResolvedValueOnce(
+      successfulReconciliationCaseworkOperation(updatedBreak)
+    );
+
+    renderWithRouter(
+      <AccountingScreen data={data} session={session} />,
+      { initialEntries: ["/accounting/reconciliation"] }
+    );
+    await waitForAsyncEffects();
+
+    await user.click(await screen.findByRole("button", { name: "Assign reconciliation break run-42:cash" }));
+
+    expect(api.reviewReconciliationBreak).toHaveBeenCalledWith({
+      breakId: "run-42:cash",
+      assignedTo: "Avery Chen",
+      reviewedBy: "Avery Chen"
+    });
+  });
+
+  it("sends the operator rationale and session identity when resolving reconciliation breaks", async () => {
+    const user = userEvent.setup();
+    const session: SessionInfo = {
+      displayName: "Avery Chen",
+      role: "Fund operations",
+      environment: "paper",
+      activeWorkspace: "accounting",
+      commandCount: 3
+    };
+    const resolvedBreak = {
+      ...data.breakQueue[0],
+      status: "Resolved" as const,
+      resolvedBy: "Avery Chen",
+      resolvedAt: "2026-01-01T00:10:00Z",
+      resolutionNote: "Matched the balancing ledger entry."
+    };
+
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
+    vi.mocked(api.resolveReconciliationBreak).mockResolvedValueOnce(
+      successfulReconciliationCaseworkOperation(resolvedBreak)
+    );
+
+    renderWithRouter(
+      <AccountingScreen data={data} session={session} />,
+      { initialEntries: ["/accounting/reconciliation"] }
+    );
+    await waitForAsyncEffects();
+
+    await user.click(await screen.findByRole("button", { name: "Resolve reconciliation break run-42:cash" }));
+    await user.type(await screen.findByLabelText(/resolve rationale/i), "Matched the balancing ledger entry.");
+    await user.click(screen.getByRole("button", { name: /confirm resolve/i }));
+
+    await waitFor(() => expect(api.resolveReconciliationBreak).toHaveBeenCalledWith({
+      breakId: "run-42:cash",
+      status: "Resolved",
+      resolvedBy: "Avery Chen",
+      resolutionNote: "Matched the balancing ledger entry.",
+      operatorRationale: "Matched the balancing ledger entry."
+    }));
   });
 
   it("surfaces view-model disabled reasons for reconciliation queue actions", async () => {

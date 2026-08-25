@@ -246,7 +246,7 @@ internal static class YahooBacktestSeedHelper
         foreach (var bar in bars.OrderBy(b => b.SessionDate))
         {
             var ts = bar.ToTimestampUtc();
-            var evt = MarketEvent.HistoricalBar(ts, bar.Symbol, bar, seq++, bar.Source);
+            var evt = MarketEvent.HistoricalBar(ts, bar.Symbol, bar, bar.Source, seq++);
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
         }
     }

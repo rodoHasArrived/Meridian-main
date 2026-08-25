@@ -171,7 +171,7 @@ public static class SecurityAssetPackRegistry
         DeepAutomation(
             "public-equity-etf",
             "Public equities and exchange-traded funds",
-            ["Equity", "ExchangeTradedFund"],
+            ["Equity", "ExchangeTradedFund", "InvestmentFund"],
             ["Purchase", "Sale", "Dividend", "CorporateAction", "Impairment", "Amendment"],
             ["MarketPrice", "UserEstimate", "ExternalModel"],
             ["trade", "dividend", "corporate action", "realized gain/loss", "unrealized gain/loss"]),
@@ -206,7 +206,7 @@ public static class SecurityAssetPackRegistry
         DeepAutomation(
             "derivatives-fx",
             "Basic derivatives and FX",
-            ["Option", "Future", "Swap", "FxSpot", "Forward"],
+            ["Option", "Future", "Swap", "FxSpot", "Forward", "Cfd", "Warrant"],
             ["Purchase", "Sale", "Draw", "Repayment", "Maturity", "Default", "Amendment", "CorporateAction"],
             ["MarketPrice", "DiscountedCashFlow", "ExternalModel", "UserEstimate"],
             ["premium", "variation margin", "settlement", "FX remeasurement", "realized gain/loss"]),
@@ -227,7 +227,7 @@ public static class SecurityAssetPackRegistry
         WideCapture(
             "controlled-other-asset",
             "Controlled other asset",
-            ["Art", "InsurancePolicy", "Vehicle", "SpecializedHolding", "OtherSecurity", "CustomAsset"],
+            ["Art", "InsurancePolicy", "Vehicle", "SpecializedHolding", "OtherSecurity", "CustomAsset", "Commodity", "CryptoCurrency"],
             ["Purchase", "Sale", "Appraisal", "Impairment", "Amendment", "Maturity"],
             ["Appraisal", "UserEstimate", "ExternalModel", "ManagerReportedNav"],
             ["acquisition", "appraisal adjustment", "impairment", "disposal"])

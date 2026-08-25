@@ -37,6 +37,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingJournalEntries: "/accounting/journal-entries",
   accountingJournalEntryDetail: "/accounting/journal-entries/detail",
   accountingCapitalAccounts: "/accounting/capital-accounts",
+  accountingCapitalCalls: "/accounting/capital-calls",
   accountingReconciliation: "/accounting/reconciliation",
   accountingExternalGlReconciliation: "/accounting/reconciliation/external-gl",
   accountingReconciliationMatch: "/accounting/reconciliation/match",

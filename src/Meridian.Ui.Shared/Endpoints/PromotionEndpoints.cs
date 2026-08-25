@@ -40,7 +40,7 @@ public static class PromotionEndpoints
 
             return Results.Json(result, jsonOptions);
         })
-        .WithName("EvaluatePromotion")
+        .WithName("EvaluatePromotion").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<PromotionEvaluationResult>(200)
         .Produces(401)
         .Produces(403)
@@ -125,7 +125,7 @@ public static class PromotionEndpoints
                 .ConfigureAwait(false);
             return Results.Json(history, jsonOptions);
         })
-        .WithName("GetPromotionHistory")
+        .WithName("GetPromotionHistory").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyPromotionRecord>>(200)
         .Produces(401)
         .Produces(403)

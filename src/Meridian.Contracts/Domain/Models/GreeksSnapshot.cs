@@ -99,7 +99,7 @@ public sealed record GreeksSnapshot : MarketEventPayload
         decimal? TheoreticalPrice = null,
         decimal? TimeToExpiry = null,
         long SequenceNumber = 0,
-        string Source = "IB")
+        string Source = MarketDataSources.Unknown)
     {
         if (string.IsNullOrWhiteSpace(Symbol))
             throw new ArgumentException("Symbol is required", nameof(Symbol));

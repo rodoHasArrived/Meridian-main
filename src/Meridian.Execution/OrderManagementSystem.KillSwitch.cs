@@ -47,15 +47,35 @@ public sealed partial class OrderManagementSystem
                 or OrderStatus.PendingCancel)
             .ToList();
 
+        // The in-memory dictionary is a claim about the book, not the book. After an OMS restart,
+        // for bracket child legs that were never registered, or for orders placed out of band,
+        // the broker can hold working orders this process has never heard of — so the sweep also
+        // asks the broker for its own open-order book and cancels whatever the in-memory view
+        // does not cover. The snapshot is taken before anything is cancelled so it reflects the
+        // pre-sweep book, and deduplication is by order id, so an order present in both views is
+        // cancelled exactly once, through the tracked path that owns its state.
+        var (brokerResidualOrders, brokerViewError) =
+            await SnapshotBrokerResidualOrdersAsync(sweepTargets, sweepToken).ConfigureAwait(false);
+
         _logger.LogInformation(
             "Cancelling all {Count} working order(s), including any already pending cancellation",
             sweepTargets.Count);
 
-        if (sweepTargets.Count == 0)
+        if (brokerResidualOrders.Count > 0)
         {
-            return failures.Count == 0
+            _logger.LogWarning(
+                "Cancel-all found {BrokerOnlyCount} broker-side open order(s) the in-memory book does not track; cancelling them directly at the gateway",
+                brokerResidualOrders.Count);
+        }
+
+        if (sweepTargets.Count == 0 && brokerResidualOrders.Count == 0)
+        {
+            var emptySweep = failures.Count == 0
                 ? KillSwitchSweepResult.Empty
                 : KillSwitchSweepResult.From(withdrawalFailures, 0, failures);
+            return brokerViewError is null
+                ? emptySweep
+                : emptySweep with { BrokerViewUnavailable = true, BrokerViewError = brokerViewError };
         }
 
         // Collected under a lock rather than through Interlocked counters: the failures carry the
@@ -63,14 +83,15 @@ public sealed partial class OrderManagementSystem
         // merely losing a count.
         var cancelled = 0;
         var gate = new Lock();
+        var parallelOptions = new ParallelOptions
+        {
+            CancellationToken = sweepToken,
+            MaxDegreeOfParallelism = _options.ValidatedCancelAllMaxConcurrency
+        };
 
         await Parallel.ForEachAsync(
             sweepTargets,
-            new ParallelOptions
-            {
-                CancellationToken = sweepToken,
-                MaxDegreeOfParallelism = _options.ValidatedCancelAllMaxConcurrency
-            },
+            parallelOptions,
             async (order, token) =>
             {
                 // A cancellation that throws is a cancellation that did not happen, and the sweep
@@ -105,21 +126,166 @@ public sealed partial class OrderManagementSystem
                 }
             }).ConfigureAwait(false);
 
+        // The broker-side residue is cancelled directly at the gateway: these orders have no
+        // tracked state for CancelOrderCoreAsync to find, and skipping them is exactly the
+        // dishonesty this sweep exists to prevent — a Completed verdict over a broker book that
+        // still has working orders.
+        if (brokerResidualOrders.Count > 0)
+        {
+            await Parallel.ForEachAsync(
+                brokerResidualOrders,
+                parallelOptions,
+                async (order, token) =>
+                {
+                    var failure = await CancelBrokerResidualOrderAsync(order, token).ConfigureAwait(false);
+
+                    lock (gate)
+                    {
+                        if (failure is { } stillWorking)
+                        {
+                            failures.Add(stillWorking);
+                        }
+                        else
+                        {
+                            cancelled++;
+                        }
+                    }
+                }).ConfigureAwait(false);
+        }
+
         var sweep = KillSwitchSweepResult.From(
-            sweepTargets.Count + withdrawalFailures,
+            sweepTargets.Count + brokerResidualOrders.Count + withdrawalFailures,
             cancelled,
             failures);
+
+        if (brokerViewError is not null)
+        {
+            sweep = sweep with { BrokerViewUnavailable = true, BrokerViewError = brokerViewError };
+        }
 
         if (sweep.RequiresOperatorAction)
         {
             _logger.LogError(
-                "Kill-switch cancel-all did not empty the book: {Cancelled} of {Requested} cancelled, {StillWorking} still working",
+                "Kill-switch cancel-all did not empty the book: {Cancelled} of {Requested} cancelled, {StillWorking} still working, broker view unavailable: {BrokerViewUnavailable}",
                 sweep.Cancelled,
                 sweep.Requested,
-                sweep.StillWorking.Count);
+                sweep.StillWorking.Count,
+                sweep.BrokerViewUnavailable);
         }
 
         return sweep;
+    }
+
+    /// <summary>
+    /// Snapshots the broker's own open-order book and returns the orders the in-memory sweep will
+    /// not cover, plus the enumeration error when the broker view could not be established.
+    /// <para>
+    /// An enumeration failure must not abort the in-memory sweep — a broker that cannot list its
+    /// book may still accept cancellations — but it is returned rather than swallowed, because
+    /// "we could not look" and "nothing was there" are different answers to the only question a
+    /// kill switch is asked, and the sweep outcome has to carry which one this was.
+    /// </para>
+    /// </summary>
+    private async Task<(IReadOnlyList<BrokerOrder> ResidualOrders, string? EnumerationError)> SnapshotBrokerResidualOrdersAsync(
+        IReadOnlyList<OrderState> sweepTargets,
+        CancellationToken ct)
+    {
+        if (_gateway is not IBrokerageGateway brokerage)
+        {
+            // The gateway keeps no broker-side book of its own (paper gateways execute
+            // in-process), so the in-memory view is the whole book by construction rather than
+            // by assumption.
+            return (Array.Empty<BrokerOrder>(), null);
+        }
+
+        IReadOnlyList<BrokerOrder> brokerOpenOrders;
+        try
+        {
+            brokerOpenOrders = await brokerage.GetOpenOrdersAsync(ct).ConfigureAwait(false)
+                ?? Array.Empty<BrokerOrder>();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Cancel-all could not enumerate the broker's open orders; the sweep covers only the in-memory book");
+            return (Array.Empty<BrokerOrder>(), exception.Message);
+        }
+
+        if (brokerOpenOrders.Count == 0)
+        {
+            return (Array.Empty<BrokerOrder>(), null);
+        }
+
+        var trackedIds = new HashSet<string>(
+            sweepTargets.Select(static order => order.OrderId),
+            StringComparer.Ordinal);
+
+        return (brokerOpenOrders
+            // Defensive: GetOpenOrdersAsync should already return only working orders, but a
+            // terminal row slipping through would make the sweep report a failure over an order
+            // that cannot fill.
+            .Where(static order => order.Status is OrderStatus.PendingNew
+                or OrderStatus.Accepted
+                or OrderStatus.PartiallyFilled
+                or OrderStatus.PendingCancel)
+            .DistinctBy(static order => order.OrderId, StringComparer.Ordinal)
+            // Deduped on both ids: the OMS registers orders under the client order id it handed
+            // the broker, while some gateways key their book by their own order id. An order the
+            // in-memory sweep already targets is cancelled there, once.
+            .Where(order => !(order.ClientOrderId is { Length: > 0 } clientOrderId && trackedIds.Contains(clientOrderId))
+                && !trackedIds.Contains(order.OrderId))
+            .ToList(), null);
+    }
+
+    /// <summary>
+    /// Cancels one broker-known order the in-memory book does not track, returning the failure to
+    /// report when the cancellation did not take. Goes straight to the gateway because there is no
+    /// tracked <see cref="OrderState"/> for the ordinary cancel path to update.
+    /// </summary>
+    private async Task<KillSwitchSweepFailure?> CancelBrokerResidualOrderAsync(BrokerOrder order, CancellationToken ct)
+    {
+        KillSwitchSweepFailure? failure;
+        ExecutionReport? report = null;
+        try
+        {
+            report = await _gateway.CancelOrderAsync(order.OrderId, ct).ConfigureAwait(false);
+            failure = report.OrderStatus is OrderStatus.Cancelled
+                ? null
+                : new KillSwitchSweepFailure(
+                    order.OrderId,
+                    order.Symbol,
+                    report.RejectReason ?? "The gateway did not confirm the cancellation.");
+        }
+        catch (Exception exception)
+        {
+            failure = new KillSwitchSweepFailure(order.OrderId, order.Symbol, exception.Message);
+        }
+
+        // Evidence, not control flow: an audit write that throws must not convert a confirmed
+        // broker cancellation into a reported failure, or abandon the rest of the sweep.
+        try
+        {
+            await RecordOrderLifecycleAuditAsync(
+                action: failure is null ? "OrderCancelled" : "OrderCancelRejected",
+                outcome: failure is null ? nameof(OrderStatus.Cancelled) : "Rejected",
+                orderId: order.OrderId,
+                state: null,
+                report: report,
+                message: failure is null
+                    ? "Cancel-all cancelled a broker-side order the in-memory book did not track."
+                    : failure.Value.Reason,
+                ct: ct).ConfigureAwait(false);
+        }
+        catch (Exception auditException)
+        {
+            _logger.LogError(
+                auditException,
+                "Cancel-all could not audit the broker-side cancellation outcome for order {OrderId}",
+                LogSanitizer.Sanitize(order.OrderId));
+        }
+
+        return failure;
     }
 
     /// <summary>

@@ -93,14 +93,15 @@ public sealed class AccountingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<DailyValuationBatchLifecycleService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<DailyValuationScheduledWorker>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AutomatedJournalScheduledWorker>(services, ServiceLifetime.Singleton);
-        services.Should().Contain(descriptor =>
+        // The scheduler host loops run server-side only. The desktop composition's ledger
+        // dependencies resolve null, so registering these hosted services here would run
+        // accounting automation against a forked, desktop-local state.
+        services.Should().NotContain(descriptor =>
             descriptor.ServiceType == typeof(IHostedService) &&
-            descriptor.ImplementationType == typeof(DailyValuationSchedulerHostedService) &&
-            descriptor.Lifetime == ServiceLifetime.Singleton);
-        services.Should().Contain(descriptor =>
+            descriptor.ImplementationType == typeof(DailyValuationSchedulerHostedService));
+        services.Should().NotContain(descriptor =>
             descriptor.ServiceType == typeof(IHostedService) &&
-            descriptor.ImplementationType == typeof(AutomatedJournalSchedulerHostedService) &&
-            descriptor.Lifetime == ServiceLifetime.Singleton);
+            descriptor.ImplementationType == typeof(AutomatedJournalSchedulerHostedService));
         DesktopFeatureModuleTestAssertions.AssertRegistered<ICapitalAccountWorkbenchService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingCloseManagementService, AccountingCloseManagementService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IPrivateCapitalCloseCockpitService>(services, ServiceLifetime.Singleton);
@@ -165,7 +166,7 @@ public sealed class AccountingFeatureModuleTests
     }
 
     [Fact]
-    public async Task Register_ResolvesMonthlyAutomationGraph_AndHostedOneShot()
+    public async Task Register_ResolvesMonthlyAutomationGraph_WithoutDesktopSchedulerHostLoops()
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -186,13 +187,49 @@ public sealed class AccountingFeatureModuleTests
         new AccountingFeatureModule().Register(services);
         await using var provider = services.BuildServiceProvider();
 
-        provider.GetRequiredService<AutomatedJournalScheduledWorker>().Should().NotBeNull();
-        var hosted = provider.GetServices<IHostedService>()
-            .OfType<AutomatedJournalSchedulerHostedService>()
-            .Should().ContainSingle().Subject;
-        var result = await hosted.RunOnceAsync();
+        // The deterministic worker seam still resolves, but no scheduler host loop runs in
+        // the desktop process — the server owns scheduled valuation/journal automation.
+        var worker = provider.GetRequiredService<AutomatedJournalScheduledWorker>();
+        var result = await worker.RunDueAsync(DateTimeOffset.UtcNow);
 
         result.Runs.Should().BeEmpty();
+        provider.GetServices<IHostedService>()
+            .Should().NotContain(hosted =>
+                hosted is AutomatedJournalSchedulerHostedService ||
+                hosted is DailyValuationSchedulerHostedService);
+    }
+
+    [Fact]
+    public void AccountingLane_SourceSweep_DoesNotForkProductState()
+    {
+        var reconciliationReadServiceSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Services\ReconciliationReadService.cs"));
+        var moduleSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Features\Accounting\AccountingFeatureModule.cs"));
+        var fundAccountsXaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Views\FundAccountsPage.xaml"));
+        var fundStructureXaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Views\FundStructureSetupPage.xaml"));
+
+        // The workbench summary reads reconciliation posture from the server workstation API
+        // (the same client the break queue uses); it must not rebuild "open breaks" from the
+        // desktop-local fund-account stores or an in-process reconciliation engine.
+        reconciliationReadServiceSource.Should().Contain("IWorkstationReconciliationApiClient");
+        reconciliationReadServiceSource.Should().Contain("GetLatestRunDetailAsync");
+        reconciliationReadServiceSource.Should().NotContain("IFundAccountService");
+        reconciliationReadServiceSource.Should().NotContain("FundAccountReadService");
+        reconciliationReadServiceSource.Should().NotContain("IReconciliationRunService");
+        reconciliationReadServiceSource.Should().NotContain("Meridian.Strategies.Services");
+
+        // The desktop composition must not start scheduler host loops; the server owns them.
+        moduleSource.Should().NotContain("Singleton<IHostedService");
+
+        // Fund-account / fund-structure setup remains desktop-local, so both screens carry
+        // the shared data-provenance badge until the lane is migrated to the server API.
+        fundAccountsXaml.Should().Contain("DataProvenanceBadgeBorderStyle");
+        fundAccountsXaml.Should().Contain("DESKTOP-LOCAL DATA");
+        fundStructureXaml.Should().Contain("DataProvenanceBadgeBorderStyle");
+        fundStructureXaml.Should().Contain("DESKTOP-LOCAL DATA");
     }
 
     [Theory]

@@ -2,9 +2,9 @@
 
 # `ledger` schema
 
-- Relations: 22
-- Functions/procedures: 1
-- Triggers: 2
+- Relations: 24
+- Functions/procedures: 4
+- Triggers: 7
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -166,6 +166,25 @@ erDiagram
     }
     ledger_journal_entries_global_sequence_seq {
         text catalogued_object
+    }
+    ledger_journal_leg_currency_affirmations {
+        uuid affirmation_id PK
+        uuid ledger_book_id FK
+        text affirmed_currency
+        text actor
+        text rationale
+        timestamp_with_time_zone affirmed_at
+        integer legs_repaired
+    }
+    ledger_journal_leg_currency_backfill_status {
+        uuid entry_id
+        uuid journal_entry_id
+        uuid period_id
+        uuid ledger_book_id
+        text base_currency
+        text period_status
+        timestamp_with_time_zone occurred_at
+        text disposition
     }
     ledger_journal_legs {
         uuid entry_id PK
@@ -366,11 +385,12 @@ erDiagram
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_originating_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_disposal_mutation_batch_id_fkey"
     ledger_journal_entries ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_journal_entry_id_fkey"
-    ledger_journal_entries ||--o{ ledger_journal_legs : "journal_legs_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_journal_legs : "fk_journal_legs_journal_entry"
     ledger_journal_entries ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lots : "tax_lots_source_journal_entry_id_fkey"
     ledger_ledger_books ||--o{ ledger_accounting_periods : "accounting_periods_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_journal_leg_currency_affirmations : "journal_leg_currency_affirmations_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_tax_lot_policies : "tax_lot_policies_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_tax_lots : "tax_lots_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_ledger_book_id_fkey"
@@ -393,7 +413,9 @@ erDiagram
 | `fund_profile_tenancy` | table | 4 | `fund_profile_id` | 0 | 2 | - |
 | `journal_entries` | table | 19 | `global_sequence` | 0 | 16 | - |
 | `journal_entries_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
-| `journal_legs` | table | 30 | `entry_id` | 1 | 8 | - |
+| `journal_leg_currency_affirmations` | table | 7 | `affirmation_id` | 1 | 2 | Operator assertions that a ledger book with no retained currency evidence transacted only in its base currency, and the currency-blind journal legs each assertion completed. Append-only: this is the authority for a repair the data alone could not determine. |
+| `journal_leg_currency_backfill_status` | view | 8 | - | 0 | 0 | - |
+| `journal_legs` | table | 30 | `entry_id` | 1 | 9 | - |
 | `ledger_books` | table | 13 | `ledger_book_id` | 0 | 6 | - |
 | `ledger_journal_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
 | `operations_continuity_audit` | table | 19 | `audit_id` | 1 | 5 | - |

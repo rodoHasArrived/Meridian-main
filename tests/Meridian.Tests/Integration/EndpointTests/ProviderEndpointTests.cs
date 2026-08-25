@@ -15,13 +15,20 @@ namespace Meridian.Tests.Integration.EndpointTests;
 [Collection("Endpoint")]
 public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
-    private readonly HttpClient _client;
+    private readonly HttpClient _dataSourceReadClient;
+    private readonly HttpClient _providerReadClient;
     private readonly HttpClient _providerMutationClient;
     private readonly HttpClient _credentialMutationClient;
 
     public ProviderEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        // The data-source reads declare ViewConfig or ManageProviders. This client holds only the
+        // former, so the read stays proven for a caller who can look at configuration but not change it.
+        _dataSourceReadClient = fixture.CreatePermittedClient(UserPermission.ViewConfig);
+
+        // Deliberately holds neither ManageProviders nor AdminMaintenance: the provider reads
+        // declare an any-of set, so a platform operator who can only look must still get through.
+        _providerReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
         _providerMutationClient = fixture.CreatePermittedClient(UserPermission.ManageProviders);
         _credentialMutationClient = fixture.CreatePermittedClient(
             UserPermission.ManageProviders,
@@ -30,6 +37,8 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
 
     public void Dispose()
     {
+        _dataSourceReadClient.Dispose();
+        _providerReadClient.Dispose();
         _providerMutationClient.Dispose();
         _credentialMutationClient.Dispose();
     }
@@ -39,7 +48,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     [Fact]
     public async Task GetCatalog_ReturnsJsonWithProviders()
     {
-        var response = await _client.GetAsync("/api/providers/catalog");
+        var response = await _providerReadClient.GetAsync("/api/providers/catalog");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -58,7 +67,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     [Fact]
     public async Task GetCatalog_FilterByStreaming_ReturnsSubset()
     {
-        var response = await _client.GetAsync("/api/providers/catalog?type=streaming");
+        var response = await _providerReadClient.GetAsync("/api/providers/catalog?type=streaming");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -68,7 +77,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     [Fact]
     public async Task GetCatalog_FilterByBackfill_ReturnsSubset()
     {
-        var response = await _client.GetAsync("/api/providers/catalog?type=backfill");
+        var response = await _providerReadClient.GetAsync("/api/providers/catalog?type=backfill");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -82,7 +91,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     [Fact]
     public async Task GetRateLimits_ReturnsTypedProviderSnapshots()
     {
-        var response = await _client.GetAsync("/api/providers/rate-limits");
+        var response = await _providerReadClient.GetAsync("/api/providers/rate-limits");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -102,7 +111,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     [Fact]
     public async Task GetRateLimitHistory_StatesThatHistoryIsNotRetained()
     {
-        var response = await _client.GetAsync("/api/providers/synthetic/rate-limit-history?hours=12");
+        var response = await _providerReadClient.GetAsync("/api/providers/synthetic/rate-limit-history?hours=12");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -120,7 +129,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     [Fact]
     public async Task GetCatalogById_WithInvalidId_ReturnsNotFound()
     {
-        var response = await _client.GetAsync("/api/providers/catalog/nonexistent-provider");
+        var response = await _providerReadClient.GetAsync("/api/providers/catalog/nonexistent-provider");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -132,7 +141,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     [Fact]
     public async Task GetProviderStatus_ReturnsJsonArray()
     {
-        var response = await _client.GetAsync("/api/providers/status");
+        var response = await _providerReadClient.GetAsync("/api/providers/status");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -149,7 +158,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     [Fact]
     public async Task GetProviderMetrics_ReturnsJsonArray()
     {
-        var response = await _client.GetAsync("/api/providers/metrics");
+        var response = await _providerReadClient.GetAsync("/api/providers/metrics");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -162,7 +171,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     [Fact]
     public async Task GetProviderMetricsById_WithInvalidId_ReturnsNotFound()
     {
-        var response = await _client.GetAsync("/api/providers/metrics/nonexistent-id");
+        var response = await _providerReadClient.GetAsync("/api/providers/metrics/nonexistent-id");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -174,7 +183,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     [Fact]
     public async Task GetProviderComparison_ReturnsJsonWithExpectedShape()
     {
-        var response = await _client.GetAsync("/api/providers/comparison");
+        var response = await _providerReadClient.GetAsync("/api/providers/comparison");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -240,7 +249,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         result["providerName"].GetString().Should().Be(displayName);
         result["error"].ValueKind.Should().Be(JsonValueKind.Null);
 
-        var dataSourcesResponse = await _client.GetAsync("/api/config/datasources");
+        var dataSourcesResponse = await _dataSourceReadClient.GetAsync("/api/config/datasources");
         dataSourcesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var dataSources = await DeserializeAsync(dataSourcesResponse);
         var source = dataSources["sources"].EnumerateArray().FirstOrDefault(s =>
@@ -297,7 +306,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         var configureResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", configureContent);
         configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var response = await _client.GetAsync("/api/config/datasources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/datasources");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
@@ -329,7 +338,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         var configureResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", configureContent);
         configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var response = await _client.GetAsync("/api/config/datasources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/datasources");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
@@ -363,7 +372,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         var configureResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", configureContent);
         configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var response = await _client.GetAsync("/api/config/data-sources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/data-sources");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
@@ -394,7 +403,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         var setupResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", content);
         setupResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var response = await _client.GetAsync("/api/config/datasources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/datasources");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -413,7 +422,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     [Fact]
     public async Task GetDataSources_ReturnsJsonWithSources()
     {
-        var response = await _client.GetAsync("/api/config/datasources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/datasources");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");

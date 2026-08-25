@@ -24,7 +24,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(service.Get(), jsonOptions);
         })
-        .WithName("GetWorkstationFeatureCapabilities")
+        .WithName("GetWorkstationFeatureCapabilities").RequireAuthenticatedSessionOrScopedLocalOperatorRead()
         .Produces<FeatureCapabilitySettingsResponse>(200)
         .Produces(501);
 

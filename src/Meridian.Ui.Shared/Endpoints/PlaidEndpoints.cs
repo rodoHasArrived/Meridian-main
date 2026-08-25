@@ -4,6 +4,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Integrity;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Plaid;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -25,7 +26,7 @@ public static class PlaidEndpoints
             var items = await service.ListItemsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
         })
-        .WithName("ListPlaidItems")
+        .WithName("ListPlaidItems").RequireAnyPermission(UserPermission.ManageCredentials, UserPermission.ViewTrades, UserPermission.ViewDirectLending)
         .Produces<IReadOnlyList<PlaidItemDto>>(StatusCodes.Status200OK);
 
         group.MapGet(UiApiRoutes.PlaidAccounts, async (string? itemId, HttpContext context, IPlaidIngestionService service) =>
@@ -38,7 +39,7 @@ public static class PlaidEndpoints
             var accounts = await service.ListAccountsAsync(itemId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(accounts, jsonOptions);
         })
-        .WithName("ListPlaidAccounts")
+        .WithName("ListPlaidAccounts").RequireAnyPermission(UserPermission.ManageCredentials, UserPermission.ViewTrades, UserPermission.ViewDirectLending)
         .Produces<IReadOnlyList<PlaidAccountDto>>(StatusCodes.Status200OK);
 
         group.MapGet(UiApiRoutes.PlaidInstitutionSearch, async (
@@ -68,7 +69,7 @@ public static class PlaidEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
             }
         })
-        .WithName("SearchPlaidInstitutions")
+        .WithName("SearchPlaidInstitutions").RequireAnyPermission(UserPermission.ManageCredentials, UserPermission.ViewTrades, UserPermission.ViewDirectLending)
         .Produces<PlaidInstitutionSearchResult>(StatusCodes.Status200OK);
 
         group.MapPost(UiApiRoutes.PlaidLinkToken, async (
@@ -152,10 +153,40 @@ public static class PlaidEndpoints
         .Produces<PlaidSyncResult>(StatusCodes.Status200OK);
 
         group.MapPost(UiApiRoutes.PlaidWebhook, async (
-            JsonElement body,
             HttpContext context,
-            IPlaidIngestionService service) =>
+            IPlaidIngestionService service,
+            PlaidOptions options) =>
         {
+            // Read the raw bytes rather than a bound JsonElement: the signature covers exactly
+            // what Plaid sent, and re-serializing a parsed document would verify a different
+            // byte sequence than the one that was signed.
+            context.Request.EnableBuffering();
+            using var bodyBuffer = new MemoryStream();
+            await context.Request.Body.CopyToAsync(bodyBuffer, context.RequestAborted).ConfigureAwait(false);
+            var rawBody = bodyBuffer.ToArray();
+
+            var verification = PlaidWebhookVerifier.Verify(
+                options,
+                context.Request.Headers["Plaid-Verification"].ToString(),
+                rawBody,
+                DateTimeOffset.UtcNow);
+            if (verification != PlaidWebhookVerifier.VerificationOutcome.Verified)
+            {
+                // Deliberately uniform and detail-free: telling an unauthenticated caller which
+                // check failed helps it iterate towards a forgery.
+                return ApiProblemDetails.Unauthorized(context, "The webhook signature could not be verified.");
+            }
+
+            JsonElement body;
+            try
+            {
+                body = JsonDocument.Parse(rawBody).RootElement.Clone();
+            }
+            catch (JsonException)
+            {
+                return Results.BadRequest(new { error = "The webhook payload was not valid JSON." });
+            }
+
             var itemId = GetString(body, "item_id") ?? GetString(body, "itemId") ?? "unknown";
             var webhookType = GetString(body, "webhook_type") ?? GetString(body, "webhookType") ?? "unknown";
             var webhookCode = GetString(body, "webhook_code") ?? GetString(body, "webhookCode") ?? "unknown";
@@ -171,6 +202,10 @@ public static class PlaidEndpoints
             return Results.Json(result, jsonOptions);
         })
         .WithName("RecordPlaidWebhook")
+        .DeclareIndependentAuthentication(
+            "Inbound Plaid callback, authenticated by verifying the ES256 Plaid-Verification " +
+            "header and the signed body hash against the received bytes; the caller is Plaid, " +
+            "never the ambient operator principal, and carries no session to hold a permission.")
         .Produces<PlaidWebhookEventDto>(StatusCodes.Status200OK);
 
         group.MapPost(UiApiRoutes.PlaidSandboxTransfer, async (

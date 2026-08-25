@@ -38,6 +38,7 @@ public sealed class LedgerJournalStoreTests
         provider.GetRequiredService<IAccountingConfigurationStore>().Should().BeOfType<PostgresAccountingConfigurationStore>();
         provider.GetRequiredService<IAccountingActionAuditStore>().Should().BeOfType<PostgresAccountingConfigurationStore>();
         provider.GetRequiredService<LedgerMigrationRunner>().Should().NotBeNull();
+        provider.GetRequiredService<PostgresLedgerCurrencyBackfill>().Should().NotBeNull();
         provider.GetRequiredService<ILedgerBookService>().Should().BeOfType<PostgresLedgerBookService>();
     }
 
@@ -179,6 +180,84 @@ public sealed class LedgerJournalStoreTests
             new LedgerJournalEntryQuery(PeriodId: periodId));
         retained.Should().ContainSingle(record =>
             record.Entry.JournalEntryId == validWrite.Entry.JournalEntryId);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task RetainedJournal_V30RejectsUpdateAndDeleteAtTheDatabase()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var periodId = Guid.NewGuid();
+        await database.SavePeriodAsync(periodId, "Open");
+        var write = BuildBalancedJournalWrite(periodId);
+        await database.JournalStore.AppendAsync(write);
+        var journalEntryId = write.Entry.JournalEntryId;
+
+        await using var connection = new NpgsqlConnection(database.Options.ConnectionString);
+        await connection.OpenAsync();
+        var mutations = new[]
+        {
+            $"update {database.Options.SchemaName}.journal_entries set description = 'tampered' where journal_entry_id = @id;",
+            $"delete from {database.Options.SchemaName}.journal_entries where journal_entry_id = @id;",
+            $"update {database.Options.SchemaName}.journal_legs set debit = debit + 1 where journal_entry_id = @id;",
+            $"delete from {database.Options.SchemaName}.journal_legs where journal_entry_id = @id;",
+        };
+
+        foreach (var sql in mutations)
+        {
+            var act = async () =>
+            {
+                await using var command = connection.CreateCommand();
+                command.CommandText = sql;
+                command.Parameters.AddWithValue("id", journalEntryId);
+                await command.ExecuteNonQueryAsync();
+            };
+            (await act.Should().ThrowAsync<PostgresException>(
+                    "V_ledger_030 makes the retained journal append-only at the database"))
+                .Which.SqlState.Should().Be("55000");
+        }
+
+        var retained = await database.JournalStore.GetByPeriodAsync(periodId);
+        retained.Should().ContainSingle(record => record.Entry.JournalEntryId == journalEntryId);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task RetainedJournal_UnbalancedRawInsert_IsRejectedWhenTheTransactionCommits()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var periodId = Guid.NewGuid();
+        await database.SavePeriodAsync(periodId, "Open");
+        var journalEntryId = Guid.NewGuid();
+
+        await using var connection = new NpgsqlConnection(database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText =
+                $"""
+                insert into {database.Options.SchemaName}.journal_entries (
+                    journal_entry_id, aggregate_id, period_id, occurred_at, description)
+                values (@journal_entry_id, @aggregate_id, @period_id, now(), 'unbalanced bypass attempt');
+                insert into {database.Options.SchemaName}.journal_legs (
+                    entry_id, journal_entry_id, line_no, aggregate_id, period_id, occurred_at,
+                    account_name, account_type, debit, credit, description)
+                values (@entry_id, @journal_entry_id, 1, @aggregate_id, @period_id, now(),
+                    'Cash', 'Asset', 100, 0, 'debit with no balancing credit');
+                """;
+            command.Parameters.AddWithValue("journal_entry_id", journalEntryId);
+            command.Parameters.AddWithValue("aggregate_id", Guid.NewGuid());
+            command.Parameters.AddWithValue("period_id", periodId);
+            command.Parameters.AddWithValue("entry_id", Guid.NewGuid());
+            await command.ExecuteNonQueryAsync();
+        }
+
+        var act = () => transaction.CommitAsync();
+
+        (await act.Should().ThrowAsync<PostgresException>(
+                "per-entry debits = credits is enforced by the deferred constraint trigger at commit"))
+            .Which.SqlState.Should().Be("23514");
+        (await database.JournalStore.GetByPeriodAsync(periodId)).Should().BeEmpty();
     }
 
     [LedgerDatabaseFact]
@@ -979,6 +1058,22 @@ public sealed class LedgerJournalStoreTests
         sql.Should().Contain("add column if not exists transaction_credit numeric(38, 10) null");
         sql.Should().Contain("add column if not exists fx_rate_to_functional numeric(38, 10) null");
         sql.Should().Contain("ck_journal_legs_currency_detail");
+    }
+
+    [Fact]
+    public void LedgerJournalImmutabilityMigration_DefinesTriggersBalanceGuardAndPlainForeignKey()
+    {
+        var sql = ReadMigration("V_ledger_030__journal_immutability.sql");
+
+        sql.Should().Contain("trg_journal_entries_immutable");
+        sql.Should().Contain("trg_journal_legs_immutable");
+        sql.Should().Contain("trg_journal_entries_truncate_guard");
+        sql.Should().Contain("trg_journal_legs_truncate_guard");
+        sql.Should().Contain("ctrg_journal_legs_entry_balanced");
+        sql.Should().Contain("deferrable initially deferred");
+        sql.Should().Contain("meridian.ledger_currency_repair");
+        sql.Should().Contain("add constraint fk_journal_legs_journal_entry");
+        sql.Should().NotContain("on delete cascade");
     }
 
     [Fact]

@@ -2,6 +2,7 @@ using System.Text.Json.Nodes;
 using Meridian.Application.Commands;
 using Meridian.Application.Composition.Startup;
 using Meridian.Contracts.Configuration;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using ConfigStore = Meridian.Application.UI.ConfigStore;
 
@@ -66,6 +67,12 @@ internal static class DemoWorkspaceCli
 
             if (DemoWorkspaceLayout.HasSeedOnlyFlag(args))
             {
+                // A seeded workspace has to be re-openable with --demo, and --demo gates on the
+                // demo config rather than on the workspace itself. Returning here before writing
+                // it left `--seed-demo --seed-only` followed by `--demo` - the sequence the start
+                // guide documents - telling the operator to seed a workspace that is already
+                // seeded. The serving paths below rewrite this config with their own port.
+                WriteDemoConfig(seeder.DemoRoot, demoPort);
                 return 0;
             }
 
@@ -102,15 +109,19 @@ internal static class DemoWorkspaceCli
     /// otherwise fail closed at startup; the demo opts into the local in-memory governance profile and
     /// an optional-auth, non-production environment. Every value is only set when unset, so an operator
     /// who has configured a real database (for a fully durable demo) or auth mode is never overridden.
+    /// The resulting posture is disclosed on the console so the relaxations are seen, not discovered.
     /// </summary>
     private static void PrepareDemoRuntimeEnvironment()
     {
-        // Mark this process as the demo serving host so composition (W9-TRUTH-001) pins the
-        // seeded provenance label without re-parsing CLI verbs.
-        if (IsUnset(DemoWorkspaceLayout.DemoModeEnvironmentVariable))
-        {
-            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, "true");
-        }
+        // Mark this process as the demo serving host so composition (W9-TRUTH-001) pins the seeded
+        // provenance label without re-parsing CLI verbs. Set unconditionally rather than only when
+        // unset: this method runs on the demo serve paths and nowhere else, so the process is the
+        // demo host as a matter of fact. An inherited MERIDIAN_DEMO=false would otherwise outrank an
+        // explicit --demo or --seed-demo, and readers that consult the marker without the argument
+        // vector -- the provenance label, and the login middleware's seeded tenant fallback -- would
+        // conclude the demo is not running while it is, leaving the workstation refused for want of
+        // a tenant.
+        Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, "true");
 
         if (IsUnset("MERIDIAN_DATABASE_URL") && IsUnset("MERIDIAN_USE_INMEMORY_GOVERNANCE"))
         {
@@ -128,6 +139,49 @@ internal static class DemoWorkspaceCli
         {
             Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "optional");
         }
+
+        // Optional authentication leaves the caller without an authorization context, and the governed
+        // surface refuses a caller it cannot authorize -- correct by default, but it would leave the
+        // demo unable to open its own workstation. The demo is a single-operator local box with no
+        // accounts, so it names the role that operator carries. This is the one place that opts in:
+        // an ordinary optional-auth deployment stays refused unless it makes the same explicit choice.
+        if (IsUnset("MDC_ANONYMOUS_ROLE"))
+        {
+            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        }
+
+        DiscloseDemoRuntimePosture();
+    }
+
+    /// <summary>
+    /// Prints exactly what the demo posture relaxes, reading the effective values back rather than
+    /// assuming the defaults above applied — an operator who configured a real database or auth
+    /// mode sees their own choice reported, not the demo default. A demo that silently grants an
+    /// unauthenticated local caller Admin is a posture the operator must see, not discover.
+    /// </summary>
+    private static void DiscloseDemoRuntimePosture()
+    {
+        var inMemoryGovernance = string.Equals(
+            Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE"),
+            "true",
+            StringComparison.OrdinalIgnoreCase);
+        var environmentName = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+            ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+            ?? "Production";
+        var authMode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE") ?? "(default)";
+        var anonymousRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
+
+        Console.WriteLine("Demo runtime posture (relaxed for local evaluation):");
+        Console.WriteLine(inMemoryGovernance
+            ? "  governance stores: in-memory (MERIDIAN_USE_INMEMORY_GOVERNANCE=true); posted money-path records do not survive restart"
+            : "  governance stores: database-backed (MERIDIAN_DATABASE_URL or per-domain connection strings are configured)");
+        Console.WriteLine($"  environment:       {environmentName} (DOTNET_ENVIRONMENT)");
+        Console.WriteLine($"  authentication:    {authMode} (MDC_AUTH_MODE); no login is required in optional mode");
+        Console.WriteLine(string.IsNullOrWhiteSpace(anonymousRole)
+            ? "  anonymous role:    none (MDC_ANONYMOUS_ROLE unset); governed routes refuse anonymous callers"
+            : $"  anonymous role:    {anonymousRole} (MDC_ANONYMOUS_ROLE); the unauthenticated local operator acts with this role's full authority");
+        Console.WriteLine("  containment:       the demo host binds to loopback only (http://localhost), so this posture is not reachable from other machines");
+        Console.WriteLine("Do not point this posture at real data; use --reset-demo to remove the demo workspace.");
     }
 
     private static bool IsUnset(string variable)

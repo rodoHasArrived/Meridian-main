@@ -800,7 +800,7 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
             Source: "test",
             SequenceNumber: 1L);
 
-        var evt = MarketEvent.HistoricalBar(timestamp, symbol, bar, 1, "test");
+        var evt = MarketEvent.HistoricalBar(timestamp, symbol, bar, "test", 1);
         using var writer = new StreamWriter(filePath);
         writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
     }
@@ -837,7 +837,7 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
                 SequenceNumber: seq++);
 
             var ts = bar.ToTimestampUtc();
-            var evt = MarketEvent.HistoricalBar(ts, symbol, bar, seq, "test");
+            var evt = MarketEvent.HistoricalBar(ts, symbol, bar, "test", seq);
 
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
             date = date.AddDays(1);
@@ -866,7 +866,7 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
                 SequenceNumber: seq++);
 
             var ts = payload.ToTimestampUtc();
-            var evt = MarketEvent.HistoricalBar(ts, symbol, payload, seq, "test");
+            var evt = MarketEvent.HistoricalBar(ts, symbol, payload, "test", seq);
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
         }
     }
@@ -895,8 +895,8 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
                 snapshot.Timestamp,
                 symbol,
                 payload,
-                sequence++,
-                "test");
+                source: "test",
+                seq: sequence++);
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
         }
     }
@@ -940,8 +940,8 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
                 snapshot.Timestamp,
                 symbol,
                 payload,
-                sequence++,
-                "test");
+                source: "test",
+                seq: sequence++);
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
         }
     }

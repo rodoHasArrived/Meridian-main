@@ -26,7 +26,16 @@ internal static class ReconciliationBreakQueueProjection
             statementBreak.Delta
             ?? ((statementBreak.StatementAmount ?? 0m) - (statementBreak.BookAmount ?? 0m)));
         var category = MapStatementBreakCategory(statementBreak.BreakType);
-        var severity = MapStatementBreakSeverity(statementBreak.Severity, variance, statementBreak.Tolerance);
+        // Breaks produced by transaction matching against an empty internal ledger-transaction
+        // population are structurally unmatched: honest evidence, but not close blockers. They keep
+        // an explicit machine-readable rationale instead of blocked outputs so nothing is hidden.
+        var informational = string.Equals(
+            statementBreak.Classification,
+            ReconciliationBreakClassifications.InternalTransactionPopulationUnavailable,
+            StringComparison.OrdinalIgnoreCase);
+        var severity = informational
+            ? ReconciliationBreakSeverity.Info
+            : MapStatementBreakSeverity(statementBreak.Severity, variance, statementBreak.Tolerance);
         var routing = ResolveRouting(category, severity, variance);
         var fingerprint = ComputeStatementBreakFingerprint(statementBreak);
         var sourceImportId =
@@ -83,11 +92,14 @@ internal static class ReconciliationBreakQueueProjection
                 ? null
                 : [statementBreak.EvidenceLink],
             EvidenceCount: string.IsNullOrWhiteSpace(statementBreak.EvidenceLink) ? 0 : 1,
+            LifecycleRationale: informational
+                ? $"{ReconciliationBreakClassifications.InternalTransactionPopulationUnavailable}: internal transaction population unavailable — informational only; does not block close outputs."
+                : null,
             LedgerBookId: accountingScope?.LedgerBookId,
             Measures: statementBreak.Measures ?? BuildStatementBreakMeasures(statementBreak, variance),
             BlockedOutputs: accountingScope is null
                 ? ["reconciliation-scope-resolution"]
-                : ["FinalReport", "PeriodClose", "ClientDelivery"],
+                : informational ? [] : ["FinalReport", "PeriodClose", "ClientDelivery"],
             AccountingPeriodId: accountingScope?.AccountingPeriodId.ToString("D"),
             AsOfDate: accountingScope?.AsOfDate)
         {

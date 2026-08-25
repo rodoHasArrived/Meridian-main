@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Json;
 using FluentAssertions;
 using Xunit;
+using Meridian.Identity.Auth;
 
 namespace Meridian.Tests.Integration.EndpointTests;
 
@@ -12,21 +13,25 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
+public sealed class HistoricalEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
-    private readonly HttpClient _client;
+    // The historical reads answer ViewHistoricalData, the same permission the alignment routes in this
+    // family already require. These cover query shape and validation, so the caller holds it.
+    private readonly HttpClient _historicalReadClient;
 
     public HistoricalEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        _historicalReadClient = fixture.CreatePermittedClient(UserPermission.ViewHistoricalData);
     }
+
+    public void Dispose() => _historicalReadClient.Dispose();
 
     #region GET /api/historical - Query Historical Data
 
     [Fact]
     public async Task QueryHistoricalData_WithoutSymbol_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/historical");
+        var response = await _historicalReadClient.GetAsync("/api/historical");
 
         // ASP.NET Core returns 400 for missing required parameters
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -35,7 +40,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task QueryHistoricalData_WithSymbol_ReturnsOk()
     {
-        var response = await _client.GetAsync("/api/historical?symbol=SPY");
+        var response = await _historicalReadClient.GetAsync("/api/historical?symbol=SPY");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -44,7 +49,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task QueryHistoricalData_WithSymbol_ReturnsValidJson()
     {
-        var response = await _client.GetAsync("/api/historical?symbol=SPY");
+        var response = await _historicalReadClient.GetAsync("/api/historical?symbol=SPY");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -62,7 +67,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task QueryHistoricalData_WithDateRange_ReturnsOk()
     {
-        var response = await _client.GetAsync("/api/historical?symbol=SPY&from=2024-01-01&to=2024-01-31");
+        var response = await _historicalReadClient.GetAsync("/api/historical?symbol=SPY&from=2024-01-01&to=2024-01-31");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadAsStringAsync();
@@ -76,7 +81,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task QueryHistoricalData_WithLimit_ReturnsOk()
     {
-        var response = await _client.GetAsync("/api/historical?symbol=SPY&limit=10");
+        var response = await _historicalReadClient.GetAsync("/api/historical?symbol=SPY&limit=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -84,7 +89,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task QueryHistoricalData_WithDataType_ReturnsOk()
     {
-        var response = await _client.GetAsync("/api/historical?symbol=SPY&dataType=trades");
+        var response = await _historicalReadClient.GetAsync("/api/historical?symbol=SPY&dataType=trades");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadAsStringAsync();
@@ -100,7 +105,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task GetAvailableSymbols_ReturnsOk()
     {
-        var response = await _client.GetAsync("/api/historical/symbols");
+        var response = await _historicalReadClient.GetAsync("/api/historical/symbols");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -109,7 +114,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task GetAvailableSymbols_ReturnsValidJson()
     {
-        var response = await _client.GetAsync("/api/historical/symbols");
+        var response = await _historicalReadClient.GetAsync("/api/historical/symbols");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -130,7 +135,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task GetSymbolDateRange_WithoutSymbol_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/historical//daterange");
+        var response = await _historicalReadClient.GetAsync("/api/historical//daterange");
 
         // Should return 400 or 404 depending on routing behavior
         response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.NotFound);
@@ -139,7 +144,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task GetSymbolDateRange_WithSymbol_ReturnsOk()
     {
-        var response = await _client.GetAsync("/api/historical/SPY/daterange");
+        var response = await _historicalReadClient.GetAsync("/api/historical/SPY/daterange");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -148,7 +153,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task GetSymbolDateRange_WithSymbol_ReturnsValidJson()
     {
-        var response = await _client.GetAsync("/api/historical/SPY/daterange");
+        var response = await _historicalReadClient.GetAsync("/api/historical/SPY/daterange");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -164,7 +169,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task GetSymbolDateRange_WithInvalidSymbol_ReturnsOkWithHasDataFalse()
     {
-        var response = await _client.GetAsync("/api/historical/NONEXISTENT/daterange");
+        var response = await _historicalReadClient.GetAsync("/api/historical/NONEXISTENT/daterange");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -183,7 +188,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task QueryHistoricalData_WithEmptySymbol_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/historical?symbol=");
+        var response = await _historicalReadClient.GetAsync("/api/historical?symbol=");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -192,7 +197,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     public async Task QueryHistoricalData_WithInvalidDateFormat_ReturnsOkOrBadRequest()
     {
         // Invalid date format should be handled gracefully
-        var response = await _client.GetAsync("/api/historical?symbol=SPY&from=invalid-date");
+        var response = await _historicalReadClient.GetAsync("/api/historical?symbol=SPY&from=invalid-date");
 
         // ASP.NET Core may return 400 for invalid date parsing
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.BadRequest);
@@ -205,7 +210,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task QueryHistoricalData_WithLargeLimit_ReturnsOk()
     {
-        var response = await _client.GetAsync("/api/historical?symbol=SPY&limit=1000");
+        var response = await _historicalReadClient.GetAsync("/api/historical?symbol=SPY&limit=1000");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -213,7 +218,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task QueryHistoricalData_WithSkipAndLimit_ReturnsOk()
     {
-        var response = await _client.GetAsync("/api/historical?symbol=SPY&skip=10&limit=20");
+        var response = await _historicalReadClient.GetAsync("/api/historical?symbol=SPY&skip=10&limit=20");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -231,7 +236,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task GetSymbolBars_WithSymbolAndDateRange_ReturnsOk()
     {
-        var response = await _client.GetAsync("/api/historical/SPY/bars?intervalMinutes=5&from=2024-01-01&to=2024-01-02");
+        var response = await _historicalReadClient.GetAsync("/api/historical/SPY/bars?intervalMinutes=5&from=2024-01-01&to=2024-01-02");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -250,7 +255,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task GetSymbolBars_WithoutDateBounds_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/historical/SPY/bars");
+        var response = await _historicalReadClient.GetAsync("/api/historical/SPY/bars");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -258,7 +263,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task GetSymbolBars_WithInvalidInterval_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/historical/SPY/bars?intervalMinutes=0&from=2024-01-01&to=2024-01-02");
+        var response = await _historicalReadClient.GetAsync("/api/historical/SPY/bars?intervalMinutes=0&from=2024-01-01&to=2024-01-02");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -266,7 +271,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task GetSymbolBars_WithExcessiveInterval_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/historical/SPY/bars?intervalMinutes=99999&from=2024-01-01&to=2024-01-02");
+        var response = await _historicalReadClient.GetAsync("/api/historical/SPY/bars?intervalMinutes=99999&from=2024-01-01&to=2024-01-02");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -275,7 +280,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task GetSymbolBars_WithInvalidDateRange_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync(
+        var response = await _historicalReadClient.GetAsync(
             "/api/historical/SPY/bars?intervalMinutes=5&from=2024-01-31&to=2024-01-01");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -284,7 +289,7 @@ public sealed class HistoricalEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task GetSymbolBars_WithDateRange_ReturnsOk()
     {
-        var response = await _client.GetAsync(
+        var response = await _historicalReadClient.GetAsync(
             "/api/historical/SPY/bars?intervalMinutes=60&from=2024-01-01&to=2024-01-31&maxBars=200");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);

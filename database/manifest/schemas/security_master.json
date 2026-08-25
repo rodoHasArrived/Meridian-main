@@ -1234,7 +1234,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "e29412963a3cdba76b280e694586b6793e56af1be24c67a9c0e3d389bd0c53ae",
+  "fingerprint": "74e065d603766df4ffb71e3244ac989fdc84ba2d74ba717277c05d2943261899",
   "foreign_tables": [],
   "functions": [
     {
@@ -4529,6 +4529,22 @@
           "security_labels": [],
           "type_name": "numeric",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "6fb910218430810bb25b2031f8c460309ae8609cd2a8982e65db9021047aa606",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": true,
+          "ordinal_position": 20,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -4578,7 +4594,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "ad1d7ec3e0cd2cde0be5ae4a093890dc59d4f15c6905f7e79b790920a9420a4d",
+      "fingerprint": "be685f37640399035d6a590f10c43210170401606349c502c774a20e912b2050",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -28290,6 +28306,22 @@
           "security_labels": [],
           "type_name": "numeric",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "6fb910218430810bb25b2031f8c460309ae8609cd2a8982e65db9021047aa606",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": true,
+          "ordinal_position": 20,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -28339,7 +28371,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "ad1d7ec3e0cd2cde0be5ae4a093890dc59d4f15c6905f7e79b790920a9420a4d",
+      "fingerprint": "be685f37640399035d6a590f10c43210170401606349c502c774a20e912b2050",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [

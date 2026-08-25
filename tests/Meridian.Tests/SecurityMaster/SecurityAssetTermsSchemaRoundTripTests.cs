@@ -98,6 +98,10 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
             spreadBps = 185m,
             capRate = 9.5m,
             floorRate = 0.5m,
+            stepSchedule = Array.Empty<object>(),
+            inflationIndex = (string?)null,
+            inflationBaseIndexValue = (decimal?)null,
+            inflationIndexRatio = (decimal?)null,
             dayCount = "ACT/360",
             isCallable = true,
             callDate = "2030-06-15",
@@ -426,6 +430,54 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
             couponType = "ZeroCoupon",
             isCallable = false,
             subclass = "Sovereign"
+        });
+    }
+
+    [Fact]
+    public void Bond_StepCouponVariant_RoundTripsByteStable()
+    {
+        // Step-rate bonds were previously classifiable (BondSubclass.StepRate) but not computable —
+        // BondCouponStructure had no schedule case. The dated step schedule must survive the codec
+        // loop so accrual/projection math can resolve the rate per period.
+        AssertRoundTripIsByteStable("Bond", new
+        {
+            maturity = "2032-06-30",
+            issueDate = "2026-06-30",
+            couponType = "Step",
+            stepSchedule = new object[]
+            {
+                new { effectiveDate = "2026-06-30", rate = 3.0m },
+                new { effectiveDate = "2028-06-30", rate = 4.0m },
+                new { effectiveDate = "2030-06-30", rate = 5.0m }
+            },
+            dayCount = "30/360",
+            isCallable = true,
+            callDate = "2028-06-30",
+            subclass = "StepRate",
+            par = 1000m,
+            paymentFrequency = "SemiAnnual"
+        });
+    }
+
+    [Fact]
+    public void Bond_InflationLinkedVariant_RoundTripsByteStable()
+    {
+        // Inflation-linked bonds previously had nowhere to put an index ratio; the real rate rides
+        // the couponRate slot (discriminated by couponType) and the indexation fields must survive.
+        AssertRoundTripIsByteStable("Bond", new
+        {
+            maturity = "2036-01-15",
+            issueDate = "2026-01-15",
+            couponType = "InflationLinked",
+            couponRate = 1.25m,
+            inflationIndex = "CPI-U",
+            inflationBaseIndexValue = 305.109m,
+            inflationIndexRatio = 1.0432m,
+            dayCount = "ACT/ACT",
+            isCallable = false,
+            subclass = "InflationLinked",
+            par = 1000m,
+            paymentFrequency = "SemiAnnual"
         });
     }
 

@@ -142,7 +142,12 @@ public sealed class BacktestProxyTests : IDisposable
             Volume: 1_000,
             Source: "test",
             SequenceNumber: 1);
-        var marketEvent = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), symbol, bar, 1, "test");
+        var marketEvent = MarketEvent.HistoricalBar(
+            bar.ToTimestampUtc(),
+            symbol,
+            bar,
+            source: "test",
+            seq: 1);
 
         File.WriteAllText(
             path,

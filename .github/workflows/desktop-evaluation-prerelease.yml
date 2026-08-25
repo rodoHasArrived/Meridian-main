@@ -1,0 +1,436 @@
+name: Desktop Evaluation Prerelease
+
+# Publishes a self-signed desktop build so people can install and evaluate Meridian before a
+# production signing certificate exists.
+#
+# This lane is deliberately separate from `Desktop Installer Release`. That workflow fails closed
+# without the protected signing secret, and nothing here may weaken it: an artifact published from
+# this lane carries no verified publisher identity, is never `PRD-014` supply-chain evidence, and
+# is tagged `eval-v*` so it can never be mistaken for a `v*` production release. The production
+# lane's N-1 lookup also skips prereleases, so an evaluation build can never become the baseline a
+# production upgrade is certified against.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Evaluation version, without a leading v (for example 0.1.0-eval.1).
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-evaluation-prerelease
+  cancel-in-progress: false
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+jobs:
+  preflight:
+    name: verify-evaluation-preflight
+    runs-on: windows-latest
+    timeout-minutes: 55
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.4.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-desktop-release-preflight-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-desktop-release-preflight-
+            ${{ runner.os }}-nuget-
+
+      - name: Restore WPF tests
+        shell: pwsh
+        run: >
+          dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj
+          /p:EnableWindowsTargeting=true
+          /p:EnableFullWpfBuild=true
+
+      # An evaluation build is still something a person installs, so it goes through the same
+      # desktop test gate a production release does.
+      - name: Run WPF tests
+        shell: pwsh
+        run: >
+          dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj
+          -c Release
+          --filter "Category!=Integration&FullyQualifiedName!~Integration"
+          /p:EnableWindowsTargeting=true
+          /p:EnableFullWpfBuild=true
+
+  package:
+    name: package-evaluation-msix (${{ matrix.runtime }})
+    needs: preflight
+    runs-on: windows-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [win-x64, win-arm64]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.4.0
+        with:
+          global-json-file: global.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-desktop-installer-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-desktop-installer-
+            ${{ runner.os }}-nuget-
+
+      # An unsigned MSIX cannot be installed at all, so a genuinely unsigned prerelease would be a
+      # file nobody can open. Sign with a throwaway certificate instead and publish its public half,
+      # which is what makes the package sideloadable. The subject says what it is, and because
+      # package-desktop-msix.ps1 stamps the signing subject into Identity/@Publisher, the package
+      # identity itself is distinct from a production build's - the two can never upgrade one
+      # another.
+      - name: Mint the evaluation signing certificate
+        id: signing
+        shell: pwsh
+        run: |
+          $subject = 'CN=Meridian Evaluation Self-Signed'
+          $password = [Guid]::NewGuid().ToString('N')
+          $pfxPath = Join-Path $env:RUNNER_TEMP 'meridian-evaluation-signing.pfx'
+          $cerPath = Join-Path $env:RUNNER_TEMP 'meridian-evaluation-signing.cer'
+
+          $certificate = New-SelfSignedCertificate `
+            -Type Custom `
+            -Subject $subject `
+            -KeyUsage DigitalSignature `
+            -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}") `
+            -NotAfter (Get-Date).AddYears(1) `
+            -CertStoreLocation 'Cert:\CurrentUser\My'
+
+          Export-PfxCertificate -Cert $certificate -FilePath $pfxPath `
+            -Password (ConvertTo-SecureString $password -AsPlainText -Force) | Out-Null
+          Export-Certificate -Cert $certificate -FilePath $cerPath | Out-Null
+          Remove-Item -LiteralPath "Cert:\CurrentUser\My\$($certificate.Thumbprint)" -Force
+
+          "pfx_path=$pfxPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "cer_path=$cerPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "password=$password" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "thumbprint=$($certificate.Thumbprint)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Build the evaluation package
+        shell: pwsh
+        env:
+          MDC_SIGNING_CERT_PFX: ${{ steps.signing.outputs.pfx_path }}
+          MDC_SIGNING_CERT_PASSWORD: ${{ steps.signing.outputs.password }}
+          MDC_PACKAGE_VERSION: ${{ inputs.version }}
+        run: |
+          # The manifest needs a four-part numeric version; take the numeric head of the evaluation
+          # version and drop any prerelease suffix.
+          if ($env:MDC_PACKAGE_VERSION -match '^(\d+)\.(\d+)\.(\d+)') {
+            $env:MDC_PACKAGE_VERSION = "$($Matches[1]).$($Matches[2]).$($Matches[3]).0"
+          } else {
+            throw "Version '${{ inputs.version }}' must start with Major.Minor.Patch."
+          }
+
+          $architecture = if ('${{ matrix.runtime }}' -eq 'win-arm64') { 'ARM64' } else { 'x64' }
+          pwsh ./build/scripts/install/install.ps1 `
+            -Mode Desktop `
+            -Architecture $architecture `
+            -SkipInstall `
+            -NoNotify `
+            -NoTrustCert
+
+      - name: Upload desktop packaging diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: evaluation-packaging-diagnostics-${{ matrix.runtime }}-${{ github.run_id }}
+          path: diagnostic-logs/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Collect the evaluation artifacts
+        shell: pwsh
+        run: |
+          $runtime = '${{ matrix.runtime }}'
+          $sourceRoot = "dist/$runtime/msix"
+          if (-not (Test-Path $sourceRoot)) { throw "Expected package output root not found: $sourceRoot" }
+
+          $releaseRoot = "artifacts/evaluation/$runtime"
+          New-Item -ItemType Directory -Path $releaseRoot -Force | Out-Null
+
+          $packageFiles = Get-ChildItem -Path $sourceRoot -File |
+            Where-Object { $_.Extension.ToLowerInvariant() -in @('.msix', '.msixbundle') }
+          if (-not $packageFiles) { throw "No packaged installer files found under $sourceRoot" }
+          Copy-Item -Path $packageFiles.FullName -Destination $releaseRoot -Force -ErrorAction Stop
+          Copy-Item -LiteralPath '${{ steps.signing.outputs.cer_path }}' `
+            -Destination (Join-Path $releaseRoot "meridian-evaluation-signing-$runtime.cer") -Force
+
+          Get-ChildItem -LiteralPath $releaseRoot -File | Where-Object Name -ne 'SHA256SUMS' |
+            Sort-Object Name |
+            ForEach-Object { "{0}  {1}" -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $_.Name } |
+            Set-Content -LiteralPath (Join-Path $releaseRoot 'SHA256SUMS') -Encoding ascii
+
+      - name: Generate the evaluation SBOM
+        shell: pwsh
+        run: |
+          dotnet tool install --global Microsoft.Sbom.DotNetTool --version 4.1.5
+          pwsh ./build/scripts/publish/generate-sbom.ps1 `
+            -BuildDropPath artifacts/evaluation/${{ matrix.runtime }} `
+            -BuildComponentPath . `
+            -PackageName Meridian-Desktop-Evaluation `
+            -PackageVersion '${{ inputs.version }}-${{ matrix.runtime }}'
+          $generated = Get-ChildItem artifacts/evaluation/${{ matrix.runtime }}/_manifest -Filter manifest.spdx.json -File -Recurse | Select-Object -First 1
+          if ($null -eq $generated) { throw "Microsoft SBOM Tool did not emit manifest.spdx.json." }
+          Copy-Item -LiteralPath $generated.FullName -Destination artifacts/evaluation/${{ matrix.runtime }}/sbom.spdx.json -Force
+
+      - name: Upload the evaluation artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: meridian-evaluation-${{ matrix.runtime }}-${{ github.run_id }}
+          path: artifacts/evaluation/${{ matrix.runtime }}/
+          if-no-files-found: error
+          retention-days: 30
+
+  # The MSIX above is the desktop shell alone: no lifecycle supervisor, no bundled database, no
+  # first-account bootstrap. An evaluator who has nothing but the MSIX lands on required auth with
+  # zero accounts. Meridian-Setup.exe is the artifact that actually solves the first mile - it
+  # bundles the workstation host, desktop shell, supervisor, and a PostgreSQL runtime, and its
+  # first run opens the browser bootstrap to create the first account - so the evaluation
+  # prerelease attaches it too. x64 only: PostgreSQL publishes no Windows ARM64 server build.
+  package-consumer-setup:
+    name: package-evaluation-consumer-setup (win-x64)
+    needs: preflight
+    runs-on: windows-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.4.0
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: "24"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-desktop-installer-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-desktop-installer-
+            ${{ runner.os }}-nuget-
+
+      # Same payload source as the production installer lane: the hosted image's own PostgreSQL.
+      - name: Materialize the PostgreSQL payload
+        shell: pwsh
+        run: |
+          $postgres = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction Stop |
+            Where-Object { $_.Name -match '^\d+' } |
+            Sort-Object { [int]($_.Name -replace '^(\d+).*$', '$1') } -Descending | Select-Object -First 1
+          if ($null -eq $postgres) { throw 'The hosted Windows runner has no PostgreSQL runtime to bundle.' }
+          $payload = 'artifacts/postgresql-payload/win-x64'
+          New-Item -ItemType Directory -Path $payload -Force | Out-Null
+          Copy-Item -Path (Join-Path $postgres.FullName '*') -Destination $payload -Recurse -Force
+
+      # Unsigned on purpose: this is the same posture the MSIX discloses. An evaluation build has
+      # no verified publisher identity, and pretending otherwise with a throwaway Authenticode
+      # signature would not change what SmartScreen tells the user. The checksum is the integrity
+      # story.
+      - name: Build the consumer package
+        shell: pwsh
+        run: |
+          pwsh ./build/scripts/install/build-consumer-setup.ps1 `
+            -PostgreSqlPayloadRoot artifacts/postgresql-payload `
+            -Runtimes @('win-x64')
+
+      - name: Generate consumer setup SBOM, checksum, and evidence
+        shell: pwsh
+        run: |
+          python build/scripts/ci/generate-release-evidence-manifest.py `
+            --project consumer-setup `
+            --runtime windows `
+            --artifact-root artifacts/consumer-setup `
+            --output artifacts/consumer-setup/release-evidence.json `
+            --workflow-run-id '${{ github.run_id }}' `
+            --validation-lane verify-evaluation-preflight `
+            --validation-lane package-evaluation-consumer-setup
+
+          dotnet tool install --global Microsoft.Sbom.DotNetTool --version 4.1.5
+          pwsh ./build/scripts/publish/generate-sbom.ps1 `
+            -BuildDropPath artifacts/consumer-setup `
+            -BuildComponentPath . `
+            -PackageName Meridian-Consumer-Setup-Evaluation `
+            -PackageVersion '${{ inputs.version }}'
+          $generated = Get-ChildItem artifacts/consumer-setup/_manifest -Filter manifest.spdx.json -File -Recurse | Select-Object -First 1
+          if ($null -eq $generated) { throw "Microsoft SBOM Tool did not emit manifest.spdx.json." }
+
+          # Release asset names are flat and must be unique across every job that feeds the
+          # publish step, so the consumer files carry distinct names instead of reusing
+          # SHA256SUMS/sbom.spdx.json from the MSIX jobs.
+          $staging = 'artifacts/evaluation/consumer-setup'
+          New-Item -ItemType Directory -Path $staging -Force | Out-Null
+          Copy-Item artifacts/consumer-setup/Meridian-Setup.exe -Destination $staging -ErrorAction Stop
+          Copy-Item -LiteralPath $generated.FullName -Destination (Join-Path $staging 'consumer-setup.sbom.spdx.json') -Force
+          Copy-Item artifacts/consumer-setup/release-evidence.json -Destination (Join-Path $staging 'consumer-setup-release-evidence.json') -Force
+          $hash = (Get-FileHash -LiteralPath (Join-Path $staging 'Meridian-Setup.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  Meridian-Setup.exe" | Set-Content -LiteralPath (Join-Path $staging 'Meridian-Setup.exe.sha256') -Encoding ascii
+
+      - name: Upload the consumer setup artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: meridian-evaluation-consumer-setup-${{ github.run_id }}
+          path: artifacts/evaluation/consumer-setup/
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: publish-evaluation-prerelease
+    needs: [package, package-consumer-setup]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download the evaluation artifacts
+        uses: actions/download-artifact@v5.0.0
+        with:
+          pattern: meridian-evaluation-*-${{ github.run_id }}
+          path: artifacts/evaluation
+
+      - name: Compose the release notes
+        run: |
+          cat > release-notes.md <<'NOTES'
+          ## Evaluation build — self-signed, not a production release
+
+          This is a **self-signed evaluation build** so you can install Meridian and look at it
+          before a production code-signing certificate exists. It carries **no verified publisher
+          identity**. Windows will treat it as software from an unknown publisher, because that is
+          what it is.
+
+          Do not use it to run real financial operations. Meridian is not production-certified: the
+          release gate in the Implementation and Readiness Tracker requires every `P0` row to be
+          complete on one release commit, and that has not happened.
+
+          ### The easiest install: `Meridian-Setup.exe` (x64)
+
+          The one-click consumer setup bundles the workstation host, the desktop shell, the
+          lifecycle supervisor, and a PostgreSQL runtime. Its first run opens your browser at the
+          setup page so you create the first operator account before anything else — no
+          environment variables, no hand-written password hashes.
+
+          It is **unsigned**, deliberately: an evaluation build has no verified publisher
+          identity either way, and SmartScreen will say so ("More info" → "Run anyway"). Verify
+          the download first:
+
+          ```powershell
+          (Get-FileHash .\Meridian-Setup.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          # compare against Meridian-Setup.exe.sha256
+          ```
+
+          There is no ARM64 consumer setup because PostgreSQL publishes no Windows ARM64 server
+          build; on ARM64 use the MSIX below or run from source.
+
+          ### Installing the MSIX
+
+          Each architecture ships an `.msix` and the public half of the certificate that signed it.
+          Windows will not install an MSIX whose publisher it does not trust, so you have to trust
+          that certificate first:
+
+          ```powershell
+          # From an elevated PowerShell, in the folder you downloaded into.
+          # Trusted People is the narrow store MSIX sideloading uses. Do not import into Root.
+          Import-Certificate -FilePath .\meridian-evaluation-signing-win-x64.cer `
+            -CertStoreLocation Cert:\LocalMachine\TrustedPeople
+
+          Add-AppxPackage -Path .\Meridian.Desktop-win-x64.msix
+          ```
+
+          Use the `win-arm64` files instead on an ARM64 device. Verify the download against
+          `SHA256SUMS` first.
+
+          ### Removing it again
+
+          ```powershell
+          Get-AppxPackage -Name Meridian.Desktop | Remove-AppxPackage
+          Get-ChildItem Cert:\LocalMachine\TrustedPeople |
+            Where-Object Subject -eq 'CN=Meridian Evaluation Self-Signed' | Remove-Item
+          ```
+
+          ### If you would rather not trust a self-signed certificate
+
+          Run from source instead — no certificate involved, and it is the path the README
+          documents:
+
+          ```bash
+          dotnet run --project src/Meridian/Meridian.csproj -- --seed-demo
+          ```
+
+          ### What this build is not
+
+          These artifacts are **not** supply-chain evidence for `PRD-014`. They are unattested and
+          self-signed. A production release is tagged `v*`, is signed with the protected
+          certificate, and carries GitHub attestations plus clean-machine install, launch, update,
+          repair, rollback and uninstall receipts.
+          NOTES
+
+      - name: Publish the evaluation prerelease
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v2
+        with:
+          tag_name: eval-v${{ inputs.version }}
+          name: Meridian ${{ inputs.version }} (evaluation, self-signed)
+          body_path: release-notes.md
+          prerelease: true
+          files: |
+            artifacts/evaluation/**/*.msix
+            artifacts/evaluation/**/*.msixbundle
+            artifacts/evaluation/**/*.cer
+            artifacts/evaluation/**/SHA256SUMS
+            artifacts/evaluation/**/sbom.spdx.json
+            artifacts/evaluation/**/Meridian-Setup.exe
+            artifacts/evaluation/**/Meridian-Setup.exe.sha256
+            artifacts/evaluation/**/consumer-setup.sbom.spdx.json
+            artifacts/evaluation/**/consumer-setup-release-evidence.json

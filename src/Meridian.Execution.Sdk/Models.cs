@@ -159,6 +159,31 @@ public sealed record ExecutionReport
     public OptionContractIdentity? OptionContract { get; init; }
     public IReadOnlyList<OrderLeg>? Legs { get; init; }
     public ExecutionDiagnostics? Diagnostics { get; init; }
+
+    /// <summary>
+    /// Broker-created child orders accompanying this acknowledgement — the take-profit and
+    /// stop-loss legs a bracket/OCO submission spawned server-side, each with its own broker
+    /// order id. Populated by gateways that parse child legs out of the submit response so the
+    /// OMS can register them as tracked orders; without this, their execution reports are
+    /// dropped as untracked and a kill-switch sweep never sees them. Null on every other report,
+    /// and omitted from serialized payloads so existing durable records keep their canonical
+    /// content hash.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<BrokerOrder>? ChildOrders { get; init; }
+
+    /// <summary>
+    /// The active gateway routed <see cref="FilledQuantity"/> as face value with prices quoted
+    /// as a percentage of par (fixed income). Stamped server-side by the OMS from the
+    /// gateway-resolved order sizing, so booking, session persistence, and restart replay all
+    /// read one authoritative classification instead of each re-deriving it. Omitted from
+    /// serialized payloads when false so existing durable fill records keep their canonical
+    /// content hash.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public bool UsesFaceValuePercentageOfPar { get; init; }
 }
 
 /// <summary>Normalized operational diagnostics derived from broker status/reject payloads.</summary>

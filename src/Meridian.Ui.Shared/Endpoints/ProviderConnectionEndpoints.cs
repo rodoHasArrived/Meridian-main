@@ -28,7 +28,7 @@ public static class ProviderConnectionEndpoints
             var rows = await service.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(rows, jsonOptions);
         })
-        .WithName("GetProviderConnections")
+        .WithName("GetProviderConnections").RequirePermission(UserPermission.ManageCredentials)
         .Produces<IReadOnlyList<ProviderConnectionRowDto>>(StatusCodes.Status200OK);
 
         group.MapPut(UiApiRoutes.ProviderCredentialMutation, async (

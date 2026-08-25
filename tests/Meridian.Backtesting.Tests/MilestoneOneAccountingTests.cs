@@ -338,6 +338,33 @@ public sealed class MilestoneOneAccountingTests
     }
 
     [Fact]
+    public void ApplyAssetEvent_SameSymbolTransformation_PreservesSecondaryAccountRealizedPnl()
+    {
+        var accounts = new[]
+        {
+            new FinancialAccount("broker-a", "Broker A", FinancialAccountKind.Brokerage, InitialCash: 10_000m),
+            new FinancialAccount("broker-b", "Broker B", FinancialAccountKind.Brokerage, InitialCash: 20_000m),
+        };
+        var portfolio = new SimulatedPortfolio(accounts, "broker-a", new FixedCommissionModel());
+        var openedAt = new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero);
+        portfolio.ProcessFill(new FillEvent(
+            Guid.NewGuid(), Guid.NewGuid(), "SPY", 10L, 100m, 0m, openedAt, "broker-b"));
+        portfolio.ProcessFill(new FillEvent(
+            Guid.NewGuid(), Guid.NewGuid(), "SPY", -4L, 110m, 0m, openedAt.AddMinutes(1), "broker-b"));
+
+        portfolio.ApplyAssetEvent(new AssetEvent(
+            new DateTimeOffset(2024, 2, 1, 0, 0, 0, TimeSpan.Zero),
+            "SPY",
+            AssetEventType.Split,
+            PositionFactor: 2m));
+
+        var position = portfolio.GetAccountSnapshots()["broker-b"].Positions["SPY"];
+        position.Quantity.Should().Be(12L);
+        position.AverageCostBasis.Should().Be(50m);
+        position.RealizedPnl.Should().Be(40m);
+    }
+
+    [Fact]
     public void ShortPosition_ExposesOpenLotsThroughPositionAccountAndPortfolioViews()
     {
         var portfolio = new SimulatedPortfolio(10_000m, new FixedCommissionModel(), 0.05, 0.02);

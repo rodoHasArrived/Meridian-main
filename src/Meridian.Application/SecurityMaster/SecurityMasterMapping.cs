@@ -468,6 +468,12 @@ internal static class SecurityMasterMapping
         "Convertible" => BondSubclass.Convertible,
         "InflationLinked" => BondSubclass.InflationLinked,
         "FloatingRate" => BondSubclass.FloatingRate,
+        "SinkingFund" => BondSubclass.SinkingFund,
+        "StepRate" => BondSubclass.StepRate,
+        "FixedToFloat" => BondSubclass.FixedToFloat,
+        "Vrdn" => BondSubclass.Vrdn,
+        "AuctionRate" => BondSubclass.AuctionRate,
+        "BankLoan" => BondSubclass.BankLoan,
         "AssetBacked" => BondSubclass.AssetBacked,
         "MortgageBacked" => BondSubclass.MortgageBacked,
         "AgencyMbs" => BondSubclass.AgencyMbs,
@@ -495,6 +501,17 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(json, "floorRate")),
                 ToOption(GetOptionalString(json, "dayCount"))),
             "ZeroCoupon" => BondCouponStructure.ZeroCoupon,
+            "Step" => BondCouponStructure.NewStep(
+                ToFSharpList(GetOptionalArrayItemsStrict(json, "stepSchedule").Select(ToStepCouponEntry)),
+                ToOption(GetOptionalString(json, "dayCount"))),
+            // The scalar couponRate slot carries the inflation-linked REAL rate; couponType
+            // discriminates, so a fixed-coupon read can never pick up an indexed rate.
+            "InflationLinked" => BondCouponStructure.NewInflationLinked(
+                GetOptionalDecimal(json, "couponRate") ?? 0m,
+                GetRequiredString(json, "inflationIndex"),
+                ToOption(GetOptionalDecimal(json, "inflationBaseIndexValue")),
+                ToOption(GetOptionalDecimal(json, "inflationIndexRatio")),
+                ToOption(GetOptionalString(json, "dayCount"))),
             _ => BondCouponStructure.NewFixed(
                 GetOptionalDecimal(json, "couponRate") ?? 0m,
                 ToOption(GetOptionalString(json, "dayCount")))
@@ -533,6 +550,11 @@ internal static class SecurityMasterMapping
         => new(
             GetRequiredDateOnly(json, "paymentDate"),
             GetRequiredDecimal(json, "amount"));
+
+    private static StepCouponEntry ToStepCouponEntry(JsonElement json)
+        => new(
+            GetRequiredDateOnly(json, "effectiveDate"),
+            GetRequiredDecimal(json, "rate"));
 
     private static FactorScheduleEntry ToFactorScheduleEntry(JsonElement json)
         => new(

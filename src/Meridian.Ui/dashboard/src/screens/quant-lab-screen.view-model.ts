@@ -404,7 +404,12 @@ export function useQuantLabScreenViewModel(
     });
   }, [tradeRows]);
 
-  const runCommand = buildRunCommandState(source, run.phase, run.sourceChangedSinceRun === true);
+  const runCommand = buildRunCommandState(
+    source,
+    run.phase,
+    run.sourceChangedSinceRun === true,
+    parameterPhase
+  );
   const templatesPanel = buildTemplatePanelState(templatesPhase, templatesError);
   const parameterPanel = buildParameterPanelState(parameterPhase, parameterRows.length, source.trim().length > 0);
   const tradeLedger = useMemo(
@@ -583,10 +588,15 @@ export function validateQuantSource(source: string): string | null {
 export function buildRunCommandState(
   source: string,
   phase: QuantRunState["phase"],
-  sourceChangedSinceRun = false
+  sourceChangedSinceRun = false,
+  parameterPhase: QuantParameterPhase = "idle"
 ): QuantCommandState {
   const sourceError = validateQuantSource(source);
   const running = phase === "running";
+  const extractingParameters = parameterPhase === "extracting";
+  const disabledReason = sourceError ?? (
+    extractingParameters ? "Wait for runtime parameter detection to finish." : null
+  );
   return {
     label: running ? "Running..." : sourceChangedSinceRun && sourceError === null ? "Run current source" : "Run",
     ariaLabel: running
@@ -594,8 +604,8 @@ export function buildRunCommandState(
       : sourceChangedSinceRun && sourceError === null
         ? "Run current edited script source"
         : "Run script",
-    disabled: running || sourceError !== null,
-    disabledReason: sourceError,
+    disabled: running || disabledReason !== null,
+    disabledReason,
     busy: running
   };
 }

@@ -70,6 +70,11 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
         // X-Meridian-Reporting-Signature over the body before recording anything, and no session
         // exists on a provider callback to carry permissions.
         "POST /hooks/reporting/distribution/{transportId}/deliveries/{jobId}/receipts",
+        // The Plaid webhook is an inbound provider callback and carries no session, so it cannot
+        // hold a permission. It authenticates the caller instead by verifying the ES256
+        // Plaid-Verification header against a configured key and confirming the signed body hash
+        // matches the bytes actually received; an unverifiable callback is refused, not recorded.
+        "POST /api/plaid/webhook",
         // The portal grant exchange is the seam that mints a session for an external report
         // recipient: it authenticates the grant token it is given, so requiring a permission the
         // caller cannot yet hold would make the route unusable for its only purpose.
@@ -78,39 +83,73 @@ public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTest
 
 
     /// <summary>
-    /// Frozen 2026-08-10 remediation baseline: mutating routes that predate the permission model
-    /// and today process a permissionless request instead of rejecting it. Each entry is known
-    /// governance debt tracked under W9-GOV-008. The ratchet only tightens - a route added here is
-    /// a deliberate exception, a fixed route MUST be removed, and any newly mapped mutating route
-    /// that is neither guarded nor allowlisted fails this test immediately.
+    /// Remediation baseline for mutating routes that process a permissionless request instead of
+    /// rejecting it — burned down to empty (W9-GOV-008 criterion one). The final nine entries were
+    /// guarded routes whose binding 400s or handler service resolution answered before their
+    /// authorization filters could; the pre-binding <c>MutationAuthorizationGuardMiddleware</c>
+    /// now decides the declared requirement first, so the sweep observes 401/403 on every guarded
+    /// route. The ratchet stays: any newly mapped mutating route that is neither guarded nor
+    /// allowlisted fails this test immediately, and a route may be re-added here only as a
+    /// deliberate, documented exception.
     /// </summary>
     internal static readonly HashSet<string> UnguardedMutationBaseline = new(StringComparer.OrdinalIgnoreCase)
     {
-        // Declared (reconciliation any-of set) and enforced; still listed because the sweep's
-        // "{}" body cannot bind IReadOnlyList<CollateralInputRow>, so binding answers 400 before
-        // any filter runs. The declarative ratchet is the operative guarantee for this route.
-        "POST /api/workstation/collateral/ingest",
-        "POST /api/compliance/actions/evaluate",
-        "POST /api/execution/orders/submit",
-        "POST /api/fund-structure/reporting/distribution/access-grants",
-        "POST /api/fund-structure/reporting/distribution/access-grants/{grantId}/revoke",
-        "POST /api/fund-structure/reporting/distribution/deliveries",
-        // Guarded, but by role rather than permission: TryGetLedgerCloseActor admits only the
-        // Admin and Accounting roles. EndpointAuthorizationMetadata carries permissions, so there
-        // is no honest declaration for a role gate -- declaring a permission would state a policy
-        // the route does not enforce. Stays listed until the guard is expressed in permissions.
-        "POST /api/ledger/periods/{periodId:guid}/close",
-        // SECURITY FINDING, deliberately left visible rather than allowlisted: unlike the
-        // reporting delivery hook two entries above, this route verifies nothing at all -- no
-        // Plaid signature, no shared secret, no session -- so any caller who can reach the host
-        // can record forged webhook events into the ingestion pipeline. It stays in the baseline
-        // until that ingress is authenticated; allowlisting it would assert an authentication
-        // story that does not exist.
-        "POST /api/plaid/webhook",
-        "POST /api/reference-data/options/chains/import",
-        "POST /api/security-master/corporate-actions/inbox/apply",
-        "POST /api/security-master/corporate-actions/ingest",
     };
+
+    /// <summary>
+    /// Locks the allowlist above to the runtime's own permissionless declarations, so the tested
+    /// exemption and the enforced exemption cannot drift: every mapped allowlisted mutation must
+    /// carry <see cref="Meridian.Ui.Shared.Endpoints.EndpointPermissionlessMutationMetadata"/> or
+    /// <see cref="Meridian.Ui.Shared.Endpoints.EndpointIndependentAuthenticationMetadata"/> (the
+    /// two markers the pre-binding mutation guard stands aside for), and no mutating route outside
+    /// the allowlist may carry either — a new webhook or bootstrap seam joins the allowlist with a
+    /// stated reason, or it does not ship permissionless.
+    /// </summary>
+    [Fact]
+    public void PermissionlessMutationAllowlist_AndDeclaredMarkers_CannotDrift()
+    {
+        var mutatingRoutes = Fixture.Services.GetServices<EndpointDataSource>()
+            .SelectMany(source => source.Endpoints)
+            .OfType<RouteEndpoint>()
+            .SelectMany(endpoint =>
+                (endpoint.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods ?? [])
+                .Where(method => MutatingMethods.Contains(method, StringComparer.OrdinalIgnoreCase))
+                .Select(method => (Method: method.ToUpperInvariant(), Endpoint: endpoint)))
+            .ToList();
+
+        mutatingRoutes.Should().NotBeEmpty();
+
+        var allowlistedWithoutMarker = new List<string>();
+        var markedOutsideAllowlist = new List<string>();
+        foreach (var (method, endpoint) in mutatingRoutes)
+        {
+            var routeKey = $"{method} /{(endpoint.RoutePattern.RawText ?? string.Empty).TrimStart('/')}";
+            var declaresPermissionless =
+                endpoint.Metadata.GetMetadata<Meridian.Ui.Shared.Endpoints.EndpointPermissionlessMutationMetadata>() is not null ||
+                endpoint.Metadata.GetMetadata<Meridian.Ui.Shared.Endpoints.EndpointIndependentAuthenticationMetadata>() is not null;
+
+            if (PermissionlessMutationAllowlist.Contains(routeKey))
+            {
+                if (!declaresPermissionless)
+                    allowlistedWithoutMarker.Add(routeKey);
+            }
+            else if (declaresPermissionless)
+            {
+                markedOutsideAllowlist.Add(routeKey);
+            }
+        }
+
+        allowlistedWithoutMarker.Should().BeEmpty(
+            "every allowlisted mutation must declare its permissionless posture as endpoint " +
+            "metadata so the pre-binding mutation guard exempts exactly what this suite exempts. " +
+            "Undeclared: {0}",
+            string.Join("; ", allowlistedWithoutMarker));
+        markedOutsideAllowlist.Should().BeEmpty(
+            "a mutating route declaring a permissionless or independently-authenticated posture " +
+            "bypasses the pre-binding mutation guard, so it must also sit in the allowlist with a " +
+            "stated reason where this suite can sweep its own rejection behaviour. Unlisted: {0}",
+            string.Join("; ", markedOutsideAllowlist));
+    }
 
     [Fact]
     public async Task EveryMappedMutatingRoute_RejectsPermissionlessCaller_OrIsExplicitlyAllowlisted()

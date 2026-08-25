@@ -3616,6 +3616,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Domain.MarketDataSources"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Domain.MarketStateValues"
     },
     {
@@ -8236,6 +8242,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionPayloads"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionTypeDescriptor"
     },
     {
@@ -9101,6 +9113,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry"
     },
     {
       "kind": "contract-set-member",
@@ -19258,6 +19276,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionPayloads"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionTypeDescriptor"
     },
     {
@@ -20123,6 +20147,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry"
     },
     {
       "kind": "contract-set-member",
@@ -29721,6 +29751,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.UpsertCashFlowSourceRequest",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowSourceKind"
     },
@@ -38561,6 +38597,18 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_journal_leg_currency_affirmations_currency on ledger.journal_leg_currency_affirmations",
+      "target": "database:ledger.journal_leg_currency_affirmations.affirmed_currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_journal_leg_currency_affirmations_legs on ledger.journal_leg_currency_affirmations",
+      "target": "database:ledger.journal_leg_currency_affirmations.legs_repaired"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_journal_legs_adjustment_approval_metadata on ledger.journal_legs",
       "target": "database:ledger.journal_legs.adjustment_approval_metadata"
     },
@@ -38841,23 +38889,60 @@
       "target": "database:ledger.wash_sale_deferrals.window_days"
     },
     {
-      "constraint": "journal_legs_journal_entry_id_fkey",
-      "kind": "foreign-key",
-      "label": "journal_entry_id",
-      "source": "database:ledger.journal_legs",
-      "target": "database:ledger.journal_entries"
-    },
-    {
       "kind": "normal",
       "label": "",
-      "source": "database:ledger.journal_legs_journal_entry_id_fkey on ledger.journal_legs",
+      "source": "database:ledger.fk_journal_legs_journal_entry on ledger.journal_legs",
       "target": "database:ledger.journal_entries.journal_entry_id"
     },
     {
       "kind": "normal",
       "label": "",
-      "source": "database:ledger.journal_legs_journal_entry_id_fkey on ledger.journal_legs",
+      "source": "database:ledger.fk_journal_legs_journal_entry on ledger.journal_legs",
       "target": "database:ledger.journal_entries_journal_entry_id_key"
+    },
+    {
+      "constraint": "journal_leg_currency_affirmations_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.journal_leg_currency_affirmations",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "view_reference",
+      "label": "",
+      "source": "database:ledger.journal_leg_currency_backfill_status",
+      "target": "database:ledger.accounting_periods"
+    },
+    {
+      "kind": "view_reference",
+      "label": "",
+      "source": "database:ledger.journal_leg_currency_backfill_status",
+      "target": "database:ledger.journal_legs"
+    },
+    {
+      "kind": "view_reference",
+      "label": "",
+      "source": "database:ledger.journal_leg_currency_backfill_status",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "constraint": "fk_journal_legs_journal_entry",
+      "kind": "foreign-key",
+      "label": "journal_entry_id",
+      "source": "database:ledger.journal_legs",
+      "target": "database:ledger.journal_entries"
     },
     {
       "constraint": "operations_continuity_audit_workflow_id_fkey",
@@ -41918,6 +42003,18 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.journal_leg_currency_affirmations"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.journal_leg_currency_backfill_status"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.journal_legs"
     },
     {
@@ -42610,7 +42707,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "eddf0d1735cdf0117c8081f01011a55dfd533183042cac61e44e649b04bd6519",
+  "fingerprint": "4b8a01396aba99b29e0f4dad52606cf78ed79ba8a3053496f805dd0b049e03f6",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -46274,6 +46371,12 @@
       "id": "contract:Meridian.Contracts.Domain.IntegrityEventDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Domain.IntegrityEventDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Domain.MarketDataSources",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Domain.MarketDataSources"
     },
     {
       "classification": "class",
@@ -50896,6 +50999,12 @@
       "label": "Meridian.Contracts.SecurityMaster.CorporateActionLifecycleStates"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionPayloads",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionPayloads"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionTypeDescriptor",
       "kind": "contract-type",
@@ -51764,6 +51873,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry"
     },
     {
       "classification": "dto",
@@ -58898,6 +59013,16 @@
       "label": "ledger.ck_journal_entries_posting_kind on ledger.journal_entries"
     },
     {
+      "id": "database:ledger.ck_journal_leg_currency_affirmations_currency on ledger.journal_leg_currency_affirmations",
+      "kind": "database-object",
+      "label": "ledger.ck_journal_leg_currency_affirmations_currency on ledger.journal_leg_currency_affirmations"
+    },
+    {
+      "id": "database:ledger.ck_journal_leg_currency_affirmations_legs on ledger.journal_leg_currency_affirmations",
+      "kind": "database-object",
+      "label": "ledger.ck_journal_leg_currency_affirmations_legs on ledger.journal_leg_currency_affirmations"
+    },
+    {
       "id": "database:ledger.ck_journal_legs_adjustment_approval_metadata on ledger.journal_legs",
       "kind": "database-object",
       "label": "ledger.ck_journal_legs_adjustment_approval_metadata on ledger.journal_legs"
@@ -59038,6 +59163,11 @@
       "label": "ledger.ck_wash_sale_deferrals_window on ledger.wash_sale_deferrals"
     },
     {
+      "id": "database:ledger.fk_journal_legs_journal_entry on ledger.journal_legs",
+      "kind": "database-object",
+      "label": "ledger.fk_journal_legs_journal_entry on ledger.journal_legs"
+    },
+    {
       "id": "database:ledger.fund_profile_tenancy",
       "kind": "database-table",
       "label": "ledger.fund_profile_tenancy",
@@ -59074,6 +59204,33 @@
       "id": "database:ledger.journal_entries_journal_entry_id_key",
       "kind": "database-object",
       "label": "ledger.journal_entries_journal_entry_id_key"
+    },
+    {
+      "id": "database:ledger.journal_leg_currency_affirmations",
+      "kind": "database-table",
+      "label": "ledger.journal_leg_currency_affirmations",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.journal_leg_currency_affirmations.affirmed_currency",
+      "kind": "database-object",
+      "label": "ledger.journal_leg_currency_affirmations.affirmed_currency"
+    },
+    {
+      "id": "database:ledger.journal_leg_currency_affirmations.legs_repaired",
+      "kind": "database-object",
+      "label": "ledger.journal_leg_currency_affirmations.legs_repaired"
+    },
+    {
+      "id": "database:ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations",
+      "kind": "database-object",
+      "label": "ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations"
+    },
+    {
+      "id": "database:ledger.journal_leg_currency_backfill_status",
+      "kind": "database-view",
+      "label": "ledger.journal_leg_currency_backfill_status",
+      "schema": "ledger"
     },
     {
       "id": "database:ledger.journal_legs",
@@ -59125,11 +59282,6 @@
       "id": "database:ledger.journal_legs.transaction_debit",
       "kind": "database-object",
       "label": "ledger.journal_legs.transaction_debit"
-    },
-    {
-      "id": "database:ledger.journal_legs_journal_entry_id_fkey on ledger.journal_legs",
-      "kind": "database-object",
-      "label": "ledger.journal_legs_journal_entry_id_fkey on ledger.journal_legs"
     },
     {
       "id": "database:ledger.ledger_books",
@@ -62152,11 +62304,11 @@
     }
   ],
   "summary": {
-    "contract_references": 2932,
-    "contract_set_memberships": 3358,
-    "edges": 7083,
-    "foreign_keys": 95,
+    "contract_references": 2933,
+    "contract_set_memberships": 3363,
+    "edges": 7099,
+    "foreign_keys": 96,
     "logical_references": 6,
-    "nodes": 3364
+    "nodes": 3374
   }
 }

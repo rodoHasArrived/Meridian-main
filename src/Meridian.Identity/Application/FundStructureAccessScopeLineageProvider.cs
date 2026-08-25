@@ -18,9 +18,22 @@ public sealed class FundStructureAccessScopeLineageProvider : IAccessScopeLineag
         Guid scopeId,
         CancellationToken ct = default)
     {
-        if (scopeKind == AccessScopeKindDto.Global)
+        var lineages = await ResolveLineagesAsync(scopeKind, [scopeId], ct).ConfigureAwait(false);
+        return lineages[scopeId];
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<AccessScopeRef>>> ResolveLineagesAsync(
+        AccessScopeKindDto scopeKind,
+        IReadOnlyCollection<Guid> scopeIds,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scopeIds);
+        var distinctScopeIds = scopeIds.Distinct().ToArray();
+        if (scopeKind == AccessScopeKindDto.Global || distinctScopeIds.Length == 0)
         {
-            return [];
+            return distinctScopeIds.ToDictionary(
+                static scopeId => scopeId,
+                static _ => (IReadOnlyList<AccessScopeRef>)[]);
         }
 
         var asOf = DateTimeOffset.UtcNow;
@@ -43,6 +56,21 @@ public sealed class FundStructureAccessScopeLineageProvider : IAccessScopeLineag
             .GroupBy(static link => link.ChildNodeId)
             .ToDictionary(static group => group.Key, static group => group.Select(link => link.ParentNodeId).ToArray());
 
+        var lineages = new Dictionary<Guid, IReadOnlyList<AccessScopeRef>>(distinctScopeIds.Length);
+        foreach (var scopeId in distinctScopeIds)
+        {
+            ct.ThrowIfCancellationRequested();
+            lineages[scopeId] = ResolveLineage(scopeId, nodeKinds, parentByChild);
+        }
+
+        return lineages;
+    }
+
+    private static IReadOnlyList<AccessScopeRef> ResolveLineage(
+        Guid scopeId,
+        IReadOnlyDictionary<Guid, AccessScopeKindDto> nodeKinds,
+        IReadOnlyDictionary<Guid, Guid[]> parentByChild)
+    {
         var scopes = new List<AccessScopeRef>();
         var visited = new HashSet<Guid> { scopeId };
         var queue = new Queue<Guid>();

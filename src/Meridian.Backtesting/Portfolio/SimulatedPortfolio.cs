@@ -500,7 +500,9 @@ internal sealed class SimulatedPortfolio
         var transformedLongLots = TransformLots(account.Lots.GetValueOrDefault(assetEvent.Symbol), factor);
         var transformedShortLots = TransformLots(account.ShortLots.GetValueOrDefault(assetEvent.Symbol), factor);
         var transformedRealized = account.RealizedPnl.GetValueOrDefault(assetEvent.Symbol);
-        var existingTargetRealized = account.RealizedPnl.GetValueOrDefault(targetSymbol);
+        var existingTargetRealized = targetSymbol.Equals(assetEvent.Symbol, StringComparison.OrdinalIgnoreCase)
+            ? 0m
+            : account.RealizedPnl.GetValueOrDefault(targetSymbol);
         var transformedPrice = referencePrice > 0m ? referencePrice : _lastPrices.GetValueOrDefault(assetEvent.Symbol, 0m);
 
         RemoveSymbolState(account, assetEvent.Symbol);

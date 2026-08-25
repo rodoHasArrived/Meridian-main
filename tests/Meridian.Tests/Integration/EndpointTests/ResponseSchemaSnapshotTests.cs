@@ -29,7 +29,7 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable, IClassFixture<End
     // through an authorized client so the snapshot assertions keep exercising the real payload.
     private readonly HttpClient _configClient;
     private readonly HttpClient _backfillReadClient;
-    private readonly HttpClient _failoverReadClient;
+    private readonly HttpClient _platformReadClient;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public ResponseSchemaSnapshotTests(EndpointTestFixture fixture)
@@ -38,14 +38,14 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable, IClassFixture<End
         _client = fixture.Client;
         _configClient = fixture.CreatePermittedClient(UserPermission.ViewConfig, UserPermission.ModifyConfig);
         _backfillReadClient = fixture.CreatePermittedClient(UserPermission.ViewHistoricalData);
-        _failoverReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
+        _platformReadClient = fixture.CreateSessionClient(UserPermission.ViewDiagnostics);
     }
 
     public void Dispose()
     {
         _configClient.Dispose();
         _backfillReadClient.Dispose();
-        _failoverReadClient.Dispose();
+        _platformReadClient.Dispose();
     }
 
     #region /api/status
@@ -232,7 +232,7 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable, IClassFixture<End
     [Fact]
     public async Task ProviderStatus_Schema_IsJsonArray()
     {
-        var response = await _client.GetAsync("/api/providers/status");
+        var response = await _platformReadClient.GetAsync("/api/providers/status");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var content = await response.Content.ReadAsStringAsync();
@@ -247,7 +247,7 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable, IClassFixture<End
     [Fact]
     public async Task ProviderMetrics_Schema_IsJsonArray()
     {
-        var response = await _client.GetAsync("/api/providers/metrics");
+        var response = await _platformReadClient.GetAsync("/api/providers/metrics");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var content = await response.Content.ReadAsStringAsync();
@@ -401,7 +401,7 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable, IClassFixture<End
     [Fact]
     public async Task Backpressure_Schema_IsJsonObject()
     {
-        var response = await _client.GetAsync("/api/backpressure");
+        var response = await _platformReadClient.GetAsync("/api/backpressure");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
 
@@ -427,6 +427,14 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable, IClassFixture<End
             {
                 _ when url.StartsWith("/api/config", StringComparison.OrdinalIgnoreCase) => _configClient,
                 _ when url.StartsWith("/api/backfill/", StringComparison.OrdinalIgnoreCase) => _backfillReadClient,
+                // W9-GOV-008: provider reads are platform reads and now require a permission, as does
+                // the runtime status family -- it carries connection state and the configured symbol
+                // set rather than the counters /metrics exposes.
+                _ when url.StartsWith("/api/providers", StringComparison.OrdinalIgnoreCase) => _platformReadClient,
+                _ when url.StartsWith("/api/status", StringComparison.OrdinalIgnoreCase) => _platformReadClient,
+                _ when url.StartsWith("/api/errors", StringComparison.OrdinalIgnoreCase) => _platformReadClient,
+                _ when url.StartsWith("/api/backpressure", StringComparison.OrdinalIgnoreCase) => _platformReadClient,
+                _ when url.StartsWith("/api/connections", StringComparison.OrdinalIgnoreCase) => _platformReadClient,
                 _ => _client
             };
             response = await client.GetAsync(url);
@@ -448,7 +456,7 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable, IClassFixture<End
 
         try
         {
-            return await _failoverReadClient.GetAsync(url);
+            return await _platformReadClient.GetAsync(url);
         }
         finally
         {

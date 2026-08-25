@@ -4,6 +4,7 @@ using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Storage.AssetOperations;
 using Microsoft.AspNetCore.TestHost;
@@ -16,7 +17,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_MultiAssetCoverage_ShouldReturnSharedReadinessRows()
     {
-        await using var app = await CreateAppAsync();
+        await using var app = await CreateAppAsync(currentUserPermissions: UserPermission.ViewTrades);
         using var client = app.GetTestClient();
 
         var payload = await client.GetFromJsonAsync<MultiAssetCoverageSummaryDto>(

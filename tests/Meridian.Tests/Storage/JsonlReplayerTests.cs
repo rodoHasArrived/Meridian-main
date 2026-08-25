@@ -238,7 +238,7 @@ public sealed class JsonlReplayerTests : IDisposable
     private static MarketEvent BuildTradeAt(string symbol, DateTimeOffset timestamp, long sequence = 1)
     {
         var trade = new Trade(timestamp, symbol, 100m + sequence, 10, AggressorSide.Buy, sequence, "TEST", "XNYS");
-        return MarketEvent.Trade(timestamp, symbol, trade, sequence, "TEST");
+        return MarketEvent.Trade(timestamp, symbol, trade, "TEST", sequence);
     }
 
     private static string SerializeLine(MarketEvent evt) =>

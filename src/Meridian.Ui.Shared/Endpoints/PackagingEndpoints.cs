@@ -194,7 +194,8 @@ public static class PackagingEndpoints
                 _ => null
             },
             includeExceptionMessage: true);
-        });
+        })
+        .RequireAnyPermission(UserPermission.ExportData, UserPermission.ManageStorage);
 
         // ==================== LIST PACKAGES ====================
 
@@ -238,7 +239,8 @@ public static class PackagingEndpoints
             },
             "Failed to list packages",
             includeExceptionMessage: true);
-        });
+        })
+        .RequireAnyPermission(UserPermission.ExportData, UserPermission.ManageStorage);
 
         // ==================== DELETE PACKAGE ====================
 
@@ -318,7 +320,8 @@ public static class PackagingEndpoints
             },
             "Failed to download package",
             includeExceptionMessage: true);
-        });
+        })
+        .RequireAnyPermission(UserPermission.ExportData, UserPermission.ManageStorage);
     }
 
     private static PackageFormat ParseFormat(string? format)

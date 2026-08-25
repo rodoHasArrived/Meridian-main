@@ -217,6 +217,20 @@ describe("Quant Lab view model helpers", () => {
     });
   });
 
+  it("keeps Run disabled while parameters are being extracted for the current source", () => {
+    expect(buildRunCommandState(
+      "var lookback = Param(\"lookback\", 20);",
+      "idle",
+      false,
+      "extracting"
+    )).toMatchObject({
+      label: "Run",
+      disabled: true,
+      disabledReason: "Wait for runtime parameter detection to finish.",
+      busy: false
+    });
+  });
+
   it("projects loading, empty, and error template states into accessible panel copy", () => {
     expect(buildTemplatePanelState("loading", null)).toMatchObject({
       title: "Starter templates",
@@ -616,6 +630,7 @@ describe("Quant Lab view model helpers", () => {
       title: "Run succeeded for previous source",
       sourceDrifted: true
     });
+    await waitFor(() => expect(result.current.parameterPhase).toBe("idle"));
     expect(result.current.runCommand).toMatchObject({
       label: "Run current source",
       disabled: false

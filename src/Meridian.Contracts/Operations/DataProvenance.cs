@@ -81,12 +81,46 @@ public static class DataProvenanceExtensions
     };
 
     /// <summary>
+    /// Folds many origins into the one a derived figure must carry: the strongest non-real
+    /// provenance among the inputs, or <see cref="DataProvenance.Real"/> only when every input is
+    /// real. A derived figure — a valuation draft, a NAV, a report pack — is never more real than
+    /// its least-real input, so this is the single rule every derivation uses.
+    /// </summary>
+    /// <remarks>
+    /// "Strongest" follows the <see cref="DataProvenance"/> ordering, where a lower value is the
+    /// stronger claim: <see cref="DataProvenance.Simulated"/> outranks
+    /// <see cref="DataProvenance.Seeded"/>, which outranks <see cref="DataProvenance.Sample"/>.
+    /// </remarks>
+    public static DataProvenance Strongest(IEnumerable<DataProvenance> provenances)
+    {
+        ArgumentNullException.ThrowIfNull(provenances);
+
+        var strongest = DataProvenance.Real;
+        foreach (var provenance in provenances)
+        {
+            if (!provenance.IsNonReal())
+            {
+                continue;
+            }
+
+            if (strongest == DataProvenance.Real || provenance < strongest)
+            {
+                strongest = provenance;
+            }
+        }
+
+        return strongest;
+    }
+
+    /// <summary>
     /// Unambiguous, structured simulated-origin markers, matched by exact (trimmed,
     /// case-insensitive) equality — never by substring — so legitimate values like
     /// "Sample Custodian" or "fixture-bank" are not mistaken for a simulated origin. An explicit
     /// provenance mark is always the primary gate; this token table is the shared safety net for a
     /// source that is labeled simulated while the record forgot to carry the mark. The ledger
-    /// append boundary (`AccountingPostingCommandValidator`) enforces the same table.
+    /// append boundary (`AccountingPostingCommandValidator`) enforces the same table, via
+    /// <see cref="CarriesSimulatedOriginToken"/> so colon-delimited structured references are
+    /// caught segment by segment.
     /// </summary>
     private static readonly string[] SimulatedOriginTokens =
     [
@@ -110,6 +144,42 @@ public static class DataProvenanceExtensions
         foreach (var token in SimulatedOriginTokens)
         {
             if (string.Equals(trimmed, token, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// True when the value is, exactly, a simulated-origin token — or when any colon-delimited
+    /// segment of a structured reference is one, so an evidence string like
+    /// <c>daily-close:AAPL:2026-08-18:synthetic</c> declares its fabricated origin even though
+    /// the whole string is not a bare token. Splitting only on <c>:</c> keeps free-text values
+    /// like "Sample Custodian" and hyphenated names like "fixture-bank" from matching: those are
+    /// whole values, not structured segments, and remain the exact-equality rule's concern.
+    /// </summary>
+    public static bool CarriesSimulatedOriginToken(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        if (IsSimulatedOriginToken(value))
+        {
+            return true;
+        }
+
+        if (!value.Contains(':'))
+        {
+            return false;
+        }
+
+        foreach (var segment in value.Split(':'))
+        {
+            if (IsSimulatedOriginToken(segment))
             {
                 return true;
             }

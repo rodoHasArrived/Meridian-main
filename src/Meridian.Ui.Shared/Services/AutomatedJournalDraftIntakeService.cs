@@ -447,9 +447,19 @@ public sealed class AutomatedJournalDraftIntakeService
             EvidenceLinks: evidenceLinks,
             ValidationIssues: [],
             EntryType: MapEntryType(draft.Event.Kind),
+            // Fund-event identity from the draft metadata must survive intake: the private-capital
+            // projector reconstructs fund events (and the commitment roll-forward that corroborates
+            // future capital calls) from this context once the draft posts. Non-fund-economics lanes
+            // carry nulls here, so nothing changes for them.
             TreasuryContext: new TreasuryLedgerContextDto(
                 EffectiveDate: effectiveDate,
                 IdempotencyKey: idempotencyKey,
+                FundEventId: NormalizeOptional(draft.Metadata.FundEventId),
+                FundEventType: NormalizeOptional(draft.Metadata.FundEventType),
+                CapitalAccountId: NormalizeOptional(draft.Metadata.CapitalAccountId),
+                InvestorId: NormalizeOptional(draft.Metadata.InvestorId),
+                PaymentIntentId: NormalizeOptional(draft.Metadata.PaymentIntentId),
+                SettlementReference: NormalizeOptional(draft.Metadata.SettlementReference),
                 BatchCorrelationId: NormalizeOptional(request.BatchCorrelationId)),
             AutomationEvidenceAssessment: evidenceAssessment);
     }
@@ -466,6 +476,10 @@ public sealed class AutomatedJournalDraftIntakeService
             // Closing entries carry a dedicated type so the workbench posts them as the sanctioned
             // ClosingEntry kind into the (closed) period being finalized.
             AutomatedJournalEventKind.PeriodCloseClosingEntries => ManualJournalEntryTypeDto.ClosingEntry,
+            // Issued calls post as the sanctioned CapitalCall kind so the private-capital projector
+            // counts them in the commitment roll-forward; funding stays General (a cash receipt),
+            // otherwise it would double-count as a second call.
+            AutomatedJournalEventKind.CapitalCallIssued => ManualJournalEntryTypeDto.CapitalCall,
             _ => ManualJournalEntryTypeDto.General
         };
 

@@ -128,6 +128,14 @@ public static class SecurityAssetTermsSchema
                 Opt("spreadBps", SecurityAssetTermFieldType.Decimal),
                 Opt("capRate", SecurityAssetTermFieldType.Decimal),
                 Opt("floorRate", SecurityAssetTermFieldType.Decimal),
+                // Step-coupon schedule ({effectiveDate, rate}); empty for non-step coupons. The
+                // inflation fields carry linker indexation (couponType = "InflationLinked"); null
+                // otherwise. These are what make StepRate/FixedToFloat/InflationLinked subclasses
+                // computable rather than labels.
+                Opt("stepSchedule", SecurityAssetTermFieldType.Array),
+                Opt("inflationIndex", SecurityAssetTermFieldType.String),
+                Opt("inflationBaseIndexValue", SecurityAssetTermFieldType.Decimal),
+                Opt("inflationIndexRatio", SecurityAssetTermFieldType.Decimal),
                 Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention"),
                 Req("isCallable", SecurityAssetTermFieldType.Boolean),
                 Opt("callDate", SecurityAssetTermFieldType.Date),

@@ -4,6 +4,7 @@ using System.Threading;
 using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
 using Meridian.Core.Monitoring;
+using Meridian.Contracts.Domain;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
@@ -46,7 +47,6 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
     private readonly TradeDataCollector _tradeCollector;
     private readonly QuoteCollector _quoteCollector;
     private readonly PolygonOptions _options;
-    private long _messageSequence;
 
     /// <summary>
     /// Creates a new Polygon market data client.
@@ -322,7 +322,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         EnsureCredentialsConfigured();
 
         await base.ConnectAsync(ct).ConfigureAwait(false);
-        _publisher.TryPublish(MarketEvent.Heartbeat(DateTimeOffset.UtcNow, source: "Polygon"));
+        _publisher.TryPublish(MarketEvent.Heartbeat(DateTimeOffset.UtcNow, source: MarketDataSources.Polygon));
     }
 
 
@@ -661,7 +661,13 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 rawConditions = conditionArray.Select(c => c.GetInt32().ToString()).ToArray();
             }
 
-            var seq = Interlocked.Increment(ref _messageSequence);
+            // Preserve Polygon's own per-message sequence ("q") when supplied; never
+            // fabricate one client-side. A sequence of 0 tells the collector this
+            // stream is unsequenced, so continuity checks are skipped instead of
+            // running against fiction.
+            var seq = elem.TryGetProperty("q", out var seqProp) && seqProp.TryGetInt64(out var providerSeq) && providerSeq > 0
+                ? providerSeq
+                : 0L;
             var trade = new MarketTradeUpdate(
                 Timestamp: timestamp > 0
                     ? DateTimeOffset.FromUnixTimeMilliseconds(timestamp)
@@ -671,9 +677,13 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 Size: size,
                 Aggressor: aggressor,
                 SequenceNumber: seq,
-                StreamId: tradeId ?? $"POLYGON_{seq}",
+                StreamId: tradeId ?? "POLYGON",
                 Venue: MapExchangeCode(exchange),
-                RawConditions: rawConditions);
+                RawConditions: rawConditions,
+                Source: MarketDataSources.Polygon,
+                // Polygon's "q" is unique and increasing per ticker but not dense, so a
+                // jump between consecutive values is normal interleaving, not data loss.
+                SequenceIsContiguous: false);
 
             _tradeCollector.OnTrade(trade);
         }
@@ -722,6 +732,11 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 ? DateTimeOffset.FromUnixTimeMilliseconds(timestamp)
                 : DateTimeOffset.UtcNow;
 
+            // Preserve Polygon's own quote sequence ("q") when supplied; null keeps the
+            // collector's local-counter fallback honest about its origin.
+            long? quoteSeq = elem.TryGetProperty("q", out var quoteSeqProp) && quoteSeqProp.TryGetInt64(out var providerQuoteSeq) && providerQuoteSeq > 0
+                ? providerQuoteSeq
+                : null;
             var quote = new MarketQuoteUpdate(
                 Timestamp: ts,
                 Symbol: symbol,
@@ -729,9 +744,10 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 BidSize: bidSize,
                 AskPrice: askPrice,
                 AskSize: askSize,
-                SequenceNumber: null,
+                SequenceNumber: quoteSeq,
                 StreamId: "POLYGON",
-                Venue: MapExchangeCode(exchange));
+                Venue: MapExchangeCode(exchange),
+                Source: MarketDataSources.Polygon);
 
             _quoteCollector.OnQuote(quote);
         }
@@ -787,7 +803,9 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 ? DateTimeOffset.FromUnixTimeMilliseconds(endTimestamp)
                 : startTime.AddSeconds(timeframe == Domain.Models.AggregateTimeframe.Second ? 1 : 60);
 
-            var seq = Interlocked.Increment(ref _messageSequence);
+            // Polygon aggregate messages carry no provider sequence; do not fabricate one.
+            // The bar's identity is its (symbol, timeframe, window) — the dedup ledger keys
+            // aggregates on exactly that, so a 0 sequence stays honest and replay-stable.
             var aggregateBar = new AggregateBar(
                 Symbol: symbol,
                 StartTime: startTime,
@@ -800,10 +818,10 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 Vwap: vwap,
                 TradeCount: tradeCount,
                 Timeframe: timeframe,
-                Source: "Polygon",
-                SequenceNumber: seq);
+                Source: MarketDataSources.Polygon,
+                SequenceNumber: 0);
 
-            _publisher.TryPublish(MarketEvent.AggregateBar(endTime, symbol, aggregateBar, seq, "Polygon"));
+            _publisher.TryPublish(MarketEvent.AggregateBar(endTime, symbol, aggregateBar, MarketDataSources.Polygon));
 
             Log.Debug(
                 "Processed {Timeframe} aggregate for {Symbol}: O={Open} H={High} L={Low} C={Close} V={Volume}",

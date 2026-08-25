@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 1 of 3
 
-Objects 1-80 of 178. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 180. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -145,7 +145,7 @@ classDiagram
         +string? LifecycleState
         +Guid? NewSecurityId
         +DateOnly? PayDate
-        +DateOnly? RecordDate
+        +JsonElement? Payload
     }
     class Meridian_Contracts_SecurityMaster_CorporateActionEffectiveState["CorporateActionEffectiveState"] {
         +CorporateActionDto Effective
@@ -177,6 +177,8 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_CorporateActionLedgerPostingKind["CorporateActionLedgerPostingKind"] {
     }
     class Meridian_Contracts_SecurityMaster_CorporateActionLifecycleStates["CorporateActionLifecycleStates"] {
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionPayloads["CorporateActionPayloads"] {
     }
     class Meridian_Contracts_SecurityMaster_CorporateActionTypeDescriptor["CorporateActionTypeDescriptor"] {
         +CorporateActionAdjustmentBehavior AdjustmentBehavior
@@ -502,13 +504,6 @@ classDiagram
         +string? Reason
         +string Resolution
         +string ResolvedBy
-    }
-    class Meridian_Contracts_SecurityMaster_ResolveSecurityRequest["ResolveSecurityRequest"] {
-        +bool ActiveOnly
-        +DateTimeOffset? AsOfUtc
-        +SecurityIdentifierKind IdentifierKind
-        +string IdentifierValue
-        +string? Provider
     }
     Meridian_Contracts_SecurityMaster_AssetPackAccountingRules --> Meridian_Contracts_SecurityMaster_AssetPackJournalTemplateRule
     Meridian_Contracts_SecurityMaster_AssetPackRegistryValidationResult --> Meridian_Contracts_SecurityMaster_AssetPackRegistryValidationIssue

@@ -32,10 +32,13 @@ public sealed class AdminEndpointPermissionTests : IClassFixture<EndpointTestFix
     // ── Admin maintenance endpoints ──────────────────────────────────────────
 
     [Fact]
-    public async Task GetAdminMaintenanceSchedule_WithoutAuth_ReturnsForbidden()
+    public async Task GetAdminMaintenanceSchedule_WithoutAuth_ReturnsUnauthorized()
     {
         var response = await _client.GetAsync("/api/admin/maintenance/schedule");
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares its permission since W9-GOV-008, lifted from the check the handler already
+        // made: a request with no session is unauthenticated rather than forbidden, and is now
+        // refused by the endpoint filter before the handler runs. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -49,17 +52,23 @@ public sealed class AdminEndpointPermissionTests : IClassFixture<EndpointTestFix
     }
 
     [Fact]
-    public async Task GetAdminMaintenanceRunById_WithoutAuth_ReturnsForbidden()
+    public async Task GetAdminMaintenanceRunById_WithoutAuth_ReturnsUnauthorized()
     {
         var response = await _client.GetAsync("/api/admin/maintenance/run/any-run-id");
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares its permission since W9-GOV-008, lifted from the check the handler already
+        // made: a request with no session is unauthenticated rather than forbidden, and is now
+        // refused by the endpoint filter before the handler runs. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
-    public async Task GetAdminMaintenanceHistory_WithoutAuth_ReturnsForbidden()
+    public async Task GetAdminMaintenanceHistory_WithoutAuth_ReturnsUnauthorized()
     {
         var response = await _client.GetAsync("/api/admin/maintenance/history");
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares its permission since W9-GOV-008, lifted from the check the handler already
+        // made: a request with no session is unauthenticated rather than forbidden, and is now
+        // refused by the endpoint filter before the handler runs. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -75,10 +84,13 @@ public sealed class AdminEndpointPermissionTests : IClassFixture<EndpointTestFix
     // ── Admin storage endpoints ──────────────────────────────────────────────
 
     [Fact]
-    public async Task GetAdminStorageTiers_WithoutAuth_ReturnsForbidden()
+    public async Task GetAdminStorageTiers_WithoutAuth_ReturnsUnauthorized()
     {
         var response = await _client.GetAsync("/api/admin/storage/tiers");
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares its permission since W9-GOV-008, lifted from the check the handler already
+        // made: a request with no session is unauthenticated rather than forbidden, and is now
+        // refused by the endpoint filter before the handler runs. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -92,26 +104,35 @@ public sealed class AdminEndpointPermissionTests : IClassFixture<EndpointTestFix
     }
 
     [Fact]
-    public async Task GetAdminStorageUsage_WithoutAuth_ReturnsForbidden()
+    public async Task GetAdminStorageUsage_WithoutAuth_ReturnsUnauthorized()
     {
         var response = await _client.GetAsync("/api/admin/storage/usage");
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares its permission since W9-GOV-008, lifted from the check the handler already
+        // made: a request with no session is unauthenticated rather than forbidden, and is now
+        // refused by the endpoint filter before the handler runs. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
-    public async Task GetAdminStoragePermissions_WithoutAuth_ReturnsForbidden()
+    public async Task GetAdminStoragePermissions_WithoutAuth_ReturnsUnauthorized()
     {
         var response = await _client.GetAsync("/api/admin/storage/permissions");
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares its permission since W9-GOV-008, lifted from the check the handler already
+        // made: a request with no session is unauthenticated rather than forbidden, and is now
+        // refused by the endpoint filter before the handler runs. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     // ── Admin retention endpoints ─────────────────────────────────────────────
 
     [Fact]
-    public async Task GetAdminRetention_WithoutAuth_ReturnsForbidden()
+    public async Task GetAdminRetention_WithoutAuth_ReturnsUnauthorized()
     {
         var response = await _client.GetAsync("/api/admin/retention");
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares its permission since W9-GOV-008, lifted from the check the handler already
+        // made: a request with no session is unauthenticated rather than forbidden, and is now
+        // refused by the endpoint filter before the handler runs. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -136,10 +157,13 @@ public sealed class AdminEndpointPermissionTests : IClassFixture<EndpointTestFix
     // ── Admin cleanup endpoints ──────────────────────────────────────────────
 
     [Fact]
-    public async Task GetAdminCleanupPreview_WithoutAuth_ReturnsForbidden()
+    public async Task GetAdminCleanupPreview_WithoutAuth_ReturnsUnauthorized()
     {
         var response = await _client.GetAsync("/api/admin/cleanup/preview");
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares its permission since W9-GOV-008, lifted from the check the handler already
+        // made: a request with no session is unauthenticated rather than forbidden, and is now
+        // refused by the endpoint filter before the handler runs. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -155,24 +179,33 @@ public sealed class AdminEndpointPermissionTests : IClassFixture<EndpointTestFix
     // ── Admin config endpoints ───────────────────────────────────────────────
 
     [Fact]
-    public async Task GetAdminShowConfig_WithoutAuth_ReturnsForbidden()
+    public async Task GetAdminShowConfig_WithoutAuth_ReturnsUnauthorized()
     {
         var response = await _client.GetAsync("/api/admin/show-config");
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares its permission since W9-GOV-008, lifted from the check the handler already
+        // made: a request with no session is unauthenticated rather than forbidden, and is now
+        // refused by the endpoint filter before the handler runs. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
-    public async Task GetAdminQuickCheck_WithoutAuth_ReturnsForbidden()
+    public async Task GetAdminQuickCheck_WithoutAuth_ReturnsUnauthorized()
     {
         var response = await _client.GetAsync("/api/admin/quick-check");
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares its permission since W9-GOV-008, lifted from the check the handler already
+        // made: a request with no session is unauthenticated rather than forbidden, and is now
+        // refused by the endpoint filter before the handler runs. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
-    public async Task GetAdminErrorCodes_WithoutAuth_ReturnsForbidden()
+    public async Task GetAdminErrorCodes_WithoutAuth_ReturnsUnauthorized()
     {
         var response = await _client.GetAsync("/api/admin/error-codes");
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Declares its permission since W9-GOV-008, lifted from the check the handler already
+        // made: a request with no session is unauthenticated rather than forbidden, and is now
+        // refused by the endpoint filter before the handler runs. Still refused.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     // ── Provider credential endpoints ────────────────────────────────────────

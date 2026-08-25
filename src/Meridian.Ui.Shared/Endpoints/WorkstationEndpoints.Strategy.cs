@@ -31,7 +31,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyDesignerUnavailable(jsonOptions)
                 : Results.Json(service.GetTemplates(), jsonOptions);
         })
-        .WithName("GetStrategyDesignerTemplates")
+        .WithName("GetStrategyDesignerTemplates").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyDesignTemplate>>(200)
         .Produces(501);
 
@@ -42,7 +42,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyDesignerUnavailable(jsonOptions)
                 : Results.Json(service.GetFieldCatalog(), jsonOptions);
         })
-        .WithName("GetStrategyDesignerFieldCatalog")
+        .WithName("GetStrategyDesignerFieldCatalog").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyDesignFieldCatalogItem>>(200)
         .Produces(501);
 
@@ -57,7 +57,7 @@ public static partial class WorkstationEndpoints
             var drafts = await repository.ListDraftsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(drafts, jsonOptions);
         })
-        .WithName("GetStrategyDesignerDrafts")
+        .WithName("GetStrategyDesignerDrafts").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyDesignDraftSummary>>(200)
         .Produces(501);
 
@@ -74,7 +74,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound(new { error = "Strategy design draft was not found." })
                 : Results.Json(document, jsonOptions);
         })
-        .WithName("GetStrategyDesignerDraft")
+        .WithName("GetStrategyDesignerDraft").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyDesignDocument>(200)
         .Produces(404)
         .Produces(501);
@@ -130,7 +130,7 @@ public static partial class WorkstationEndpoints
             var normalized = service.Normalize(document);
             return Results.Json(service.Validate(normalized), jsonOptions);
         })
-        .WithName("ValidateStrategyDesignerDocument").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .WithName("ValidateStrategyDesignerDocument").DeclareNonMutating("Normalizes and validates the posted design document in memory; StrategyDesignService holds only a field catalog and templates and persists nothing.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyDesignValidationResult>(200)
         .Produces(400)
         .Produces(501);
@@ -154,7 +154,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(preview, jsonOptions)
                 : Results.Json(preview, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
         })
-        .WithName("PreviewStrategyDesignerDocument").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .WithName("PreviewStrategyDesignerDocument").DeclareNonMutating("Normalizes and previews the posted design document in memory; the preview is computed from the body and StrategyDesignService persists nothing. Saving a design is a separate route.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyDesignPreviewResult>(200)
         .Produces(400)
         .Produces(501);
@@ -353,7 +353,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyEngineUnavailable(jsonOptions)
                 : Results.Json(registry.GetDefinitions(), jsonOptions);
         })
-        .WithName("GetStrategyEngineDefinitions")
+        .WithName("GetStrategyEngineDefinitions").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyEngineDefinition>>(200)
         .Produces(501);
 
@@ -377,7 +377,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(result, jsonOptions)
                 : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
         })
-        .WithName("ValidateStrategyEngineRun").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .WithName("ValidateStrategyEngineRun").DeclareNonMutating("Validates a posted run request against the engine registry and the supplied data availability; StrategyEngineValidationService holds only the registry and does not start or record a run.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyEngineValidationResult>(200)
         .Produces<StrategyEngineValidationResult>(400)
         .Produces(501);

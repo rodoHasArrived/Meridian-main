@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Identity.Auth;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -12,14 +13,19 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class LiveDataEndpointTests : IClassFixture<EndpointTestFixture>
+public sealed class LiveDataEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
+    // W9-GOV-008: the /api/data reads serve live market data and now require ViewMarketData, the
+    // same permission the workstation quote stream carries -- the REST routes are the stream's
+    // polling fallback, so leaving them open would have made that gate bypassable.
     private readonly HttpClient _client;
 
     public LiveDataEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        _client = fixture.CreatePermittedClient(UserPermission.ViewMarketData, UserPermission.ViewDiagnostics);
     }
+
+    public void Dispose() => _client.Dispose();
 
     [Fact]
     public async Task DataHealth_ReturnsJson()

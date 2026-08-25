@@ -50,7 +50,7 @@ public static class SymbolEndpoints
             });
             return Results.Json(records, jsonOptions);
         })
-        .WithName("GetSymbols")
+        .WithName("GetSymbols").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200);
 
         // GET /api/symbols/monitored — symbols configured for monitoring
@@ -73,7 +73,7 @@ public static class SymbolEndpoints
                 })
             }, jsonOptions);
         })
-        .WithName("GetMonitoredSymbols")
+        .WithName("GetMonitoredSymbols").RequirePermission(UserPermission.ViewConfig)
         .Produces(200);
 
         // GET /api/symbols/archived — symbols that have stored data files
@@ -92,7 +92,7 @@ public static class SymbolEndpoints
                 return Results.Json(new { count = symbols.Length, symbols }, jsonOptions);
             }, "Failed to discover archived symbols.", logger);
         })
-        .WithName("GetArchivedSymbols")
+        .WithName("GetArchivedSymbols").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // GET /api/symbols/{symbol}/status — detailed status for one symbol
@@ -101,14 +101,24 @@ public static class SymbolEndpoints
             ConfigStore store,
             IStorageSearchService? searchService,
             StorageOptions storageOptions,
+            HttpContext context,
             CancellationToken ct) =>
         {
+            // Composite payload, projected by what the caller could fetch head-on. The subscription
+            // configuration is what GetMonitoredSymbols serves under ViewConfig, and the storage block
+            // is what the storage-backed symbol reads serve under ViewHistoricalData -- so a
+            // ViewMarketData-only caller got both through this one route, and a historical-only caller
+            // got the configuration. The admitted set stays wide; the payload narrows.
+            var canReadConfiguration = EndpointAuthorization.HasAnyPermission(
+                context, UserPermission.ViewConfig, UserPermission.ModifyConfig);
+            var canReadStorage = EndpointAuthorization.HasPermission(context, UserPermission.ViewHistoricalData);
+
             var cfg = store.Load();
             var symbolCfg = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
                 .FirstOrDefault(s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
 
             object? storageInfo = null;
-            if (searchService is not null)
+            if (canReadStorage && searchService is not null)
             {
                 try
                 {
@@ -124,15 +134,22 @@ public static class SymbolEndpoints
                 catch (InvalidOperationException) { /* storage search not critical - service issue */ }
             }
 
+            // "configured" is the membership discriminator for the monitored watchlist, which
+            // GetMonitoredSymbols serves under ViewConfig. Nulling the configuration object while
+            // still answering yes/no left the list enumerable one probe at a time, so the flag is
+            // projected by the same permission as the object it describes.
             return Results.Json(new
             {
                 symbol,
-                configured = symbolCfg is not null,
-                config = symbolCfg,
+                configured = canReadConfiguration ? symbolCfg is not null : (bool?)null,
+                config = canReadConfiguration ? symbolCfg : null,
                 storage = storageInfo
             }, jsonOptions);
         })
-        .WithName("GetSymbolStatus")
+        // ViewMarketData is not admitted: every block this route serves is configuration or historical
+        // storage, so a market-data caller would receive an envelope with nothing in it. The route is
+        // the symbol's configuration-and-storage overview, and its admission now says so.
+        .WithName("GetSymbolStatus").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ModifyConfig, UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // POST /api/symbols/add — add a single symbol; returns {success, symbol}
@@ -201,7 +218,7 @@ public static class SymbolEndpoints
                 files = result.Results?.Select(f => new { f.Path, f.SizeBytes, f.EventCount, f.Date })
             }, jsonOptions);
         })
-        .WithName("GetSymbolTrades")
+        .WithName("GetSymbolTrades").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // GET /api/symbols/{symbol}/depth — recent depth files for a symbol
@@ -226,7 +243,7 @@ public static class SymbolEndpoints
                 files = result.Results?.Select(f => new { f.Path, f.SizeBytes, f.EventCount, f.Date })
             }, jsonOptions);
         })
-        .WithName("GetSymbolDepth")
+        .WithName("GetSymbolDepth").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // GET /api/symbols/statistics — aggregate stats matching SymbolStatistics UI type
@@ -264,7 +281,7 @@ public static class SymbolEndpoints
                 totalEventsLast24h = 0
             }, jsonOptions);
         })
-        .WithName("GetSymbolStatistics")
+        .WithName("GetSymbolStatistics").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // POST /api/symbols/validate — validate symbol identifiers
@@ -387,7 +404,7 @@ public static class SymbolEndpoints
                 results = matches.Select(s => new { s.Symbol, s.Exchange, s.Currency, s.InstrumentType })
             }, jsonOptions);
         })
-        .WithName("SearchSymbols")
+        .WithName("SearchSymbols").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200);
 
         // POST /api/symbols/batch — batch operations (add/remove/update)
@@ -567,7 +584,7 @@ public static class SymbolEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetIndexConstituents")
+        .WithName("GetIndexConstituents").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200);
     }
 }

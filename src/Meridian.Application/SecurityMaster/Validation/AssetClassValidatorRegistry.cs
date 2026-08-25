@@ -104,7 +104,21 @@ internal static class DefaultAssetClassValidators
                     FieldRule.OptionalNonNegative("couponRate", "SM_BOND_COUPON_RATE_INVALID", "Bond coupon rate is invalid", "Fixed coupon rates must be zero or greater."),
                     FieldRule.OptionalNonNegative("spreadBps", "SM_BOND_FLOATING_SPREAD_INVALID", "Bond floating spread is invalid", "Floating-rate spread must be zero or greater when supplied."),
                     DateOrderRule.Optional("issueDate", "maturity", "SM_BOND_ISSUE_DATE_INVALID", "Bond issue date is invalid", "Bond issue date must be on or before maturity."),
-                    DateOrderRule.Optional("callDate", "maturity", "SM_BOND_CALL_DATE_INVALID", "Bond call date is invalid", "Bond call date must be on or before maturity.")
+                    DateOrderRule.Optional("callDate", "maturity", "SM_BOND_CALL_DATE_INVALID", "Bond call date is invalid", "Bond call date must be on or before maturity."),
+                    // ADR-022 canonical-home enforcement: securitized products (MBS/ABS/CLO/CMBS/CDO
+                    // tranches and IO/PO strips) have ONE canonical home — StructuredCredit, which
+                    // carries the tranche, pool, factor-schedule, and maturity economics that pool
+                    // amortization and cash-flow math require and BondTerms lacks. A Bond classified
+                    // into a securitized subclass is a label those pipelines cannot act on, and a
+                    // second modeling route reporting/risk/reconciliation cannot partition against.
+                    DisallowedStringValuesRule.Create(
+                        "subclass",
+                        ["AssetBacked", "MortgageBacked", "AgencyMbs", "CommercialMbs", "Cmo", "Clo", "Cdo", "PrincipalOnly", "InterestOnly", "InverseInterestOnly"],
+                        SecurityValidationSeverityDto.Error,
+                        "SM_BOND_SECURITIZED_SUBCLASS_NONCANONICAL",
+                        "Securitized products must be modeled as StructuredCredit",
+                        "Bond subclass '{0}' models a securitized product; StructuredCredit is the canonical home for MBS/ABS/CLO/CMBS/CDO tranches and IO/PO strips (ADR-022).",
+                        "Re-model the instrument as StructuredCredit (tranche, pool, factor schedule) through a governed amendment so downstream cash-flow, amortization, and reconciliation pipelines can act on its economics.")
                 ]),
             new JsonAssetClassValidator(
                 "FxSpot",
@@ -263,7 +277,44 @@ internal static class DefaultAssetClassValidators
                     FieldRule.OptionalPositive("strike", "SM_WARRANT_STRIKE_INVALID", "Warrant strike is invalid", "Warrant strike must be greater than zero when supplied."),
                     FieldRule.OptionalPositive("multiplier", "SM_WARRANT_MULTIPLIER_INVALID", "Warrant multiplier is invalid", "Warrant multiplier must be greater than zero when supplied.")
                 ]),
-            requiredProfileValidator
+            // ADR-022 canonical-home guidance: MoneyMarketFund is the canonical home for
+            // stable-NAV money-market and government liquidity vehicles; the generic fund wrapper
+            // flagged stable-NAV is the overlap the review called out. Warning (not Error): the
+            // InvestmentFundTerms contract documents the flag, so existing records are steered,
+            // not blocked, toward the canonical class.
+            new JsonAssetClassValidator(
+                "InvestmentFund",
+                [
+                    DiscouragedTrueBooleanRule.Create(
+                        "isStableNav",
+                        SecurityValidationSeverityDto.Warning,
+                        "SM_INVESTMENT_FUND_STABLE_NAV_NONCANONICAL",
+                        "Stable-NAV vehicles belong in MoneyMarketFund",
+                        "This InvestmentFund record is flagged stable-NAV; MoneyMarketFund is the canonical home for stable-NAV money-market and government liquidity vehicles (ADR-022).",
+                        "Model the vehicle as MoneyMarketFund (fund family, sweep eligibility, WAM, liquidity-fee eligibility) through a governed amendment.")
+                ]),
+            new CompositeAssetClassValidator(
+                "CustomAsset",
+                [
+                    requiredProfileValidator,
+                    // ADR-022: a CustomAsset envelope whose classification metadata names a
+                    // securitized product should resolve to StructuredCredit via a registered
+                    // reclassifying profile (e.g. structured-credit-io-po), not stay a generic
+                    // custom asset — CustomAsset remains the home for private/other assets with no
+                    // first-class kind. Warning: the profile map, not metadata, decides identity.
+                    new JsonAssetClassValidator(
+                        "CustomAsset",
+                        [
+                            DisallowedStringValuesRule.Create(
+                                "category",
+                                ["MBS", "ABS", "CLO", "CMBS", "StructuredCredit"],
+                                SecurityValidationSeverityDto.Warning,
+                                "SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL",
+                                "Securitized products belong in StructuredCredit",
+                                "CustomAsset category '{0}' names a securitized product; StructuredCredit is the canonical home for MBS/ABS/CLO/CMBS tranches (ADR-022).",
+                                "Pin the record to a profile that resolves to StructuredCredit (e.g. structured-credit-io-po) or re-model it as a first-class StructuredCredit record.")
+                        ])
+                ])
         ];
     }
 }
@@ -829,6 +880,95 @@ internal sealed record DistinctStringRule(
                 [$"assetSpecificTerms.{LeftFieldPath}", $"assetSpecificTerms.{RightFieldPath}"],
                 "Correct the currency pair definition and resubmit the Security Master amendment.")
             : null;
+    }
+}
+
+/// <summary>
+/// ADR-022 canonical-home rule: flags a string term whose value routes the instrument into a
+/// non-canonical modeling home (e.g. a Bond subclass naming a securitized product whose canonical
+/// home is StructuredCredit). Absent or unlisted values pass — this rule partitions homes, it does
+/// not require the field.
+/// </summary>
+internal sealed record DisallowedStringValuesRule(
+    string FieldPath,
+    IReadOnlyList<string> DisallowedValues,
+    SecurityValidationSeverityDto Severity,
+    string Code,
+    string Title,
+    string MessageFormat,
+    string SuggestedAction) : ISecurityValidationRule
+{
+    public static DisallowedStringValuesRule Create(
+        string fieldPath,
+        IReadOnlyList<string> disallowedValues,
+        SecurityValidationSeverityDto severity,
+        string code,
+        string title,
+        string messageFormat,
+        string suggestedAction)
+        => new(fieldPath, disallowedValues, severity, code, title, messageFormat, suggestedAction);
+
+    public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
+    {
+        if (!JsonValidationReader.TryGetAssetTermString(context.Record.AssetSpecificTerms, FieldPath, context.Record.AssetClass, out var value))
+        {
+            return null;
+        }
+
+        var disallowed = DisallowedValues.FirstOrDefault(
+            candidate => string.Equals(candidate, value, StringComparison.OrdinalIgnoreCase));
+        if (disallowed is null)
+        {
+            return null;
+        }
+
+        return SecurityValidationIssueFactory.Create(
+            Severity,
+            Code,
+            Title,
+            string.Format(CultureInfo.InvariantCulture, MessageFormat, value),
+            [$"assetSpecificTerms.{FieldPath}"],
+            SuggestedAction);
+    }
+}
+
+/// <summary>
+/// ADR-022 canonical-home rule: flags a boolean term whose <c>true</c> value indicates the record
+/// belongs in a different canonical asset class (e.g. an InvestmentFund flagged stable-NAV, whose
+/// canonical home is MoneyMarketFund). Absent or <c>false</c> values pass.
+/// </summary>
+internal sealed record DiscouragedTrueBooleanRule(
+    string FieldPath,
+    SecurityValidationSeverityDto Severity,
+    string Code,
+    string Title,
+    string Message,
+    string SuggestedAction) : ISecurityValidationRule
+{
+    public static DiscouragedTrueBooleanRule Create(
+        string fieldPath,
+        SecurityValidationSeverityDto severity,
+        string code,
+        string title,
+        string message,
+        string suggestedAction)
+        => new(fieldPath, severity, code, title, message, suggestedAction);
+
+    public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
+    {
+        if (!JsonValidationReader.TryGetAssetTermProperty(context.Record.AssetSpecificTerms, FieldPath, context.Record.AssetClass, out var property)
+            || property.ValueKind != JsonValueKind.True)
+        {
+            return null;
+        }
+
+        return SecurityValidationIssueFactory.Create(
+            Severity,
+            Code,
+            Title,
+            Message,
+            [$"assetSpecificTerms.{FieldPath}"],
+            SuggestedAction);
     }
 }
 

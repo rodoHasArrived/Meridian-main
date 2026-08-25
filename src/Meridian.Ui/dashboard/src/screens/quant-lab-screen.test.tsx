@@ -168,7 +168,7 @@ describe("QuantLabScreen", () => {
 
   it("labels run evidence when the editor changes before the run completes", async () => {
     const deferredRun = createDeferred<QuantRunResponse>();
-    vi.spyOn(api, "runQuantScript").mockReturnValue(deferredRun.promise);
+    const runSpy = vi.spyOn(api, "runQuantScript").mockReturnValue(deferredRun.promise);
 
     const user = userEvent.setup();
     renderWithRouter(<QuantLabScreen />);
@@ -177,7 +177,10 @@ describe("QuantLabScreen", () => {
     const editor = screen.getByLabelText("Script source") as HTMLTextAreaElement;
     await user.clear(editor);
     await user.type(editor, "Print(\"submitted\");");
-    await user.click(screen.getByRole("button", { name: /Run script/i }));
+    const runButton = screen.getByRole("button", { name: /Run script/i });
+    await waitFor(() => expect(runButton).toBeEnabled());
+    await user.click(runButton);
+    await waitFor(() => expect(runSpy).toHaveBeenCalledTimes(1));
 
     await user.clear(editor);
     await user.type(editor, "Print(\"edited\");");

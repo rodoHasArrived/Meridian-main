@@ -197,6 +197,52 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
     }
 
     [Fact]
+    public async Task PublishAsync_InformationalTransactionBreak_PublishesNonBlockingCasework()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var ct = timeout.Token;
+        // A transaction break produced against an empty internal ledger-transaction population
+        // carries the informational classification from the statement-run matcher.
+        var informationalBreak = StatementBreak() with
+        {
+            BreakType = StatementBreakType.TransactionAmountMismatch,
+            Severity = StatementValidationSeverity.Info,
+            Classification = ReconciliationBreakClassifications.InternalTransactionPopulationUnavailable
+        };
+        var harness = CreateHarness(
+            [Book(LedgerBookId)],
+            [Period(AccountingPeriodId, LedgerBookId, LedgerPeriodStatusDto.Open)],
+            informationalBreak);
+        var scope = new StatementAccountingScope(
+            FundProfileId.ToString("D"),
+            LedgerBookId,
+            AccountingPeriodId,
+            PeriodEnd);
+
+        await harness.Authority.PublishAsync(
+            "statement-reconciliation-report-informational",
+            ImportResult(),
+            scope,
+            TenantId,
+            CompanyId,
+            "statement-operations",
+            SourceInstitution,
+            ["evidence-vault:statement-vault-june-2026"],
+            ct);
+
+        var queueItem = (await harness.Queue.GetAllAsync(ct: ct))
+            .Should().ContainSingle().Which;
+        // The break is still published (nothing hidden), but with no close-gating outputs, an
+        // Info severity, and an explicit machine-readable rationale for why it does not block.
+        queueItem.SourceType.Should().Be("statement");
+        queueItem.BlockedOutputs.Should().BeEmpty(
+            "transaction breaks matched against an empty internal population must not block PeriodClose, FinalReport, or ClientDelivery");
+        queueItem.Severity.Should().Be(ReconciliationBreakSeverity.Info);
+        queueItem.LifecycleRationale.Should().Contain(
+            ReconciliationBreakClassifications.InternalTransactionPopulationUnavailable);
+    }
+
+    [Fact]
     public async Task Scenario_AmbiguousPrimaryLedgerAuthority_FailsClosedBeforeStatementRetention()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
@@ -272,7 +318,8 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
 
     private IntakeHarness CreateHarness(
         IReadOnlyList<LedgerBookDto> books,
-        IReadOnlyList<LedgerPeriodDto> periods)
+        IReadOnlyList<LedgerPeriodDto> periods,
+        StatementBreakDto? statementBreak = null)
     {
         var dataRoot = Path.Combine(_root, Guid.NewGuid().ToString("N"));
         var accounts = new Mock<IAccountQueryService>(MockBehavior.Strict);
@@ -317,7 +364,7 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
                     scope.TenantId == TenantId
                     && scope.CompanyId == CompanyId),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync([StatementBreak()]);
+            .ReturnsAsync([statementBreak ?? StatementBreak()]);
 
         var derivation = new OperationsStatusDerivationService();
         var operations = new OperationsContinuityWorkflowService(

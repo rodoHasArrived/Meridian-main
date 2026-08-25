@@ -4,8 +4,24 @@
       Title="Entity Setup">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="24" MaxWidth="1120">
+            <!-- ═══ DATA PROVENANCE ═══ -->
+            <!-- Fund structure created here is served by the desktop-local
+                 InMemoryFundStructureService and persisted as JSON under %LOCALAPPDATA%. It
+                 is not the server's fund universe and is not shared with the browser
+                 workstation. The badge is unconditional and non-dismissable until this lane
+                 reads the governed server API. -->
+            <Border Style="{StaticResource DataProvenanceBadgeBorderStyle}"
+                    Margin="0,0,0,16"
+                    AutomationProperties.Name="Data provenance">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource DataProvenanceBadgeLabelStyle}"
+                               Text="DESKTOP-LOCAL DATA — NOT THE SERVER LEDGER OF RECORD" />
+                    <TextBlock Style="{StaticResource DataProvenanceBadgeDetailStyle}"
+                               Text="Entities, vehicles, and accounts created here are stored only on this workstation (%LOCALAPPDATA% JSON). They are not written to, and are not visible from, the server or the browser workstation. Do not treat this structure as the governed system of record." />
+                </StackPanel>
+            </Border>
             <TextBlock Text="Entity setup" FontSize="28" FontWeight="SemiBold" />
-            <TextBlock Text="Create the organization, business lane, client or fund, legal entity, vehicle, investment portfolio, ownership links, and account handoff through /api/fund-structure shared orchestration."
+            <TextBlock Text="Create the organization, business lane, client or fund, legal entity, vehicle, investment portfolio, ownership links, and account handoff through the shared setup orchestration service. On the desktop this lane persists to workstation-local storage, not the server."
                        TextWrapping="Wrap" Margin="0,6,0,18" />
 
             <UniformGrid Columns="3" Margin="0,0,0,16">

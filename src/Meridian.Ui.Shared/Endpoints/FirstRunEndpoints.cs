@@ -13,7 +13,8 @@ public static class FirstRunEndpoints
     {
         var group = app.MapGroup("/api/workstation/first-run").WithTags("First run");
         group.MapGet("/", async (HttpContext context, FirstRunExperienceService service, CancellationToken ct) =>
-            Results.Ok(await service.GetAsync(CurrentUser(context), ct).ConfigureAwait(false)));
+            Results.Ok(await service.GetAsync(CurrentUser(context), ct).ConfigureAwait(false)))
+            .RequireAuthenticatedSessionOrScopedLocalOperatorRead();
         group.MapPost("/complete", async (HttpContext context, CompleteFirstRunRequestDto request, FirstRunExperienceService service, CancellationToken ct) =>
         {
             try
@@ -56,6 +57,7 @@ public static class FirstRunEndpoints
                     var redemption = service.Redeem(context.Connection.RemoteIpAddress, ticket);
                     return redemption is null ? Results.NotFound() : Results.Ok(redemption);
                 })
+            .DeclareOpenRead("One-use desktop launch ticket redeemed by the WPF client before it has a session -- the handoff exists precisely because no session is established yet -- and bound to the redeeming caller's remote address rather than to a permission.")
             .ExcludeFromDescription();
     }
 

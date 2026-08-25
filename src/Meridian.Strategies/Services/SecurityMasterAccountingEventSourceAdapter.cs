@@ -114,7 +114,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
 
     private async Task<List<SecurityMasterAccountingPosition>> ResolveDurablePositionsAsync(
         IReadOnlyList<SecurityMasterAccountingPosition> positions,
-        IReadOnlyList<SecurityFactorScheduleEntry> factorSchedule,
+        IReadOnlyList<SecurityFactorObservation> factorSchedule,
         CancellationToken ct)
     {
         if (_assetOperationsQueryService is null)
@@ -351,17 +351,17 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         return new SecurityAccountingRule(classification.Trim(), "GAAP");
     }
 
-    private static IReadOnlyList<SecurityFactorScheduleEntry> BuildFactorSchedule(
+    private static IReadOnlyList<SecurityFactorObservation> BuildFactorSchedule(
         IEnumerable<SecurityEconomicDefinitionRecord> definitions,
         DateOnly periodStart,
         DateOnly periodEnd)
     {
-        var entries = new List<SecurityFactorScheduleEntry>();
+        var entries = new List<SecurityFactorObservation>();
         foreach (var definition in definitions)
         {
             var coveredDates = new HashSet<DateOnly>();
             var definitionStartCount = entries.Count;
-            SecurityFactorScheduleEntry? latestPrePeriod = null;
+            SecurityFactorObservation? latestPrePeriod = null;
             foreach (var schedule in EnumerateFactorScheduleArrays(definition))
             {
                 foreach (var item in schedule.EnumerateArray())
@@ -388,7 +388,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                         continue;
                     }
 
-                    var entry = new SecurityFactorScheduleEntry(
+                    var entry = new SecurityFactorObservation(
                         definition.SecurityId,
                         asOfDate.Value,
                         priorFactor.Value,
@@ -490,7 +490,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                     // the asserting provider under sourceSystem, so that vendor identity — not the
                     // generic security-master fallback — is the factor-source lineage the expected
                     // event must record.
-                    var typedEntry = new SecurityFactorScheduleEntry(
+                    var typedEntry = new SecurityFactorObservation(
                         definition.SecurityId,
                         row.AsOfDate,
                         priorFactor,

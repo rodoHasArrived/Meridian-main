@@ -107,6 +107,18 @@ public sealed class EndpointTestFixture : IAsyncLifetime
     }
 
     /// <summary>
+    /// A signed-in operator holding exactly these permissions. Use this for routes that require a
+    /// validated session; <see cref="CreatePermittedClient"/> supplies a permission snapshot with no
+    /// actor, which such routes refuse by design.
+    /// </summary>
+    public HttpClient CreateSessionClient(params UserPermission[] permissions)
+    {
+        var client = CreatePermittedClient(permissions);
+        client.DefaultRequestHeaders.Add("X-Test-Auth", "session");
+        return client;
+    }
+
+    /// <summary>
     /// Creates an <see cref="HttpClient"/> backed by the in-memory TestServer that does NOT
     /// automatically follow redirects. Use this to inspect 3xx responses directly.
     /// The caller is responsible for disposing the returned client.
@@ -232,6 +244,16 @@ public sealed class EndpointTestFixture : IAsyncLifetime
                 context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Admin);
             }
             else if (context.Request.Headers.TryGetValue("X-Test-Auth", out mode) &&
+                     StringComparer.Ordinal.Equals(mode.ToString(), "session"))
+            {
+                // Actor only: the permission set stays with X-Test-Permissions, so this models a
+                // signed-in operator holding exactly what the test declares. Deliberately separate from
+                // CreatePermittedClient, whose actor-less snapshot is itself a principal shape the
+                // codebase has a rule about -- see
+                // NonSessionPrincipalAuthorizationTests.PermissionSnapshotWithoutAnActor_*.
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = "session-operator";
+            }
+            else if (context.Request.Headers.TryGetValue("X-Test-Auth", out mode) &&
                      StringComparer.Ordinal.Equals(mode.ToString(), "fund-accounting"))
             {
                 context.Items[LoginSessionMiddleware.CurrentUserKey] = "fund-ops";
@@ -273,6 +295,9 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         // mutations. Registered after the X-Test-Permissions stub so header-declared permissions
         // are visible to it, exactly as upstream authenticators' permissions are in production.
         _app.UseAccountAdministrationGuard();
+        // Mirrors the production pipeline's pre-binding enforcement of declared mutation
+        // authorization, in the same order relative to the permission-contributing middleware.
+        _app.UseMutationAuthorizationGuard();
 
         var config = _app.Services.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load();
         _app.MapPackagingEndpoints(config.DataRoot);

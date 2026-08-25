@@ -43,7 +43,7 @@ public class EventPipelineBenchmarks
                         SequenceNumber: i,
                         StreamId: "BENCH",
                         Venue: "TEST"
-                    ));
+                    ), source: "BENCH");
             })
             .ToArray();
     }
@@ -177,7 +177,7 @@ public class PublishLatencyBenchmarks
                 SequenceNumber: 12345,
                 StreamId: "BENCH",
                 Venue: "TEST"
-            ));
+            ), source: "BENCH");
 
         // Start a consumer
         _ = Task.Run(async () =>

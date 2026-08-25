@@ -34,7 +34,7 @@ public class QuoteCollectorTests
             AskSize: 200,
             StreamId: "TEST",
             Venue: "NYSE"
-        );
+        , Source: "TEST");
 
         // Act
         _collector.OnQuote(update);
@@ -65,7 +65,7 @@ public class QuoteCollectorTests
             BidSize: 50,
             AskPrice: 101m,
             AskSize: 50
-        );
+        , Source: "TEST");
 
         // Act
         _collector.OnQuote(update);
@@ -85,7 +85,7 @@ public class QuoteCollectorTests
             BidSize: 100,
             AskPrice: 450.05m,
             AskSize: 200
-        );
+        , Source: "TEST");
 
         // Act
         _collector.OnQuote(update);
@@ -119,7 +119,7 @@ public class QuoteCollectorTests
             BidSize: 100,
             AskPrice: 450.05m,
             AskSize: 200
-        );
+        , Source: "TEST");
         var update2 = new MarketQuoteUpdate(
             Timestamp: DateTimeOffset.UtcNow,
             Symbol: "SPY",
@@ -127,7 +127,7 @@ public class QuoteCollectorTests
             BidSize: 150,
             AskPrice: 450.15m,
             AskSize: 250
-        );
+        , Source: "TEST");
 
         // Act
         var payload1 = _collector.Upsert(update1);
@@ -149,7 +149,7 @@ public class QuoteCollectorTests
             BidSize: 100,
             AskPrice: 450.05m,
             AskSize: 200
-        );
+        , Source: "TEST");
         var aaplUpdate = new MarketQuoteUpdate(
             Timestamp: DateTimeOffset.UtcNow,
             Symbol: "AAPL",
@@ -157,7 +157,7 @@ public class QuoteCollectorTests
             BidSize: 50,
             AskPrice: 180.10m,
             AskSize: 75
-        );
+        , Source: "TEST");
 
         // Act
         var spy1 = _collector.Upsert(spyUpdate);
@@ -181,7 +181,7 @@ public class QuoteCollectorTests
             BidSize: 100,
             AskPrice: 450.05m,
             AskSize: 200
-        );
+        , Source: "TEST");
         _collector.OnQuote(update);
 
         // Act
@@ -272,6 +272,6 @@ public class QuoteCollectorTests
             BidSize: 100,
             AskPrice: askPrice,
             AskSize: 100
-        );
+        , Source: "TEST");
     }
 }

@@ -79,7 +79,8 @@ public sealed class CorporateActionAdjustmentPlan
             Close: bar.Close * dividendFactor / splitDivisor,
             Volume: (long)Math.Round(bar.Volume * splitDivisor, MidpointRounding.AwayFromZero),
             Source: bar.Source,
-            SequenceNumber: bar.SequenceNumber);
+            SequenceNumber: bar.SequenceNumber,
+            IsAdjusted: true);
     }
 
     internal static CorporateActionAdjustmentPlan FromLegacyAdjustedBars(

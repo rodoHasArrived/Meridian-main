@@ -250,15 +250,18 @@ export interface VerifiedOperationOutcome {
 
 export interface ReviewReconciliationBreakRequest {
   breakId: string;
-  assignedTo: string;
-  reviewedBy: string;
+  /** Session operator identity when the shell supplies one; omitted otherwise so the server records its own session actor. */
+  assignedTo?: string;
+  /** Session operator identity when the shell supplies one; the server always rewrites this from the authenticated session. */
+  reviewedBy?: string;
   reviewNote?: string;
 }
 
 export interface ResolveReconciliationBreakRequest {
   breakId: string;
   status: "Resolved" | "Dismissed";
-  resolvedBy: string;
+  /** Session operator identity when the shell supplies one; the server always rewrites this from the authenticated session. */
+  resolvedBy?: string;
   resolutionNote: string;
   operatorRationale: string;
 }

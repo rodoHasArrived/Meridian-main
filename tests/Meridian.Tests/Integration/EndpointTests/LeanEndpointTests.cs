@@ -9,23 +9,31 @@ namespace Meridian.Tests.Integration.EndpointTests;
 
 /// <summary>
 /// Integration tests for the QuantConnect Lean API endpoints.
-/// Covers status, config, verification, algorithms, sync, backtest lifecycle,
-/// auto-export, results ingestion, and symbol mapping.
+/// Covers status, config, verification, algorithms, the honest 501 refusals on the unimplemented
+/// sync and backtest lifecycle routes, auto-export, results ingestion, and symbol mapping.
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
 public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
-    private readonly HttpClient _client;
+    // The Lean reads expose the deployment's Lean install path, its algorithm source listing, and
+    // auto-export destinations, so they answer the Strategy workspace's own permissions rather than
+    // any signed-in caller. ViewStrategies is the read half of that pair; ManageStrategies drives the
+    // mutations, exactly as the routes declare.
+    private readonly HttpClient _strategyReadClient;
     private readonly HttpClient _strategyMutationClient;
 
     public LeanEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        _strategyReadClient = fixture.CreatePermittedClient(UserPermission.ViewStrategies);
         _strategyMutationClient = fixture.CreatePermittedClient(UserPermission.ManageStrategies);
     }
 
-    public void Dispose() => _strategyMutationClient.Dispose();
+    public void Dispose()
+    {
+        _strategyReadClient.Dispose();
+        _strategyMutationClient.Dispose();
+    }
 
     // -------------------------------------------------------------------------
     // GET /api/lean/status
@@ -34,7 +42,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetLeanStatus_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/lean/status");
+        var response = await _strategyReadClient.GetAsync("/api/lean/status");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -49,7 +57,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     public async Task GetLeanStatus_WhenNoLeanPath_InstalledIsFalse()
     {
         // LEAN_PATH is not set in the test environment
-        var response = await _client.GetAsync("/api/lean/status");
+        var response = await _strategyReadClient.GetAsync("/api/lean/status");
         var content = await response.Content.ReadAsStringAsync();
         var doc = JsonDocument.Parse(content);
 
@@ -63,7 +71,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetLeanConfig_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/lean/config");
+        var response = await _strategyReadClient.GetAsync("/api/lean/config");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -109,7 +117,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetAlgorithms_ReturnsJsonWithTotalField()
     {
-        var response = await _client.GetAsync("/api/lean/algorithms");
+        var response = await _strategyReadClient.GetAsync("/api/lean/algorithms");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -121,109 +129,95 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     }
 
     // -------------------------------------------------------------------------
-    // POST /api/lean/sync
+    // POST /api/lean/sync and GET /api/lean/sync/status
+    //
+    // No Lean engine integration exists: sync jobs used to be fabricated as "queued" and never
+    // ran. The routes stay mapped so clients get an honest 501 problem document, not a 404.
     // -------------------------------------------------------------------------
 
     [Fact]
-    public async Task StartSync_ReturnsJobIdOrError()
+    public async Task StartSync_ReturnsNotImplementedProblem()
     {
         var payload = new { symbols = new[] { "SPY" } };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
         var response = await _strategyMutationClient.PostAsync("/api/lean/sync", content);
 
-        // Either 200 (queued) or 200 with error message when LEAN_DATA_PATH not set
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(
+            HttpStatusCode.NotImplemented,
+            "no sync job ever ran, so an honest 501 beats a fabricated 'queued' response");
 
         var body = await response.Content.ReadAsStringAsync();
         var doc = JsonDocument.Parse(body);
-        doc.RootElement.TryGetProperty("status", out var status).Should().BeTrue();
-        status.GetString().Should().BeOneOf("queued", "failed");
+        doc.RootElement.GetProperty("status").GetInt32().Should().Be(501);
+        doc.RootElement.GetProperty("type").GetString().Should().Contain("not-implemented");
+        doc.RootElement.GetProperty("detail").GetString().Should().Contain("No Lean engine integration exists");
     }
 
-    // -------------------------------------------------------------------------
-    // GET /api/lean/sync/status
-    // -------------------------------------------------------------------------
-
     [Fact]
-    public async Task GetSyncStatus_ReturnsJson()
+    public async Task GetSyncStatus_ReturnsNotImplementedProblem()
     {
-        var response = await _client.GetAsync("/api/lean/sync/status");
+        var response = await _strategyReadClient.GetAsync("/api/lean/sync/status");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.NotImplemented);
 
         var content = await response.Content.ReadAsStringAsync();
         var doc = JsonDocument.Parse(content);
-        doc.RootElement.TryGetProperty("isRunning", out _).Should().BeTrue();
-        doc.RootElement.TryGetProperty("timestamp", out _).Should().BeTrue();
+        doc.RootElement.GetProperty("type").GetString().Should().Contain("not-implemented");
     }
 
     // -------------------------------------------------------------------------
-    // POST /api/lean/backtest/start  →  GET /api/lean/backtest/{id}/status
-    //   →  GET /api/lean/backtest/{id}/results  →  POST /stop  →  DELETE
+    // POST /api/lean/backtest/start, GET /{id}/status, GET /{id}/results
+    //
+    // The fabricated lifecycle (create "queued", never transition, hardcode zero metrics for an
+    // unreachable "completed" state) is gone; all three routes answer 501. Stop and delete keep
+    // their 404 semantics for unknown ids, and /api/lean/results/ingest remains the real path for
+    // recording externally run Lean backtests.
     // -------------------------------------------------------------------------
 
     [Fact]
-    public async Task BacktestLifecycle_StartStatusResultsStopDelete()
+    public async Task StartBacktest_ReturnsNotImplementedProblem()
     {
-        // 1. Start backtest
         var startPayload = new { algorithmName = "SampleAlgorithm", algorithmLanguage = "CSharp" };
         var startContent = new StringContent(JsonSerializer.Serialize(startPayload), Encoding.UTF8, "application/json");
-        var startResp = await _strategyMutationClient.PostAsync("/api/lean/backtest/start", startContent);
-        startResp.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var startBody = await startResp.Content.ReadAsStringAsync();
-        var startDoc = JsonDocument.Parse(startBody);
-        startDoc.RootElement.TryGetProperty("backtestId", out var idElem).Should().BeTrue();
-        // When LEAN_PATH is not configured, backtestId may be null and status "failed"
-        var backtestId = idElem.ValueKind == JsonValueKind.String ? idElem.GetString() : null;
-        var startStatus = startDoc.RootElement.GetProperty("status").GetString();
+        var response = await _strategyMutationClient.PostAsync("/api/lean/backtest/start", startContent);
 
-        if (backtestId == null || startStatus == "failed")
-        {
-            // No Lean installation in test environment — verify the error response is well-formed
-            startDoc.RootElement.TryGetProperty("error", out var errElem).Should().BeTrue();
-            errElem.GetString().Should().NotBeNullOrEmpty();
-            return; // remaining lifecycle steps require a real backtestId
-        }
+        response.StatusCode.Should().Be(
+            HttpStatusCode.NotImplemented,
+            "Meridian does not launch Lean backtests, and a 'queued' job that never runs is a fabrication");
 
-        // 2. Get status
-        var statusResp = await _client.GetAsync($"/api/lean/backtest/{backtestId}/status");
-        statusResp.StatusCode.Should().Be(HttpStatusCode.OK);
-        var statusDoc = JsonDocument.Parse(await statusResp.Content.ReadAsStringAsync());
-        statusDoc.RootElement.GetProperty("backtestId").GetString().Should().Be(backtestId);
-
-        // 3. Get results (backtest not completed yet — should return info message)
-        var resultsResp = await _client.GetAsync($"/api/lean/backtest/{backtestId}/results");
-        resultsResp.StatusCode.Should().Be(HttpStatusCode.OK);
-        var resultsDoc = JsonDocument.Parse(await resultsResp.Content.ReadAsStringAsync());
-        resultsDoc.RootElement.GetProperty("backtestId").GetString().Should().Be(backtestId);
-
-        // 4. Stop
-        var stopResp = await _strategyMutationClient.PostAsync($"/api/lean/backtest/{backtestId}/stop", content: null);
-        stopResp.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        // 5. Delete
-        var deleteResp = await _strategyMutationClient.DeleteAsync($"/api/lean/backtest/{backtestId}/delete");
-        deleteResp.StatusCode.Should().Be(HttpStatusCode.OK);
-        var deleteDoc = JsonDocument.Parse(await deleteResp.Content.ReadAsStringAsync());
-        deleteDoc.RootElement.GetProperty("deleted").GetBoolean().Should().BeTrue();
+        var body = await response.Content.ReadAsStringAsync();
+        var doc = JsonDocument.Parse(body);
+        doc.RootElement.GetProperty("status").GetInt32().Should().Be(501);
+        doc.RootElement.GetProperty("type").GetString().Should().Contain("not-implemented");
+        doc.RootElement.GetProperty("detail").GetString().Should().Contain("results/ingest");
     }
 
     [Fact]
-    public async Task GetBacktestStatus_UnknownId_Returns404()
+    public async Task GetBacktestStatus_ReturnsNotImplementedProblem()
     {
-        var response = await _client.GetAsync("/api/lean/backtest/nonexistent-id-xyz/status");
+        var response = await _strategyReadClient.GetAsync("/api/lean/backtest/nonexistent-id-xyz/status");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(
+            HttpStatusCode.NotImplemented,
+            "there is no lifecycle to report a status for, whatever the id");
+
+        var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        doc.RootElement.GetProperty("type").GetString().Should().Contain("not-implemented");
     }
 
     [Fact]
-    public async Task GetBacktestResults_UnknownId_Returns404()
+    public async Task GetBacktestResults_ReturnsNotImplementedProblem()
     {
-        var response = await _client.GetAsync("/api/lean/backtest/nonexistent-id-xyz/results");
+        var response = await _strategyReadClient.GetAsync("/api/lean/backtest/nonexistent-id-xyz/results");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(
+            HttpStatusCode.NotImplemented,
+            "the old handler hardcoded zero metrics; honest refusal replaces fabricated results");
+
+        var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        doc.RootElement.GetProperty("type").GetString().Should().Contain("not-implemented");
     }
 
     [Fact]
@@ -249,7 +243,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetBacktestHistory_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/lean/backtest/history");
+        var response = await _strategyReadClient.GetAsync("/api/lean/backtest/history");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -262,7 +256,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetBacktestHistory_WithLimitParam_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/lean/backtest/history?limit=5");
+        var response = await _strategyReadClient.GetAsync("/api/lean/backtest/history?limit=5");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -274,7 +268,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetAutoExportStatus_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/lean/auto-export");
+        var response = await _strategyReadClient.GetAsync("/api/lean/auto-export");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -401,7 +395,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
             btId.GetString().Should().NotBeNullOrEmpty();
             doc.RootElement.GetProperty("algorithmName").GetString().Should().Be("TestAlgorithm");
 
-            var history = await _client.GetAsync("/api/lean/backtest/history?limit=50");
+            var history = await _strategyReadClient.GetAsync("/api/lean/backtest/history?limit=50");
             history.StatusCode.Should().Be(HttpStatusCode.OK);
             var historyDoc = JsonDocument.Parse(await history.Content.ReadAsStringAsync());
             historyDoc.RootElement
@@ -424,7 +418,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetSymbolMap_NoSymbols_ReturnsMappingsArray()
     {
-        var response = await _client.GetAsync("/api/lean/symbol-map");
+        var response = await _strategyReadClient.GetAsync("/api/lean/symbol-map");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -438,7 +432,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task GetSymbolMap_WithEquitySymbols_ReturnsMappings()
     {
-        var response = await _client.GetAsync("/api/lean/symbol-map?symbols=SPY,AAPL");
+        var response = await _strategyReadClient.GetAsync("/api/lean/symbol-map?symbols=SPY,AAPL");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 

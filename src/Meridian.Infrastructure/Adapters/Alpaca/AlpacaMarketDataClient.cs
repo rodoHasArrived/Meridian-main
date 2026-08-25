@@ -2,6 +2,7 @@ using System.Buffers;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Models;
@@ -418,6 +419,10 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
                 SequenceNumber: tradeId <= 0 ? 0L : tradeId,
                 StreamId: "ALPACA",
                 Venue: venue ?? "ALPACA",
+                Source: MarketDataSources.Alpaca,
+                // Alpaca's "i" is an exchange-assigned trade id: unique and increasing but
+                // not dense, so jumps are normal interleaving rather than data loss.
+                SequenceIsContiguous: false,
                 RawConditions: el.TryGetProperty("c", out var cProp) && cProp.ValueKind == JsonValueKind.Array
                     ? cProp.EnumerateArray()
                             .Select(c => c.GetString())
@@ -467,7 +472,8 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
                 AskSize: askSize,
                 SequenceNumber: null,
                 StreamId: "ALPACA",
-                Venue: "ALPACA"
+                Venue: "ALPACA",
+                Source: MarketDataSources.Alpaca
             );
 
             var issues = ProviderDataQualityValidator.ValidateQuote(ProviderId, quoteUpdate);

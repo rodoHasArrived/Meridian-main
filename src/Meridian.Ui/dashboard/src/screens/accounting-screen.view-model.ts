@@ -2774,6 +2774,7 @@ export interface AccountingCloseReportPackageViewModel {
   lockClosePeriodBusy: boolean;
   lockClosePeriodStatusText: string | null;
   lockClosePeriodStatusTone: "neutral" | "success" | "danger";
+  lockClosePeriodArmed: boolean;
   queueClosingEntriesBusy: boolean;
   queueClosingEntriesStatusText: string | null;
   queueClosingEntriesStatusTone: "neutral" | "success" | "danger";
@@ -3842,7 +3843,8 @@ export function useAccountingReconciliationViewModel(
   data: AccountingWorkspaceResponse | null,
   workstream: AccountingWorkstream,
   services: AccountingReconciliationServices = defaultAccountingReconciliationServices,
-  systemReconciliation: AccountingSystemReconciliationSummary | null = null
+  systemReconciliation: AccountingSystemReconciliationSummary | null = null,
+  operatorIdentity: string | null = null
 ) {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [breakQueue, setBreakQueue] = useState<ReconciliationBreakQueueItem[]>(data?.breakQueue ?? []);
@@ -4048,7 +4050,10 @@ export function useAccountingReconciliationViewModel(
     setBreakActionError(null);
 
     try {
-      const operation = await services.reviewBreak({ breakId, assignedTo: "ops.gov", reviewedBy: "ops.gov" });
+      const operation = await services.reviewBreak({
+        breakId,
+        ...(operatorIdentity ? { assignedTo: operatorIdentity, reviewedBy: operatorIdentity } : {})
+      });
       const updated = requireSuccessfulReconciliationCasework(operation);
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
     } catch (err) {
@@ -4056,7 +4061,7 @@ export function useAccountingReconciliationViewModel(
     } finally {
       setBreakAction(null);
     }
-  }, [services]);
+  }, [operatorIdentity, services]);
 
   const resolveBreak = useCallback(async (
     breakId: string,
@@ -4080,8 +4085,8 @@ export function useAccountingReconciliationViewModel(
       const operation = await services.resolveBreak({
         breakId,
         status,
-        resolvedBy: "ops.gov",
-        resolutionNote: "Reviewed in accounting panel.",
+        ...(operatorIdentity ? { resolvedBy: operatorIdentity } : {}),
+        resolutionNote: trimmedRationale,
         operatorRationale: trimmedRationale
       });
       const updated = requireSuccessfulReconciliationCasework(operation);
@@ -4091,7 +4096,7 @@ export function useAccountingReconciliationViewModel(
     } finally {
       setBreakAction(null);
     }
-  }, [services]);
+  }, [operatorIdentity, services]);
 
   const breakQueueState = useMemo(
     () => buildReconciliationBreakQueueState({
@@ -5130,7 +5135,8 @@ export function buildAccountingTrialBalanceViewState({
   selectedBasis = DEFAULT_ACCOUNTING_BASIS,
   accountFilter = "",
   loading,
-  error
+  error,
+  scopeLabel = null
 }: {
   runId: string | null;
   rows: LedgerTrialBalanceLine[];
@@ -5139,9 +5145,11 @@ export function buildAccountingTrialBalanceViewState({
   accountFilter?: string | null;
   loading: boolean;
   error: string | ApiErrorDisplay | null;
+  /** Overrides the scope wording in labels; defaults to the strategy-run phrasing. */
+  scopeLabel?: string | null;
 }): AccountingTrialBalanceViewState {
   const detailPanelId = "trial-balance-account-detail";
-  const runLabel = runId ? "the selected ledger run" : "the current ledger selection";
+  const runLabel = scopeLabel?.trim() || (runId ? "the selected ledger run" : "the current ledger selection");
   const resolvedBasis = normalizeAccountingBasis(selectedBasis);
   const normalizedAccountFilter = normalizeLedgerAccountFilter(accountFilter);
   const normalizedRows = rows.map(normalizeTrialBalanceLine);
@@ -5206,7 +5214,7 @@ export function buildAccountingTrialBalanceViewState({
     emptyTitle: "No trial balance lines",
     emptyDetail: normalizedAccountFilter && basisRows.length > 0
       ? `No ${accountingBasisDisplayName(resolvedBasis)} ledger accounts match "${accountFilter ?? ""}". Clear the GL account filter or search another account.`
-      : `Meridian did not return account-balance rows for ${runLabel}. Select another reconciliation run or refresh ledger evidence before report handoff.`,
+      : `Meridian did not return account-balance rows for ${runLabel}. ${scopeLabel ? "Select another ledger period" : "Select another reconciliation run"} or refresh ledger evidence before report handoff.`,
     errorText,
     errorDetails: normalizedError?.details ?? [],
     statusAnnouncement: buildTrialBalanceAnnouncement({ runLabel, state, rowCount: viewRows.length, loading, errorText })
@@ -5717,11 +5725,7 @@ function normalizeTrialBalanceLine(line: LedgerTrialBalanceLine): BasisAwareLedg
   };
 }
 
-export function buildGovernanceTrialBalanceViewState(
-  options: Parameters<typeof buildAccountingTrialBalanceViewState>[0]
-): AccountingTrialBalanceViewState {
-  return buildAccountingTrialBalanceViewState(options);
-}
+export const buildGovernanceTrialBalanceViewState = buildAccountingTrialBalanceViewState;
 
 function normalizeAccountingBasis(value: AccountingBasisKind | null | undefined): AccountingBasisKind {
   return ACCOUNTING_BASIS_OPTIONS.some((option) => option.id === value)

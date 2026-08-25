@@ -67,7 +67,7 @@ public static class DiagnosticsEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsProviders")
+        .WithName("GetDiagnosticsProviders").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Storage diagnostics
@@ -117,7 +117,7 @@ public static class DiagnosticsEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsStorage")
+        .WithName("GetDiagnosticsStorage").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Config diagnostics
@@ -143,7 +143,7 @@ public static class DiagnosticsEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsConfig")
+        .WithName("GetDiagnosticsConfig").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Diagnostic bundle
@@ -163,7 +163,7 @@ public static class DiagnosticsEndpoints
                 message = result.Message
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsBundle")
+        .WithName("GetDiagnosticsBundle").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200)
         .Produces(503);
 
@@ -270,7 +270,7 @@ public static class DiagnosticsEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsMetrics")
+        .WithName("GetDiagnosticsMetrics").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Validate (generic validation)
@@ -350,7 +350,7 @@ public static class DiagnosticsEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsQuickCheck")
+        .WithName("GetDiagnosticsQuickCheck").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Show config (sanitized)
@@ -374,7 +374,7 @@ public static class DiagnosticsEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsShowConfig")
+        .WithName("GetDiagnosticsShowConfig").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Error codes reference
@@ -384,7 +384,7 @@ public static class DiagnosticsEndpoints
                 .Select(e => new { code = (int)e, name = e.ToString() });
             return Results.Json(new { errorCodes = codes, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetDiagnosticsErrorCodes")
+        .WithName("GetDiagnosticsErrorCodes").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Self-test
@@ -527,7 +527,7 @@ public static class DiagnosticsEndpoints
                 timestamp = snapshot.CapturedAtUtc
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsCoordination")
+        .WithName("GetDiagnosticsCoordination").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200)
         .Produces(503);
     }

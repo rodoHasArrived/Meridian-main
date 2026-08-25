@@ -219,6 +219,94 @@ public sealed class CompositeRiskValidatorTests
     }
 
     [Fact]
+    public async Task ValidateOrderAsync_CriticalSeverityFailure_SweepsTheOpenBookExactlyOnce()
+    {
+        var controls = CreateOperatorControls();
+        var handler = new RecordingTripHandler(() => controls.GetSnapshot().CircuitBreaker.IsOpen);
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("gross-exposure", RiskValidationResult.Rejected("book over ceiling"), severity: RiskRuleSeverity.Critical)],
+            NullLogger<CompositeRiskValidator>.Instance,
+            operatorControls: controls,
+            tripHandler: handler);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse();
+        controls.GetSnapshot().CircuitBreaker.IsOpen.Should().BeTrue();
+        handler.Invocations.Should().Be(1, "an automated critical trip must sweep the open book");
+        handler.BreakerOpenWhenInvoked.Should().BeTrue(
+            "the sweep runs strictly after the halt is applied, never gating or delaying the trip");
+        handler.LastTrippedBy.Should().Be("risk-engine/gross-exposure");
+        handler.LastReason.Should().Contain("book over ceiling");
+
+        // A repeat critical breach against the already-open breaker must not re-run
+        // cancel-all: the book was swept when the halt landed.
+        var repeat = await validator.ValidateOrderAsync(CreateOrder());
+        repeat.IsApproved.Should().BeFalse();
+        handler.Invocations.Should().Be(1, "an already-open breaker does not sweep again");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_WhenTripSweepFails_TripAndRejectionStand()
+    {
+        var controls = CreateOperatorControls();
+        var handler = new RecordingTripHandler
+        {
+            Failure = new InvalidOperationException("broker unreachable"),
+        };
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("gross-exposure", RiskValidationResult.Rejected("book over ceiling"), severity: RiskRuleSeverity.Critical)],
+            NullLogger<CompositeRiskValidator>.Instance,
+            operatorControls: controls,
+            tripHandler: handler);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        handler.Invocations.Should().Be(1);
+        result.IsApproved.Should().BeFalse("the sweep's failure must not leak back into the risk decision");
+        result.RejectReason.Should().Be("book over ceiling", "the refusal stays the rule's, not the sweep fault's");
+        controls.GetSnapshot().CircuitBreaker.IsOpen.Should().BeTrue(
+            "a failed sweep must neither prevent nor revert the trip");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_WhenBreakerTripCannotPersist_StillSweepsTheOpenBook()
+    {
+        // A file squatting on the controls root makes the durable trip fail, latching the
+        // validator fail-closed. Resting orders keep filling at the broker regardless of the
+        // latch, so the sweep is still owed — and still runs strictly after the trip attempt.
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"controls-sweep-blocked-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.GetDirectoryName(root)!);
+        File.WriteAllText(root, "blocks the controls directory");
+        try
+        {
+            var controls = new ExecutionOperatorControlService(
+                new ExecutionOperatorControlOptions(root),
+                NullLogger<ExecutionOperatorControlService>.Instance);
+            var handler = new RecordingTripHandler();
+            var validator = new CompositeRiskValidator(
+                [new StubRiskRule("gross-exposure", RiskValidationResult.Rejected("book over ceiling"), severity: RiskRuleSeverity.Critical)],
+                NullLogger<CompositeRiskValidator>.Instance,
+                operatorControls: controls,
+                tripHandler: handler);
+
+            var result = await validator.ValidateOrderAsync(CreateOrder());
+
+            result.IsApproved.Should().BeFalse();
+            controls.GetSnapshot().CircuitBreaker.IsOpen.Should().BeFalse("the durable trip failed");
+            handler.Invocations.Should().Be(1,
+                "the latch only refuses new orders; cancelling the resting book must not wait for persistence to recover");
+        }
+        finally
+        {
+            if (File.Exists(root))
+            {
+                File.Delete(root);
+            }
+        }
+    }
+
+    [Fact]
     public async Task ValidateOrderAsync_CriticalRuleCannotMeasureOrder_RejectsWithoutTrippingBreaker()
     {
         var controls = CreateOperatorControls();
@@ -836,6 +924,32 @@ public sealed class CompositeRiskValidatorTests
         {
             caller.Cancel();
             return Task.FromResult(RiskValidationResult.Rejected("book over ceiling"));
+        }
+    }
+
+    /// <summary>
+    /// Records on-trip sweep invocations, optionally observing breaker state at invocation time
+    /// (to prove the sweep runs after the halt) and optionally failing like a dead broker.
+    /// </summary>
+    private sealed class RecordingTripHandler(Func<bool>? breakerOpenProbe = null) : ICircuitBreakerTripHandler
+    {
+        public int Invocations { get; private set; }
+
+        public string? LastReason { get; private set; }
+
+        public string? LastTrippedBy { get; private set; }
+
+        public bool? BreakerOpenWhenInvoked { get; private set; }
+
+        public Exception? Failure { get; init; }
+
+        public Task OnCircuitBreakerTrippedAsync(string reason, string trippedBy, CancellationToken ct)
+        {
+            Invocations++;
+            LastReason = reason;
+            LastTrippedBy = trippedBy;
+            BreakerOpenWhenInvoked = breakerOpenProbe?.Invoke();
+            return Failure is null ? Task.CompletedTask : Task.FromException(Failure);
         }
     }
 

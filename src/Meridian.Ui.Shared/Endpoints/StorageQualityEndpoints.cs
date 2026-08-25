@@ -49,7 +49,7 @@ public static class StorageQualityEndpoints
                 }, jsonOptions);
             }, "Failed to generate quality summary.", logger);
         })
-        .WithName("GetQualitySummary").Produces(200);
+        .WithName("GetQualitySummary").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/quality/scores — quality scores for all scored files
         group.MapGet(UiApiRoutes.StorageQualityScores, async (
@@ -76,7 +76,7 @@ public static class StorageQualityEndpoints
                 }, jsonOptions);
             }, "Failed to retrieve quality scores.", logger);
         })
-        .WithName("GetQualityScores").Produces(200);
+        .WithName("GetQualityScores").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/quality/symbol/{symbol} — quality for a specific symbol
         group.MapGet(UiApiRoutes.StorageQualitySymbol, async (
@@ -98,7 +98,7 @@ public static class StorageQualityEndpoints
                 }, jsonOptions);
             }, "Failed to get symbol quality.", logger);
         })
-        .WithName("GetSymbolQuality").Produces(200);
+        .WithName("GetSymbolQuality").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/quality/alerts — active quality alerts
         group.MapGet(UiApiRoutes.StorageQualityAlerts, async (
@@ -118,7 +118,7 @@ public static class StorageQualityEndpoints
                 }, jsonOptions);
             }, "Failed to retrieve quality alerts.", logger);
         })
-        .WithName("GetQualityAlerts").Produces(200);
+        .WithName("GetQualityAlerts").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // POST /api/storage/quality/alerts/{alertId}/acknowledge — acknowledge an alert
         group.MapPost(UiApiRoutes.StorageQualityAlertAcknowledge, (string alertId) =>
@@ -156,7 +156,7 @@ public static class StorageQualityEndpoints
                 }, jsonOptions);
             }, "Failed to rank quality sources.", logger);
         })
-        .WithName("GetSourceRankings").Produces(200);
+        .WithName("GetSourceRankings").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/quality/trends — quality trends across all data
         group.MapGet(UiApiRoutes.StorageQualityTrends, async (
@@ -194,7 +194,7 @@ public static class StorageQualityEndpoints
                 return Results.Json(payload, jsonOptions);
             }, "Failed to compute quality trends.", logger);
         })
-        .WithName("GetQualityTrends").Produces(200);
+        .WithName("GetQualityTrends").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/quality/anomalies — detected quality anomalies
         group.MapGet(UiApiRoutes.StorageQualityAnomalies, async (
@@ -225,7 +225,7 @@ public static class StorageQualityEndpoints
                 }, jsonOptions);
             }, "Failed to detect quality anomalies.", logger);
         })
-        .WithName("GetQualityAnomalies").Produces(200);
+        .WithName("GetQualityAnomalies").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // POST /api/storage/quality/check — run a quality check on specified path
         group.MapPost(UiApiRoutes.StorageQualityCheck, async (
@@ -311,7 +311,7 @@ public static class StorageQualityEndpoints
                 timestamp = stats.Timestamp
             }, jsonOptions);
         })
-        .WithName("GetQualityDrops")
+        .WithName("GetQualityDrops").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
         .Produces(200);
 
         group.MapGet(UiApiRoutes.QualityDropsBySymbol, (string symbol) =>
@@ -339,7 +339,7 @@ public static class StorageQualityEndpoints
                 timestamp = stats.Timestamp
             }, jsonOptions);
         })
-        .WithName("GetQualityDropsBySymbol")
+        .WithName("GetQualityDropsBySymbol").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
         .Produces(200);
     }
 }

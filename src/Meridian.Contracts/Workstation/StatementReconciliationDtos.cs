@@ -197,7 +197,8 @@ public sealed record StatementBreakDto(
     string? SlaState = null,
     string? EscalationLabel = null,
     string? EscalationReason = null,
-    IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null);
+    IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null,
+    string? Classification = null);
 
 /// <summary>
 /// Operator case opened to investigate and close one or more statement reconciliation breaks.

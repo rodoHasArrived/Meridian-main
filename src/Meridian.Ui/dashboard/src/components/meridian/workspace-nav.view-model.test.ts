@@ -147,6 +147,7 @@ describe("workspace nav view model", () => {
       "/accounting/ledger",
       "/accounting/journal-entries",
       "/accounting/capital-accounts",
+      "/accounting/capital-calls",
       "/accounting/security-master",
       "/accounting/statement-import",
       "/accounting/reconciliation",
@@ -161,7 +162,7 @@ describe("workspace nav view model", () => {
       group.items.map((item) => item.label)
     ])).toEqual([
       ["Close", ["Today", "Operations continuity", "Close calendar"]],
-      ["Records", ["Ledger explorer", "Adjustments", "Capital accounts", "Security Master"]],
+      ["Records", ["Ledger explorer", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
       ["Reconciliation", ["Import statement", "Casework", "External GL"]],
       ["Review", ["Exceptions", "Approvals"]],
       ["Administration", ["Entity setup", "Configure"]]

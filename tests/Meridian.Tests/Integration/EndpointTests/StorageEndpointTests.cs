@@ -22,7 +22,9 @@ public sealed class StorageEndpointTests : IDisposable, IClassFixture<EndpointTe
     public StorageEndpointTests(EndpointTestFixture fixture)
     {
         _fixture = fixture;
-        _client = fixture.CreateNoRedirectClient();
+        // Storage and storage-quality reads describe the state of the stored market data and
+        // require one of ViewHistoricalData / ViewDiagnostics / ManageStorage (W9-GOV-008).
+        _client = fixture.CreatePermittedClient(UserPermission.ViewHistoricalData);
     }
 
     public void Dispose() => _client.Dispose();

@@ -623,6 +623,55 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
     }
 
+    // ── GET /api/auth/roles ──────────────────────────────────────────────────
+
+    [Fact]
+    public async Task AuthRoles_WithoutSession_ReturnsUnauthorized()
+    {
+        // LoginSessionMiddleware exempts the whole /api/auth prefix before it validates a cookie, so
+        // a declaration on this route enforces nothing and the handler has to resolve the session
+        // itself. The catalog names the deployment's custom roles and the permissions each grants.
+        var response = await Client.GetAsync("/api/auth/roles");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task AuthRoles_AfterLogin_ReturnsTheCatalog()
+    {
+        var usersJson = $$"""[{"username":"analyst","passwordHash":"{{A1Hash}}","role":"Analysis","companyId":"company-alpha"}]""";
+        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
+        try
+        {
+            using var loginContent = new StringContent(
+                JsonSerializer.Serialize(new { Username = "analyst", Password = "a1" }),
+                Encoding.UTF8, "application/json");
+
+            using var cookieClient = Fixture.CreateNoRedirectClient();
+            var loginResp = await cookieClient.PostAsync("/api/auth/login", loginContent);
+            loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var sessionCookie = loginResp.Headers
+                .Where(h => h.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(h => h.Value)
+                .FirstOrDefault(v => v.Contains("mdc-session"));
+            sessionCookie.Should().NotBeNullOrWhiteSpace("a session cookie must be set after login");
+
+            // The other direction: the catalog is open to any authenticated operator, including one
+            // holding no administrative permission, because each needs it to name the authority they
+            // already carry.
+            using var rolesRequest = new HttpRequestMessage(HttpMethod.Get, "/api/auth/roles");
+            rolesRequest.Headers.Add("Cookie", sessionCookie);
+            var rolesResp = await cookieClient.SendAsync(rolesRequest);
+
+            rolesResp.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
     // ── GET /api/auth/me ─────────────────────────────────────────────────────
 
     [Fact]

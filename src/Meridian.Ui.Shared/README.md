@@ -761,6 +761,26 @@ intake and is exposed at `/api/ledger/journal-automation/dividend-intake` and
 `/api/ledger/journal-automation/fee-accrual-intake` (ledger-mutation permission, fund-scoped
 write tenant, mutation rate limit); the dividend lane returns a conflict when the Security Master
 query service is not configured rather than silently producing nothing.
+`/api/ledger/journal-automation/capital-call-issuance-intake` (same permission, tenant, and
+rate-limit posture) activates the fund-economics capital-call kernel: the request carries the
+operator-attested commitment register (each line must cite retained register evidence), the
+runner recomputes each commitment's called-to-date basis from posted private-capital fund events
+via `IManualJournalEntryWorkbenchService.GetPrivateCapitalActivityAsync` — never from the caller
+— and `CapitalCallPlanBuilder`/`CapitalCallScheduleDraftBuilder` turn the fund-level amount into
+balanced per-LP `CapitalCallIssued` drafts that land in the same approval queue. Runs whose
+evidence or uncalled capacity cannot be corroborated return `Blocked` with reasons instead of
+drafts, and intake stamps the drafts' fund-event identity into their treasury context so posting
+feeds the roll-forward that corroborates the next call.
+`/api/ledger/journal-automation/capital-call-funding-intake` (same declaration) records LP cash
+receipts against an issued call as governed `CapitalCallFunded` drafts (Dr Cash / Cr Capital Call
+Receivable, entry type General so the roll-forward never counts funding as a second call). The
+fundable ceiling is recomputed server-side from the call's posted ledger activity — issuance
+debits minus funding credits on the LP's receivable — so funding an unissued call, exceeding the
+open receivable, or omitting retained remittance evidence returns `Blocked` with reasons instead
+of drafts; partial funding drafts the funded portion and leaves the receivable balance open.
+Default-interest accrual for late LPs is not wired yet: the kernel exists
+(`DefaultInterestCalculator`, `BuildDefaultInterestDraft`), but its rate/convention/grace terms
+and the installment due date have no durable server-side policy source to corroborate against.
 Close-management endpoints under `/api/ledger/close-management/*`
 adapt Financial Operations close-plan behavior for browser and WPF consumers: the period-plan route
 projects checklist dependencies, approval sign-offs, materiality policy, late adjustments, period

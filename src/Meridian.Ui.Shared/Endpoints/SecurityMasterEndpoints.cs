@@ -275,7 +275,7 @@ public static class SecurityMasterEndpoints
 
             return Results.Json(detail, jsonOptions);
         })
-        .WithName("ResolveSecurityMaster").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .WithName("ResolveSecurityMaster").DeclareNonMutating("Resolves one Security Master record by identifier; the body carries the identifier kind, value, provider and as-of, and the handler only calls ISecurityMasterQueryService.GetByIdentifierAsync.").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -307,7 +307,7 @@ public static class SecurityMasterEndpoints
             var results = await queryService.SearchAsync(request, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("SearchSecurityMaster").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .WithName("SearchSecurityMaster").DeclareNonMutating("Security Master search; the body carries the query because it has several optional filters, and the handler only calls ISecurityMasterQueryService.SearchAsync.").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecuritySummaryDto>>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -377,11 +377,15 @@ public static class SecurityMasterEndpoints
             AmendSecurityTermsRequest request,
             HttpContext context,
             [FromServices] ISecurityMasterService service,
+            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
             CancellationToken ct) =>
         {
             var authorizationResult = RequireSecurityMasterMutationPermission(context);
             if (authorizationResult is not null)
                 return authorizationResult;
+
+            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+                return governedRefusal;
 
             var detail = await service.AmendTermsAsync(request, ct).ConfigureAwait(false);
             return Results.Json(detail, jsonOptions);
@@ -507,8 +511,12 @@ public static class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
+            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
             CancellationToken ct) =>
         {
+            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+                return governedRefusal;
+
             var currentTerms = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
             if (currentTerms is null)
             {
@@ -564,8 +572,12 @@ public static class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
+            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
             CancellationToken ct) =>
         {
+            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+                return governedRefusal;
+
             var currentTerms = await queryService.GetConvertibleEquityTermsAsync(securityId, ct).ConfigureAwait(false);
             if (currentTerms is null)
             {
@@ -1248,6 +1260,25 @@ public static class SecurityMasterEndpoints
             ? Results.Forbid()
             : null;
     }
+
+    /// <summary>
+    /// ADR-guarded maker-checker enforcement for DIRECT term amendments: when
+    /// <see cref="AppSecurityMaster.SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/>
+    /// is enabled, the generic amend route and the bespoke preferred/convertible equity PATCH
+    /// routes are refused with guidance to stage the correction through the governed workbench
+    /// (Draft → Submitted → Approved → Published), whose canonical-merge publish handler applies
+    /// the approved value to the golden record. Null when direct amendments remain permitted.
+    /// </summary>
+    private static IResult? RequireGovernedTermAmendmentRoute(
+        Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions)
+        => workbenchOptions.CurrentValue.RequireGovernedTermAmendments
+            ? Results.Problem(
+                statusCode: StatusCodes.Status403Forbidden,
+                title: "Direct term amendments are disabled by governance policy.",
+                detail: "This deployment requires term corrections to pass maker-checker: stage the edit through the "
+                    + "Security Master workbench field-edit route and publish it through the governed "
+                    + "Draft → Submitted → Approved → Published lifecycle instead of amending terms directly.")
+            : null;
 
     private static SecurityMasterIngestStatusResponse ToIngestStatusResponse(
         AppSecurityMaster.SecurityMasterIngestStatusSnapshot snapshot,
