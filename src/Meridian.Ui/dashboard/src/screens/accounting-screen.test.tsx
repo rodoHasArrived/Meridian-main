@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
+import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
@@ -21,7 +22,6 @@ import type {
   ExternalGlMappingProfile,
   ClosePeriodPlan,
   DailyValuationScheduleWorkItem,
-  LedgerTrialBalanceLine,
   ReconciliationCalibrationSummary,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
@@ -40,16 +40,39 @@ import type {
 } from "@/types";
 import { requireFirst, requirePresent } from "@/test/fixtures";
 
+vi.mock("@/lib/ledger-reports-api", () => ({
+  getLedgerBooks: vi.fn().mockResolvedValue([{
+    ledgerBookId: "00000000-0000-0000-0000-0000000000aa",
+    fundProfileId: "fund-alpha",
+    fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+    fundStructureNodeKind: "Fund",
+    displayName: "Master Fund",
+    baseCurrency: "USD",
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-01-01T00:00:00Z",
+    accountingBasis: "Primary",
+    accountingPolicyId: "legacy-v1",
+    accountingPolicyVersion: "legacy-v1"
+  }]),
+  getLedgerPeriods: vi.fn().mockResolvedValue([]),
+  getLedgerPeriodTrialBalance: vi.fn().mockResolvedValue([]),
+  getLedgerPeriodPnlSummary: vi.fn().mockResolvedValue(null),
+  getLedgerPeriodJournalEntries: vi.fn().mockResolvedValue([])
+}));
+
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   const createFinancialRecordExplorer = (explorerId: string) => ({
     explorerId,
-    title: explorerId === "security-instrument" ? "Security & Instrument Explorer" : "Ledger Explorer",
+    title: explorerId === "security-instrument" ? "Security & Instrument Explorer" : "Strategy Run Ledger Explorer",
     description: "Explore retained financial records and proof links.",
     sourceState: `Source-backed ${explorerId} projection from run run-42.`,
     isBlocked: false,
     blockedReason: "",
     scopeItems: [
+      ...(explorerId === "security-instrument"
+        ? []
+        : [{ label: "Ledger source", value: "Strategy run (simulation) — not the posted journal", tone: "Default" }]),
       { label: "Workstream", value: "Accounting", tone: "Info" },
       { label: "Source", value: explorerId === "security-instrument" ? "Security Master instruments" : "Journal entries and ledger detail", tone: "Default" }
     ],
@@ -731,30 +754,6 @@ const corporateActions: CorporateAction[] = [
     exchangeRatio: null,
     subscriptionPricePerShare: null,
     rightsPerShare: null
-  }
-];
-
-const trialBalanceLines: LedgerTrialBalanceLine[] = [
-  {
-    accountName: "Cash",
-    accountType: "Asset",
-    symbol: null,
-    financialAccountId: "acct-cash",
-    balance: 120500,
-    entryCount: 12,
-    security: null,
-    sourceJournalEntryId: "je-cash-1",
-    sourceEventIds: ["evt-cash-1"],
-    approvalIds: ["approval-cash-1"]
-  },
-  {
-    accountName: "Financing payable",
-    accountType: "Liability",
-    symbol: null,
-    financialAccountId: "acct-financing",
-    balance: -500,
-    entryCount: 2,
-    security: null
   }
 ];
 
@@ -4607,82 +4606,73 @@ describe("AccountingScreen", () => {
     );
   });
 
-  it("renders trial-balance rows with accessible table evidence", async () => {
-    const user = userEvent.setup();
-    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
+  // The run-scoped trial-balance tests moved with their surface to
+  // strategy-run-ledger-screen.test.tsx; Accounting no longer renders a run's ledger.
+
+  it("reads the posted journal for the Accounting ledger surface and no longer hosts the run explorer", async () => {
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValueOnce([
+      {
+        periodId: "11111111-1111-1111-1111-111111111111",
+        ledgerBookId: "22222222-2222-2222-2222-222222222222",
+        fiscalYear: 2026,
+        periodNo: 7,
+        label: "July 2026",
+        startDate: "2026-07-01",
+        endDate: "2026-07-31",
+        status: "HardClosed",
+        openedAt: "2026-07-01T00:00:00Z",
+        closedAt: "2026-08-02T00:00:00Z",
+        version: 1
+      }
+    ]);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValueOnce([
+      {
+        accountName: "Cash - Operating",
+        accountType: "Asset",
+        symbol: null,
+        financialAccountId: "1000",
+        debitTotal: 125000,
+        creditTotal: 4500,
+        balance: 120500,
+        entryCount: 12,
+        accountingBasis: "Primary"
+      }
+    ]);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockResolvedValueOnce({
+      periodId: "11111111-1111-1111-1111-111111111111",
+      ledgerBookId: "22222222-2222-2222-2222-222222222222",
+      fiscalYear: 2026,
+      periodNo: 7,
+      label: "July 2026",
+      totalRevenue: 5000,
+      totalExpenses: 1800,
+      netIncome: 3200,
+      periodOnPeriodVariance: null,
+      openBreakCount: 0,
+      signoffStatus: "SignedOff",
+      completedAt: "2026-08-02T00:00:00Z",
+      revenueLines: [],
+      expenseLines: []
+    });
 
     await renderAccountingScreen(data, "/accounting/ledger");
 
-    const table = await screen.findByRole("region", { name: "Primary trial balance lines for the selected ledger run" });
-    expect(table).toBeInTheDocument();
-    const cashRow = screen.getByRole("row", { name: /Cash Asset\. Primary basis/ });
-    const financingRow = screen.getByRole("row", { name: /Financing payable Liability\. Primary basis/ });
-    expect(cashRow).toHaveAttribute("aria-selected", "true");
-    expect(cashRow).toHaveAttribute("aria-expanded", "true");
-    expect(cashRow).toHaveAttribute("aria-controls", "trial-balance-account-detail");
-    expect(screen.getByRole("region", { name: "Trial-balance detail for Cash" })).toHaveTextContent("$120,500");
-    expect(screen.getByLabelText("Filter by General Ledger account")).toHaveValue("");
-    expect(screen.getAllByText("2 GL account rows").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByRole("list", { name: "Ledger lines for selected account" })).toHaveTextContent("je-cash-1");
-    expect(screen.getByRole("link", { name: "Open source event evt-cash-1 for Cash" })).toHaveAttribute(
-      "href",
-      "/accounting/audit?sourceEventId=evt-cash-1"
-    );
-    expect(screen.getByRole("link", { name: "Open journal entry je-cash-1 for Cash" })).toHaveAttribute(
-      "href",
-      "/accounting/ledger?journalEntryId=je-cash-1"
-    );
-    expect(screen.getByRole("link", { name: "Open approval approval-cash-1 for Cash" })).toHaveAttribute(
-      "href",
-      "/accounting/approvals?approvalId=approval-cash-1"
-    );
-    expect(financingRow).toHaveAttribute("aria-expanded", "false");
-    expect(financingRow).toHaveAccessibleName(/Balance -\$500/);
+    // The Accounting workstream's primary trial balance comes from the period-scoped
+    // posted-journal endpoints, not the strategy run's simulation ledger.
+    const postedTable = await screen.findByRole("region", {
+      name: "Primary trial balance lines for the posted journal for period July 2026"
+    });
+    expect(postedTable).toBeInTheDocument();
+    expect(ledgerReportsApi.getLedgerPeriods).toHaveBeenCalled();
+    expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith("11111111-1111-1111-1111-111111111111");
+    expect(ledgerReportsApi.getLedgerPeriodPnlSummary).toHaveBeenCalledWith("11111111-1111-1111-1111-111111111111");
+    expect(screen.getByText("Source: posted journal")).toBeInTheDocument();
+    expect(screen.getByText("Signed off")).toBeInTheDocument();
 
-    await user.type(screen.getByLabelText("Filter by General Ledger account"), "financing");
-
-    expect(screen.getAllByText("1 of 2 GL account rows").length).toBeGreaterThanOrEqual(1);
-    expect(screen.queryByRole("row", { name: /Cash Asset\. Primary basis/ })).not.toBeInTheDocument();
-    const filteredFinancingRow = screen.getByRole("row", { name: /Financing payable Liability\. Primary basis/ });
-    expect(filteredFinancingRow).toHaveAttribute("aria-selected", "true");
-
-    await user.click(filteredFinancingRow);
-
-    expect(screen.getByRole("region", { name: "Trial-balance detail for Financing payable" })).toHaveTextContent("Credit / payable");
-    expect(filteredFinancingRow).toHaveAttribute("aria-selected", "true");
-  });
-
-  it("renders a useful trial-balance empty state instead of a blank table", async () => {
-    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce([]);
-
-    await renderAccountingScreen(data, "/accounting/ledger");
-
-    expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "Primary trial balance lines for the selected ledger run" })).not.toBeInTheDocument();
-  });
-
-  it("renders structured trial-balance api-errors with endpoint and validation detail", async () => {
-    vi.mocked(api.getRunTrialBalance).mockRejectedValueOnce(new ApiError({
-      path: "/api/workstation/runs/run-42/trial-balance",
-      status: 422,
-      title: "Validation failed",
-      detail: "Fund account is required.",
-      validationIssues: [
-        {
-          field: "fundAccountId",
-          label: "Fund account",
-          messages: ["Select a fund account before loading accounting evidence."]
-        }
-      ]
-    }));
-
-    await renderAccountingScreen(data, "/accounting/ledger");
-
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("Fund account is required.");
-    expect(alert).toHaveTextContent("Meridian service returned 422. Open diagnostics for technical details.");
-    expect(alert).toHaveTextContent("Validation failed");
-    expect(alert).toHaveTextContent("Fund account: Select a fund account before loading accounting evidence.");
+    // The run-scoped explorer now lives under Strategy (/strategy/run-ledger). Accounting must
+    // not render a strategy run's simulated ledger beside the fund's book.
+    expect(screen.queryByRole("heading", { name: "Strategy Run Ledger Explorer" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Strategy run (simulation) — not the posted journal")).not.toBeInTheDocument();
   });
 
   it("runs ledger reporting export through the POST mutation instead of a GET link", async () => {

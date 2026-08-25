@@ -81,7 +81,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   "ledger-explorer": {
     id: "ledger-explorer",
     label: "Ledger Explorer",
-    description: "Meridian-owned trial balance, journal support, reconciliation posture, report usage, and proof drill-through stay together.",
+    description: "Posted-journal trial balance and P&L for the governed book of record, with strategy-run ledger drill-through kept alongside as an explicitly labelled simulation artifact.",
     routeLabel: "Ledger Explorer",
     href: WORKSTATION_ROUTE_CATALOG.accountingLedger
   },

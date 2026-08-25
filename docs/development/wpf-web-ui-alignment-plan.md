@@ -45,7 +45,8 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06.
 | asset-detail-screen | `Views/SecurityPassportEditorView.xaml` (drill-in from `SecurityMasterPage`) | Partial — less unified than the web tabbed detail |
 | family-office-screen | `Views/AggregatePortfolioPage.xaml` | Partial — aggregation exists, less family-office framing |
 | cash-ladder-screen | `Views/RunCashFlowPage.xaml` | Partial — WPF ladder is per-strategy-run; web is portfolio-wide liquidity ladder |
-| trial-balance (tab of finance-standard-pages ledger explorer at `/accounting/ledger?view=trial-balance`; consolidated per `W8-UX-CONSOL-001`) | `Views/FundLedgerPage.xaml` / `Views/FinancialRecordExplorerPage.xaml` | Partial — trial balance is a section in both lanes; the web fold moved it inside the ledger explorer, matching WPF's section model |
+| trial-balance (tab of finance-standard-pages ledger explorer at `/accounting/ledger?view=trial-balance`; consolidated per `W8-UX-CONSOL-001`) | `Views/PostedLedgerPage.xaml` | Aligned — both lanes now read the posted journal by ledger period over `/api/ledger/periods/*`; the shared projection lives in `Meridian.Ui.Services` (`PostedLedgerProjection`) so neither lane can drift on default-period choice, missing-summary handling, or balance integrity |
+| accounting-screen posted-ledger panel (`/accounting/ledger`) | `Views/PostedLedgerPage.xaml` | Aligned — desktop reads the governed book over the shared API seam; no desktop-local ledger state |
 | journal-entry-detail-screen | `Views/FundLedgerPage.xaml` (journal entries) | Partial — no standalone JE detail page |
 | statement-import-screen | `ViewModels/FundLedgerViewModel.StatementReconciliation.cs` + `Views/PortfolioImportPage.xaml` | Partial — recon exists, no guided import screen |
 | daily-control-tower-screen | `Views/DashboardPage.xaml` + `Views/WorkspaceDecisionQueueControl.xaml` | Partial — dashboard/decision-queue overlap, not a triage tower |

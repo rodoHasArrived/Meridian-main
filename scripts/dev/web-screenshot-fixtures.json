@@ -2735,14 +2735,22 @@
         "cancelled": 0,
         "resumable": 3
       },
-      "providers": ["alpaca", "databento", "polygon"],
+      "providers": [
+        "alpaca",
+        "databento",
+        "polygon"
+      ],
       "jobs": [
         {
           "jobId": "ING-4102",
           "workloadType": "Historical backfill",
           "state": "Running",
           "provider": "databento",
-          "symbols": ["AAPL", "MSFT", "NVDA"],
+          "symbols": [
+            "AAPL",
+            "MSFT",
+            "NVDA"
+          ],
           "createdAt": "2026-07-14T16:40:00Z",
           "startedAt": "2026-07-14T16:41:00Z",
           "completedAt": null,
@@ -2754,8 +2762,18 @@
           "errorMessage": null,
           "evidenceRoute": "/data/evidence?subjectId=ING-4102",
           "actions": [
-            { "action": "pause", "label": "Pause", "enabled": true, "disabledReason": null },
-            { "action": "cancel", "label": "Cancel", "enabled": true, "disabledReason": null }
+            {
+              "action": "pause",
+              "label": "Pause",
+              "enabled": true,
+              "disabledReason": null
+            },
+            {
+              "action": "cancel",
+              "label": "Cancel",
+              "enabled": true,
+              "disabledReason": null
+            }
           ]
         },
         {
@@ -2763,7 +2781,9 @@
           "workloadType": "Intraday import",
           "state": "Running",
           "provider": "alpaca",
-          "symbols": ["SPY"],
+          "symbols": [
+            "SPY"
+          ],
           "createdAt": "2026-07-14T17:05:00Z",
           "startedAt": "2026-07-14T17:06:00Z",
           "completedAt": null,
@@ -2775,7 +2795,12 @@
           "errorMessage": null,
           "evidenceRoute": "/data/evidence?subjectId=ING-4103",
           "actions": [
-            { "action": "pause", "label": "Pause", "enabled": true, "disabledReason": null }
+            {
+              "action": "pause",
+              "label": "Pause",
+              "enabled": true,
+              "disabledReason": null
+            }
           ]
         },
         {
@@ -2783,7 +2808,10 @@
           "workloadType": "Historical backfill",
           "state": "Failed",
           "provider": "polygon",
-          "symbols": ["TSLA", "AMD"],
+          "symbols": [
+            "TSLA",
+            "AMD"
+          ],
           "createdAt": "2026-07-14T15:10:00Z",
           "startedAt": "2026-07-14T15:12:00Z",
           "completedAt": null,
@@ -2795,8 +2823,18 @@
           "errorMessage": "Provider rate limit exceeded during range 2026-06-01..2026-06-30.",
           "evidenceRoute": "/data/evidence?subjectId=ING-4098",
           "actions": [
-            { "action": "retry", "label": "Retry", "enabled": true, "disabledReason": null },
-            { "action": "cancel", "label": "Cancel", "enabled": true, "disabledReason": null }
+            {
+              "action": "retry",
+              "label": "Retry",
+              "enabled": true,
+              "disabledReason": null
+            },
+            {
+              "action": "cancel",
+              "label": "Cancel",
+              "enabled": true,
+              "disabledReason": null
+            }
           ]
         },
         {
@@ -2804,7 +2842,9 @@
           "workloadType": "Corporate actions sync",
           "state": "Queued",
           "provider": "databento",
-          "symbols": ["QQQ"],
+          "symbols": [
+            "QQQ"
+          ],
           "createdAt": "2026-07-14T17:45:00Z",
           "startedAt": null,
           "completedAt": null,
@@ -2816,7 +2856,12 @@
           "errorMessage": null,
           "evidenceRoute": null,
           "actions": [
-            { "action": "cancel", "label": "Cancel", "enabled": true, "disabledReason": null }
+            {
+              "action": "cancel",
+              "label": "Cancel",
+              "enabled": true,
+              "disabledReason": null
+            }
           ]
         },
         {
@@ -2824,7 +2869,9 @@
           "workloadType": "Historical backfill",
           "state": "Completed",
           "provider": "alpaca",
-          "symbols": ["IWM"],
+          "symbols": [
+            "IWM"
+          ],
           "createdAt": "2026-07-14T14:00:00Z",
           "startedAt": "2026-07-14T14:01:00Z",
           "completedAt": "2026-07-14T14:38:00Z",
@@ -2857,7 +2904,9 @@
         "filesAnalyzed": 18420,
         "averageScore": 0.982,
         "lowQualityFileCount": 24,
-        "recommendations": ["Re-run canonicalization for providers with soft failures."],
+        "recommendations": [
+          "Re-run canonicalization for providers with soft failures."
+        ],
         "message": null
       },
       "canonicalization": {
@@ -2869,8 +2918,22 @@
         "hardFailTotal": 32,
         "matchRatePercent": 99.8,
         "providers": [
-          { "provider": "alpaca", "total": 60112, "success": 60050, "softFail": 55, "hardFail": 7, "matchRatePercent": 99.9 },
-          { "provider": "databento", "total": 71001, "success": 70820, "softFail": 160, "hardFail": 21, "matchRatePercent": 99.7 }
+          {
+            "provider": "alpaca",
+            "total": 60112,
+            "success": 60050,
+            "softFail": 55,
+            "hardFail": 7,
+            "matchRatePercent": 99.9
+          },
+          {
+            "provider": "databento",
+            "total": 71001,
+            "success": 70820,
+            "softFail": 160,
+            "hardFail": 21,
+            "matchRatePercent": 99.7
+          }
         ]
       },
       "capacity": {
@@ -2881,9 +2944,21 @@
         "status": "Healthy"
       },
       "tiers": [
-        { "tier": "Hot", "fileCount": 5210, "totalBytes": 1610612736 },
-        { "tier": "Warm", "fileCount": 9800, "totalBytes": 2684354560 },
-        { "tier": "Cold", "fileCount": 3410, "totalBytes": 1203664384 }
+        {
+          "tier": "Hot",
+          "fileCount": 5210,
+          "totalBytes": 1610612736
+        },
+        {
+          "tier": "Warm",
+          "fileCount": 9800,
+          "totalBytes": 2684354560
+        },
+        {
+          "tier": "Cold",
+          "fileCount": 3410,
+          "totalBytes": 1203664384
+        }
       ],
       "alerts": [
         {
@@ -2894,7 +2969,12 @@
           "detectedAt": "2026-07-14T12:30:00Z"
         }
       ],
-      "permissions": { "canView": true, "canRunQualityCheck": true, "canMigrate": true, "canDelete": true }
+      "permissions": {
+        "canView": true,
+        "canRunQualityCheck": true,
+        "canMigrate": true,
+        "canDelete": true
+      }
     },
     "/api/quality/dashboard": {
       "overallScore": 98.7,
@@ -4667,6 +4747,53 @@
         "revocationReason": "Superseded by the portal grant after the email transport throttled.",
         "allowPackageRead": false
       }
-    ]
+    ],
+    "/api/workstation/financial-record-explorers/ledger": {
+      "explorerId": "ledger",
+      "title": "Strategy Run Ledger Explorer",
+      "description": "Explore the selected strategy run's simulated trial-balance records and their proof links. This is a run artifact, not the posted journal.",
+      "sourceState": "Source-backed ledger projection from run run-42.",
+      "isBlocked": false,
+      "blockedReason": "",
+      "scopeItems": [
+        {
+          "label": "Ledger source",
+          "value": "Strategy run (simulation) — not the posted journal",
+          "tone": "Default"
+        },
+        {
+          "label": "Run",
+          "value": "run-42",
+          "tone": "Default"
+        }
+      ],
+      "savedViews": [],
+      "summaryItems": [
+        {
+          "label": "Accounts",
+          "value": "3",
+          "detail": "Retained trial-balance rows.",
+          "tone": "Success"
+        }
+      ],
+      "filters": [],
+      "columns": [
+        {
+          "id": "accountName",
+          "label": "Account",
+          "width": 220
+        },
+        {
+          "id": "balance",
+          "label": "Balance",
+          "kind": "money",
+          "width": 120,
+          "isRightAligned": true
+        }
+      ],
+      "rows": [],
+      "selectedRecord": null,
+      "proofActions": []
+    }
   }
 }

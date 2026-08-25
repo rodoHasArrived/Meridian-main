@@ -42,6 +42,7 @@ public sealed class AccountingFeatureModuleTests
             "FundAccountingConfigure",
             "FundAccountingClose",
             "FundTrialBalance",
+            "PostedLedger",
             "LedgerExplorer",
             "FundReconciliation",
             "FundAuditTrail",

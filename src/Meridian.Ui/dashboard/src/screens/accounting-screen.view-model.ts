@@ -37,7 +37,11 @@ import {
   requireSuccessfulReconciliationCasework,
   type AccountingReconciliationServices
 } from "./reconciliation-casework-outcome";
-import { formatBytes, formatCount, formatCurrency, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
+import { formatBytes, formatCount, formatCurrency, formatCurrencyForCode, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
+import {
+  accountingBasisDisplayName,
+  buildBasisBridgeViewState
+} from "./accounting-screen.basis-bridge.view-model";
 import {
   buildSecurityConflictAction, buildSecurityIdentityAliasRow, buildSecurityIdentityIdentifierRow,
   formatConflictDate, formatFinanceFacingSourceSummary, formatSecurityConflictField, formatSecurityDate,
@@ -2374,6 +2378,16 @@ export interface AccountingTrialBalanceViewState {
   state: AccountingTrialBalanceState;
   rows: AccountingTrialBalanceRowViewModel[];
   hasRows: boolean;
+  /**
+   * Signed sum of the whole selected basis, independent of the account filter.
+   *
+   * The balance control answers "does this book tie", which is a property of the book, not of
+   * whatever subset an operator has searched for. Summing the filtered rows instead declared the
+   * book out of balance by the value of everything filtered out, and told the operator to resolve
+   * a variance that does not exist before approving or reporting.
+   */
+  basisVariance: number;
+  isBasisOutOfBalance: boolean;
   selectedRowId: string | null;
   detailPanelId: string;
   selectedDetail: AccountingTrialBalanceDetailViewState | null;
@@ -5135,7 +5149,10 @@ export function buildAccountingTrialBalanceViewState({
   selectedBasis = DEFAULT_ACCOUNTING_BASIS,
   accountFilter = "",
   loading,
-  error
+  error,
+  scopeLabel = null,
+  currency = null,
+  periodId = null
 }: {
   runId: string | null;
   rows: LedgerTrialBalanceLine[];
@@ -5144,9 +5161,19 @@ export function buildAccountingTrialBalanceViewState({
   accountFilter?: string | null;
   loading: boolean;
   error: string | ApiErrorDisplay | null;
+  /** Overrides the scope wording in labels; defaults to the strategy-run phrasing. */
+  scopeLabel?: string | null;
+  /** The book's base currency, when these rows come from a posted book rather than a run. */
+  currency?: string | null;
+  /**
+   * The ledger period these rows were posted in, when they come from a posted book. Journal
+   * drill-through needs it: the detail screen resolves a posted entry by period, and a link
+   * without one cannot reach the entry it names.
+   */
+  periodId?: string | null;
 }): AccountingTrialBalanceViewState {
   const detailPanelId = "trial-balance-account-detail";
-  const runLabel = runId ? "the selected ledger run" : "the current ledger selection";
+  const runLabel = scopeLabel?.trim() || (runId ? "the selected ledger run" : "the current ledger selection");
   const resolvedBasis = normalizeAccountingBasis(selectedBasis);
   const normalizedAccountFilter = normalizeLedgerAccountFilter(accountFilter);
   const normalizedRows = rows.map(normalizeTrialBalanceLine);
@@ -5154,8 +5181,9 @@ export function buildAccountingTrialBalanceViewState({
   const bridge = buildBasisBridgeViewState(normalizedRows, resolvedBasis, runLabel);
   const basisRows = normalizedRows
     .filter((line) => line.accountingBasis === resolvedBasis)
-    .map((line) => buildTrialBalanceRow(line, detailPanelId));
+    .map((line) => buildTrialBalanceRow(line, detailPanelId, currency));
   const accountFilterOptions = buildLedgerAccountFilterOptions(basisRows, normalizedAccountFilter);
+  const basisVariance = basisRows.reduce((total, row) => total + row.balance, 0);
   const rawRows = basisRows.filter((row) => ledgerAccountRowMatchesFilter(row, normalizedAccountFilter));
   const hasRows = rawRows.length > 0;
   const resolvedSelectedRowId = rawRows.some((row) => row.rowId === selectedRowId)
@@ -5197,9 +5225,11 @@ export function buildAccountingTrialBalanceViewState({
     state,
     rows: viewRows,
     hasRows,
+    basisVariance,
+    isBasisOutOfBalance: Math.abs(basisVariance) > 0.005,
     selectedRowId: resolvedSelectedRowId,
     detailPanelId,
-    selectedDetail: selectedRow ? buildTrialBalanceDetail(selectedRow, runLabel, runId) : null,
+    selectedDetail: selectedRow ? buildTrialBalanceDetail(selectedRow, runLabel, runId, periodId) : null,
     detailEmptyTitle: "No account selected",
     detailEmptyText: hasRows
       ? "Select an account line to inspect balance evidence for report handoff."
@@ -5211,7 +5241,7 @@ export function buildAccountingTrialBalanceViewState({
     emptyTitle: "No trial balance lines",
     emptyDetail: normalizedAccountFilter && basisRows.length > 0
       ? `No ${accountingBasisDisplayName(resolvedBasis)} ledger accounts match "${accountFilter ?? ""}". Clear the GL account filter or search another account.`
-      : `Meridian did not return account-balance rows for ${runLabel}. Select another reconciliation run or refresh ledger evidence before report handoff.`,
+      : `Meridian did not return account-balance rows for ${runLabel}. ${scopeLabel ? "Select another ledger period" : "Select another reconciliation run"} or refresh ledger evidence before report handoff.`,
     errorText,
     errorDetails: normalizedError?.details ?? [],
     statusAnnouncement: buildTrialBalanceAnnouncement({ runLabel, state, rowCount: viewRows.length, loading, errorText })
@@ -5221,13 +5251,14 @@ export function buildAccountingTrialBalanceViewState({
 export function buildAccountingLedgerJournalEvidenceViewState({
   runId,
   rows,
-  dimensionFilter = ""
+  dimensionFilter = "", scopeLabel = null
 }: {
   runId: string | null;
   rows: LedgerJournalLine[];
   dimensionFilter?: string | null;
+  scopeLabel?: string | null; // overrides the run phrasing: the posted journal is period-scoped
 }): AccountingLedgerJournalEvidenceViewState {
-  const runLabel = runId ? "the selected ledger run" : "the current ledger selection";
+  const runLabel = scopeLabel?.trim() || (runId ? "the selected ledger run" : "the current ledger selection");
   const normalizedFilter = normalizeLedgerAccountFilter(dimensionFilter);
   const journalRows = rows
     .map(buildLedgerJournalEvidenceRow)
@@ -5288,7 +5319,7 @@ function ledgerJournalRowMatchesDimensionFilter(
     .includes(normalizedFilter);
 }
 
-type BasisAwareLedgerTrialBalanceLine = LedgerTrialBalanceLine & {
+export type BasisAwareLedgerTrialBalanceLine = LedgerTrialBalanceLine & {
   accountingBasis: AccountingBasisKind;
   accountingPolicyId: string;
   accountingPolicyVersion: string;
@@ -5296,14 +5327,16 @@ type BasisAwareLedgerTrialBalanceLine = LedgerTrialBalanceLine & {
 
 function buildTrialBalanceRow(
   line: BasisAwareLedgerTrialBalanceLine,
-  detailPanelId: string
+  detailPanelId: string,
+  currency: string | null = null
 ): AccountingTrialBalanceRowViewModel {
   const accountLabel = line.accountName.trim() || "Unnamed account";
   const accountTypeLabel = line.accountType.trim() || "Unclassified";
   const basisName = accountingBasisDisplayName(line.accountingBasis);
   const basisLabel = `${basisName} basis`;
   const policyLabel = `${line.accountingPolicyId}/${line.accountingPolicyVersion}`;
-  const balanceLabel = formatCurrency(line.balance);
+  // Posted balances are in the book's base currency; the bare formatter prefixes a dollar sign.
+  const balanceLabel = currency ? formatCurrencyForCode(line.balance, currency) : formatCurrency(line.balance);
   const entryCountLabel = line.entryCount.toLocaleString();
   const securityLabel = line.security?.primaryIdentifier?.trim() || line.symbol?.trim() || line.security?.displayName.trim() || null;
   const dimensionLabels = buildLedgerDimensionLabels(line);
@@ -5470,7 +5503,8 @@ function buildLedgerAccountFilteredCountLabel(
 function buildTrialBalanceDetail(
   line: AccountingTrialBalanceRowViewModel,
   runLabel: string,
-  runId: string | null
+  runId: string | null,
+  periodId: string | null = null
 ): AccountingTrialBalanceDetailViewState {
   const securityLabel = line.security?.displayName?.trim()
     || line.security?.primaryIdentifier?.trim()
@@ -5530,7 +5564,8 @@ function buildTrialBalanceDetail(
       runId,
       sourceEventIds,
       approvalIds,
-      sourceJournalEntryIds
+      sourceJournalEntryIds,
+      periodId
     }),
     supportingDocumentsEmptyText: "No source documents, approvals, or review packet links are attached to this GL account yet."
   };
@@ -5574,13 +5609,15 @@ function buildSupportingDocumentRows({
   runId,
   sourceEventIds,
   approvalIds,
-  sourceJournalEntryIds
+  sourceJournalEntryIds,
+  periodId
 }: {
   line: AccountingTrialBalanceRowViewModel;
   runId: string | null;
   sourceEventIds: string[];
   approvalIds: string[];
   sourceJournalEntryIds: string[];
+  periodId?: string | null;
 }): AccountingSupportingDocumentViewModel[] {
   const rows: AccountingSupportingDocumentViewModel[] = [];
 
@@ -5609,7 +5646,11 @@ function buildSupportingDocumentRows({
       id: `${line.rowId}-journal-${journalEntryId}`,
       label: "Journal entry evidence",
       detail: "Posting support and ledger entry lineage.",
-      href: `/accounting/ledger?journalEntryId=${encodeURIComponent(journalEntryId)}`,
+      // The journal-entry detail screen, not the ledger explorer: the explorer reads `view` and
+      // its book and period, never a journalEntryId, so this used to land on whatever period the
+      // explorer defaulted to with the entry silently dropped. The period is carried because that
+      // is how the detail screen resolves a posted entry.
+      href: buildJournalEntryEvidenceHref(journalEntryId, periodId, runId),
       ariaLabel: `Open journal entry ${journalEntryId} for ${line.accountLabel}`
     });
   }
@@ -5627,6 +5668,25 @@ function buildSupportingDocumentRows({
   return rows;
 }
 
+/**
+ * Where a journal-entry evidence link goes. The detail screen resolves a posted entry from its
+ * period and a run-scoped one from its run, so whichever scope these rows came from is carried.
+ */
+function buildJournalEntryEvidenceHref(
+  journalEntryId: string,
+  periodId: string | null | undefined,
+  runId: string | null
+): string {
+  const params = new URLSearchParams({ journalEntryId });
+  if (periodId) {
+    params.set("periodId", periodId);
+  } else if (runId) {
+    params.set("runId", runId);
+  }
+
+  return `/accounting/journal-entries/detail?${params.toString()}`;
+}
+
 function readStringArrayField(value: unknown, fieldName: string): string[] {
   if (!value || typeof value !== "object" || !(fieldName in value)) {
     return [];
@@ -5642,7 +5702,7 @@ function readStringArrayField(value: unknown, fieldName: string): string[] {
     .filter((item) => item.length > 0);
 }
 
-function readSourceEventIds(value: unknown): string[] {
+export function readSourceEventIds(value: unknown): string[] {
   return uniqueStrings([
     ...readStringArrayField(value, "sourceEventIds"),
     ...readStringScalarField(value, "sourceEventId")
@@ -5722,11 +5782,7 @@ function normalizeTrialBalanceLine(line: LedgerTrialBalanceLine): BasisAwareLedg
   };
 }
 
-export function buildGovernanceTrialBalanceViewState(
-  options: Parameters<typeof buildAccountingTrialBalanceViewState>[0]
-): AccountingTrialBalanceViewState {
-  return buildAccountingTrialBalanceViewState(options);
-}
+export const buildGovernanceTrialBalanceViewState = buildAccountingTrialBalanceViewState;
 
 function normalizeAccountingBasis(value: AccountingBasisKind | null | undefined): AccountingBasisKind {
   return ACCOUNTING_BASIS_OPTIONS.some((option) => option.id === value)
@@ -5755,105 +5811,6 @@ function buildTrialBalanceBasisOptions(
     rowCountLabel: rowCounts[option.id] === 1 ? "1 row" : `${rowCounts[option.id]} rows`,
     isSelected: option.id === selectedBasis
   }));
-}
-
-function buildBasisBridgeViewState(
-  rows: BasisAwareLedgerTrialBalanceLine[],
-  selectedBasis: AccountingBasisKind,
-  runLabel: string
-): AccountingBasisBridgeViewState {
-  const comparisonBasis = selectedBasis === "Primary"
-    ? rows.find((row) => row.accountingBasis !== "Primary")?.accountingBasis ?? "Gaap"
-    : selectedBasis;
-  const primaryRows = rows.filter((row) => row.accountingBasis === "Primary");
-  const comparisonRows = rows.filter((row) => row.accountingBasis === comparisonBasis);
-  const tableLabel = `${accountingBasisDisplayName(comparisonBasis)} to Primary basis bridge for ${runLabel}`;
-
-  if (comparisonBasis === "Primary" || primaryRows.length === 0 || comparisonRows.length === 0) {
-    return {
-      title: "Basis bridge",
-      description: `${accountingBasisDisplayName(comparisonBasis)} to Primary comparison grouped by source/rule/account where lineage is available.`,
-      tableLabel,
-      fromBasis: "Primary",
-      toBasis: comparisonBasis,
-      rows: [],
-      hasRows: false,
-      emptyText: "No non-primary basis rows are available for this run yet. The bridge will populate after GAAP, Cash, Tax, or Statutory projection posts journal lines."
-    };
-  }
-
-  const primaryByKey = new Map(primaryRows.map((row) => [basisBridgeKey(row), row]));
-  const comparisonByKey = new Map(comparisonRows.map((row) => [basisBridgeKey(row), row]));
-  const keys = [...new Set([...primaryByKey.keys(), ...comparisonByKey.keys()])].sort((left, right) => left.localeCompare(right));
-  const bridgeRows = keys.map((key) => {
-    const primary = primaryByKey.get(key) ?? null;
-    const comparison = comparisonByKey.get(key) ?? null;
-    const source = comparison ?? primary;
-    const primaryBalance = primary?.balance ?? 0;
-    const comparisonBalance = comparison?.balance ?? 0;
-    const variance = comparisonBalance - primaryBalance;
-    const sourceLabel = buildBasisBridgeSourceLabel(source);
-    const accountLabel = source?.accountName.trim() || "Unnamed account";
-    const accountTypeLabel = source?.accountType.trim() || "Unclassified";
-    const varianceLabel = formatCurrency(variance);
-
-    return {
-      rowId: `${comparisonBasis}-${key}`,
-      accountLabel,
-      accountTypeLabel,
-      primaryBalanceLabel: formatCurrency(primaryBalance),
-      comparisonBalanceLabel: formatCurrency(comparisonBalance),
-      varianceLabel,
-      varianceTone: variance < 0 ? "danger" : variance > 0 ? "success" : "default",
-      sourceLabel,
-      ariaLabel: `${accountLabel} ${accountTypeLabel}. Primary ${formatCurrency(primaryBalance)}. ${accountingBasisDisplayName(comparisonBasis)} ${formatCurrency(comparisonBalance)}. Variance ${varianceLabel}.`
-    } satisfies AccountingBasisBridgeRowViewModel;
-  });
-
-  return {
-    title: "Basis bridge",
-    description: `${accountingBasisDisplayName(comparisonBasis)} compared with Primary for ${runLabel}, grouped by source/rule/account where lineage is available.`,
-    tableLabel,
-    fromBasis: "Primary",
-    toBasis: comparisonBasis,
-    rows: bridgeRows,
-    hasRows: bridgeRows.length > 0,
-    emptyText: "No bridge rows matched the selected basis pair."
-  };
-}
-
-function basisBridgeKey(line: BasisAwareLedgerTrialBalanceLine): string {
-  const sourceEventId = readSourceEventIds(line).join(",");
-  const ruleId = "ruleId" in line ? String(line.ruleId ?? "") : "";
-  return [
-    sourceEventId,
-    ruleId,
-    line.accountName,
-    line.accountType,
-    line.symbol ?? "",
-    line.financialAccountId ?? ""
-  ].join("|");
-}
-
-function buildBasisBridgeSourceLabel(line: BasisAwareLedgerTrialBalanceLine | null): string {
-  if (!line) {
-    return "Missing source group";
-  }
-
-  const sourceEventIds = readSourceEventIds(line);
-  const ruleId = "ruleId" in line ? String(line.ruleId ?? "").trim() : "";
-  if (sourceEventIds.length > 0 || ruleId) {
-    return [
-      sourceEventIds.length > 0 ? `Source ${sourceEventIds.join(", ")}` : null,
-      ruleId ? `Rule ${ruleId}` : null
-    ].filter(Boolean).join(" / ");
-  }
-
-  return line.symbol?.trim() || line.financialAccountId?.trim() || "Account group";
-}
-
-function accountingBasisDisplayName(basis: AccountingBasisKind): string {
-  return basis === "Gaap" ? "GAAP" : basis;
 }
 
 function trialBalanceBasisTone(basis: AccountingBasisKind): AccountingTrialBalanceRowViewModel["basisTone"] {
