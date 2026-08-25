@@ -837,6 +837,7 @@ public static class UiApiRoutes
     public const string LedgerJournalAutomationDividendIntake = "/api/ledger/journal-automation/dividend-intake";
     public const string LedgerJournalAutomationFeeAccrualIntake = "/api/ledger/journal-automation/fee-accrual-intake";
     public const string LedgerJournalAutomationCapitalCallIssuanceIntake = "/api/ledger/journal-automation/capital-call-issuance-intake";
+    public const string LedgerJournalAutomationCapitalCallFundingIntake = "/api/ledger/journal-automation/capital-call-funding-intake";
     public const string LedgerJournalAutomationPeriodCloseIntake = "/api/ledger/journal-automation/period-close-intake";
     public const string LedgerJournalAutomationDailyMarkToMarketIntake = "/api/ledger/journal-automation/daily-mark-to-market-intake";
     public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";

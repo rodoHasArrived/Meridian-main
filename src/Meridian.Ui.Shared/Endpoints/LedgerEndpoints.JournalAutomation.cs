@@ -15,9 +15,9 @@ public static partial class LedgerEndpoints
 {
     /// <summary>
     /// Maps the automated journal-intake routes (daily valuation, corporate-action dividends,
-    /// fee-schedule accruals, capital-call issuance, and period-close closing entries) that
-    /// project source evidence or closed-period trial balances into governed manual journal
-    /// workbench drafts.
+    /// fee-schedule accruals, capital-call issuance and funding, and period-close closing
+    /// entries) that project source evidence or closed-period trial balances into governed
+    /// manual journal workbench drafts.
     /// </summary>
     private static void MapJournalAutomationEndpoints(WebApplication app, JsonSerializerOptions jsonOptions)
     {
@@ -598,6 +598,49 @@ public static partial class LedgerEndpoints
             }
         })
         .WithName("RunLedgerJournalAutomationCapitalCallIssuanceIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationCapitalCallFundingIntake, async (RunCapitalCallFundingDraftIntakeRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
+            if (runner is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await runner.RunCapitalCallFundingIntakeAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ApiProblemDetails.Conflict(context, ex.Message);
+            }
+        })
+        .WithName("RunLedgerJournalAutomationCapitalCallFundingIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)

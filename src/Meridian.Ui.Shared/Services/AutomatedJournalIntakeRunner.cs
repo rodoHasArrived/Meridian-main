@@ -597,6 +597,8 @@ public sealed class AutomatedJournalIntakeRunner
         {
             return BuildBlockedCapitalCallResult(
                 runKey,
+                CapitalCallIssuanceDraftProducer.AssessmentCode,
+                "Capital-call issuance",
                 "The posted private-capital activity source is unavailable; capital-call issuance cannot corroborate the commitment register.");
         }
 
@@ -621,6 +623,8 @@ public sealed class AutomatedJournalIntakeRunner
         {
             return BuildBlockedCapitalCallResult(
                 runKey,
+                CapitalCallIssuanceDraftProducer.AssessmentCode,
+                "Capital-call issuance",
                 "The posted private-capital activity projection could not be read; capital-call issuance is blocked.");
         }
 
@@ -658,18 +662,116 @@ public sealed class AutomatedJournalIntakeRunner
             []);
     }
 
-    private static AutomatedJournalIntakeRunResult BuildBlockedCapitalCallResult(string runKey, string blocker)
+    /// <summary>
+    /// Records LP cash receipts against an issued capital call and admits the per-LP funding
+    /// drafts (Dr Cash / Cr Capital Call Receivable) into the human approval queue. The fundable
+    /// ceiling is recomputed server-side from the call's posted ledger activity — issuance debits
+    /// minus funding credits on each LP's receivable — before drafting; runs that name an
+    /// unissued call, exceed the open receivable, or carry no retained funding evidence return
+    /// Blocked with reasons instead of drafts. Partial funding drafts the funded portion and
+    /// leaves the receivable balance open. Posting remains exclusively available via the governed
+    /// workbench lifecycle.
+    /// </summary>
+    public async Task<AutomatedJournalIntakeRunResult> RunCapitalCallFundingIntakeAsync(
+        RunCapitalCallFundingDraftIntakeRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (string.IsNullOrWhiteSpace(request.FundProfileId))
+            throw new ArgumentException("Fund profile identifier is required.", nameof(request));
+        if (string.IsNullOrWhiteSpace(request.CallId))
+            throw new ArgumentException("Capital-call identifier is required.", nameof(request));
+
+        var evaluatedAtUtc = (request.AsOf ?? _timeProvider.GetUtcNow()).ToUniversalTime();
+        var runKey = CapitalCallFundingDraftProducer.BuildRunAssessmentKey(request.FundProfileId, request.CallId);
+        if (_manualJournalWorkbench is null)
+        {
+            return BuildBlockedCapitalCallResult(
+                runKey,
+                CapitalCallFundingDraftProducer.AssessmentCode,
+                "Capital-call funding",
+                "The posted private-capital activity source is unavailable; capital-call funding cannot corroborate the posted issuance.");
+        }
+
+        PrivateCapitalActivityProjectionDto activity;
+        try
+        {
+            activity = await _manualJournalWorkbench
+                .GetPrivateCapitalActivityAsync(
+                    request.FundProfileId,
+                    request.LedgerBookId,
+                    ct,
+                    request.TenantId,
+                    request.CompanyId)
+                .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return BuildBlockedCapitalCallResult(
+                runKey,
+                CapitalCallFundingDraftProducer.AssessmentCode,
+                "Capital-call funding",
+                "The posted private-capital activity projection could not be read; capital-call funding is blocked.");
+        }
+
+        var production = CapitalCallFundingDraftProducer.Produce(
+            request,
+            activity.FundEvents,
+            activity.LedgerImpacts,
+            evaluatedAtUtc);
+        if (!production.IsReady)
+        {
+            return new AutomatedJournalIntakeRunResult(
+                production.Skipped,
+                EmptyIntake,
+                production.EvidenceAssessments,
+                production.Readiness,
+                production.Blockers);
+        }
+
+        var intake = await _intake.IntakeDraftsAsync(
+            new AutomatedJournalPreparedDraftIntakeRequest(
+                request.FundProfileId,
+                request.Currency,
+                production.Drafts,
+                request.Actor,
+                request.LedgerBookId,
+                request.PeriodId,
+                request.EntityId,
+                request.TenantId,
+                request.CompanyId,
+                production.EvidenceAssessments,
+                BatchCorrelationId: runKey),
+            ct).ConfigureAwait(false);
+
+        return new AutomatedJournalIntakeRunResult(
+            production.Skipped,
+            intake,
+            production.EvidenceAssessments,
+            AutomatedJournalIntakeReadiness.Ready,
+            []);
+    }
+
+    private static AutomatedJournalIntakeRunResult BuildBlockedCapitalCallResult(
+        string runKey,
+        string assessmentCode,
+        string laneLabel,
+        string blocker)
         => new(
             ProducerSkips: [],
             Intake: EmptyIntake,
             EvidenceAssessments: new Dictionary<string, AutomatedJournalEvidenceAssessmentDto>(StringComparer.OrdinalIgnoreCase)
             {
                 [runKey] = new AutomatedJournalEvidenceAssessmentDto(
-                    CapitalCallIssuanceDraftProducer.AssessmentCode,
+                    assessmentCode,
                     ConfidenceScore: 0m,
                     Quality: AutomatedJournalEvidenceQualityDto.Low,
                     RequiresInvestigation: true,
-                    Summary: $"Capital-call issuance cannot enter approval: {blocker}",
+                    Summary: $"{laneLabel} cannot enter approval: {blocker}",
                     Reasons: [blocker])
             },
             Readiness: AutomatedJournalIntakeReadiness.Blocked,
