@@ -7,17 +7,17 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "bb625bf15b9d",
+  "sourceFingerprint": "21f5c9db3cfa",
   "baselineDate": "2026-06-17",
   "summary": {
-    "screenCount": 97,
+    "screenCount": 98,
     "workspaceCount": 7,
     "screenshotCount": 92,
-    "testReferenceCount": 97,
-    "openTaskCount": 5,
+    "testReferenceCount": 98,
+    "openTaskCount": 6,
     "statusCounts": {
       "evidence-current": 92,
-      "needs-screenshot": 5
+      "needs-screenshot": 6
     },
     "workspaces": [
       {
@@ -42,13 +42,13 @@
       },
       {
         "name": "Accounting",
-        "screenCount": 15,
-        "primaryCount": 7,
+        "screenCount": 16,
+        "primaryCount": 8,
         "secondaryCount": 8,
         "overflowCount": 0,
         "screenshotCount": 14,
-        "testReferenceCount": 15,
-        "openTaskCount": 1
+        "testReferenceCount": 16,
+        "openTaskCount": 2
       },
       {
         "name": "Reporting",
@@ -995,6 +995,41 @@
         }
       ],
       "openTaskCount": 0
+    },
+    {
+      "workspace": "Accounting",
+      "pageTag": "PostedLedger",
+      "title": "Posted ledger",
+      "section": "Fund Ops",
+      "visibilityTier": "Primary",
+      "order": 62,
+      "pageType": "PostedLedgerPage",
+      "screenshotIndexRow": true,
+      "screenshotPath": null,
+      "screenshotExists": false,
+      "refreshedDate": null,
+      "fixtureMode": "TBI",
+      "screenshotGap": "New W8-WPF-PARITY-001 posted-journal surface has no retained PNG yet.",
+      "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/PostedLedgerViewModelTests.cs"
+      ],
+      "status": "needs-screenshot",
+      "tasks": [
+        {
+          "done": true,
+          "text": "Registered in the WPF shell registry as PostedLedger (PostedLedgerPage)."
+        },
+        {
+          "done": false,
+          "text": "Capture a fixture-mode desktop screenshot for PostedLedger or record an explicit non-capture decision."
+        },
+        {
+          "done": true,
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/PostedLedgerViewModelTests.cs."
+        }
+      ],
+      "openTaskCount": 1
     },
     {
       "workspace": "Accounting",
