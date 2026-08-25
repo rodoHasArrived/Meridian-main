@@ -147,6 +147,9 @@ import {
   workstationOperationsContinuityTimelineEndpoint,
   workstationRunAttributionEndpoint,
   workstationRunCompareEndpoint,
+  ledgerPeriodsEndpoint,
+  ledgerPeriodTrialBalanceEndpoint,
+  ledgerPeriodPnlSummaryEndpoint,
   workstationRunContinuityEndpoint,
   workstationRunDiffEndpoint,
   workstationRunEquityCurveEndpoint,
@@ -175,6 +178,18 @@ import {
 } from "@/lib/workstation-endpoints";
 
 describe("workstation API endpoint catalog", () => {
+  it("builds posted-journal ledger reporting routes over the governed book", () => {
+    expect(ledgerPeriodsEndpoint()).toBe("/api/ledger/periods");
+    expect(ledgerPeriodsEndpoint({ ledgerBookId: "book-1", status: "HardClosed" })).toBe(
+      "/api/ledger/periods?ledgerBookId=book-1&status=HardClosed"
+    );
+    expect(ledgerPeriodTrialBalanceEndpoint("11111111-2222-3333-4444-555555555555")).toBe(
+      "/api/ledger/periods/11111111-2222-3333-4444-555555555555/trial-balance"
+    );
+    expect(ledgerPeriodPnlSummaryEndpoint("11111111-2222-3333-4444-555555555555")).toBe(
+      "/api/ledger/periods/11111111-2222-3333-4444-555555555555/pnl-summary"
+    );
+  });
   it("builds governed Data operations and assurance routes", () => {
     expect(WORKSTATION_API_ENDPOINTS.ingestionOperations).toBe("/api/workstation/data/ingestion-operations");
     expect(workstationIngestionOperationEndpoint("job / 1")).toBe("/api/workstation/data/ingestion-operations/job%20%2F%201");
