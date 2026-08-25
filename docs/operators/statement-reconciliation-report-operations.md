@@ -87,6 +87,23 @@ tenant/company. A scheduled run verifies the retained scope before remote fetch 
 same statement reconciliation report workflow. It never commits through a separate raw-import
 path.
 
+### Continue the browser close handoff
+
+After a successful file import, the browser shows a **Trusted close handoff** only when the server
+returned both the exact `accountingScope` and `operationsWorkflowId`. The handoff displays the
+fund profile, ledger book, accounting period, and as-of date retained by the intake authority, then
+opens Operations Continuity with those identifiers in the route. Operations Continuity filters the
+workflow list to the retained book and period and selects that exact workflow; it does not fall
+back to the newest unrelated workflow when the requested workflow is missing or inaccessible.
+
+Use that selected workflow to assign and resolve the projected statement cases, retain correction
+and approval evidence, complete the close checklist, and publish the governed close package.
+Continue to the Accounting close cockpit for the controller-gated ledger period lock: an Operations
+close package is proof of the workflow transition, not by itself proof that the ledger period is
+`HardClosed`. If the import result lacks either exact scope or the Operations workflow identity, the
+browser keeps the handoff blocked and directs the operator back to reconciliation rather than
+displaying a generic close action.
+
 Legacy schedules without retained tenant/company, exact period, or accounting scope cannot run.
 Re-create or re-save the known schedule with the same connector/account identity and exact period
 so the server can bind current authority; do not edit the schedule file or infer a period from the

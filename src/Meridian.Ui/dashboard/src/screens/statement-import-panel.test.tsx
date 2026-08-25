@@ -128,7 +128,14 @@ const commitResult: StatementImportCommitResult = {
       suggestedNextAction: "Assign the case and attach cash support."
     }
   ],
-  nextActions: ["Open retained statement evidence in Evidence Vault.", "Review reconciliation cases and linked statement evidence."]
+  nextActions: ["Open retained statement evidence in Evidence Vault.", "Review reconciliation cases and linked statement evidence."],
+  operationsWorkflowId: "35995e0d-4726-41c2-9b18-275129868c6a",
+  accountingScope: {
+    fundProfileId: "fund-profile-alpha",
+    ledgerBookId: "5dca0d66-b576-44d9-a24a-9f2651bf163c",
+    accountingPeriodId: "44a5b4ac-7068-4775-8978-d76138a9428e",
+    asOfDate: "2026-06-30"
+  }
 };
 
 const remoteConnector: StatementConnectorDescriptor = {
@@ -260,7 +267,7 @@ describe("StatementImportPanel", () => {
   it("links committed statement imports to Evidence Vault and reconciliation review", async () => {
     const user = userEvent.setup();
     const services = makeServices();
-    renderWithRouter(<StatementImportPanel services={services} />, {
+    const { container } = renderWithRouter(<StatementImportPanel services={services} />, {
       initialEntries: ["/accounting/statement-import"]
     });
 
@@ -286,6 +293,15 @@ describe("StatementImportPanel", () => {
       "href",
       "/accounting/reconciliation/match?runId=stmt-run-77"
     );
+    expect(screen.getByLabelText("Trusted close handoff")).toHaveTextContent("Trusted close workflow ready");
+    expect(screen.getByLabelText("Trusted close scope")).toHaveTextContent("fund-profile-alpha");
+    expect(screen.getByLabelText("Trusted close scope")).toHaveTextContent("5dca0d66-b576-44d9-a24a-9f2651bf163c");
+    expect(screen.getByLabelText("Trusted close scope")).toHaveTextContent("44a5b4ac-7068-4775-8978-d76138a9428e");
+    expect(screen.getByLabelText("Trusted close scope")).toHaveTextContent("2026-06-30");
+    expect(screen.getByRole("link", { name: /Continue trusted close for accounting period/ })).toHaveAttribute(
+      "href",
+      "/accounting/operations-continuity?workflowId=35995e0d-4726-41c2-9b18-275129868c6a&ledgerBookId=5dca0d66-b576-44d9-a24a-9f2651bf163c&periodId=44a5b4ac-7068-4775-8978-d76138a9428e"
+    );
     expect(screen.getByLabelText("Statement import reconciliation cases")).toHaveTextContent("case:break-cash-1");
     expect(screen.getByLabelText("Statement import reconciliation cases")).toHaveTextContent("Cash break case");
     expect(screen.getByLabelText("Statement import reconciliation cases")).toHaveTextContent("High");
@@ -295,6 +311,39 @@ describe("StatementImportPanel", () => {
       "href",
       "/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-cash-1&breakId=break-cash-1"
     );
+
+    const results = await axe(container);
+    expect(results.violations).toHaveLength(0);
+  });
+
+  it("does not offer a trusted-close link when the commit lacks authoritative scope", async () => {
+    const user = userEvent.setup();
+    const services = makeServices();
+    services.commitImport = vi.fn(async () => ({
+      ...commitResult,
+      operationsWorkflowId: null,
+      accountingScope: null
+    }));
+    renderWithRouter(<StatementImportPanel services={services} />, {
+      initialEntries: ["/accounting/statement-import"]
+    });
+
+    await waitFor(() => expect(screen.getByLabelText("Connector")).toBeEnabled());
+    await user.type(screen.getByLabelText("Source institution"), "Interactive Brokers");
+    await user.type(screen.getByLabelText("Fund account"), "FUND-A");
+    await user.type(screen.getByLabelText("External account"), "U-100");
+    await user.type(screen.getByLabelText("Period start"), "2026-06-01");
+    await user.type(screen.getByLabelText("Period end"), "2026-06-30");
+    await user.upload(
+      screen.getByLabelText<HTMLInputElement>("Statement file", { selector: "input" }),
+      new File(["Symbol\nAAPL"], "statement.csv", { type: "text/csv" })
+    );
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Preview: statement.csv" })).toBeInTheDocument());
+
+    await user.click(screen.getByRole("button", { name: "Commit statement import" }));
+
+    expect(await screen.findByText("Trusted close workflow unavailable")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Continue trusted close/ })).not.toBeInTheDocument();
   });
 
   it("opens the scheduled-fetch operator path from the Import statement route", async () => {

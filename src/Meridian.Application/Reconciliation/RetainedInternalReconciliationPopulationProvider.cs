@@ -189,7 +189,9 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                     aliases,
                     context.StatementPeriodStart,
                     context.StatementPeriodEnd,
-                    context.BaseCurrency),
+                    context.BaseCurrency,
+                    context.LedgerBookId,
+                    context.AccountingPeriodId),
                 ct)
             .ConfigureAwait(false) ?? [];
     }

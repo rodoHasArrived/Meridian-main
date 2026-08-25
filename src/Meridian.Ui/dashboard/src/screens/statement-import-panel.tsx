@@ -13,7 +13,7 @@ import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
   useStatementImportPanelViewModel,
   type StatementImportPanelViewModel,
@@ -553,6 +553,7 @@ function CommitResultPanel({ viewModel }: { viewModel: StatementImportPanelViewM
           title="Duplicate statement detected"
           detail={`This statement was already imported as run ${result.runId}. No new records were committed. ${result.nextAction}`}
         />
+        <TrustedCloseHandoff result={result} />
         <CommitResultActions result={result} />
       </PanelSurface>
     );
@@ -589,8 +590,76 @@ function CommitResultPanel({ viewModel }: { viewModel: StatementImportPanelViewM
         </ul>
       ) : null}
       <CommitCaseLinks result={result} />
+      <TrustedCloseHandoff result={result} />
       <CommitResultActions result={result} />
     </PanelSurface>
+  );
+}
+
+function TrustedCloseHandoff({ result }: { result: StatementImportPanelViewModel["commitResult"] }) {
+  const workflowId = result?.operationsWorkflowId?.trim();
+  const scope = result?.accountingScope;
+  if (!workflowId || !scope) {
+    return (
+      <StatusBanner
+        role="alert"
+        tone="warning"
+        title="Trusted close workflow unavailable"
+        detail="The import result did not include an exact Operations Continuity workflow and accounting scope. Retry the import before continuing to close."
+      />
+    );
+  }
+
+  const closeRoute = workstationRouteWithQuery("accountingOperationsContinuity", {
+    workflowId,
+    ledgerBookId: scope.ledgerBookId,
+    periodId: scope.accountingPeriodId
+  });
+
+  return (
+    <div
+      className="flex flex-col gap-3 rounded-[2px] border border-success/40 bg-success/5 p-3"
+      aria-label="Trusted close handoff"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm font-semibold text-foreground">Trusted close workflow ready</p>
+            <Badge variant="success">Scoped</Badge>
+          </div>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            Continue with the exact account-period workflow created by this statement import.
+          </p>
+        </div>
+        <Button asChild size="sm">
+          <Link
+            to={closeRoute}
+            aria-label={`Continue trusted close for accounting period ${scope.accountingPeriodId}`}
+          >
+            <span>Continue trusted close</span>
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
+        </Button>
+      </div>
+      <dl className="grid gap-2 text-xs sm:grid-cols-2" aria-label="Trusted close scope">
+        <div className="min-w-0">
+          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Fund profile</dt>
+          <dd className="break-all font-mono text-foreground">{scope.fundProfileId}</dd>
+        </div>
+        <div className="min-w-0">
+          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Ledger book</dt>
+          <dd className="break-all font-mono text-foreground">{scope.ledgerBookId}</dd>
+        </div>
+        <div className="min-w-0">
+          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Accounting period</dt>
+          <dd className="break-all font-mono text-foreground">{scope.accountingPeriodId}</dd>
+        </div>
+        <div className="min-w-0">
+          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">As of</dt>
+          <dd className="font-mono text-foreground">{scope.asOfDate}</dd>
+        </div>
+      </dl>
+    </div>
   );
 }
 

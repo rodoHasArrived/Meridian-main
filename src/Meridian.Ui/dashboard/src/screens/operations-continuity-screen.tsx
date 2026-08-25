@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { AlertTriangle, ArrowRight, CalendarDays, Gauge, GitBranch, ListChecks, Lock, RefreshCcw, Workflow } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1161,7 +1161,14 @@ const timelineColumns: DenseDataTableColumn<OperationsContinuityTimelineRow>[] =
 ];
 
 export function OperationsContinuityScreen() {
-  const vm = useOperationsContinuityScreenViewModel();
+  const [searchParams] = useSearchParams();
+  const vm = useOperationsContinuityScreenViewModel(undefined, {
+    initialWorkflowId: searchParams.get("workflowId"),
+    filters: {
+      ledgerBookId: searchParams.get("ledgerBookId") ?? undefined,
+      periodId: searchParams.get("periodId") ?? undefined
+    }
+  });
   const [breakCommand, setBreakCommand] = useState<{
     pending: { breakId: string; kind: BreakCommandKind } | null;
     message: string | null;
