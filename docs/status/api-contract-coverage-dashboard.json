@@ -917,7 +917,7 @@
     {
       "method": "GET",
       "path": "/api/compliance/access-reviews",
-      "source": "src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:117",
+      "source": "src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:123",
       "documented": false
     },
     {
@@ -4751,42 +4751,42 @@
     },
     {
       "name": "FinancialRecordExplorerRowDto",
-      "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:78",
+      "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:87",
       "documented": false
     },
     {
       "name": "FinancialRecordExplorerSelectedRecordDto",
-      "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:88",
+      "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:97",
       "documented": false
     },
     {
       "name": "FinancialRecordExplorerProofActionDto",
-      "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:101",
-      "documented": false
-    },
-    {
-      "name": "FinancialRecordExplorerRecordGraphDto",
       "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:110",
       "documented": false
     },
     {
+      "name": "FinancialRecordExplorerRecordGraphDto",
+      "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:119",
+      "documented": false
+    },
+    {
       "name": "FinancialRecordExplorerGraphNodeDto",
-      "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:114",
+      "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:123",
       "documented": false
     },
     {
       "name": "FinancialRecordExplorerGraphEdgeDto",
-      "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:121",
+      "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:130",
       "documented": false
     },
     {
       "name": "FinancialRecordExplorerRelationshipDto",
-      "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:127",
+      "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:136",
       "documented": false
     },
     {
       "name": "FinancialRecordExplorerSavedViewSaveRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:134",
+      "source": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:143",
       "documented": false
     },
     {
