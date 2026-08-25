@@ -288,6 +288,21 @@ describe("TrialBalanceScreen", () => {
       .toBeGreaterThan(0);
   });
 
+  it("accepts a deep link whose GUIDs are upper-case", async () => {
+    // GUID text is case-insensitive — the API and .NET Guid treat these as the same ids. Comparing
+    // the raw query string exactly rejected a valid link, opened the default scope, and then
+    // rewrote the link to that different scope, losing the bookmark to a formatting difference.
+    primeHappyPath();
+
+    await renderTrialBalanceScreen(
+      `/accounting/ledger?view=trial-balance&ledgerBookId=${"00000000-0000-0000-0000-0000000000AA"}&periodId=${PERIOD_ID.toUpperCase()}`
+    );
+    await waitForAsyncEffects();
+
+    expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(PERIOD_ID);
+    expect(screen.getByLabelText("Period", { selector: "select" })).toHaveValue(PERIOD_ID);
+  });
+
   it("switches basis and narrows rows with the account filter", async () => {
     primeHappyPath();
     const user = userEvent.setup();

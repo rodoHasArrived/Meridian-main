@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { AccountTree, type AccountNode } from "@/components/accounting/AccountTree";
 import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
 import { TrialBalanceTable } from "@/components/accounting/TrialBalanceTable";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
+import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +36,6 @@ type TrialBalanceViewMode = "table" | "hierarchy";
  * previously meant an unrelated request's failure blanked a book that had loaded fine.
  */
 export function TrialBalanceScreen() {
-  const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<TrialBalanceViewMode>("table");
   const ledgerBook = "Primary GL";
 
@@ -47,98 +47,10 @@ export function TrialBalanceScreen() {
   const postedLedger = useAccountingPostedLedgerViewModel("ledger", undefined, { includeJournal: true });
   const { journalLines, journalLoading, journalErrorText, selectedPeriodId, selectedPeriodLabel } = postedLedger;
   const periodOptions = postedLedger.view.periodSelector.options;
-  // Depend on the stable callback, never on the view-model object: the hook returns a fresh
-  // object every render, so an object dependency would re-run this effect forever.
-  const selectPeriod = postedLedger.selectPeriod;
-  const selectBook = postedLedger.selectBook;
-  const bookOptions = postedLedger.view.bookOptions;
-  const selectedBookId = bookOptions.find((option) => option.isSelected)?.id ?? null;
 
-  // A deep link names a book and a period, and the two have to settle before the URL is written
-  // back — otherwise the write below stamps the default selection over the link's own values
-  // before they have been applied, and the two effects trade edits without converging.
-  const requestedBookId = searchParams.get("ledgerBookId");
-  const requestedPeriodId = searchParams.get("periodId");
-  // Only a book this deployment actually has can be waited for; anything else resolves to "no
-  // book requested" so a stale bookmark still opens the screen on its default.
-  const resolvedRequestedBookId = requestedBookId && bookOptions.some((option) => option.id === requestedBookId)
-    ? requestedBookId
-    : null;
-
-  const appliedBookIdRef = useRef<string | null>(null);
-  const appliedPeriodIdRef = useRef<string | null>(null);
-  const periodsSettled = postedLedger.periodsSettled;
-
-  useEffect(() => {
-    // Books have to have landed before a requested one can be judged present or absent.
-    if (!requestedBookId || requestedBookId === appliedBookIdRef.current || bookOptions.length === 0) {
-      return;
-    }
-
-    appliedBookIdRef.current = requestedBookId;
-    if (resolvedRequestedBookId) {
-      selectBook(resolvedRequestedBookId);
-    }
-  }, [bookOptions, requestedBookId, resolvedRequestedBookId, selectBook]);
-
-  // Applied only once the requested book is the selected one: periods are scoped to the book, so
-  // judging a period against the previous book's set would decline a perfectly good link and land
-  // silently on that book's default — a deep link opening a different period than it named.
-  useEffect(() => {
-    if (!requestedPeriodId || requestedPeriodId === appliedPeriodIdRef.current) {
-      return;
-    }
-
-    if (resolvedRequestedBookId && resolvedRequestedBookId !== selectedBookId) {
-      return;
-    }
-
-    // Wait only while the periods are still arriving. A book that has finished loading with no
-    // periods at all is an answer, not a pending state: treating it as pending left the request
-    // permanently unresolved, so the write-back below never ran and the URL kept naming the empty
-    // book and its stale period even after the operator moved to a populated one — a copied or
-    // refreshed link then reopened the wrong scope.
-    if (!periodsSettled) {
-      return;
-    }
-
-    appliedPeriodIdRef.current = requestedPeriodId;
-    if (periodOptions.some((option) => option.id === requestedPeriodId)) {
-      selectPeriod(requestedPeriodId);
-    }
-  }, [periodOptions, periodsSettled, requestedPeriodId, resolvedRequestedBookId, selectPeriod, selectedBookId]);
-
-  // The book goes into the URL with the period. Without it a link named a period but not the book
-  // it belongs to, so reopening it resolved against whichever book sorts first.
-  useEffect(() => {
-    const bookPending = requestedBookId !== null && requestedBookId !== appliedBookIdRef.current;
-    const periodPending = requestedPeriodId !== null && requestedPeriodId !== appliedPeriodIdRef.current;
-    if (bookPending || periodPending) {
-      return;
-    }
-
-    // Compared against what the URL actually says, in both directions: testing only
-    // "no selection means nothing to write" left a stale periodId in place for a book that has
-    // none, which is the case this has to clean up.
-    const periodMatches = searchParams.get("periodId") === (selectedPeriodId ?? null);
-    const bookMatches = !selectedBookId || searchParams.get("ledgerBookId") === selectedBookId;
-    if (periodMatches && bookMatches) {
-      return;
-    }
-
-    const nextParams = new URLSearchParams(searchParams);
-    if (selectedBookId) {
-      nextParams.set("ledgerBookId", selectedBookId);
-    }
-    if (selectedPeriodId) {
-      nextParams.set("periodId", selectedPeriodId);
-    } else {
-      // The book on screen has no period. Leaving the outgoing one in the URL would name a scope
-      // this screen is not showing.
-      nextParams.delete("periodId");
-    }
-    setSearchParams(nextParams, { replace: true });
-  }, [requestedBookId, requestedPeriodId, searchParams, selectedBookId, selectedPeriodId, setSearchParams]);
+  // The book and period this surface shows travel in the URL, through the one binding both
+  // ledger tabs share.
+  usePostedLedgerRouteScope(postedLedger);
 
   const journalEvidence: AccountingLedgerJournalEvidenceViewState = useMemo(
     () => buildAccountingLedgerJournalEvidenceViewState({

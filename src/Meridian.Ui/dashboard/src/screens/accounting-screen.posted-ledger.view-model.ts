@@ -94,8 +94,31 @@ export function resolvePostedEntryDimensions(entry: LedgerPostedJournalEntry): L
  * Maps a posted journal entry onto the shared ledger-journal evidence row so the
  * posted book can reuse the journal-lineage panels the run-scoped ledger built.
  */
+/**
+ * The entity every one of an entry's lines was posted to, when they agree on one.
+ *
+ * Resolved on its own rather than from the whole-set match: a perfectly ordinary entry has a
+ * debit and a credit that share an entity but differ in another dimension — an account, most
+ * often — so requiring the complete sets to be equal reported "not scoped to one entity" for
+ * exactly the entries an operator most expects to see scoped.
+ */
+export function resolvePostedEntryEntityId(entry: LedgerPostedJournalEntry): string | null {
+  const lines = Array.isArray(entry.lines) ? entry.lines : [];
+  if (lines.length === 0) {
+    return null;
+  }
+
+  const first = lines[0].dimensions?.entityId?.trim() || null;
+  if (!first) {
+    return null;
+  }
+
+  return lines.every((line) => (line.dimensions?.entityId?.trim() || null) === first) ? first : null;
+}
+
 export function toLedgerJournalLine(entry: LedgerPostedJournalEntry): LedgerJournalLine {
   const dimensions = resolvePostedEntryDimensions(entry);
+  const entityId = resolvePostedEntryEntityId(entry);
   return {
     journalEntryId: entry.journalEntryId,
     timestamp: entry.timestamp,
@@ -107,8 +130,8 @@ export function toLedgerJournalLine(entry: LedgerPostedJournalEntry): LedgerJour
     // Derived, not left null: consumers fall back to "all entities" on a null scope, which is an
     // affirmative claim about an entry that may be scoped to exactly one. Null here means the
     // entry's lines do not agree on an entity, which is not the same as spanning all of them.
-    entityScopeId: dimensions?.entityId ?? null,
-    entityScopeDisplayName: dimensions?.entityId ?? null
+    entityScopeId: entityId,
+    entityScopeDisplayName: entityId
   };
 }
 
@@ -266,9 +289,30 @@ export function sortLedgerBooks(books: readonly LedgerBook[]): LedgerBook[] {
  * equal, so the residual disagreement is confined to that case.
  */
 function compareOrdinalIgnoreCase(left: string, right: string): number {
-  const upperLeft = left.toUpperCase();
-  const upperRight = right.toUpperCase();
+  const upperLeft = toSimpleUpperCase(left);
+  const upperRight = toSimpleUpperCase(right);
   return upperLeft < upperRight ? -1 : upperLeft > upperRight ? 1 : 0;
+}
+
+/**
+ * Simple, one-to-one uppercase folding — what <c>char.ToUpperInvariant</c> does, and what
+ * <c>StringComparer.OrdinalIgnoreCase</c> is built on.
+ *
+ * `String.prototype.toUpperCase()` is not that: it applies full Unicode case mapping, which
+ * expands some code units into several. "ß" becomes "SS", so a book named "ß Fund" folded equal
+ * to one named "SS Fund" and the browser fell through to the id tie-break while the desktop kept
+ * ordering them by their distinct names — the same cross-workstation divergence in default book
+ * and figures, one layer down. A code unit with no single-character uppercase is left as it is,
+ * which is exactly what the .NET mapping does.
+ */
+function toSimpleUpperCase(value: string): string {
+  let folded = "";
+  for (const codeUnit of value) {
+    const upper = codeUnit.toUpperCase();
+    folded += upper.length === codeUnit.length ? upper : codeUnit;
+  }
+
+  return folded;
 }
 
 export function sortLedgerPeriodsDescending(periods: LedgerPeriod[]): LedgerPeriod[] {

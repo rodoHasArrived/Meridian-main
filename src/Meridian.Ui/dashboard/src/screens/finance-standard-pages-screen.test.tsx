@@ -492,6 +492,12 @@ describe("finance standard pages", () => {
     await waitForAsyncEffects();
     expect(journalBookSelect()).toBeNull();
 
+    // The trial-balance tab reads the same scope rather than resolving its own. Holding two
+    // independent scopes meant this tab defaulted to the first book and wrote it into the route,
+    // so coming back showed book B under a URL that said A.
+    const trialBalanceBookSelect = document.getElementById("trial-balance-book-select") as HTMLSelectElement | null;
+    expect(trialBalanceBookSelect?.value).toBe(FEEDER_BOOK_ID);
+
     fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
     await waitForAsyncEffects();
 

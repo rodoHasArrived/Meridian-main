@@ -23,6 +23,7 @@ import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
 import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
+import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
 import {
   buildTemplateRows,
   hasRetainedReportingAsOfDate,
@@ -426,6 +427,7 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
       tabs={LEDGER_EXPLORER_TABS}
       value={view}
       onValueChange={(nextView) => {
+        // Only `view` changes: ledgerBookId and periodId are the shared scope both tabs read.
         const nextParams = new URLSearchParams(searchParams);
         if (nextView === "ledger") {
           nextParams.delete("view");
@@ -459,6 +461,11 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
     "ledger",
     undefined,
     { includeJournal: true, enabled: active });
+  // The same route binding the trial-balance tab uses, so the two tabs share one scope rather
+  // than holding two. This tab never wrote to the route before: selecting book B here and
+  // switching tabs showed A, and switching back showed B under a URL that said A. Only the tab
+  // on screen syncs — two active writers would race each other's edits.
+  usePostedLedgerRouteScope(postedLedger, active);
   const journalLines = postedLedger.journalLines;
   const loading = postedLedger.journalLoading;
 

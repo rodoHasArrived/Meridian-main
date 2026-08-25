@@ -5352,13 +5352,18 @@ function buildTrialBalanceRow(
   const dimensionLabels = buildLedgerDimensionLabels(line);
   const dimensionLabel = dimensionLabels.summary;
   const dimensionDetailLabel = dimensionLabels.detail;
+  // Identity from the full dimension set, not the summary. The summary shows the first three
+  // dimensions and a "+N" count, so two rows differing only in a later one produced the same
+  // string -- duplicate React keys, and selecting the second row resolving the first row's detail
+  // and evidence. Widening the enumeration to every declared dimension made that collision far
+  // easier to hit. The summary is still what the operator reads; it is just not the identity.
   const rowId = [
     line.accountingBasis,
     accountLabel,
     accountTypeLabel,
     line.financialAccountId,
     securityLabel,
-    dimensionLabel === "No dimensions" ? null : dimensionLabel
+    dimensionDetailLabel === "No ledger dimensions are attached to this row." ? null : dimensionDetailLabel
   ].filter(Boolean).join("-");
 
   return {

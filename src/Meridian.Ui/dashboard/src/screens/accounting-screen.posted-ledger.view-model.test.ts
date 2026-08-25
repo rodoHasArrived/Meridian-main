@@ -7,6 +7,7 @@ import {
   collectPostedLedgerRelatedSecurities,
   resolveDefaultPostedLedgerPeriodId,
   resolvePostedEntryDimensions,
+  resolvePostedEntryEntityId,
   sortLedgerBooks,
   sortLedgerPeriodsDescending,
   toLedgerJournalLine,
@@ -199,6 +200,20 @@ describe("sortLedgerBooks", () => {
     expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-z", "book-a"]);
   });
 
+  it("folds case one-to-one, without full Unicode expansion", () => {
+    // toUpperCase() applies full case mapping: "ß" becomes "SS", which would tie a book named
+    // "ß Fund" with one named "SS Fund" and drop the browser to the id tie-break while the desktop
+    // still separates them by name. char.ToUpperInvariant leaves a code unit with no
+    // single-character uppercase alone, and so does this.
+    const sorted = sortLedgerBooks([
+      makeBook({ ledgerBookId: "book-sharp", displayName: "\u00DF Fund" }),
+      makeBook({ ledgerBookId: "book-ss", displayName: "SS Fund" })
+    ]);
+
+    // "ß" (U+00DF) sorts after "S" (U+0053), so the two names stay distinct and ordered by name.
+    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-ss", "book-sharp"]);
+  });
+
   it("ignores case, as the desktop comparator does", () => {
     const sorted = sortLedgerBooks([
       makeBook({ ledgerBookId: "book-b", displayName: "beta Fund" }),
@@ -252,6 +267,23 @@ describe("resolvePostedEntryDimensions", () => {
       ]
     });
     expect(toLedgerJournalLine(mixed).entityScopeDisplayName).toBeNull();
+  });
+
+  it("names the entity when every line agrees on it, whatever else differs", () => {
+    // The ordinary case: a debit and a credit sharing an entity but posted to different accounts.
+    // Requiring the whole dimension sets to match reported "not scoped to one entity" for exactly
+    // the entries an operator most expects to see scoped.
+    const entry = makePostedEntry({
+      lines: [
+        makePostedEntryLine({ entryId: "entry-1", dimensions: { entityId: "entity-lux", accountId: "1000" } }),
+        makePostedEntryLine({ entryId: "entry-2", debit: 0, credit: 1200, dimensions: { entityId: "entity-lux", accountId: "2000" } })
+      ]
+    });
+
+    expect(resolvePostedEntryEntityId(entry)).toBe("entity-lux");
+    expect(toLedgerJournalLine(entry).entityScopeDisplayName).toBe("entity-lux");
+    // The whole-set match still declines, which is right for the dimension set as a whole.
+    expect(resolvePostedEntryDimensions(entry)).toBeNull();
   });
 
   it("reports no scope for an entry whose lines disagree", () => {
