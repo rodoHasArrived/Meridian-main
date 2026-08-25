@@ -860,6 +860,90 @@ describe("finance standard pages", () => {
     expect(search()).toContain(LEDGER_PERIOD_ID);
   });
 
+  it("waits for its own books response before judging a sibling tab's book", async () => {
+    // A book can be added while this tab is idle. Its retained list was still marked settled on
+    // the way back, so route resolution judged the sibling's newly discovered book against that
+    // stale list, called it absent, and wrote the old book back into the shared URL before
+    // getBooks returned -- undoing the sibling's selection.
+    const SECOND_BOOK_ID = "00000000-0000-0000-0000-0000000000cc";
+    const SECOND_PERIOD_ID = "66666666-6666-6666-6666-666666666666";
+    mockPostedBook();
+    const masterBook = {
+      ledgerBookId: LEDGER_BOOK_ID,
+      fundProfileId: "fund-alpha",
+      fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+      fundStructureNodeKind: "Fund",
+      displayName: "Alpha Master Fund",
+      baseCurrency: "USD",
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+      accountingBasis: "Primary",
+      accountingPolicyId: "legacy-v1",
+      accountingPolicyVersion: "legacy-v1"
+    };
+    const addedBook = { ...masterBook, ledgerBookId: SECOND_BOOK_ID, displayName: "Beta Feeder Fund" };
+    const period = (periodId: string, ledgerBookId: string, label: string) => ({
+      periodId,
+      ledgerBookId,
+      fiscalYear: 2026,
+      periodNo: 7,
+      label,
+      startDate: "2026-07-01",
+      endDate: "2026-07-31",
+      status: "HardClosed",
+      openedAt: "2026-07-01T00:00:00Z",
+      closedAt: "2026-08-02T00:00:00Z",
+      version: 1
+    });
+    // Only the master book exists when the Ledger tab first loads.
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([masterBook] as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockImplementation((query) =>
+      Promise.resolve(query?.ledgerBookId === SECOND_BOOK_ID
+        ? [period(SECOND_PERIOD_ID, SECOND_BOOK_ID, "July 2026 (feeder)")]
+        : [period(LEDGER_PERIOD_ID, LEDGER_BOOK_ID, "July 2026")]) as never);
+
+    const search = renderLedgerExplorerWithLocation("/accounting/ledger");
+    await waitForAsyncEffects();
+    expect(search()).toContain(LEDGER_BOOK_ID);
+
+    // The second book is created while this tab is idle, and the sibling selects it.
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([masterBook, addedBook] as never);
+    fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
+    await waitForAsyncEffects();
+    fireEvent.change(
+      document.getElementById("trial-balance-book-select") as HTMLSelectElement,
+      { target: { value: SECOND_BOOK_ID } }
+    );
+    await waitForAsyncEffects();
+    expect(search()).toContain(SECOND_BOOK_ID);
+
+    fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    // The sibling's book survives the return rather than being overwritten from a stale list.
+    expect(search()).toContain(SECOND_BOOK_ID);
+    expect((document.getElementById("ledger-book-select") as HTMLSelectElement | null)?.value)
+      .toBe(SECOND_BOOK_ID);
+  });
+
+  it("clears a deep-linked scope that book discovery says does not exist", async () => {
+    // A successful EMPTY books response authoritatively establishes that this deployment has no
+    // books. Waiting on a non-empty list instead left the request unresolved for ever, so the
+    // write-back stayed gated and a link naming a book that is not here was never cleaned up.
+    mockPostedBook();
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([] as never);
+
+    const search = renderLedgerExplorerWithLocation(
+      `/accounting/ledger?ledgerBookId=${LEDGER_BOOK_ID}&periodId=${LEDGER_PERIOD_ID}`
+    );
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    expect(search()).not.toContain(LEDGER_BOOK_ID);
+    expect(search()).not.toContain(LEDGER_PERIOD_ID);
+  });
+
   it("offers no ledger filter it does not apply", async () => {
     // "Unposted", "Reversals", "Manual JEs" and "System Generated" changed a label and nothing
     // else, and the results header reported the unfiltered count as that view's. On a governed

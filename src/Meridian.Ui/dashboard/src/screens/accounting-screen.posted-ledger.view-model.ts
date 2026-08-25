@@ -716,6 +716,12 @@ export function useAccountingPostedLedgerViewModel(
   if (settledWhileEnabled !== enabled) {
     setSettledWhileEnabled(enabled);
     setPeriodsLoadedForBookId(null);
+    // Books need the same reset, and for the same reason one level up: a sibling tab can add or
+    // remove a book while this one is idle, so the list this tab still holds is not an authority
+    // on what the deployment has until its own refresh lands. Left settled, route resolution
+    // judged the sibling's book against the stale list, called it absent, and wrote the old one
+    // back into the shared URL before getBooks returned.
+    setBooksSettled(false);
   }
   const [periods, setPeriods] = useState<LedgerPeriod[]>([]);
   const [periodsLoading, setPeriodsLoading] = useState(false);

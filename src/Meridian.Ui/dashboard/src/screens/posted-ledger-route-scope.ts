@@ -50,8 +50,12 @@ export function usePostedLedgerRouteScope(
   const [appliedPeriodId, setAppliedPeriodId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Books have to have landed before a requested one can be judged present or absent.
-    if (!active || !requestedBookId || requestedBookId === appliedBookId || bookOptions.length === 0) {
+    // Books have to have landed before a requested one can be judged present or absent. Waiting on
+    // a NON-EMPTY list rather than on a settled one left a deployment with no books waiting for
+    // ever: the request never resolved, so the write-back below stayed gated and a link naming a
+    // book that does not exist here was never cleaned up. A settled empty list is an answer --
+    // the book is absent -- and only an unsettled one is cause to wait.
+    if (!active || !requestedBookId || requestedBookId === appliedBookId || !booksSettled) {
       return;
     }
 
@@ -59,7 +63,7 @@ export function usePostedLedgerRouteScope(
     if (resolvedRequestedBookId) {
       selectBook(resolvedRequestedBookId);
     }
-  }, [active, appliedBookId, bookOptions, requestedBookId, resolvedRequestedBookId, selectBook]);
+  }, [active, appliedBookId, booksSettled, requestedBookId, resolvedRequestedBookId, selectBook]);
 
   // Applied only once the requested book is the selected one: periods are scoped to the book, so
   // judging a period against the previous book's set would decline a perfectly good link and land
@@ -145,7 +149,12 @@ export function usePostedLedgerRouteScope(
     const periodMatches = selectedPeriodId
       ? idsMatch(searchParams.get("periodId"), selectedPeriodId)
       : searchParams.get("periodId") === null;
-    const bookMatches = !selectedBookId || idsMatch(searchParams.get("ledgerBookId"), selectedBookId);
+    // Both directions, as with the period above: "nothing selected means nothing to write" left a
+    // ledgerBookId in the URL naming a book this deployment does not have. Reached only once books
+    // have settled, so no selection here means discovery answered that there is none.
+    const bookMatches = selectedBookId
+      ? idsMatch(searchParams.get("ledgerBookId"), selectedBookId)
+      : searchParams.get("ledgerBookId") === null;
     if (periodMatches && bookMatches) {
       return;
     }
@@ -153,6 +162,8 @@ export function usePostedLedgerRouteScope(
     const nextParams = new URLSearchParams(searchParams);
     if (selectedBookId) {
       nextParams.set("ledgerBookId", selectedBookId);
+    } else {
+      nextParams.delete("ledgerBookId");
     }
     if (selectedPeriodId) {
       nextParams.set("periodId", selectedPeriodId);
