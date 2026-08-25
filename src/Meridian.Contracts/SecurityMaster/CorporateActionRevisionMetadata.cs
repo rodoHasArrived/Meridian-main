@@ -23,6 +23,13 @@ internal static class CorporateActionRevisionMetadata
         return RecordedAt.TryGetValue(action, out var holder) ? holder.Value : null;
     }
 
+    internal static IReadOnlyList<CorporateActionDto> FilterKnown(
+        IReadOnlyList<CorporateActionDto> actions,
+        DateTimeOffset asOf)
+        => actions
+            .Where(action => GetRecordedAtUtc(action) is not { } recordedAt || recordedAt <= asOf)
+            .ToArray();
+
     private sealed class RecordedAtHolder
     {
         internal DateTimeOffset Value { get; set; }

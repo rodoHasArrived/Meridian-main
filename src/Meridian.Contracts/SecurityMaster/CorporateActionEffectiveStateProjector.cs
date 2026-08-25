@@ -4,8 +4,7 @@ namespace Meridian.Contracts.SecurityMaster;
 /// Pure fold over a security's append-only corporate-action events: normalizes stored
 /// EventType aliases via <see cref="CorporateActionTypeDescriptorCatalog"/>, follows
 /// <c>SupersedesCorpActId</c> chains to their tips, and derives the effective lifecycle
-/// state at a given as-of time. Revisions recorded after that time are excluded before
-/// chain tips are selected. Consumers that apply economic effects (price adjustment,
+/// state at a given as-of time. Consumers that apply economic effects (price adjustment,
 /// ledger posting) should act on the projected effective actions, never the raw rows, so
 /// amendments collapse to their latest terms and cancellations drop out.
 /// </summary>
@@ -16,34 +15,25 @@ public static class CorporateActionEffectiveStateProjector
         DateTimeOffset asOf)
     {
         ArgumentNullException.ThrowIfNull(actions);
+        actions = CorporateActionRevisionMetadata.FilterKnown(actions, asOf);
         if (actions.Count == 0)
         {
             return [];
         }
-
-        var knownActions = actions
-            .Where(action => CorporateActionRevisionMetadata.GetRecordedAtUtc(action) is not { } recordedAt
-                || recordedAt <= asOf)
-            .ToArray();
-        if (knownActions.Length == 0)
-        {
-            return [];
-        }
-
-        var byId = new Dictionary<Guid, CorporateActionDto>(knownActions.Length);
-        foreach (var action in knownActions)
+        var byId = new Dictionary<Guid, CorporateActionDto>(actions.Count);
+        foreach (var action in actions)
         {
             // Duplicate ids should not occur in an append-only store; last one wins on read.
             byId[action.CorpActId] = action;
         }
 
-        var supersededIds = knownActions
+        var supersededIds = actions
             .Where(static action => action.SupersedesCorpActId.HasValue)
             .Select(static action => action.SupersedesCorpActId!.Value)
             .ToHashSet();
 
-        var results = new List<CorporateActionEffectiveState>(knownActions.Length);
-        foreach (var action in knownActions)
+        var results = new List<CorporateActionEffectiveState>(actions.Count);
+        foreach (var action in actions)
         {
             if (supersededIds.Contains(action.CorpActId))
             {

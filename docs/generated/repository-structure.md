@@ -3975,6 +3975,7 @@ Meridian-main
 │   │   │   ├── CorporateActionEventTypes.cs
 │   │   │   ├── CorporateActionLifecycleStates.cs
 │   │   │   ├── CorporateActionPayloads.cs
+│   │   │   ├── CorporateActionRevisionMetadata.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalog.cs
 │   │   │   ├── DataVendorEntitlement.cs
 │   │   │   ├── DayCountConventions.cs
