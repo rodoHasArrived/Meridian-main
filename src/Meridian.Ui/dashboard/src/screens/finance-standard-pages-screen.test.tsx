@@ -563,6 +563,49 @@ describe("finance standard pages", () => {
     expect(journalPeriodSelect()?.value).toBe(AUGUST_PERIOD_ID);
   });
 
+  it("keeps naming the period when a returning tab's period refresh fails but its entries load", async () => {
+    // A partial outage: the retained tab comes back, its period request fails and its journal
+    // request succeeds. Emptying the period list on that failure left governed entries rendered
+    // under a selector saying no period was available and a scope label naming none -- posted
+    // entries on screen with nothing saying which period they belong to. The last good list for
+    // THIS book is still correctly labelled, so it stays until a response replaces it.
+    mockPostedBook();
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([
+      {
+        journalEntryId: "je-cash-1",
+        periodId: LEDGER_PERIOD_ID,
+        ledgerBookId: LEDGER_BOOK_ID,
+        timestamp: "2026-07-31T00:00:00Z",
+        description: "Cash sweep",
+        totalDebits: 500,
+        totalCredits: 500,
+        isBalanced: true,
+        lines: []
+      }
+    ] as never);
+
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+    await waitForAsyncEffects();
+
+    const periodSelect = () => document.getElementById("ledger-period-select") as HTMLSelectElement | null;
+    expect(periodSelect()?.value).toBe(LEDGER_PERIOD_ID);
+
+    // The period endpoint goes down while the tab is idle; the journal endpoint stays up.
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockRejectedValue(new Error("Ledger periods are unavailable."));
+
+    fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
+    await waitForAsyncEffects();
+    fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    // The entries are still on screen...
+    expect(await screen.findByRole("table", { name: "Ledger Explorer results" })).toHaveTextContent("Cash sweep");
+    // ...so the period they belong to has to still be named.
+    expect(periodSelect()?.value).toBe(LEDGER_PERIOD_ID);
+    expect(screen.queryByText(/No ledger periods exist yet/)).not.toBeInTheDocument();
+  });
+
   it("offers no ledger filter it does not apply", async () => {
     // "Unposted", "Reversals", "Manual JEs" and "System Generated" changed a label and nothing
     // else, and the results header reported the unfiltered count as that view's. On a governed

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getLedgerPeriodJournalEntries,
   getLedgerPeriodPnlSummary,
@@ -686,6 +686,11 @@ export function useAccountingPostedLedgerViewModel(
   //
   // Reset during render rather than in an effect. Route resolution reads `periodsSettled` in the
   // very commit `enabled` flips, and an effect's write lands one render too late to stop it.
+  // Which book the periods currently held came from -- deliberately distinct from the settlement
+  // marker above. A list can be correctly LABELLED (this book's, from the last good response)
+  // without being an AUTHORITY on what the book holds right now. A ref because it is read only
+  // inside the request callbacks below: never during render, and never as an effect dependency.
+  const periodsBookIdRef = useRef<string | null>(null);
   const [settledWhileEnabled, setSettledWhileEnabled] = useState(enabled);
   if (settledWhileEnabled !== enabled) {
     setSettledWhileEnabled(enabled);
@@ -727,6 +732,7 @@ export function useAccountingPostedLedgerViewModel(
     setJournalErrorText(null);
     setSelectedRowId(null);
     setPeriodsLoadedForBookId(null);
+    periodsBookIdRef.current = null;
   }, []);
 
   useEffect(() => {
@@ -793,17 +799,28 @@ export function useAccountingPostedLedgerViewModel(
       .then((rows) => {
         if (!cancelled) {
           setPeriods(rows);
+          periodsBookIdRef.current = selectedBookId;
           setPeriodsLoadedForBookId(selectedBookId);
         }
       })
       .catch((err) => {
         if (!cancelled) {
-          setPeriods([]);
-          // Deliberately not settled. A failed request is not an authoritative "this book has no
-          // periods": treating it as one let a deep link's period be judged invalid against an
-          // empty list, and the route write-back then dropped periodId from the URL — destroying
-          // the operator's bookmark over a transient 500. Left unsettled, the link stays pending
-          // and survives to be retried.
+          // Emptying the list here was a misstatement during a partial outage. A returning tab
+          // whose period request fails while its journal request succeeds still holds a valid
+          // selection, so it rendered governed entries under a selector saying no period was
+          // available and a scope label naming none — posted entries with nothing saying which
+          // period they belong to. This book's last good list is still correctly labelled, so it
+          // stays; another book's leftovers would name the wrong scope, so those go.
+          if (periodsBookIdRef.current !== selectedBookId) {
+            setPeriods([]);
+            periodsBookIdRef.current = null;
+          }
+          // Deliberately not settled — separately from whether the list is retained above. A
+          // failed request is not an authoritative "this book has no periods": treating it as one
+          // let a deep link's period be judged invalid against an empty list, and the route
+          // write-back then dropped periodId from the URL — destroying the operator's bookmark
+          // over a transient 500. Left unsettled, the link stays pending and survives to be
+          // retried, and route resolution keeps waiting rather than trusting the retained list.
           setPeriodsError(describeApiError(err, "Ledger periods failed to load."));
         }
       })
