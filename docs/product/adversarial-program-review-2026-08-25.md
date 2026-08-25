@@ -194,11 +194,11 @@ an approval request.
 `/audit/extract`, `/controls/attestation` and `GET /access-reviews` would also gain authority over
 approval decisions and access-review remediation. Whichever flags are added, **update the `Developer`
 subtraction in the same change** — `DeveloperPermissions = AdminPermissions & ~(…)`
-(`RolePermissions.cs:49`) inherits every new `Admin` grant by construction
-permissions and re-gate these surfaces. The permission enum has 27 flags in a `long` — there is ample
-room. This is a small, mechanical change that removes a real blocker to any multi-user deployment.
+(`RolePermissions.cs:49`) inherits every new `Admin` grant by construction. Re-gate the
+approval, evaluation, and assessment routes to `ManageCompliance` and the three reads to `ViewCompliance`; deliberately retain
+`ManageUsers` on `POST /api/compliance/access-reviews/run`, which strips roles from a caller-selected account and needs authoritative activity data plus target/scope safeguards before its gate can move.
 
-## 3. Paper-session restore rescales every option position
+## 3. Paper option economics omit contract scale live and on replay
 
 The 2026-08-24 review flagged the missing `ContractMultiplier` on the durable fill record. It is
 still open — and tracing it end to end shows the defect is larger than "the durable record drops it".
@@ -320,8 +320,8 @@ one record — and fixing either alone still leaves the restored book wrong.
 (`Models.cs:186`), `CloneExecutionReport` preserves it, and `ApplyFill` reads it off the record
 regardless of the parameter (`PaperTradingPortfolio.cs:469`) — then applies it to the price before
 any cash or cost-basis math runs. Percent-of-par is modeled *and consumed*. The contract multiplier
-is neither: it has no field on the record, and even when passed it is routed to metadata instead of
-into the arithmetic.
+exists only in nullable `OptionContract` metadata, is not stamped consistently, and is not consumed
+by paper-book arithmetic even when passed separately to the portfolio.
 
 **Improvement — two changes, and the second matters more.** First, apply the multiplier in the
 economic paths so a contract's notional is `qty × price × multiplier` for **monetary amounts only**:
@@ -1383,9 +1383,9 @@ above — so the document held the specific fact and the contradicting generaliz
 for nine rounds.
 
 It also sharpens the method lesson rather than weakening it. "A value carried but never consumed
-reads as handled" was the wrong formulation; the true one is worse. **A value consumed in exactly one
-place and ignored everywhere else reads as handled everywhere**, because the first grep finds it
-being multiplied and the search stops. That single correct consumer is what let this defect survive
+reads as handled" was the wrong formulation; the true one is worse. **A value consumed in a few
+places and ignored everywhere else reads as handled everywhere**, because the first grep finds correct
+multiplication and stops. Those two aggregate consumers let the paper-book and Trading defects survive
 four consecutive reviews.
 
 **Round 15 — three, one of which reverses a correction from round 13:**
@@ -1823,12 +1823,12 @@ remedies — and are rewritten rather than softened; the multiplier correction m
 *larger* and the original remedy insufficient, and both the catalog test and the CI `needs` change
 were unimplementable as specified. Three method lessons generalize. **A permission gate read in isolation predicts the wrong
 access** — the same intersection error this document accuses the codebase of, committed while
-describing it. And **a value consumed in one place and ignored in the rest reads as handled everywhere**:
-`ContractMultiplier` is threaded through three layers, applied correctly by
-`AggregatePortfolioExposureProvider`, and ignored by every transaction, valuation and margin path —
-which is why four consecutive reviews, this one included, mistook partial plumbing for correctness.
-The single correct consumer is what makes the defect so durable: anyone who greps for the identifier
-finds it being multiplied and stops looking. And third: **correcting one section without
+describing it. And **a value consumed in a few places and ignored in the rest reads as handled everywhere**:
+`ContractMultiplier` is threaded through three layers and applied correctly by both
+`AggregatePortfolioExposureProvider` and `WorkstationEndpoints.BuildExposureReport`, while the paper
+book ignores it in every transaction, valuation and margin path and `WorkstationEndpoints.Trading.cs`
+separately recomputes unscaled exposure and P&L. Those two correct consumers make the defect durable:
+anyone who greps for the identifier finds it being multiplied and stops looking. And third: **correcting one section without
 re-reading the sections that depend on it introduces fresh contradictions** — round 2's narrowing of
 §4 was refuted by §3, which the same commit had just rewritten; round 3's replacement then
 overcorrected past the evidence, and round 4 had to pull it back. Seven of the nine findings in
@@ -2009,7 +2009,7 @@ not permission work — see improvement #7. The lockout §1 describes is resolve
 which is the book those roles own — and the `ViewStrategies` gate on the run queue is now the
 correct behaviour rather than the defect.
 
-### Third addendum — `main` at `3eb6961a`: nothing above changed
+### Third addendum — `main` at `3eb6961a`: five open claims rechecked
 
 `main` advanced a third time, merging PR #2828, and is merged into this branch. Recorded here for a
 narrow reason: **the second addendum's `file:line` citations are coordinates in the `bb43e0e6` frame
@@ -2026,8 +2026,8 @@ What was checked against the merged tree, and the result in each case:
 | `RequireFundProfileTenantScope` is cross-tenant and fail-open | Still true. `FundProfileScopeEndpointFilters.cs` is **unchanged** |
 | `ViewCompliance` does not exist; the three reads gate on `ManageCompliance` | Still true. `src/Meridian.Identity/` and `ComplianceEndpoints.cs` are **unchanged** |
 
-So every open item this document names survives the merge intact, and no finding, improvement or
-remaining-work statement needed revision. PR #2828 worked the posted-ledger route scope — book and
+So the five open items rechecked above survive the merge intact, and none of those five findings or
+remaining-work statements needed revision. PR #2828 worked the posted-ledger route scope — book and
 period selection — which is adjacent to §1 but not the same surface: its new
 `posted-ledger-route-scope.ts` contains no fund-scoping logic at all.
 
