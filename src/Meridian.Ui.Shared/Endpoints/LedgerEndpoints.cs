@@ -1921,19 +1921,9 @@ public static partial class LedgerEndpoints
         => !string.IsNullOrWhiteSpace(tenantContext.TenantId) &&
            !string.IsNullOrWhiteSpace(tenantContext.CompanyId);
 
-    /// <summary>
-    /// Read authority over the governed ledger. <see cref="UserPermission.ViewLedgerReports"/> and
-    /// <see cref="UserPermission.ManageLedgerReports"/> are the permissions this surface actually
-    /// means; <see cref="UserPermission.ManageDirectLending"/> stays accepted so deployments that
-    /// configured it as the de facto fund-accounting grant keep working through the transition.
-    /// </summary>
+    /// <summary>Read authority over the governed ledger. The ledger-report permissions are what this surface means; ManageDirectLending stays accepted so deployments that used it as the fund-accounting grant keep working.</summary>
     private static bool HasLedgerReadPermission(HttpContext context)
-        => EndpointAuthorization.HasAnyPermission(
-            context,
-            UserPermission.AdminMaintenance,
-            UserPermission.ManageDirectLending,
-            UserPermission.ViewLedgerReports,
-            UserPermission.ManageLedgerReports);
+        => EndpointAuthorization.HasAnyPermission(context, UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports);
 
     private static async Task<CloseWorkflowTenantScope> ResolveCloseWorkflowTenantScopeAsync(
         HttpContext context,
@@ -2070,17 +2060,9 @@ public static partial class LedgerEndpoints
         return decision.IsAllowed;
     }
 
-    /// <summary>
-    /// Write authority over the governed ledger. Deliberately excludes
-    /// <see cref="UserPermission.ViewLedgerReports"/>: reading the trial balance must never confer
-    /// the authority to post to it.
-    /// </summary>
+    /// <summary>Write authority over the governed ledger. Deliberately excludes ViewLedgerReports: reading the trial balance must never confer the authority to post to it.</summary>
     private static bool HasLedgerMutationPermission(HttpContext context)
-        => EndpointAuthorization.HasAnyPermission(
-            context,
-            UserPermission.AdminMaintenance,
-            UserPermission.ManageDirectLending,
-            UserPermission.ManageLedgerReports);
+        => EndpointAuthorization.HasAnyPermission(context, UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports);
 
     private static bool TryResolveControllerRole(HttpContext context, out string role)
     {

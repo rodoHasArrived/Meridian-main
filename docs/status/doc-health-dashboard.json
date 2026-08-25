@@ -1,6 +1,6 @@
 {
   "total_files": 656,
-  "total_lines": 132155,
+  "total_lines": 132167,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2033,7 +2033,7 @@
     },
     {
       "path": "docs/development/wpf-web-ui-alignment-plan.md",
-      "line_count": 198,
+      "line_count": 199,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2625,7 +2625,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10561,
+      "line_count": 10571,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3497,7 +3497,7 @@
     },
     {
       "path": "docs/screenshots/desktop/README.md",
-      "line_count": 113,
+      "line_count": 114,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

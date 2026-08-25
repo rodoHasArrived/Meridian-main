@@ -6603,6 +6603,8 @@ Meridian-main
 │   │   │   │   │   ├── strategy-designer-screen.tsx
 │   │   │   │   │   ├── strategy-designer-screen.view-model.test.ts
 │   │   │   │   │   ├── strategy-designer-screen.view-model.ts
+│   │   │   │   │   ├── strategy-run-ledger-screen.test.tsx
+│   │   │   │   │   ├── strategy-run-ledger-screen.tsx
 │   │   │   │   │   ├── strategy-screen.a11y.test.tsx
 │   │   │   │   │   ├── strategy-screen.evidence-timeline.ts
 │   │   │   │   │   ├── strategy-screen.formatters.ts
@@ -6745,7 +6747,8 @@ Meridian-main
 │   │   │   └── NavigationTypes.cs
 │   │   ├── Services
 │   │   │   ├── Accounting
-│   │   │   │   └── AccountingProjectionQueryService.cs
+│   │   │   │   ├── AccountingProjectionQueryService.cs
+│   │   │   │   └── PostedLedgerProjection.cs
 │   │   │   ├── DataQuality
 │   │   │   │   ├── DataQualityApiClient.cs
 │   │   │   │   ├── DataQualityModels.cs
@@ -7533,6 +7536,7 @@ Meridian-main
 │   │   │   ├── IWorkspaceShellStateProvider.cs
 │   │   │   ├── JumpListService.cs
 │   │   │   ├── KeyboardShortcutService.cs
+│   │   │   ├── LedgerReportsApiClient.cs
 │   │   │   ├── LifecycleControlClient.cs
 │   │   │   ├── LoggingService.cs
 │   │   │   ├── MessagingService.cs
@@ -7706,6 +7710,7 @@ Meridian-main
 │   │   │   ├── PluginManagementViewModel.cs
 │   │   │   ├── PortfolioImportViewModel.cs
 │   │   │   ├── PositionBlotterViewModel.cs
+│   │   │   ├── PostedLedgerViewModel.cs
 │   │   │   ├── ProviderAccountingViewModel.cs
 │   │   │   ├── ProviderDataProjectionViewModel.cs
 │   │   │   ├── ProviderHealthViewModel.cs
@@ -7893,6 +7898,8 @@ Meridian-main
 │   │   │   ├── PortfolioImportPage.xaml.cs
 │   │   │   ├── PositionBlotterPage.xaml
 │   │   │   ├── PositionBlotterPage.xaml.cs
+│   │   │   ├── PostedLedgerPage.xaml
+│   │   │   ├── PostedLedgerPage.xaml.cs
 │   │   │   ├── ProviderHealthPage.xaml
 │   │   │   ├── ProviderHealthPage.xaml.cs
 │   │   │   ├── ProviderPage.xaml
@@ -9915,6 +9922,7 @@ Meridian-main
 │   │   │   ├── FundStructureEndpointAuthorizationTests.cs
 │   │   │   ├── InvestmentAccountingTransactionLabServiceTests.cs
 │   │   │   ├── LedgerAmountProvenanceServiceTests.cs
+│   │   │   ├── LedgerAndCompliancePermissionSplitTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.cs
 │   │   │   ├── LegacyReportingRouteRetirementEndpointTests.cs
 │   │   │   ├── LiveTradingEngineHostRegistrationTests.cs
@@ -10092,6 +10100,7 @@ Meridian-main
 │   │   │   ├── OAuthRefreshServiceTests.cs
 │   │   │   ├── OrderBookVisualizationServiceTests.cs
 │   │   │   ├── PortfolioImportServiceTests.cs
+│   │   │   ├── PostedLedgerProjectionTests.cs
 │   │   │   ├── ProviderHealthServiceTests.cs
 │   │   │   ├── ProviderManagementServiceTests.cs
 │   │   │   ├── ScheduledMaintenanceServiceTests.cs
@@ -10262,6 +10271,7 @@ Meridian-main
 │   │   │   ├── PageActivationLifetimeContractTests.cs
 │   │   │   ├── PortfolioImportViewModelTests.cs
 │   │   │   ├── PositionBlotterViewModelTests.cs
+│   │   │   ├── PostedLedgerViewModelTests.cs
 │   │   │   ├── ProviderAccountingViewModelTests.cs
 │   │   │   ├── ProviderDataProjectionViewModelTests.cs
 │   │   │   ├── ProviderHealthViewModelTests.cs
