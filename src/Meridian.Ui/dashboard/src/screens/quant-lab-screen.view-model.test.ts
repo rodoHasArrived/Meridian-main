@@ -223,7 +223,7 @@ describe("Quant Lab view model helpers", () => {
       defaultValue: "default"
     };
 
-    expect(buildQuantParameters([textParameter], { label: "" })).toEqual({ label: "" });
+    // An empty string is a deliberate value for text parameters, not a missing override.\n    expect(buildQuantParameters([textParameter], { label: "" })).toEqual({ label: "" });
   });
 
   it("builds disabled run command state for empty source", () => {
