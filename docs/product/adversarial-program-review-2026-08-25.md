@@ -360,7 +360,9 @@ attempt at this number was wrong by half because it enumerated two client layers
 
 **Improvement.** Add the orphan-export structural test the backlog already specifies, with a
 declared allowlist for intentionally headless routes, and fail CI when the unallowed dark count
-grows. Without a gate, this ratio only moves one way — and it has.
+grows. There is no evidence the ratio *has* grown — the corrected 29% matches the prior review, and
+the apparent increase was an artifact of the broken scan. The gate's value is preventing future
+drift, not arresting an observed slide.
 
 ## 7. The authoritative merge gate never compiles or tests the only supported platform
 
@@ -418,13 +420,19 @@ real `EventSource` consumers. It is used for live quotes and report-run progress
 
 The surfaces where staleness actually costs an operator money still poll:
 
-- operator inbox / notification centre — 60s (`use-notification-center.ts:20`)
-- governed approvals — interval refresh (`trading-screen.governed-approvals.ts:110`)
+- governed approvals — 15s (`trading-screen.governed-approvals.ts:47`)
 - lifecycle control — 5s (`lifecycle-control-panel.tsx:57`)
+- operator inbox / notification centre — 60s (`use-notification-center.ts:20`)
+- **accounting break casework — no poll at all.** `usePollingInterval` is installed only for
+  Trading, provider routing, and Portfolio (`use-workstation-data.ts:731-733`); Accounting is not
+  among them, and the break-queue fetch runs only when its effect dependencies change
+  (`accounting-screen.view-model.ts:3903-3912`)
 
 Break casework, approvals, and close-readiness do not refresh after a mutation elsewhere in the app,
-so two operators working the same close see divergent state for up to a minute. That staleness, not
-error handling, is the finding here: the accounting surfaces **do** surface failures — the
+so two operators working the same close diverge — and for break casework that divergence is
+**unbounded**, not capped at a poll interval. A second operator's assignment or resolution stays
+invisible until the first triggers a manual refresh or remounts the screen. That is a materially
+worse defect than the 15s/60s polls elsewhere, and it is the finding here, not error handling: the accounting surfaces **do** surface failures — the
 reconciliation panel renders `view.errorText` (`accounting-screen.reconciliation-panels.tsx:106-118`),
 the close cockpit does the same (`close-cockpit-panels.tsx:177,457`), and the trial balance carries a
 structured `ApiErrorDisplay`. `RegionErrorState` appears directly in only 3 non-test modules, but it
@@ -506,9 +514,13 @@ close-management product can tell.
    `needs:` resolves only job IDs within the same workflow, and `verify-desktop` is a lane-manifest
    ID, not a job: the Windows validation is the `desktop` job in the separate
    `windows-desktop-build.yml`. So either invoke that Windows job from `meridian-ci.yml` (or move it
-   there) and add the real job ID to `needs`, or make `Windows Desktop Build / desktop` a required
-   status check alongside `quality-gate` — and accept that its path filters must widen, since a
-   change outside them can still break WPF. Also promote the bootstrap and role-authorization
+   there) and add the real job ID to `needs`, or make the Windows workflow's check a required
+   status check alongside `quality-gate` — noting that the required context uses the job's *display*
+   name, not its key: `windows-desktop-build.yml:106-107` declares job `desktop` but renders it as
+   **`verify-desktop (build/test WPF)`**, so configuring `Windows Desktop Build / desktop` would
+   match nothing and silently leave WPF non-blocking. Verify the emitted context string before
+   configuring it, and accept that the workflow's path filters must widen, since a change outside
+   them can still break WPF. Also promote the bootstrap and role-authorization
    Integration suites into the required lane. (§7)
 7. **Surface the evidence that already exists — after checking each surface can bear the weight.**
    31 quality drill-downs sit behind a dashboard that is already wired, so those are genuinely
@@ -611,6 +623,14 @@ because a review that demands evidence discipline owes the same discipline about
 | "Apply the multiplier to cash, **cost basis**, margin, and market value" | `AverageCostBasis` is a per-unit entry price and consumers apply the multiplier themselves (`OptionPosition.cs:57`, `AggregatePortfolioService.cs:174-179`). Multiplying at storage would report $250,000 for ten $2.50 calls — a 100× error the other way | §3 |
 | "JSON-ignore when default, as `ChildOrders` does" | Neither existing pattern transfers. `ChildOrders` is `WhenWritingNull` on a nullable reference; `UsesFaceValuePercentageOfPar` is `WhenWritingDefault` on a `bool` whose semantic default *is* the CLR default. A `decimal` with semantic default `1m` matches neither, so every legacy record would gain `contractMultiplier: 1` and change its hash | §3 |
 
+**Round 6 — three more:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "Without a gate this ratio only moves one way — **and it has**" | Contradicted the correction printed 50 lines above it. The growth was an artifact of the broken scan; 29% matches the prior review. Sixth instance in this document of fixing a finding and leaving a dependent claim | Improvement #6 |
+| "Make `Windows Desktop Build / desktop` a required check" | The required context uses the job's *display* name. `windows-desktop-build.yml:106-107` declares job `desktop` but renders it `verify-desktop (build/test WPF)`, so that string matches nothing — the recommendation would silently leave WPF non-blocking, which is the exact failure §7 is about | Improvement #6 |
+| "Operators diverge for **up to a minute**" | Understated. `usePollingInterval` covers Trading, provider routing and Portfolio only (`use-workstation-data.ts:731-733`) — **not Accounting**. Break casework has no poll at all, so divergence is unbounded until manual refresh or remount | §8 — the finding is worse than reported |
+
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
 remedies — and are rewritten rather than softened; the multiplier correction made the defect
@@ -639,6 +659,13 @@ it invents one, and then everything built on it — the group table, the CI gate
 "cheapest uplift" ranking — inherits the error. Any structural test proposed in improvement #4 must
 therefore enumerate its own inputs explicitly and fail when a client layer is added that it does not
 know about.
+
+Round 6 supplied the sharpest illustration of the whole pattern. This document recommended making a
+Windows check required by a context string that does not exist — because the workflow overrides its
+job's display name. A review whose central finding is *"the catalogs disagree and no gate checks
+them"* proposed a gate configured against the wrong catalog entry. The recommendation would have
+looked applied and changed nothing, which is precisely the built-but-dead failure the review exists
+to name.
 
 ## Addendum — remediation landed while this review was in flight
 
