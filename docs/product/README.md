@@ -47,8 +47,9 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     no fund id), one run-scoped binding under `/accounting/accounts/detail`, the missing
     `ViewCompliance` read grant (which must also be subtracted from the `Developer` role, defined as
     `Admin` minus a list), the compliance read surfaces that need server work beyond that grant —
-    `controls/attestation` evaluates none of the four controls it names, and neither read route is
-    tenant-scoped — the option contract multiplier that reaches the two aggregate
+    `controls/attestation` evaluates none of the four controls it names, neither read route is
+    tenant-scoped, and the chain records policy evaluations rather than actions (the evaluate route
+    never dispatches, and the caller supplies the object identity and both state snapshots) — the option contract multiplier that reaches the two aggregate
     exposure projections but none of the paper transaction, valuation, persistence or margin paths
     — nor the Trading screen's own exposure and P&L arithmetic, which the book-side fix does not
     reach — and an estimated 29%

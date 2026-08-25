@@ -332,16 +332,32 @@ downstream consumers already apply the multiplier themselves (`OptionPosition.cs
 onward as separate values). Multiplying at storage while leaving those consumers alone would report
 $250,000 of exposure for ten $2.50 calls instead of $2,500 — a 100× error in the opposite direction.
 Keep lot and average prices in per-unit terms; migrate every consumer together or not at all.
-Second, give `ContractMultiplier` a persisted field so no reconstruction path can drop it — **and
-version the canonical hash when you do, or every existing durable session stops loading.**
+Second, make sure no reconstruction path can drop the multiplier — **and the record can already carry
+it, so this is a population gap, not a schema change.** `ExecutionReport.OptionContract` is an
+`OptionContractIdentity?` (`Models.cs:158`) whose `Multiplier` property already exists
+(`:119`), and `CloneExecutionReport` explicitly preserves the nested record on both the fill and each
+leg (`PaperSessionPersistenceService.cs:1214-1220`). What is missing is that fill producers do not
+stamp it and replay does not read it.
+
+**That distinction removes a requirement this document previously imposed on itself.** An earlier
+version of this remedy said to add a top-level `decimal ContractMultiplier` and warned — correctly,
+for *that* design — that doing so breaks every existing durable session:
 `PaperSessionFillRecord.Validate` recomputes `ComputeCanonicalHash(Fill)` by re-serializing the whole
 report through `ExecutionJsonContext` and **throws `InvalidDataException`** on any mismatch
-(`IPaperSessionStore.cs:149-175`). That context sets `DefaultIgnoreCondition = WhenWritingNull`
-(`ExecutionJsonContext.cs:18`), so a non-nullable `decimal` defaulting to `1m` is always written: a
-legacy record persisted before the field existed deserializes to `1m`, re-serializes with
-`contractMultiplier: 1`, hashes differently, and fails validation. This is a hard restore failure,
-not a warning. The fix needs a schema-versioned hash path or an explicit migration, with a
-legacy-hash compatibility test. `ResolveContractMultiplier`
+(`IPaperSessionStore.cs:149-175`), and that context sets `DefaultIgnoreCondition = WhenWritingNull`
+(`ExecutionJsonContext.cs:18`), so a non-nullable `decimal` defaulting to `1m` is *always* written and
+a legacy record re-serializes to a different hash. **Nullability is precisely what made that fatal,
+and the existing field is nullable.** A legacy record whose `OptionContract` is null omits the
+property entirely under `WhenWritingNull`, hashes exactly as before, and loads unchanged; only newly
+written option fills carry the value, and they hash correctly from birth. No schema-versioned hash
+path, no migration, no legacy-hash compatibility test. Adding a second top-level field would instead
+create two sources of truth for one quantity and force all of that work for nothing.
+
+One real cost to weigh rather than skip: `OptionContractIdentity.Multiplier` is a `string?`, part of
+a broker-identity payload rather than an economic one, so consumption means parsing at the boundary
+and deciding what a malformed or absent value means. That is a smaller and better-scoped problem than
+a hash migration, and it belongs at the one consumption point rather than spread across the
+transaction branches. `ResolveContractMultiplier`
 (`OrderManagementSystem.RiskOutcomes.cs:324`) already derives the value; the gap is that the
 transaction, valuation and margin paths do not multiply by it. **Scope the fix to those and to the
 Trading endpoint's own arithmetic** (`WorkstationEndpoints.Trading.cs:80-81,91,137-138`) — the two
@@ -615,6 +631,27 @@ a surface answering a question it never asked. Second, neither read route is ten
 carries a company identifier, and these endpoints never call `ResolveCompanyId`
 (`EndpointAuthorization.cs:307-317`) although other surfaces in the same layer do. In a multi-company
 deployment one company's compliance operator reads every company's audit chain.
+
+**And beneath both sits the one that decides what the chain is.** `actions/evaluate` calls
+`policy.Evaluate` and `auditLog.Append` and then returns — **it never dispatches the action.** No rule
+edit, break closure, payment release or override happens on that path. Meanwhile the caller supplies
+the object identity and both state snapshots: `ComplianceActionRequest` takes `ObjectType`,
+`ObjectId`, `BeforeStateJson` and `AfterStateJson` (`ComplianceModels.cs:23-36`) and `AppendCore`
+copies all four verbatim into the `AuditEvent` (`ComplianceServices.cs:190-207`). So an allowed
+evaluation is recorded whether or not any mutation follows it, describing whatever before-and-after
+the caller chose to send. **The chain is a log of policy evaluations, not of actions**, and appending
+denials — necessary as that is — does not change what the entries are.
+
+The gap is not that the integrity guarantee is weak. It is real: `AuditHash` chains each event to its
+predecessor and `VerifyIntegrity` walks it. **Integrity and truthfulness are orthogonal, and only the
+first is implemented.** A tamper-evident chain proves nobody edited the record afterwards; it says
+nothing about whether the recorded thing happened. The same record already shows the codebase knows
+this distinction: `RequestedByActorId` and `AdditionalApproverIds` are marked retained "only for wire
+compatibility", with a comment that policy evaluation "deliberately ignores these caller-authored
+identity claims" and resolves approval evidence authoritatively instead. That distrust was applied to
+who and never extended to what. Append from the actual mutation boundary, with state read rather than
+received — or label the surface a policy-evaluation-attempt log and stop calling its output an
+audit extract.
 
 The **data-quality** surface is different in kind, and narrower than an earlier draft of this
 section claimed. The aggregate `/api/quality/dashboard` is wired, *and so is the per-symbol
@@ -922,8 +959,15 @@ close-management product can tell.
    It needs authoritative activity data and target/scope safeguards before it can move. Read
    "stop using `ManageUsers` as the compliance grant" as applying to the read and approval routes,
    not to this mutation. This is what makes a least-privilege multi-user deployment possible at all. (§2)
-3. **Make instrument scale a modeled concept, once.** One value object carrying multiplier and price
-   convention, on `ExecutionReport` and `FillEvent` — and *consumed* in **every** transaction branch,
+3. **Make instrument scale a modeled concept, once — reusing what the record already carries.**
+   `ExecutionReport.OptionContract` is an `OptionContractIdentity?` whose `Multiplier` already exists
+   (`Models.cs:119,158`) and which `CloneExecutionReport` already preserves through replay
+   (`PaperSessionPersistenceService.cs:1214-1220`); the gap is that producers do not stamp it and
+   consumers do not read it. **Populate that rather than adding a second top-level field** — the
+   existing one is nullable, so legacy records omit it and hash unchanged, which removes the
+   versioned-hash migration an earlier version of this remedy required. Whatever value object carries
+   multiplier and price convention on `ExecutionReport` and `FillEvent` must then be *consumed* in
+   **every** transaction branch,
    not a subset: `ApplyBuy`, `ApplySellLong`, `ApplyShortSell` and `ApplyCoverShort` (the last two
    also feed Reg-T collateral and the ledger postings), the `MarketValue`/`SignedMarketValue`/
    `UnrealisedPnl` projections on `PaperPosition`, the three restore sites in
@@ -996,11 +1040,17 @@ close-management product can tell.
    precisely the state §5 describes. The scoped predicate therefore excluded the item it was written
    for, for the second time.
 
-   Two ways to specify it so that it bites: cover **every `implementation_complete` acceptance
-   candidate** regardless of what its criteria mention, or add explicit **surface-expectation
-   metadata** to the roadmap schema and gate on that. The first is cheaper and needs no schema
-   change; the second is more precise and would let a genuinely headless capability declare itself.
-   What does not work is inferring a surface expectation from criteria that never mention one.
+   Two ways to specify it so that it bites, and **the second needs no new schema field, because the
+   one it wants already exists.** Cover **every `implementation_complete` acceptance candidate**
+   regardless of what its criteria mention; or gate on the roadmap's existing `workspace:` key —
+   `W9-NAV-006` already declares `workspace: [Accounting, Portfolio]`
+   (`roadmap-items.yml:1047-1049`), and 39 items carry the key. An implementation-complete item that
+   names operator workspaces and reaches none of them is exactly the condition the gate is for, and
+   it is expressible today. Proposing *new* surface-expectation metadata beside it would create two
+   declarations that can drift — the failure this document spends §6 documenting — and buy a schema
+   change for nothing. What the field may need is tighter documented semantics or validation, which
+   is a smaller job than adding a parallel one. What does not work is inferring a surface expectation
+   from criteria that never mention one.
    (§1, §5, §6)
 5. **Activate NAV per unit end-to-end.** Valuation → `ShareClassUnitRegisterProjector` → governed
    journal intake → an operator panel, following the path capital-call issuance just proved. Highest
@@ -1078,8 +1128,11 @@ close-management product can tell.
 
    So all four route groups need server work first; they differ in how much, not in whether. The
    approver queue needs a discovery contract, access reviews need durable retention, `audit/extract`
-   needs denial events and tenant provenance, and `controls/attestation` needs all of that plus
-   actual control evaluation. Register them as route constants too, so the
+   needs denial events, tenant provenance **and events that record actions rather than evaluations**
+   — `actions/evaluate` never dispatches the action it evaluates, and the caller supplies the object
+   identity and both state snapshots that `AppendCore` copies verbatim — and `controls/attestation`
+   needs all of that plus actual control evaluation. The audit chain's tamper-evidence is real and
+   orthogonal: it proves the record was not edited afterwards, not that what it records occurred. Register them as route constants too, so the
    drift gate can see them. (§6)
 8. **Fix the freshness gap; standardize the error vocabulary second.** The demonstrated defect is
    staleness, and only **break casework** is established as unbounded: `usePollingInterval` does not
@@ -1130,8 +1183,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Thirty-four rounds of automated review challenged **98 claims** across this document. Every one was checked
-against the code, **all 98 held**, and the findings above are the corrected text. **Ten more were
+Thirty-five rounds of automated review challenged **101 claims** across this document. Every one was checked
+against the code, **all 101 held**, and the findings above are the corrected text. **Ten more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
@@ -1140,7 +1193,7 @@ and the second addendum's miscited compliance gate lines — and each is recorde
 marked *(self-detected)*. A further self-initiated pass, numbered round 31 below, is **absent from the table on purpose**: every correction it made was
 wrong and was retracted in round 32, so it contributes no rows and its number is left as a gap
 rather than silently reused.
-The table therefore holds **108 rows: 98 raised by review, 10 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **111 rows: 101 raised by review, 10 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1730,6 +1783,39 @@ round 33's evidence was elsewhere in the same file; round 34's was in a differen
 one's was **a comment directly above the line the remedy already cited**, written by someone who had
 made the same mistake and documented it so the next person would not. Reading the line and not the
 comment above it is the whole failure.
+
+**Round 36 — three, and all of them the same mistake inverted:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| The multiplier remedy: "give `ContractMultiplier` a persisted field… and version the canonical hash, or every existing durable session stops loading" | The record already carries it. `ExecutionReport.OptionContract` is an `OptionContractIdentity?` (`Models.cs:158`) whose `Multiplier` exists at `:119`, and `CloneExecutionReport` preserves the nested record on the fill *and* each leg (`PaperSessionPersistenceService.cs:1214-1220`). The gap is population, not schema. **And the existing field is nullable** — the exact property that made the proposed top-level `decimal` fatal — so legacy records omit it under `WhenWritingNull` and hash unchanged. **No migration, no versioned hash, no compatibility test** | §3 remedy and improvement #3 — rewritten around the existing field; the round-19 requirement withdrawn |
+| Improvement #4: "add explicit **surface-expectation metadata** to the roadmap schema and gate on that" | The key already exists. `W9-NAV-006` declares `workspace: [Accounting, Portfolio]` (`roadmap-items.yml:1047-1049`) and 39 items carry it. A parallel declaration would be two facts that can drift — the failure this document spends §6 on — bought with a schema change | Improvement #4 — gate points at `workspace:` |
+| "Append the decision either way" makes the chain audit evidence | It does not, because the entries are not records of actions. `actions/evaluate` calls `policy.Evaluate` and `auditLog.Append` and **never dispatches** the rule edit, break closure, payment release or override, while the caller supplies `ObjectType`, `ObjectId`, `BeforeStateJson` and `AfterStateJson` (`ComplianceModels.cs:23-36`) and `AppendCore` copies all four verbatim (`ComplianceServices.cs:190-207`). An allowed evaluation is logged whether or not any mutation follows, with whatever state the caller sent | §6 and improvement #7 |
+
+**All three are one failure, and it is the inverse of round 35's.** Round 35 was *existence checked,
+function not* — I confirmed a thing existed and assumed it worked. Round 36 is *function assumed,
+existence not* — I specified a thing that should exist without checking whether it already did, three
+times, and would have added a schema field, a roadmap key and a design pattern that were all already
+present. The two failures share a root: **reading the thing I was looking for and not the declaration
+around it.** In round 35 that meant reading a route and not what it computed; here it meant reading
+the field I wanted and not the record it would have lived in. `OptionContract` sits four lines below
+`Commission` in the same record my remedy was editing.
+
+The first row is worth separating out because it runs the other way from every other correction here.
+**It makes the work smaller.** Round 19 added a versioned-hash migration to this remedy and was right
+to, for the design it was given; round 36 removes it by changing the design to one the codebase
+already supports. Thirty-five rounds of this ledger read as scope ratcheting steadily up, and that is
+mostly what adversarial review does — but not always, and a reviewer who only ever expands the
+estimate is not being adversarial, just cautious. Nullability is the whole hinge: the property that
+made a new field a migration is the property the existing field already has.
+
+The third row is the **third consecutive round** to find an independent reason the compliance surface
+is not evidence — success-only in round 34, an attestation that computes nothing and unscoped reads in
+round 35, and now entries that record evaluations rather than actions. Each surfaced only after the
+previous was written into the text. That is its own lesson: **fixing the named gap keeps revealing the
+next one because the surface was never examined as a whole**, and it is the strongest justification
+for round 35's withdrawal of the "build it now" advice. Had that advice stood, the third gap would
+have been discovered by an auditor rather than a reviewer.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
