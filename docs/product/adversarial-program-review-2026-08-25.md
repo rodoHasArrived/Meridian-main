@@ -520,21 +520,31 @@ needs:
 </PropertyGroup>
 ```
 
-That guard is what lets a Windows-targeted *restore* succeed off Windows — but it is **not** what
-happens in the gate, and an earlier draft of this section had the mechanism wrong. The required lane
-never compiles `Meridian.Wpf` at all. `scripts/ci.sh` restores the full solution (`:135`) and then
-builds exactly one filter — `dotnet build Meridian.WebWorkstation.slnf` (`:156`) — and that filter
-lists a single project, `src/Meridian/Meridian.csproj`. Only that project and its project-reference
-closure are compiled, and a WPF desktop app is not in the web host's closure. The test runner then
-excludes the desktop suite explicitly: `run-dotnet-ci-tests.py:29` drops
-`tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj`, under a comment noting it "compiles an empty
-stub off-Windows".
+That guard is what lets a Windows-targeted *restore* succeed off Windows — but it is **not** the CI
+mechanism, and an earlier draft of this section had that wrong. The required lane never compiles
+`Meridian.Wpf` at all, and the reason takes two steps to state accurately.
 
-So the desktop workstation — a co-equal UI lane, and the client for the platform ADR-019
-*proposes* as the v1 production envelope (Windows 11 x64) — is **absent from the gate's build
-entirely**, which is a wider gap than the stub reading suggested: it is not that WPF compiles to
-nothing, it is that the merge gate compiles one project's closure out of the solution and never
-looks at the desktop lane.
+`scripts/ci.sh` restores the full solution (`:135`), then builds one filter —
+`dotnet build Meridian.WebWorkstation.slnf` (`:156`) — whose contents are the single project
+`src/Meridian/Meridian.csproj`. **That is not the whole build, though.** The very next step invokes
+`run-dotnet-ci-tests.py` (`:159`), whose `main` calls `run_builds` (`:324-343,430`) and issues a real
+`dotnet build` for every default test project. `tests/Meridian.Tests/Meridian.Tests.csproj` alone
+carries **30 `ProjectReference`s** against 38 projects under `src/`, so most of the solution *is*
+compiled — through the test projects' closures rather than the web filter. A previous version of this
+section claimed the gate "compiles one project's closure out of the solution"; that over-read the
+`.slnf` and ignored the builds happening one line below it.
+
+What is genuinely absent is narrower and unchanged: `Meridian.Wpf` and the Windows-only projects.
+`run-dotnet-ci-tests.py:28-33` lists `Meridian.Wpf.Tests`, `Meridian.LifecycleSupervisor.Tests` and
+`Meridian.Setup.Tests` as `WINDOWS_ONLY_TEST_PROJECTS`, excluded from the ubuntu lane — under a
+comment stating that `Meridian.Wpf.Tests` "compiles an empty stub off-Windows
+(`EnableDefaultCompileItems=false`)". The desktop *app* project is in no test project's closure
+either, so nothing on this lane compiles it.
+
+So the desktop workstation — a co-equal UI lane, and the client for the platform ADR-019 *proposes*
+as the v1 production envelope (Windows 11 x64) — is **absent from the gate's build**, while the rest
+of the solution is covered. The finding is the one it always was; only the mechanism needed
+correcting, twice.
 That ADR is still **"Proposed (awaiting core-team sign-off)"** (`019-production-support-matrix-and-deployment-posture.md:3`),
 and its context records that no support declaration exists yet and that `PRD-000` blocks every
 supported production release until one is signed (`:11-14`) — so Windows is the *target*, not a
@@ -794,12 +804,12 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Nineteen rounds of automated review challenged **59 claims** across this document. Every one was checked
-against the code, **all 59 held**, and the findings above are the corrected text. **Four more were
+Twenty rounds of automated review challenged **60 claims** across this document. Every one was checked
+against the code, **all 60 held**, and the findings above are the corrected text. **Four more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, and §3's own lead sentence — and each is recorded as a row below, marked *(self-detected)*.
-The table therefore holds **63 rows: 59 raised by review, 4 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **64 rows: 60 raised by review, 4 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1059,7 +1069,7 @@ seventeen times.
 
 | Claim | Why it was wrong | Corrected in |
 | --- | --- | --- |
-| "`Meridian.Wpf` compiles to an empty stub in the gate" | The required lane never compiles it at all. `scripts/ci.sh` restores the full solution (`:135`) but builds only `dotnet build Meridian.WebWorkstation.slnf` (`:156`), and that filter contains one project — `src/Meridian/Meridian.csproj`. Only its reference closure is built, and a WPF app is not in a web host's closure; `run-dotnet-ci-tests.py:29` then drops the desktop test suite explicitly. The `EnableDefaultCompileItems` guard makes the Windows-targeted *restore* work off-Windows; it is not the CI mechanism | §7 — evidence replaced, conclusion widened |
+| "`Meridian.Wpf` compiles to an empty stub in the gate" | The required lane never compiles it at all. `scripts/ci.sh` restores the full solution (`:135`) but builds only `dotnet build Meridian.WebWorkstation.slnf` (`:156`), and that filter contains one project — `src/Meridian/Meridian.csproj`. Only its reference closure is built, and a WPF app is not in a web host's closure; `run-dotnet-ci-tests.py:29` then drops the desktop test suite explicitly. The `EnableDefaultCompileItems` guard makes the Windows-targeted *restore* work off-Windows; it is not the CI mechanism | §7 — evidence replaced. The widening this round added was itself withdrawn in round 20 |
 | "Break casework, approvals, and close-readiness do not refresh after a mutation elsewhere" | Approvals poll: `useGovernedApprovalsViewModel` installs a `setInterval` at `DEFAULT_APPROVAL_REFRESH_MS = 15_000` (`:47,101-112`), so they are stale but **bounded**. Only break casework is unbounded, and close-readiness is not established either way by the evidence gathered here | §8 — narrowed to the case that holds |
 | The §3 remedy's two steps fix only scale | The same three replay sites also omit `ownerAccountId`, so `AttributeFill` receives null and the restored book stays unattributed even after the multiplier is persisted and consumed. Round 4 established the gap; the remedy was never updated to close it | §3 — third step added |
 | The corrections total still did not foot | The header counted 53 raised + 2 self-detected, while round 17's prose described two further self-detected fixes that appeared in no row and no total. Recorded as rows and counted | This header, round-17 block |
@@ -1094,6 +1104,24 @@ The second row is the same failure in a different register: round 5 established 
 field changes the canonical hash of every legacy record, recorded it in the corrections table, and
 left the implementation instruction saying "add the field". A hazard noted in the audit trail but
 absent from the instruction is a hazard an implementer will hit.
+
+**Round 20 — one, correcting the correction from round 18:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "The merge gate compiles one project's closure out of the solution" (round 18's own widening) | `scripts/ci.sh:159` invokes `run-dotnet-ci-tests.py`, whose `main` calls `run_builds` and issues a real `dotnet build` for every default test project (`:324-343,430`). `tests/Meridian.Tests/Meridian.Tests.csproj` alone has **30 `ProjectReference`s** against 38 projects under `src/`, so most of the solution is compiled through the test closures. Only `Meridian.Wpf` and the three `WINDOWS_ONLY_TEST_PROJECTS` are absent | §7 — mechanism corrected, widening withdrawn |
+
+Three versions of one mechanism, and the failure mode is identical each time. The original said WPF
+"compiles to an empty stub" — plausible, because `Meridian.Wpf.csproj` really does disable default
+compile items off Windows, and `run-dotnet-ci-tests.py`'s own comment really does describe the *test*
+project that way. Round 18 corrected the mechanism and then over-generalized from the `.slnf`, in the
+same breath. Round 20 removes the over-generalization.
+
+The detail worth keeping is that I had already read `run-dotnet-ci-tests.py` twice — in round 16 for
+the provenance test, and in round 18 to cite line 29's exclusion list — and never asked what the file
+*builds*, only what it *skips*. Reading a file for the fact you came to find is not reading it. The
+finding itself has survived all three versions unchanged: **WPF is not compiled on the lane that
+gates the merge.**
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
