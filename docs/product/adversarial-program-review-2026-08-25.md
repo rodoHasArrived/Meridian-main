@@ -53,7 +53,7 @@ and it is invisible to every gate the repository runs, because no gate compares 
 | Release attachment | **Landed** | tag `eval-v0.1.0-eval.1`; `8e9b11c3` attaches consumer setup to the evaluation prerelease |
 | Provenance at the ingress seam | **Partial** | `2361152c` threads real provider identity; the contract still permits an un-sourced print — `MarketTradeUpdate.cs:33` is `string? Source = null` |
 | Fund-economics activation | **Partial — the named alternative was skipped** | capital-call issuance wired (`CapitalCallFundingIntake.cs:236`); NAV-per-unit + unit register still at zero consumers |
-| `ContractMultiplier` on the durable fill record | **Open — and wider than reported** | §3–§4 below: the multiplier never reaches portfolio economics on any path, so option books are 1/100-scaled live as well as on restore |
+| `ContractMultiplier` on the durable fill record | **Open — and wider than reported** | §3–§4 below: the multiplier never reaches portfolio economics on any path, so option position value is understated live as well as on restore, and every number derived from it is wrong (see §4 for the per-metric breakdown — it is not a uniform 1/100 on equity or Sharpe) |
 | WPF state un-fork / desktop test job in the gate | **Open** | §7 below |
 
 ## 1. The accounting workstation reads the wrong book, and the accountants are locked out of it
@@ -177,10 +177,16 @@ input and is never used as one.
 
 That reframes the persistence gap rather than erasing it. All three
 `PaperSessionPersistenceService` call sites — `:159` (session restore on startup), `:820`
-(`ReplaySessionAsync`), `:1190` (candidate projection) — still take the `1m` default, so the
-restored book additionally loses the attribution metadata and the per-owner split that depends on
-it, and `VerifyReplayAsync` (`:835`) compares two books that agree only because both are wrong the
-same way. A continuity proof that passes because live and replay share a defect is not a proof.
+(`ReplaySessionAsync`), `:1190` (candidate projection) — still take the `1m` default, and
+`VerifyReplayAsync` (`:835`) compares two books that agree only because both are wrong the same way.
+A continuity proof that passes because live and replay share a defect is not a proof.
+
+**A second, independent gap sits at the same three call sites.** They also omit `ownerAccountId`, and
+that one is *not* fixed by a multiplier field: `AttributeFill` builds the per-owner split from its
+own `ownerAccountId` argument, and neither `ExecutionReport` nor `PaperSessionFillRecord`
+(`IPaperSessionStore.cs:72-76`) persists it. So every fund-scoped fill restores unattributed, and
+fund-scoped portfolio views are incomplete after any restart. Two missing pieces of durable identity,
+one record — and fixing either alone still leaves the restored book wrong.
 
 **Scope: options only.** Fixed income is *not* affected, and the contrast is the whole lesson.
 `ExecutionReport` carries `UsesFaceValuePercentageOfPar` as a first-class persisted field
@@ -225,10 +231,21 @@ portfolio producing that equity is itself unscaled: `PaperPosition.MarketValue` 
 `LiveStrategyRunSession` feeds exactly that `_context.PortfolioValue` into both `RecordDayEnd`
 (`:361-364`) and `Build` (`:772-775`).
 
-So for an options session the equity series is 1/100-scaled at source, and **net P&L, total return,
-drawdown, and Sharpe all inherit it**. Only commissions escape, because `_totalCommissions`
-accumulates independently of position value. The per-trade record is wrong *and* every session-level
-number computed from the book is wrong, for the same root cause.
+So for an options session every number derived from position value is wrong — but *how* it is wrong
+differs by metric, and the distinction matters for triage:
+
+| Quantity | Effect |
+| --- | --- |
+| Option position value, and the cash/cost-basis entries behind it | Understated by the multiplier — 1/100 for a standard equity option |
+| Portfolio equity | **Not** 1/100 of correct: equity is cash + positions, and cash is intact. Understated by the missing option exposure only |
+| Net P&L, total return, drawdown | Wrong by the equity error above — a magnitude error, not a clean 1/100 scale |
+| Sharpe (`mean / stdDev * √252`, `:143`) | **Not** scale-invariant here. A *uniform* scale on returns would cancel in the ratio; this is not uniform, because daily returns are `(equity − previous) / previous` over a book whose cash component is correct and whose option component is not. Sharpe is distorted nonlinearly — plausible-looking and untrustworthy, which is worse than visibly wrong |
+| Commissions | Unaffected — `_totalCommissions` accumulates independently |
+
+The per-trade record is wrong *and* every session-level number computed from the book is wrong, for
+the same root cause. This review has now mis-stated that blast radius twice in opposite directions —
+first too narrow, then too broad — which is itself evidence for how hard the defect is to reason
+about when a value is threaded but not consumed.
 
 This is the same defect shape as §3, in a third subsystem. Three subsystems now model instrument
 scale differently: `ExecutionPosition.ContractMultiplier` (`ExecutionPosition.cs:42`), the
@@ -564,6 +581,14 @@ because a review that demands evidence discipline owes the same discipline about
 | "Stop the UI lying by omission" | Contradicted the corrected §8. The named panels already render failures; consolidating them is standardization, not restoration, and was crowding out the real staleness defect | Improvement #8 |
 | `ManageCompliance` as a single new grant | Re-creates the §2 overload one level down: an auditor reading `/audit/extract` would also gain authority over approval decisions | Improvement #2 — split into `ViewCompliance`/`ManageCompliance` |
 
+**Round 4 — three more, all self-inflicted:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "The restored book loses the per-owner split *that depends on* the multiplier" | It does not depend on it. `AttributeFill` builds the split from a separate `ownerAccountId` argument, and neither `ExecutionReport` nor `PaperSessionFillRecord` persists that — so the proposed multiplier field would leave every fund-scoped fill unattributed. Two independent gaps, not one | §3 |
+| "Net P&L, total return, drawdown, and Sharpe all inherit the 1/100 scale" | Overcorrected in the opposite direction from round 2. Equity is cash + positions and cash is intact, so equity is not 1/100 of correct; and Sharpe is `mean / stdDev`, which a *uniform* scale would cancel — the real effect is nonlinear distortion, which is worse than a clean scale because it looks plausible | §4 — replaced with a per-metric table |
+| Addendum marking "§1(a) and §1(b)" fixed | Only (b) was. §1(a) is the run-scoped binding, which the same addendum confirms is still mounted — so the label contradicted the paragraph four lines below it | Addendum |
+
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
 remedies — and are rewritten rather than softened; the multiplier correction made the defect
@@ -574,8 +599,14 @@ describing it. And **a value that is carried but never consumed reads as handled
 is threaded through three layers and multiplied by nothing, which is why four consecutive reviews,
 this one included, mistook plumbing for correctness. And third: **correcting one section without
 re-reading the sections that depend on it introduces fresh contradictions** — round 2's narrowing of
-§4 was refuted by §3, which the same commit had just rewritten. Four of round 3's six findings are
-damage from rounds 1 and 2, not from the original draft.
+§4 was refuted by §3, which the same commit had just rewritten; round 3's replacement then
+overcorrected past the evidence, and round 4 had to pull it back. Seven of the nine findings in
+rounds 3 and 4 are damage from earlier corrections, not defects in the original draft.
+
+The §4 blast radius alone was mis-stated three times — too narrow, too broad, then finally
+enumerated per metric. That is the same failure the document diagnoses in the codebase: each fix was
+correct about the line it touched and wrong about the line next to it. Writing about a defect class
+turns out to be no protection against committing it.
 
 ## Addendum — remediation landed while this review was in flight
 
@@ -583,7 +614,9 @@ damage from rounds 1 and 2, not from the original draft.
 trial balance at the posted journal"). That branch is merged into this one, so the findings above are
 still anchored at `e232ece1` but the code beside them has moved. What actually changed, verified:
 
-**Genuinely fixed — §1(a) and §1(b).** A new `src/Meridian.Ui/dashboard/src/lib/ledger-reports-api.ts`
+**Genuinely fixed — §1(b) only.** §1(a) is the Accounting screen's run-scoped
+`getRunTrialBalance` binding, and that is still mounted and unchanged (see below), so the two-book
+ambiguity is *not* remediated. What did land: a new `src/Meridian.Ui/dashboard/src/lib/ledger-reports-api.ts`
 calls `/api/ledger/periods`, `…/{periodId}/trial-balance`, and `…/{periodId}/pnl-summary`, and a new
 `AccountingPostedLedgerSection` (`accounting-screen.posted-ledger-panel.tsx`, mounted at
 `accounting-screen.tsx:2894`) renders them. The posted journal's trial balance and P&L now reach an
