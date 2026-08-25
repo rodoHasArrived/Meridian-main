@@ -306,6 +306,17 @@ internal sealed class SimulatedPortfolio
 
         var symbol = assetEvent.Symbol;
         var targetSymbol = assetEvent.DestinationSymbol;
+        decimal? sharedSameSymbolReferencePrice = null;
+        if (assetEvent.HasPositionTransformation &&
+            assetEvent.PositionFactor != 0m &&
+            targetSymbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
+        {
+            if (assetEvent.ReferencePrice is > 0m)
+                sharedSameSymbolReferencePrice = assetEvent.ReferencePrice;
+            else if (_lastPrices.TryGetValue(symbol, out var sourcePrice) && sourcePrice > 0m)
+                sharedSameSymbolReferencePrice = sourcePrice / Math.Abs(assetEvent.PositionFactor);
+        }
+
         foreach (var account in _accounts.Values)
         {
             if (account.Account.Kind != FinancialAccountKind.Brokerage)
@@ -315,9 +326,25 @@ internal sealed class SimulatedPortfolio
             if (existingQty == 0)
                 continue;
 
+            if (assetEvent.HasPositionTransformation &&
+                targetSymbol.Equals(symbol, StringComparison.OrdinalIgnoreCase) &&
+                sharedSameSymbolReferencePrice is null)
+            {
+                sharedSameSymbolReferencePrice = ResolveReferencePrice(
+                    account,
+                    assetEvent,
+                    existingQty,
+                    assetEvent.PositionFactor);
+            }
+
             decimal totalCashImpact = 0m;
             if (assetEvent.HasPositionTransformation)
-                totalCashImpact += ApplyPositionTransformation(account, assetEvent, existingQty, targetSymbol);
+                totalCashImpact += ApplyPositionTransformation(
+                    account,
+                    assetEvent,
+                    existingQty,
+                    targetSymbol,
+                    sharedSameSymbolReferencePrice);
 
             if (assetEvent.CashPerShare != 0m)
                 totalCashImpact += ApplyPerShareCashAdjustment(account, assetEvent, existingQty);
@@ -485,7 +512,12 @@ internal sealed class SimulatedPortfolio
         return amount;
     }
 
-    private decimal ApplyPositionTransformation(AccountState account, AssetEvent assetEvent, long existingQty, string targetSymbol)
+    private decimal ApplyPositionTransformation(
+        AccountState account,
+        AssetEvent assetEvent,
+        long existingQty,
+        string targetSymbol,
+        decimal? referencePriceOverride)
     {
         var factor = assetEvent.PositionFactor;
         if (factor == 0m)
@@ -494,7 +526,7 @@ internal sealed class SimulatedPortfolio
         var transformedQtyDecimal = existingQty * factor;
         var transformedQty = ConvertToWholeUnits(transformedQtyDecimal);
         var fractionalUnits = transformedQtyDecimal - transformedQty;
-        var referencePrice = ResolveReferencePrice(account, assetEvent, existingQty, factor);
+        var referencePrice = referencePriceOverride ?? ResolveReferencePrice(account, assetEvent, existingQty, factor);
         var cashInLieu = fractionalUnits * referencePrice;
 
         var transformedLongLots = TransformLots(account.Lots.GetValueOrDefault(assetEvent.Symbol), factor);
@@ -532,7 +564,9 @@ internal sealed class SimulatedPortfolio
         if (assetEvent.ReferencePrice is { } explicitReference && explicitReference > 0m)
             return explicitReference;
 
-        if (_lastPrices.TryGetValue(assetEvent.DestinationSymbol, out var destinationPrice) && destinationPrice > 0m)
+        if (!assetEvent.DestinationSymbol.Equals(assetEvent.Symbol, StringComparison.OrdinalIgnoreCase) &&
+            _lastPrices.TryGetValue(assetEvent.DestinationSymbol, out var destinationPrice) &&
+            destinationPrice > 0m)
             return destinationPrice;
 
         if (_lastPrices.TryGetValue(assetEvent.Symbol, out var sourcePrice) && sourcePrice > 0m)

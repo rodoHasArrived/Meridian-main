@@ -44,6 +44,23 @@ public sealed class CorporateActionAdjustmentServiceTests
     }
 
     [Fact]
+    public async Task PrepareAsync_HistoricalTickerMiss_FallsBackToCurrentIdentity()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResults(null, securityId);
+        _mockQueryService.SetCorporateActions([]);
+        var asOf = new DateTimeOffset(2024, 12, 31, 23, 59, 59, TimeSpan.Zero);
+        var bars = new[] { CreateBar("RENAMED", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m) };
+
+        await _service.PrepareAsync(bars, "RENAMED", asOf);
+
+        _mockResolver.Requests.Should().HaveCount(2);
+        _mockResolver.Requests[0].AsOfUtc.Should().Be(asOf);
+        _mockResolver.Requests[1].AsOfUtc.Should().BeAfter(asOf);
+        _mockQueryService.GetCorporateActionsCallCount.Should().Be(1);
+    }
+
+    [Fact]
     public async Task AdjustAsync_NoCorporateActions_ReturnsOriginalBars()
     {
         var securityId = Guid.NewGuid();
@@ -515,18 +532,34 @@ public sealed class CorporateActionAdjustmentServiceTests
     private sealed class MockSecurityResolver : ISecurityResolver
     {
         private Guid? _result;
+        private readonly Queue<Guid?> _results = new();
 
         public int ResolveCallCount { get; private set; }
 
         public ResolveSecurityRequest? LastRequest { get; private set; }
 
-        public void SetResolveResult(Guid? result) => _result = result;
+        public List<ResolveSecurityRequest> Requests { get; } = [];
+
+        public void SetResolveResult(Guid? result)
+        {
+            _results.Clear();
+            _result = result;
+        }
+
+        public void SetResolveResults(params Guid?[] results)
+        {
+            _results.Clear();
+            foreach (var result in results)
+                _results.Enqueue(result);
+            _result = results.LastOrDefault();
+        }
 
         public Task<Guid?> ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default)
         {
             ResolveCallCount++;
             LastRequest = request;
-            return Task.FromResult(_result);
+            Requests.Add(request);
+            return Task.FromResult(_results.Count > 0 ? _results.Dequeue() : _result);
         }
     }
 

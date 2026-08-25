@@ -149,8 +149,19 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
 
         if (securityId is null)
         {
-            _logger.LogWarning("Security not found in master for ticker {Ticker}", ticker);
-            return [];
+            securityId = await _resolver.ResolveAsync(
+                new ResolveSecurityRequest(
+                    IdentifierKind: SecurityIdentifierKind.Ticker,
+                    IdentifierValue: ticker,
+                    Provider: null,
+                    AsOfUtc: DateTimeOffset.UtcNow),
+                ct).ConfigureAwait(false);
+
+            if (securityId is null)
+            {
+                _logger.LogWarning("Security not found in master for ticker {Ticker}", ticker);
+                return [];
+            }
         }
 
         var actions = await _queryService.GetCorporateActionsAsync(securityId.Value, ct)

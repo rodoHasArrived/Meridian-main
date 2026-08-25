@@ -67,7 +67,13 @@ public sealed class BacktestProxy
     }
 
     public BacktestProxy WithExecutionModel(ExecutionModel model) { _executionModel = model; return this; }
-    public BacktestProxy WithSlippage(decimal basisPoints) { _slippageBasisPoints = basisPoints; return this; }
+    public BacktestProxy WithSlippage(decimal basisPoints)
+    {
+        if (basisPoints < 0m)
+            throw new ArgumentOutOfRangeException(nameof(basisPoints), basisPoints, "Slippage cannot be negative.");
+        _slippageBasisPoints = basisPoints;
+        return this;
+    }
     public BacktestProxy WithCommission(
         BacktestCommissionKind kind,
         decimal rate = 0.005m,
@@ -128,10 +134,10 @@ public sealed class BacktestProxy
         try
         {
             var result = await _engine.RunAsync(request, _strategy, progress, _cancellationTokenProvider()).ConfigureAwait(false);
+            _strategy.CompleteRun(result);
             _capturedResults.Add(result);
             _capturedFills.Clear();
             _capturedFills.AddRange(result.Fills);
-            _strategy.CompleteRun(result);
             return result;
         }
         catch

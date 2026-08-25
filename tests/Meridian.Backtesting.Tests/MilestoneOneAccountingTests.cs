@@ -335,6 +335,8 @@ public sealed class MilestoneOneAccountingTests
         accountsAfterSplit["broker-a"].Positions["SPY"].AverageCostBasis.Should().Be(50m);
         accountsAfterSplit["broker-b"].Positions["SPY"].Quantity.Should().Be(40L);
         accountsAfterSplit["broker-b"].Positions["SPY"].AverageCostBasis.Should().Be(50m);
+        portfolio.LastPrices["SPY"].Should().Be(50m,
+            "a same-symbol split must normalize the shared mark only once for every account");
     }
 
     [Fact]

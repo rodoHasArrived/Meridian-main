@@ -536,6 +536,45 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
     }
 
     [Fact]
+    public async Task RunAsync_NonPartialBatchRejectedOnLaterSlice_AcceptsNoSlices()
+    {
+        WriteMultiLevelLobJsonl(
+            "SPY",
+            (new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero),
+                [(99m, 1_000L)],
+                [(100m, 1L), (101m, 1L)]));
+
+        var cashOnlyAccount = new FinancialAccount(
+            BacktestDefaults.DefaultBrokerageAccountId,
+            "Cash Brokerage",
+            FinancialAccountKind.Brokerage,
+            InitialCash: 150m,
+            Rules: new FinancialAccountRules(AllowMargin: false, AllowShortSelling: true));
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            Accounts: [cashOnlyAccount],
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(
+            request,
+            new SubmitOnceStrategy(new OrderRequest(
+                "SPY",
+                2L,
+                OrderType.Market,
+                TimeInForce: TimeInForce.GoodTilCancelled,
+                AllowPartialFills: false,
+                ExecutionModel: ExecutionModel.OrderBook)));
+
+        result.Fills.Should().BeEmpty(
+            "a non-partial order must roll back every slice when any slice violates account rules");
+        result.Snapshots.Should().ContainSingle();
+        result.Snapshots[0].Accounts[BacktestDefaults.DefaultBrokerageAccountId]
+            .Cash.Should().Be(150m);
+    }
+
+    [Fact]
     public async Task RunAsync_FillOrKillBarProposalCannotComplete_DiscardsPartialProposal()
     {
         WriteCustomBarJsonl(

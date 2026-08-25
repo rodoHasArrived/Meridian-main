@@ -470,8 +470,16 @@ export function reconcileQuantParameterValues(
   existing: Record<string, string>,
   params: QuantParameter[]
 ): Record<string, string> {
-  const names = new Set(params.map((parameter) => parameter.name));
-  const retained = Object.fromEntries(Object.entries(existing).filter(([name]) => names.has(name)));
+  const parametersByName = new Map(
+    params.map((parameter) => [parameter.name.toLowerCase(), parameter] as const)
+  );
+  const retained: Record<string, string> = {};
+  for (const [name, value] of Object.entries(existing)) {
+    const parameter = parametersByName.get(name.toLowerCase());
+    if (parameter) {
+      retained[parameter.name] = value;
+    }
+  }
   return initializeNewParameterValues(retained, params);
 }
 
@@ -482,7 +490,7 @@ export function buildQuantParameters(
   const result: Record<string, string | number | boolean | null> = {};
   for (const parameter of params) {
     const raw = values[parameter.name];
-    if (raw === undefined || raw === "") {
+    if (raw === undefined || (raw === "" && parameter.typeName !== "string")) {
       continue;
     }
     switch (parameter.typeName) {

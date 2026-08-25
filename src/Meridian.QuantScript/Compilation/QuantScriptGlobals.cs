@@ -118,13 +118,12 @@ public sealed class QuantScriptGlobals
             throw InvalidParameter(name, typeof(T), "the supplied value is malformed, out of range, or cannot be represented exactly", ex);
         }
 
-        if (TryGetNumericValue(converted, out var numericValue) &&
-            (numericValue < min || numericValue > max))
+        if (IsNumericOutsideBounds(converted, min, max, out var numericValue))
         {
             throw InvalidParameter(
                 name,
                 typeof(T),
-                $"the supplied value {numericValue.ToString("R", CultureInfo.InvariantCulture)} is outside the inclusive range {min.ToString("R", CultureInfo.InvariantCulture)}..{max.ToString("R", CultureInfo.InvariantCulture)}");
+                $"the supplied value {numericValue} is outside the inclusive range {min.ToString("R", CultureInfo.InvariantCulture)}..{max.ToString("R", CultureInfo.InvariantCulture)}");
         }
 
         return (T)converted;
@@ -366,17 +365,36 @@ public sealed class QuantScriptGlobals
         }
     }
 
-    private static bool TryGetNumericValue(object value, out double numericValue)
+    private static bool IsNumericOutsideBounds(object value, double min, double max, out string numericValue)
     {
-        if (value is byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal)
+        numericValue = Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
+        if (value is byte or sbyte or short or ushort or int or uint or long or ulong or decimal)
         {
-            numericValue = Convert.ToDouble(value, CultureInfo.InvariantCulture);
-            return double.IsFinite(numericValue);
+            var exactValue = Convert.ToDecimal(value, CultureInfo.InvariantCulture);
+            var belowMinimum = TryConvertFiniteBoundToDecimal(min, out var exactMin)
+                ? exactValue < exactMin
+                : double.IsFinite(min) && min > 0d;
+            var aboveMaximum = TryConvertFiniteBoundToDecimal(max, out var exactMax)
+                ? exactValue > exactMax
+                : double.IsFinite(max) && max < 0d;
+            return belowMinimum || aboveMaximum;
         }
 
-        numericValue = default;
+        if (value is float or double)
+        {
+            var floatingValue = Convert.ToDouble(value, CultureInfo.InvariantCulture);
+            return double.IsFinite(floatingValue) && (floatingValue < min || floatingValue > max);
+        }
+
         return false;
     }
+
+    private static bool TryConvertFiniteBoundToDecimal(double bound, out decimal converted)
+        => decimal.TryParse(
+            bound.ToString("R", CultureInfo.InvariantCulture),
+            NumberStyles.Float,
+            CultureInfo.InvariantCulture,
+            out converted);
 
     private static ArgumentException InvalidParameter(string name, Type requestedType, string detail, Exception? inner = null)
         => new(

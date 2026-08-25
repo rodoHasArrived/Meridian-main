@@ -155,6 +155,25 @@ public sealed class JsonlReplayerTests : IDisposable
     }
 
     [Fact]
+    public async Task ReadEventsAsync_WhenPartitionCountExceedsReaderCap_FailsClosedAndReleasesReaders()
+    {
+        for (var index = 0; index < 129; index++)
+        {
+            var file = Path.Combine(_tempRoot, $"{index:D3}.jsonl");
+            await File.WriteAllTextAsync(file, SerializeLine(BuildTrade($"S{index}", index + 1)));
+        }
+
+        var act = async () => await ReadAllAsync(new JsonlReplayer(_tempRoot));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*128 concurrently open partition readers*");
+
+        var singleFile = Path.Combine(_tempRoot, "000.jsonl");
+        var replayed = await ReadAllAsync(new JsonlReplayer(singleFile));
+        replayed.Should().ContainSingle("the failed merge must release every acquired reader slot");
+    }
+
+    [Fact]
     public async Task ReadEventsAsync_WhenPathIsGzipJsonlFile_DecompressesAndReplays()
     {
         var file = Path.Combine(_tempRoot, "events.jsonl.gz");

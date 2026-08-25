@@ -60,6 +60,16 @@ public sealed class BacktestProxyTests : IDisposable
     }
 
     [Fact]
+    public void WithSlippage_NegativeValue_FailsClosed()
+    {
+        var proxy = new BacktestProxy(null, new QuantScriptOptions());
+
+        var act = () => proxy.WithSlippage(-0.01m);
+
+        act.Should().Throw<ArgumentOutOfRangeException>().WithMessage("*cannot be negative*");
+    }
+
+    [Fact]
     public async Task RunAsync_OnFinishedReceivesTheCompletedMatchingResult()
     {
         Directory.CreateDirectory(_dataRoot);
@@ -78,6 +88,27 @@ public sealed class BacktestProxyTests : IDisposable
         var result = await proxy.RunAsync();
 
         callbackResult.Should().BeSameAs(result);
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenOnFinishedThrows_DoesNotCaptureFailedRun()
+    {
+        Directory.CreateDirectory(_dataRoot);
+        WriteBar("SPY", new DateOnly(2024, 1, 2));
+        var catalog = new StorageCatalogService(_dataRoot, new StorageOptions());
+        var engine = new BacktestEngine(NullLogger<BacktestEngine>.Instance, catalog);
+        var proxy = new BacktestProxy(engine, new QuantScriptOptions())
+            .From(new DateOnly(2024, 1, 2))
+            .To(new DateOnly(2024, 1, 3))
+            .WithSymbols("SPY")
+            .WithDataRoot(_dataRoot)
+            .OnFinished((_, _) => throw new InvalidOperationException("finish failed"));
+
+        var act = async () => await proxy.RunAsync();
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("finish failed");
+        proxy.DrainCapturedResults().Should().BeEmpty();
+        proxy.DrainCapturedFills().Should().BeEmpty();
     }
 
     [Fact]

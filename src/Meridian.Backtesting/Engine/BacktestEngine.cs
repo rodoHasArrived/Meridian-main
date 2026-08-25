@@ -527,7 +527,7 @@ public sealed class BacktestEngine(
                 order.TimeInForce != TimeInForce.FillOrKill ||
                 Math.Abs(proposedFilledQuantity) == order.RemainingQuantity;
 
-            if (order.TimeInForce == TimeInForce.FillOrKill &&
+            if (!order.AllowPartialFills &&
                 fillOrKillHasCompleteProposal &&
                 result.Fills.Count > 0)
             {
@@ -540,11 +540,11 @@ public sealed class BacktestEngine(
                 catch (InvalidOperationException ex)
                 {
                     logger.LogWarning(ex,
-                        "Atomic fill-or-kill batch rejected for order {OrderId} on {Symbol}: {Message}. No slices were accepted.",
+                        "Atomic non-partial fill batch rejected for order {OrderId} on {Symbol}: {Message}. No slices were accepted.",
                         order.OrderId, order.Symbol, ex.Message);
                 }
             }
-            else if (order.TimeInForce != TimeInForce.FillOrKill)
+            else if (order.TimeInForce != TimeInForce.FillOrKill && order.AllowPartialFills)
             {
                 foreach (var candidateFill in result.Fills)
                 {

@@ -11,6 +11,10 @@ namespace Meridian.Storage.Replay;
 /// </summary>
 public sealed class JsonlReplayer
 {
+    internal const int MaxConcurrentPartitionReaders = 128;
+    private static readonly SemaphoreSlim PartitionReaderSlots = new(
+        MaxConcurrentPartitionReaders,
+        MaxConcurrentPartitionReaders);
     private readonly string _path;
 
     public JsonlReplayer(string path)
@@ -86,62 +90,76 @@ public sealed class JsonlReplayer
         string file,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        await using var fs = new FileStream(
-            file,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.ReadWrite | FileShare.Delete,
-            bufferSize: 4096,
-            useAsync: true);
-        // Shared codec detection (magic bytes, extension fallback) so this reader honors every
-        // compression suffix the storage policy can emit, not just gzip.
-        var stream = CompressedJsonlStream.Decompress(fs, file);
-
-        using var reader = new StreamReader(stream);
-        long lineNumber = 0;
-        long? previousUtcTicks = null;
-        long previousLineNumber = 0;
-
-        while (true)
+        if (!await PartitionReaderSlots.WaitAsync(0, ct).ConfigureAwait(false))
         {
-            ct.ThrowIfCancellationRequested();
-            var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
-            if (line is null)
-                yield break;
+            throw new InvalidOperationException(
+                $"Replay requires more than {MaxConcurrentPartitionReaders} concurrently open partition readers. " +
+                "Reduce the replay partition set or consolidate old partitions before retrying.");
+        }
 
-            lineNumber++;
-            if (string.IsNullOrWhiteSpace(line))
-                continue;
+        try
+        {
+            await using var fs = new FileStream(
+                file,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete,
+                bufferSize: 4096,
+                useAsync: true);
+            // Shared codec detection (magic bytes, extension fallback) so this reader honors every
+            // compression suffix the storage policy can emit, not just gzip.
+            var stream = CompressedJsonlStream.Decompress(fs, file);
 
-            MarketEvent? evt;
-            try
+            using var reader = new StreamReader(stream);
+            long lineNumber = 0;
+            long? previousUtcTicks = null;
+            long previousLineNumber = 0;
+
+            while (true)
             {
-                evt = JsonSerializer.Deserialize<MarketEvent>(line, MarketDataJsonContext.HighPerformanceOptions);
-            }
-            catch (JsonException ex)
-            {
-                throw new InvalidDataException(
-                    $"Malformed JSONL record in replay file '{file}' at line {lineNumber}.",
-                    ex);
-            }
+                ct.ThrowIfCancellationRequested();
+                var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+                if (line is null)
+                    yield break;
 
-            if (evt is null)
-            {
-                throw new InvalidDataException(
-                    $"Null JSONL record in replay file '{file}' at line {lineNumber}.");
-            }
+                lineNumber++;
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
 
-            var utcTicks = evt.Timestamp.UtcTicks;
-            if (previousUtcTicks.HasValue && utcTicks < previousUtcTicks.Value)
-            {
-                throw new InvalidDataException(
-                    $"Replay file '{file}' is not chronological: line {lineNumber} timestamp " +
-                    $"{evt.Timestamp:O} precedes line {previousLineNumber}.");
-            }
+                MarketEvent? evt;
+                try
+                {
+                    evt = JsonSerializer.Deserialize<MarketEvent>(line, MarketDataJsonContext.HighPerformanceOptions);
+                }
+                catch (JsonException ex)
+                {
+                    throw new InvalidDataException(
+                        $"Malformed JSONL record in replay file '{file}' at line {lineNumber}.",
+                        ex);
+                }
 
-            previousUtcTicks = utcTicks;
-            previousLineNumber = lineNumber;
-            yield return new ReplayRecord(evt, lineNumber);
+                if (evt is null)
+                {
+                    throw new InvalidDataException(
+                        $"Null JSONL record in replay file '{file}' at line {lineNumber}.");
+                }
+
+                var utcTicks = evt.Timestamp.UtcTicks;
+                if (previousUtcTicks.HasValue && utcTicks < previousUtcTicks.Value)
+                {
+                    throw new InvalidDataException(
+                        $"Replay file '{file}' is not chronological: line {lineNumber} timestamp " +
+                        $"{evt.Timestamp:O} precedes line {previousLineNumber}.");
+                }
+
+                previousUtcTicks = utcTicks;
+                previousLineNumber = lineNumber;
+                yield return new ReplayRecord(evt, lineNumber);
+            }
+        }
+        finally
+        {
+            PartitionReaderSlots.Release();
         }
     }
 

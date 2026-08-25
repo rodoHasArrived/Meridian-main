@@ -44,6 +44,19 @@ public sealed class QuantScriptGlobalsTests
         act.Should().Throw<ArgumentException>().WithMessage("*outside the inclusive range*");
     }
 
+    [Fact]
+    public void Param_Int64BoundBeyondDoublePrecision_FailsClosedExactly()
+    {
+        var globals = CreateGlobals(new Dictionary<string, object?>
+        {
+            ["value"] = "9007199254740993"
+        });
+
+        var act = () => globals.Param<long>("value", max: 9007199254740992d);
+
+        act.Should().Throw<ArgumentException>().WithMessage("*outside the inclusive range*");
+    }
+
     [Theory]
     [InlineData(double.NaN)]
     [InlineData(double.PositiveInfinity)]

@@ -207,6 +207,25 @@ describe("Quant Lab view model helpers", () => {
     )).toEqual({ lookback: "63", includeFees: "true" });
   });
 
+  it("retains overrides across casing-only parameter edits", () => {
+    expect(reconcileQuantParameterValues(
+      { Lookback: "63" },
+      [{ ...numberParameter, name: "lookback" }]
+    )).toEqual({ lookback: "63" });
+  });
+
+  it("preserves an explicit empty string override", () => {
+    const textParameter: QuantParameter = {
+      ...numberParameter,
+      name: "label",
+      label: "Label",
+      typeName: "string",
+      defaultValue: "default"
+    };
+
+    expect(buildQuantParameters([textParameter], { label: "" })).toEqual({ label: "" });
+  });
+
   it("builds disabled run command state for empty source", () => {
     expect(validateQuantSource("   ")).toBe("Enter some script source first.");
     expect(buildRunCommandState("   ", "idle")).toMatchObject({
