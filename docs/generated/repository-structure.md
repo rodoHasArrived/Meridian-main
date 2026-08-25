@@ -8124,6 +8124,7 @@ Meridian-main
 │   │   ├── MarketImpactFillModelTests.cs
 │   │   ├── Meridian.Backtesting.Tests.csproj
 │   │   ├── MeridianNativeBacktestStudioEngineTests.cs
+│   │   ├── MilestoneOneAccountingTests.cs
 │   │   ├── MultiSymbolMergeEnumeratorTests.cs
 │   │   ├── OptionsOverwriteStrategyTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
@@ -8762,6 +8763,7 @@ Meridian-main
 │   │   │       ├── ZiggyCreatures.FusionCache.dll
 │   │   │       ├── ZiggyCreatures.FusionCache.Serialization.SystemTextJson.dll
 │   │   │       └── ZstdSharp.dll
+│   │   ├── BacktestProxyTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.QuantScript.Tests.csproj
 │   │   ├── NotebookExecutionSessionTests.cs
@@ -8769,6 +8771,7 @@ Meridian-main
 │   │   ├── PortfolioBuilderTests.cs
 │   │   ├── PriceSeriesTests.cs
 │   │   ├── QuantScriptCompositionAndLaunchTests.cs
+│   │   ├── QuantScriptGlobalsTests.cs
 │   │   ├── QuantScriptNotebookStoreTests.cs
 │   │   ├── QuantScriptWorkerProtocolTests.cs
 │   │   ├── RoslynScriptCompilerTests.cs
@@ -9936,6 +9939,7 @@ Meridian-main
 │   │   │   ├── ProviderLedgerReconciliationServiceTests.cs
 │   │   │   ├── ProviderReadinessEndpointTests.cs
 │   │   │   ├── ProviderRoutingEndpointsTests.cs
+│   │   │   ├── QuantLabEndpointContractTests.cs
 │   │   │   ├── ReconciliationApiServiceTests.cs
 │   │   │   ├── ReconciliationBreakQueueProjectionTests.cs
 │   │   │   ├── ReconciliationLegacyBulkActionTests.cs
