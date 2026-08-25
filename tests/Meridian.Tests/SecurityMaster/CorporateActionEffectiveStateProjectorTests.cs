@@ -69,15 +69,13 @@ public sealed class CorporateActionEffectiveStateProjectorTests
     [Fact]
     public void Project_AmendmentRecordedAfterAsOf_PreservesKnownRevision()
     {
-        var original = MakeAction("Split", exDate: new DateOnly(2026, 8, 14), splitRatio: 2m) with
-        {
-            RecordedAtUtc = AsOf.AddDays(-1)
-        };
+        var original = MakeAction("Split", exDate: new DateOnly(2026, 8, 14), splitRatio: 2m);
         var amendment = MakeAction("Split", exDate: new DateOnly(2026, 8, 14), splitRatio: 4m) with
         {
-            SupersedesCorpActId = original.CorpActId,
-            RecordedAtUtc = AsOf.AddDays(1)
+            SupersedesCorpActId = original.CorpActId
         };
+        CorporateActionRevisionMetadata.SetRecordedAtUtc(original, AsOf.AddDays(-1));
+        CorporateActionRevisionMetadata.SetRecordedAtUtc(amendment, AsOf.AddDays(1));
 
         var state = CorporateActionEffectiveStateProjector.Project([original, amendment], AsOf)
             .Should().ContainSingle().Subject;

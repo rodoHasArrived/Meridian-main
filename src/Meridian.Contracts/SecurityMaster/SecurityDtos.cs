@@ -162,8 +162,7 @@ public sealed record TradingParametersDto(
 /// for event types with no dedicated columns — tender offers, crypto forks, returns of capital,
 /// principal paydowns, option contract adjustments, delistings, and any future type — so a new
 /// event type never needs another nullable column. Well-known payload keys are documented in
-/// <see cref="CorporateActionPayloads"/>. <paramref name="RecordedAtUtc"/> is the transaction-time
-/// boundary used to keep later amendments and cancellations out of historical projections.
+/// <see cref="CorporateActionPayloads"/>.
 /// </summary>
 public sealed record CorporateActionDto(
     Guid CorpActId,
@@ -184,8 +183,7 @@ public sealed record CorporateActionDto(
     string? LifecycleState = null,
     Guid? SupersedesCorpActId = null,
     decimal? RedemptionPricePercentOfPar = null,
-    JsonElement? Payload = null,
-    DateTimeOffset? RecordedAtUtc = null);
+    JsonElement? Payload = null);
 
 /// <summary>
 /// Preferred-equity-specific terms returned by the preferred-terms query.

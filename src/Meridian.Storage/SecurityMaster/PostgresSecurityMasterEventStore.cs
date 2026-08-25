@@ -350,7 +350,7 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
             var exDateRaw = reader.GetDateTime(3);
             var payDateRaw = reader.IsDBNull(4) ? (DateTime?)null : reader.GetDateTime(4);
             var recordDateRaw = reader.IsDBNull(14) ? (DateTime?)null : reader.GetDateTime(14);
-            results.Add(new CorporateActionDto(
+            var action = new CorporateActionDto(
                 CorpActId: reader.GetGuid(0),
                 SecurityId: reader.GetGuid(1),
                 EventType: reader.GetString(2),
@@ -369,8 +369,11 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 LifecycleState: reader.IsDBNull(15) ? null : reader.GetString(15),
                 SupersedesCorpActId: reader.IsDBNull(16) ? null : reader.GetGuid(16),
                 RedemptionPricePercentOfPar: reader.IsDBNull(17) ? null : reader.GetDecimal(17),
-                Payload: reader.IsDBNull(18) ? null : ParsePayload(reader.GetString(18)),
-                RecordedAtUtc: reader.GetFieldValue<DateTimeOffset>(19)));
+                Payload: reader.IsDBNull(18) ? null : ParsePayload(reader.GetString(18)));
+            CorporateActionRevisionMetadata.SetRecordedAtUtc(
+                action,
+                reader.GetFieldValue<DateTimeOffset>(19));
+            results.Add(action);
         }
 
         return results;

@@ -22,7 +22,8 @@ public static class CorporateActionEffectiveStateProjector
         }
 
         var knownActions = actions
-            .Where(action => !action.RecordedAtUtc.HasValue || action.RecordedAtUtc.Value <= asOf)
+            .Where(action => CorporateActionRevisionMetadata.GetRecordedAtUtc(action) is not { } recordedAt
+                || recordedAt <= asOf)
             .ToArray();
         if (knownActions.Length == 0)
         {

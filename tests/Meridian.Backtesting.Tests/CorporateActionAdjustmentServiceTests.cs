@@ -68,15 +68,15 @@ public sealed class CorporateActionAdjustmentServiceTests
         var asOf = new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero);
         var original = new CorporateActionDto(
             Guid.NewGuid(), securityId, "StockSplit", new DateOnly(2024, 2, 1), null,
-            null, null, 2m, null, null, null, null, null, null,
-            RecordedAtUtc: asOf.AddDays(-1));
+            null, null, 2m, null, null, null, null, null, null);
         var amendment = original with
         {
             CorpActId = Guid.NewGuid(),
             SplitRatio = 4m,
-            SupersedesCorpActId = original.CorpActId,
-            RecordedAtUtc = asOf.AddDays(1)
+            SupersedesCorpActId = original.CorpActId
         };
+        CorporateActionRevisionMetadata.SetRecordedAtUtc(original, asOf.AddDays(-1));
+        CorporateActionRevisionMetadata.SetRecordedAtUtc(amendment, asOf.AddDays(1));
         _mockQueryService.SetCorporateActions([original, amendment]);
         var bar = CreateBar("SPY", new DateOnly(2024, 1, 2), 100m, 100m, 100m, 100m, 1_000);
 
