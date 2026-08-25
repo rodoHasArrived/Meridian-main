@@ -666,7 +666,7 @@ public sealed class AggregatePortfolioExposureProviderTests
             BidPrice: 0.99m,
             BidSize: 100,
             AskPrice: 1.01m,
-            AskSize: 100));
+            AskSize: 100, Source: "TEST"));
 
         var provider = new AggregatePortfolioExposureProvider(
             aggregate.Object,
@@ -695,7 +695,7 @@ public sealed class AggregatePortfolioExposureProviderTests
             BidPrice: 99m,
             BidSize: 100,
             AskPrice: 101m,
-            AskSize: 100));
+            AskSize: 100, Source: "TEST"));
 
         var provider = new AggregatePortfolioExposureProvider(
             aggregate.Object,
@@ -775,14 +775,14 @@ public sealed class AggregatePortfolioExposureProviderTests
             BidPrice: 0m,
             BidSize: 0,
             AskPrice: 100m,
-            AskSize: 100));
+            AskSize: 100, Source: "TEST"));
         trades.OnTrade(new Meridian.Domain.Models.MarketTradeUpdate(
             Timestamp: DateTimeOffset.UtcNow,
             Symbol: "AAPL",
             Price: 50m,
             Size: 100,
             Aggressor: Meridian.Contracts.Domain.Enums.AggressorSide.Buy,
-            SequenceNumber: 1));
+            SequenceNumber: 1, Source: "TEST"));
 
         var provider = new AggregatePortfolioExposureProvider(
             aggregate.Object,
@@ -856,7 +856,7 @@ public sealed class AggregatePortfolioExposureProviderTests
             BidPrice: 99m,
             BidSize: 100,
             AskPrice: 100m,
-            AskSize: 100));
+            AskSize: 100, Source: "TEST"));
 
         var provider = new AggregatePortfolioExposureProvider(
             aggregate.Object,
@@ -912,14 +912,14 @@ public sealed class AggregatePortfolioExposureProviderTests
             BidPrice: 100m,
             BidSize: 100,
             AskPrice: 120m,
-            AskSize: 100));
+            AskSize: 100, Source: "TEST"));
         trades.OnTrade(new Meridian.Domain.Models.MarketTradeUpdate(
             Timestamp: DateTimeOffset.UtcNow,
             Symbol: "AAPL",
             Price: 100m,
             Size: 100,
             Aggressor: Meridian.Contracts.Domain.Enums.AggressorSide.Buy,
-            SequenceNumber: 1));
+            SequenceNumber: 1, Source: "TEST"));
 
         var provider = new AggregatePortfolioExposureProvider(
             aggregate.Object,

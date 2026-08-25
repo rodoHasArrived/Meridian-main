@@ -523,7 +523,8 @@ describe("useHistoricalChartViewModel", () => {
       filesProcessed: 1,
       totalFiles: 1,
       queryTimeMs: 1,
-      bars: toBars(closes)
+      bars: toBars(closes),
+      sources: []
     });
     const run = vi.fn((closes: number[]) =>
       Promise.resolve(computeCandlestickIndicators(closes)));
@@ -557,7 +558,7 @@ describe("useHistoricalChartViewModel", () => {
     vi.mocked(getHistoricalBars).mockResolvedValue({
       success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
       from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
-      queryTimeMs: 0, bars: []
+      queryTimeMs: 0, bars: [], sources: []
     });
 
     const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));
@@ -581,7 +582,7 @@ describe("useHistoricalChartViewModel", () => {
     vi.mocked(getHistoricalBars).mockResolvedValue({
       success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
       from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
-      queryTimeMs: 0, bars: []
+      queryTimeMs: 0, bars: [], sources: []
     });
 
     const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));
@@ -635,7 +636,8 @@ describe("useHistoricalChartViewModel", () => {
         filesProcessed: 0,
         totalFiles: 0,
         queryTimeMs: 0,
-        bars: []
+        bars: [],
+        sources: []
       });
       await second.promise;
     });
@@ -648,7 +650,7 @@ describe("useHistoricalChartViewModel", () => {
     vi.mocked(getHistoricalBars).mockResolvedValue({
       success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
       from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
-      queryTimeMs: 0, bars: []
+      queryTimeMs: 0, bars: [], sources: []
     });
 
     const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));
@@ -705,7 +707,7 @@ describe("useHistoricalChartViewModel", () => {
     vi.mocked(getHistoricalBars).mockResolvedValue({
       success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
       from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
-      queryTimeMs: 0, bars: []
+      queryTimeMs: 0, bars: [], sources: []
     });
 
     const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));
@@ -733,7 +735,7 @@ describe("useHistoricalChartViewModel", () => {
     vi.mocked(getHistoricalBars).mockResolvedValue({
       success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
       from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
-      queryTimeMs: 0, bars: []
+      queryTimeMs: 0, bars: [], sources: []
     });
 
     const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));

@@ -36,6 +36,10 @@ export const WORKSTATION_API_ENDPOINTS = {
   storageMaintenanceExecute: UI_API_ROUTES.WorkstationStorageMaintenanceExecute,
   accounting: UI_API_ROUTES.WorkstationAccounting,
   ledgerBooks: UI_API_ROUTES.LedgerBooks,
+  ledgerPeriods: UI_API_ROUTES.LedgerPeriods,
+  ledgerPeriodTrialBalance: UI_API_ROUTES.LedgerPeriodTrialBalance,
+  ledgerPeriodPnlSummary: UI_API_ROUTES.LedgerPeriodPnlSummary,
+  ledgerPeriodJournalEntries: UI_API_ROUTES.LedgerPeriodJournalEntries,
   accountingConfiguration: UI_API_ROUTES.LedgerAccountingConfiguration,
   accountingConfigurationChart: UI_API_ROUTES.LedgerAccountingConfigurationChart,
   accountingConfigurationTemplates: UI_API_ROUTES.LedgerAccountingConfigurationTemplates,
@@ -106,6 +110,31 @@ export const WORKSTATION_API_ENDPOINTS = {
 
 export function workstationIngestionOperationEndpoint(jobId: string): string {
   return routeWithParam(WORKSTATION_API_ENDPOINTS.ingestionOperation, "jobId", jobId);
+}
+
+export function ledgerPeriodsEndpoint(query: { ledgerBookId?: string | null; status?: string | null } = {}): string {
+  const params = new URLSearchParams();
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+  if (query.status) {
+    params.set("status", query.status);
+  }
+
+  const suffix = params.toString();
+  return suffix ? `${WORKSTATION_API_ENDPOINTS.ledgerPeriods}?${suffix}` : WORKSTATION_API_ENDPOINTS.ledgerPeriods;
+}
+
+export function ledgerPeriodTrialBalanceEndpoint(periodId: string): string {
+  return routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodTrialBalance, "periodId", periodId);
+}
+
+export function ledgerPeriodPnlSummaryEndpoint(periodId: string): string {
+  return routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodPnlSummary, "periodId", periodId);
+}
+
+export function ledgerPeriodJournalEntriesEndpoint(periodId: string): string {
+  return routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodJournalEntries, "periodId", periodId);
 }
 
 export function workstationIngestionOperationActionEndpoint(jobId: string, action: string): string {
@@ -1296,8 +1325,28 @@ export function workstationAssetOperationsEndpoint(securityId: string): string {
   return routeWithParam(UI_API_ROUTES.WorkstationAssetOperations, "securityId", securityId);
 }
 
-export function workstationFinancialRecordExplorerEndpoint(explorerId: string): string {
-  return routeWithParam(WORKSTATION_API_ENDPOINTS.financialRecordExplorer, "explorerId", explorerId);
+/**
+ * One explorer-side filter to send with an explorer request, so the explorer answers for the same
+ * subject the screen is showing. The ledger explorer reads `run`; without it it answers for
+ * whichever run is newest, whatever run the panels beside it are reading.
+ */
+export interface ExplorerFilterSelection {
+  filterId: string;
+  value: string;
+}
+
+export function workstationFinancialRecordExplorerEndpoint(
+  explorerId: string,
+  filters: readonly ExplorerFilterSelection[] = []
+): string {
+  const base = routeWithParam(WORKSTATION_API_ENDPOINTS.financialRecordExplorer, "explorerId", explorerId);
+  // The endpoint parses each `filter` as one "filterId:value" pair, so the id must not contain a
+  // colon and the value keeps everything after the first one.
+  const query = filters
+    .filter((filter) => filter.filterId && filter.value)
+    .map((filter) => `filter=${encodeURIComponent(`${filter.filterId}:${filter.value}`)}`)
+    .join("&");
+  return query ? `${base}?${query}` : base;
 }
 
 export function workstationFinancialRecordExplorerRecordEndpoint(explorerId: string, recordId: string): string {

@@ -15,14 +15,16 @@ namespace Meridian.Tests.Integration.EndpointTests;
 [Collection("Endpoint")]
 public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
-    private readonly HttpClient _client;
+    private readonly HttpClient _dataSourceReadClient;
     private readonly HttpClient _providerReadClient;
     private readonly HttpClient _providerMutationClient;
     private readonly HttpClient _credentialMutationClient;
 
     public ProviderEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        // The data-source reads declare ViewConfig or ManageProviders. This client holds only the
+        // former, so the read stays proven for a caller who can look at configuration but not change it.
+        _dataSourceReadClient = fixture.CreatePermittedClient(UserPermission.ViewConfig);
 
         // Deliberately holds neither ManageProviders nor AdminMaintenance: the provider reads
         // declare an any-of set, so a platform operator who can only look must still get through.
@@ -35,6 +37,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
 
     public void Dispose()
     {
+        _dataSourceReadClient.Dispose();
         _providerReadClient.Dispose();
         _providerMutationClient.Dispose();
         _credentialMutationClient.Dispose();
@@ -246,7 +249,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         result["providerName"].GetString().Should().Be(displayName);
         result["error"].ValueKind.Should().Be(JsonValueKind.Null);
 
-        var dataSourcesResponse = await _client.GetAsync("/api/config/datasources");
+        var dataSourcesResponse = await _dataSourceReadClient.GetAsync("/api/config/datasources");
         dataSourcesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var dataSources = await DeserializeAsync(dataSourcesResponse);
         var source = dataSources["sources"].EnumerateArray().FirstOrDefault(s =>
@@ -303,7 +306,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         var configureResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", configureContent);
         configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var response = await _client.GetAsync("/api/config/datasources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/datasources");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
@@ -335,7 +338,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         var configureResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", configureContent);
         configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var response = await _client.GetAsync("/api/config/datasources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/datasources");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
@@ -369,7 +372,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         var configureResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", configureContent);
         configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var response = await _client.GetAsync("/api/config/data-sources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/data-sources");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
@@ -400,7 +403,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         var setupResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", content);
         setupResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var response = await _client.GetAsync("/api/config/datasources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/datasources");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -419,7 +422,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     [Fact]
     public async Task GetDataSources_ReturnsJsonWithSources()
     {
-        var response = await _client.GetAsync("/api/config/datasources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/datasources");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");

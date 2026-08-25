@@ -1,3 +1,4 @@
+import datetime as _dt
 import importlib.util
 import json
 import tempfile
@@ -199,12 +200,34 @@ class ValidateNpmAuditTests(unittest.TestCase):
         exit_code = self.run_gate(audit_payload({}), {"accepted": [broken]})
         self.assertEqual(exit_code, 1)
 
-    def test_repository_register_is_valid_and_matches_the_live_advisory(self):
+    def test_repository_register_is_structurally_valid(self):
+        """The register's invariants, not one specific entry.
+
+        This previously pinned the KV-2026-002 react-router acceptance. That made retiring an
+        acceptance — the outcome the policy actually wants when upstream ships a fix — fail the
+        script-test lane, so the test held the register at its 2026-07-28 contents. Assert what
+        must always hold instead: the register parses, points at the human registry, and every
+        entry it does contain is well-formed and unexpired. An empty register is a valid and
+        preferred state.
+        """
         register = json.loads(REPO_REGISTER.read_text(encoding="utf-8"))
         entries = MODULE.load_acceptances(REPO_REGISTER)
         self.assertEqual(register["registry"], "docs/security/known-vulnerabilities.md")
-        self.assertEqual(entries[0]["ghsa"], GHSA)
-        self.assertEqual(entries[0]["package"], "react-router")
+        self.assertEqual(len(entries), len(register["accepted"]))
+
+        today = _dt.date.today()
+        for entry in entries:
+            for field in MODULE.REQUIRED_ACCEPTANCE_FIELDS:
+                self.assertIn(field, entry)
+                self.assertTrue(str(entry[field]).strip(), f"{entry['id']}.{field} is blank")
+            self.assertEqual(entry["ghsa"], MODULE.canonical_ghsa(entry["ghsa"]))
+            review_by = MODULE.parse_date(entry["review_by"], "review_by", entry["id"])
+            self.assertGreaterEqual(
+                review_by,
+                today,
+                f"acceptance {entry['id']} expired on {entry['review_by']}; "
+                "retire it or renew the accepted-risk review.",
+            )
 
 
 if __name__ == "__main__":

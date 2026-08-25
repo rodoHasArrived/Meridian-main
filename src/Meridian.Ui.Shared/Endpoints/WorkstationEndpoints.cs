@@ -66,7 +66,7 @@ public static partial class WorkstationEndpoints
         {
             return await BuildSessionPayloadAsync(context).ConfigureAwait(false);
         })
-        .WithName("GetWorkstationSession");
+        .WithName("GetWorkstationSession").RequireAuthenticatedSessionOrScopedLocalOperatorRead();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationResearch), async (HttpContext context) =>
         {
@@ -150,17 +150,26 @@ public static partial class WorkstationEndpoints
                     fundProfileId: fundProfileId,
                     fundAccountId: fundAccountId,
                     fundDisplayName: fundDisplayName,
-                    ct: context.RequestAborted)
+                    // The browser sends a fund account, not a fund profile, so the run load is not
+                    // narrowed by the query alone. The resolved request tenant is what bounds it.
+                    tenantId: HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId,
+                    companyId: EndpointAuthorization.ResolveCompanyId(context),
+                    ct: context.RequestAborted, readScope: WorkstationWorkflowReadScope.ForRequest(context))
                 .ConfigureAwait(false);
             return Results.Json(summary, jsonOptions);
         })
-        .WithName("GetWorkstationWorkflowSummary")
+        .WithName("GetWorkstationWorkflowSummary").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.AdminMaintenance, UserPermission.ViewConfig, UserPermission.ModifyConfig)
         .Produces<OperatorWorkflowHomeSummary>(200)
         .Produces(403)
         .Produces(501)
-        // No route-level read permission to defer to, so the ownership gate always evaluates the
-        // fundProfileId query value (SEC-005 slice 3b).
-        .RequireFundProfileTenantScope();
+        // Admission is the union of the projection's family sets, plus the permissions of every card the
+        // projection adds unconditionally: reporting, portfolio and settings. Portfolio's ViewTrades and
+        // reporting's pair are already family sets, but the settings card had no representative here, so
+        // a ViewConfig-only operator was refused a summary the desktop lane composed for it in-process.
+        // The ownership gate takes the same set (SEC-005 slice 3b) -- it skips its check for callers
+        // lacking the permissions handed to it, so a wider declaration with a narrower gate would stop
+        // checking fund ownership for exactly the callers the widening admitted.
+        .RequireFundProfileTenantScope(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.AdminMaintenance, UserPermission.ViewConfig, UserPermission.ModifyConfig);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowLibrary), (HttpContext context) =>
         {
@@ -173,49 +182,10 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(service.GetLibrary(), jsonOptions);
         })
-        .WithName("GetWorkstationWorkflowLibrary")
+        .WithName("GetWorkstationWorkflowLibrary").DeclareOpenRead("Static workflow catalog from WorkflowRegistry; carries no deployment, account or tenant state.")
         .Produces<WorkflowLibraryDto>(200);
 
-        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationCollateralIngest), (
-            IReadOnlyList<CollateralInputRow> rows,
-            HttpContext context) =>
-        {
-            if (!HasOperationsContinuityMutationPermission(context))
-            {
-                return Results.Forbid();
-            }
-
-            const int maxRowsPerRequest = 1_000;
-            if (rows.Count > maxRowsPerRequest)
-            {
-                return Results.BadRequest(new { error = $"A maximum of {maxRowsPerRequest} collateral rows can be ingested per request." });
-            }
-
-            var buffer = context.RequestServices.GetService<CollateralIngestionBuffer>();
-            if (buffer is null)
-            {
-                return Results.Accepted(value: new { ingested = 0, buffered = false });
-            }
-
-            var ingested = 0;
-            foreach (var row in rows)
-            {
-                if (!buffer.TryIngest(row))
-                {
-                    return Results.StatusCode(StatusCodes.Status429TooManyRequests);
-                }
-
-                ingested++;
-            }
-
-            return Results.Accepted(value: new { ingested, buffered = true });
-        })
-        .WithName("IngestCollateralRows").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces(202)
-        .Produces(400)
-        .Produces(403)
-        .Produces(429)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        MapCollateralEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowPresets), async (HttpContext context) =>
         {
@@ -228,7 +198,7 @@ public static partial class WorkstationEndpoints
             var library = await service.GetLibraryAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(library, jsonOptions);
         })
-        .WithName("GetWorkstationWorkflowPresets")
+        .WithName("GetWorkstationWorkflowPresets").RequireAuthenticatedSessionOrScopedLocalOperatorRead()
         .Produces<WorkflowPresetLibraryDto>(200)
         .Produces(501);
 
@@ -384,28 +354,13 @@ public static partial class WorkstationEndpoints
         .Produces(403)
         .RequireWorkstationTenantCompanyScope();
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationCollateralExposure), (HttpContext context) =>
-        {
-            if (!HasOperationsContinuityReadPermission(context))
-            {
-                return Results.Forbid();
-            }
-
-            var service = context.RequestServices.GetRequiredService<CollateralExposureService>();
-            var buffer = context.RequestServices.GetService<CollateralIngestionBuffer>();
-            var rows = buffer?.DrainBatch(5_000) ?? [];
-            return Results.Json(BuildCollateralExposureSnapshot(service, rows), jsonOptions);
-        })
-        .WithName("GetWorkstationCollateralExposure").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<ExposureSnapshotDto>(200)
-        .Produces(403);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationOperatorInbox), async (Guid? fundAccountId, HttpContext context) =>
         {
             var inbox = await BuildOperatorInboxAsync(fundAccountId, context).ConfigureAwait(false);
             return Results.Json(inbox, jsonOptions);
         })
-        .WithName("GetWorkstationOperatorInbox")
+        .WithName("GetWorkstationOperatorInbox").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<OperatorInboxDto>(200)
         .Produces(403)
         .RequireWorkstationTenantCompanyScope();
@@ -458,7 +413,7 @@ public static partial class WorkstationEndpoints
                 .ConfigureAwait(false);
             return Results.Ok(result);
         })
-        .WithName("PostWorkstationDataQuery").RequirePermission(UserPermission.ViewHistoricalData)
+        .WithName("PostWorkstationDataQuery").RequirePermission(UserPermission.ViewHistoricalData).DeclareNonMutating("SqlStatementGuard admits one SELECT-family statement with no embedded semicolon and a blocked-keyword list, so this is a read whose query does not fit in a URL.")
         .Produces<DataQueryResult>(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -483,7 +438,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyReadServiceUnavailable()
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationGovernance")
+        .WithName("GetWorkstationGovernance").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<WorkstationAccountingPayload>(200)
         .Produces(503)
         .RequireWorkstationTenantCompanyScope();
@@ -495,7 +450,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyReadServiceUnavailable()
                 : Results.Ok(payload);
         })
-        .WithName("GetWorkstationAccounting")
+        .WithName("GetWorkstationAccounting").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<WorkstationAccountingPayload>(200)
         .Produces(503)
         .RequireWorkstationTenantCompanyScope();
@@ -534,7 +489,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(payload, jsonOptions);
         })
-        .WithName("GetWorkstationAssetOperations")
+        .WithName("GetWorkstationAssetOperations").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<AssetOperationsDetailDto>(200)
         .Produces(404);
 
@@ -1846,7 +1801,7 @@ public static partial class WorkstationEndpoints
             var items = await GetBreakQueueItemsAsync(repository, queueScope, status, fundAccountId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
         })
-        .WithName("GetReconciliationBreakQueue").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .WithName("GetReconciliationBreakQueue").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200)
         .Produces(501);
 
@@ -1866,7 +1821,7 @@ public static partial class WorkstationEndpoints
             var item = await repository.GetByIdAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
             return item is null ? Results.NotFound() : Results.Json(item, jsonOptions);
         })
-        .WithName("GetReconciliationBreakQueueItem").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .WithName("GetReconciliationBreakQueueItem").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<ReconciliationBreakQueueItem>(200)
         .Produces(404);
 
@@ -1945,9 +1900,15 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // Authentication proves the executing operator. Rewrite the client-supplied assignee the
+            // same way as the reviewer: the browser lane hardcodes a placeholder assignee, the queue's
+            // assignee filter must answer "my breaks", and the repository derives the audit actor from
+            // AssignedTo ?? ReviewedBy ?? ResolvedBy — so neither identity may pass through verbatim.
+            var reviewActor = ResolveCurrentActor(context);
             var transition = await ReviewBreakAsync(context.RequestServices, queueScope, request with
             {
-                ReviewedBy = ResolveCurrentActor(context)
+                AssignedTo = reviewActor,
+                ReviewedBy = reviewActor
             }, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
         })
@@ -2755,7 +2716,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(comparison, jsonOptions);
         })
-        .WithName("CompareRuns").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .WithName("CompareRuns").DeclareNonMutating("Compares retained strategy runs and returns the comparison; the handler resolves the caller read scope, checks the runs are accessible, and calls StrategyRunComparisonService.CompareRunsAsync, which holds only StrategyRunReadService.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyRunComparison>>(200)
         .Produces(400)
         .Produces(501);
@@ -2792,7 +2753,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(diff, jsonOptions);
         })
-        .WithName("DiffRuns").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .WithName("DiffRuns").DeclareNonMutating("Diffs two retained strategy runs and returns the result; same read path as CompareRuns, through StrategyRunComparisonService.BuildDiffAsync.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyRunDiff>(200)
         .Produces(404)
         .Produces(501);
@@ -3020,14 +2981,14 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(summary, jsonOptions);
         })
-        .WithName("GetPortfolioCashFlows")
+        .WithName("GetPortfolioCashFlows").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<RunCashFlowSummary>(200)
         .Produces(404)
         .Produces(501);
 
         MapCrossStrategyPortfolioRoutes(portfolioGroup, jsonOptions);
         app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
-            .ExcludeFromDescription();
+            .DeclareOpenRead("Browser workstation shell HTML; it carries no operator data, and the session middleware redirects an unauthenticated caller to /login before it is served. Every governed read the loaded shell then makes is declared on its own route.").ExcludeFromDescription();
 
         app.MapGet("/workstation/{*path}", (string? path, IWebHostEnvironment environment) =>
         {
@@ -3062,7 +3023,7 @@ public static partial class WorkstationEndpoints
                 _ => "application/octet-stream"
             };
             return Results.File(filePath, contentType);
-        }).ExcludeFromDescription();
+        }).DeclareOpenRead("Browser workstation shell fallback and its static assets from wwwroot/workstation; same shell and same reasoning as /workstation.").ExcludeFromDescription();
     }
 
     private static Task<TradingOperatorReadinessDto> GetTradingOperatorReadinessAsync(
@@ -3173,17 +3134,19 @@ public static partial class WorkstationEndpoints
         // --- Providers (real data from metrics store when available) ---
         var metricsStatus = configStore?.TryLoadProviderMetrics();
         var healthyProviderCount = metricsStatus?.HealthyProviders ?? 0;
+        // Routing connections, bindings and trust snapshots follow connectionRows: their direct
+        // /api/provider-routing reads require ManageCredentials, which the Data workspace does not admit.
         var canManageCredentials = HasPermission(context, UserPermission.ManageCredentials);
         var connectionRows = canManageCredentials && providerConnectionLifecycle is not null
             ? await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
-        var routingConnections = routingConnectionService is not null
+        var routingConnections = canManageCredentials && routingConnectionService is not null
             ? await routingConnectionService.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
-        var routingBindings = routingBindingService is not null
+        var routingBindings = canManageCredentials && routingBindingService is not null
             ? await routingBindingService.GetBindingsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
-        var trustSnapshots = routingTrustService is not null
+        var trustSnapshots = canManageCredentials && routingTrustService is not null
             ? await routingTrustService.GetTrustSnapshotsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
         var providers = BuildWorkstationDataProviderRecords(
@@ -3605,189 +3568,6 @@ public static partial class WorkstationEndpoints
         return await service.GetOperationsAsync(securityId, context.RequestAborted).ConfigureAwait(false);
     }
 
-    // Returns null when the strategy run read service is not registered so the route can
-    // respond 503 instead of serving fabricated reconciliation/cash-flow data.
-    private static async Task<WorkstationAccountingPayload?> BuildAccountingPayloadAsync(HttpContext context)
-    {
-        var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        var breakQueueRepository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-        var kernelObservability = context.RequestServices.GetService<KernelObservabilityService>()?.GetSnapshot();
-        var requestedLedgerBookId = ParseOptionalGuid(context.Request.Query["ledgerBookId"].FirstOrDefault());
-        if (readService is null || breakQueueRepository is null)
-        {
-            return null;
-        }
-
-        if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
-        {
-            return null;
-        }
-
-        var manualJournalWorkbench = await BuildManualJournalWorkbenchPayloadAsync(context).ConfigureAwait(false);
-        var breakQueueItems = await GetBreakQueueItemsAsync(
-                breakQueueRepository,
-                queueScope,
-                status: null,
-                fundAccountId: null,
-                ledgerBookId: requestedLedgerBookId,
-                ct: context.RequestAborted)
-            .ConfigureAwait(false);
-        var scopedOpenBreaks = breakQueueItems.Count(static item =>
-            item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview);
-
-        var allRuns = await GetAuthorizedAccountingRunsAsync(
-                context,
-                readService,
-                queueScope,
-                context.RequestAborted)
-            .ConfigureAwait(false);
-        if (allRuns is null)
-        {
-            return null;
-        }
-
-        var runs = allRuns.Take(6).ToArray();
-        if (runs.Length == 0)
-        {
-            var reporting = BuildReportingPayload(context);
-            // PR-03: return typed DTO
-            return new WorkstationAccountingPayload(
-                Metrics:
-                [
-                    new WorkstationMetricCard("open-breaks", "Open Breaks", scopedOpenBreaks.ToString(CultureInfo.InvariantCulture), "0%", scopedOpenBreaks == 0 ? "success" : "warning"),
-                    new WorkstationMetricCard("timing-drift", "Timing Drift", "0", "0%", "default"),
-                    new WorkstationMetricCard("security-gaps", "Security Gaps", "0", "0%", "success"),
-                    new WorkstationMetricCard("audit-ready", "Audit Ready", "0", "0%", "default"),
-                    new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
-                ],
-                ReconciliationQueue: Array.Empty<WorkstationAccountingRunRecord>(),
-                BreakQueue: breakQueueItems,
-                Workspace: new WorkstationAccountingWorkspaceSummary(0, 0, 0, scopedOpenBreaks, 0),
-                CashFlow: BuildAccountingWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
-                Reporting: reporting,
-                ControlCenter: BuildAccountingControlCenterPayload(breakQueueItems, reporting),
-                KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
-                ManualJournalWorkbench: manualJournalWorkbench);
-        }
-
-        var reconciliationService = context.RequestServices.GetService<IReconciliationRunService>();
-        var detailTasks = runs.Select(run => readService.GetRunDetailAsync(run.RunId, context.RequestAborted));
-        var reconciliationTasks = reconciliationService is null
-            ? runs.Select(_ => Task.FromResult<ReconciliationRunDetail?>(null))
-            : runs.Select(run => reconciliationService.GetLatestForRunAsync(run.RunId, context.RequestAborted));
-
-        var details = await Task.WhenAll(detailTasks).ConfigureAwait(false);
-        var reconciliations = await Task.WhenAll(reconciliationTasks).ConfigureAwait(false);
-
-        var timingDriftRuns = reconciliations.Count(static detail => detail?.Summary.HasTimingDrift == true);
-        var runsWithBreaks = reconciliations.Count(static detail => (detail?.Summary.BreakCount ?? 0) > 0);
-        var runsWithSecurityIssues = details.Count(static detail =>
-            (detail?.Portfolio?.SecurityMissingCount ?? 0) > 0 ||
-            (detail?.Ledger?.SecurityMissingCount ?? 0) > 0);
-        var auditReadyRuns = runs.Count(static run => !string.IsNullOrWhiteSpace(run.AuditReference)) - runsWithBreaks;
-        var reportingPayload = BuildReportingPayload(context);
-
-        // PR-03: return typed DTO
-        return new WorkstationAccountingPayload(
-            Metrics:
-            [
-                new WorkstationMetricCard("open-breaks", "Open Breaks", scopedOpenBreaks.ToString(CultureInfo.InvariantCulture), "0%", scopedOpenBreaks == 0 ? "success" : "warning"),
-                new WorkstationMetricCard("timing-drift", "Timing Drift", timingDriftRuns.ToString(CultureInfo.InvariantCulture), "0%", timingDriftRuns == 0 ? "default" : "warning"),
-                new WorkstationMetricCard("security-gaps", "Security Gaps", runsWithSecurityIssues.ToString(CultureInfo.InvariantCulture), "0%", runsWithSecurityIssues == 0 ? "success" : "warning"),
-                new WorkstationMetricCard("audit-ready", "Audit Ready", Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), "0%", auditReadyRuns > 0 ? "success" : "default"),
-                new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
-            ],
-            ReconciliationQueue: runs
-                .Zip(details, static (run, detail) => (run, detail))
-                .Zip(reconciliations, (pair, reconciliation) => BuildAccountingRunCard(pair.run, pair.detail, reconciliation, kernelObservability))
-                .ToArray(),
-            BreakQueue: breakQueueItems,
-            Workspace: new WorkstationAccountingWorkspaceSummary(
-                TotalRuns: allRuns.Length,
-                ReconciledRuns: reconciliations.Count(static detail => detail is not null),
-                LedgerReadyRuns: runs.Count(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
-                OpenBreaks: scopedOpenBreaks,
-                SecurityIssues: runsWithSecurityIssues),
-            CashFlow: BuildAccountingWorkspaceCashFlowSummary(details),
-            Reporting: reportingPayload,
-            ControlCenter: BuildAccountingControlCenterPayload(breakQueueItems, reportingPayload),
-            KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
-            ManualJournalWorkbench: manualJournalWorkbench);
-    }
-
-    private static async Task<StrategyRunSummary[]?> GetAuthorizedAccountingRunsAsync(
-        HttpContext context,
-        StrategyRunReadService readService,
-        ReconciliationBreakQueueScope scope,
-        CancellationToken ct)
-    {
-        var tenancyRegistry = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
-        if (tenancyRegistry is null)
-        {
-            return null;
-        }
-
-        try
-        {
-            var runs = await readService.GetRunsAsync(ct: ct).ConfigureAwait(false);
-            var ownershipByFund = new Dictionary<string, FundProfileOwnership?>(
-                StringComparer.OrdinalIgnoreCase);
-
-            foreach (var fundProfileId in runs
-                         .Select(static run => run.FundProfileId)
-                         .Where(static fundProfileId => !string.IsNullOrWhiteSpace(fundProfileId))
-                         .Select(static fundProfileId => fundProfileId!.Trim())
-                         .Distinct(StringComparer.OrdinalIgnoreCase))
-            {
-                ownershipByFund[fundProfileId] = await tenancyRegistry
-                    .ResolveAsync(fundProfileId, ct)
-                    .ConfigureAwait(false);
-            }
-
-            return runs
-                .Where(run =>
-                {
-                    if (string.IsNullOrWhiteSpace(run.FundProfileId))
-                    {
-                        return false;
-                    }
-
-                    var fundProfileId = run.FundProfileId.Trim();
-                    return ownershipByFund.TryGetValue(fundProfileId, out var ownership) &&
-                           ownership is not null &&
-                           ownership.IsHeldBy(scope.TenantId) &&
-                           !string.IsNullOrWhiteSpace(ownership.CompanyId) &&
-                           string.Equals(
-                               ownership.CompanyId.Trim(),
-                               scope.CompanyId.Trim(),
-                               StringComparison.OrdinalIgnoreCase);
-                })
-                .ToArray();
-        }
-        catch (Exception) when (!ct.IsCancellationRequested)
-        {
-            return null;
-        }
-    }
-
-    private static async Task<ManualJournalEntryWorkbenchDto?> BuildManualJournalWorkbenchPayloadAsync(HttpContext context)
-    {
-        var service = context.RequestServices.GetService<IManualJournalEntryWorkbenchService>();
-        if (service is null)
-        {
-            return null;
-        }
-
-        var query = context.Request.Query;
-        var fundProfileId = query["fundProfileId"].FirstOrDefault();
-        var ledgerBookId = ParseOptionalGuid(query["ledgerBookId"].FirstOrDefault());
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-
-        return await service
-            .GetWorkbenchAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId)
-            .ConfigureAwait(false);
-    }
-
     private static string ResolveModeVariant(StrategyRunMode? mode)
         => mode switch
         {
@@ -3955,76 +3735,6 @@ public static partial class WorkstationEndpoints
             HasGlobalOverride: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance),
             TenantId: tenant.TenantId,
             RequireBoundScope: true);
-    }
-
-    private static WorkstationAccountingControlCenterPayload BuildAccountingControlCenterPayload(
-        IReadOnlyList<ReconciliationBreakQueueItem> breakQueue,
-        WorkstationReportingPayload reporting)
-    {
-        var criticalOpen = breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Critical && item.Status != ReconciliationBreakQueueStatus.Resolved && item.Status != ReconciliationBreakQueueStatus.Dismissed);
-        var inReview = breakQueue.Count(item => item.Status == ReconciliationBreakQueueStatus.InReview);
-        var unowned = breakQueue.Count(item => string.IsNullOrWhiteSpace(item.AssignedTo));
-        var overdue = breakQueue.Count(item => item.Status != ReconciliationBreakQueueStatus.Resolved && item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-2));
-        var breachCount = breakQueue.Count(item => item.Status != ReconciliationBreakQueueStatus.Resolved && item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-3));
-
-        var alerts = new List<WorkstationAccountingAlertPayload>();
-        if (criticalOpen > 0)
-        {
-            alerts.Add(new WorkstationAccountingAlertPayload("danger", $"{criticalOpen} critical reconciliation breaks remain unresolved."));
-        }
-
-        if (overdue > 0)
-        {
-            alerts.Add(new WorkstationAccountingAlertPayload("danger", $"{overdue} reconciliation breaks are overdue for resolution."));
-        }
-
-        if (reporting.ReportPackDistributions.Any(distribution => distribution.PendingItems > 0))
-        {
-            alerts.Add(new WorkstationAccountingAlertPayload("warning", "Report-pack distribution recipients have pending approval, publication, or delivery work."));
-        }
-
-        return new WorkstationAccountingControlCenterPayload(
-            CloseReadiness: criticalOpen == 0 && overdue == 0 ? "ReadyWithAttention" : "Blocked",
-            PortfolioFilterOptions: ["all-portfolios", "macro", "equity", "fixed-income"],
-            AccountFilterOptions: breakQueue.Select(item => item.FundAccountId).Where(static id => !string.IsNullOrWhiteSpace(id)).Distinct().Cast<string>().ToArray(),
-            BlockerSeverityDistribution:
-            [
-                new WorkstationAccountingSeverityCountPayload("Critical", breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Critical)),
-                new WorkstationAccountingSeverityCountPayload("High", breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.High)),
-                new WorkstationAccountingSeverityCountPayload("Medium", breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Medium)),
-                new WorkstationAccountingSeverityCountPayload("Low", breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Low))
-            ],
-            AgingCurves:
-            [
-                new WorkstationAccountingAgingBucketPayload("0-1d", breakQueue.Count(item => item.LastUpdatedAt >= DateTimeOffset.UtcNow.AddDays(-1))),
-                new WorkstationAccountingAgingBucketPayload("2-3d", breakQueue.Count(item => item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-1) && item.LastUpdatedAt >= DateTimeOffset.UtcNow.AddDays(-3))),
-                new WorkstationAccountingAgingBucketPayload("4d+", breakQueue.Count(item => item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-3)))
-            ],
-            OwnerWorkload: breakQueue.GroupBy(item => string.IsNullOrWhiteSpace(item.AssignedTo) ? "Unassigned" : item.AssignedTo!)
-                .Select(group => new WorkstationAccountingOwnerWorkloadPayload(
-                    Owner: group.Key,
-                    OpenCount: group.Count(item => item.Status != ReconciliationBreakQueueStatus.Resolved && item.Status != ReconciliationBreakQueueStatus.Dismissed)))
-                .OrderByDescending(item => item.OpenCount)
-                .ToArray(),
-            SlaBreachCount: breachCount,
-            TrendSnapshots:
-            [
-                new WorkstationAccountingTrendSnapshotPayload("Open critical breaks", criticalOpen, criticalOpen > 0 ? "worsening" : "stable"),
-                new WorkstationAccountingTrendSnapshotPayload("Breaks in review", inReview, inReview > 0 ? "improving" : "stable"),
-                new WorkstationAccountingTrendSnapshotPayload("Unassigned breaks", unowned, unowned > 0 ? "worsening" : "stable"),
-                new WorkstationAccountingTrendSnapshotPayload(
-                    "Report distributions pending",
-                    reporting.ReportPackDistributions.Count(distribution => distribution.PendingItems > 0),
-                    "stable")
-            ],
-            DrillLinks:
-            [
-                new WorkstationAccountingDrillLinkPayload("Open close readiness", "/trading/readiness"),
-                new WorkstationAccountingDrillLinkPayload("Open reconciliation queue", "/accounting/reconciliation"),
-                new WorkstationAccountingDrillLinkPayload("Open report approvals", "/reporting/report-packs"),
-                new WorkstationAccountingDrillLinkPayload("Open evidence completeness", "/reporting/evidence")
-            ],
-            Alerts: alerts);
     }
 
     private static string BuildRunNotes(StrategyRunSummary run)
@@ -4353,13 +4063,28 @@ public static partial class WorkstationEndpoints
         return "operator";
     }
 
+    /// <summary>
+    /// Who may read reconciliation break records, wherever they surface: the break-queue routes, and
+    /// the operator inbox, which contributes the same records as work items.
+    /// <para>
+    /// Deliberately a superset of <see cref="HasReconciliationMutationPermission"/> -- a profile that
+    /// can act on casework must be able to load the queue it acts on, and a permission override need
+    /// not match the bundled roles, so ManageDirectLending cannot be assumed to arrive alongside the
+    /// view grants.
+    /// </para>
+    /// <para>
+    /// ViewTrades is deliberately absent. It cannot act on casework at all, and the records carry
+    /// strategy and run identifiers, variances, reasons, assignees, sign-off history, counterparties
+    /// and resolution notes. Kept here rather than only on the route declarations because the inbox
+    /// reaches these records without passing one: a helper the declarations disagree with is not a
+    /// stricter gate, it is an unreachable check on one path and an open one on the other.
+    /// </para>
+    /// </summary>
     private static bool CanViewReconciliationBreakQueue(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(
             context,
-            UserPermission.ViewTrades,
-            UserPermission.ViewSecurityMaster,
-            UserPermission.ModifySecurityMaster,
-            UserPermission.AdminMaintenance);
+            UserPermission.ViewDirectLending, UserPermission.ManageDirectLending,
+            UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
 
     private static bool CanMutateReconciliationBreakQueue(HttpContext context)
         => HasReconciliationMutationPermission(context);

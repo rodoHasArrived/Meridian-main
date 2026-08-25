@@ -165,6 +165,24 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                 | BondCouponStructure.Fixed _ -> "Fixed", None, None, None, None
                 | BondCouponStructure.Floating(index, spread, cap, floor, _) -> "Floating", Some index, spread, cap, floor
                 | BondCouponStructure.ZeroCoupon -> "ZeroCoupon", None, None, None, None
+                | BondCouponStructure.Step _ -> "Step", None, None, None, None
+                | BondCouponStructure.InflationLinked _ -> "InflationLinked", None, None, None, None
+            // The dated step schedule and inflation indexation are coupon-structure payload: an
+            // empty array / null asserts "not a step / not inflation-linked" so the field set
+            // stays constant across coupon variants (the round-trip guard's exact-match contract).
+            let stepSchedule =
+                match terms.Coupon with
+                | BondCouponStructure.Step(schedule, _) ->
+                    schedule
+                    |> List.map (fun entry ->
+                        {| effectiveDate = entry.EffectiveDate
+                           rate = entry.Rate |})
+                | _ -> []
+            let inflationIndex, inflationBaseIndexValue, inflationIndexRatio =
+                match terms.Coupon with
+                | BondCouponStructure.InflationLinked(_, indexName, baseIndexValue, indexRatio, _) ->
+                    Some indexName, baseIndexValue, indexRatio
+                | _ -> None, None, None
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    maturity = terms.Maturity
@@ -175,12 +193,16 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    spreadBps = spreadBps
                    capRate = capRate
                    floorRate = floorRate
+                   stepSchedule = stepSchedule
+                   inflationIndex = inflationIndex
+                   inflationBaseIndexValue = inflationBaseIndexValue
+                   inflationIndexRatio = inflationIndexRatio
                    dayCount = BondTerms.dayCount terms
                    isCallable = terms.IsCallable
                    callDate = terms.CallDate
                    issuerName = terms.IssuerName
                    seniority = terms.Seniority
-                   subclass = terms.Subclass.ToString()
+                   subclass = BondSubclass.label terms.Subclass
                    par = terms.Par
                    paymentFrequency = terms.PaymentFrequency |> Option.map PaymentFrequency.label
                    legalFinalMaturity = terms.LegalFinalMaturity

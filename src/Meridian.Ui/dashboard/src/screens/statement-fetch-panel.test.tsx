@@ -255,7 +255,43 @@ describe("StatementFetchPanel", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "Delete schedule alpaca-daily" }));
+    expect(services.deleteSchedule).not.toHaveBeenCalled();
+    expect(screen.getByRole("status")).toHaveTextContent("Delete confirmation pending for alpaca-daily.");
+
+    await user.click(screen.getByRole("button", {
+      name: "Confirm delete schedule alpaca-daily. This permanently removes the fetch schedule."
+    }));
     await waitFor(() => expect(screen.queryByRole("table", { name: "Statement fetch schedules" })).not.toBeInTheDocument());
     expect(services.deleteSchedule).toHaveBeenCalledWith("alpaca-daily");
+  });
+
+  it("disarms a pending schedule delete when a different schedule is targeted", async () => {
+    const user = userEvent.setup();
+    const secondSchedule: StatementFetchSchedule = {
+      ...schedule,
+      scheduleId: "alpaca-monthly",
+      cadenceHours: 720
+    };
+    const services = makeServices();
+    services.listSchedules = vi.fn(async () => [schedule, secondSchedule]);
+    renderWithRouter(
+      <StatementFetchPanel connectors={connectors} profiles={profiles} services={services} />,
+      { initialEntries: ["/accounting/statement-import"] }
+    );
+
+    await waitFor(() => expect(screen.getByRole("table", { name: "Statement fetch schedules" })).toBeInTheDocument());
+    await user.click(screen.getByRole("button", { name: "Delete schedule alpaca-daily" }));
+    expect(services.deleteSchedule).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "Delete schedule alpaca-monthly" }));
+    expect(services.deleteSchedule).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Delete schedule alpaca-daily" })).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Delete confirmation pending for alpaca-monthly.");
+
+    await user.click(screen.getByRole("button", {
+      name: "Confirm delete schedule alpaca-monthly. This permanently removes the fetch schedule."
+    }));
+    await waitFor(() => expect(services.deleteSchedule).toHaveBeenCalledWith("alpaca-monthly"));
+    expect(services.deleteSchedule).toHaveBeenCalledTimes(1);
   });
 });

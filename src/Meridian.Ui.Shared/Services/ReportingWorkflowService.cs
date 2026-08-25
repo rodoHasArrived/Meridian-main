@@ -1327,7 +1327,7 @@ public sealed class FileReportPackWorkflowRecordStore : IReportPackWorkflowRecor
     private sealed record ReportPackWorkflowSnapshot(IReadOnlyList<ReportPackWorkflowRecordDto> Records);
 }
 
-public sealed class ReportPackWorkflowService
+public sealed partial class ReportPackWorkflowService
 {
     private const string LedgerFinancialRecordExplorerId = "ledger";
     private const string PortfolioFinancialRecordExplorerId = "portfolio";

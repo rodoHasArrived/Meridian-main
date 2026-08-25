@@ -34,6 +34,10 @@ public static class LedgerStoreExtensions
         services.AddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
         services.AddSingleton<IAccountingActionAuditStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
         services.AddSingleton<LedgerMigrationRunner>();
+        // Maintenance surface for the currency detail historical journal legs are missing.
+        // Registered so the gap can be surveyed and repaired from the running host rather
+        // than only by hand against the database.
+        services.AddSingleton<PostgresLedgerCurrencyBackfill>();
         services.AddSingleton<ILedgerBookService>(sp =>
             new PostgresLedgerBookService(
                 sp.GetRequiredService<ILedgerJournalStore>(),

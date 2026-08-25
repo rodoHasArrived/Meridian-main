@@ -147,7 +147,7 @@ public static class SamplingEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("EstimateSampleSize")
+        .WithName("EstimateSampleSize").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // List saved samples
@@ -171,7 +171,7 @@ public static class SamplingEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetSavedSamples")
+        .WithName("GetSavedSamples").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // Get sample by ID - returns actual sampled events
@@ -193,7 +193,7 @@ public static class SamplingEndpoints
                 sample.CreatedAt
             }, jsonOptions);
         })
-        .WithName("GetSampleById")
+        .WithName("GetSampleById").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(404);
     }

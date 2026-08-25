@@ -593,7 +593,7 @@ public sealed class WalEventPipelineTests : IAsyncDisposable
             SequenceNumber: 1,
             Venue: "NYSE");
 
-        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade);
+        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, source: "TEST");
     }
 
     private static async Task WaitForConsumption(MockWalSink sink, int expectedCount, int timeoutMs = 5000)

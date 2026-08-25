@@ -65,7 +65,7 @@ public static class ProviderEndpoints
                 failoverTimeoutSeconds = cfg.DataSources?.FailoverTimeoutSeconds ?? 30
             }, jsonOptions);
         })
-        .WithName("GetDataSources")
+        .WithName("GetDataSources").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ManageProviders)
         .WithDescription("Returns all configured data sources with failover and default source settings.")
         .Produces(200);
 
@@ -646,7 +646,7 @@ public static class ProviderEndpoints
                 failoverTimeoutSeconds = cfg.DataSources?.FailoverTimeoutSeconds ?? 30
             }, jsonOptions);
         })
-        .WithName("GetDataSourcesAlias")
+        .WithName("GetDataSourcesAlias").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ManageProviders)
         .WithDescription("Alias for /api/config/datasources for backward compatibility.")
         .Produces(200);
 

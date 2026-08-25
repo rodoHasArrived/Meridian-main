@@ -247,6 +247,11 @@ version, retained-by actor, and subject scope before append.
 The durable aggregate remains `JournalEntry` with balanced child `LedgerEntry` rows. Candidate
 journals, Asset Operations economic state, projection events, and balance snapshots are not accepted
 as alternate accounting facts.
+Retained journal aggregates are sealed at the posting transaction's deferred boundary. Parent and
+leg inserts share a transaction-scoped per-entry lock, and initial legs require a short-lived open
+marker owned by the parent transaction. A racing or later child therefore fails closed even from a
+repeatable-read snapshot that cannot observe a newly committed seal. Migration backfill holds both
+journal tables against writers until validation, sealing, and trigger installation complete.
 
 Ledger period close writes also fail closed for reviewed automation. `PostgresLedgerBookService`
 rejects assistant or automation-origin close requests before saving the period status, period-close
@@ -288,8 +293,11 @@ external GL, and customer-neutral scope values use the same trimmed durable shap
 period hydration and report filtering; it does not require a new journal column or position-balance
 table.
 `PostgresLedgerJournalStore.QueryAsync` provides the first durable journal-read seam for those
-line dimensions: callers can combine ledger-book, period, aggregate, account, date, and line-level
-dimension filters, and the store applies them against `journal_legs.dimensions` instead of
+line dimensions: callers can combine ledger-book, period, aggregate, account, posting-date,
+accounting-effective-date, and line-level dimension filters. Effective-date filters use retained
+`JournalEntryMetadata.EffectiveDate` with the UTC posting date only as a legacy fallback, so
+late-posted adjustments and reversals remain visible to period reconciliation. The store applies
+line-dimension filters against `journal_legs.dimensions` instead of
 guessing scope from account names or browser/WPF state. Empty queries fail before opening a
 connection so production journal reads stay explicitly scoped. Account and line-dimension filters
 first identify matching journal entries, then rehydrate every retained leg for those entries, so

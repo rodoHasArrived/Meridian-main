@@ -241,7 +241,8 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 record_date,
                 lifecycle_state,
                 supersedes_corp_act_id,
-                redemption_price_percent_of_par)
+                redemption_price_percent_of_par,
+                payload)
             values (
                 @corp_act_id,
                 @security_id,
@@ -260,7 +261,8 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 @record_date,
                 @lifecycle_state,
                 @supersedes_corp_act_id,
-                @redemption_price_percent_of_par)
+                @redemption_price_percent_of_par,
+                @payload)
             on conflict (corp_act_id) do nothing;
             """;
 
@@ -282,8 +284,31 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
         command.Parameters.AddWithValue("lifecycle_state", (object?)action.LifecycleState ?? DBNull.Value);
         command.Parameters.AddWithValue("supersedes_corp_act_id", (object?)action.SupersedesCorpActId ?? DBNull.Value);
         command.Parameters.AddWithValue("redemption_price_percent_of_par", (object?)action.RedemptionPricePercentOfPar ?? DBNull.Value);
+        command.Parameters.Add(new NpgsqlParameter("payload", NpgsqlTypes.NpgsqlDbType.Jsonb)
+        {
+            Value = action.Payload is { ValueKind: not JsonValueKind.Undefined } payload
+                ? payload.GetRawText()
+                : DBNull.Value,
+        });
 
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Parses a stored payload envelope. Read tolerance: a malformed stored document reads as no
+    /// payload rather than failing the whole corporate-action history row.
+    /// </summary>
+    private static JsonElement? ParsePayload(string rawPayload)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(rawPayload);
+            return document.RootElement.Clone();
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     public async Task<IReadOnlyList<CorporateActionDto>> LoadCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
@@ -309,7 +334,8 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                    record_date,
                    lifecycle_state,
                    supersedes_corp_act_id,
-                   redemption_price_percent_of_par
+                   redemption_price_percent_of_par,
+                   payload
             from {Qualified("corporate_actions")}
             where security_id = @security_id
             order by ex_date;
@@ -341,7 +367,8 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 RecordDate: recordDateRaw.HasValue ? DateOnly.FromDateTime(recordDateRaw.Value) : null,
                 LifecycleState: reader.IsDBNull(15) ? null : reader.GetString(15),
                 SupersedesCorpActId: reader.IsDBNull(16) ? null : reader.GetGuid(16),
-                RedemptionPricePercentOfPar: reader.IsDBNull(17) ? null : reader.GetDecimal(17)));
+                RedemptionPricePercentOfPar: reader.IsDBNull(17) ? null : reader.GetDecimal(17),
+                Payload: reader.IsDBNull(18) ? null : ParsePayload(reader.GetString(18))));
         }
 
         return results;

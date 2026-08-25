@@ -79,25 +79,43 @@ public sealed class BrokeragePortfolioSyncService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<IReadOnlyList<WorkstationBrokerageAccountDto>> DiscoverAccountsAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<WorkstationBrokerageAccountDto>> DiscoverAccountsAsync(
+        Func<IReadOnlyCollection<Guid>, CancellationToken, Task<IReadOnlySet<Guid>>> authorizeFundAccounts,
+        bool includeUnlinkedAccounts = false,
+        CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(authorizeFundAccounts);
+        var authorizedExternalAccounts = includeUnlinkedAccounts
+            ? null
+            : await ResolveAuthorizedExternalAccountsAsync(authorizeFundAccounts, ct).ConfigureAwait(false);
+        if (!includeUnlinkedAccounts && authorizedExternalAccounts!.Count == 0)
+        {
+            return [];
+        }
+
         var accounts = new List<WorkstationBrokerageAccountDto>();
 
         foreach (var catalog in _catalogs.Values)
         {
             ct.ThrowIfCancellationRequested();
+            if (!includeUnlinkedAccounts && !authorizedExternalAccounts!.ContainsKey(catalog.ProviderId))
+            {
+                continue;
+            }
 
             try
             {
                 var providerAccounts = await catalog.GetAccountsAsync(ct).ConfigureAwait(false);
-                accounts.AddRange(providerAccounts.Select(static account => new WorkstationBrokerageAccountDto(
-                    ProviderId: account.ProviderId,
-                    AccountId: account.AccountId,
-                    DisplayName: account.DisplayName,
-                    Status: account.Status,
-                    Currency: account.Currency,
-                    RetrievedAt: account.RetrievedAt,
-                    AccountKind: InferAccountKind(account.Metadata, account.DisplayName))));
+                accounts.AddRange(providerAccounts
+                    .Where(account => includeUnlinkedAccounts || IsAuthorizedExternalAccount(account, authorizedExternalAccounts!))
+                    .Select(static account => new WorkstationBrokerageAccountDto(
+                        ProviderId: account.ProviderId,
+                        AccountId: account.AccountId,
+                        DisplayName: account.DisplayName,
+                        Status: account.Status,
+                        Currency: account.Currency,
+                        RetrievedAt: account.RetrievedAt,
+                        AccountKind: InferAccountKind(account.Metadata, account.DisplayName))));
             }
             catch (OperationCanceledException)
             {
@@ -232,8 +250,8 @@ public sealed class BrokeragePortfolioSyncService
             }
             catch (Exception ex)
             {
-                warnings.Add($"Portfolio snapshot failed: {ex.Message}");
-                _logger.LogWarning(ex, "Brokerage portfolio sync failed for {ProviderId}/{AccountId}", link.ProviderId, link.ExternalAccountId);
+                warnings.Add($"Portfolio snapshot failed: {SanitizeProviderFailureMessage(ex, link.ExternalAccountId)}");
+                LogProviderFailure("Brokerage portfolio sync", link.ProviderId, ex);
             }
         }
         else
@@ -253,8 +271,8 @@ public sealed class BrokeragePortfolioSyncService
             }
             catch (Exception ex)
             {
-                warnings.Add($"Activity snapshot failed: {ex.Message}");
-                _logger.LogWarning(ex, "Brokerage activity sync failed for {ProviderId}/{AccountId}", link.ProviderId, link.ExternalAccountId);
+                warnings.Add($"Activity snapshot failed: {SanitizeProviderFailureMessage(ex, link.ExternalAccountId)}");
+                LogProviderFailure("Brokerage activity sync", link.ProviderId, ex);
             }
         }
         else
@@ -302,11 +320,7 @@ public sealed class BrokeragePortfolioSyncService
             {
                 const string captureWarning =
                     "Accounting position-history capture failed; valuation and dividend schedules will remain blocked until a later successful sync.";
-                _logger.LogWarning(
-                    ex,
-                    "Accounting position-history capture failed for {ProviderId}/{AccountId}",
-                    link.ProviderId,
-                    link.ExternalAccountId);
+                LogProviderFailure("Accounting position-history capture", link.ProviderId, ex);
                 projection = projection with
                 {
                     Status = projection.Status with
@@ -484,9 +498,11 @@ public sealed class BrokeragePortfolioSyncService
     }
 
     public async Task<BrokerageHouseholdPortfolioDto> GetHouseholdAsync(
-        string? providerId = null,
+        string? providerId,
+        Func<IReadOnlyCollection<Guid>, CancellationToken, Task<IReadOnlySet<Guid>>> authorizeFundAccounts,
         CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(authorizeFundAccounts);
         ct.ThrowIfCancellationRequested();
 
         var providerFilter = NormalizeProviderId(providerId);
@@ -494,11 +510,38 @@ public sealed class BrokeragePortfolioSyncService
         var projections = new List<FundAccountBrokerageSyncActivityDto>();
         if (Directory.Exists(projectionRoot))
         {
-            foreach (var path in Directory.EnumerateFiles(projectionRoot, "current.json", SearchOption.AllDirectories))
+            var candidates = Directory
+                .EnumerateFiles(projectionRoot, "current.json", SearchOption.AllDirectories)
+                .Select(static path => new
+                {
+                    Path = path,
+                    AccountDirectory = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path))
+                })
+                .Where(static candidate => Guid.TryParseExact(candidate.AccountDirectory, "N", out _))
+                .Select(static candidate => new
+                {
+                    candidate.Path,
+                    FundAccountId = Guid.ParseExact(candidate.AccountDirectory!, "N")
+                })
+                .ToArray();
+            IReadOnlySet<Guid> authorizedFundAccounts = candidates.Length == 0
+                ? new HashSet<Guid>()
+                : await authorizeFundAccounts(
+                        candidates.Select(static candidate => candidate.FundAccountId).Distinct().ToArray(),
+                        ct)
+                    .ConfigureAwait(false);
+            ArgumentNullException.ThrowIfNull(authorizedFundAccounts);
+            foreach (var candidate in candidates)
             {
                 ct.ThrowIfCancellationRequested();
-                var projection = await ReadProjectionFileAsync(path, ct).ConfigureAwait(false);
+                if (!authorizedFundAccounts.Contains(candidate.FundAccountId))
+                {
+                    continue;
+                }
+
+                var projection = await ReadProjectionFileAsync(candidate.Path, ct).ConfigureAwait(false);
                 if (projection is not null
+                    && projection.FundAccountId == candidate.FundAccountId
                     && (providerFilter is null || string.Equals(projection.Link.ProviderId, providerFilter, StringComparison.OrdinalIgnoreCase)))
                 {
                     projections.Add(projection);
@@ -556,6 +599,115 @@ public sealed class BrokeragePortfolioSyncService
             Accounts: accounts,
             Positions: positions,
             Warnings: projections.Count == 0 ? ["No brokerage sync projections match the requested provider."] : []);
+    }
+
+    private async Task<IReadOnlyDictionary<string, HashSet<string>>> ResolveAuthorizedExternalAccountsAsync(
+        Func<IReadOnlyCollection<Guid>, CancellationToken, Task<IReadOnlySet<Guid>>> authorizeFundAccounts,
+        CancellationToken ct)
+    {
+        // Candidates are the fund accounts themselves as well as the persisted link files, because a
+        // link need not be persisted to exist: ResolveLinkAsync falls back to the account's Institution
+        // (or the configured default provider) with its SubAccountNumber, PortfolioId or AccountCode.
+        // Enumerating links/*.json alone made discovery disagree with the status and sync routes, which
+        // treat such an account as linked -- an authorized caller saw no matching account at all.
+        var candidateIds = new HashSet<Guid>();
+        foreach (var account in await ListFundAccountsAsync(ct).ConfigureAwait(false))
+        {
+            candidateIds.Add(account.AccountId);
+        }
+
+        // Kept as a separate source so a link file whose fund account the store no longer lists still
+        // resolves exactly as it did before.
+        var linkRoot = Path.Combine(_options.RootDirectory, "links");
+        if (Directory.Exists(linkRoot))
+        {
+            foreach (var fileName in Directory
+                .EnumerateFiles(linkRoot, "*.json", SearchOption.TopDirectoryOnly)
+                .Select(static path => Path.GetFileNameWithoutExtension(path)))
+            {
+                if (Guid.TryParseExact(fileName, "N", out var linkedId))
+                {
+                    candidateIds.Add(linkedId);
+                }
+            }
+        }
+
+        if (candidateIds.Count == 0)
+        {
+            return new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var authorizedIds = await authorizeFundAccounts(candidateIds.ToArray(), ct).ConfigureAwait(false);
+        ArgumentNullException.ThrowIfNull(authorizedIds);
+        var externalAccounts = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var fundAccountId in candidateIds)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!authorizedIds.Contains(fundAccountId))
+            {
+                continue;
+            }
+
+            WorkstationBrokerageAccountLinkDto? link;
+            try
+            {
+                // The same resolver the status and sync routes use, so discovery and per-account
+                // resolution agree by construction rather than by two rules kept in step by hand.
+                link = await ResolveLinkAsync(fundAccountId, request: null, ct).ConfigureAwait(false)
+                    ?? await LoadLinkAsync(fundAccountId, ct).ConfigureAwait(false);
+            }
+            // The identifier in these two warnings is what makes a skipped link actionable: without
+            // it an operator learns that some link was unreadable but not which one to repair. It is
+            // a Meridian-generated Guid surrogate key, not a credential and not a provider-side
+            // account number, and it is already the name of the file being read
+            // (links/{guid}.json), so the warning discloses nothing the storage layout does not.
+            //
+            // Code scanning reads the identifier's name and raises
+            // cs/cleartext-storage-of-sensitive-information on both calls below. LogSanitizer is not
+            // the answer -- its own contract excludes server-generated identifiers, and a Guid cannot
+            // carry the control characters it neutralizes -- so there is no barrier to route this
+            // through that would mean anything. The alerts are dismissed on the security tab; this
+            // note is here so the next reader does not re-derive the analysis from scratch.
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Skipping unreadable brokerage link for fund account {FundAccountId}", fundAccountId);
+                continue;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "Skipping locked brokerage link for fund account {FundAccountId}", fundAccountId);
+                continue;
+            }
+
+            var providerId = NormalizeProviderId(link?.ProviderId);
+            var externalAccountId = NormalizeOptional(link?.ExternalAccountId);
+            if (link is null || link.FundAccountId != fundAccountId || providerId is null || externalAccountId is null)
+            {
+                continue;
+            }
+
+            if (!externalAccounts.TryGetValue(providerId, out var providerAccounts))
+            {
+                providerAccounts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                externalAccounts[providerId] = providerAccounts;
+            }
+
+            providerAccounts.Add(externalAccountId);
+        }
+
+        return externalAccounts;
+    }
+
+    private static bool IsAuthorizedExternalAccount(
+        BrokerageExternalAccountDto account,
+        IReadOnlyDictionary<string, HashSet<string>> authorizedExternalAccounts)
+    {
+        var providerId = NormalizeProviderId(account.ProviderId);
+        var externalAccountId = NormalizeOptional(account.AccountId);
+        return providerId is not null
+            && externalAccountId is not null
+            && authorizedExternalAccounts.TryGetValue(providerId, out var providerAccounts)
+            && providerAccounts.Contains(externalAccountId);
     }
 
     private async Task<FundAccountBrokerageSyncActivityDto> BuildProjectionAsync(
@@ -810,6 +962,9 @@ public sealed class BrokeragePortfolioSyncService
         }
         catch (InvalidOperationException ex)
         {
+            // Same Guid surrogate key, same code-scanning alert, same reason it stays: a sync run
+            // whose history could not be recorded is only actionable if the warning names the account
+            // it belonged to.
             _logger.LogWarning(
                 ex,
                 "Brokerage sync history could not be recorded for fund account {FundAccountId}.",
@@ -1219,6 +1374,21 @@ public sealed class BrokeragePortfolioSyncService
         }
     }
 
+    private async Task<IReadOnlyList<AccountSummaryDto>> ListFundAccountsAsync(CancellationToken ct)
+    {
+        if (_services.GetService<IAccountQueryService>() is { } query)
+        {
+            return await query.ListAccountsAsync(null, null, null, ct).ConfigureAwait(false);
+        }
+
+        if (_services.GetService<IFundAccountService>() is { } fundAccountService)
+        {
+            return await fundAccountService.QueryAccountsAsync(new AccountStructureQuery(), ct).ConfigureAwait(false);
+        }
+
+        return [];
+    }
+
     private async Task<AccountSummaryDto?> ResolveFundAccountAsync(Guid fundAccountId, CancellationToken ct)
     {
         if (_services.GetService<IAccountQueryService>() is { } query)
@@ -1297,6 +1467,31 @@ public sealed class BrokeragePortfolioSyncService
             : value.ToLowerInvariant();
     }
 
+    private void LogProviderFailure(string operation, string providerId, Exception exception)
+    {
+        // Provider calls are scoped by an external account identifier, and provider exceptions may
+        // echo that IBAN, bank id, or broker account number. Log only stable, non-account context;
+        // passing the original exception object would reintroduce the identifier through its text.
+        _logger.LogWarning(
+            "{Operation} failed for provider {ProviderId}; failure type {FailureType}",
+            operation,
+            providerId,
+            exception.GetType().Name);
+    }
+
+    private static string SanitizeProviderFailureMessage(Exception exception, string externalAccountId)
+    {
+        var message = string.IsNullOrWhiteSpace(exception.Message)
+            ? exception.GetType().Name
+            : exception.Message;
+        return string.IsNullOrWhiteSpace(externalAccountId)
+            ? message
+            : message.Replace(
+                externalAccountId.Trim(),
+                "[account identifier redacted]",
+                StringComparison.OrdinalIgnoreCase);
+    }
+
     private static void ValidatePortfolioSnapshot(
         WorkstationBrokerageAccountLinkDto link,
         BrokeragePortfolioSnapshotDto snapshot,
@@ -1338,7 +1533,7 @@ public sealed class BrokeragePortfolioSyncService
                 StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
-                $"Portfolio snapshot account '{snapshot.Account.AccountId}' does not match requested account '{link.ExternalAccountId}'.");
+                "Portfolio snapshot account does not match the requested brokerage account.");
         }
 
         if (snapshot.Balance is null)

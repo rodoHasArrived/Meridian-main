@@ -588,13 +588,23 @@ public class ReconciliationApiService : IReconciliationApiService
         casesByBreakId.TryGetValue(item.BreakId, out var reconciliationCase);
         var owner = FirstNonBlank(reconciliationCase?.Owner);
         var escalation = BuildStatementBreakEscalation(item, reconciliationCase, DateTimeOffset.UtcNow);
+        // A break classified as "internal population unavailable" is structurally unmatched rather
+        // than a measured discrepancy, so it surfaces as informational instead of an error.
+        var informational = string.Equals(
+            item.Classification,
+            ReconciliationBreakClassifications.InternalTransactionPopulationUnavailable,
+            StringComparison.OrdinalIgnoreCase);
         return new StatementBreakDto(
             BreakId: item.BreakId,
             BreakType: MapBreakType(item.BreakCode),
-            Severity: item.ToleranceBreached ? StatementValidationSeverity.Error : StatementValidationSeverity.Warning,
+            Severity: informational
+                ? StatementValidationSeverity.Info
+                : item.ToleranceBreached ? StatementValidationSeverity.Error : StatementValidationSeverity.Warning,
             MatchTier: WorkstationStatementMatchTier.Manual,
             StatementReference: item.SourceReference,
-            Description: $"{item.Category} break {item.BreakCode} requires statement reconciliation review.",
+            Description: informational
+                ? $"{item.Category} break {item.BreakCode} is informational: the internal ledger-transaction population is unavailable, so statement movements cannot be matched."
+                : $"{item.Category} break {item.BreakCode} requires statement reconciliation review.",
             StatementAmount: item.Delta,
             BookAmount: null,
             Delta: item.Delta,
@@ -612,7 +622,8 @@ public class ReconciliationApiService : IReconciliationApiService
             SlaBreachedAtUtc: escalation.BreachedAtUtc,
             SlaState: escalation.SlaState,
             EscalationLabel: escalation.Label,
-            EscalationReason: escalation.Reason);
+            EscalationReason: escalation.Reason,
+            Classification: item.Classification);
     }
 
     private static string ResolveStatementBreakEvidenceLink(

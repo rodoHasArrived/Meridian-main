@@ -384,7 +384,8 @@ public static class JsonBenchmarkUtilities
         return MarketEvent.Trade(
             DateTimeOffset.UtcNow,
             "SPY",
-            new Trade(
+            source: "BENCH",
+            trade: new Trade(
                 Timestamp: DateTimeOffset.UtcNow,
                 Symbol: "SPY",
                 Price: 450.25m,
@@ -407,7 +408,8 @@ public static class JsonBenchmarkUtilities
             yield return MarketEvent.Trade(
                 DateTimeOffset.UtcNow,
                 symbol,
-                new Trade(
+                source: "BENCH",
+                trade: new Trade(
                     Timestamp: DateTimeOffset.UtcNow,
                     Symbol: symbol,
                     Price: 100m + (i % 100) * 0.01m,

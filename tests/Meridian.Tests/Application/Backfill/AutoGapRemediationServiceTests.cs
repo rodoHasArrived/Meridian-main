@@ -1,10 +1,13 @@
 using System.Net.Http;
 using FluentAssertions;
 using Meridian.Application.Backfill;
+using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Domain.Models;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Scheduling;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Resilience;
+using Meridian.Tests.TestHelpers;
 using Xunit;
 using AppBackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 using QualityDataGap = Meridian.DataIntegration.Monitoring.DataQuality.DataGap;
@@ -617,6 +620,93 @@ public sealed class AutoGapRemediationServiceTests
             To = new DateOnly(2026, 07, 10)
         });
     }
+
+    // ── integrity disclosure for sub-threshold reconnection gaps ──────────────
+
+    [Fact]
+    public async Task RequestReconnectionGapAsync_BelowRemediationFloor_DisclosesSkippedWindowOnTape()
+    {
+        var gateway = new FakeGateway();
+        var publisher = new TestMarketEventPublisher();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            new BackfillExecutionHistory(),
+            policy: SkipFloorPolicy(),
+            integrityPublisher: publisher);
+        var reconnectedAt = new DateTimeOffset(2026, 08, 24, 14, 30, 45, TimeSpan.Zero);
+        var disconnectedAt = reconnectedAt.AddSeconds(-30);
+        var gap = new ReconnectionGap("polygon", disconnectedAt, reconnectedAt, ReconnectAttempts: 1);
+
+        var outcome = await service.RequestReconnectionGapAsync(gap, ["AAPL", "MSFT"]);
+
+        outcome.Should().Be(AutoRemediationOutcome.Skipped);
+        gateway.Calls.Should().Be(0, "the marker discloses the hole; it must not trigger remediation");
+        publisher.PublishedEvents.Should().HaveCount(2);
+        publisher.PublishedEvents.Should().OnlyContain(e => e.Type == MarketEventType.Integrity);
+        publisher.PublishedEvents.Should().OnlyContain(e => e.Source == "polygon",
+            "the marker must carry the real provider whose feed dropped");
+        publisher.PublishedEvents.Select(e => e.Symbol).Should().BeEquivalentTo(["AAPL", "MSFT"]);
+        var integrity = publisher.PublishedEvents[0].Payload.Should().BeOfType<IntegrityEvent>().Subject;
+        integrity.ErrorCode.Should().Be(1009);
+        integrity.Description.Should().Contain("below remediation floor");
+        integrity.Description.Should().Contain(disconnectedAt.ToString("O"));
+        integrity.Description.Should().Contain(reconnectedAt.ToString("O"));
+    }
+
+    [Fact]
+    public async Task RequestReconnectionGapAsync_AboveRemediationFloor_DoesNotPublishSkipMarker()
+    {
+        var gateway = new FakeGateway();
+        var publisher = new TestMarketEventPublisher();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            new BackfillExecutionHistory(),
+            policy: SkipFloorPolicy(),
+            integrityPublisher: publisher);
+        var gap = new ReconnectionGap(
+            "polygon",
+            DateTimeOffset.UtcNow.AddMinutes(-10),
+            DateTimeOffset.UtcNow,
+            ReconnectAttempts: 1);
+
+        var outcome = await service.RequestReconnectionGapAsync(gap, ["AAPL"]);
+
+        outcome.Should().Be(AutoRemediationOutcome.Completed);
+        publisher.PublishedEvents.Should().BeEmpty(
+            "a remediated gap is not a coverage hole and must not be falsely disclosed as one");
+    }
+
+    [Fact]
+    public async Task RequestReconnectionGapAsync_MarkerPublishFailure_FailsOpenAndStillSkips()
+    {
+        var gateway = new FakeGateway();
+        var publisher = new ThrowingMarketEventPublisher();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            new BackfillExecutionHistory(),
+            policy: SkipFloorPolicy(),
+            integrityPublisher: publisher);
+        var gap = new ReconnectionGap(
+            "polygon",
+            DateTimeOffset.UtcNow.AddSeconds(-30),
+            DateTimeOffset.UtcNow,
+            ReconnectAttempts: 1);
+
+        var outcome = AutoRemediationOutcome.None;
+        var act = async () => outcome = await service.RequestReconnectionGapAsync(gap, ["AAPL"]);
+
+        await act.Should().NotThrowAsync("integrity disclosure must fail open around the remediation path");
+        outcome.Should().Be(AutoRemediationOutcome.Skipped);
+        publisher.Attempts.Should().BeGreaterThan(0, "the publish must actually have been attempted");
+    }
+
+    private static AutoGapRemediationPolicy SkipFloorPolicy() => new(
+        MinimumGapDuration: TimeSpan.FromMinutes(2),
+        MinimumGapSize: 1,
+        SymbolCooldown: TimeSpan.Zero,
+        ProviderCooldown: TimeSpan.Zero,
+        MaxConcurrentRemediations: 1,
+        DefaultProvider: "composite");
 
     private sealed class FakeGateway : IBackfillExecutionGateway
     {

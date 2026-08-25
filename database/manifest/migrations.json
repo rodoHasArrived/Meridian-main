@@ -253,6 +253,15 @@
       "sha256": "f4e5b1dc957c3d9faff4a44ff7a03b96ae61fd3c1a2f95e5217aae795043e59a"
     },
     {
+      "filename": "029_security_master_corp_action_payload.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 29,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/029_security_master_corp_action_payload.sql",
+      "schema": "security_master",
+      "sha256": "ea6d018f72ada53278482e5176394c82cdaa3ff5d565a33eabbb447decdddf76"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -649,6 +658,33 @@
       "sha256": "e61c5802322fe591aa8892d5a3ac476a11f03f90fad42e5ed75eb5d56dd030ff"
     },
     {
+      "filename": "V_ledger_029__journal_leg_currency_backfill.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_029__journal_leg_currency_backfill.sql",
+      "schema": "ledger",
+      "sha256": "15d77e46ad9cbce7728ed988170c9d70a2c5491b53c937b145171b983d39b1f8"
+    },
+    {
+      "filename": "V_ledger_030__journal_immutability.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_030__journal_immutability.sql",
+      "schema": "ledger",
+      "sha256": "f53862bdd253083aeda0698b80c81cbc38bf9782aff6e9d47317f696f00ef4f0"
+    },
+    {
+      "filename": "V_ledger_031__journal_aggregate_seal.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_031__journal_aggregate_seal.sql",
+      "schema": "ledger",
+      "sha256": "a537f4fe37dd46331761c2fbdbaec22e7ae4be972a46ebbd634d3ae3eee9dbdc"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -875,7 +911,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "074db69b45fc567136428b4ee8eaa198d2c3ac2325c5924ad94b4801c6830cc8",
+  "fingerprint": "a948737517dff274e59e537139e40cfa39b57d1e42bc5b97d028409ca3445f50",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1113,12 +1149,47 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 97,
+    "files": 101,
     "migration_sets": 10,
-    "waivers": 1,
+    "waivers": 6,
     "warnings": 0
   },
   "waivers": [
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_030__journal_immutability.sql",
+      "reason": "DROP TRIGGER IF EXISTS immediately before each CREATE TRIGGER is the ledger set's reapply-idempotence idiom (drift policy: reapply), mirroring V_ledger_027. Nothing existing is removed on first apply.",
+      "review_after": "2027-02-01",
+      "rule_id": "migration-drop-object"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_030__journal_immutability.sql",
+      "reason": "Deliberate hardening, not data loss: the unnamed on-delete-cascade FK from journal_legs to journal_entries is dropped and immediately re-created as a plain NO ACTION FK in the same transaction, so an entry delete can no longer vaporize legs. No column or data is removed.",
+      "review_after": "2027-02-01",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_030__journal_immutability.sql",
+      "reason": "The lexical TRUNCATE match is the migration's own BEFORE TRUNCATE guard trigger - the statement that REJECTS truncation of the journal tables. The migration truncates nothing.",
+      "review_after": "2027-02-01",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_031__journal_aggregate_seal.sql",
+      "reason": "DROP TRIGGER IF EXISTS immediately before each CREATE TRIGGER is the ledger set's reapply-idempotence idiom (drift policy: reapply), matching V030. Nothing existing is removed on first apply.",
+      "review_after": "2027-02-01",
+      "rule_id": "migration-drop-object"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_031__journal_aggregate_seal.sql",
+      "reason": "The lexical TRUNCATE match is the migration's own BEFORE TRUNCATE guard trigger, which rejects truncation of the journal integrity tables. The migration truncates nothing.",
+      "review_after": "2027-02-01",
+      "rule_id": "migration-truncate"
+    },
     {
       "category": "removed_migrations",
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/026_security_operator_override_approval_trail.sql",

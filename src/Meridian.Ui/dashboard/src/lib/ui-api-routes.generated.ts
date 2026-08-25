@@ -706,6 +706,8 @@ export const UI_API_ROUTES = {
   LedgerManualJournalEntryLifecycleAction: "/api/ledger/journal-entry-workbench/lifecycle-action",
   LedgerJournalAutomationDividendIntake: "/api/ledger/journal-automation/dividend-intake",
   LedgerJournalAutomationFeeAccrualIntake: "/api/ledger/journal-automation/fee-accrual-intake",
+  LedgerJournalAutomationCapitalCallIssuanceIntake: "/api/ledger/journal-automation/capital-call-issuance-intake",
+  LedgerJournalAutomationCapitalCallFundingIntake: "/api/ledger/journal-automation/capital-call-funding-intake",
   LedgerJournalAutomationPeriodCloseIntake: "/api/ledger/journal-automation/period-close-intake",
   LedgerJournalAutomationDailyMarkToMarketIntake: "/api/ledger/journal-automation/daily-mark-to-market-intake",
   LedgerJournalAutomationDailyMarkToMarketSchedules: "/api/ledger/journal-automation/daily-mark-to-market-schedules",

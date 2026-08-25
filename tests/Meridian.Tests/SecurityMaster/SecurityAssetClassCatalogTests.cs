@@ -165,6 +165,26 @@ public sealed class SecurityAssetClassCatalogTests
     }
 
     [Fact]
+    public void AssetPackRegistry_ValidatesCleanly_AndCoversEveryCatalogAssetClass()
+    {
+        // The registry is normative metadata the operational-readiness service consumes, not
+        // documentation shaped like code: its own validation rules must pass for every declared
+        // pack, and EVERY canonical Security Master asset class must be claimed by at least one
+        // pack — an unclaimed class silently drops out of asset-pack coverage routing. Packs may
+        // additionally claim broader business vocabulary (e.g. "Cash", "Mortgage") that the
+        // Security Master catalog does not model as classes.
+        var validation = SecurityAssetPackRegistry.ValidateAll();
+        validation.IsValid.Should().BeTrue(string.Join(
+            "; ", validation.Issues.Select(static issue => $"[{issue.Code}] {issue.Target}: {issue.Message}")));
+
+        foreach (var assetClass in SecurityAssetClassCatalog.AssetClasses)
+        {
+            SecurityAssetPackRegistry.FindByAssetClass(assetClass).Should().NotBeEmpty(
+                $"canonical asset class '{assetClass}' must be claimed by at least one asset pack");
+        }
+    }
+
+    [Fact]
     public void AssetPackRegistry_ShouldExposeInitialDeepCoveragePacks()
     {
         SecurityAssetPackRegistry.All.Select(static pack => pack.PackId).Should().BeEquivalentTo(

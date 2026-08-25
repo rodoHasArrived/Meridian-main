@@ -41,7 +41,7 @@ public static class OmsIntegrationEndpoints
             }
 
             return Results.Json(handler.Snapshot(), jsonOptions);
-        });
+        }).RequirePermission(UserPermission.ViewTrades);
 
         group.MapGet("/adapters/diagnostics", (HttpContext context, IOmsIntegrationApiHandler handler) =>
         {
@@ -51,7 +51,7 @@ public static class OmsIntegrationEndpoints
             }
 
             return Results.Json(handler.AdapterDiagnostics(), jsonOptions);
-        });
+        }).RequirePermission(UserPermission.ViewDiagnostics);
 
         group.MapPost("/excel/sync", (HttpContext context, OmsSyncRequest request, IOmsIntegrationApiHandler handler) =>
         {
@@ -88,7 +88,7 @@ public static class OmsIntegrationEndpoints
             }
 
             return Results.Json(handler.AuditTrail(take ?? 200), jsonOptions);
-        });
+        }).RequirePermission(UserPermission.ViewDiagnostics);
 
         return app;
     }

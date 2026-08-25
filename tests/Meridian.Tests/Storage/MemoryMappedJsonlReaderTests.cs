@@ -452,7 +452,7 @@ public class MemoryMappedJsonlReaderTests : IDisposable
     {
         var ts = timestamp ?? DateTimeOffset.UtcNow;
         var trade = new Trade(ts, symbol, 100m + sequence, 100, AggressorSide.Buy, sequence);
-        var evt = MarketEvent.Trade(ts, symbol, trade, sequence, "TEST");
+        var evt = MarketEvent.Trade(ts, symbol, trade, "TEST", sequence);
         return JsonSerializer.Serialize(evt, new JsonSerializerOptions(JsonSerializerDefaults.Web));
     }
 }

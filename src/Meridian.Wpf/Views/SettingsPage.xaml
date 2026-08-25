@@ -1238,7 +1238,7 @@
                                    FontWeight="SemiBold"
                                    FontSize="16"
                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                        <TextBlock Text="Version 1.6.1"
+                        <TextBlock Text="{Binding AppVersionText}"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    Margin="0,0,0,8" />
                         <TextBlock Text="A high-performance market data collection system for real-time and historical market data."

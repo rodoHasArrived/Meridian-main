@@ -166,7 +166,11 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
             Close: bar.Close * dividendFactor / splitDivisor,
             Volume: (long)Math.Round(bar.Volume * splitDivisor, MidpointRounding.AwayFromZero),
             Source: bar.Source,
-            SequenceNumber: bar.SequenceNumber);
+            SequenceNumber: bar.SequenceNumber,
+            // Only a bar an actual factor rewrote is claimed as adjusted; a bar the factor
+            // computation skipped (CA_DEF_001: missing prior close) keeps its input regime, so
+            // the flag can never assert an adjustment that silently did not happen.
+            IsAdjusted: dividendFactor != 1m || splitDivisor != 1m ? true : bar.IsAdjusted);
     }
 
     private static IReadOnlyDictionary<DateOnly, decimal> BuildDividendFactors(

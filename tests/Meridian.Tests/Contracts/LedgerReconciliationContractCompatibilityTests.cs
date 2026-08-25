@@ -167,7 +167,7 @@ public sealed class LedgerReconciliationContractCompatibilityTests
             "BreakId", "BreakType", "Severity", "MatchTier", "StatementReference", "Description",
             "StatementAmount", "BookAmount", "Delta", "EscalationLabel", "EscalationReason", "Tolerance", "Currency", "CreatedAtUtc",
             "Status", "InternalReference", "Owner", "LastObservedAtUtc", "RecommendedAction", "EvidenceLink",
-            "SlaDueAtUtc", "SlaWarningAtUtc", "SlaBreachedAtUtc", "SlaState", "Measures");
+            "SlaDueAtUtc", "SlaWarningAtUtc", "SlaBreachedAtUtc", "SlaState", "Measures", "Classification");
 
         AssertMembers(typeof(StatementReconciliationCaseDto),
             "CaseId", "RunId", "Status", "Priority", "Title", "Summary", "BreakIds", "CreatedAtUtc",

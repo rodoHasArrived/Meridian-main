@@ -5,25 +5,25 @@
 
 ## Overall Coverage
 
-**1237 / 8809** items documented (**14.0%**) &mdash; Grade: **F**
+**1247 / 8853** items documented (**14.1%**) &mdash; Grade: **F**
 
 ```text
-[===-----------------] 14.0%
+[===-----------------] 14.1%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1140 | 8340 | 13.7% | F |
-| API Endpoints | 85 | 329 | 25.8% | F |
-| Configuration Options | 1 | 129 | 0.8% | F |
+| Public Classes / Interfaces | 1146 | 8381 | 13.7% | F |
+| API Endpoints | 89 | 329 | 27.1% | F |
+| Configuration Options | 1 | 132 | 0.8% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (7200 undocumented)
+### Public Classes / Interfaces (7235 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -43,20 +43,20 @@
 | `RegisteredHistoricalCloseMarkPriceSource` | `src/Meridian.Application/Accounting/RegisteredHistoricalCloseMarkPriceSource.cs:10` |
 | `PriceSourceTier` | `src/Meridian.Application/Accounting/WaterfallMarkPriceSource.cs:16` |
 | `WaterfallMarkPriceSource` | `src/Meridian.Application/Accounting/WaterfallMarkPriceSource.cs:25` |
-| `AutoRemediationOutcome` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:14` |
-| `AutoRemediationTriggerSource` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:24` |
-| `IDataQualityGapRemediationService` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:36` |
-| `AutoGapRemediationRequestResult` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:47` |
-| `AutoGapRemediationPolicy` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:83` |
-| `BackfillRemediationSlaTier` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:123` |
-| `BackfillRemediationSlaDecision` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:129` |
-| `BackfillRemediationSlaMetadata` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:141` |
-| `BackfillRemediationSlaStatus` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:149` |
-| `BackfillRemediationSlaStatusItem` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:158` |
-| `BackfillRemediationSlaSnapshot` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:175` |
-| `BackfillRemediationSlaPolicy` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:194` |
-| `QualityAlertRemediationSignal` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:276` |
-| `AutoGapRemediationService` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:299` |
+| `AutoRemediationOutcome` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:15` |
+| `AutoRemediationTriggerSource` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:25` |
+| `IDataQualityGapRemediationService` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:37` |
+| `AutoGapRemediationRequestResult` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:48` |
+| `AutoGapRemediationPolicy` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:84` |
+| `BackfillRemediationSlaTier` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:124` |
+| `BackfillRemediationSlaDecision` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:130` |
+| `BackfillRemediationSlaMetadata` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:142` |
+| `BackfillRemediationSlaStatus` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:150` |
+| `BackfillRemediationSlaStatusItem` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:159` |
+| `BackfillRemediationSlaSnapshot` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:176` |
+| `BackfillRemediationSlaPolicy` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:195` |
+| `QualityAlertRemediationSignal` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:277` |
+| `AutoGapRemediationService` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:300` |
 | `BackfillCoordinator` | `src/Meridian.Application/Backfill/BackfillCoordinator.cs:33` |
 | `BackfillCoordinatorExecutionGateway` | `src/Meridian.Application/Backfill/BackfillCoordinatorExecutionGateway.cs:8` |
 | `BackfillCostEstimator` | `src/Meridian.Application/Backfill/BackfillCostEstimator.cs:12` |
@@ -77,9 +77,9 @@
 | `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| ... and 7150 more | |
+| ... and 7185 more | |
 
-### API Endpoints (244 undocumented)
+### API Endpoints (240 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -105,7 +105,7 @@
 | `/api/compliance/controls/attestation` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:70` |
 | `/api/compliance/access-reviews/assess` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:85` |
 | `/api/compliance/access-reviews/run` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:101` |
-| `/api/compliance/access-reviews` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:117` |
+| `/api/compliance/access-reviews` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:123` |
 | `/api/loans` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:37` |
 | `/api/loans/{loanId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:67` |
 | `/api/loans/{loanId}/projections/contract` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:82` |
@@ -133,9 +133,9 @@
 | `/api/loans/servicer-statements/preview` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:498` |
 | `/api/loans/servicer-statements/import` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:522` |
 | `/api/loans/servicer-statements/{batchId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:546` |
-| ... and 194 more | |
+| ... and 190 more | |
 
-### Configuration Options (128 undocumented)
+### Configuration Options (131 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -162,6 +162,7 @@
 | `SecurityMasterWorkbench.GoldenCopySource` | `config/appsettings.sample.json` |
 | `SecurityMasterWorkbench.RequireIndependentReviewer` | `config/appsettings.sample.json` |
 | `SecurityMasterWorkbench.MaxBulkResolveBatch` | `config/appsettings.sample.json` |
+| `SecurityMasterWorkbench.RequireGovernedTermAmendments` | `config/appsettings.sample.json` |
 | `Synthetic` | `config/appsettings.sample.json` |
 | `Synthetic.Enabled` | `config/appsettings.sample.json` |
 | `Synthetic.Seed` | `config/appsettings.sample.json` |
@@ -188,14 +189,13 @@
 | `Backfill.SymbolResolutionMode` | `config/appsettings.sample.json` |
 | `Backfill.ProviderPriority` | `config/appsettings.sample.json` |
 | `Backfill.EnableRateLimitRotation` | `config/appsettings.sample.json` |
-| `Backfill.RateLimitRotationThreshold` | `config/appsettings.sample.json` |
-| ... and 78 more | |
+| ... and 81 more | |
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 7200 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
-2. **API Endpoints**: 244 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
-3. **Configuration Options**: 128 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
+1. **Public Classes / Interfaces**: 7235 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
+2. **API Endpoints**: 240 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+3. **Configuration Options**: 131 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---
 

@@ -886,7 +886,10 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
             Aggressor: (AggressorSide)raw.Aggressor,
             SequenceNumber: raw.Sequence);
 
-        return MarketEvent.Trade(ts, symbol, trade, raw.Sequence);
+        // The hot-path struct does not carry provenance (its binary layout is frozen by the
+        // batch serializer), so a reconstituted event is honestly UNKNOWN rather than being
+        // misattributed to a hardcoded vendor.
+        return MarketEvent.Trade(ts, symbol, trade, Meridian.Contracts.Domain.MarketDataSources.Unknown, raw.Sequence);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -904,7 +907,8 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
             askSize: raw.AskSize,
             sequenceNumber: raw.Sequence);
 
-        return MarketEvent.BboQuote(ts, symbol, quote, raw.Sequence);
+        // See ReconstituteTrade: the hot-path struct carries no provenance.
+        return MarketEvent.BboQuote(ts, symbol, quote, Meridian.Contracts.Domain.MarketDataSources.Unknown, raw.Sequence);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

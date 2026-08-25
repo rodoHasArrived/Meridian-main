@@ -64,10 +64,16 @@ public sealed record AdjustedHistoricalBar(
                 adjClose,
                 AdjustedVolume ?? Volume,
                 Source,
-                SequenceNumber
+                SequenceNumber,
+                IsAdjusted: true
             );
         }
 
-        return new HistoricalBar(Symbol, SessionDate, Open, High, Low, Close, Volume, Source, SequenceNumber);
+        // When adjustment data exists, the base OHLCV values are raw exchange prices by
+        // construction, so the regime is known-unadjusted. Without adjustment data the
+        // provider's regime is unknown — carry null rather than guessing.
+        return new HistoricalBar(
+            Symbol, SessionDate, Open, High, Low, Close, Volume, Source, SequenceNumber,
+            IsAdjusted: AdjustedClose.HasValue ? false : null);
     }
 }

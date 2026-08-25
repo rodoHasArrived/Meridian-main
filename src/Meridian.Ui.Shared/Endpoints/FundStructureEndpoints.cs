@@ -1104,117 +1104,9 @@ public static partial class FundStructureEndpoints
             {
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
-        }).RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance);
+        }).DeclareNonMutating("Renders a report template and returns the result; ReportingWorkflowService.Render resolves the template, evaluates the grids through ReportWriterGridEngine in memory, and returns a DTO without persisting anything. The body carries the template id, parameters, grid definitions and dataset rows, which is why it is a POST.").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance);
 
-        reportingGroup.MapPost("/packs/create", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs",
-                "Legacy report-pack creation bypassed the canonical run contract and certified snapshot."));
-
-        reportingGroup.MapPost("/packs", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs",
-                "Legacy report-pack creation bypassed the canonical run contract and certified snapshot."))
-        .WithName("CreateReportingPackWorkflow")
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        reportingGroup.MapPost("/packs/{reportId:guid}/validate", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/{runId}/validate",
-                "The legacy pack lifecycle was mutable and is not authoritative."));
-        reportingGroup.MapPost("/packs/{reportId:guid}/submit", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/{runId}/submit",
-                "The legacy pack lifecycle was mutable and is not authoritative."));
-        reportingGroup.MapPost("/packs/{reportId:guid}/approve", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/{runId}/approve",
-                "The legacy pack lifecycle did not enforce the canonical maker-checker state machine."));
-        reportingGroup.MapPost("/packs/{reportId:guid}/reject", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs",
-                "Legacy rejection mutated the old pack record; remediation must create or advance a governed run."))
-        .WithName("RejectReportingPackWorkflow")
-        .ProducesProblem(StatusCodes.Status410Gone);
-        reportingGroup.MapPost("/packs/{reportId:guid}/publish", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/{runId}/release",
-                "Legacy publication accepted caller-supplied signers, hashes, manifest ids, and retention paths instead of verified retained artifacts."));
-
-        reportingGroup.MapPost("/packs/{reportId:guid}/restatements", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/{runId}/restatement-requests",
-                "In-place legacy restatement could rewrite a released pack; governed restatement creates a new revision after independent approval."))
-        .WithName("RestateReportingPackWorkflow")
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        reportingGroup.MapPost("/packs/{reportId:guid}/archive", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/{runId}",
-                "Client-driven archive mutation is not part of the immutable governed reporting lifecycle."));
-
-        reportingGroup.MapGet("/packs/{reportId:guid}/deliveries", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/distribution/packages/{runId}/deliveries",
-                "Legacy delivery history embedded deterministic query-token routes and synthetic delivery state."))
-        .WithName("GetReportingPackDeliveryHistory").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        reportingGroup.MapGet("/packs/{reportId:guid}/deliveries/{attemptId:guid}/package", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/portal/reporting/access-grants/{grantId}/exchange",
-                "Query-string package tokens are retired; exchange an opaque, scoped grant in a POST body."))
-        .WithName("GetReportingPackDeliveryPackage").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        reportingGroup.MapGet("/packs/{reportId:guid}/deliveries/{attemptId:guid}/artifacts/{artifactName}", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/distribution/packages/{runId}/artifacts/{artifactId}",
-                "Query-string artifact tokens are retired; authenticated downloads now use the immutable artifact vault."))
-        .WithName("GetReportingPackDeliveryArtifact").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        app.MapGet(UiApiRoutes.ReportingPackDeliveryPortalPackage, (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/portal/reporting/access-grants/{grantId}/exchange",
-                "Query-string portal tokens are retired; the opaque grant must be exchanged through a no-store POST body."))
-        .WithName("GetReportingPortalDeliveryPackage")
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        reportingGroup.MapPost("/packs/{reportId:guid}/deliveries", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/distribution/deliveries",
-                "Legacy delivery could bypass canonical Released verification and durable transport receipts."))
-        .WithName("CreateReportingPackDeliveryAttempt")
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        reportingGroup.MapPost("/packs/{reportId:guid}/deliveries/failures", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/distribution/deliveries/{jobId}",
-                "Client-recorded synthetic failures are retired; provider receipts are server-owned and reflected on the durable delivery job."))
-        .WithName("CreateReportingPackDeliveryFailure")
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        reportingGroup.MapPost("/packs/{reportId:guid}/restate", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/{runId}/restatement-requests",
-                "In-place legacy restatement is retired; approval creates a new immutable governed revision."));
+        MapLegacyReportingPackTombstones(app, reportingGroup);
 
         reportingGroup.MapGet("/runs", async (int? limit, HttpContext context) =>
         {
@@ -1727,6 +1619,7 @@ public static partial class FundStructureEndpoints
                 "the internal reporting scheduler worker",
                 "Public due-schedule execution is retired; due work is leased and executed only by the server-owned background worker."))
         .WithName("RunDueReportingSchedules")
+        .DeclarePermissionlessMutation(LegacyReportingTombstoneReason)
         .ProducesProblem(StatusCodes.Status410Gone);
 
         reportingGroup.MapGet("/packs/history", (string period, string fundAccountId, HttpContext context) =>
@@ -2131,19 +2024,6 @@ public static partial class FundStructureEndpoints
             detail: $"{capability} requires a registered persistence store and is unavailable in this deployment.",
             statusCode: StatusCodes.Status503ServiceUnavailable,
             title: "Durable reporting mutation unavailable");
-
-    private static IResult LegacyReportingRouteGone(
-        HttpContext context,
-        string canonicalRoute,
-        string reason)
-    {
-        context.Response.Headers.CacheControl = "no-store";
-        context.Response.Headers.Pragma = "no-cache";
-        return Results.Problem(
-            detail: $"{reason} Use {canonicalRoute}.",
-            statusCode: StatusCodes.Status410Gone,
-            title: "Legacy reporting route retired");
-    }
 
     private static Guid? ParseGuid(string? value) =>
         Guid.TryParse(value, out var parsed) ? parsed : null;

@@ -118,7 +118,9 @@ public static class DataProvenanceExtensions
     /// "Sample Custodian" or "fixture-bank" are not mistaken for a simulated origin. An explicit
     /// provenance mark is always the primary gate; this token table is the shared safety net for a
     /// source that is labeled simulated while the record forgot to carry the mark. The ledger
-    /// append boundary (`AccountingPostingCommandValidator`) enforces the same table.
+    /// append boundary (`AccountingPostingCommandValidator`) enforces the same table, via
+    /// <see cref="CarriesSimulatedOriginToken"/> so colon-delimited structured references are
+    /// caught segment by segment.
     /// </summary>
     private static readonly string[] SimulatedOriginTokens =
     [
@@ -142,6 +144,42 @@ public static class DataProvenanceExtensions
         foreach (var token in SimulatedOriginTokens)
         {
             if (string.Equals(trimmed, token, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// True when the value is, exactly, a simulated-origin token — or when any colon-delimited
+    /// segment of a structured reference is one, so an evidence string like
+    /// <c>daily-close:AAPL:2026-08-18:synthetic</c> declares its fabricated origin even though
+    /// the whole string is not a bare token. Splitting only on <c>:</c> keeps free-text values
+    /// like "Sample Custodian" and hyphenated names like "fixture-bank" from matching: those are
+    /// whole values, not structured segments, and remain the exact-equality rule's concern.
+    /// </summary>
+    public static bool CarriesSimulatedOriginToken(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        if (IsSimulatedOriginToken(value))
+        {
+            return true;
+        }
+
+        if (!value.Contains(':'))
+        {
+            return false;
+        }
+
+        foreach (var segment in value.Split(':'))
+        {
+            if (IsSimulatedOriginToken(segment))
             {
                 return true;
             }

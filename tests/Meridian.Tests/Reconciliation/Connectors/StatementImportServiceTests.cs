@@ -10,6 +10,7 @@ using Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca;
 using Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Ofx;
 using Meridian.Infrastructure.Reconciliation;
+using Meridian.Tests.TestHelpers;
 using Xunit;
 
 namespace Meridian.Tests.Reconciliation.Connectors;
@@ -560,6 +561,13 @@ public sealed class StatementImportServiceTests : IDisposable
         ofxResult.RecordCount.Should().Be(4);
         flexResult.RecordCount.Should().Be(7);
 
+        // OFX STMTTRN movements commit into the transaction lane with only LEDGERBAL as a cash
+        // balance; Flex CashTransactions likewise land as transactions, never as ending balances.
+        ofxResult.KindSummaries.Single(summary => summary.Kind == "Transaction").RecordCount.Should().Be(2);
+        ofxResult.KindSummaries.Single(summary => summary.Kind == "CashBalance").RecordCount.Should().Be(1);
+        flexResult.KindSummaries.Single(summary => summary.Kind == "Transaction").RecordCount.Should().Be(3);
+        flexResult.KindSummaries.Should().NotContain(summary => summary.Kind == "CashBalance");
+
         var imports = await _workflow.ListImportsAsync();
         imports.Select(import => import.ImportId).Should().Contain([ofxResult.RunId, flexResult.RunId]);
     }
@@ -832,6 +840,37 @@ public sealed class StatementImportServiceTests : IDisposable
             .LastRunStatus
             .Should()
             .Be("Failed: InvalidOperationException");
+    }
+
+    [Fact]
+    public async Task ScheduleRunner_FailureLogDoesNotContainExternalAccountIdentifier()
+    {
+        const string sensitiveIban = "GB82WEST12345698765432";
+        var scheduleStore = new FileStatementFetchScheduleStore(_root);
+        var schedule = await scheduleStore.UpsertAsync(
+            CreateScopedSchedule(
+                "sensitive-account-log",
+                new DateOnly(2026, 6, 1),
+                new DateOnly(2026, 6, 30)) with
+            {
+                ExternalAccountId = sensitiveIban
+            });
+        var ingestion = new RecordingStatementFetchIngestionAuthority(
+            _service,
+            authorizationFailure: new InvalidOperationException($"Account {sensitiveIban} is unavailable."));
+        var logger = new RecordingLogger<StatementFetchScheduleRunner>();
+        var runner = new StatementFetchScheduleRunner(scheduleStore, _service, ingestion, logger);
+
+        var result = await runner.RunScheduleAsync(
+            schedule,
+            new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero));
+
+        result.Should().BeNull();
+        var entry = logger.Entries.Should().ContainSingle().Subject;
+        entry.Message.Should().NotContain(sensitiveIban);
+        (entry.Exception?.ToString() ?? string.Empty).Should().NotContain(sensitiveIban);
+        entry.Exception.Should().BeNull(
+            "provider exceptions may echo sensitive account identifiers and must not be attached to logs");
     }
 
     [Fact]

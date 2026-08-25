@@ -26,7 +26,7 @@ public sealed class ResponseSchemaValidationTests : IDisposable, IClassFixture<E
     {
         _client = fixture.Client;
         _configClient = fixture.CreatePermittedClient(UserPermission.ViewConfig, UserPermission.ModifyConfig);
-        _providerReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
+        _providerReadClient = fixture.CreateSessionClient(UserPermission.ViewDiagnostics);
     }
 
     public void Dispose()
@@ -251,9 +251,18 @@ public sealed class ResponseSchemaValidationTests : IDisposable, IClassFixture<E
     private async Task<Dictionary<string, JsonElement>> GetJsonAsync(string url)
     {
         // SEC-001: configuration reads require ViewConfig/ModifyConfig — use the authorized client.
-        // W9-GOV-008: provider reads require a platform permission — likewise.
+        // W9-GOV-008: provider reads require a platform permission — likewise. The health family
+        // declares ViewDiagnostics; bare /api/health has no trailing slash and stays an open read.
+        // The runtime status family -- status, errors, back-pressure, connections -- declares the same
+        // operational permissions as the provider reads, because it carries connection state and the
+        // configured symbol set rather than the counters /metrics exposes.
         var client = url.StartsWith("/api/config", StringComparison.OrdinalIgnoreCase) ? _configClient
             : url.StartsWith("/api/providers", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
+            : url.StartsWith("/api/health/", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
+            : url.StartsWith("/api/status", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
+            : url.StartsWith("/api/errors", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
+            : url.StartsWith("/api/backpressure", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
+            : url.StartsWith("/api/connections", StringComparison.OrdinalIgnoreCase) ? _providerReadClient
             : _client;
         var response = await client.GetAsync(url);
         response.StatusCode.Should().Be(HttpStatusCode.OK);

@@ -358,13 +358,33 @@ public sealed class UiServer : IAsyncDisposable
                 builder.Services.AddSingleton<Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger>(sp =>
                     (Meridian.Execution.Adapters.PaperTradingGateway)sp.GetRequiredService<IOrderGateway>());
             }
-            builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
-            builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
-            // Production IPositionTracker projection over the live portfolio state. Gives the
-            // safety-critical risk rules (PositionLimitRule, DrawdownCircuitBreaker) a real backing
-            // instead of leaving IPositionTracker without any non-test implementation.
-            builder.Services.AddSingleton<IPositionTracker>(sp =>
-                new PortfolioStatePositionTracker(sp.GetRequiredService<IPortfolioState>()));
+            if (usesPaperGateway)
+            {
+                builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
+                builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
+                // Production IPositionTracker projection over the live portfolio state. Gives the
+                // safety-critical risk rules (PositionLimitRule, DrawdownCircuitBreaker) a real backing
+                // instead of leaving IPositionTracker without any non-test implementation.
+                builder.Services.AddSingleton<IPositionTracker>(sp =>
+                    new PortfolioStatePositionTracker(sp.GetRequiredService<IPortfolioState>()));
+            }
+            else
+            {
+                // Live brokerage composition. The hardcoded $100k paper book must not be the
+                // authoritative IPortfolioState here: every live risk rail — position limits,
+                // gross exposure, notional, concentration, drawdown — would measure a fictional
+                // empty book instead of the account actually trading. No broker-backed portfolio
+                // state exists yet (IBrokeragePositionSync has no production implementation), so
+                // live routing fails closed at startup with an actionable message rather than
+                // routing orders whose risk was measured against nothing.
+                builder.Services.AddSingleton<IPortfolioState>(_ =>
+                    throw new InvalidOperationException(
+                        "Live brokerage execution is configured, but no broker-backed portfolio "
+                        + "state is implemented; refusing to measure live risk against the "
+                        + "hardcoded paper book. Use the paper gateway, or compose a "
+                        + "brokerage-backed IPortfolioState/IPositionTracker before enabling "
+                        + "live execution."));
+            }
             builder.Services.AddSingleton<IOrderManager>(sp =>
             {
                 var gateway = sp.GetRequiredService<IExecutionGateway>();
@@ -372,7 +392,10 @@ public sealed class UiServer : IAsyncDisposable
                 // Order routing is fail-closed: an OMS without the mandatory pre-trade risk gate is
                 // not a valid host composition in any supported production posture.
                 var risk = sp.GetRequiredService<IRiskValidator>();
-                var portfolio = sp.GetRequiredService<PaperTradingPortfolio>();
+                // Paper compositions resolve the paper book; a live brokerage composition
+                // resolves the fail-closed IPortfolioState above and refuses to construct an
+                // OMS whose risk rails would measure a fictional book.
+                var portfolio = sp.GetRequiredService<IPortfolioState>();
                 return new OrderManagementSystem(
                     gateway,
                     logger,
@@ -560,6 +583,9 @@ public sealed class UiServer : IAsyncDisposable
             // Refuse account-administration mutations before binding parses the body; the session
             // middleware exempts /api/auth, and endpoint filters only run after binding.
             _app.UseAccountAdministrationGuard();
+            // Enforce every mutating route's declared permission before binding, and refuse
+            // mutating routes that declare no authorization requirement at all.
+            _app.UseMutationAuthorizationGuard();
             _app.UseRateLimiter();
             if (_apiHostOptions.AllowedOrigins.Length > 0)
             {
@@ -722,7 +748,11 @@ public sealed class UiServer : IAsyncDisposable
                 processId = Environment.ProcessId,
                 shutdownRequested = _lifecycle.IsShutdownRequested
             }, statusCode: StatusCodes.Status202Accepted);
-        });
+        })
+        .DeclareIndependentAuthentication(
+            "Loopback-only lifecycle control, authenticated in-handler by the supervisor's local " +
+            "shutdown token or an AdminMaintenance principal; the token path carries no session, " +
+            "so a declared permission would break the supervisor's only shutdown seam.");
 
         _app.MapGet("/api/system/shutdown/{operationId}", (string operationId, HttpContext context) =>
         {

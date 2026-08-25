@@ -16,7 +16,8 @@ public sealed partial class OrderManagementSystem
         decimal cumulativeFilledQuantity,
         decimal realizedPnl,
         decimal newCash,
-        string? financialAccountId)
+        string? financialAccountId,
+        bool usesFaceValuePercentageOfPar)
     {
         if (fillIncrement.FillPrice is not { } fillPrice)
         {
@@ -40,7 +41,8 @@ public sealed partial class OrderManagementSystem
             realizedPnl,
             newCash,
             fillIncrement.Timestamp,
-            financialAccountId);
+            financialAccountId,
+            usesFaceValuePercentageOfPar);
     }
 
     /// <summary>

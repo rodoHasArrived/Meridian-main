@@ -13,6 +13,58 @@ For an end user, Meridian is intended to reduce disconnected spreadsheets, inbox
 - What still needs review, approval, reconciliation, evidence, or reporting?
 - Which report, ledger entry, close blocker, or operational decision depends on it?
 
+## Get Meridian Running
+
+**There is no downloadable installer yet.** No release has been published, so the only way to run
+Meridian today is from source. The desktop installer lane exists and builds signed MSIX and
+one-click setup artifacts, but publishing a release needs a code-signing certificate that is not in
+the repository; until then, use the path below.
+
+### See it working in one command
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --seed-demo
+```
+
+This provisions a durable, clearly-labelled **Seeded** demo workspace and opens the browser
+workstation on it, so the first screen is populated — reconciliation casework in the control tower
+and a completed paper strategy run on the Strategy desk — rather than an empty shell. Demo data
+lives in its own root (`{dataRoot}/demo-workspace`), never mixes with real data, carries `Seeded`
+provenance on every record, and is removed by `--reset-demo`. Re-open it later with `--demo`.
+
+You need the .NET SDK pinned by [global.json](global.json) and Git. Node.js is **not** required to
+see the workstation: the browser bundle is tracked in the repository.
+
+### Running against your own data
+
+`--seed-demo` and `--demo` configure a database-less local profile for you. Any other launch —
+including `--mode workstation` — requires you to choose a persistence profile first, and fails
+closed with a diagnostic naming the variable if you have not:
+
+```bash
+# Real local persistence (recommended): point Meridian at a PostgreSQL instance
+export MERIDIAN_DATABASE_URL=postgres://user:password@localhost:5432/meridian
+dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
+
+# Or, for local/dev fixture scenarios only, file-backed governance stores
+export MERIDIAN_USE_INMEMORY_GOVERNANCE=true
+```
+
+Authentication defaults to required outside Development, so plan credentials before a
+non-demo launch. See [Start Here](docs/start/README.md) for the full setup path and
+[environment variables](docs/reference/environment-variables.md) for the complete list.
+
+### What is supported today
+
+The v1 envelope in [ADR-019](docs/adr/019-production-support-matrix-and-deployment-posture.md) is a
+**single-operator, single-company, single-node local workstation** on Windows 11 x64. Container
+(`deploy/docker/`, `deploy/k8s/`), systemd, remote-hosted `ProductionApi`, and multi-node
+topologies are **experimental and fail closed** — they are not a supported way to run Meridian, and
+the installer offers Docker only on that basis. Meridian is not production-certified: the release
+gate in the
+[Implementation and Readiness Tracker](docs/product/implementation-todo-list.md) requires every
+`P0` row to be complete on one release commit, and that has not happened yet.
+
 ## Current Product Status
 
 Meridian's current baseline is the closed W1-W5 operational record plus completed W5X shared
@@ -154,10 +206,14 @@ Direct commands:
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --help
+dotnet run --project src/Meridian/Meridian.csproj -- --seed-demo
 dotnet run --project src/Meridian/Meridian.csproj -- --setup
-dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
 python build/python/cli/buildctl.py --help
 ```
+
+`--mode workstation --http-port 8080` serves the host and `http://localhost:8080/workstation/`, but
+only once a persistence profile is configured — see [Running against your own
+data](#running-against-your-own-data). Unlike `--seed-demo`, it does not choose one for you.
 
 GNU Make targets are optional convenience wrappers when `make` is installed:
 
