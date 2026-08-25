@@ -1,4 +1,6 @@
+using System.Globalization;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Operations;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Storage;
@@ -72,11 +74,15 @@ public sealed class StrategyRunResearchRecorder(
             // The engine has already finished by the time the host records it, so Start/Complete
             // would otherwise stamp a multi-minute backtest as near-zero duration and sort it by
             // persistence time. Derive the real start from the run's own elapsed time.
-            var completed = entry.Complete(result);
+            var completed = entry.Complete(BoundResultForRetention(result));
             var startedAt = completed.EndedAt is { } endedAt && result.ElapsedTime > TimeSpan.Zero
                 ? endedAt - result.ElapsedTime
                 : completed.StartedAt;
-            completed = completed with { StartedAt = startedAt };
+            completed = completed with
+            {
+                StartedAt = startedAt,
+                OutputMetadata = DescribeTrimmedDetail(result)
+            };
 
             await store.RecordRunAsync(completed, ct).ConfigureAwait(false);
             // Preserve raw lineage in storage; sanitize caller-controlled metadata only at the log boundary.
@@ -105,4 +111,37 @@ public sealed class StrategyRunResearchRecorder(
             return null;
         }
     }
+
+    /// <summary>
+    /// Trims the per-event detail from a result before it is retained. The durable store caps a run
+    /// snapshot at <see cref="OperationalCaseHistoryHashing.MaxDataValueLength"/> characters, and a
+    /// long or fill-dense backtest serializes every snapshot, cash flow, fill, and ledger entry —
+    /// so the runs most worth tracking were exactly the ones whose recording failed and was
+    /// swallowed. Metrics, universe, and bias disclosure are what lineage and run comparison read,
+    /// so they are kept; the bulk collections are dropped and their sizes recorded instead.
+    /// </summary>
+    private static BacktestResult BoundResultForRetention(BacktestResult result)
+    {
+        if (result.Snapshots.Count == 0 && result.CashFlows.Count == 0 && result.Fills.Count == 0)
+        {
+            return result;
+        }
+
+        return result with
+        {
+            Snapshots = [],
+            CashFlows = [],
+            Fills = [],
+            TradeTickets = null
+        };
+    }
+
+    /// <summary>Counts of the detail dropped by <see cref="BoundResultForRetention"/>.</summary>
+    private static Dictionary<string, string> DescribeTrimmedDetail(BacktestResult result) => new(StringComparer.Ordinal)
+    {
+        ["retainedDetail"] = "summary",
+        ["snapshotCount"] = result.Snapshots.Count.ToString(CultureInfo.InvariantCulture),
+        ["cashFlowCount"] = result.CashFlows.Count.ToString(CultureInfo.InvariantCulture),
+        ["fillCount"] = result.Fills.Count.ToString(CultureInfo.InvariantCulture)
+    };
 }

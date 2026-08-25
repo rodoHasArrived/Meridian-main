@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
+using Meridian.Storage.Operations;
 using Meridian.Strategies.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -221,5 +222,42 @@ public sealed class StrategyRunResearchRecorderTests
         // Recording happens after the engine finishes, so without deriving the start from the
         // run's own elapsed time a seven-minute backtest is retained as near-instantaneous.
         (recorded!.EndedAt - recorded.StartedAt).Should().BeCloseTo(elapsed, TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task RecordAsync_RetainsLineageForFillDenseResult()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-research-recorder", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        try
+        {
+            // Durable store, not the in-memory one: the snapshot size cap only exists there, and
+            // in-memory-only coverage is what let this class of failure stay invisible.
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var recorder = new StrategyRunResearchRecorder(store, NullLogger<StrategyRunResearchRecorder>.Instance);
+
+            var fills = Enumerable.Range(0, 20_000)
+                .Select(i => new FillEvent(
+                    Guid.NewGuid(), Guid.NewGuid(), "SPY", i % 2 == 0 ? 10L : -10L,
+                    400m + (i % 50), 1m, DateTimeOffset.UtcNow.AddSeconds(i), "acct-1"))
+                .ToList();
+
+            var result = Result() with { Fills = fills };
+
+            var runId = await recorder.RecordAsync(new ResearchRunDescriptor("strat-dense", "Dense"), result);
+
+            // A fill-dense run is exactly the kind worth tracking, so it must not be the kind that
+            // silently loses lineage to the durable snapshot limit.
+            runId.Should().NotBeNull();
+            var recorded = await store.GetRunByIdAsync(runId!);
+            recorded.Should().NotBeNull();
+            recorded!.Metrics.Should().NotBeNull();
+            recorded.OutputMetadata.Should().ContainKey("fillCount");
+            recorded.OutputMetadata["fillCount"].Should().Be("20000");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
     }
 }
