@@ -154,7 +154,8 @@ public sealed class CollectorModeRunner
                         providerMap,
                         failoverService,
                         rule.Id,
-                        initialProvider);
+                        initialProvider,
+                        integrityPublisher: hostStartup.GetService<Meridian.Domain.Events.IMarketEventPublisher>());
                     dataClient = failoverClient;
                     failoverService.Start(
                         failoverCfg,
@@ -207,7 +208,8 @@ public sealed class CollectorModeRunner
                 backfillExecutor: (_, _) => throw new InvalidOperationException("Direct gap backfill execution is not used in collector mode."),
                 subscribedSymbols: () => gapBackfillSymbols,
                 minimumGap: autoGapRemediation.MinimumGapDuration,
-                guardedRemediation: autoGapRemediation);
+                guardedRemediation: autoGapRemediation,
+                integrityPublisher: hostStartup.GetService<Meridian.Domain.Events.IMarketEventPublisher>());
             foreach (var gapSource in gapSources)
                 gapBackfill.Subscribe(gapSource);
 

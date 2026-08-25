@@ -123,6 +123,50 @@ public sealed record IntegrityEvent(
             Venue: venue);
 
     /// <summary>
+    /// Creates a coverage-hole integrity event for a known data gap that was deliberately left
+    /// unremediated (e.g. a reconnect window below the automatic remediation floor). The gap is
+    /// disclosed on the tape instead of disappearing into a Debug log, so a stored day with a
+    /// skipped outage no longer reads back as continuous coverage.
+    /// </summary>
+    public static IntegrityEvent UnremediatedCoverageGap(
+        DateTimeOffset ts,
+        string symbol,
+        string provider,
+        DateTimeOffset gapStart,
+        DateTimeOffset gapEnd,
+        string reason,
+        string? streamId = null,
+        string? venue = null)
+        => new(ts, symbol, IntegritySeverity.Warning,
+            $"Unremediated coverage gap on provider '{provider}' from {gapStart:O} to {gapEnd:O}: {reason}.",
+            ErrorCode: 1009,
+            SequenceNumber: 0,
+            StreamId: streamId,
+            Venue: venue);
+
+    /// <summary>
+    /// Creates a provider-failover integrity event marking the coverage-uncertain window while a
+    /// composite streaming client hands off from one provider to another (losing the old feed
+    /// through completing re-subscription on the new one).
+    /// </summary>
+    public static IntegrityEvent ProviderFailover(
+        DateTimeOffset ts,
+        string symbol,
+        string fromProvider,
+        string toProvider,
+        string reason,
+        DateTimeOffset windowStart,
+        DateTimeOffset windowEnd,
+        string? streamId = null,
+        string? venue = null)
+        => new(ts, symbol, IntegritySeverity.Warning,
+            $"Provider failover '{fromProvider}' -> '{toProvider}' ({reason}); coverage uncertain from {windowStart:O} to {windowEnd:O}.",
+            ErrorCode: 1010,
+            SequenceNumber: 0,
+            StreamId: streamId,
+            Venue: venue);
+
+    /// <summary>
     /// Creates a canonicalization hard-fail integrity event when required fields are missing.
     /// </summary>
     public static IntegrityEvent CanonicalizationHardFail(
