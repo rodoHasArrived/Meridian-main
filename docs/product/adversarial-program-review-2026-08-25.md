@@ -56,7 +56,7 @@ and it is invisible to every gate the repository runs, because no gate compares 
 | Broker-truthful kill-switch sweep | **Landed** | `af05058f` sweeps the union of tracked and broker books; `ExecutionReport.ChildOrders` added (`Models.cs:166-174`) and registered (`OrderManagementSystem.ChildOrders.cs:61-84`) |
 | Journal immutability at the database | **Landed** | `V_ledger_030__journal_immutability.sql` |
 | Release attachment | **Landed** | tag `eval-v0.1.0-eval.1`; `8e9b11c3` attaches consumer setup to the evaluation prerelease |
-| Provenance at the ingress seam | **Landed at runtime; type-level hardening outstanding** | `2361152c` threads real provider identity, and `TradeDataCollector.OnTrade` rejects a missing `Source` with a `MissingSource` integrity event before storing (`:117-134`, tested). `MarketTradeUpdate.cs:33` is still `string? Source = null`, so the remaining work is compile-time, not behavioural |
+| Provenance at the ingress seam | **Landed at runtime; type-level hardening outstanding** | `2361152c` threads real provider identity, and `TradeDataCollector.OnTrade` rejects a missing `Source` with a `MissingSource` integrity event before storing (`:117-134`, tested). `MarketTradeUpdate.cs:41` is still `string? Source = null`, so the remaining work is compile-time, not behavioural |
 | Fund-economics activation | **Partial — the named alternative was skipped** | capital-call issuance wired (`CapitalCallFundingIntake.cs:236`); NAV-per-unit + unit register still at zero consumers |
 | `ContractMultiplier` on the durable fill record | **Open — and wider than reported** | §3–§4 below: the multiplier reaches the two exposure projections (`AggregatePortfolioExposureProvider:571-582`, `WorkstationEndpoints.BuildExposureReport`) and nothing else — not the paper book's transaction branches, valuation projections, persistence sites or either margin model — so option position value is understated live as well as on restore (see §4 for the per-metric breakdown, which is not a uniform 1/100 on equity or Sharpe) |
 | WPF state un-fork | **Partial** | reconciliation posture no longer reads desktop-local state and the remaining local fund-setup lane is labelled with a provenance badge (`AccountingFeatureModule.cs:53-59`); the scheduler host loops were removed from the desktop process and now run server-side (`:196-202`). Residual: fund-account and fund-structure services still persist JSON under `%LOCALAPPDATA%`, along with drafts and schedules |
@@ -712,7 +712,7 @@ close-management product can tell.
   capability "is not dark" on the strength of the client call site alone; tracing the endpoint shows
   the original finding was substantially right.
 - **Provenance is optional at the type level but fail-closed at runtime — this is hardening, not a
-  gap.** `MarketTradeUpdate.cs:33` is still `string? Source = null`, so the *contract* admits an
+  gap.** `MarketTradeUpdate.cs:41` is still `string? Source = null`, so the *contract* admits an
   un-sourced print. The *runtime* does not: `TradeDataCollector.OnTrade` checks
   `MarketDataSources.IsMissing(update.Source)`, publishes an `IntegrityEvent.MissingSource` carrying
   an explicit `UNKNOWN` sentinel, and **returns before the trade is created or stored**

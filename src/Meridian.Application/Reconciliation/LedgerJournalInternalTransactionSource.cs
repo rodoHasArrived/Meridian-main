@@ -47,14 +47,16 @@ public interface IInternalLedgerTransactionSource
 /// false match or a false internal-only break, both worse than the honest informational break):
 /// <list type="bullet">
 ///   <item><b>Period scope:</b> journals are read via the tenant-scoped
-///     <see cref="ILedgerJournalStore.QueryAsync"/> bounded to the statement window, and each
-///     entry's effective date (<see cref="JournalEntryMetadata.EffectiveDate"/>, falling back to
-///     the posting timestamp) is re-checked against the window so an out-of-period record a store
-///     streams anyway is never projected.</item>
-///   <item><b>Account attribution:</b> an entry is projected only when its metadata
-///     <c>FinancialAccountId</c> or any line's account-scoped <c>FinancialAccountId</c> equals one
-///     of the query's account aliases (ordinal-ignore-case). Unattributed journals — including an
-///     entire currency-blind single-account book — fail closed to the empty population.</item>
+///     <see cref="ILedgerJournalStore.QueryAsync"/> by accounting effective date, not posting
+///     timestamp, so late-posted entries and reversal/rebook records effective inside the statement
+///     window remain visible. Each entry's effective date
+///     (<see cref="JournalEntryMetadata.EffectiveDate"/>, falling back to the posting timestamp) is
+///     re-checked against the window so an out-of-period record a store streams anyway is never
+///     projected.</item>
+///   <item><b>Account attribution:</b> only cash legs whose account-scoped
+///     <c>FinancialAccountId</c> equals one of the query aliases are projected. An unscoped legacy
+///     cash leg may inherit matching journal metadata or the journal's one unambiguous line-level
+///     account scope. Unattributed or mixed-scope legacy cash legs fail closed.</item>
 ///   <item><b>Custodian visibility:</b> only entries that move cash project — at least one line on
 ///     a well-known cash asset account (<c>Cash</c> or a per-currency <c>Cash (XXX)</c>). Pure
 ///     internal postings (accrual declarations, fair-value marks, revaluations, period close,
@@ -63,12 +65,14 @@ public interface IInternalLedgerTransactionSource
 ///     entries (<c>reversal.of</c> tag) and the entries they reverse are both excluded: the pair
 ///     nets to nothing internally, and if the custodian really executed the movement its statement
 ///     row still surfaces as an honest break.</item>
-///   <item><b>Amount and currency:</b> the projected net amount is the entry's net cash movement
-///     (debits positive, credits negative), grouped per resolved cash currency — the line's
-///     transaction-currency detail when present, else the <c>Cash (XXX)</c> denomination, else the
-///     run's base currency (currency-blind legacy legs are assumed base-denominated). A
-///     multi-currency entry (an FX conversion) projects one record per currency, mirroring the two
-///     movements a statement shows; a zero net movement in a currency is skipped.</item>
+///   <item><b>Amount and currency:</b> the projected net amount is the requested account's cash
+///     movement only (debits positive, credits negative), grouped per resolved cash currency — the
+///     line's transaction-currency detail when present, else the <c>Cash (XXX)</c> denomination,
+///     else the run's base currency (currency-blind legacy legs are assumed base-denominated).
+///     Explicitly account-scoped cash legs belonging to another account are never netted into this
+///     account's transaction. A multi-currency entry (an FX conversion) projects one record per
+///     currency, mirroring the two movements a statement shows; a zero net movement in a currency
+///     is skipped.</item>
 ///   <item><b>Type:</b> the canonical statement vocabulary (<c>trade</c>/<c>fee</c>/<c>dividend</c>/
 ///     <c>transaction</c>) is derived from the journal's activity classification when stamped, else
 ///     from its account shape (dividend accounts before instrument accounts, so a receivable
@@ -175,8 +179,8 @@ public sealed class LedgerJournalInternalTransactionSource(
         {
             records = await journalStore.QueryAsync(
                     new LedgerJournalEntryQuery(
-                        OccurredFrom: new DateTimeOffset(periodStart.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
-                        OccurredTo: new DateTimeOffset(query.PeriodEnd.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero)),
+                        EffectiveFrom: periodStart,
+                        EffectiveTo: query.PeriodEnd),
                     ct)
                 .ConfigureAwait(false);
         }
@@ -185,14 +189,12 @@ public sealed class LedgerJournalInternalTransactionSource(
             // Fail closed to the empty transaction population only: the retained cash/position
             // populations must keep reconciling even when the journal store is unavailable or does
             // not support scoped queries.
-            // The account label is the run's reconciliation identity - the fund-account Guid
-            // surrogate or its ledger reference, the same label every retained population record
-            // carries - not a credential or provider-side account number; without it the warning
-            // cannot say which account's projection failed closed.
+            // AccountLabel can be a provider-side bank, brokerage, or IBAN identifier. Keep it and
+            // the alias set out of diagnostics; the caller can correlate the failed reconciliation
+            // run without copying sensitive account data into an application log.
             logger?.LogWarning(
                 ex,
-                "Failed to query posted journals for account {AccountLabel}; projecting an empty internal transaction population.",
-                query.AccountLabel);
+                "Failed to query posted journals for a reconciliation account; projecting an empty internal transaction population.");
             return [];
         }
 
@@ -216,8 +218,7 @@ public sealed class LedgerJournalInternalTransactionSource(
             var entry = record.Entry;
             if (reversalExclusions.Contains(entry.JournalEntryId)
                 || record.PostingKind == LedgerPostingKindDto.ClosingEntry
-                || (entry.Metadata.ActivityType is { } activity && InternalOnlyActivityTypes.Contains(activity))
-                || !BelongsToAccount(entry, aliases))
+                || (entry.Metadata.ActivityType is { } activity && InternalOnlyActivityTypes.Contains(activity)))
             {
                 continue;
             }
@@ -225,7 +226,7 @@ public sealed class LedgerJournalInternalTransactionSource(
             // Conservative custodian-visibility rule: only postings that move cash have a statement
             // counterpart. Accrual declarations, valuation marks, and pure reclasses have no cash
             // line and are excluded structurally.
-            var cashLines = entry.Lines.Where(IsCashLine).ToArray();
+            var cashLines = SelectAccountCashLines(entry, aliases);
             if (cashLines.Length == 0)
             {
                 continue;
@@ -302,15 +303,32 @@ public sealed class LedgerJournalInternalTransactionSource(
         return excluded;
     }
 
-    private static bool BelongsToAccount(JournalEntry entry, HashSet<string> aliases)
+    private static LedgerEntry[] SelectAccountCashLines(JournalEntry entry, HashSet<string> aliases)
     {
-        if (entry.Metadata.FinancialAccountId is { } metadataAccount && aliases.Contains(metadataAccount))
-        {
-            return true;
-        }
+        var metadataBelongsToAccount = entry.Metadata.FinancialAccountId is { } metadataAccount
+            && aliases.Contains(metadataAccount.Trim());
 
-        return entry.Lines.Any(line =>
-            line.Account.FinancialAccountId is { } lineAccount && aliases.Contains(lineAccount));
+        // An unscoped legacy cash line may inherit one unambiguous journal/line scope. Explicitly
+        // scoped cash lines never inherit: that is the critical distinction for cross-account
+        // transfers, where netting every cash line would either erase the movement or contaminate
+        // it with the other account's amount.
+        var explicitLineAccounts = entry.Lines
+            .Select(static line => line.Account.FinancialAccountId)
+            .Where(static account => !string.IsNullOrWhiteSpace(account))
+            .Select(static account => account!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var unscopedCashBelongsToAccount = metadataBelongsToAccount
+            || (entry.Metadata.FinancialAccountId is null
+                && explicitLineAccounts.Length == 1
+                && aliases.Contains(explicitLineAccounts[0]));
+
+        return entry.Lines
+            .Where(IsCashLine)
+            .Where(line => line.Account.FinancialAccountId is { } lineAccount
+                ? aliases.Contains(lineAccount.Trim())
+                : unscopedCashBelongsToAccount)
+            .ToArray();
     }
 
     private static bool IsCashLine(LedgerEntry line) =>

@@ -223,7 +223,11 @@ and UI presentation concerns in their owning layers.
   rules, break classification, repository implementations, and durable case materialization are
   owned by the Financial Operations design module rather than the application layer. The
   Security Master-enriched portfolio-vs-ledger reconciliation engine also lives in Financial
-  Operations and consumes the contracts-owned Security Master query interface.
+  Operations and consumes the contracts-owned Security Master query interface. Retained internal
+  transaction population reads posted journals by accounting effective date and projects only the
+  requested account's cash legs, so late postings remain visible without cross-account transfer
+  amounts being netted into one another; provider-side account identifiers are excluded from
+  degraded-path logs.
 - `Backfill/` - historical backfill request orchestration and execution coordination. Shared run
   results and per-symbol validation signals live in `Meridian.Contracts.Backfill`, while durable
   last-run status, checkpoints, and bar-count sidecars live in `Meridian.Storage.Backfill`.

@@ -101,10 +101,14 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
         {
             // Fail closed: a resolution error must surface statement rows as breaks for operator
             // review rather than throw out of the import workflow.
+            // Composed sources receive the external account label and may echo it in exception
+            // text. Keep the exception object out of logs so an IBAN, bank id, or broker account
+            // number cannot cross this outer fail-closed boundary through a provider message.
             logger?.LogWarning(
-                ex,
-                "Failed to resolve internal reconciliation populations for fund account {FundAccountId}; reconciling against an empty book.",
-                context.FundAccountId);
+                "Failed to resolve internal reconciliation populations for fund account {FundAccountId}; " +
+                "reconciling against an empty book; failure type {FailureType}.",
+                context.FundAccountId,
+                ex.GetType().Name);
             return InternalReconciliationPopulations.Empty;
         }
     }

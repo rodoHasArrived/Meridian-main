@@ -189,12 +189,15 @@ public sealed class StatementFetchScheduleRunner(
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            // ExternalAccountId can be an IBAN, bank id, or broker account number. Do not attach
+            // either that value or a provider exception that may echo it to the application log.
+            // The retained schedule id and stable exception type preserve correlation without
+            // copying account data into diagnostics.
             logger?.LogWarning(
-                ex,
-                "Scheduled statement fetch failed for schedule {ScheduleId} (connector {ConnectorId}, account {ExternalAccountId})",
+                "Scheduled statement fetch failed for schedule {ScheduleId} (connector {ConnectorId}); failure type {FailureType}",
                 schedule.ScheduleId,
                 schedule.ConnectorId,
-                schedule.ExternalAccountId);
+                ex.GetType().Name);
             await scheduleStore.RecordFailureAsync(
                     schedule.ScheduleId,
                     nowUtc,

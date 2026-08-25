@@ -2,9 +2,9 @@
 
 # `ledger` schema
 
-- Relations: 24
-- Functions/procedures: 4
-- Triggers: 7
+- Relations: 26
+- Functions/procedures: 11
+- Triggers: 15
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -166,6 +166,15 @@ erDiagram
     }
     ledger_journal_entries_global_sequence_seq {
         text catalogued_object
+    }
+    ledger_journal_entry_integrity_seals {
+        uuid journal_entry_id PK,FK
+        integer leg_count
+        timestamp_with_time_zone sealed_at
+    }
+    ledger_journal_entry_open_postings {
+        uuid journal_entry_id PK,FK
+        xid8 opening_xid
     }
     ledger_journal_leg_currency_affirmations {
         uuid affirmation_id PK
@@ -385,6 +394,8 @@ erDiagram
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_originating_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_disposal_mutation_batch_id_fkey"
     ledger_journal_entries ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_journal_entry_integrity_seals : "journal_entry_integrity_seals_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_journal_entry_open_postings : "journal_entry_open_postings_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_journal_legs : "fk_journal_legs_journal_entry"
     ledger_journal_entries ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lots : "tax_lots_source_journal_entry_id_fkey"
@@ -413,6 +424,8 @@ erDiagram
 | `fund_profile_tenancy` | table | 4 | `fund_profile_id` | 0 | 2 | - |
 | `journal_entries` | table | 19 | `global_sequence` | 0 | 16 | - |
 | `journal_entries_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
+| `journal_entry_integrity_seals` | table | 3 | `journal_entry_id` | 1 | 1 | - |
+| `journal_entry_open_postings` | table | 2 | `journal_entry_id` | 1 | 1 | - |
 | `journal_leg_currency_affirmations` | table | 7 | `affirmation_id` | 1 | 2 | Operator assertions that a ledger book with no retained currency evidence transacted only in its base currency, and the currency-blind journal legs each assertion completed. Append-only: this is the authority for a repair the data alone could not determine. |
 | `journal_leg_currency_backfill_status` | view | 8 | - | 0 | 0 | - |
 | `journal_legs` | table | 30 | `entry_id` | 1 | 9 | - |

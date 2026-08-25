@@ -249,7 +249,9 @@ public sealed record LedgerJournalEntryQuery(
     string? AccountName = null,
     DateTimeOffset? OccurredFrom = null,
     DateTimeOffset? OccurredTo = null,
-    Guid? SourceEventId = null);
+    Guid? SourceEventId = null,
+    DateOnly? EffectiveFrom = null,
+    DateOnly? EffectiveTo = null);
 
 public sealed record LedgerJournalEntryRecord(
     JournalEntry Entry,
