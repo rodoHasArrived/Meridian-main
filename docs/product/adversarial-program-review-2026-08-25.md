@@ -435,6 +435,38 @@ close-management product can tell.
   screen → screenshot catalog, in one cycle, with tests. Every dark asset in §5 and §6 should be
   activated this way.
 
+## Addendum — remediation landed while this review was in flight
+
+`main` moved to `054e2d27` after this document was written, merging PR #2824 ("Point the Accounting
+trial balance at the posted journal"). That branch is merged into this one, so the findings above are
+still anchored at `e232ece1` but the code beside them has moved. What actually changed, verified:
+
+**Genuinely fixed — §1(a) and §1(b).** A new `src/Meridian.Ui/dashboard/src/lib/ledger-reports-api.ts`
+calls `/api/ledger/periods`, `…/{periodId}/trial-balance`, and `…/{periodId}/pnl-summary`, and a new
+`AccountingPostedLedgerSection` (`accounting-screen.posted-ledger-panel.tsx`, mounted at
+`accounting-screen.tsx:2894`) renders them. The posted journal's trial balance and P&L now reach an
+operator for the first time. That is the right fix, done the right way.
+
+**The class survived, three ways** — the pattern this review's headline describes, one cycle later:
+
+- **The run-scoped panel is still wired, unchanged.** `accounting-screen.view-model.ts:2940` still
+  reads `getTrialBalance: (runId) => getRunTrialBalance(runId)` — the exact line §1 cites — still
+  gated on `ViewStrategies`. The Accounting screen now carries *two* trial balances over two
+  different books, and the accounting roles still receive a 403 on one of them.
+- **A second screen was not touched.** `finance-standard-pages-screen.tsx:299` still calls
+  `getRunTrialBalance`, so the run-scoped view remains an operator-facing "trial balance" in a
+  second place.
+- **§2 is untouched, and the fix now depends on it.** The posted-journal endpoints still gate on
+  `AdminMaintenance | ManageDirectLending` (`LedgerEndpoints.cs:386,411,436`), and
+  `FundAccountant`/`Controller` still lack `ViewStrategies`. The new panel is reachable by those
+  roles *only because* `ManageDirectLending` is the overloaded fund-accounting grant §2 names. The
+  remediation is load-bearing on the defect.
+
+So §1(c), §2, and the disjoint-permission structural test in improvement #4 all remain open, and the
+"two books, one screen name" ambiguity is now more visible rather than less. Retiring the run-scoped
+panel from Accounting (or relabelling it as a Strategy-run artifact) and splitting the permission are
+the remaining work.
+
 ## Relationship to existing planning
 
 This review is independent input. Live delivery status stays in the roadmap registry
