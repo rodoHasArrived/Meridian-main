@@ -38,7 +38,9 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     model, the shared API surface, and the client surface. Findings are anchored at `e232ece1`;
     the document's addendum records that PR #2824 has since wired the posted-journal trial balance
     and P&L into `AccountingPostedLedgerSection`, so **that half is no longer current state**. A
-    second addendum records `main` at `bb43e0e6`: the `ViewLedgerReports`/`ManageLedgerReports` split
+    third addendum records `main` at `3eb6961a` (PR #2828) and verifies that it changed none of the
+    open items — the second addendum's citations stay in the `bb43e0e6` frame its heading declares.
+    That second addendum records `main` at `bb43e0e6`: the `ViewLedgerReports`/`ManageLedgerReports` split
     landed and the posted-ledger panel no longer depends on `ManageDirectLending`, and the run-scoped
     explorer was retired from Accounting to `/strategy/run-ledger`. What remains open is
     assigned-fund scoping (the new tenant filter is cross-tenant and fail-open, and the client sends

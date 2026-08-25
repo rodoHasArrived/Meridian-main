@@ -1923,6 +1923,32 @@ not permission work — see improvement #7. The lockout §1 describes is resolve
 which is the book those roles own — and the `ViewStrategies` gate on the run queue is now the
 correct behaviour rather than the defect.
 
+### Third addendum — `main` at `3eb6961a`: nothing above changed
+
+`main` advanced a third time, merging PR #2828, and is merged into this branch. Recorded here for a
+narrow reason: **the second addendum's `file:line` citations are coordinates in the `bb43e0e6` frame
+its heading declares, and they stay there.** Chasing them to a newer tree is the round-31 error, and
+the ledger keeps that number as a gap precisely so this stays visible.
+
+What was checked against the merged tree, and the result in each case:
+
+| Claim under test | State at `3eb6961a` |
+| --- | --- |
+| `AccountDetailScreen` still calls `getRunTrialBalance` | Still true. The call moved from `finance-standard-pages-screen.tsx:299` to `:301`; the second addendum's citation remains correct in its own frame |
+| `accounting-screen.view-model.ts:2954` still binds `getTrialBalance`, with a leftover run fetch | Still true — binding unmoved at `:2954`, fetch now at `:4033` |
+| The ledger clients send no `fundProfileId` | Still true. `ledger-reports-api.ts` is **unchanged** by the merge |
+| `RequireFundProfileTenantScope` is cross-tenant and fail-open | Still true. `FundProfileScopeEndpointFilters.cs` is **unchanged** |
+| `ViewCompliance` does not exist; the three reads gate on `ManageCompliance` | Still true. `src/Meridian.Identity/` and `ComplianceEndpoints.cs` are **unchanged** |
+
+So every open item this document names survives the merge intact, and no finding, improvement or
+remaining-work statement needed revision. PR #2828 worked the posted-ledger route scope — book and
+period selection — which is adjacent to §1 but not the same surface: its new
+`posted-ledger-route-scope.ts` contains no fund-scoping logic at all.
+
+**The scope of that statement is exactly the five rows above plus those four paths.** It is not a
+re-verification of the whole document against a new tree, which is neither necessary — the findings
+are anchored — nor something a merge occasions.
+
 ## Relationship to existing planning
 
 This review is independent input. Live delivery status stays in the roadmap registry
