@@ -5135,7 +5135,9 @@ export function buildAccountingTrialBalanceViewState({
   selectedBasis = DEFAULT_ACCOUNTING_BASIS,
   accountFilter = "",
   loading,
-  error
+  error,
+  scopeLabel = null,
+  detailPanelId = "trial-balance-account-detail"
 }: {
   runId: string | null;
   rows: LedgerTrialBalanceLine[];
@@ -5144,9 +5146,11 @@ export function buildAccountingTrialBalanceViewState({
   accountFilter?: string | null;
   loading: boolean;
   error: string | ApiErrorDisplay | null;
+  /** Overrides the scope wording in labels; defaults to the strategy-run phrasing. */
+  scopeLabel?: string | null;
+  detailPanelId?: string;
 }): AccountingTrialBalanceViewState {
-  const detailPanelId = "trial-balance-account-detail";
-  const runLabel = runId ? "the selected ledger run" : "the current ledger selection";
+  const runLabel = scopeLabel?.trim() || (runId ? "the selected ledger run" : "the current ledger selection");
   const resolvedBasis = normalizeAccountingBasis(selectedBasis);
   const normalizedAccountFilter = normalizeLedgerAccountFilter(accountFilter);
   const normalizedRows = rows.map(normalizeTrialBalanceLine);
@@ -5211,7 +5215,7 @@ export function buildAccountingTrialBalanceViewState({
     emptyTitle: "No trial balance lines",
     emptyDetail: normalizedAccountFilter && basisRows.length > 0
       ? `No ${accountingBasisDisplayName(resolvedBasis)} ledger accounts match "${accountFilter ?? ""}". Clear the GL account filter or search another account.`
-      : `Meridian did not return account-balance rows for ${runLabel}. Select another reconciliation run or refresh ledger evidence before report handoff.`,
+      : `Meridian did not return account-balance rows for ${runLabel}. ${scopeLabel ? "Select another ledger period" : "Select another reconciliation run"} or refresh ledger evidence before report handoff.`,
     errorText,
     errorDetails: normalizedError?.details ?? [],
     statusAnnouncement: buildTrialBalanceAnnouncement({ runLabel, state, rowCount: viewRows.length, loading, errorText })

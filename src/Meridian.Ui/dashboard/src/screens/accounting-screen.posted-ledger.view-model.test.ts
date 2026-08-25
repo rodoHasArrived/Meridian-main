@@ -1,0 +1,274 @@
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { ApiError } from "@/lib/api-errors";
+import {
+  buildAccountingPostedLedgerViewState,
+  buildPostedLedgerPnlViewState,
+  resolveDefaultPostedLedgerPeriodId,
+  sortLedgerPeriodsDescending,
+  toTrialBalanceLine,
+  useAccountingPostedLedgerViewModel,
+  type AccountingPostedLedgerServices
+} from "@/screens/accounting-screen.posted-ledger.view-model";
+import type {
+  LedgerPeriod,
+  LedgerPeriodPnlSummary,
+  LedgerPeriodTrialBalanceLine
+} from "@/types";
+
+function makePeriod(overrides: Partial<LedgerPeriod> = {}): LedgerPeriod {
+  return {
+    periodId: "00000000-0000-0000-0000-000000000001",
+    ledgerBookId: "00000000-0000-0000-0000-0000000000aa",
+    fiscalYear: 2026,
+    periodNo: 7,
+    label: "July 2026",
+    startDate: "2026-07-01",
+    endDate: "2026-07-31",
+    status: "HardClosed",
+    openedAt: "2026-07-01T00:00:00Z",
+    closedAt: "2026-08-02T00:00:00Z",
+    version: 3,
+    ...overrides
+  };
+}
+
+function makeLine(overrides: Partial<LedgerPeriodTrialBalanceLine> = {}): LedgerPeriodTrialBalanceLine {
+  return {
+    accountName: "Cash",
+    accountType: "Asset",
+    symbol: null,
+    financialAccountId: "1000",
+    debitTotal: 1500,
+    creditTotal: 250,
+    balance: 1250,
+    entryCount: 12,
+    accountingBasis: "Primary",
+    ...overrides
+  };
+}
+
+function makePnl(overrides: Partial<LedgerPeriodPnlSummary> = {}): LedgerPeriodPnlSummary {
+  return {
+    periodId: "00000000-0000-0000-0000-000000000001",
+    ledgerBookId: "00000000-0000-0000-0000-0000000000aa",
+    fiscalYear: 2026,
+    periodNo: 7,
+    label: "July 2026",
+    totalRevenue: 5000,
+    totalExpenses: 1800,
+    netIncome: 3200,
+    periodOnPeriodVariance: 150,
+    openBreakCount: 0,
+    signoffStatus: "SignedOff",
+    completedAt: "2026-08-02T00:00:00Z",
+    revenueLines: [],
+    expenseLines: [],
+    ...overrides
+  };
+}
+
+function makeServices(overrides: Partial<AccountingPostedLedgerServices> = {}): AccountingPostedLedgerServices {
+  return {
+    getPeriods: vi.fn().mockResolvedValue([makePeriod()]),
+    getTrialBalance: vi.fn().mockResolvedValue([makeLine()]),
+    getPnlSummary: vi.fn().mockResolvedValue(makePnl()),
+    ...overrides
+  };
+}
+
+describe("sortLedgerPeriodsDescending", () => {
+  it("orders periods newest first by fiscal year and period number", () => {
+    const sorted = sortLedgerPeriodsDescending([
+      makePeriod({ periodId: "p-2025-12", fiscalYear: 2025, periodNo: 12 }),
+      makePeriod({ periodId: "p-2026-07", fiscalYear: 2026, periodNo: 7 }),
+      makePeriod({ periodId: "p-2026-01", fiscalYear: 2026, periodNo: 1 })
+    ]);
+
+    expect(sorted.map((period) => period.periodId)).toEqual(["p-2026-07", "p-2026-01", "p-2025-12"]);
+  });
+});
+
+describe("resolveDefaultPostedLedgerPeriodId", () => {
+  it("prefers the latest closed period over a newer open one", () => {
+    const selected = resolveDefaultPostedLedgerPeriodId([
+      makePeriod({ periodId: "p-open", fiscalYear: 2026, periodNo: 8, status: "Open" }),
+      makePeriod({ periodId: "p-closed", fiscalYear: 2026, periodNo: 7, status: "HardClosed" })
+    ]);
+
+    expect(selected).toBe("p-closed");
+  });
+
+  it("falls back to the latest period when nothing is closed", () => {
+    const selected = resolveDefaultPostedLedgerPeriodId([
+      makePeriod({ periodId: "p-old", fiscalYear: 2026, periodNo: 6, status: "Open" }),
+      makePeriod({ periodId: "p-new", fiscalYear: 2026, periodNo: 7, status: "Open" })
+    ]);
+
+    expect(selected).toBe("p-new");
+  });
+
+  it("returns null when there are no periods", () => {
+    expect(resolveDefaultPostedLedgerPeriodId([])).toBeNull();
+  });
+});
+
+describe("toTrialBalanceLine", () => {
+  it("maps a posted-journal line into the shared trial-balance shape without a security reference", () => {
+    const line = toTrialBalanceLine(makeLine({ ruleId: "rule-7", sourceJournalEntryId: "je-1" }));
+
+    expect(line.accountName).toBe("Cash");
+    expect(line.balance).toBe(1250);
+    expect(line.entryCount).toBe(12);
+    expect(line.security).toBeNull();
+    expect(line.ruleId).toBe("rule-7");
+    expect(line.sourceJournalEntryId).toBe("je-1");
+  });
+});
+
+describe("buildAccountingPostedLedgerViewState", () => {
+  it("labels the trial balance with the posted-journal period scope, not a run", () => {
+    const view = buildAccountingPostedLedgerViewState({
+      periods: [makePeriod()],
+      periodsLoading: false,
+      periodsError: null,
+      selectedPeriodId: makePeriod().periodId,
+      periodNotice: null,
+      trialBalanceRows: [toTrialBalanceLine(makeLine())],
+      trialBalanceLoading: false,
+      trialBalanceError: null,
+      pnl: makePnl(),
+      pnlLoading: false,
+      pnlError: null,
+      selectedRowId: null,
+      selectedBasis: "Primary",
+      accountFilter: ""
+    });
+
+    expect(view.trialBalance.description).toContain("the posted journal for period July 2026");
+    expect(view.trialBalance.description).not.toContain("ledger run");
+    expect(view.trialBalance.hasRows).toBe(true);
+    expect(view.trialBalance.detailPanelId).toBe("posted-ledger-account-detail");
+    expect(view.periodSelector.options).toHaveLength(1);
+    expect(view.periodSelector.options[0]?.isSelected).toBe(true);
+    expect(view.pnl.state).toBe("ready");
+    expect(view.pnl.signoffLabel).toBe("Signed off");
+  });
+
+  it("explains how to create the governed book when no periods exist", () => {
+    const view = buildAccountingPostedLedgerViewState({
+      periods: [],
+      periodsLoading: false,
+      periodsError: null,
+      selectedPeriodId: null,
+      periodNotice: null,
+      trialBalanceRows: [],
+      trialBalanceLoading: false,
+      trialBalanceError: null,
+      pnl: null,
+      pnlLoading: false,
+      pnlError: null,
+      selectedRowId: null,
+      selectedBasis: "Primary",
+      accountFilter: ""
+    });
+
+    expect(view.periodSelector.emptyText).toContain("No ledger periods exist yet");
+    expect(view.pnl.state).toBe("empty");
+  });
+});
+
+describe("buildPostedLedgerPnlViewState", () => {
+  it("flags open breaks and negative net income", () => {
+    const view = buildPostedLedgerPnlViewState({
+      pnl: makePnl({ netIncome: -100, openBreakCount: 3, signoffStatus: "Pending" }),
+      loading: false,
+      error: null,
+      periodLabel: "July 2026"
+    });
+
+    expect(view.items.find((item) => item.id === "net-income")?.tone).toBe("danger");
+    expect(view.items.find((item) => item.id === "open-breaks")?.tone).toBe("warning");
+    expect(view.signoffLabel).toBe("Sign-off pending");
+    expect(view.signoffTone).toBe("warning");
+  });
+});
+
+describe("useAccountingPostedLedgerViewModel", () => {
+  it("loads periods on the ledger workstream and reads the posted book for the default period", async () => {
+    const services = makeServices();
+    const { result } = renderHook(() => useAccountingPostedLedgerViewModel("ledger", services));
+
+    await waitFor(() => {
+      expect(result.current.view.trialBalance.hasRows).toBe(true);
+    });
+
+    expect(services.getPeriods).toHaveBeenCalledTimes(1);
+    expect(services.getTrialBalance).toHaveBeenCalledWith(makePeriod().periodId);
+    expect(services.getPnlSummary).toHaveBeenCalledWith(makePeriod().periodId);
+    expect(result.current.view.pnl.state).toBe("ready");
+  });
+
+  it("does not call the ledger API outside the ledger workstream", async () => {
+    const services = makeServices();
+    renderHook(() => useAccountingPostedLedgerViewModel("reconciliation", services));
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(services.getPeriods).not.toHaveBeenCalled();
+    expect(services.getTrialBalance).not.toHaveBeenCalled();
+  });
+
+  it("treats a 404 as an open-period notice rather than a failure", async () => {
+    const notFound = new ApiError({ path: "/api/ledger/periods/x/trial-balance", status: 404 });
+    const services = makeServices({
+      getTrialBalance: vi.fn().mockRejectedValue(notFound),
+      getPnlSummary: vi.fn().mockRejectedValue(notFound)
+    });
+    const { result } = renderHook(() => useAccountingPostedLedgerViewModel("ledger", services));
+
+    await waitFor(() => {
+      expect(result.current.view.periodNotice).toContain("no closed-period summary");
+    });
+
+    expect(result.current.view.trialBalance.errorText).toBeNull();
+    expect(result.current.view.pnl.errorText).toBeNull();
+  });
+
+  it("surfaces a real failure as an error", async () => {
+    const services = makeServices({
+      getTrialBalance: vi.fn().mockRejectedValue(new ApiError({ path: "/api/ledger/periods/x/trial-balance", status: 500 }))
+    });
+    const { result } = renderHook(() => useAccountingPostedLedgerViewModel("ledger", services));
+
+    await waitFor(() => {
+      expect(result.current.view.trialBalance.errorText).not.toBeNull();
+    });
+    expect(result.current.view.periodNotice).toBeNull();
+  });
+
+  it("reloads the posted book when the operator selects another period", async () => {
+    const closed = makePeriod();
+    const older = makePeriod({
+      periodId: "00000000-0000-0000-0000-000000000002",
+      periodNo: 6,
+      label: "June 2026"
+    });
+    const services = makeServices({
+      getPeriods: vi.fn().mockResolvedValue([closed, older])
+    });
+    const { result } = renderHook(() => useAccountingPostedLedgerViewModel("ledger", services));
+
+    await waitFor(() => {
+      expect(result.current.view.trialBalance.hasRows).toBe(true);
+    });
+
+    act(() => {
+      result.current.selectPeriod(older.periodId);
+    });
+
+    await waitFor(() => {
+      expect(services.getTrialBalance).toHaveBeenCalledWith(older.periodId);
+    });
+    expect(result.current.view.periodSelector.options.find((option) => option.isSelected)?.id).toBe(older.periodId);
+  });
+});

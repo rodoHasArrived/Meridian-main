@@ -226,8 +226,8 @@ public sealed partial class FinancialRecordExplorerReadService
         {
             return CreateBlockedExplorer(
                 LedgerExplorerId,
-                "Ledger Explorer",
-                "Explore retained trial-balance records and their proof links.",
+                "Strategy Run Ledger Explorer",
+                "Explore the selected strategy run's simulated trial-balance records and their proof links. This is a run artifact, not the posted journal.",
                 "Strategy run read service is not registered.");
         }
 
@@ -240,8 +240,8 @@ public sealed partial class FinancialRecordExplorerReadService
         {
             return await CreateEmptyExplorerAsync(
                 LedgerExplorerId,
-                "Ledger Explorer",
-                "Explore retained trial-balance records and their proof links.",
+                "Strategy Run Ledger Explorer",
+                "Explore the selected strategy run's simulated trial-balance records and their proof links. This is a run artifact, not the posted journal.",
                 "No source-backed ledger projection is available.",
                 tenantId,
                 ct).ConfigureAwait(false);
@@ -255,10 +255,13 @@ public sealed partial class FinancialRecordExplorerReadService
 
         return await CreateExplorerAsync(
             LedgerExplorerId,
-            "Ledger Explorer",
-            "Explore retained trial-balance records and their proof links.",
+            "Strategy Run Ledger Explorer",
+            "Explore the selected strategy run's simulated trial-balance records and their proof links. This is a run artifact, not the posted journal.",
             $"Source-backed ledger projection from run {run.RunId}.",
-            BuildScope(run, ledger.AsOf, ledger.LedgerReference),
+            [
+                new("Ledger source", "Strategy run (simulation) — not the posted journal"),
+                .. BuildScope(run, ledger.AsOf, ledger.LedgerReference)
+            ],
             BuildLedgerSummary(run, ledger, rows.Length),
             BuildSystemViews(LedgerExplorerId, "Trial balance", "Accounts with retained ledger balances."),
             BuildLedgerFilters(run, ledger),

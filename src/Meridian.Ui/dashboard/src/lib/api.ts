@@ -99,6 +99,9 @@ import type {
   InvestmentAccountingTransactionLabRequest,
   InstrumentPassport,
   LedgerJournalLine,
+  LedgerPeriod,
+  LedgerPeriodPnlSummary,
+  LedgerPeriodTrialBalanceLine,
   LedgerSummary,
   LedgerTrialBalanceLine,
   MetricSnapshot,
@@ -512,6 +515,9 @@ import {
   workstationRunEquityCurveEndpoint,
   workstationRunFillsEndpoint,
   workstationRunHistoryEndpoint,
+  ledgerPeriodsEndpoint,
+  ledgerPeriodTrialBalanceEndpoint,
+  ledgerPeriodPnlSummaryEndpoint,
   workstationRunLedgerEndpoint,
   workstationRunLedgerJournalEndpoint,
   workstationRunLedgerTrialBalanceEndpoint,
@@ -2887,6 +2893,20 @@ export function getRunLedger(runId: string) {
 
 export function getRunTrialBalance(runId: string, accountTypeOrOptions?: string | LedgerTrialBalanceQueryOptions) {
   return getJson<LedgerTrialBalanceLine[]>(workstationRunLedgerTrialBalanceEndpoint(runId, accountTypeOrOptions));
+}
+
+// --- Posted-journal ledger reporting (the governed book, period-scoped) ---
+
+export function getLedgerPeriods(query: { ledgerBookId?: string | null; status?: string | null } = {}) {
+  return getJson<LedgerPeriod[]>(ledgerPeriodsEndpoint(query));
+}
+
+export function getLedgerPeriodTrialBalance(periodId: string) {
+  return getJson<LedgerPeriodTrialBalanceLine[]>(ledgerPeriodTrialBalanceEndpoint(periodId));
+}
+
+export function getLedgerPeriodPnlSummary(periodId: string) {
+  return getJson<LedgerPeriodPnlSummary>(ledgerPeriodPnlSummaryEndpoint(periodId));
 }
 
 export function getRunLedgerJournal(runId: string, options: LedgerJournalQueryOptions = {}) {

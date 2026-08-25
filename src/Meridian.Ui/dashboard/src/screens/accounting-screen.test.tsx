@@ -44,12 +44,15 @@ vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   const createFinancialRecordExplorer = (explorerId: string) => ({
     explorerId,
-    title: explorerId === "security-instrument" ? "Security & Instrument Explorer" : "Ledger Explorer",
+    title: explorerId === "security-instrument" ? "Security & Instrument Explorer" : "Strategy Run Ledger Explorer",
     description: "Explore retained financial records and proof links.",
     sourceState: `Source-backed ${explorerId} projection from run run-42.`,
     isBlocked: false,
     blockedReason: "",
     scopeItems: [
+      ...(explorerId === "security-instrument"
+        ? []
+        : [{ label: "Ledger source", value: "Strategy run (simulation) — not the posted journal", tone: "Default" }]),
       { label: "Workstream", value: "Accounting", tone: "Info" },
       { label: "Source", value: explorerId === "security-instrument" ? "Security Master instruments" : "Journal entries and ledger detail", tone: "Default" }
     ],
@@ -193,6 +196,9 @@ vi.mock("@/lib/api", async () => {
     reviewReconciliationBreak: vi.fn(),
     runAnalysisExport: vi.fn(),
     getRunTrialBalance: vi.fn().mockResolvedValue([]),
+    getLedgerPeriods: vi.fn().mockResolvedValue([]),
+    getLedgerPeriodTrialBalance: vi.fn().mockResolvedValue([]),
+    getLedgerPeriodPnlSummary: vi.fn().mockResolvedValue(null),
     getAccountingSystemProviders: vi.fn().mockResolvedValue([]),
     previewAccountingSystemImport: vi.fn(),
     getLatestAccountingSystemImport: vi.fn().mockResolvedValue(null),
@@ -4683,6 +4689,72 @@ describe("AccountingScreen", () => {
     expect(alert).toHaveTextContent("Meridian service returned 422. Open diagnostics for technical details.");
     expect(alert).toHaveTextContent("Validation failed");
     expect(alert).toHaveTextContent("Fund account: Select a fund account before loading accounting evidence.");
+  });
+
+  it("reads the posted journal for the Accounting trial balance and labels the run explorer as a simulation artifact", async () => {
+    vi.mocked(api.getLedgerPeriods).mockResolvedValueOnce([
+      {
+        periodId: "11111111-1111-1111-1111-111111111111",
+        ledgerBookId: "22222222-2222-2222-2222-222222222222",
+        fiscalYear: 2026,
+        periodNo: 7,
+        label: "July 2026",
+        startDate: "2026-07-01",
+        endDate: "2026-07-31",
+        status: "HardClosed",
+        openedAt: "2026-07-01T00:00:00Z",
+        closedAt: "2026-08-02T00:00:00Z",
+        version: 1
+      }
+    ]);
+    vi.mocked(api.getLedgerPeriodTrialBalance).mockResolvedValueOnce([
+      {
+        accountName: "Cash - Operating",
+        accountType: "Asset",
+        symbol: null,
+        financialAccountId: "1000",
+        debitTotal: 125000,
+        creditTotal: 4500,
+        balance: 120500,
+        entryCount: 12,
+        accountingBasis: "Primary"
+      }
+    ]);
+    vi.mocked(api.getLedgerPeriodPnlSummary).mockResolvedValueOnce({
+      periodId: "11111111-1111-1111-1111-111111111111",
+      ledgerBookId: "22222222-2222-2222-2222-222222222222",
+      fiscalYear: 2026,
+      periodNo: 7,
+      label: "July 2026",
+      totalRevenue: 5000,
+      totalExpenses: 1800,
+      netIncome: 3200,
+      periodOnPeriodVariance: null,
+      openBreakCount: 0,
+      signoffStatus: "SignedOff",
+      completedAt: "2026-08-02T00:00:00Z",
+      revenueLines: [],
+      expenseLines: []
+    });
+
+    await renderAccountingScreen(data, "/accounting/ledger");
+
+    // The Accounting workstream's primary trial balance comes from the period-scoped
+    // posted-journal endpoints, not the strategy run's simulation ledger.
+    const postedTable = await screen.findByRole("region", {
+      name: "Primary trial balance lines for the posted journal for period July 2026"
+    });
+    expect(postedTable).toBeInTheDocument();
+    expect(api.getLedgerPeriods).toHaveBeenCalled();
+    expect(api.getLedgerPeriodTrialBalance).toHaveBeenCalledWith("11111111-1111-1111-1111-111111111111");
+    expect(api.getLedgerPeriodPnlSummary).toHaveBeenCalledWith("11111111-1111-1111-1111-111111111111");
+    expect(screen.getByText("Source: posted journal")).toBeInTheDocument();
+    expect(screen.getByText("Signed off")).toBeInTheDocument();
+
+    // The run-scoped explorer stays available but is explicitly labelled a
+    // simulation artifact so it can no longer masquerade as the fund's book.
+    expect(screen.getByRole("heading", { name: "Strategy Run Ledger Explorer" })).toBeInTheDocument();
+    expect(screen.getByText("Strategy run (simulation) — not the posted journal")).toBeInTheDocument();
   });
 
   it("runs ledger reporting export through the POST mutation instead of a GET link", async () => {

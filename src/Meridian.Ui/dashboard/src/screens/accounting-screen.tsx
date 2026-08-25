@@ -46,6 +46,8 @@ import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization
 import { accountingToolingBadgeVariant, accountingToolingBorderClass, cashFlowBadgeClass, cashFlowTextClass, reportingBadgeClass } from "@/screens/accounting-screen.styles";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import { CapitalAccountWorkbenchPanel } from "@/screens/accounting-screen.capital-account-workbench-panel";
+import { AccountingPostedLedgerSection } from "@/screens/accounting-screen.posted-ledger-panel";
+import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
 import { CorporateActionsPanel } from "@/screens/accounting-screen.corporate-actions-panel";
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
 import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels";
@@ -1646,6 +1648,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
   const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
   const reconciliation = useAccountingReconciliationViewModel(data, workstream, undefined, accountingSystemReconciliation, operatorIdentity);
+  const postedLedger = useAccountingPostedLedgerViewModel(workstream);
   const selectedBreakPrimaryFields = reconciliation.selectedDetail?.fields.filter((field) => [
     "Variance",
     "Owner",
@@ -2890,14 +2893,19 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         </section>
       ) : null}
 
+      {sectionVisibility.showLedgerExplorer ? (
+        <AccountingPostedLedgerSection viewModel={postedLedger} />
+      ) : null}
+
       {sectionVisibility.showLedgerExplorer && selectedReconciliation ? (
         <FinancialRecordExplorerShell
           explorerLabel="Financial Record Explorer"
-          title="Ledger Explorer"
+          title="Strategy Run Ledger Explorer"
           titleId="accounting-ledger-explorer-title"
-          description="Filter accounting ledger records, inspect dense trial-balance rows, and drill into journals, ledger lines, source documents, approvals, reconciliations, report usage, and audit history without leaving the Accounting workspace."
+          description="Simulation artifact: this explorer reads the selected strategy/reconciliation run's ledger, not the fund's posted book. Use it for run evidence drill-through — the posted-journal trial balance above is the book of record."
           scopeItems={[
             { id: "workspace", label: "Workspace", value: "Accounting" },
+            { id: "source", label: "Ledger source", value: "Strategy run (simulation) — not the posted journal" },
             { id: "record-set", label: "Record set", value: "Journal entries and ledger detail" },
             { id: "run", label: "Reconciliation run", value: selectedReconciliation.strategyName },
             { id: "run-id", label: "Run ID", value: selectedReconciliation.runId }
