@@ -43,10 +43,15 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     explorer was retired from Accounting to `/strategy/run-ledger`. What remains open is
     assigned-fund scoping (the new tenant filter is cross-tenant and fail-open, and the client sends
     no fund id), one run-scoped binding under `/accounting/accounts/detail`, the missing
-    `ViewCompliance` read grant, the option contract multiplier that reaches the two exposure projections but none of the
-    paper transaction, valuation, persistence or margin paths, and an estimated 29%
+    `ViewCompliance` read grant, the option contract multiplier that reaches the two aggregate
+    exposure projections but none of the paper transaction, valuation, persistence or margin paths
+    — nor the Trading screen's own exposure and P&L arithmetic, which the book-side fix does not
+    reach — and an estimated 29%
     of route constants (250 of 862) referenced by no client layer — a reference-based measure the
-    review itself qualifies as an estimate with error in both directions, not a settled count
+    review itself qualifies as an estimate with error in both directions, not a settled count. The
+    denominator is itself imperfect: at least two catalog constants are registered by no server
+    route and reach the browser through the generated mirror, and the review states plainly that
+    the scale of that class is unmeasured
   - [Adversarial Program Review (2026-08-24)](adversarial-program-review-2026-08-24.md) —
     independent whole-program adverse review; re-tests every headline finding of the 2026-08-18
     pass against the 218 commits landed since, verifies the three built-but-dead flagship fixes

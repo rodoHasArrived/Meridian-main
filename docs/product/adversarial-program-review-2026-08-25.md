@@ -58,7 +58,7 @@ and it is invisible to every gate the repository runs, because no gate compares 
 | Release attachment | **Landed** | tag `eval-v0.1.0-eval.1`; `8e9b11c3` attaches consumer setup to the evaluation prerelease |
 | Provenance at the ingress seam | **Landed at runtime; type-level hardening outstanding** | `2361152c` threads real provider identity, and `TradeDataCollector.OnTrade` rejects a missing `Source` with a `MissingSource` integrity event before storing (`:117-134`, tested). `MarketTradeUpdate.cs:33` is still `string? Source = null`, so the remaining work is compile-time, not behavioural |
 | Fund-economics activation | **Partial — the named alternative was skipped** | capital-call issuance wired (`CapitalCallFundingIntake.cs:236`); NAV-per-unit + unit register still at zero consumers |
-| `ContractMultiplier` on the durable fill record | **Open — and wider than reported** | §3–§4 below: the multiplier reaches the two exposure projections (`AggregatePortfolioExposureProvider:571-582`, `WorkstationEndpoints.BuildExposureReport`) and nothing else — not the paper book's transaction branches, valuation projections, persistence sites or either margin model — so option position value is understated live as well as on restore (see §4 for the per-metric breakdown, which is not a uniform 1/100 on equity or Sharpe) |
+| `ContractMultiplier` on the durable fill record | **Open — and wider than reported** | §3–§4 below: the multiplier reaches the two aggregate exposure projections (`AggregatePortfolioExposureProvider:571-582`, `WorkstationEndpoints.BuildExposureReport`) and nothing else — not the paper book's transaction branches, valuation projections, persistence sites, either margin model, or the Trading screen's own exposure and P&L arithmetic (`WorkstationEndpoints.Trading.cs:80-81,137-138`, which never names `ContractMultiplier`) — so option position value is understated live as well as on restore (see §4 for the per-metric breakdown, which is not a uniform 1/100 on equity or Sharpe) |
 | WPF state un-fork | **Partial** | reconciliation posture no longer reads desktop-local state and the remaining local fund-setup lane is labelled with a provenance badge (`AccountingFeatureModule.cs:53-59`); the scheduler host loops were removed from the desktop process and now run server-side (`:196-202`). Residual: fund-account and fund-structure services still persist JSON under `%LOCALAPPDATA%`, along with drafts and schedules |
 | Desktop test job in the required gate | **Open** | §7 below. Bundling this with the state un-fork, as an earlier draft did, hid the remediation above and meant neither half was actually re-tested |
 
@@ -200,8 +200,9 @@ room. This is a small, mechanical change that removes a real blocker to any mult
 
 The 2026-08-24 review flagged the missing `ContractMultiplier` on the durable fill record. It is
 still open — and tracing it end to end shows the defect is larger than "the durable record drops it".
-**The multiplier reaches two downstream consumers — both exposure projections — and none of the
-paper book's own economics, live or restored.**
+**The multiplier reaches two downstream consumers — both aggregate exposure projections — and none
+of the paper book's own economics, live or restored. A third operator-facing projection sits outside
+the book and ignores it too: the Trading screen recomputes its own exposure and P&L.**
 
 `PaperTradingPortfolio.ApplyFill` carries the multiplier
 (`PaperTradingPortfolio.cs:443-448`), and exactly one call site passes a real value:
@@ -245,6 +246,30 @@ live fill**, not on restore.
    (`WorkstationEndpoints.PortfolioAggregation.cs:96-123`) — and its `/api/portfolio/exposure`
    result is operator-facing: the WPF `AggregatePortfolioViewModel` consumes it (`:246`).
 
+**A third operator-facing exposure projection ignores it, and §3's remedy does not reach it.**
+`BuildTradingPayloadAsync` iterates the same `IPosition` values and computes every figure on the
+Trading screen without the multiplier: a position row's unrealised is
+`(effectiveMark - pos.AverageCostBasis) * pos.Quantity` and its exposure is
+`Math.Abs(pos.Quantity * effectiveMark)` (`WorkstationEndpoints.Trading.cs:80-81`), while the
+screen's gross and net exposure accumulate `pos.Quantity * px` in a second loop (`:137-138`) that
+feeds the `GrossExposure`/`NetExposure` fields (`:230-231`) and the buying-power-used metric
+(`:188-189`). The file contains **no reference to `ContractMultiplier` at all** — zero matches in
+its 251 lines — although the interface it iterates declares one: `IPosition.ContractMultiplier`
+(`IPosition.cs:67`), under a doc comment that states this section's finding verbatim, *"Exposure
+that ignores it under-measures an option position by the multiplier."* The interface's own
+notional helper is unscaled for the same reason (`NotionalValue(lastPrice) => Quantity * lastPrice`,
+`:40`).
+
+**And that row is not repaired by fixing `PaperPosition.UnrealisedPnl`.** It emits
+`FormatCurrency(hasMark ? liveUnrealized : pos.UnrealizedPnl)` (`:91`), so the book's own
+`UnrealizedPnl` — the value improvement #3 corrects — is read **only when there is no live mark**.
+Whenever a quote is available, which is the case the screen exists for, the endpoint's unscaled
+arithmetic wins. A remedy confined to the paper book therefore leaves the operator's live option
+P&L at 1/100 and makes the two branches of a single ternary disagree by the multiplier. The fix
+has to reach the projection, not only the book: `WorkstationEndpoints.Trading.cs` must read
+`pos.ContractMultiplier` in all three sites, which is a change to a different file than any the
+improvement below names.
+
 **Both exposure projections are therefore already correct**, and a remediation applied
 indiscriminately would scale them twice. The defective consumers are the paper book's own cash,
 P&L and account snapshots, and the two margin models — not everything downstream. **Stored cost
@@ -254,12 +279,19 @@ the improvement below rules out explicitly. Naming it here contradicted that rem
 later, and an implementer following this inventory would have introduced the defect the remedy exists
 to prevent.
 
-The count here has now been wrong twice in the same direction. The original text said *nothing*
-consumes the multiplier; round 14 corrected that to *one*; this is the second. Each correction was
-made by finding a consumer rather than by enumerating them, which is why the number kept moving.
+The count here has now moved three times, and the third moved the other way. The original text said
+*nothing* consumes the multiplier; round 14 corrected that to *one*; the round after it to *two*.
+Round 34 then found a consumer that was never in the enumeration at all — the Trading screen above —
+and it is a **defective** one, so it changes the remedy rather than the count of correct consumers.
+It went unfound for a structural reason worth naming: every prior pass searched for sites that
+*read* `ContractMultiplier`, and **grepping an identifier can only find the code that already
+handles it.** The sites that need it are precisely the ones where the name does not appear. Finding
+those means enumerating what iterates `IPosition` and asking which of them measure value — which is
+how this one surfaced, and is the only method that terminates.
 The reliable statement is structural, and stating it carelessly is how the last error got in: **the
-multiplier is consumed by the two exposure projections — one of which is operator-facing — and
-ignored by the paper book's own transaction, valuation, account-snapshot and margin paths.** An
+multiplier is consumed by the two aggregate exposure projections — one of which is operator-facing
+— and ignored by the paper book's own transaction, valuation, account-snapshot and margin paths
+*and by the Trading screen's own exposure and P&L arithmetic*.** An
 earlier version of this very sentence said it was "ignored by everything that produces the numbers an
 operator reads", which the enumeration four lines above disproves: `BuildExposureReport` feeds the
 WPF aggregate-portfolio view. Any remediation needs an exhaustive consumer list, not another
@@ -306,8 +338,9 @@ legacy record persisted before the field existed deserializes to `1m`, re-serial
 not a warning. The fix needs a schema-versioned hash path or an explicit migration, with a
 legacy-hash compatibility test. `ResolveContractMultiplier`
 (`OrderManagementSystem.RiskOutcomes.cs:324`) already derives the value; the gap is that the
-transaction, valuation and margin paths do not multiply by it. **Scope the fix to those** — the
-two exposure projections already apply it — `AggregatePortfolioExposureProvider:571-582` and
+transaction, valuation and margin paths do not multiply by it. **Scope the fix to those and to the
+Trading endpoint's own arithmetic** (`WorkstationEndpoints.Trading.cs:80-81,91,137-138`) — the two
+aggregate exposure projections already apply it — `AggregatePortfolioExposureProvider:571-582` and
 `WorkstationEndpoints.BuildExposureReport` (`PortfolioAggregation.cs:96-123`, consumed by the WPF
 `AggregatePortfolioViewModel`) — and scaling either again would overstate exposure by the multiplier,
 the same double-count the cost-basis caveat above warns about.
@@ -502,6 +535,33 @@ mirror, so they are out-of-catalog and must be reported separately rather than f
 Their absence from the catalog is itself a finding — a route that never becomes a constant is
 invisible to the drift gate that keeps the mirror honest, so no tooling can notice it has no client.
 
+**The gate is blind in the other direction too, and there the catalog actively misleads a client.**
+`AccountingSystemQuickBooksOAuthStart` and `AccountingSystemQuickBooksOAuthCallback`
+(`UiApiRoutes.cs:135-136`) are exported to the browser through the generated mirror
+(`ui-api-routes.generated.ts:114-115`) and are registered by **no server route**: no qualified
+reference anywhere in `src`, no matching path literal, and their owning file —
+`AccountingSystemEndpoints.cs`, whose `MapGroup("")` adds no prefix (`:19`) — declares nothing under
+`oauth`. A dashboard that imports the constant, which is exactly what the mirror exists to invite,
+calls a 404. A constant with no route and a route with no constant are one gap seen from opposite
+ends: the drift gate checks that the two catalogs match *each other*, and neither is checked against
+the routes the application actually registers.
+
+**The scale of that second direction is unmeasured, and both attempts to measure it failed their own
+controls.** The first scoped the corpus to files that looked like endpoint registrations and
+produced "732 of 862 unregistered" — implausible on its face, and the corpus proved to hold 216
+`Map*` call sites against **1,178** in `src`. The second matched each constant's path literal across
+the whole tree; it was contaminated by the built bundle under `wwwroot/`, which is a third copy of
+the same catalog, and after excluding that the residue still failed a spot check. Routes are
+registered relative to a group prefix in 21 of the 64 `MapGroup` calls, so the five
+`/api/loans/servicer-statements/*` constants — all of which the grep called dark — are in fact
+registered at `DirectLendingEndpoints.cs:498-566` as `/servicer-statements/…` under `/api/loans`,
+with `:guid` constraints the constant does not carry. No literal comparison could have found them.
+**A sound count needs the route table the application actually builds, not a grep:** enumerate
+`EndpointDataSource` at startup and diff it against the catalog. That is also the only version of
+this check worth adding to CI. Until it exists, the QuickBooks pair is a confirmed instance and
+nothing about the population should be claimed — a number derived the way those two were would be
+wrong in a direction that flatters the finding.
+
 Counted on its own terms the compliance surface is permission-guarded and has no operator path — but
 it is **not** a complete governance capability, and two things have to land server-side before any UI
 work starts.
@@ -527,7 +587,14 @@ is no torn-write exposure; the objection is that the snapshot is mutable and not
 cannot carry tamper-evidence. Access reviews are weaker still: a plain `List<AccessReviewRecord>`
 (`AccessReviewService.cs:94-95`) that is empty after restart. Wiring a UI onto the approval and
 access-review routes as they stand would present retention and tamper-evidence the storage does not
-provide. The **data-quality** surface is different in kind, and narrower than an earlier draft of this
+provide. **And the one genuinely append-only chain is success-only.** `actions/evaluate` returns its
+403 at `:56-59` and calls `auditLog.Append` at `:61`, so a refused sensitive action leaves no
+record — the log holds what was permitted and is silent about what was blocked. That inverts the
+surface's purpose twice over: an extract reads clean *because* the refusals were dropped, and the
+attestation's own control list claims "Immutable append-only audit chain" (`:78`) over a chain
+that never saw them. It is a two-line fix — append the decision before branching, with the outcome
+on the record — and it has to precede any UI that presents either surface as evidence, because a
+gap-by-construction is not visible to the operator reading the result. The **data-quality** surface is different in kind, and narrower than an earlier draft of this
 section claimed. The aggregate `/api/quality/dashboard` is wired, *and so is the per-symbol
 drill-down*: the mounted `DataQualityRegion` expands each symbol into component scores with
 explanations, provider freshness, open gaps with remediation actions, and current issues
@@ -826,7 +893,13 @@ close-management product can tell.
    asserted over an expression that is not uniformly scaled. That is a
    *separate* margin path from the short-sale collateral in §3: one is `pos.MarginBorrowed` inside
    the portfolio, the other is the `IMarginModel` requirement computed over it. Both need the
-   multiplier, and both need regression coverage.
+   multiplier, and both need regression coverage. **And one consumer is outside the paper book
+   entirely:** `WorkstationEndpoints.Trading.cs` recomputes the Trading screen's position rows
+   (`:80-81`) and its gross/net exposure (`:137-138`) from `Quantity × price` with no multiplier
+   anywhere in the file, and its row emits `hasMark ? liveUnrealized : pos.UnrealizedPnl` (`:91`) —
+   so the corrected `PaperPosition.UnrealisedPnl` is read *only* when no quote exists. Repairing the
+   book alone leaves every live-marked option row at 1/100. Read `pos.ContractMultiplier`
+   (`IPosition.cs:67`) in all three sites.
    Carrying it is not the fix; multiplying by it is. Until then an option session's P&L and total
    return are off by the multiplier, its equity is wrong in the flattering direction on losses, and
    its Sharpe drifts — see §4 for the per-metric breakdown, which is *not* a uniform 1/100. Third
@@ -916,7 +989,14 @@ close-management product can tell.
    durable log that `actions/evaluate` appends to — and production composition does supply a
    persisted path (`UiServer.cs:307` registers `ImmutableAuditLogService` with a JSONL file under the
    data root, after `AddWorkstationSharedServices`' in-memory `TryAddSingleton`, so the durable
-   instance is the one resolved). Those two surfaces can be built now. The approver queue is blocked
+   instance is the one resolved). Those two surfaces can be built now — **with one caveat that changes
+   what they attest to.** `actions/evaluate` returns its 403 *before* it appends: the denial branch
+   returns at `ComplianceEndpoints.cs:56-59` and `auditLog.Append` sits at `:61`, so the chain
+   records permitted actions only. An extract or an attestation built on that log shows a clean
+   history because refusals were never written, not because none occurred — the inverse of what an
+   auditor consults it for, and the one class of event a compliance log exists to hold. Move the
+   append above the denial branch, recording the decision either way, before either surface is
+   presented as evidence. The approver queue is blocked
    on the discovery contract, and access reviews on durable retention; those two wait. Register them as route constants too, so the
    drift gate can see them. (§6)
 8. **Fix the freshness gap; standardize the error vocabulary second.** The demonstrated defect is
@@ -968,17 +1048,17 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Thirty-two rounds of automated review challenged **89 claims** across this document. Every one was checked
-against the code, **all 89 held**, and the findings above are the corrected text. **Nine more were
+Thirty-three rounds of automated review challenged **93 claims** across this document. Every one was checked
+against the code, **all 93 held**, and the findings above are the corrected text. **Ten more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
 in the published artifact, an unresolvable file path in §8, the artifact's refuted cost-basis remedy,
-— and each is recorded as a row below, marked *(self-detected)*. A tenth self-initiated pass,
-numbered round 31 below, is **absent from the table on purpose**: every correction it made was
+and the second addendum's miscited compliance gate lines — and each is recorded as a row below,
+marked *(self-detected)*. A further self-initiated pass, numbered round 31 below, is **absent from the table on purpose**: every correction it made was
 wrong and was retracted in round 32, so it contributes no rows and its number is left as a gap
 rather than silently reused.
-The table therefore holds **98 rows: 89 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **103 rows: 93 raised by review, 10 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1504,6 +1584,36 @@ complete when everything that depends on the old behaviour has been accounted fo
 this one was sitting in the same file the remedy already cited: the ledger split, three lines up,
 does the thing the compliance split forgot.
 
+**Round 34 — four from review, one self-detected:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| §3's consumer inventory: the multiplier is "ignored by the paper book's own transaction, valuation, account-snapshot and margin paths" | It is also ignored by a projection outside the paper book. `WorkstationEndpoints.Trading.cs` computes the Trading screen's position rows (`:80-81`) and its gross/net exposure (`:137-138`) from `Quantity × price`, and contains **zero** references to `ContractMultiplier` in 251 lines — while the interface it iterates declares `IPosition.ContractMultiplier` (`IPosition.cs:67`) under a comment stating this defect verbatim | §3 — new consumer paragraph |
+| Improvement #3's remedy scope — fixing `PaperPosition.UnrealisedPnl` repairs the operator's view | It does not. The row emits `hasMark ? liveUnrealized : pos.UnrealizedPnl` (`Trading.cs:91`), so the corrected book value is read **only when no live mark exists** — the case the screen does not exist for. Every quoted option row keeps the endpoint's own unscaled arithmetic, and the two branches of one ternary end up disagreeing by the multiplier | §3 — remedy extended to `WorkstationEndpoints.Trading.cs` |
+| "Those two surfaces can be built now" (`audit/extract`, `controls/attestation`) | True of the plumbing, wrong about the evidence. `actions/evaluate` returns its 403 at `ComplianceEndpoints.cs:56-59`, *before* `auditLog.Append` at `:61`, so the chain holds permitted actions only. An extract built on it shows a clean history because refusals were never recorded — the one class of event an auditor consults it for | Improvement #7 — caveat and the append-before-deny fix |
+| The 862 route constants are a clean denominator | Two of them are registered by no route at all. `AccountingSystemQuickBooksOAuthStart`/`Callback` (`UiApiRoutes.cs:135-136`) reach the browser through the generated mirror and resolve to a 404. The drift gate compares the two catalogs to each other and neither to the routes actually registered | §6 — new paragraph; scale explicitly left unmeasured |
+| *(self-detected)* The second addendum cited `ComplianceEndpoints.cs:64,68` for the two read-only routes' gates | `:64` gates `actions/evaluate`; the correct pair is `:68,83`. Wrong under both the anchor and the post-merge tree, and contradicted by the same addendum's closing paragraph twenty lines below, which cites the routes correctly at `:66` and `:70` | Second addendum |
+
+Two things in this round are worth separating from their findings. The first is a method failure that
+did not reach the page. Quantifying the catalog drift was attempted twice and both attempts produced
+confident numbers from corpora that could not support them — "732 of 862" from a corpus holding 216
+of the tree's 1,178 `Map*` sites, then "43" from a literal match contaminated by a built bundle and
+blind to the 21 non-empty `MapGroup` prefixes that register routes under a path the constant never
+spells. Both were caught by controls rather than by review, and neither number appears above except
+as a record of its own failure. That is the round-24 discipline holding a second time: **a plausible
+number from an unvalidated corpus is more dangerous than no number**, because it survives review by
+looking like measurement.
+
+The second is that the first two rows are one finding, and it is the fourth remedy in this document
+that would have left the defect it targets in place. Rounds 14, 19 and 33 each named a change and
+omitted the compensating change; this one names the right change in the wrong *file*. The repair to
+`PaperPosition.UnrealisedPnl` is correct and insufficient, because the operator never reads that
+value when a quote exists. **Fixing the model does not fix the view when the view recomputes.** The
+generalization that survives is the one in §3: searching for an identifier finds the code that
+already handles it, and is structurally blind to the code that should. The Trading screen was found
+by asking what iterates `IPosition`, not by grepping `ContractMultiplier` — which had been done four
+times and could never have surfaced it.
+
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
 remedies — and are rewritten rather than softened; the multiplier correction made the defect
@@ -1666,7 +1776,7 @@ ledger because four of them overstated how much was closed.
   when the ledger workstream has a selected reconciliation — leftover wiring behind a retired UI, so
   a cleanup rather than an operator-visible defect.
 - **`ViewCompliance` does not exist.** Only `ManageCompliance` (`:118`) was added, and the read-only
-  `audit/extract` and `controls/attestation` gate on it (`ComplianceEndpoints.cs:64,68`), so an
+  `audit/extract` and `controls/attestation` gate on it (`ComplianceEndpoints.cs:68,83`), so an
   auditor who only reads is handed authority over approval decisions — the outcome §2's remedy rules
   out. **One route is a deliberate exception and must stay one:**
   `POST /api/compliance/access-reviews/run` requires `ManageUsers` (`:101-121`), with a comment
