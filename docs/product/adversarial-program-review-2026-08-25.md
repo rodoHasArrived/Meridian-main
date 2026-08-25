@@ -433,11 +433,11 @@ This is the same defect shape as §3, in a third subsystem. Three subsystems now
 scale differently: `ExecutionPosition.ContractMultiplier` (`ExecutionPosition.cs:42`), the
 `usesFaceValuePercentageOfPar` boolean, and `FillEvent`'s implicit 1×.
 
-**Improvement.** Define one instrument-scale value object (multiplier + price convention) in
-`Meridian.Contracts`, carry it on `FillEvent` and `ExecutionReport`, and delete the three parallel
-representations. Until instrument scale is a single modeled concept rather than an argument passed
-by convention, this class of bug will keep reappearing at each new seam — as it has now for three
-consecutive reviews.
+**Improvement.** Reuse and populate `ExecutionReport.OptionContract.Multiplier`; do not replace it
+with a second scale object. Add an instrument-scale value (multiplier + price convention) only where
+no representation exists, notably `FillEvent`, and resolve both records to one consumption model in
+`Meridian.Contracts`. Retire the parallel boolean and implicit conventions only after their consumers
+migrate; otherwise this defect class will keep reappearing at each new seam.
 
 ## 5. The fund-administration lane is dark — 80 of 231 ledger types reach no consumer
 
@@ -966,9 +966,9 @@ close-management product can tell.
    (`PaperSessionPersistenceService.cs:1214-1220`); the gap is that producers do not stamp it and
    consumers do not read it. **Populate that rather than adding a second top-level field** — the
    existing one is nullable, so legacy records omit it and hash unchanged, which removes the
-   versioned-hash migration an earlier version of this remedy required. Whatever value object carries
-   multiplier and price convention on `ExecutionReport` and `FillEvent` must then be *consumed* in
-   **every** transaction branch,
+   versioned-hash migration an earlier version of this remedy required. Resolve that existing field
+   and the scale value added where none exists (`FillEvent`) into one economic concept, then consume
+   it in **every** transaction branch,
    not a subset: `ApplyBuy`, `ApplySellLong`, `ApplyShortSell` and `ApplyCoverShort` (the last two
    also feed Reg-T collateral and the ledger postings), the `MarketValue`/`SignedMarketValue`/
    `UnrealisedPnl` projections on `PaperPosition`, the three restore sites in
@@ -993,10 +993,10 @@ close-management product can tell.
    so the corrected `PaperPosition.UnrealisedPnl` is read *only* when no quote exists. Repairing the
    book alone leaves every live-marked option row at 1/100. Read `pos.ContractMultiplier`
    (`IPosition.cs:67`) in all three sites.
-   Carrying it is not the fix; multiplying by it is. Until then an option session's P&L and total
-   return are off by the multiplier, its equity is wrong in the flattering direction on losses, and
-   its Sharpe drifts — see §4 for the per-metric breakdown, which is *not* a uniform 1/100. Third
-   consecutive review to find this class in a new subsystem. (§3, §4)
+   Carrying scale is not enough: multiplying by it is. Replay also has an independent ownership gap:
+   the same three sites omit `ownerAccountId`. Persist the owning fund or join
+   `OrderState.FundAccountId` through order identity at every restore and projection site, and cover
+   both scaled economics and restored fund attribution in regression tests. (§3, §4)
 4. **Gate the catalogs against each other — with predicates that actually bite.** An
    existential check ("some role can reach it") is useless here: Admin, Developer, and Accounting
    satisfy it while `FundAccountant` and `Controller` stay locked out, so the defect passes. Three
@@ -1179,8 +1179,8 @@ close-management product can tell.
   (`scripts/ci.sh:173-175`). The machinery for improvement #4 is built; it needs two more checks
   pointed at reachability and authorization.
 - **Capital-call issuance is the model to copy.** Kernel → governed intake → approval queue → operator
-  screen → screenshot catalog, in one cycle, with tests. Every dark asset in §5 and §6 should be
-  activated this way.
+  screen → screenshot catalog, in one cycle, with tests. Copy it for verified, operator-facing,
+  activation-ready capabilities; exclude headless, diagnostic, or contract-incomplete routes.
 
 ## Corrections applied after automated review
 
@@ -1818,7 +1818,7 @@ next one because the surface was never examined as a whole**, and it is the stro
 for round 35's withdrawal of the "build it now" advice. Had that advice stood, the third gap would
 have been discovered by an auditor rather than a reviewer.
 
-**Round 37 — three from review, one self-detected, and the review-raised three were applied by
+**Round 37 — four from review, one self-detected, and the review-raised four were applied by
 commits that did not come from this session:**
 
 | Claim | Why it was wrong | Corrected in |
