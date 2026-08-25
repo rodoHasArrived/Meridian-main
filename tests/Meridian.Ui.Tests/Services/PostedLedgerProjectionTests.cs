@@ -1,4 +1,6 @@
+using System.Globalization;
 using FluentAssertions;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Ui.Services.Services.Accounting;
 
@@ -17,10 +19,11 @@ public sealed class PostedLedgerProjectionTests
         int periodNo = 7,
         string label = "July 2026",
         LedgerPeriodStatusDto status = LedgerPeriodStatusDto.HardClosed,
-        Guid? periodId = null)
+        Guid? periodId = null,
+        Guid? ledgerBookId = null)
         => new(
             PeriodId: periodId ?? Guid.NewGuid(),
-            LedgerBookId: Guid.NewGuid(),
+            LedgerBookId: ledgerBookId ?? Guid.NewGuid(),
             FiscalYear: fiscalYear,
             PeriodNo: periodNo,
             Label: label,
@@ -196,5 +199,93 @@ public sealed class PostedLedgerProjectionTests
         var line = Line();
         PostedLedgerProjection.MatchesAccountFilter(line, null).Should().BeTrue();
         PostedLedgerProjection.MatchesAccountFilter(line, "   ").Should().BeTrue();
+    }
+
+    private static LedgerBookDto Book(Guid ledgerBookId, string displayName, string baseCurrency = "USD")
+        => new(
+            LedgerBookId: ledgerBookId,
+            FundProfileId: "fund-alpha",
+            FundStructureNodeId: Guid.Parse("0000000c-0000-0000-0000-00000000000d"),
+            FundStructureNodeKind: FundStructureNodeKindDto.Fund,
+            DisplayName: displayName,
+            BaseCurrency: baseCurrency,
+            CreatedAt: DateTimeOffset.UnixEpoch,
+            UpdatedAt: DateTimeOffset.UnixEpoch);
+
+    [Fact]
+    public void SortBooks_OrdersByDisplayNameWithAStableTieBreak()
+    {
+        var first = Guid.Parse("00000001-0000-0000-0000-000000000000");
+        var second = Guid.Parse("00000002-0000-0000-0000-000000000000");
+        var books = new[] { Book(second, "Feeder"), Book(first, "Master") };
+
+        PostedLedgerProjection.SortBooks(books).Select(book => book.DisplayName)
+            .Should().ContainInOrder("Feeder", "Master");
+    }
+
+    [Fact]
+    public void ResolveDefaultBookId_PicksTheFirstBookInStableOrder()
+    {
+        var master = Guid.Parse("00000002-0000-0000-0000-000000000000");
+        var feeder = Guid.Parse("00000001-0000-0000-0000-000000000000");
+
+        PostedLedgerProjection.ResolveDefaultBookId([Book(master, "Master"), Book(feeder, "Feeder")])
+            .Should().Be(feeder);
+    }
+
+    [Fact]
+    public void ResolveDefaultBookId_WithNoBooks_IsNull()
+        => PostedLedgerProjection.ResolveDefaultBookId([]).Should().BeNull();
+
+    [Fact]
+    public void FilterPeriodsByBook_KeepsOnlyTheRequestedBooksPeriods()
+    {
+        var mine = Guid.Parse("0000000a-0000-0000-0000-000000000000");
+        var theirs = Guid.Parse("0000000b-0000-0000-0000-000000000000");
+        var periods = new[]
+        {
+            Period(periodNo: 7, ledgerBookId: mine),
+            Period(periodNo: 6, ledgerBookId: theirs),
+            Period(periodNo: 5, ledgerBookId: mine)
+        };
+
+        PostedLedgerProjection.FilterPeriodsByBook(periods, mine)
+            .Should().OnlyContain(period => period.LedgerBookId == mine)
+            .And.HaveCount(2);
+    }
+
+    [Fact]
+    public void FilterPeriodsByBook_WithNoBook_KeepsEveryPeriod()
+        => PostedLedgerProjection.FilterPeriodsByBook([Period(periodNo: 7), Period(periodNo: 6)], null)
+            .Should().HaveCount(2);
+
+    /// <summary>
+    /// The defect this replaced: ToString("C", CurrentCulture) takes the symbol from the operator's
+    /// OS locale, so a USD book rendered as pounds under en-GB — the same number wearing another
+    /// currency's symbol, with no conversion.
+    /// </summary>
+    [Fact]
+    public void FormatAmount_UsesTheBooksCurrencyCodeRegardlessOfMachineCulture()
+    {
+        var previous = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("en-GB");
+            var formatted = PostedLedgerProjection.FormatAmount(1250.5m, "USD");
+
+            formatted.Should().Be("USD 1,250.50");
+            formatted.Should().NotContain("£");
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previous;
+        }
+    }
+
+    [Fact]
+    public void FormatAmount_WithNoDeclaredCurrency_ShowsABareNumberRatherThanGuessingASymbol()
+    {
+        PostedLedgerProjection.FormatAmount(1250.5m, null).Should().Be("1,250.50");
+        PostedLedgerProjection.FormatAmount(1250.5m, "  ").Should().Be("1,250.50");
     }
 }

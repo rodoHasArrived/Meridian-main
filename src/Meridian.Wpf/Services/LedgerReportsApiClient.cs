@@ -20,7 +20,15 @@ namespace Meridian.Wpf.Services;
 /// </summary>
 public interface ILedgerReportsApiClient
 {
-    Task<ApiResponse<List<LedgerPeriodDto>>> GetPeriodsAsync(CancellationToken ct = default);
+    Task<ApiResponse<List<LedgerBookDto>>> GetBooksAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Periods for one ledger book. The book scope is not optional in practice: a deployment with
+    /// more than one book returns every book's periods from the unscoped route, and nothing in a
+    /// period identifies its book to the operator, so an unscoped surface can present one fund's
+    /// closed period as another's.
+    /// </summary>
+    Task<ApiResponse<List<LedgerPeriodDto>>> GetPeriodsAsync(Guid? ledgerBookId, CancellationToken ct = default);
 
     Task<ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>> GetTrialBalanceAsync(Guid periodId, CancellationToken ct = default);
 
@@ -36,8 +44,17 @@ public sealed class LedgerReportsApiClient : ILedgerReportsApiClient
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
     }
 
-    public Task<ApiResponse<List<LedgerPeriodDto>>> GetPeriodsAsync(CancellationToken ct = default)
-        => _apiClient.GetWithResponseAsync<List<LedgerPeriodDto>>(UiApiRoutes.LedgerPeriods, ct);
+    public Task<ApiResponse<List<LedgerBookDto>>> GetBooksAsync(CancellationToken ct = default)
+        => _apiClient.GetWithResponseAsync<List<LedgerBookDto>>(UiApiRoutes.LedgerBooks, ct);
+
+    public Task<ApiResponse<List<LedgerPeriodDto>>> GetPeriodsAsync(
+        Guid? ledgerBookId,
+        CancellationToken ct = default)
+        => _apiClient.GetWithResponseAsync<List<LedgerPeriodDto>>(
+            ledgerBookId is null
+                ? UiApiRoutes.LedgerPeriods
+                : $"{UiApiRoutes.LedgerPeriods}?ledgerBookId={Uri.EscapeDataString(ledgerBookId.Value.ToString())}",
+            ct);
 
     public Task<ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>> GetTrialBalanceAsync(
         Guid periodId,

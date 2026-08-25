@@ -125,4 +125,45 @@ public static class PostedLedgerProjection
         return new[] { line.AccountName, line.AccountType, line.FinancialAccountId, line.Symbol }
             .Any(value => value is not null && value.Contains(needle, StringComparison.OrdinalIgnoreCase));
     }
+
+    /// <summary>Books newest-usable first: by display name, with a stable id tie-break.</summary>
+    public static IReadOnlyList<LedgerBookDto> SortBooks(IEnumerable<LedgerBookDto>? books)
+        => books?
+            .OrderBy(book => book.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(book => book.LedgerBookId)
+            .ToList() ?? [];
+
+    /// <summary>
+    /// The book a freshly opened surface should show. There is no notion of a "default" book in
+    /// the contract, so this is simply the first in a stable order — the point is that the surface
+    /// names the book it chose rather than presenting whichever book happened to own the latest
+    /// closed period as though it were the fund's only one.
+    /// </summary>
+    public static Guid? ResolveDefaultBookId(IEnumerable<LedgerBookDto>? books)
+        => SortBooks(books).Select(book => (Guid?)book.LedgerBookId).FirstOrDefault();
+
+    /// <summary>Periods belonging to one book, newest first.</summary>
+    public static IReadOnlyList<LedgerPeriodDto> FilterPeriodsByBook(
+        IEnumerable<LedgerPeriodDto>? periods,
+        Guid? ledgerBookId)
+        => ledgerBookId is null
+            ? SortPeriodsDescending(periods)
+            : SortPeriodsDescending(periods?.Where(period => period.LedgerBookId == ledgerBookId.Value));
+
+    /// <summary>
+    /// Formats a ledger amount in the book's own base currency.
+    /// <para>
+    /// Deliberately not <c>ToString("C", CultureInfo.CurrentCulture)</c>: that takes the currency
+    /// symbol from the operator's OS culture, so a USD book renders as pounds on a machine set to
+    /// en-GB — the same number, relabelled as another currency, with no conversion. The ledger
+    /// contract carries a currency code rather than a locale, so the code itself is shown. A book
+    /// with no declared currency formats as a bare number rather than borrowing a symbol.
+    /// </para>
+    /// </summary>
+    public static string FormatAmount(decimal value, string? currencyCode)
+    {
+        var amount = value.ToString("N2", CultureInfo.InvariantCulture);
+        var code = currencyCode?.Trim();
+        return string.IsNullOrEmpty(code) ? amount : $"{code} {amount}";
+    }
 }

@@ -36,6 +36,13 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
     private string _signoffText = string.Empty;
     private string _balanceSummaryText = "Trial balance not loaded.";
     private bool _isOutOfBalance;
+    private PostedLedgerPeriodRow? _selectedPeriodRow;
+    private PostedLedgerBookRow? _selectedBookRow;
+    private Guid? _selectedBookId;
+    private string _selectedBookLabel = "No ledger book selected";
+    // The book's declared base currency, not the operator's locale. Empty until a book loads,
+    // which formats amounts as bare numbers rather than guessing a symbol.
+    private string _baseCurrency = string.Empty;
 
     public PostedLedgerViewModel(ILedgerReportsApiClient? client = null)
     {
@@ -47,11 +54,19 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
             row => row is null || _isDisposed
                 ? Task.CompletedTask
                 : SelectPeriodAsync(row.PeriodId, _cts.Token));
+        SelectBookCommand = new AsyncRelayCommand<PostedLedgerBookRow>(
+            row => row is null || _isDisposed
+                ? Task.CompletedTask
+                : SelectBookAsync(row.LedgerBookId, _cts.Token));
     }
 
     public IAsyncRelayCommand RefreshCommand { get; }
 
     public IAsyncRelayCommand<PostedLedgerPeriodRow> SelectPeriodCommand { get; }
+
+    public IAsyncRelayCommand<PostedLedgerBookRow> SelectBookCommand { get; }
+
+    public ObservableCollection<PostedLedgerBookRow> Books { get; } = [];
 
     public ObservableCollection<PostedLedgerPeriodRow> Periods { get; } = [];
 
@@ -81,6 +96,71 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
     {
         get => _selectedPeriodLabel;
         private set => SetProperty(ref _selectedPeriodLabel, value);
+    }
+
+    public Guid? SelectedBookId
+    {
+        get => _selectedBookId;
+        private set => SetProperty(ref _selectedBookId, value);
+    }
+
+    /// <summary>
+    /// Two-way bound to the period list. WPF list selection only moves a highlight; loading the
+    /// period it names is this setter's job, and without it the picker changed nothing and every
+    /// period but the default was unreachable.
+    /// </summary>
+    public PostedLedgerPeriodRow? SelectedPeriodRow
+    {
+        get => _selectedPeriodRow;
+        set
+        {
+            if (!SetProperty(ref _selectedPeriodRow, value))
+            {
+                return;
+            }
+
+            // Null arrives when the list is repopulated, and an unchanged id when the view model
+            // drove the selection itself; neither is an operator asking for a different period.
+            if (value is null || _isDisposed || value.PeriodId == SelectedPeriodId)
+            {
+                return;
+            }
+
+            SelectPeriodCommand.Execute(value);
+        }
+    }
+
+    /// <summary>Two-way bound to the book list; see <see cref="SelectedPeriodRow"/>.</summary>
+    public PostedLedgerBookRow? SelectedBookRow
+    {
+        get => _selectedBookRow;
+        set
+        {
+            if (!SetProperty(ref _selectedBookRow, value))
+            {
+                return;
+            }
+
+            if (value is null || _isDisposed || value.LedgerBookId == SelectedBookId)
+            {
+                return;
+            }
+
+            SelectBookCommand.Execute(value);
+        }
+    }
+
+    /// <summary>Names the book on screen, so a multi-book deployment cannot mistake whose journal this is.</summary>
+    public string SelectedBookLabel
+    {
+        get => _selectedBookLabel;
+        private set => SetProperty(ref _selectedBookLabel, value);
+    }
+
+    public string BaseCurrency
+    {
+        get => _baseCurrency;
+        private set => SetProperty(ref _baseCurrency, value);
     }
 
     public string StatusText
@@ -215,34 +295,38 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
                 return;
             }
 
-            var response = await _client.GetPeriodsAsync(ct).ConfigureAwait(true);
+            // Books first: a period means nothing without the book it belongs to, and the
+            // period route returns every book's periods unless it is told which book to answer for.
+            var booksResponse = await _client.GetBooksAsync(ct).ConfigureAwait(true);
             if (revision != _loadRevision)
             {
                 return;
             }
 
-            if (!response.Success || response.Data is null)
+            if (!booksResponse.Success || booksResponse.Data is null)
             {
+                Books.Clear();
                 Periods.Clear();
-                PeriodsErrorText = string.IsNullOrWhiteSpace(response.ErrorMessage)
-                    ? "Ledger periods could not be loaded."
-                    : response.ErrorMessage;
+                PeriodsErrorText = string.IsNullOrWhiteSpace(booksResponse.ErrorMessage)
+                    ? "Ledger books could not be loaded."
+                    : booksResponse.ErrorMessage;
                 StatusText = "Posted journal unavailable.";
                 return;
             }
 
-            ApplyPeriods(response.Data);
+            ApplyBooks(booksResponse.Data);
 
-            var defaultPeriodId = PostedLedgerProjection.ResolveDefaultPeriodId(response.Data);
-            if (defaultPeriodId is null)
+            var bookId = PostedLedgerProjection.ResolveDefaultBookId(booksResponse.Data);
+            if (bookId is null)
             {
+                Periods.Clear();
                 TrialBalance.Clear();
                 PnlMetrics.Clear();
-                StatusText = "No ledger periods exist yet. Create a ledger book and period to start the governed book.";
+                StatusText = "No ledger books exist yet. Create a ledger book and period to start the governed book.";
                 return;
             }
 
-            await SelectPeriodAsync(defaultPeriodId.Value, ct).ConfigureAwait(true);
+            await SelectBookAsync(bookId.Value, ct).ConfigureAwait(true);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -265,10 +349,87 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         }
     }
 
+    public async Task SelectBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+    {
+        SelectedBookId = ledgerBookId;
+        var book = Books.FirstOrDefault(row => row.LedgerBookId == ledgerBookId);
+        SelectedBookLabel = book?.Label ?? "Selected ledger book";
+        if (!ReferenceEquals(_selectedBookRow, book))
+        {
+            _selectedBookRow = book;
+            OnPropertyChanged(nameof(SelectedBookRow));
+        }
+
+        BaseCurrency = book?.BaseCurrency ?? string.Empty;
+        foreach (var row in Books)
+        {
+            row.IsSelected = row.LedgerBookId == ledgerBookId;
+        }
+
+        PeriodsErrorText = string.Empty;
+        // The outgoing book's periods and figures are a different book entirely.
+        Periods.Clear();
+        TrialBalance.Clear();
+        PnlMetrics.Clear();
+        SelectedPeriodId = null;
+        SelectedPeriodLabel = "No period selected";
+        BalanceSummaryText = "Trial balance not loaded.";
+
+        if (_client is null)
+        {
+            PeriodsErrorText = "The ledger reporting client is not available in this session.";
+            return;
+        }
+
+        var response = await _client.GetPeriodsAsync(ledgerBookId, ct).ConfigureAwait(true);
+        if (!response.Success || response.Data is null)
+        {
+            PeriodsErrorText = string.IsNullOrWhiteSpace(response.ErrorMessage)
+                ? "Ledger periods could not be loaded."
+                : response.ErrorMessage;
+            StatusText = "Posted journal unavailable.";
+            return;
+        }
+
+        // Filter defensively as well as scoping the request: an older server that ignores the
+        // ledgerBookId query would otherwise hand back every book's periods.
+        var periods = PostedLedgerProjection.FilterPeriodsByBook(response.Data, ledgerBookId);
+        ApplyPeriods(periods);
+
+        var defaultPeriodId = PostedLedgerProjection.ResolveDefaultPeriodId(periods);
+        if (defaultPeriodId is null)
+        {
+            StatusText = $"{SelectedBookLabel} has no ledger periods yet.";
+            return;
+        }
+
+        await SelectPeriodAsync(defaultPeriodId.Value, ct).ConfigureAwait(true);
+    }
+
+    private void ApplyBooks(IReadOnlyList<LedgerBookDto> books)
+    {
+        Books.Clear();
+        foreach (var book in PostedLedgerProjection.SortBooks(books))
+        {
+            Books.Add(new PostedLedgerBookRow(
+                book.LedgerBookId,
+                string.IsNullOrWhiteSpace(book.DisplayName) ? book.LedgerBookId.ToString() : book.DisplayName,
+                book.BaseCurrency));
+        }
+    }
+
     public async Task SelectPeriodAsync(Guid periodId, CancellationToken ct = default)
     {
         SelectedPeriodId = periodId;
-        SelectedPeriodLabel = Periods.FirstOrDefault(row => row.PeriodId == periodId)?.Label ?? "Selected period";
+        var selectedRow = Periods.FirstOrDefault(row => row.PeriodId == periodId);
+        SelectedPeriodLabel = selectedRow?.Label ?? "Selected period";
+        // Assign the backing field: routing through the property would re-enter the setter above.
+        if (!ReferenceEquals(_selectedPeriodRow, selectedRow))
+        {
+            _selectedPeriodRow = selectedRow;
+            OnPropertyChanged(nameof(SelectedPeriodRow));
+        }
+
         foreach (var row in Periods)
         {
             row.IsSelected = row.PeriodId == periodId;
@@ -292,7 +453,7 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
 
             ApplyTrialBalance(await trialBalanceTask.ConfigureAwait(true));
             ApplyPnl(await pnlTask.ConfigureAwait(true));
-            StatusText = $"Posted journal for {SelectedPeriodLabel}.";
+            StatusText = $"Posted journal for {SelectedBookLabel} · {SelectedPeriodLabel}.";
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -347,14 +508,14 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
                 line.AccountName,
                 line.AccountType,
                 line.Symbol,
-                line.Balance.ToString("C", CultureInfo.CurrentCulture),
+                PostedLedgerProjection.FormatAmount(line.Balance, BaseCurrency),
                 line.EntryCount));
         }
 
         IsOutOfBalance = PostedLedgerProjection.IsOutOfBalance(response.Data);
         var variance = PostedLedgerProjection.SumBalances(response.Data);
         BalanceSummaryText = IsOutOfBalance
-            ? $"{TrialBalance.Count} accounts · out by {Math.Abs(variance).ToString("C", CultureInfo.CurrentCulture)}"
+            ? $"{TrialBalance.Count} accounts · out by {PostedLedgerProjection.FormatAmount(Math.Abs(variance), BaseCurrency)}"
             : $"{TrialBalance.Count} accounts · in balance";
     }
 
@@ -380,13 +541,13 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         }
 
         var pnl = response.Data;
-        PnlMetrics.Add(new PostedLedgerMetricRow("Total revenue", pnl.TotalRevenue.ToString("C", CultureInfo.CurrentCulture)));
-        PnlMetrics.Add(new PostedLedgerMetricRow("Total expenses", pnl.TotalExpenses.ToString("C", CultureInfo.CurrentCulture)));
-        PnlMetrics.Add(new PostedLedgerMetricRow("Net income", pnl.NetIncome.ToString("C", CultureInfo.CurrentCulture)));
+        PnlMetrics.Add(new PostedLedgerMetricRow("Total revenue", PostedLedgerProjection.FormatAmount(pnl.TotalRevenue, BaseCurrency)));
+        PnlMetrics.Add(new PostedLedgerMetricRow("Total expenses", PostedLedgerProjection.FormatAmount(pnl.TotalExpenses, BaseCurrency)));
+        PnlMetrics.Add(new PostedLedgerMetricRow("Net income", PostedLedgerProjection.FormatAmount(pnl.NetIncome, BaseCurrency)));
         PnlMetrics.Add(new PostedLedgerMetricRow(
             "Period-on-period variance",
             pnl.PeriodOnPeriodVariance is { } variance
-                ? variance.ToString("C", CultureInfo.CurrentCulture)
+                ? PostedLedgerProjection.FormatAmount(variance, BaseCurrency)
                 : "No prior period"));
         PnlMetrics.Add(new PostedLedgerMetricRow(
             "Open breaks",
@@ -397,6 +558,34 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
 }
 
 /// <summary>A selectable ledger period in the desktop posted-journal surface.</summary>
+/// <summary>
+/// One ledger book the operator can scope the posted journal to. Carries the book's declared
+/// base currency so amounts are formatted in the book's own currency rather than the machine's.
+/// </summary>
+public sealed class PostedLedgerBookRow : BindableBase
+{
+    private bool _isSelected;
+
+    public PostedLedgerBookRow(Guid ledgerBookId, string label, string baseCurrency)
+    {
+        LedgerBookId = ledgerBookId;
+        Label = label;
+        BaseCurrency = baseCurrency;
+    }
+
+    public Guid LedgerBookId { get; }
+
+    public string Label { get; }
+
+    public string BaseCurrency { get; }
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
+}
+
 public sealed class PostedLedgerPeriodRow : BindableBase
 {
     private bool _isSelected;

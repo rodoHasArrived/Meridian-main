@@ -1,4 +1,5 @@
 using Meridian.Contracts.Api;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -17,14 +18,31 @@ namespace Meridian.Wpf.Tests.ViewModels;
 /// </summary>
 public sealed class PostedLedgerViewModelTests
 {
+    private static readonly Guid DefaultBookId = Guid.Parse("0000000a-0000-0000-0000-00000000000b");
+
+    private static LedgerBookDto Book(
+        Guid ledgerBookId,
+        string displayName = "Master Fund",
+        string baseCurrency = "USD")
+        => new(
+            LedgerBookId: ledgerBookId,
+            FundProfileId: "fund-alpha",
+            FundStructureNodeId: Guid.Parse("0000000c-0000-0000-0000-00000000000d"),
+            FundStructureNodeKind: FundStructureNodeKindDto.Fund,
+            DisplayName: displayName,
+            BaseCurrency: baseCurrency,
+            CreatedAt: DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            UpdatedAt: DateTimeOffset.Parse("2026-01-01T00:00:00Z"));
+
     private static LedgerPeriodDto Period(
         Guid periodId,
         int periodNo = 7,
         string label = "July 2026",
-        LedgerPeriodStatusDto status = LedgerPeriodStatusDto.HardClosed)
+        LedgerPeriodStatusDto status = LedgerPeriodStatusDto.HardClosed,
+        Guid? ledgerBookId = null)
         => new(
             PeriodId: periodId,
-            LedgerBookId: Guid.NewGuid(),
+            LedgerBookId: ledgerBookId ?? DefaultBookId,
             FiscalYear: 2026,
             PeriodNo: periodNo,
             Label: label,
@@ -196,6 +214,94 @@ public sealed class PostedLedgerViewModelTests
         client.RequestedPeriodIds.Should().Contain(prior);
     }
 
+    [Fact]
+    public async Task RefreshScopesThePeriodRequestToTheSelectedBook()
+    {
+        var latest = Guid.NewGuid();
+        var client = new FakeLedgerReportsApiClient
+        {
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(latest)]),
+            TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok([Line("Cash", 10m)]),
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(latest))
+        };
+
+        using var viewModel = new PostedLedgerViewModel(client);
+        await viewModel.RefreshAsync();
+
+        // An unscoped request returns every book's periods, and nothing in a period names its
+        // book, so the surface could present another fund's closed period as this fund's.
+        client.RequestedBookScopes.Should().NotContain((Guid?)null);
+        client.RequestedBookScopes.Should().Contain(DefaultBookId);
+        viewModel.SelectedBookId.Should().Be(DefaultBookId);
+        viewModel.SelectedBookLabel.Should().Be("Master Fund");
+    }
+
+    [Fact]
+    public async Task PeriodsBelongingToAnotherBookAreNotShown()
+    {
+        var mine = Guid.NewGuid();
+        var foreign = Guid.NewGuid();
+        var client = new FakeLedgerReportsApiClient
+        {
+            // A server that ignores the ledgerBookId query hands back both books' periods.
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([
+                Period(mine),
+                Period(foreign, periodNo: 6, label: "June 2026", ledgerBookId: Guid.NewGuid())
+            ]),
+            TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok([Line("Cash", 10m)]),
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(mine))
+        };
+
+        using var viewModel = new PostedLedgerViewModel(client);
+        await viewModel.RefreshAsync();
+
+        viewModel.Periods.Select(row => row.PeriodId).Should().ContainSingle().Which.Should().Be(mine);
+    }
+
+    [Fact]
+    public async Task AmountsAreFormattedInTheBooksCurrencyNotTheMachines()
+    {
+        var latest = Guid.NewGuid();
+        var client = new FakeLedgerReportsApiClient
+        {
+            Books = ApiResponse<List<LedgerBookDto>>.Ok([Book(DefaultBookId, baseCurrency: "USD")]),
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(latest)]),
+            TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok([Line("Cash", 1250m)]),
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(latest))
+        };
+
+        using var viewModel = new PostedLedgerViewModel(client);
+        await viewModel.RefreshAsync();
+
+        viewModel.BaseCurrency.Should().Be("USD");
+        viewModel.TrialBalance.Should().ContainSingle()
+            .Which.BalanceLabel.Should().Contain("USD");
+    }
+
+    [Fact]
+    public async Task SettingTheSelectedPeriodRowLoadsThatPeriod()
+    {
+        var latest = Guid.NewGuid();
+        var prior = Guid.NewGuid();
+        var client = new FakeLedgerReportsApiClient
+        {
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok(
+                [Period(latest), Period(prior, periodNo: 6, label: "June 2026")]),
+            TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok([Line("Cash", 10m)]),
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(latest))
+        };
+
+        using var viewModel = new PostedLedgerViewModel(client);
+        await viewModel.RefreshAsync();
+
+        // This is what the list's SelectedItem binding does. Before it was wired, moving the
+        // highlight loaded nothing and every period but the default was unreachable.
+        viewModel.SelectedPeriodRow = viewModel.Periods.Single(row => row.PeriodId == prior);
+
+        viewModel.SelectedPeriodId.Should().Be(prior);
+        client.RequestedPeriodIds.Should().Contain(prior);
+    }
+
     private sealed class FakeLedgerReportsApiClient : ILedgerReportsApiClient
     {
         public ApiResponse<List<LedgerPeriodDto>> Periods { get; set; }
@@ -207,10 +313,24 @@ public sealed class PostedLedgerViewModelTests
         public ApiResponse<LedgerPeriodPnlSummaryDto> Pnl { get; set; }
             = ApiResponse<LedgerPeriodPnlSummaryDto>.Fail("not configured", 404);
 
+        public ApiResponse<List<LedgerBookDto>> Books { get; set; }
+            = ApiResponse<List<LedgerBookDto>>.Ok([Book(DefaultBookId)]);
+
         public List<Guid> RequestedPeriodIds { get; } = [];
 
-        public Task<ApiResponse<List<LedgerPeriodDto>>> GetPeriodsAsync(CancellationToken ct = default)
-            => Task.FromResult(Periods);
+        /// <summary>Records the book scope each periods request carried, or null for an unscoped one.</summary>
+        public List<Guid?> RequestedBookScopes { get; } = [];
+
+        public Task<ApiResponse<List<LedgerBookDto>>> GetBooksAsync(CancellationToken ct = default)
+            => Task.FromResult(Books);
+
+        public Task<ApiResponse<List<LedgerPeriodDto>>> GetPeriodsAsync(
+            Guid? ledgerBookId,
+            CancellationToken ct = default)
+        {
+            RequestedBookScopes.Add(ledgerBookId);
+            return Task.FromResult(Periods);
+        }
 
         public Task<ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>> GetTrialBalanceAsync(
             Guid periodId,

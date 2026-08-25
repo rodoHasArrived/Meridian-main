@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**1247 / 8847** items documented (**14.1%**) &mdash; Grade: **F**
+**1247 / 8848** items documented (**14.1%**) &mdash; Grade: **F**
 
 ```text
 [===-----------------] 14.1%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1146 | 8375 | 13.7% | F |
+| Public Classes / Interfaces | 1146 | 8376 | 13.7% | F |
 | API Endpoints | 89 | 329 | 27.1% | F |
 | Configuration Options | 1 | 132 | 0.8% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,7 +23,7 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (7229 undocumented)
+### Public Classes / Interfaces (7230 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,7 +77,7 @@
 | `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| ... and 7179 more | |
+| ... and 7180 more | |
 
 ### API Endpoints (240 undocumented)
 
@@ -105,7 +105,7 @@
 | `/api/compliance/controls/attestation` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:70` |
 | `/api/compliance/access-reviews/assess` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:85` |
 | `/api/compliance/access-reviews/run` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:101` |
-| `/api/compliance/access-reviews` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:117` |
+| `/api/compliance/access-reviews` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:123` |
 | `/api/loans` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:37` |
 | `/api/loans/{loanId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:67` |
 | `/api/loans/{loanId}/projections/contract` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:82` |
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 7229 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
+1. **Public Classes / Interfaces**: 7230 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
 2. **API Endpoints**: 240 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 131 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 

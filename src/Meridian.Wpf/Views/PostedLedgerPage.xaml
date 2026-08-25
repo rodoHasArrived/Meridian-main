@@ -103,10 +103,35 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- Period picker. -->
-            <ListBox Grid.Column="0"
-                     ItemsSource="{Binding Periods}"
-                     Margin="0,0,12,0"
+            <!-- Book and period pickers. Both bind SelectedItem two-way: the view model's setter
+                 loads the selection, so moving the highlight actually changes the subject. -->
+            <DockPanel Grid.Column="0" Margin="0,0,12,0" LastChildFill="True">
+                <TextBlock DockPanel.Dock="Top"
+                           Text="Ledger book"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,4" />
+                <ListBox DockPanel.Dock="Top"
+                         ItemsSource="{Binding Books}"
+                         SelectedItem="{Binding SelectedBookRow, Mode=TwoWay}"
+                         MaxHeight="120"
+                         Margin="0,0,0,12"
+                         AutomationProperties.AutomationId="PostedLedgerBookList">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,2">
+                                <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding BaseCurrency}"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <TextBlock DockPanel.Dock="Top"
+                           Text="Ledger period"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,4" />
+            <ListBox ItemsSource="{Binding Periods}"
+                     SelectedItem="{Binding SelectedPeriodRow, Mode=TwoWay}"
                      AutomationProperties.AutomationId="PostedLedgerPeriodList">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
@@ -120,6 +145,7 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
+            </DockPanel>
 
             <!-- Posted trial balance. -->
             <DataGrid Grid.Column="1"
