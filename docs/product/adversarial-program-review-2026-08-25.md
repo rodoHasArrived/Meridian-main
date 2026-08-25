@@ -236,21 +236,31 @@ portfolio producing that equity is itself unscaled: `PaperPosition.MarketValue` 
 `LiveStrategyRunSession` feeds exactly that `_context.PortfolioValue` into both `RecordDayEnd`
 (`:361-364`) and `Build` (`:772-775`).
 
-So for an options session every number derived from position value is wrong — but *how* it is wrong
-differs by metric, and the distinction matters for triage:
+**Both legs are unscaled, and that changes the answer.** `ApplyBuy` deducts the same unscaled
+`notional` from cash that it books into the position (`PaperTradingPortfolio.cs:701-715`:
+`account.Cash -= notional + commission`). The cash and position errors are therefore *paired*, and
+the effect on each metric follows from that pairing rather than from the position error alone. Worked
+for a cash account, zero commission, 10 calls at $2.50 against $100,000 of starting cash:
 
 | Quantity | Effect |
 | --- | --- |
-| Option position value, and the cash/cost-basis entries behind it | Understated by the multiplier — 1/100 for a standard equity option |
-| Portfolio equity | **Not** 1/100 of correct: equity is cash + positions, and cash is intact. Understated by the missing option exposure only |
-| Net P&L, total return, drawdown | Wrong by the equity error above — a magnitude error, not a clean 1/100 scale |
-| Sharpe (`mean / stdDev * √252`, `:143`) | **Not** scale-invariant here. A *uniform* scale on returns would cancel in the ratio; this is not uniform, because daily returns are `(equity − previous) / previous` over a book whose cash component is correct and whose option component is not. Sharpe is distorted nonlinearly — plausible-looking and untrustworthy, which is worse than visibly wrong |
-| Commissions | Unaffected — `_totalCommissions` accumulates independently |
+| Trade cash leg and position value | Each 1/100 of correct — the errors offset |
+| Portfolio equity **at entry** | **Exactly correct.** $100,000 either way; the two errors cancel |
+| Portfolio equity **after a move** | Deviates by 99% of unrealised P&L, and **overstated on losses**: at a $2.00 mark, $99,995 against a correct $99,500 |
+| Net P&L, total return | **Exactly 1/100** ($−5 against $−500) |
+| Drawdown | ≈1/100, since both the peak and the trough carry the same 1/100 P&L error over a nearly-correct cash base |
+| Sharpe (`mean / stdDev`) | **Approximately correct in a pure-option book** — daily returns are uniformly 1/100 (−0.005% against −0.5%), and a uniform factor cancels in the ratio. Distorted only in a *mixed* book, where equities scale correctly and options do not, so the factor is non-uniform |
+| Commissions | Unaffected — already dollar amounts, accumulated independently |
 
-The per-trade record is wrong *and* every session-level number computed from the book is wrong, for
-the same root cause. This review has now mis-stated that blast radius twice in opposite directions —
-first too narrow, then too broad — which is itself evidence for how hard the defect is to reason
-about when a value is threaded but not consumed.
+So the damage is severe where it is easiest to miss: an options session's realized P&L is off by two
+orders of magnitude while its *equity looks plausible* and its *Sharpe looks fine*. The metrics an
+operator would use to sanity-check the book are the ones the defect leaves intact.
+
+This review has now mis-stated that blast radius **four times**: too narrow (round 2), too broad
+(round 3), wrongly reversed on equity and Sharpe (round 4), and only correct once the paired cash leg
+was traced and the arithmetic actually run (round 7). Every earlier version reasoned about the
+position error in isolation. That is the same mistake the document accuses the codebase of — reading
+one side of a seam and inferring the other — and it took four attempts to stop making it.
 
 This is the same defect shape as §3, in a third subsystem. Three subsystems now model instrument
 scale differently: `ExecutionPosition.ContractMultiplier` (`ExecutionPosition.cs:42`), the
@@ -631,6 +641,12 @@ because a review that demands evidence discipline owes the same discipline about
 | "Make `Windows Desktop Build / desktop` a required check" | The required context uses the job's *display* name. `windows-desktop-build.yml:106-107` declares job `desktop` but renders it `verify-desktop (build/test WPF)`, so that string matches nothing — the recommendation would silently leave WPF non-blocking, which is the exact failure §7 is about | Improvement #6 |
 | "Operators diverge for **up to a minute**" | Understated. `usePollingInterval` covers Trading, provider routing and Portfolio only (`use-workstation-data.ts:731-733`) — **not Accounting**. Break casework has no poll at all, so divergence is unbounded until manual refresh or remount | §8 — the finding is worse than reported |
 
+**Round 7 — one, and it reversed two rows of the round-4 table:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "Equity is not 1/100 — cash is intact"; "Sharpe is distorted nonlinearly" | Only *initial* cash is intact. `ApplyBuy` deducts the same unscaled `notional` it books into the position (`:701-715`), so the legs are paired. Worked arithmetic: equity is **exactly correct at entry** and **overstated on losses**; net P&L and total return are **exactly 1/100**; and daily returns carry a *uniform* 1/100 factor, so **Sharpe cancels it and is approximately correct** in a pure-option book — distorted only in a mixed one | §4 — rewritten from the arithmetic |
+
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
 remedies — and are rewritten rather than softened; the multiplier correction made the defect
@@ -666,6 +682,15 @@ job's display name. A review whose central finding is *"the catalogs disagree an
 them"* proposed a gate configured against the wrong catalog entry. The recommendation would have
 looked applied and changed nothing, which is precisely the built-but-dead failure the review exists
 to name.
+
+Round 7 closed the §4 loop and is worth stating as the fifth lesson. Every earlier version of that
+table reasoned about the position leg and *inferred* the cash leg. Reading `ApplyBuy` to the end —
+`account.Cash -= notional` — and then running the numbers produced a materially different and partly
+opposite answer: equity is right at entry and overstated on losses, P&L is exactly 1/100, and Sharpe
+is approximately *unaffected*. **The metrics an operator would use to sanity-check an options book
+are precisely the ones this defect leaves looking plausible.** Four wrong versions of one table, each
+confidently reasoned, none of them arithmetic — inference from one side of a seam is not evidence,
+which is the thesis of this entire document applied to its own author.
 
 ## Addendum — remediation landed while this review was in flight
 

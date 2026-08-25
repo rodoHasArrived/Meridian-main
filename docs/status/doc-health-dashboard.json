@@ -1,6 +1,6 @@
 {
   "total_files": 657,
-  "total_lines": 132976,
+  "total_lines": 133001,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2961,7 +2961,7 @@
     },
     {
       "path": "docs/product/adversarial-program-review-2026-08-25.md",
-      "line_count": 716,
+      "line_count": 741,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
