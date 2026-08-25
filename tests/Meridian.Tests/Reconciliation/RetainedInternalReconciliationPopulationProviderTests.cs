@@ -4,6 +4,7 @@ using Meridian.Contracts.Domain;
 using Meridian.Contracts.FundStructure;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.PortfolioRecords.Accounts;
+using Meridian.Tests.TestHelpers;
 using NSubstitute;
 
 namespace Meridian.Tests.Reconciliation;
@@ -84,6 +85,44 @@ public sealed class RetainedInternalReconciliationPopulationProviderTests
             "EXT-1", "journals stamped with the external custodian key must attribute to this account");
         captured.PeriodStart.Should().Be(new DateOnly(2026, 5, 1));
         captured.PeriodEnd.Should().Be(new DateOnly(2026, 5, 31));
+    }
+
+    [Fact]
+    public async Task GetPopulationsAsync_ComposedSourceFailureDoesNotLogExternalAccountIdentifier()
+    {
+        const string sensitiveIban = "GB82WEST12345698765432";
+        var accounts = Substitute.For<IAccountQueryService>();
+        accounts.GetAccountAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Account("FUND-1", "run-1"));
+        accounts.GetBalanceTimelineAsync(
+                Arg.Any<Guid>(),
+                Arg.Any<DateOnly?>(),
+                Arg.Any<DateOnly?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new List<AccountBalanceSnapshotDto>());
+
+        var ledgerSource = Substitute.For<IInternalLedgerTransactionSource>();
+        ledgerSource
+            .GetTransactionsAsync(Arg.Any<InternalLedgerTransactionQuery>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<IReadOnlyList<InternalLedgerTransaction>>(
+                new InvalidOperationException($"Provider account {sensitiveIban} is unavailable.")));
+        var logger = new RecordingLogger<RetainedInternalReconciliationPopulationProvider>();
+        var provider = new RetainedInternalReconciliationPopulationProvider(
+            accounts,
+            logger: logger,
+            ledgerTransactionSource: ledgerSource);
+
+        var result = await provider.GetPopulationsAsync(
+            new InternalReconciliationPopulationContext(
+                AccountId.ToString("D"),
+                sensitiveIban,
+                new DateOnly(2026, 5, 1),
+                new DateOnly(2026, 5, 31),
+                "USD"));
+
+        result.Should().BeSameAs(InternalReconciliationPopulations.Empty);
+        var entry = logger.Entries.Should().ContainSingle().Subject;
+        entry.Message.Should().NotContain(sensitiveIban);
+        entry.Exception.Should().BeNull();
     }
 
     [Fact]

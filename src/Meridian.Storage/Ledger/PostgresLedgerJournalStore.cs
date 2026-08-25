@@ -1,4 +1,5 @@
 using System.Data;
+using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
@@ -134,6 +135,8 @@ public sealed partial class PostgresLedgerJournalStore :
             && string.IsNullOrWhiteSpace(query.AccountName)
             && !query.OccurredFrom.HasValue
             && !query.OccurredTo.HasValue
+            && !query.EffectiveFrom.HasValue
+            && !query.EffectiveTo.HasValue
             && lineDimensionsJson is null)
         {
             throw new ArgumentException("At least one journal query filter is required.", nameof(query));
@@ -150,6 +153,20 @@ public sealed partial class PostgresLedgerJournalStore :
         if (query.SourceEventId.HasValue)
         {
             command.Parameters.AddWithValue("source_event_id", query.SourceEventId.Value);
+        }
+
+        if (query.EffectiveFrom.HasValue)
+        {
+            command.Parameters.AddWithValue(
+                "effective_from",
+                query.EffectiveFrom.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+
+        if (query.EffectiveTo.HasValue)
+        {
+            command.Parameters.AddWithValue(
+                "effective_to",
+                query.EffectiveTo.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         }
 
         // SEC-005 slice 4c-ii: scope the entry filter to the caller's tenant via the period's stamped
