@@ -53,8 +53,8 @@ risks that compound as new asset classes land.
 > **Verification pass, 2026-08-25.** Re-read against `bb43e0e6`. Both surviving findings above are
 > still open; the pass adds why V2 escaped review (no test exercises the CSV path at all) and files
 > two further items — the workbench UI does not distinguish its merging from its annotation-only
-> field namespace, and the profile-backed class tables in `SecurityMasterService` duplicate catalog
-> data with no parity guard. See [Verification pass — 2026-08-25](#verification-pass--2026-08-25).
+> field namespace, and profile-backed class behavior in `SecurityMasterService` is split across
+> hand-maintained lookups with no parity guard. See [Verification pass — 2026-08-25](#verification-pass--2026-08-25).
 
 ---
 
@@ -710,16 +710,16 @@ this document.
 both, constructing its request with `CommonTerms` and `AssetSpecificTerms` hardcoded to `{}`
 (`SecurityMasterCsvParser.cs:143-155`). `SecurityMasterImportService` hands that straight to
 `CreateAsync` (`:164`), whose `ToCommonTerms` requires `displayName` and `currency`
-(`SecurityMasterMapping.cs:214-217`, throwing at `:698-701`). Every CSV row still fails at create
-time, for every asset class. The path is live on both UI lanes — `SecurityMasterViewModel.cs:37`
-(WPF) and `SecurityMasterEndpoints.cs:901` (web).
+(`SecurityMasterMapping.cs:214-217`, throwing at `:698-701`). Every otherwise parseable CSV row
+still fails at create time across every asset class the parser accepts. The path is live on both UI
+lanes — `SecurityMasterViewModel.cs:4358` (WPF) and `SecurityMasterEndpoints.cs:914-918` (web).
 
 **New evidence — the test suite cannot see this.** Both `SecurityMasterImportServiceTests` files
-construct the real `SecurityMasterCsvParser` and then never feed it CSV: each builds
-`CreateSecurityRequest` objects by hand with a well-formed `displayName`/`currency` payload and
-drives the service through the `.json` route
-(`tests/Meridian.Tests/SecurityMaster/SecurityMasterImportServiceTests.cs:52-88`;
-`tests/Meridian.Tests/Application/SecurityMaster/SecurityMasterImportServiceTests.cs:23-91`). There
+construct the real `SecurityMasterCsvParser` and then never feed it CSV: each drives the service
+through hand-built `.json` content. The first supplies `displayName` and `currency` and reaches
+the real `SecurityMasterService` (`tests/Meridian.Tests/SecurityMaster/SecurityMasterImportServiceTests.cs:52-88`);
+the second omits `currency` but uses a blocking service double that never maps the request
+(`tests/Meridian.Tests/Application/SecurityMaster/SecurityMasterImportServiceTests.cs:23-91`). There
 is no test anywhere that parses a CSV row and maps it through `SecurityMasterMapping`. The fix needs
 that end-to-end test as much as it needs the payload change — otherwise the same gap reopens.
 
@@ -747,23 +747,23 @@ that reads as applied. The fix is presentational, not architectural — drive th
 `SecurityAssetTermsSchema` for the record's asset class (the same table the server validates
 against), and mark annotation-only paths as such at entry.
 
-### V4 — the profile-backed class tables are hand-maintained and now provably derivable
+### V4 — profile-backed class behavior is split across hand-maintained lookups
 
-Recorded as "noted, not re-filed" last pass; this pass files it, because the duplication is now
-demonstrable rather than suspected. `SecurityMasterService` carries three hand-written string tables
-governing asset-class behavior:
+Recorded as "noted, not re-filed" last pass; this pass files it because the maintenance burden is
+concrete. `SecurityMasterService` carries three hand-written lookups governing asset-class behavior:
 
 - `IsProfileBackedCustomAsset`'s seven-class allow-list (`:961-972`),
 - `KnownProfileAssetClasses`, profile id → asset class (`:981-989`),
 - `AssetClassMetadataKeywords`, class → accepted classification keywords (`:992-1000`).
 
-None is derived from a catalog and none is covered by a parity test — they sit below the four guards
-that protect the catalog's other surfaces. `KnownProfileAssetClasses` in particular duplicates data
-the profile catalog already holds: `SecurityAssetProfileCatalog.Profile(...)` takes the asset class
-as its third argument, so `structured-credit-io-po → StructuredCredit` is declared in both places
-(`SecurityAssetProfileCatalog.cs:74-76`). Adding a profile-backed alternative class today means
-editing all three tables inside an application service, with nothing failing at commit time if one
-is missed.
+None is derived from a catalog or covered by a parity test. The profile contract carries `Category`
+and `SubType`, not a resolved asset class (`SecurityAssetProfiles.cs:63-83`); `Profile(...)`'s
+third argument is `category` (`SecurityAssetProfileCatalog.cs:167-172`). The apparent
+`structured-credit-io-po → StructuredCredit` duplication is coincidental: `real-estate-holding`
+uses category `RealAssets` while the map resolves `RealEstateHolding`, and `commitment-guarantee`
+has a mapping but no default seed. Adding a profile-backed class still requires editing all three
+lookups with nothing failing if one is missed. Deriving the profile-id mapping first requires an
+explicit resolved asset-class field in the profile contract; otherwise test-lock these lookups.
 
 Related, from the same catalog entry: the `structured-credit-io-po` profile still declares
 `factorSchedule` as a **required text** field (`SecurityAssetProfileCatalog.cs:84`) and declares no
@@ -774,14 +774,14 @@ schedule replaced.
 ### Priorities after this pass
 
 1. **Fix the CSV import payload, with an end-to-end parser→create test.** The only live functional
-   break in the subsystem: an operator-reachable import path that fails every row on both UI lanes,
-   invisible to a test suite that constructs its requests by hand.
+   break in the subsystem: an operator-reachable import path that fails every otherwise parseable row
+   on both UI lanes, invisible to a test suite that constructs its requests by hand.
 2. **Add the catalog↔validator parity guard.** A fifth guard mirroring the four that exist; the
    cheapest durable item here, unchanged for two passes.
 3. **Close the workbench UI's half of finding 5.** Schema-drive the field-path input and label the
    annotation-only namespace, so a governed correction cannot silently be inert.
-4. **Derive or test-lock the profile-backed class tables**, and give the structured-credit profile a
-   typed factor-schedule field.
+4. **Add a resolved asset class to profiles and derive the profile-id mapping, or test-lock the
+   hand-maintained lookups**, and give the structured-credit profile a typed factor-schedule field.
 5. *Standing, unchanged:* codec generation from `SecurityAssetTermsSchema`; relational projections
    for the 15 private/alternative classes; valid-time term history.
 
