@@ -56,7 +56,7 @@ and it is invisible to every gate the repository runs, because no gate compares 
 | Broker-truthful kill-switch sweep | **Landed** | `af05058f` sweeps the union of tracked and broker books; `ExecutionReport.ChildOrders` added (`Models.cs:166-174`) and registered (`OrderManagementSystem.ChildOrders.cs:61-84`) |
 | Journal immutability at the database | **Landed** | `V_ledger_030__journal_immutability.sql` |
 | Release attachment | **Landed** | tag `eval-v0.1.0-eval.1`; `8e9b11c3` attaches consumer setup to the evaluation prerelease |
-| Provenance at the ingress seam | **Partial** | `2361152c` threads real provider identity; the contract still permits an un-sourced print — `MarketTradeUpdate.cs:33` is `string? Source = null` |
+| Provenance at the ingress seam | **Landed at runtime; type-level hardening outstanding** | `2361152c` threads real provider identity, and `TradeDataCollector.OnTrade` rejects a missing `Source` with a `MissingSource` integrity event before storing (`:117-134`, tested). `MarketTradeUpdate.cs:33` is still `string? Source = null`, so the remaining work is compile-time, not behavioural |
 | Fund-economics activation | **Partial — the named alternative was skipped** | capital-call issuance wired (`CapitalCallFundingIntake.cs:236`); NAV-per-unit + unit register still at zero consumers |
 | `ContractMultiplier` on the durable fill record | **Open — and wider than reported** | §3–§4 below: the multiplier never reaches portfolio economics on any path, so option position value is understated live as well as on restore, and every number derived from it is wrong (see §4 for the per-metric breakdown — it is not a uniform 1/100 on equity or Sharpe) |
 | WPF state un-fork | **Partial** | reconciliation posture no longer reads desktop-local state and the remaining local fund-setup lane is labelled with a provenance badge (`AccountingFeatureModule.cs:53-59`); the scheduler host loops were removed from the desktop process and now run server-side (`:196-202`). Residual: fund-account and fund-structure services still persist JSON under `%LOCALAPPDATA%`, along with drafts and schedules |
@@ -581,10 +581,20 @@ close-management product can tell.
   has no governed path to reopen it. A previous draft of this bullet accepted a correction that the
   capability "is not dark" on the strength of the client call site alone; tracing the endpoint shows
   the original finding was substantially right.
-- **Provenance remains optional at the type level.** `MarketTradeUpdate.cs:33` is
-  `string? Source = null`. The ingress threading landed; the contract still admits an un-sourced
-  print, so the class of defect can be reintroduced by any new adapter. Making `Source` required is
-  a compile-time gate that no reviewer has to remember.
+- **Provenance is optional at the type level but fail-closed at runtime — this is hardening, not a
+  gap.** `MarketTradeUpdate.cs:33` is still `string? Source = null`, so the *contract* admits an
+  un-sourced print. The *runtime* does not: `TradeDataCollector.OnTrade` checks
+  `MarketDataSources.IsMissing(update.Source)`, publishes an `IntegrityEvent.MissingSource` carrying
+  an explicit `UNKNOWN` sentinel, and **returns before the trade is created or stored**
+  (`TradeDataCollector.cs:117-134`), with
+  `CollectorSourceProvenanceTests.TradeCollector_MissingSource_RejectsWithMissingSourceIntegrityEvent`
+  covering it. An earlier draft said a new adapter could silently reintroduce an un-sourced print;
+  at this shared collector seam it cannot — the print is rejected loudly. Making `Source` required
+  is worth doing as **compile-time hardening of an already fail-closed control**, moving the
+  rejection from run time to build time, but it should be ranked as such rather than as an open
+  governed gap. (Scope note: this verifies the collector seam, which the code documents as the
+  shared singleton serving every active adapter; whether any path writes trades without passing
+  through it is not something this review established either way.)
 - **`InMemoryFundStructureService` is 4,326 lines and persists as one JSON snapshot blob.** The
   Postgres path exists (`PostgresFundStructureService`, `PostgresFundStructureStore`) and the startup
   gate correctly forbids the in-memory profile in Production. But the file-backed loader discards the
@@ -701,7 +711,9 @@ close-management product can tell.
 9. **Close the small governed gaps.** Wire an operator path to *ledger period* reopen — the mounted
    command reopens only the continuity workflow, leaving the period and its closing reversals locked,
    and `LedgerCloseManagementPeriodReopen` (the route that runs the posting-gated path) has no
-   client; make `MarketTradeUpdate.Source` required;
+   client; make `MarketTradeUpdate.Source` required as compile-time hardening — the collector already
+   rejects a sourceless print at run time (`TradeDataCollector.cs:117-134`), so this moves an existing
+   control from run time to build time rather than closing an open hole;
    make the fund-structure snapshot loader fail loudly rather than starting empty. (§9)
 
 ## What is genuinely strong (do not regress it)
@@ -734,8 +746,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Fifteen rounds of automated review challenged **49 claims** across this document. Every one was checked
-against the code, **all 49 held**, and the findings above are the corrected text. Two more — the
+Sixteen rounds of automated review challenged **50 claims** across this document. Every one was checked
+against the code, **all 50 held**, and the findings above are the corrected text. Two more — the
 quality-route count, wrong at 31 in three places, and a refuted remedy still standing in §1 — were
 caught by re-measuring and re-reading rather than by a reviewer, and are recorded with them. Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
@@ -952,6 +964,18 @@ deserves the same standard as verifying an assertion.
 The third row matters for a different reason: it is the second defect found in PR #2824's
 remediation, after the simulation mislabel in round 13. A fix landing mid-review has had two
 problems in two rounds, both found by re-examining the fix rather than the original finding.
+
+**Round 16 — one:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "The contract still admits an un-sourced print, so the class of defect can be reintroduced by any new adapter" | The runtime is fail-closed at the shared ingress seam: `TradeDataCollector.OnTrade` rejects a missing `Source`, publishes an `IntegrityEvent.MissingSource`, and returns **before the trade is created or stored** (`:117-134`), with a dedicated test. The nullable contract is real, but it is compile-time hardening of a control that already holds at run time — not an open governed gap | §9, re-test table |
+
+This one is worth noting for what it says about how the finding was originally framed. The type
+signature was read, the enforcement was not, and the gap between them was filled with the plausible
+inference that a nullable field means an unchecked field. That is the same one-sided reading the
+round-7 lesson names, applied to a type declaration instead of a code path — and it produced a
+finding that was directionally reasonable and materially wrong about the risk.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
