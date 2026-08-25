@@ -779,13 +779,16 @@ close-management product can tell.
    screen; the remedy did not, so following it as written would declare the work complete with
    Accounting still serving the wrong book. Until this lands, the flagship persona still
    cannot open half of the flagship screen. (§1, §2)
-2. **Split the overloaded permissions — and split the replacements too.** Add
-   `ViewLedgerReports`/`ManageLedgerReports` and `ViewCompliance`/`ManageCompliance`; stop using
-   `ManageDirectLending` as the fund-accounting grant and `ManageUsers` as the compliance grant. Note
-   the read/write split on both: a single `ManageCompliance` would re-create the same defect one
-   level down, forcing an auditor who only reads `/audit/extract`, `/controls/attestation`, and
-   `GET /access-reviews` to also hold authority over approval decisions and access-review
-   remediation. **One route is a deliberate exception and must keep `ManageUsers`:**
+2. **Finish the permission split.** *Mostly landed in `bb43e0e6` — see the second addendum.*
+   `ViewLedgerReports` (`UserPermission.cs:111`), `ManageLedgerReports` (`:114`) and
+   `ManageCompliance` (`:118`) **already exist and are wired**, and the ledger routes already apply a
+   real read/write split. Do not re-add them. **What remains is exactly three things:** add
+   `ViewCompliance`, the one flag of the four still missing; re-gate the **three** read-only
+   compliance routes onto it — `audit/extract` (`ComplianceEndpoints.cs:66`),
+   `controls/attestation` (`:70`) and `GET /access-reviews` (`:123`), which all still require
+   `ManageCompliance`, so an auditor who only reads holds authority over approval decisions and
+   access-review remediation; and drop the legacy `ManageDirectLending` acceptance from the ledger
+   routes, where it is still accepted but no longer load-bearing. **One route is a deliberate exception and must keep `ManageUsers`:**
    `POST /api/compliance/access-reviews/run` (`ComplianceEndpoints.cs:101-121`) strips roles from the
    account named in its body and decides dormancy from a caller-supplied `LastUsedAtUtc`, so a caller
    can remove every role from any account, an administrator included. That is user administration
@@ -954,14 +957,14 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Twenty-nine rounds of automated review challenged **82 claims** across this document. Every one was checked
-against the code, **all 82 held**, and the findings above are the corrected text. **Nine more were
+Thirty rounds of automated review challenged **83 claims** across this document. Every one was checked
+against the code, **all 83 held**, and the findings above are the corrected text. **Nine more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
 in the published artifact, and an unresolvable file path in §8, and the artifact's refuted cost-basis remedy — and each is recorded as a
 row below, marked *(self-detected)*.
-The table therefore holds **91 rows: 82 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **92 rows: 83 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1415,6 +1418,20 @@ text that repeats the claim. Knowing the pattern has not been enough to stop com
 mechanical remedy, applied from here: after correcting any claim, grep the whole document for the
 *subject* of that claim — `ManageUsers`, "close readiness", a route count — and read every hit, rather
 than trusting that the challenged location was the only one.
+
+**Round 30 — one, and it is the parallel-text pattern for the fourth consecutive round:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| Improvement #2: "**Add** `ViewLedgerReports`/`ManageLedgerReports` and `ViewCompliance`/`ManageCompliance`" | Three of those four already exist in the merged tree and are wired — `UserPermission.cs:111,114,118` — as this document's own second addendum records. An implementer following the prioritized list would be told to add three permissions that are already there, and would not see that the actual remaining work is `ViewCompliance` alone, plus re-gating three read-only routes and dropping the legacy `ManageDirectLending` acceptance | Improvement #2 — rewritten to current source state |
+
+Round 29 adopted a remedy for exactly this: after correcting a claim, grep the document for the
+*subject* and read every hit. That remedy was applied to `ManageUsers`, to the compliance route count
+and to close readiness — and not to the permission *list* in the same improvement block, one line
+above the sentence that was being edited. The lesson is narrower and more useful than "check parallel
+text": **when an addendum records that the world changed, every recommendation that assumes the old
+world is now wrong, including the ones that were not challenged.** A remediation note is not an
+append-only log; it invalidates instructions elsewhere in the same document.
 
 Both were found by re-measuring §5's existential claim rather than re-reading its prose — the same
 method that caught rounds 9 and 22. The first measurement pass produced **98** dark types and was
