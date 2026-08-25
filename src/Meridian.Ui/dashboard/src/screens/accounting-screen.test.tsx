@@ -22,7 +22,6 @@ import type {
   ExternalGlMappingProfile,
   ClosePeriodPlan,
   DailyValuationScheduleWorkItem,
-  LedgerTrialBalanceLine,
   ReconciliationCalibrationSummary,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
@@ -742,30 +741,6 @@ const corporateActions: CorporateAction[] = [
     exchangeRatio: null,
     subscriptionPricePerShare: null,
     rightsPerShare: null
-  }
-];
-
-const trialBalanceLines: LedgerTrialBalanceLine[] = [
-  {
-    accountName: "Cash",
-    accountType: "Asset",
-    symbol: null,
-    financialAccountId: "acct-cash",
-    balance: 120500,
-    entryCount: 12,
-    security: null,
-    sourceJournalEntryId: "je-cash-1",
-    sourceEventIds: ["evt-cash-1"],
-    approvalIds: ["approval-cash-1"]
-  },
-  {
-    accountName: "Financing payable",
-    accountType: "Liability",
-    symbol: null,
-    financialAccountId: "acct-financing",
-    balance: -500,
-    entryCount: 2,
-    security: null
   }
 ];
 

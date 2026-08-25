@@ -16,8 +16,7 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
-import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
-import { ReconciliationComparisonPanel, TrialBalanceTable } from "@/components/accounting";
+import { ReconciliationComparisonPanel } from "@/components/accounting";
 import {
   approveAndPostDailyValuationBatch,
   approveOperationsContinuityWorkflow,
@@ -42,11 +41,10 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import { accountingToolingBadgeVariant, accountingToolingBorderClass, cashFlowBadgeClass, cashFlowTextClass, reportingBadgeClass } from "@/screens/accounting-screen.styles";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import { CapitalAccountWorkbenchPanel } from "@/screens/accounting-screen.capital-account-workbench-panel";
-import { AccountingPostedLedgerSection, LEDGER_EXPLORER_SAVED_VIEWS } from "@/screens/accounting-screen.posted-ledger-panel";
+import { AccountingPostedLedgerSection } from "@/screens/accounting-screen.posted-ledger-panel";
 import { CorporateActionsPanel } from "@/screens/accounting-screen.corporate-actions-panel";
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
 import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels";
@@ -1664,8 +1662,6 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const resolveDialog = useReconciliationResolveDialogViewModel(reconciliation.resolveBreak);
   const selectedReconciliation = reconciliation.selectedReconciliation;
   const selectedReconciliationDetail = reconciliation.detailView;
-  const selectedReconciliationOpenBreakLabel = `${selectedReconciliation?.openBreakCount ?? 0} open break${selectedReconciliation?.openBreakCount === 1 ? "" : "s"}`;
-  const selectedReconciliationOpenBreakTone = (selectedReconciliation?.openBreakCount ?? 0) === 0 ? "success" : "warning";
   const cashFlow = useAccountingCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useAccountingReportingViewModel(data?.reporting ?? null);
   const configuration = useAccountingConfigurationViewModel(undefined, sectionVisibility.showConfiguration);
@@ -1700,7 +1696,6 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
   const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
   const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
-  const [ledgerExplorer, setLedgerExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const [securityInstrumentExplorer, setSecurityInstrumentExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const securityInstrumentExplorerView = useMemo(() => {
     if (!securityInstrumentExplorer) {
@@ -1863,27 +1858,6 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
     : null;
 
   useEffect(() => {
-    if (!sectionVisibility.showLedgerExplorer) {
-      return;
-    }
-
-    let cancelled = false;
-    void getFinancialRecordExplorer("ledger").then((explorer) => {
-      if (!cancelled) {
-        setLedgerExplorer(explorer);
-      }
-    }).catch(() => {
-      if (!cancelled) {
-        setLedgerExplorer(null);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [sectionVisibility.showLedgerExplorer]);
-
-  useEffect(() => {
     if (!sectionVisibility.showSecurityMaster) {
       return;
     }
@@ -1904,17 +1878,14 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
     };
   }, [sectionVisibility.showSecurityMaster]);
 
+  // Only the security-instrument explorer remains in Accounting; the ledger explorer moved
+  // to the Strategy workspace with the run-scoped ledger it serves.
   async function saveAccountingExplorerView(
-    explorerId: "ledger" | "security-instrument",
+    explorerId: "security-instrument",
     request: FinancialRecordExplorerSavedViewSaveRequestDto
   ) {
     await saveFinancialRecordExplorerView(explorerId, request);
-    const refreshed = await getFinancialRecordExplorer(explorerId);
-    if (explorerId === "ledger") {
-      setLedgerExplorer(refreshed);
-    } else {
-      setSecurityInstrumentExplorer(refreshed);
-    }
+    setSecurityInstrumentExplorer(await getFinancialRecordExplorer(explorerId));
   }
   const reconciliationBreakTableColumns: DenseDataTableColumn<ReconciliationBreakRowViewModel>[] = [
     ...reconciliationBreakColumns,
