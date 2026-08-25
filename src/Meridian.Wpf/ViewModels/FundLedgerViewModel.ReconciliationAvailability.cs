@@ -112,7 +112,7 @@ public sealed partial class FundLedgerViewModel
             var unavailableParts = new List<string>();
             if (snapshot.UnavailableRunCount > 0)
             {
-                unavailableParts.Add($"{snapshot.UnavailableRunCount:N0} run detail read(s) failed");
+                unavailableParts.Add($"{snapshot.UnavailableRunCount:N0} detail read(s) failed");
             }
 
             if (!snapshot.BreakQueueReadAvailable)
