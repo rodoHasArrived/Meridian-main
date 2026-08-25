@@ -453,6 +453,36 @@ describe("useAccountingPostedLedgerViewModel", () => {
     expect(result.current.journalLines).toHaveLength(0);
   });
 
+  it("keeps the ledger on screen when the book already selected is chosen again", async () => {
+    // Re-selecting the current book is not a scope change, but the clearing ran unconditionally
+    // while setSelectedBookId bailed out on the unchanged id — so the period effect never re-ran
+    // and the panel stayed blank until a different book was picked.
+    const services = makeServices({
+      getBooks: vi.fn().mockResolvedValue([
+        makeBook(),
+        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Feeder Fund" })
+      ]),
+      getTrialBalance: vi.fn().mockResolvedValue([makeLine()])
+    });
+    const { result } = renderHook(() => useAccountingPostedLedgerViewModel("ledger", services));
+
+    await waitFor(() => {
+      expect(result.current.view.trialBalance.hasRows).toBe(true);
+    });
+    const selectedBook = result.current.view.bookOptions.find((book) => book.isSelected);
+    expect(selectedBook).toBeDefined();
+    const periodCount = result.current.view.periodSelector.options.length;
+    expect(periodCount).toBeGreaterThan(0);
+
+    act(() => {
+      result.current.selectBook(selectedBook!.id);
+    });
+
+    expect(result.current.view.bookOptions.find((book) => book.isSelected)?.id).toBe(selectedBook!.id);
+    expect(result.current.view.periodSelector.options).toHaveLength(periodCount);
+    expect(result.current.view.trialBalance.hasRows).toBe(true);
+  });
+
   it("leaves the posted journal unrequested for a consumer that does not render it", async () => {
     // AccountingPostedLedgerSection destructures only `view`. The journal route returns a
     // period's entries in full, so fetching it for that panel downloads a production month's

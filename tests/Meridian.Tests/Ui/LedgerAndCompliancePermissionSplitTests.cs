@@ -326,7 +326,8 @@ public sealed class LedgerAndCompliancePermissionSplitTests
         (string Method, string Pattern, EndpointAuthorizationMetadata Authorization) route)
         => !route.Pattern.StartsWith(PrivateCapitalPrefix, StringComparison.Ordinal)
            && !route.Pattern.Contains("manual-journal", StringComparison.OrdinalIgnoreCase)
-           && !route.Pattern.Contains("journal-entry-workbench", StringComparison.OrdinalIgnoreCase);
+           && !route.Pattern.Contains("journal-entry-workbench", StringComparison.OrdinalIgnoreCase)
+           && !route.Pattern.Contains("accounting-configuration", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// The ledger-report grant buys the trial balance, P&amp;L, periods and posted entries — not the
@@ -359,30 +360,47 @@ public sealed class LedgerAndCompliancePermissionSplitTests
 
 
     /// <summary>
-    /// The manual-journal workbench is pre-posting workflow, not a ledger report: unposted drafts
-    /// with full lines, evidence links, preparer and approver identities, validation issues,
-    /// lifecycle history and the accounting audit trail. The ledger-report grant buys the trial
-    /// balance, P&amp;L, periods and posted entries, so it must not reach this route.
+    /// The manual-journal workbench and the accounting-configuration workspace are both
+    /// pre-posting workflow, not ledger reports: unposted drafts with full lines, the chart of
+    /// accounts, journal templates, posting rules and their tests, promotion requests with actor
+    /// identities, and the configuration audit trail. The ledger-report grant buys the trial
+    /// balance, P&amp;L, periods and posted entries, so it must not reach either. Their mutations
+    /// keep ManageLedgerReports, which the write-side test above already separates from the
+    /// read-only grant.
     /// </summary>
     [Fact]
-    public async Task ManualJournalWorkbench_IsNotReachableWithTheLedgerReportGrant()
+    public async Task PrePostingWorkflowRoutes_AreNotReachableWithTheLedgerReportGrant()
     {
         await using var app = await CreateLedgerAndComplianceAppAsync(UserPermission.ViewLedgerReports);
 
         var workbench = DeclaredRoutes(app, "/api/ledger")
-            .Where(route => route.Pattern.Contains("journal-entry-workbench", StringComparison.OrdinalIgnoreCase))
+            .Where(route => route.Pattern.Contains("journal-entry-workbench", StringComparison.OrdinalIgnoreCase)
+                            || route.Pattern.Contains("accounting-configuration", StringComparison.OrdinalIgnoreCase))
             .Where(route => route.Method == "GET")
             .ToList();
-        workbench.Should().NotBeEmpty("the manual-journal workbench must map a read route");
+        workbench.Should().HaveCountGreaterThanOrEqualTo(
+            2,
+            "both the manual-journal workbench and the accounting-configuration workspace map read routes");
 
         foreach (var route in workbench)
         {
             route.Authorization.Permissions.Should().NotContain(
                 UserPermission.ViewLedgerReports,
                 $"{route.Method} {route.Pattern} exposes pre-posting workflow, not a ledger report");
+        }
+
+        // The workbench goes further: it is the manual-journal lane's own surface, so it keeps the
+        // direct-lending grant alone and takes neither ledger-report permission. The configuration
+        // workspace is reachable with ManageLedgerReports, matching its own mutations.
+        var manualWorkbench = workbench
+            .Where(route => route.Pattern.Contains("journal-entry-workbench", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        manualWorkbench.Should().NotBeEmpty();
+        foreach (var route in manualWorkbench)
+        {
             route.Authorization.Permissions.Should().NotContain(
                 UserPermission.ManageLedgerReports,
-                $"{route.Method} {route.Pattern} exposes pre-posting workflow, not a ledger report");
+                $"{route.Method} {route.Pattern} is the manual-journal lane's own surface");
         }
     }
 

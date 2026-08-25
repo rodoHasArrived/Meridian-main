@@ -112,26 +112,37 @@ public sealed class PostedLedgerViewModelTests
     [Fact]
     public async Task RefreshAsync_KeepsTheOperatorsSelectedBook_RatherThanReturningToTheDefault()
     {
-        var periodId = Guid.NewGuid();
+        var masterPeriodId = Guid.NewGuid();
+        var feederPeriodId = Guid.NewGuid();
         var client = new FakeLedgerReportsApiClient
         {
+            // Named so the master book is the one an initial load lands on: books are ordered by
+            // display name, so a feeder that sorted first would make the switch below a no-op and
+            // the test would pass without ever leaving the default.
             Books = ApiResponse<List<LedgerBookDto>>.Ok(
-                [Book(DefaultBookId), Book(FeederBookId, "Feeder Fund", "EUR")]),
-            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(periodId, ledgerBookId: FeederBookId)]),
+                [Book(DefaultBookId, "Alpha Master Fund"), Book(FeederBookId, "Beta Feeder Fund", "EUR")]),
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([
+                Period(masterPeriodId),
+                Period(feederPeriodId, periodNo: 6, label: "June 2026", ledgerBookId: FeederBookId)
+            ]),
             TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok([Line("Cash", 100m)]),
-            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(periodId))
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(masterPeriodId))
         };
 
         using var viewModel = new PostedLedgerViewModel(client);
         await viewModel.RefreshAsync();
+        viewModel.SelectedBookId.Should().Be(DefaultBookId, "the initial load takes the first book in display order");
+
         await viewModel.SelectBookAsync(FeederBookId);
         viewModel.SelectedBookId.Should().Be(FeederBookId);
+        viewModel.SelectedPeriodId.Should().Be(feederPeriodId);
 
         // Refresh is a reload of what is on screen, not a reset of the subject under review.
         await viewModel.RefreshAsync();
 
         viewModel.SelectedBookId.Should().Be(FeederBookId);
-        viewModel.SelectedBookLabel.Should().Be("Feeder Fund");
+        viewModel.SelectedBookLabel.Should().Be("Beta Feeder Fund");
+        viewModel.SelectedPeriodId.Should().Be(feederPeriodId);
     }
 
     [Fact]
@@ -140,8 +151,11 @@ public sealed class PostedLedgerViewModelTests
         var periodId = Guid.NewGuid();
         var client = new FakeLedgerReportsApiClient
         {
+            // The period below belongs to the master book, so the master book has to be the one
+            // the initial load selects -- periods are filtered to the selected book, and a feeder
+            // that sorted first would leave the first load with nothing to show.
             Books = ApiResponse<List<LedgerBookDto>>.Ok(
-                [Book(DefaultBookId), Book(FeederBookId, "Feeder Fund", "EUR")]),
+                [Book(DefaultBookId, "Alpha Master Fund"), Book(FeederBookId, "Beta Feeder Fund", "EUR")]),
             Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(periodId)]),
             TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok([Line("Cash", 100m)]),
             Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(periodId))
@@ -149,6 +163,7 @@ public sealed class PostedLedgerViewModelTests
 
         using var viewModel = new PostedLedgerViewModel(client);
         await viewModel.RefreshAsync();
+        viewModel.SelectedBookId.Should().Be(DefaultBookId);
         viewModel.Bases.Should().NotBeEmpty("the first book must load for this to test the switch");
 
         // No periods for the incoming book: the picker and its cached lines must not survive the

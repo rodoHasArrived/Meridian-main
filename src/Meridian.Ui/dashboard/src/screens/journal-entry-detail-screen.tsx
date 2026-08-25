@@ -78,19 +78,20 @@ export function JournalEntryDetailScreen() {
           const matched = entries.find((entry) => entry.journalEntryId === journalEntryId) ?? null;
           setPostedEntry(matched);
           setJournalLine(matched ? toLedgerJournalLine(matched) : null);
-          return matched;
-        })
-        .then((matched) => {
-          // Best-effort: an unresolvable book leaves the amounts unlabelled rather than
-          // mislabelled, and must not fail the entry the operator asked for.
-          if (!matched?.ledgerBookId) return;
-          return getLedgerBooks()
-            .then((books) => {
-              if (cancelled) return;
-              const book = books.find((candidate) => candidate.ledgerBookId === matched.ledgerBookId);
-              setPostedCurrency(book?.baseCurrency ?? null);
-            })
-            .catch(() => undefined);
+
+          // Fire-and-forget, deliberately not returned into this chain. The currency only decides
+          // how the amounts are labelled, so awaiting it here would hold `loading` — and therefore
+          // every piece of posting detail already in hand — behind a books request that may be
+          // slow or never settle.
+          if (matched?.ledgerBookId) {
+            void getLedgerBooks()
+              .then((books) => {
+                if (cancelled) return;
+                const book = books.find((candidate) => candidate.ledgerBookId === matched.ledgerBookId);
+                setPostedCurrency(book?.baseCurrency ?? null);
+              })
+              .catch(() => undefined);
+          }
         })
         .catch(() => {
           if (!cancelled) {

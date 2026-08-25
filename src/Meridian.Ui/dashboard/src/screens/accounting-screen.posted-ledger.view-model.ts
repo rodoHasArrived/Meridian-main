@@ -720,6 +720,13 @@ export function useAccountingPostedLedgerViewModel(
   );
 
   const selectBook = useCallback((ledgerBookId: string) => {
+    // Re-selecting the book already on screen is not a scope change. setSelectedBookId would be a
+    // no-op for an unchanged id, so the period effect would never re-run, while the clearing below
+    // had already emptied the ledger -- leaving the panel blank until another book was chosen.
+    if (ledgerBookId === selectedBookId) {
+      return;
+    }
+
     setSelectedBookId(ledgerBookId);
     // The incoming book's periods are a different set entirely; keeping the outgoing selection
     // would request a period that does not belong to it.
@@ -734,7 +741,7 @@ export function useAccountingPostedLedgerViewModel(
     setJournalLines([]);
     setJournalErrorText(null);
     setSelectedRowId(null);
-  }, []);
+  }, [selectedBookId]);
 
   const view = useMemo(
     () => buildAccountingPostedLedgerViewState({
