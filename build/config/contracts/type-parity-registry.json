@@ -46,6 +46,12 @@
       "typescript_interface": "CanonicalSymbolResolutionMismatchResponse"
     },
     {
+      "csharp_file": "src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs",
+      "csharp_record": "HistoricalBarPoint",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/market-data.ts",
+      "typescript_interface": "HistoricalBarPoint"
+    },
+    {
       "csharp_file": "src/Meridian.Contracts/Api/LiveDataModels.cs",
       "csharp_record": "OrderBookLevelDto",
       "typescript_file": "src/Meridian.Ui/dashboard/src/types/market-data.ts",

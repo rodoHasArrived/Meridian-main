@@ -215,7 +215,9 @@ function buildFixtureHistoricalBars(symbol: string, path: string): HistoricalBar
       close,
       volume,
       vwap: roundMarketPrice((open + high + low + close) / 4),
-      tradeCount: 40 + index * 3
+      tradeCount: 40 + index * 3,
+      source: "fixture",
+      isAdjusted: null
     };
   });
 
@@ -230,7 +232,8 @@ function buildFixtureHistoricalBars(symbol: string, path: string): HistoricalBar
     filesProcessed: 1,
     totalFiles: 1,
     queryTimeMs: 3,
-    bars
+    bars,
+    sources: ["fixture"]
   };
 }
 
