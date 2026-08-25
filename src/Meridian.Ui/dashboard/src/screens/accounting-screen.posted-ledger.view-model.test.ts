@@ -11,6 +11,7 @@ import {
   type AccountingPostedLedgerServices
 } from "@/screens/accounting-screen.posted-ledger.view-model";
 import type {
+  LedgerBook,
   LedgerPeriod,
   LedgerPeriodPnlSummary,
   LedgerPeriodTrialBalanceLine
@@ -68,8 +69,26 @@ function makePnl(overrides: Partial<LedgerPeriodPnlSummary> = {}): LedgerPeriodP
   };
 }
 
+function makeBook(overrides: Partial<LedgerBook> = {}): LedgerBook {
+  return {
+    ledgerBookId: "00000000-0000-0000-0000-0000000000aa",
+    fundProfileId: "fund-alpha",
+    fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+    fundStructureNodeKind: "Fund",
+    displayName: "Master Fund",
+    baseCurrency: "USD",
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-01-01T00:00:00Z",
+    accountingBasis: "Primary",
+    accountingPolicyId: "legacy-v1",
+    accountingPolicyVersion: "legacy-v1",
+    ...overrides
+  };
+}
+
 function makeServices(overrides: Partial<AccountingPostedLedgerServices> = {}): AccountingPostedLedgerServices {
   return {
+    getBooks: vi.fn().mockResolvedValue([makeBook()]),
     getPeriods: vi.fn().mockResolvedValue([makePeriod()]),
     getTrialBalance: vi.fn().mockResolvedValue([makeLine()]),
     getPnlSummary: vi.fn().mockResolvedValue(makePnl()),
@@ -143,7 +162,8 @@ describe("buildAccountingPostedLedgerViewState", () => {
       pnlError: null,
       selectedRowId: null,
       selectedBasis: "Primary",
-      accountFilter: ""
+      accountFilter: "",
+      selectedBookLabel: "Master Fund"
     });
 
     expect(view.trialBalance.description).toContain("the posted journal for period July 2026");
@@ -171,7 +191,8 @@ describe("buildAccountingPostedLedgerViewState", () => {
       pnlError: null,
       selectedRowId: null,
       selectedBasis: "Primary",
-      accountFilter: ""
+      accountFilter: "",
+      selectedBookLabel: "Master Fund"
     });
 
     expect(view.periodSelector.emptyText).toContain("No ledger periods exist yet");
@@ -311,5 +332,24 @@ describe("useAccountingPostedLedgerViewModel", () => {
     expect(result.current.view.trialBalance.hasRows).toBe(false);
     expect(result.current.view.trialBalance.state).toBe("loading");
     expect(result.current.journalLines).toHaveLength(0);
+  });
+  it("scopes the period request to a ledger book instead of spanning every book", async () => {
+    // Unscoped, the period list spans every book and the default lands on whichever book owns
+    // the globally latest closed period — shown under this panel's scope as if it were the only one.
+    const services = makeServices({
+      getBooks: vi.fn().mockResolvedValue([makeBook({ displayName: "Feeder Fund" })])
+    });
+    const { result } = renderHook(() => useAccountingPostedLedgerViewModel("ledger", services));
+
+    await waitFor(() => {
+      expect(services.getPeriods).toHaveBeenCalled();
+    });
+
+    expect(services.getPeriods).toHaveBeenCalledWith({
+      ledgerBookId: "00000000-0000-0000-0000-0000000000aa"
+    });
+    await waitFor(() => {
+      expect(result.current.view.selectedBookLabel).toBe("Feeder Fund");
+    });
   });
 });

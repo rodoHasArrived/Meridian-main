@@ -2868,9 +2868,80 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         The strategy-run ledger explorer moved to the Strategy workspace
         (/strategy/run-ledger). A run's simulated ledger is a run artifact; keeping it here
         put it under the name operators read as the fund's book of record. The Accounting
-        ledger surface above now renders the posted journal. Reporting exports stayed — they
-        are accounting handoff, not run evidence, and only shared the removed container.
+        ledger surface above now renders the posted journal. Reporting exports and Transaction
+        Lab stayed — both are accounting work, not run evidence, and only shared the removed
+        container. Transaction Lab in particular previews the accounting effect of a proposed
+        transaction, and this is its only entry point anywhere in the workstation.
       */}
+      {sectionVisibility.showLedgerExplorer ? (
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle>{reconciliation.transactionLabView.title}</CardTitle>
+            <CardDescription>{reconciliation.transactionLabView.description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-start justify-between gap-3">
+              <p
+                role={reconciliation.transactionLabView.statusRole}
+                className={cn(
+                  "flex-1 rounded-md border px-3 py-2 text-sm",
+                  reconciliation.transactionLabView.statusTone === "default" ? "border-border/70 bg-secondary/25 text-muted-foreground" : "",
+                  reconciliation.transactionLabView.statusTone === "success" ? "border-success/30 bg-success/10 text-success" : "",
+                  reconciliation.transactionLabView.statusTone === "warning" ? "border-warning/30 bg-warning/10 text-warning" : "",
+                  reconciliation.transactionLabView.statusTone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : ""
+                )}
+              >
+                {reconciliation.transactionLabView.statusText}
+              </p>
+              <Badge variant={reconciliation.transactionLabView.statusTone === "default" ? "outline" : reconciliation.transactionLabView.statusTone} dot>
+                {reconciliation.transactionLabView.requestSummaryLabel}
+              </Badge>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+              <div className="rounded-md border border-border/70 bg-background px-3 py-2">
+                <span className="block text-muted-foreground">Expected projection</span>
+                <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.journalLineCountLabel}</span>
+              </div>
+              <div className="rounded-md border border-border/70 bg-background px-3 py-2">
+                <span className="block text-muted-foreground">Projected accounting effect</span>
+                <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.ledgerImpactLabel}</span>
+              </div>
+              <div className="rounded-md border border-border/70 bg-background px-3 py-2">
+                <span className="block text-muted-foreground">Reconciliation</span>
+                <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.reconciliationLabel}</span>
+              </div>
+              <div className="rounded-md border border-border/70 bg-background px-3 py-2">
+                <span className="block text-muted-foreground">Evidence</span>
+                <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.evidenceLabel}</span>
+              </div>
+            </div>
+            {reconciliation.transactionLabView.impactRows.length > 0 ? (
+              <div className="mt-3 space-y-2" aria-label="Transaction Lab projected trial-balance effect">
+                {reconciliation.transactionLabView.impactRows.map((row) => (
+                  <div key={row.id} className="flex items-center justify-between gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm">
+                    <span className="min-w-0 truncate text-foreground">{row.label}</span>
+                    <Badge variant={row.tone === "default" ? "outline" : row.tone}>{row.value}</Badge>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-3 w-full"
+              disabled={!reconciliation.transactionLabView.canPreview}
+              disabledReason={reconciliation.transactionLabView.disabledReason}
+              busy={reconciliation.transactionLabView.busy}
+              busyLabel={reconciliation.transactionLabView.previewButtonLabel}
+              aria-label={reconciliation.transactionLabView.previewButtonAriaLabel}
+              onClick={() => void reconciliation.runTransactionLabPreview()}
+            >
+              {reconciliation.transactionLabView.previewButtonLabel}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
+
       {sectionVisibility.showLedgerExplorer ? (
         <Card className="panel-surface">
           <CardHeader>

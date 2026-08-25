@@ -43,6 +43,11 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
     // The book's declared base currency, not the operator's locale. Empty until a book loads,
     // which formats amounts as bare numbers rather than guessing a symbol.
     private string _baseCurrency = string.Empty;
+    // The period's posted lines as returned, retained so switching basis re-projects without a
+    // refetch. All bases arrive together; they are different projections of the same accounts.
+    private IReadOnlyList<LedgerPeriodTrialBalanceLineDto> _postedLines = [];
+    private AccountingBasisKindDto _selectedBasis = AccountingBasisKindDto.Primary;
+    private PostedLedgerBasisRow? _selectedBasisRow;
 
     public PostedLedgerViewModel(ILedgerReportsApiClient? client = null)
     {
@@ -67,6 +72,9 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
     public IAsyncRelayCommand<PostedLedgerBookRow> SelectBookCommand { get; }
 
     public ObservableCollection<PostedLedgerBookRow> Books { get; } = [];
+
+    /// <summary>The accounting bases this period actually carries; empty until a period loads.</summary>
+    public ObservableCollection<PostedLedgerBasisRow> Bases { get; } = [];
 
     public ObservableCollection<PostedLedgerPeriodRow> Periods { get; } = [];
 
@@ -161,6 +169,37 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
     {
         get => _baseCurrency;
         private set => SetProperty(ref _baseCurrency, value);
+    }
+
+    public AccountingBasisKindDto SelectedBasis
+    {
+        get => _selectedBasis;
+        private set => SetProperty(ref _selectedBasis, value);
+    }
+
+    /// <summary>
+    /// Two-way bound to the basis picker. Stacking Primary alongside a GAAP or tax projection
+    /// puts the same account on screen twice and sums both into the balance check, so exactly one
+    /// basis is shown at a time.
+    /// </summary>
+    public PostedLedgerBasisRow? SelectedBasisRow
+    {
+        get => _selectedBasisRow;
+        set
+        {
+            if (!SetProperty(ref _selectedBasisRow, value))
+            {
+                return;
+            }
+
+            if (value is null || _isDisposed || value.Basis == SelectedBasis)
+            {
+                return;
+            }
+
+            SelectedBasis = value.Basis;
+            ProjectTrialBalance();
+        }
     }
 
     public string StatusText
@@ -483,6 +522,8 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
     private void ApplyTrialBalance(ApiResponse<List<LedgerPeriodTrialBalanceLineDto>> response)
     {
         TrialBalance.Clear();
+        _postedLines = [];
+        Bases.Clear();
 
         if (!response.Success || response.Data is null)
         {
@@ -502,7 +543,49 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
             return;
         }
 
-        foreach (var line in response.Data)
+        _postedLines = response.Data;
+        ApplyBases(response.Data);
+        SelectedBasis = PostedLedgerProjection.ResolveDefaultBasis(response.Data);
+        SyncSelectedBasisRow();
+        ProjectTrialBalance();
+    }
+
+    private void ApplyBases(IReadOnlyList<LedgerPeriodTrialBalanceLineDto> lines)
+    {
+        Bases.Clear();
+        foreach (var basis in PostedLedgerProjection.AvailableBases(lines))
+        {
+            Bases.Add(new PostedLedgerBasisRow(basis, PostedLedgerProjection.DescribeBasis(basis)));
+        }
+    }
+
+    private void SyncSelectedBasisRow()
+    {
+        var row = Bases.FirstOrDefault(candidate => candidate.Basis == SelectedBasis);
+        foreach (var candidate in Bases)
+        {
+            candidate.IsSelected = candidate.Basis == SelectedBasis;
+        }
+
+        // Backing field: the property setter would re-enter and re-project.
+        if (!ReferenceEquals(_selectedBasisRow, row))
+        {
+            _selectedBasisRow = row;
+            OnPropertyChanged(nameof(SelectedBasisRow));
+        }
+    }
+
+    /// <summary>
+    /// Renders exactly the selected basis. The balance check sums the same filtered set: summing
+    /// every basis together would add one account's Primary and GAAP projections and report a
+    /// variance that does not exist.
+    /// </summary>
+    private void ProjectTrialBalance()
+    {
+        var lines = PostedLedgerProjection.FilterByBasis(_postedLines, SelectedBasis);
+
+        TrialBalance.Clear();
+        foreach (var line in lines)
         {
             TrialBalance.Add(new PostedLedgerTrialBalanceRow(
                 line.AccountName,
@@ -512,11 +595,12 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
                 line.EntryCount));
         }
 
-        IsOutOfBalance = PostedLedgerProjection.IsOutOfBalance(response.Data);
-        var variance = PostedLedgerProjection.SumBalances(response.Data);
+        IsOutOfBalance = PostedLedgerProjection.IsOutOfBalance(lines);
+        var variance = PostedLedgerProjection.SumBalances(lines);
+        var basisLabel = PostedLedgerProjection.DescribeBasis(SelectedBasis);
         BalanceSummaryText = IsOutOfBalance
-            ? $"{TrialBalance.Count} accounts · out by {PostedLedgerProjection.FormatAmount(Math.Abs(variance), BaseCurrency)}"
-            : $"{TrialBalance.Count} accounts · in balance";
+            ? $"{basisLabel} · {TrialBalance.Count} accounts · out by {PostedLedgerProjection.FormatAmount(Math.Abs(variance), BaseCurrency)}"
+            : $"{basisLabel} · {TrialBalance.Count} accounts · in balance";
     }
 
     private void ApplyPnl(ApiResponse<LedgerPeriodPnlSummaryDto> response)
@@ -578,6 +662,28 @@ public sealed class PostedLedgerBookRow : BindableBase
     public string Label { get; }
 
     public string BaseCurrency { get; }
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
+}
+
+/// <summary>One accounting basis a period carries, for the basis picker.</summary>
+public sealed class PostedLedgerBasisRow : BindableBase
+{
+    private bool _isSelected;
+
+    public PostedLedgerBasisRow(AccountingBasisKindDto basis, string label)
+    {
+        Basis = basis;
+        Label = label;
+    }
+
+    public AccountingBasisKindDto Basis { get; }
+
+    public string Label { get; }
 
     public bool IsSelected
     {

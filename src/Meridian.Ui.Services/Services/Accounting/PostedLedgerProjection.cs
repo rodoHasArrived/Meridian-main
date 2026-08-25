@@ -166,4 +166,47 @@ public static class PostedLedgerProjection
         var code = currencyCode?.Trim();
         return string.IsNullOrEmpty(code) ? amount : $"{code} {amount}";
     }
+
+    /// <summary>
+    /// The accounting bases actually present in a period's posted lines, in enum order. A closed
+    /// period can carry a Primary projection alongside GAAP, tax or statutory ones; they are
+    /// different books of basis over the same accounts, so a surface must show one at a time
+    /// rather than stacking them into duplicate rows and a meaningless total.
+    /// </summary>
+    public static IReadOnlyList<AccountingBasisKindDto> AvailableBases(
+        IEnumerable<LedgerPeriodTrialBalanceLineDto>? lines)
+        => lines?
+            .Select(line => line.AccountingBasis)
+            .Distinct()
+            .OrderBy(basis => basis)
+            .ToList() ?? [];
+
+    /// <summary>
+    /// The basis a freshly loaded period should show: Primary when present, else the first
+    /// available. Defaulting to Primary unconditionally would render a GAAP-only period empty.
+    /// </summary>
+    public static AccountingBasisKindDto ResolveDefaultBasis(
+        IEnumerable<LedgerPeriodTrialBalanceLineDto>? lines)
+    {
+        var available = AvailableBases(lines);
+        if (available.Count == 0)
+        {
+            return AccountingBasisKindDto.Primary;
+        }
+
+        return available.Contains(AccountingBasisKindDto.Primary)
+            ? AccountingBasisKindDto.Primary
+            : available[0];
+    }
+
+    /// <summary>Human-readable basis name for a picker.</summary>
+    public static string DescribeBasis(AccountingBasisKindDto basis) => basis switch
+    {
+        AccountingBasisKindDto.Primary => "Primary",
+        AccountingBasisKindDto.Gaap => "GAAP",
+        AccountingBasisKindDto.Cash => "Cash",
+        AccountingBasisKindDto.Tax => "Tax",
+        AccountingBasisKindDto.Statutory => "Statutory",
+        _ => basis.ToString()
+    };
 }

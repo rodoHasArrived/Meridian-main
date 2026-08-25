@@ -1,11 +1,13 @@
 import { apiGetJson } from "@/lib/api";
 import {
+  WORKSTATION_API_ENDPOINTS,
   ledgerPeriodJournalEntriesEndpoint,
   ledgerPeriodPnlSummaryEndpoint,
   ledgerPeriodsEndpoint,
   ledgerPeriodTrialBalanceEndpoint
 } from "@/lib/workstation-endpoints";
 import type {
+  LedgerBook,
   LedgerPeriod,
   LedgerPeriodPnlSummary,
   LedgerPeriodTrialBalanceLine,
@@ -17,6 +19,10 @@ import type {
  * record, scoped by ledger period. Kept out of `lib/api.ts` per the file-size
  * ratchet; follows the `reporting-governance-api.ts` domain-module pattern.
  */
+
+export function getLedgerBooks() {
+  return apiGetJson<LedgerBook[]>(WORKSTATION_API_ENDPOINTS.ledgerBooks);
+}
 
 export function getLedgerPeriods(query: { ledgerBookId?: string | null; status?: string | null } = {}) {
   return apiGetJson<LedgerPeriod[]>(ledgerPeriodsEndpoint(query));

@@ -288,4 +288,62 @@ public sealed class PostedLedgerProjectionTests
         PostedLedgerProjection.FormatAmount(1250.5m, null).Should().Be("1,250.50");
         PostedLedgerProjection.FormatAmount(1250.5m, "  ").Should().Be("1,250.50");
     }
+
+    [Fact]
+    public void AvailableBases_ListsEachBasisPresentOnceInEnumOrder()
+    {
+        var lines = new[]
+        {
+            Line(basis: AccountingBasisKindDto.Gaap),
+            Line(basis: AccountingBasisKindDto.Primary),
+            Line(basis: AccountingBasisKindDto.Gaap)
+        };
+
+        PostedLedgerProjection.AvailableBases(lines)
+            .Should().ContainInOrder(AccountingBasisKindDto.Primary, AccountingBasisKindDto.Gaap)
+            .And.HaveCount(2);
+    }
+
+    [Fact]
+    public void ResolveDefaultBasis_PrefersPrimaryWhenPresent()
+        => PostedLedgerProjection.ResolveDefaultBasis([
+            Line(basis: AccountingBasisKindDto.Tax),
+            Line(basis: AccountingBasisKindDto.Primary)
+        ]).Should().Be(AccountingBasisKindDto.Primary);
+
+    /// <summary>
+    /// Defaulting to Primary unconditionally renders a period that has no Primary projection as
+    /// though it had no trial balance at all.
+    /// </summary>
+    [Fact]
+    public void ResolveDefaultBasis_FallsBackToTheFirstAvailableBasis()
+        => PostedLedgerProjection.ResolveDefaultBasis([
+            Line(basis: AccountingBasisKindDto.Tax),
+            Line(basis: AccountingBasisKindDto.Gaap)
+        ]).Should().Be(AccountingBasisKindDto.Gaap);
+
+    [Fact]
+    public void ResolveDefaultBasis_WithNoLines_IsPrimary()
+        => PostedLedgerProjection.ResolveDefaultBasis([]).Should().Be(AccountingBasisKindDto.Primary);
+
+    /// <summary>
+    /// A period's Primary and GAAP projections each tie on their own. Summing them together
+    /// reports a variance that does not exist in either book.
+    /// </summary>
+    [Fact]
+    public void FilteringByBasisBeforeTheBalanceCheckAvoidsAFalseVariance()
+    {
+        var lines = new[]
+        {
+            Line(accountName: "Cash", balance: 100m, basis: AccountingBasisKindDto.Primary),
+            Line(accountName: "Payable", balance: -100m, basis: AccountingBasisKindDto.Primary),
+            Line(accountName: "Cash", balance: 90m, basis: AccountingBasisKindDto.Gaap),
+            Line(accountName: "Payable", balance: -90m, basis: AccountingBasisKindDto.Gaap)
+        };
+
+        PostedLedgerProjection.IsOutOfBalance(
+            PostedLedgerProjection.FilterByBasis(lines, AccountingBasisKindDto.Primary)).Should().BeFalse();
+        PostedLedgerProjection.IsOutOfBalance(
+            PostedLedgerProjection.FilterByBasis(lines, AccountingBasisKindDto.Gaap)).Should().BeFalse();
+    }
 }

@@ -158,7 +158,14 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
     }
   ];
 
-  const trialBalanceScope = `${entityScope} · ${ledgerBook} · ${selectedPeriodLabel ?? "No period selected"}`;
+  // A production month's posted journal can carry a very large number of entries, and the
+  // route returns them all. Bound what is rendered so the panel cannot lock the tab, and say
+  // plainly how many are not shown rather than presenting a truncated list as the whole book.
+  const journalRenderLimit = 250;
+  const visibleJournalRows = journalEvidence.rows.slice(0, journalRenderLimit);
+  const hiddenJournalRowCount = journalEvidence.rows.length - visibleJournalRows.length;
+
+  const trialBalanceScope = `${entityScope} · ${postedLedger.view.selectedBookLabel ?? ledgerBook} · ${selectedPeriodLabel ?? "No period selected"}`;
 
   return (
     <ScreenLayout
@@ -385,7 +392,7 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
             <StatusBanner role="alert" tone="warning" title="Journal lineage unavailable" detail={journalErrorText} />
           ) : journalEvidence.hasRows ? (
             <ul className="space-y-2" aria-label={journalEvidence.title}>
-              {journalEvidence.rows.map((row) => (
+              {visibleJournalRows.map((row) => (
                 <li key={row.journalEntryId} className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <Link
@@ -402,6 +409,12 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
                   <p className="mt-1 text-xs text-muted-foreground">{row.timestampLabel} - {row.lineCountLabel}</p>
                 </li>
               ))}
+              {hiddenJournalRowCount > 0 ? (
+                <li className="rounded-md border border-dashed border-border/70 px-3 py-2 text-xs text-muted-foreground">
+                  Showing the first {journalRenderLimit} of {journalEvidence.rows.length} posted entries. Open the
+                  journal-entry surfaces for the full period.
+                </li>
+              ) : null}
             </ul>
           ) : (
             <p className="text-sm text-muted-foreground">{journalEvidence.emptyText}</p>

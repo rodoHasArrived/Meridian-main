@@ -5,6 +5,7 @@ import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "
 import { TrialBalanceTable } from "@/components/accounting";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormRow } from "@/components/ui/form";
 import { Select } from "@/components/ui/select";
@@ -16,7 +17,13 @@ import {
   buildAccountingLedgerJournalEvidenceViewState,
   buildAccountingTrialBalanceViewState
 } from "@/screens/accounting-screen.view-model";
-import type { FinancialRecordExplorerDto, LedgerJournalLine, LedgerTrialBalanceLine } from "@/types";
+import { DEFAULT_ACCOUNTING_BASIS } from "@/screens/accounting-screen.view-model.shared";
+import type {
+  AccountingBasisKind,
+  FinancialRecordExplorerDto,
+  LedgerJournalLine,
+  LedgerTrialBalanceLine
+} from "@/types";
 
 /**
  * The strategy run's ledger — a simulation artifact, not the fund's book.
@@ -38,6 +45,9 @@ export function StrategyRunLedgerScreen() {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [journalLines, setJournalLines] = useState<LedgerJournalLine[]>([]);
   const [journalErrorText, setJournalErrorText] = useState<string | null>(null);
+  // Without this the builder defaults to Primary and filters every other projection out, so a
+  // GAAP- or tax-only run reads as having no trial balance at all.
+  const [selectedBasis, setSelectedBasis] = useState<AccountingBasisKind>(DEFAULT_ACCOUNTING_BASIS);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,6 +82,11 @@ export function StrategyRunLedgerScreen() {
     }
 
     let cancelled = false;
+    // Drop the outgoing run's evidence first. The labels below recompute from runId
+    // immediately and the trial-balance builder counts retained rows as "ready" even while
+    // loading, so keeping them would show run A's ledger and journal as run B's.
+    setTrialBalanceRows([]);
+    setJournalLines([]);
     setTrialBalanceLoading(true);
     setTrialBalanceError(null);
     setJournalErrorText(null);
@@ -117,10 +132,11 @@ export function StrategyRunLedgerScreen() {
       runId,
       rows: trialBalanceRows,
       selectedRowId,
+      selectedBasis,
       loading: trialBalanceLoading,
       error: trialBalanceError
     }),
-    [runId, selectedRowId, trialBalanceError, trialBalanceLoading, trialBalanceRows]
+    [runId, selectedBasis, selectedRowId, trialBalanceError, trialBalanceLoading, trialBalanceRows]
   );
 
   const journalEvidence = useMemo(
@@ -198,6 +214,24 @@ export function StrategyRunLedgerScreen() {
           </CardHeader>
           <CardContent>
             <span className="sr-only" aria-live="polite">{trialBalanceView.statusAnnouncement}</span>
+            {trialBalanceView.basisOptions.length > 0 ? (
+              <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Accounting basis">
+                {trialBalanceView.basisOptions.map((option) => (
+                  <Button
+                    key={option.id}
+                    type="button"
+                    size="sm"
+                    variant={option.isSelected ? "default" : "outline"}
+                    aria-pressed={option.isSelected}
+                    aria-label={`${option.label} basis, ${option.rowCountLabel}. ${option.description}`}
+                    onClick={() => setSelectedBasis(option.id)}
+                  >
+                    <span>{option.label}</span>
+                    <span className="ml-2 font-mono text-[10px] opacity-75">{option.rowCount}</span>
+                  </Button>
+                ))}
+              </div>
+            ) : null}
             {trialBalanceView.hasRows ? (
               <div className="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
                 {trialBalanceView.rows.length > DENSE_VIRTUALIZATION_THRESHOLD ? (

@@ -105,6 +105,22 @@ This backlog converts the threat-model residual concerns into tracked remediatio
   - Tests proving a fund scoped to company B is invisible to a company-A caller across runs, ledger books, and report packs.
   - Threat-model update reclassifying the residual from "deployment-boundary-enforced" to "storage-enforced".
 
+## Compliance audit extract scope
+
+### SEC-006 — The compliance audit extract is a global, untenanted export
+- **Affected module/path:** `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs` (`GET /api/compliance/audit/extract`); `src/Meridian.Audit/Compliance/ImmutableAuditLogService.cs` (`GetAll`); `AuditEvent` in `src/Meridian.Audit/Compliance/ComplianceModels.cs`.
+- **Risk rating:** **Low–Medium** (deployment-conditional cross-company information disclosure; **not reachable** under the single-company-per-deployment boundary SEC-005 documents).
+- **What it is:** the extract returns the entire append-only audit chain — every sensitive action's actor, object type and id, correlation id, and `BeforeStateJson`/`AfterStateJson` — with no scope parameter. `ImmutableAuditLogService` is a singleton over one data-root audit file, and `AuditEvent` carries no tenant or company field, so there is nothing to filter on even if the route wanted to.
+- **Why the gate was widened deliberately:** the route previously required `ManageUsers`; the 2026-08-25 review's least-privilege split moved the compliance surface to `ManageCompliance`, and reading the audit trail is a compliance function rather than a user-administration one. Reverting it would recreate exactly the "a compliance officer must also hold user administration" coupling the split set out to remove, so the grant is correct and the scope is the gap.
+- **Current security boundary (documented, relied upon):** the same one SEC-005 rests on — one company per deployment, `TenantId == CompanyId`, multi-tenant separation design-stage rather than realized. In a single-company deployment there is no other company's audit history in the file, so the export discloses nothing cross-company.
+- **Required code/tests to close:**
+  - Stamp the resolved tenant/company onto `AuditEvent` at append time (server-resolved, never body-supplied), with a migration/backfill story for existing chains — noting the chain is hash-linked, so a rewrite is not available and the field must be additive with legacy events treated as ambient-tenant.
+  - Filter `GetAll` by the caller's resolved tenant, fail-open for unstamped legacy events, matching the `TenantReadPredicate` posture used for the ledger stores.
+  - Regression test proving a company-B event is absent from a company-A caller's extract and that an unstamped legacy event still surfaces.
+- **Owner:** `@platform-security` + `@fund-operations`.
+- **Target date:** **gated on a multi-tenant deployment decision** (as SEC-005).
+- **Done evidence:** PR adding the tenant stamp + extract predicate, with tests; threat-model update reclassifying the residual.
+
 ## Threat-model traceability
 
 | Backlog ID | Threat-model section | Threat-model source lines | Residual concern excerpt |

@@ -41,6 +41,19 @@ import type {
 import { requireFirst, requirePresent } from "@/test/fixtures";
 
 vi.mock("@/lib/ledger-reports-api", () => ({
+  getLedgerBooks: vi.fn().mockResolvedValue([{
+    ledgerBookId: "00000000-0000-0000-0000-0000000000aa",
+    fundProfileId: "fund-alpha",
+    fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+    fundStructureNodeKind: "Fund",
+    displayName: "Master Fund",
+    baseCurrency: "USD",
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-01-01T00:00:00Z",
+    accountingBasis: "Primary",
+    accountingPolicyId: "legacy-v1",
+    accountingPolicyVersion: "legacy-v1"
+  }]),
   getLedgerPeriods: vi.fn().mockResolvedValue([]),
   getLedgerPeriodTrialBalance: vi.fn().mockResolvedValue([]),
   getLedgerPeriodPnlSummary: vi.fn().mockResolvedValue(null),

@@ -2,12 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   getLedgerPeriodJournalEntries,
   getLedgerPeriodPnlSummary,
+  getLedgerBooks,
   getLedgerPeriods,
   getLedgerPeriodTrialBalance
 } from "@/lib/ledger-reports-api";
 import { describeApiError, isApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import type {
   AccountingBasisKind,
+  LedgerBook,
   LedgerJournalLine,
   LedgerPeriod,
   LedgerPeriodPnlSummary,
@@ -33,14 +35,16 @@ import type { AccountingWorkstream } from "./accounting-screen.task-mode-view-mo
  */
 
 export interface AccountingPostedLedgerServices {
-  getPeriods: () => Promise<LedgerPeriod[]>;
+  getBooks: () => Promise<LedgerBook[]>;
+  getPeriods: (query?: { ledgerBookId?: string | null }) => Promise<LedgerPeriod[]>;
   getTrialBalance: (periodId: string) => Promise<LedgerPeriodTrialBalanceLine[]>;
   getPnlSummary: (periodId: string) => Promise<LedgerPeriodPnlSummary>;
   getJournalEntries: (periodId: string) => Promise<LedgerPostedJournalEntry[]>;
 }
 
 const defaultAccountingPostedLedgerServices: AccountingPostedLedgerServices = {
-  getPeriods: () => getLedgerPeriods(),
+  getBooks: () => getLedgerBooks(),
+  getPeriods: (query) => getLedgerPeriods(query ?? {}),
   getTrialBalance: (periodId) => getLedgerPeriodTrialBalance(periodId),
   getPnlSummary: (periodId) => getLedgerPeriodPnlSummary(periodId),
   getJournalEntries: (periodId) => getLedgerPeriodJournalEntries(periodId)
@@ -109,6 +113,8 @@ export interface AccountingPostedLedgerViewState {
   periodSelector: PostedLedgerPeriodSelectorViewState;
   /** Non-error explanation shown when the selected period has no closed summary yet. */
   periodNotice: string | null;
+  /** The ledger book these periods belong to, so a multi-book deployment names its subject. */
+  selectedBookLabel: string | null;
   trialBalance: AccountingTrialBalanceViewState;
   pnl: PostedLedgerPnlViewState;
 }
@@ -306,7 +312,8 @@ export function buildAccountingPostedLedgerViewState({
   pnlError,
   selectedRowId,
   selectedBasis,
-  accountFilter
+  accountFilter,
+  selectedBookLabel
 }: {
   periods: LedgerPeriod[];
   periodsLoading: boolean;
@@ -322,6 +329,8 @@ export function buildAccountingPostedLedgerViewState({
   selectedRowId: string | null;
   selectedBasis: AccountingBasisKind;
   accountFilter: string;
+  /** Names the book the periods below belong to; null until the books land. */
+  selectedBookLabel: string | null;
 }): AccountingPostedLedgerViewState {
   const selectedPeriod = periods.find((period) => period.periodId === selectedPeriodId) ?? null;
   const periodLabel = selectedPeriod
@@ -369,6 +378,7 @@ export function buildAccountingPostedLedgerViewState({
         : "No ledger periods exist yet. Create a ledger book and period in Accounting → Configure to start the governed book."
     },
     periodNotice,
+    selectedBookLabel,
     trialBalance,
     pnl: buildPostedLedgerPnlViewState({ pnl, loading: pnlLoading, error: pnlError, periodLabel })
   };
@@ -378,6 +388,8 @@ export function useAccountingPostedLedgerViewModel(
   workstream: AccountingWorkstream,
   services: AccountingPostedLedgerServices = defaultAccountingPostedLedgerServices
 ): AccountingPostedLedgerViewModel {
+  const [books, setBooks] = useState<LedgerBook[]>([]);
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [periods, setPeriods] = useState<LedgerPeriod[]>([]);
   const [periodsLoading, setPeriodsLoading] = useState(false);
   const [periodsError, setPeriodsError] = useState<ApiErrorDisplay | null>(null);
@@ -402,10 +414,40 @@ export function useAccountingPostedLedgerViewModel(
     }
 
     let cancelled = false;
+    services.getBooks()
+      .then((rows) => {
+        if (cancelled) return;
+        setBooks(rows);
+        // Scope to one book before any period is chosen. Unscoped, the period list spans every
+        // book and the default lands on whichever book owns the globally latest closed period —
+        // presented under this panel's fixed scope label as though it were the only book.
+        setSelectedBookId((current) =>
+          current !== null && rows.some((book) => book.ledgerBookId === current)
+            ? current
+            : rows[0]?.ledgerBookId ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBooks([]);
+          setSelectedBookId(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [services, workstream]);
+
+  useEffect(() => {
+    if (workstream !== "ledger" || selectedBookId === null) {
+      return;
+    }
+
+    let cancelled = false;
     setPeriodsLoading(true);
     setPeriodsError(null);
 
-    services.getPeriods()
+    services.getPeriods({ ledgerBookId: selectedBookId })
       .then((rows) => {
         if (!cancelled) {
           setPeriods(rows);
@@ -426,7 +468,7 @@ export function useAccountingPostedLedgerViewModel(
     return () => {
       cancelled = true;
     };
-  }, [services, workstream]);
+  }, [selectedBookId, services, workstream]);
 
   useEffect(() => {
     // Nothing to validate a selection against until the periods land. Resetting here would
@@ -586,6 +628,11 @@ export function useAccountingPostedLedgerViewModel(
     setSelectedRowId(null);
   }, []);
 
+  const selectedBookLabel = useMemo(() => {
+    const book = books.find((candidate) => candidate.ledgerBookId === selectedBookId);
+    return book ? (book.displayName.trim() || book.ledgerBookId) : null;
+  }, [books, selectedBookId]);
+
   const view = useMemo(
     () => buildAccountingPostedLedgerViewState({
       periods,
@@ -601,10 +648,12 @@ export function useAccountingPostedLedgerViewModel(
       pnlError,
       selectedRowId,
       selectedBasis,
-      accountFilter
+      accountFilter,
+      selectedBookLabel
     }),
     [
       accountFilter,
+      selectedBookLabel,
       periodNotice,
       periods,
       periodsError,
