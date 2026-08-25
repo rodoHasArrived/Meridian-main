@@ -1,10 +1,10 @@
 {
   "total_files": 656,
-  "total_lines": 132363,
+  "total_lines": 132364,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 238,
+  "todo_count": 239,
   "average_lines": 201.8,
   "health_score": 80,
   "orphaned_files": [
@@ -2625,9 +2625,9 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10578,
+      "line_count": 10579,
       "has_heading": true,
-      "todo_count": 7,
+      "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
