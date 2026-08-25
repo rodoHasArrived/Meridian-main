@@ -1184,8 +1184,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Thirty-six rounds of automated review challenged **104 claims** across this document. Every one was checked
-against the code, **all 104 held**, and the findings above are the corrected text. **Eleven more were
+Thirty-six rounds of automated review challenged **105 claims** across this document. Every one was checked
+against the code, **all 105 held**, and the findings above are the corrected text. **Eleven more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
@@ -1194,7 +1194,7 @@ the second addendum's miscited compliance gate lines, and a sentence round 35 le
 marked *(self-detected)*. A further self-initiated pass, numbered round 31 below, is **absent from the table on purpose**: every correction it made was
 wrong and was retracted in round 32, so it contributes no rows and its number is left as a gap
 rather than silently reused.
-The table therefore holds **115 rows: 104 raised by review, 11 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **116 rows: 105 raised by review, 11 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1826,17 +1826,18 @@ commits that did not come from this session:**
 | §3's heading: "Paper-session restore rescales every option position" | Restore-only framing, contradicted by §3's own body, which establishes that `ApplyBuy`, `ApplyShortSell` and the rest omit the multiplier **from the first live fill** and replay merely reconstructs the same wrong economics. An implementer reading the heading would reach for a persistence-only repair the section spends its length proving insufficient | §3 heading — now "Paper option economics omit contract scale live and on replay" |
 | The closing lesson: "a value consumed in **exactly one** place… that single correct consumer" | Two rounds out of date. §3 had already settled on **two** correct consumers (`AggregatePortfolioExposureProvider` and `BuildExposureReport`) plus the separately defective `WorkstationEndpoints.Trading.cs`. Read literally it invites double-scaling the second exposure report and leaves live Trading P&L uncorrected | Closing lessons and the round-14 block |
 | The third addendum: "every open item this document names survives the merge intact" | Universal, and contradicted by the scope-bounding sentence I wrote **three lines below it**, which limits the verification to five table rows and four paths. The heading, the sentence and the docs index all presented the whole review as refreshed against `3eb6961a` | Third addendum heading and conclusion, and the docs index — all narrowed to the five rechecked claims |
+| Round 37's own header update left "**Ten** more were caught by re-measuring" three lines above a summary sentence that had been corrected to eleven | Caught by `b53f9cc2`, a third outside commit, not by me. The mechanical check I run before every commit counts table rows and validates the one summary sentence; it never read the narrative count beside it. **A correction can leave a *different* sentence stale, and a check that validates what you thought to check is not a check** — the header now has all six of its count claims, its enumeration length and its round-block count asserted mechanically |
 | *(self-detected)* Round 35's edit to §2's improvement left a **mangled sentence** | The replacement ended without a period and orphaned the tail of the sentence it displaced, leaving "…inherits every new `Admin` grant by construction / permissions and re-gate these surfaces." That fragment sat in the published document across two pushes and was repaired by one of the outside commits, not by me. Its supporting fact — that the permission enum has ample headroom — was dropped in the repair and is restored here, remeasured at HEAD: 30 flags on a `long`, highest shift 29 | §2 improvement |
 
-**Two commits in this round came from outside this session** — `400d891f` and `a3e82038`, authored
-under the repository owner's account and carrying none of the `Co-Authored-By`/`Claude-Session`
-trailers every other commit on this branch carries. They applied the three review-raised corrections
+**Three commits in this round came from outside this session** — `400d891f`, `a3e82038` and
+`b53f9cc2`, authored under the repository owner's account and carrying none of the
+`Co-Authored-By`/`Claude-Session` trailers every other commit on this branch carries. They applied the three review-raised corrections
 above. They were not reverted: the changes were checked against source and against the sections they
 touch, they are correct, and rewriting someone else's history on a shared branch is not a thing to do
-because the authorship surprised me. What they left undone is this ledger — three corrections landed
-in the text with no rows, no round block, and a header still footing to the previous total — which is
-the same dependent-text failure this section exists to record, arriving this time from a different
-direction.
+because the authorship surprised me. The first two left this ledger undone — three corrections in the
+text with no rows, no round block, and a header still footing to the previous total — which is the
+same dependent-text failure this section exists to record, arriving from a different direction. The
+third then corrected the ledger *I* wrote to close that gap, which is the row above.
 
 The self-detected row is the one worth sitting with. **A correction can damage the sentence it is
 inserted into**, and nothing in the process I had been running would catch it: the ledger check counts
