@@ -346,4 +346,44 @@ public sealed class PostedLedgerProjectionTests
         PostedLedgerProjection.IsOutOfBalance(
             PostedLedgerProjection.FilterByBasis(lines, AccountingBasisKindDto.Gaap)).Should().BeFalse();
     }
+    /// <summary>
+    /// The ledger service returns one row per account per dimension set, so the same account in
+    /// two funds arrives as two rows with identical name, type and symbol. Dropping the scope left
+    /// desktop operators unable to tell which fund's balance they were signing off.
+    /// </summary>
+    [Fact]
+    public void DescribeDimensionScope_NamesTheDimensionsWidestFirst()
+    {
+        var line = Line() with
+        {
+            Dimensions = new LedgerDimensionSetDto(
+                FundId: "fund-alpha",
+                EntityId: "entity-lux",
+                SleeveId: "sleeve-core",
+                CostCenterId: "cc-42",
+                OrganizationId: "org-1")
+        };
+
+        PostedLedgerProjection.DescribeDimensionScope(line)
+            .Should().Be("org-1 · fund-alpha · entity-lux · sleeve-core · cc-42");
+    }
+
+    [Fact]
+    public void DescribeDimensionScope_AppendsExternalGlDimensionsByName()
+    {
+        var line = Line() with
+        {
+            Dimensions = new LedgerDimensionSetDto(
+                FundId: "fund-alpha",
+                ExternalGlDimensions: new Dictionary<string, string> { ["Region"] = "EMEA", ["Desk"] = "Rates" })
+        };
+
+        // Operator-defined, so named rather than positional, and ordered so the label is stable.
+        PostedLedgerProjection.DescribeDimensionScope(line)
+            .Should().Be("fund-alpha · Desk=Rates · Region=EMEA");
+    }
+
+    [Fact]
+    public void DescribeDimensionScope_WithNoDimensions_IsEmptySoTheColumnStaysBlank()
+        => PostedLedgerProjection.DescribeDimensionScope(Line()).Should().BeEmpty();
 }

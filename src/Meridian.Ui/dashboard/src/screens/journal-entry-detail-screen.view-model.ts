@@ -45,8 +45,20 @@ export interface JournalEntryDetailEvidenceRow {
   addedAtUtc: string;
 }
 
+/**
+ * Which record answered for this entry.
+ *
+ * Deliberately separate from `dataCompleteness`, which says only how much of the entry we hold.
+ * A governed posted entry and a manual draft are both "full", but only the draft has an approval
+ * workflow, a lifecycle and attached evidence behind it. Deciding those sections from completeness
+ * made a posted entry render manual-workflow panels — including an "Approval pending" it can never
+ * resolve — and label its source as the manual journal workbench.
+ */
+export type JournalEntryDetailSourceKind = "manual-draft" | "posted-journal" | "run-summary" | "none";
+
 export interface JournalEntryDetailViewState {
   dataCompleteness: JournalEntryDetailDataCompleteness;
+  sourceKind: JournalEntryDetailSourceKind;
   journalEntryId: string;
   title: string;
   statusLabel: string;
@@ -91,7 +103,8 @@ export function buildJournalEntryDetailViewState({
   journalEntryId,
   draft,
   journalLine,
-  postedEntry = null
+  postedEntry = null,
+  postedCurrency = null
 }: {
   journalEntryId: string;
   draft: ManualJournalEntryDraft | null;
@@ -102,6 +115,13 @@ export function buildJournalEntryDetailViewState({
    * detail the response already contained.
    */
   postedEntry?: LedgerPostedJournalEntry | null;
+  /**
+   * Base currency of the ledger book the posted entry belongs to. The posted payload carries a
+   * `ledgerBookId` but no currency, and its amounts are in the book's own units, so the caller
+   * resolves the book and passes the currency here. Without it the table labelled a EUR or GBP
+   * book's debits and credits as dollars.
+   */
+  postedCurrency?: string | null;
 }): JournalEntryDetailViewState {
   if (draft) {
     const attachedEvidence = (draft.evidenceAttachments ?? []).map((attachment) => ({
@@ -124,6 +144,7 @@ export function buildJournalEntryDetailViewState({
 
     return {
       dataCompleteness: "full",
+      sourceKind: "manual-draft",
       journalEntryId,
       title: draft.memo || draft.journalEntryId,
       statusLabel: draft.status,
@@ -161,6 +182,7 @@ export function buildJournalEntryDetailViewState({
   if (postedEntry && postedEntry.lines.length > 0) {
     return {
       dataCompleteness: "full",
+      sourceKind: "posted-journal",
       journalEntryId,
       title: postedEntry.description || postedEntry.journalEntryId,
       statusLabel: "Posted",
@@ -170,9 +192,13 @@ export function buildJournalEntryDetailViewState({
         { label: "Posted at", value: postedEntry.timestamp },
         { label: "Ledger book", value: postedEntry.ledgerBookId ?? "Unassigned" },
         { label: "Basis", value: postedEntry.accountingBasis ?? "Primary" },
-        { label: "Line count", value: String(postedEntry.lines.length) }
+        { label: "Line count", value: String(postedEntry.lines.length) },
+        { label: "Currency", value: postedCurrency ?? "Unknown" }
       ],
-      currency: "USD",
+      // Posted amounts are in the book's own base currency. Falling back to the empty string
+      // rather than USD when the book could not be resolved: an unlabelled number is honest,
+      // a number labelled as dollars it is not is a misstatement.
+      currency: postedCurrency ?? "",
       lines: postedEntry.lines.map((line, index) => ({
         lineId: line.entryId || `posted-line-${index + 1}`,
         account: line.accountName,
@@ -194,6 +220,7 @@ export function buildJournalEntryDetailViewState({
   if (journalLine) {
     return {
       dataCompleteness: "summary-only",
+      sourceKind: "run-summary",
       journalEntryId,
       title: journalLine.description || journalLine.journalEntryId,
       statusLabel: "Posted (summary only)",
@@ -216,6 +243,7 @@ export function buildJournalEntryDetailViewState({
 
   return {
     dataCompleteness: "not-found",
+    sourceKind: "none",
     journalEntryId,
     title: "Journal entry not found",
     statusLabel: "Not found",

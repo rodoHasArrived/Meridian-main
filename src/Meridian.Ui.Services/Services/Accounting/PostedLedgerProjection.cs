@@ -126,6 +126,52 @@ public static class PostedLedgerProjection
             .Any(value => value is not null && value.Contains(needle, StringComparison.OrdinalIgnoreCase));
     }
 
+    /// <summary>
+    /// Names the dimensional scope a posted line covers, or an empty string when it carries none.
+    /// <para>
+    /// The ledger service deliberately returns one row per account *per dimension set*, so an
+    /// account posted in several funds, entities, sleeves or cost centres comes back as several
+    /// rows with identical account name, type and symbol. Rendering only those three makes those
+    /// rows indistinguishable, and an operator cannot tell which scope's balance they are signing
+    /// off. Ordered widest-to-narrowest so the label reads as an address.
+    /// </para>
+    /// </summary>
+    public static string DescribeDimensionScope(LedgerPeriodTrialBalanceLineDto line)
+    {
+        ArgumentNullException.ThrowIfNull(line);
+        var dimensions = line.Dimensions;
+        if (dimensions is null)
+        {
+            return string.Empty;
+        }
+
+        var parts = new[]
+        {
+            dimensions.OrganizationId,
+            dimensions.FundId,
+            dimensions.EntityId,
+            dimensions.PortfolioId,
+            dimensions.SleeveId,
+            dimensions.StrategyId,
+            dimensions.CostCenterId,
+            dimensions.CounterpartyId,
+            dimensions.InvestorId,
+            dimensions.CapitalAccountId,
+            dimensions.TaxLotId
+        }.Where(part => !string.IsNullOrWhiteSpace(part)).Select(part => part!.Trim()).ToList();
+
+        // External GL dimensions are operator-defined, so they are named rather than positional.
+        if (dimensions.ExternalGlDimensions is { Count: > 0 })
+        {
+            parts.AddRange(dimensions.ExternalGlDimensions
+                .Where(pair => !string.IsNullOrWhiteSpace(pair.Value))
+                .OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+                .Select(pair => $"{pair.Key.Trim()}={pair.Value.Trim()}"));
+        }
+
+        return string.Join(" · ", parts);
+    }
+
     /// <summary>Books newest-usable first: by display name, with a stable id tie-break.</summary>
     public static IReadOnlyList<LedgerBookDto> SortBooks(IEnumerable<LedgerBookDto>? books)
         => books?

@@ -167,6 +167,9 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Account" Binding="{Binding AccountName}" Width="*" />
                     <DataGridTextColumn Header="Type" Binding="{Binding AccountType}" Width="120" />
+                    <!-- One row per account per dimension set: without the scope, an account
+                         posted in several funds or entities renders as identical rows. -->
+                    <DataGridTextColumn Header="Scope" Binding="{Binding ScopeLabel}" Width="180" />
                     <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="90" />
                     <DataGridTextColumn Header="Balance" Binding="{Binding BalanceLabel}" Width="140" />
                     <DataGridTextColumn Header="Entries" Binding="{Binding EntryCount}" Width="90" />

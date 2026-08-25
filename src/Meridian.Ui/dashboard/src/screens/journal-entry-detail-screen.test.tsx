@@ -18,7 +18,8 @@ vi.mock("@/lib/ledger-reports-api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/ledger-reports-api")>("@/lib/ledger-reports-api");
   return {
     ...actual,
-    getLedgerPeriodJournalEntries: vi.fn()
+    getLedgerPeriodJournalEntries: vi.fn(),
+    getLedgerBooks: vi.fn()
   };
 });
 
@@ -230,5 +231,46 @@ describe("JournalEntryDetailScreen", () => {
     // The posted journal and a strategy run are different books; a period scope must never
     // fall back to the run ledger.
     expect(api.getRunLedgerJournal).not.toHaveBeenCalled();
+  });
+  it("renders a posted entry as governed evidence in its book currency", async () => {
+    // A posted entry is "full" in the same sense a draft is, but it has no approval workflow,
+    // no lifecycle and no attached evidence, and its amounts are in the book's own currency.
+    // Deciding those from completeness rendered manual-workflow panels over a governed posting
+    // and labelled a EUR book's lines as dollars.
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(workbench);
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValueOnce([
+      { ledgerBookId: "book-eur", displayName: "Feeder Fund", baseCurrency: "EUR" }
+    ] as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValueOnce([
+      {
+        journalEntryId: "je-posted-1",
+        periodId: "period-7",
+        ledgerBookId: "book-eur",
+        timestamp: "2026-06-30T00:00:00Z",
+        description: "Posted close entry",
+        totalDebits: 500,
+        totalCredits: 500,
+        isBalanced: true,
+        lines: [
+          { entryId: "e-1", journalEntryId: "je-posted-1", timestamp: "2026-06-30T00:00:00Z", accountName: "Cash", accountType: "Asset", debit: 500, credit: 0, description: "Sweep in" }
+        ],
+        dimensions: null
+      }
+    ] as never);
+
+    await renderScreen("/accounting/journal-entries/detail?journalEntryId=je-posted-1&periodId=period-7");
+    await waitForAsyncEffects();
+
+    expect(await screen.findByText("Governed posted journal")).toBeInTheDocument();
+    expect(screen.queryByText("Manual journal workbench")).not.toBeInTheDocument();
+    // No manual workflow behind a posted entry, so none of its panels — and in particular no
+    // "Approval pending" that can never resolve.
+    expect(screen.queryByRole("heading", { name: "Approval" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Lifecycle" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Evidence" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Approval pending")).not.toBeInTheDocument();
+    // Book currency, not dollars.
+    expect(screen.getByRole("table")).toHaveTextContent("€");
+    expect(screen.getByRole("table")).not.toHaveTextContent("$");
   });
 });

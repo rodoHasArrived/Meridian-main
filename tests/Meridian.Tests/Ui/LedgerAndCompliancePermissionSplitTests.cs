@@ -278,6 +278,7 @@ public sealed class LedgerAndCompliancePermissionSplitTests
 
         var reads = DeclaredRoutes(app, "/api/ledger")
             .Where(route => route.Method == "GET")
+            .Where(route => !route.Pattern.StartsWith(PrivateCapitalPrefix, StringComparison.Ordinal))
             .Where(route => route.Authorization.Permissions.Contains(UserPermission.ManageDirectLending))
             .ToList();
         reads.Should().NotBeEmpty("the governed ledger must map read routes");
@@ -287,6 +288,39 @@ public sealed class LedgerAndCompliancePermissionSplitTests
             route.Authorization.Permissions.Should().Contain(
                 UserPermission.ViewLedgerReports,
                 $"{route.Method} {route.Pattern} still treats direct lending as the fund-accounting grant");
+        }
+    }
+
+
+    /// <summary>The private-capital surface is a different domain, not a ledger report.</summary>
+    private const string PrivateCapitalPrefix = "/api/ledger/private-capital/";
+
+    /// <summary>
+    /// The ledger-report grant buys the trial balance, P&amp;L, periods and posted entries — not the
+    /// private-capital surface. Those routes return investor-level balances and activity,
+    /// allocation rules and inputs, evidence links and statement lineage, which is materially
+    /// broader than what a Reporting Analyst is being granted. They stay behind the
+    /// direct-lending grant they had before the split.
+    /// </summary>
+    [Fact]
+    public async Task PrivateCapitalRoutes_AreNotReachableWithTheLedgerReportGrant()
+    {
+        await using var app = await CreateLedgerAndComplianceAppAsync(UserPermission.ViewLedgerReports);
+
+        var privateCapital = DeclaredRoutes(app, PrivateCapitalPrefix).ToList();
+        privateCapital.Should().NotBeEmpty("the private-capital surface must map routes");
+
+        foreach (var route in privateCapital)
+        {
+            route.Authorization.Permissions.Should().NotContain(
+                UserPermission.ViewLedgerReports,
+                $"{route.Method} {route.Pattern} exposes investor-level private-capital detail, not a ledger report");
+            route.Authorization.Permissions.Should().NotContain(
+                UserPermission.ManageLedgerReports,
+                $"{route.Method} {route.Pattern} exposes investor-level private-capital detail, not a ledger report");
+            route.Authorization.Permissions.Should().Contain(
+                UserPermission.ManageDirectLending,
+                $"{route.Method} {route.Pattern} must keep its private-capital domain grant");
         }
     }
 

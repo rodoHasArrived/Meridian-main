@@ -9,12 +9,22 @@ import { ScreenLayout } from "@/components/ui/screen-layout";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { getManualJournalEntryWorkbench, getRunLedgerJournal } from "@/lib/api";
-import { getLedgerPeriodJournalEntries } from "@/lib/ledger-reports-api";
+import { getLedgerBooks, getLedgerPeriodJournalEntries } from "@/lib/ledger-reports-api";
 import { toLedgerJournalLine } from "@/screens/accounting-screen.posted-ledger.view-model";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
-import { buildJournalEntryDetailViewState } from "@/screens/journal-entry-detail-screen.view-model";
+import {
+  buildJournalEntryDetailViewState,
+  type JournalEntryDetailSourceKind
+} from "@/screens/journal-entry-detail-screen.view-model";
 import type { LedgerJournalLine, LedgerPostedJournalEntry, ManualJournalEntryDraft } from "@/types";
+
+const JOURNAL_ENTRY_SOURCE_LABELS: Record<JournalEntryDetailSourceKind, string> = {
+  "manual-draft": "Manual journal workbench",
+  "posted-journal": "Governed posted journal",
+  "run-summary": "Run ledger summary",
+  none: "Unknown"
+};
 
 export function JournalEntryDetailScreen() {
   const [searchParams] = useSearchParams();
@@ -28,6 +38,10 @@ export function JournalEntryDetailScreen() {
   const [draft, setDraft] = useState<ManualJournalEntryDraft | null>(null);
   const [journalLine, setJournalLine] = useState<LedgerJournalLine | null>(null);
   const [postedEntry, setPostedEntry] = useState<LedgerPostedJournalEntry | null>(null);
+  // Posted amounts are in the ledger book's base currency, which the posted payload does not
+  // carry — only its ledgerBookId. Resolved from the books list so a EUR or GBP book is not
+  // labelled in dollars.
+  const [postedCurrency, setPostedCurrency] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState<string | null>(null);
   const [reloadVersion, setReloadVersion] = useState(0);
@@ -37,6 +51,7 @@ export function JournalEntryDetailScreen() {
       setDraft(null);
       setJournalLine(null);
       setPostedEntry(null);
+      setPostedCurrency(null);
       setErrorText(null);
       setLoading(false);
       return;
@@ -51,6 +66,7 @@ export function JournalEntryDetailScreen() {
     setDraft(null);
     setJournalLine(null);
     setPostedEntry(null);
+    setPostedCurrency(null);
 
     // A period scope means the governed journal is the authority. Nesting it inside the
     // manual-workbench continuation meant an unavailable or forbidden workbench reported the
@@ -62,6 +78,19 @@ export function JournalEntryDetailScreen() {
           const matched = entries.find((entry) => entry.journalEntryId === journalEntryId) ?? null;
           setPostedEntry(matched);
           setJournalLine(matched ? toLedgerJournalLine(matched) : null);
+          return matched;
+        })
+        .then((matched) => {
+          // Best-effort: an unresolvable book leaves the amounts unlabelled rather than
+          // mislabelled, and must not fail the entry the operator asked for.
+          if (!matched?.ledgerBookId) return;
+          return getLedgerBooks()
+            .then((books) => {
+              if (cancelled) return;
+              const book = books.find((candidate) => candidate.ledgerBookId === matched.ledgerBookId);
+              setPostedCurrency(book?.baseCurrency ?? null);
+            })
+            .catch(() => undefined);
         })
         .catch(() => {
           if (!cancelled) {
@@ -198,7 +227,7 @@ export function JournalEntryDetailScreen() {
     );
   }
 
-  const view = buildJournalEntryDetailViewState({ journalEntryId, draft, journalLine, postedEntry });
+  const view = buildJournalEntryDetailViewState({ journalEntryId, draft, journalLine, postedEntry, postedCurrency });
   const technicalSummaryFields = view.summaryFields.filter((field) => ["Journal entry", "Fund", "Ledger book"].includes(field.label));
   const operationalSummaryFields = view.summaryFields.filter((field) => !technicalSummaryFields.includes(field));
 
@@ -286,7 +315,10 @@ export function JournalEntryDetailScreen() {
         </Card>
       ) : null}
 
-      {view.dataCompleteness === "full" ? (
+      {/* Lifecycle, Evidence and Approval belong to the manual workbench's workflow. A governed
+          posted entry has none of them, and gating on completeness rendered all three for posted
+          entries with empty arrays and an "Approval pending" that can never resolve. */}
+      {view.sourceKind === "manual-draft" ? (
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle>Lifecycle</CardTitle>
@@ -312,7 +344,7 @@ export function JournalEntryDetailScreen() {
         </Card>
       ) : null}
 
-      {view.dataCompleteness === "full" ? (
+      {view.sourceKind === "manual-draft" ? (
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle>Evidence</CardTitle>
@@ -342,6 +374,7 @@ export function JournalEntryDetailScreen() {
 
       {view.dataCompleteness !== "not-found" ? (
         <section className="grid gap-4 xl:grid-cols-3">
+          {view.sourceKind === "manual-draft" ? (
           <Card className="panel-surface">
             <CardHeader>
               <CardTitle>Approval</CardTitle>
@@ -360,6 +393,7 @@ export function JournalEntryDetailScreen() {
               ) : null}
             </CardContent>
           </Card>
+          ) : null}
 
           <Card className="panel-surface">
             <CardHeader>
@@ -368,7 +402,7 @@ export function JournalEntryDetailScreen() {
             </CardHeader>
             <CardContent>
               <dl className="grid gap-2">
-                <JournalEntryFact label="Source" value={view.dataCompleteness === "full" ? "Manual journal workbench" : "Run ledger summary"} />
+                <JournalEntryFact label="Source" value={JOURNAL_ENTRY_SOURCE_LABELS[view.sourceKind]} />
                 <JournalEntryFact label="Reversal of" value="No reversal retained" />
                 <JournalEntryFact label="Rebooked from" value="No rebook lineage retained" />
               </dl>

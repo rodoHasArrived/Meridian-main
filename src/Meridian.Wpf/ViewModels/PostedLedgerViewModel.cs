@@ -403,6 +403,13 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
     /// </summary>
     private void ClearBookScopedFigures()
     {
+        // Invalidate any period load still in flight for the outgoing scope. Clearing the rows is
+        // not enough on its own: SelectPeriodAsync stamps its own revision and re-checks it before
+        // publishing, so book A's trial balance and P&L could return while book B's period request
+        // was still pending, pass that check, and repopulate A's figures under B's label and base
+        // currency -- and stay there indefinitely if B's request then failed or hung.
+        _periodRevision++;
+
         Periods.Clear();
         TrialBalance.Clear();
         PnlMetrics.Clear();
@@ -638,12 +645,17 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         TrialBalance.Clear();
         foreach (var line in lines)
         {
+            // The account id and dimensional scope come with the line for a reason: the service
+            // returns one row per account per dimension set, so without them a fund-A and a fund-B
+            // balance on the same account render as two identical rows.
             TrialBalance.Add(new PostedLedgerTrialBalanceRow(
                 line.AccountName,
                 line.AccountType,
                 line.Symbol,
                 PostedLedgerProjection.FormatAmount(line.Balance, BaseCurrency),
-                line.EntryCount));
+                line.EntryCount,
+                line.FinancialAccountId,
+                PostedLedgerProjection.DescribeDimensionScope(line)));
         }
 
         IsOutOfBalance = PostedLedgerProjection.IsOutOfBalance(lines);
@@ -787,6 +799,12 @@ public sealed record PostedLedgerTrialBalanceRow(
     string AccountType,
     string? Symbol,
     string BalanceLabel,
-    int EntryCount);
+    int EntryCount,
+    string? FinancialAccountId = null,
+    string ScopeLabel = "")
+{
+    /// <summary>Whether this row has a dimensional scope worth showing beside the account.</summary>
+    public bool HasScope => !string.IsNullOrEmpty(ScopeLabel);
+}
 
 public sealed record PostedLedgerMetricRow(string Label, string Value);
