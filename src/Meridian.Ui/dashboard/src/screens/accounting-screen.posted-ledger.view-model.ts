@@ -253,7 +253,7 @@ export interface AccountingPostedLedgerViewModel {
   journalErrorText: string | null;
   selectedPeriodId: string | null;
   selectedPeriodLabel: string | null;
-  /** True once the selected book's period request has finished, whatever it returned. */
+  /** True once the selected book's period request has come back successfully. */
   periodsSettled: boolean;
 }
 
@@ -672,9 +672,11 @@ export function useAccountingPostedLedgerViewModel(
   // selector reporting "no ledger periods exist yet -- create a ledger book" while the books
   // request was still in flight: an instruction to create accounting data, during a load.
   const [booksLoading, setBooksLoading] = useState(false);
-  // Which book's period request has actually finished. A caller cannot tell "no periods yet" from
-  // "no periods at all" by watching the loading flags: between books landing and the period effect
-  // setting its own flag there is a render where nothing is loading and the list is still empty.
+  // Which book's period request has finished SUCCESSFULLY. A caller cannot tell "no periods yet"
+  // from "no periods at all" by watching the loading flags: between books landing and the period
+  // effect setting its own flag there is a render where nothing is loading and the list is still
+  // empty. Only a successful response settles the question -- a failure leaves it open, because
+  // an empty list from an outage means nothing about what the book holds.
   const [periodsLoadedForBookId, setPeriodsLoadedForBookId] = useState<string | null>(null);
   const [periods, setPeriods] = useState<LedgerPeriod[]>([]);
   const [periodsLoading, setPeriodsLoading] = useState(false);
@@ -784,7 +786,11 @@ export function useAccountingPostedLedgerViewModel(
       .catch((err) => {
         if (!cancelled) {
           setPeriods([]);
-          setPeriodsLoadedForBookId(selectedBookId);
+          // Deliberately not settled. A failed request is not an authoritative "this book has no
+          // periods": treating it as one let a deep link's period be judged invalid against an
+          // empty list, and the route write-back then dropped periodId from the URL — destroying
+          // the operator's bookmark over a transient 500. Left unsettled, the link stays pending
+          // and survives to be retried.
           setPeriodsError(describeApiError(err, "Ledger periods failed to load."));
         }
       })
@@ -1066,9 +1072,10 @@ export function useAccountingPostedLedgerViewModel(
     selectedPeriodId,
     selectedPeriodLabel,
     /**
-     * True once the selected book's period request has finished, whatever it returned. A deep link
-     * cannot tell an empty book from a still-loading one without this, and waiting on the loading
-     * flags alone leaves the request unresolved forever on a book that genuinely has no periods.
+     * True once the selected book's period request has come back successfully. A deep link cannot
+     * tell an empty book from a still-loading one without this, and waiting on the loading flags
+     * alone leaves the request unresolved forever on a book that genuinely has no periods. A
+     * failed request does not settle it: an empty list from an outage says nothing about the book.
      */
     periodsSettled: periodsLoadedForBookId !== null && periodsLoadedForBookId === selectedBookId
   };
