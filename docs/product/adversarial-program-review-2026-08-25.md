@@ -247,9 +247,13 @@ basis, P&L and account snapshots, and the two margin models — not everything d
 The count here has now been wrong twice in the same direction. The original text said *nothing*
 consumes the multiplier; round 14 corrected that to *one*; this is the second. Each correction was
 made by finding a consumer rather than by enumerating them, which is why the number kept moving.
-The reliable statement is structural: **the multiplier is consumed by the exposure projections and
-ignored by everything that produces the numbers an operator reads** — and any remediation needs an
-exhaustive consumer list, not another spot-check.
+The reliable statement is structural, and stating it carelessly is how the last error got in: **the
+multiplier is consumed by the two exposure projections — one of which is operator-facing — and
+ignored by the paper book's own transaction, valuation, account-snapshot and margin paths.** An
+earlier version of this very sentence said it was "ignored by everything that produces the numbers an
+operator reads", which the enumeration four lines above disproves: `BuildExposureReport` feeds the
+WPF aggregate-portfolio view. Any remediation needs an exhaustive consumer list, not another
+spot-check — and not a summary sentence written faster than the list it summarises.
 
 That reframes the persistence gap rather than erasing it. All three
 `PaperSessionPersistenceService` call sites — `:159` (session restore on startup), `:820`
@@ -833,12 +837,12 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Twenty-one rounds of automated review challenged **63 claims** across this document. Every one was checked
-against the code, **all 63 held**, and the findings above are the corrected text. **Four more were
+Twenty-two rounds of automated review challenged **64 claims** across this document. Every one was checked
+against the code, **all 64 held**, and the findings above are the corrected text. **Four more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, and §3's own lead sentence — and each is recorded as a row below, marked *(self-detected)*.
-The table therefore holds **67 rows: 63 raised by review, 4 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **68 rows: 64 raised by review, 4 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1174,6 +1178,23 @@ to pass on the exact defects they were written for.** Test (b) accepts a referen
 wrapper; the capability check reads a status the target item does not have; and test (a) checked
 permissions when the failure is in the payload. A gate that would not have caught the finding that
 motivated it is not a gate, and this document has now produced three of them.
+
+**Round 22 — one, and it is a contradiction four lines wide:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "The multiplier is consumed by the exposure projections and ignored by everything that produces the numbers an operator reads" | `BuildExposureReport`'s `/api/portfolio/exposure` output **is** operator-facing — the WPF `AggregatePortfolioViewModel` consumes it — which the enumeration four lines above this sentence states explicitly. Written in round 19 as the "reliable structural statement" meant to replace a consumer count that kept moving; the replacement contradicted its own paragraph | §3 summary |
+
+This is the smallest correction in twenty-two rounds and the one that best characterises the whole
+exercise. Round 19 discovered a second consumer, enumerated it correctly with a file and a line, drew
+the right conclusion about double-scaling — and then closed with a one-sentence generalisation that
+the enumeration immediately above it falsifies. The error is not in the research; it is in the
+summary written on top of correct research, in the same edit, moments later.
+
+Every cross-surface sweep this document has adopted looks for a stale claim in *another* section or
+*another* file. This one was four lines from its own refutation. The sweep that would have caught it
+is re-reading the paragraph you just wrote against the paragraph you just wrote — which is the
+cheapest check available and the only one never added.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
