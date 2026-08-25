@@ -579,6 +579,35 @@ describe("useAccountingPostedLedgerViewModel", () => {
     });
   });
 
+  it("loads the period the operator picked even while the route still names another", async () => {
+    // The route-scope binding suppresses period-scoped loads while the route names a period this
+    // hook cannot resolve. A period the operator picked from the list in front of them is not that
+    // case -- it is the scope on screen. Left suppressed, the pick showed in the selector and
+    // never loaded anything, and it stayed that way for as long as the route disagreed.
+    const services = makeServices({
+      getPeriods: vi.fn().mockRejectedValue(new Error("Ledger periods are unavailable."))
+    });
+
+    const { result } = renderHook(() =>
+      useAccountingPostedLedgerViewModel("ledger", services, {
+        // What a stale shared route says, which this hook has no way to resolve while its own
+        // period request is failing.
+        requestedPeriodId: "period-named-by-the-route"
+      }));
+
+    await waitFor(() => {
+      expect(result.current.view.periodSelector.errorText).toBe("Ledger periods are unavailable.");
+    });
+
+    act(() => {
+      result.current.selectPeriod("period-picked-by-the-operator");
+    });
+
+    await waitFor(() => {
+      expect(services.getTrialBalance).toHaveBeenCalledWith("period-picked-by-the-operator");
+    });
+  });
+
   it("does not call the ledger API outside the ledger workstream", async () => {
     const services = makeServices();
     renderHook(() => useAccountingPostedLedgerViewModel("reconciliation", services));

@@ -257,6 +257,8 @@ export interface AccountingPostedLedgerViewModel {
   periodsSettled: boolean;
   /** True once the ledger books request has come back successfully. */
   booksSettled: boolean;
+  /** True when the operator picked the current period by hand rather than it being held or defaulted. */
+  periodChosenByOperator: boolean;
 }
 
 /**
@@ -693,6 +695,12 @@ export function useAccountingPostedLedgerViewModel(
   // for the same reason: an empty book list left by an outage says nothing about what this
   // deployment holds, and acting on it as though it did destroys the operator's link.
   const [booksSettled, setBooksSettled] = useState(false);
+  // Whether the operator has chosen the current period by hand since this surface last had an
+  // answer of its own about what the book holds. A retained tab's cached options stay selectable
+  // through a failed refresh, so a choice made from them is real -- and has to reach the shared
+  // route even though nothing has settled. Distinct from merely still HOLDING a period, which is
+  // what must not be published.
+  const [periodChosenByOperator, setPeriodChosenByOperator] = useState(false);
   // Which book's period request has finished SUCCESSFULLY. A caller cannot tell "no periods yet"
   // from "no periods at all" by watching the loading flags: between books landing and the period
   // effect setting its own flag there is a render where nothing is loading and the list is still
@@ -722,6 +730,9 @@ export function useAccountingPostedLedgerViewModel(
     // judged the sibling's book against the stale list, called it absent, and wrote the old one
     // back into the shared URL before getBooks returned.
     setBooksSettled(false);
+    // The choice belonged to the last time this tab was on screen. Coming back it is holding a
+    // period again, not choosing one, and holding is not grounds to publish.
+    setPeriodChosenByOperator(false);
   }
   const [periods, setPeriods] = useState<LedgerPeriod[]>([]);
   const [periodsLoading, setPeriodsLoading] = useState(false);
@@ -766,6 +777,7 @@ export function useAccountingPostedLedgerViewModel(
     setJournalErrorText(null);
     setSelectedRowId(null);
     setPeriodsLoadedForBookId(null);
+    setPeriodChosenByOperator(false);
     periodsBookIdRef.current = null;
   }, []);
 
@@ -929,7 +941,11 @@ export function useAccountingPostedLedgerViewModel(
   const routePeriodUnresolved = requestedPeriodId !== null
     && selectedPeriodId !== null
     && !periodIdsMatch(requestedPeriodId, selectedPeriodId)
-    && !periodsSettled;
+    && !periodsSettled
+    // A period the operator picked from the list in front of them is the scope on screen, so its
+    // figures load. Left suppressed, choosing a cached period during an outage showed that period
+    // in the selector and never loaded anything for it.
+    && !periodChosenByOperator;
 
   useEffect(() => {
     if (!selectedPeriodId || workstream !== "ledger" || !enabled || routePeriodUnresolved) {
@@ -1064,6 +1080,7 @@ export function useAccountingPostedLedgerViewModel(
 
   const selectPeriod = useCallback((periodId: string) => {
     setSelectedPeriodId(periodId);
+    setPeriodChosenByOperator(true);
     setSelectedRowId(null);
   }, []);
 
@@ -1192,6 +1209,12 @@ export function useAccountingPostedLedgerViewModel(
      * below it, so a consumer that writes the scope somewhere durable -- the URL -- has to be able
      * to tell "this deployment has no books" from "the books request failed".
      */
-    booksSettled
+    booksSettled,
+    /**
+     * True when the current period was picked by hand. A surface that publishes the scope to the
+     * URL needs to tell an operator's choice from a value this hook is merely still holding: the
+     * first must reach the shared route even with nothing settled, the second must not.
+     */
+    periodChosenByOperator
   };
 }

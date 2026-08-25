@@ -29,7 +29,14 @@ export function usePostedLedgerRouteScope(
   active = true
 ): void {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { selectBook, selectPeriod, selectedPeriodId, periodsSettled, booksSettled } = postedLedger;
+  const {
+    selectBook,
+    selectPeriod,
+    selectedPeriodId,
+    periodsSettled,
+    booksSettled,
+    periodChosenByOperator
+  } = postedLedger;
   const bookOptions = postedLedger.view.bookOptions;
   const periodOptions = postedLedger.view.periodSelector.options;
   const selectedBookId = bookOptions.find((option) => option.isSelected)?.id ?? null;
@@ -159,7 +166,11 @@ export function usePostedLedgerRouteScope(
     // that the book has none and dropped it from the route -- writing the held value then restored
     // a period the shared scope had authoritatively given up. Until this tab has an answer of its
     // own, what the URL already says about the period stands.
-    const nextPeriodId = periodsSettled
+    // A choice made by hand supersedes the unresolved route request, exactly as an explicit book
+    // change already does: the cached options stay selectable through a failed refresh, so picking
+    // one is a real scope change and has to reach the shared route. Without it the selector moved
+    // and the URL did not, and the mismatch then suppressed every load for the period on screen.
+    const nextPeriodId = periodsSettled || periodChosenByOperator
       ? selectedPeriodId
       : showsAnotherBook ? null : searchParams.get("periodId");
 
@@ -190,6 +201,7 @@ export function usePostedLedgerRouteScope(
     appliedBookId,
     appliedPeriodId,
     booksSettled,
+    periodChosenByOperator,
     periodsSettled,
     requestedBookId,
     requestedPeriodId,

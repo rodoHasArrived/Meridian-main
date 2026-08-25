@@ -988,6 +988,74 @@ describe("finance standard pages", () => {
     expect(screen.getAllByText("Ledger periods are unavailable.").length).toBeGreaterThan(0);
   });
 
+  it("publishes a period the operator picks while the refresh is failing", async () => {
+    // The retained options stay selectable through a failed refresh, so a choice made from them is
+    // real. Reusing the URL's period whenever nothing had settled left the selector on the new
+    // period and the route on the old one -- and that mismatch then suppressed the journal and
+    // balance loads, so the period on screen never loaded anything at all.
+    const JUNE_PERIOD_ID = "77777777-7777-7777-7777-777777777777";
+    mockPostedBook();
+    const july = {
+      periodId: LEDGER_PERIOD_ID,
+      ledgerBookId: LEDGER_BOOK_ID,
+      fiscalYear: 2026,
+      periodNo: 7,
+      label: "July 2026",
+      startDate: "2026-07-01",
+      endDate: "2026-07-31",
+      status: "HardClosed",
+      openedAt: "2026-07-01T00:00:00Z",
+      closedAt: "2026-08-02T00:00:00Z",
+      version: 1
+    };
+    // Deliberately EARLIER than July, so July stays the default everywhere and the only thing that
+    // can put this period in the route is the operator choosing it.
+    const june = { ...july, periodId: JUNE_PERIOD_ID, periodNo: 6, label: "June 2026" };
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValue([july, june] as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockImplementation((periodId) =>
+      Promise.resolve(periodId === JUNE_PERIOD_ID
+        ? [{
+          journalEntryId: "je-june-1",
+          periodId: JUNE_PERIOD_ID,
+          ledgerBookId: LEDGER_BOOK_ID,
+          timestamp: "2026-06-30T00:00:00Z",
+          description: "June sweep",
+          totalDebits: 500,
+          totalCredits: 500,
+          isBalanced: true,
+          lines: []
+        }]
+        : []) as never);
+
+    const search = renderLedgerExplorerWithLocation("/accounting/ledger");
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+    expect(search()).toContain(LEDGER_PERIOD_ID);
+
+    // Go idle, and the period endpoint fails before this tab comes back.
+    fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
+    await waitForAsyncEffects();
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockRejectedValue(new Error("Ledger periods are unavailable."));
+    fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+    // Nothing has settled, and the route still names the period this tab was holding.
+    expect(search()).toContain(LEDGER_PERIOD_ID);
+
+    // The retained options are still on offer, so the operator picks the other one.
+    const periodSelect = document.getElementById("ledger-period-select") as HTMLSelectElement;
+    fireEvent.change(periodSelect, { target: { value: JUNE_PERIOD_ID } });
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    expect(periodSelect.value).toBe(JUNE_PERIOD_ID);
+    // The shared route follows the choice...
+    expect(search()).toContain(JUNE_PERIOD_ID);
+    expect(search()).not.toContain(LEDGER_PERIOD_ID);
+    // ...and the period on screen actually loads.
+    expect(await screen.findByRole("table", { name: "Ledger Explorer results" })).toHaveTextContent("June sweep");
+  });
+
   it("offers no ledger filter it does not apply", async () => {
     // "Unposted", "Reversals", "Manual JEs" and "System Generated" changed a label and nothing
     // else, and the results header reported the unfiltered count as that view's. On a governed
