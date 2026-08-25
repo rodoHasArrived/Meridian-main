@@ -19,6 +19,7 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class PostedLedgerViewModelTests
 {
     private static readonly Guid DefaultBookId = Guid.Parse("0000000a-0000-0000-0000-00000000000b");
+    private static readonly Guid FeederBookId = Guid.Parse("0000000e-0000-0000-0000-00000000000f");
 
     private static LedgerBookDto Book(
         Guid ledgerBookId,
@@ -106,6 +107,80 @@ public sealed class PostedLedgerViewModelTests
         viewModel.HasTrialBalanceError.Should().BeFalse();
         viewModel.HasPnlError.Should().BeFalse();
         viewModel.HasPeriodNotice.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RefreshAsync_KeepsTheOperatorsSelectedBook_RatherThanReturningToTheDefault()
+    {
+        var periodId = Guid.NewGuid();
+        var client = new FakeLedgerReportsApiClient
+        {
+            Books = ApiResponse<List<LedgerBookDto>>.Ok(
+                [Book(DefaultBookId), Book(FeederBookId, "Feeder Fund", "EUR")]),
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(periodId, ledgerBookId: FeederBookId)]),
+            TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok([Line("Cash", 100m)]),
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(periodId))
+        };
+
+        using var viewModel = new PostedLedgerViewModel(client);
+        await viewModel.RefreshAsync();
+        await viewModel.SelectBookAsync(FeederBookId);
+        viewModel.SelectedBookId.Should().Be(FeederBookId);
+
+        // Refresh is a reload of what is on screen, not a reset of the subject under review.
+        await viewModel.RefreshAsync();
+
+        viewModel.SelectedBookId.Should().Be(FeederBookId);
+        viewModel.SelectedBookLabel.Should().Be("Feeder Fund");
+    }
+
+    [Fact]
+    public async Task SelectBookAsync_ClearsTheOutgoingBooksCachedBasisLines()
+    {
+        var periodId = Guid.NewGuid();
+        var client = new FakeLedgerReportsApiClient
+        {
+            Books = ApiResponse<List<LedgerBookDto>>.Ok(
+                [Book(DefaultBookId), Book(FeederBookId, "Feeder Fund", "EUR")]),
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(periodId)]),
+            TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok([Line("Cash", 100m)]),
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(periodId))
+        };
+
+        using var viewModel = new PostedLedgerViewModel(client);
+        await viewModel.RefreshAsync();
+        viewModel.Bases.Should().NotBeEmpty("the first book must load for this to test the switch");
+
+        // No periods for the incoming book: the picker and its cached lines must not survive the
+        // switch, or choosing a basis re-projects book A's balances under book B.
+        client.Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([]);
+        await viewModel.SelectBookAsync(FeederBookId);
+
+        viewModel.Bases.Should().BeEmpty();
+        viewModel.TrialBalance.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Deactivate_LeavesThePageAbleToLoadAgainOnBackNavigation()
+    {
+        var periodId = Guid.NewGuid();
+        var client = new FakeLedgerReportsApiClient
+        {
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(periodId)]),
+            TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok([Line("Cash", 100m)]),
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(periodId))
+        };
+
+        using var viewModel = new PostedLedgerViewModel(client);
+        await viewModel.RefreshAsync();
+
+        // Navigating away used to Dispose, which made the same instance permanently inert when the
+        // Frame restored it from history.
+        viewModel.Deactivate();
+        await viewModel.RefreshAsync();
+
+        viewModel.TrialBalance.Should().NotBeEmpty("a deactivated page must still load when navigated back to");
+        viewModel.SelectedPeriodId.Should().Be(periodId);
     }
 
     [Fact]

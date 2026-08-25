@@ -39,8 +39,14 @@ public static class RolePermissions
         UserPermission.ManageLedgerReports |
         UserPermission.ManageCompliance;
 
+    // Subtracted, not merely omitted: Developer is defined as Admin minus user administration, so
+    // every permission added to AdminPermissions lands here silently. ManageCompliance did exactly
+    // that. Before the split, compliance routes required ManageUsers and Developer was refused by
+    // all of them; inheriting the new grant would have let a Developer account file and decide
+    // approval requests, extract the audit chain, and read access reviews — the opposite of what a
+    // least-privilege split is for.
     private const UserPermission DeveloperPermissions =
-        AdminPermissions & ~UserPermission.ManageUsers;
+        AdminPermissions & ~(UserPermission.ManageUsers | UserPermission.ManageCompliance);
 
     private const UserPermission TradeDeskPermissions =
         UserPermission.ViewMarketData |

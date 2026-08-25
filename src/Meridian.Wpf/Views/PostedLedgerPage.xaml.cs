@@ -19,6 +19,9 @@ public partial class PostedLedgerPage : Page
     private void OnPageLoaded(object sender, RoutedEventArgs e)
         => _viewModel.Activate();
 
+    // Deactivate, not Dispose: the shell's Frame can restore this page instance from navigation
+    // history, and a disposed view model returns permanently inert. The container owns the
+    // view model's lifetime and disposes it when the scope ends.
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
-        => _viewModel.Dispose();
+        => _viewModel.Deactivate();
 }

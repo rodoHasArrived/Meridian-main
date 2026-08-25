@@ -21,7 +21,7 @@ namespace Meridian.Wpf.ViewModels;
 public sealed class PostedLedgerViewModel : BindableBase, IDisposable
 {
     private readonly ILedgerReportsApiClient? _client;
-    private readonly CancellationTokenSource _cts = new();
+    private CancellationTokenSource _cts = new();
     private bool _isDisposed;
     private bool _hasLoaded;
     private int _loadRevision;
@@ -301,6 +301,39 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         _ = RefreshAsync(_cts.Token);
     }
 
+    /// <summary>
+    /// Stands the page down without ending its life: cancels whatever load is in flight and arms a
+    /// fresh token so a later <see cref="Activate"/> reloads.
+    /// <para>
+    /// This is what navigating away means. Disposing there instead looked equivalent but was not —
+    /// the shell's <c>Frame</c> can restore this same instance from navigation history, and a
+    /// disposed view model comes back permanently inert: <see cref="Activate"/> returns at the
+    /// <c>_isDisposed</c> guard and refresh, period and book commands all no-op, so Back landed the
+    /// operator on a dead page with stale figures on it.
+    /// </para>
+    /// </summary>
+    public void Deactivate()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        var previous = _cts;
+        _cts = new CancellationTokenSource();
+        _hasLoaded = false;
+
+        try
+        {
+            previous.Cancel();
+            previous.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Already torn down; nothing to cancel.
+        }
+    }
+
     public void Dispose()
     {
         if (_isDisposed)
@@ -365,7 +398,13 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
 
             ApplyBooks(booksResponse.Data);
 
-            var bookId = PostedLedgerProjection.ResolveDefaultBookId(booksResponse.Data);
+            // Refresh must not silently change the subject under review. An operator who selected a
+            // non-first book and pressed Refresh was returned to the alphabetically first one, and
+            // lost the selected period with it. The default is for an initial load, or when the
+            // previous selection is no longer in the book list at all.
+            var bookId = booksResponse.Data.Any(book => book.LedgerBookId == SelectedBookId)
+                ? SelectedBookId
+                : PostedLedgerProjection.ResolveDefaultBookId(booksResponse.Data);
             if (bookId is null)
             {
                 ClearBookScopedFigures();
@@ -413,6 +452,12 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         Periods.Clear();
         TrialBalance.Clear();
         PnlMetrics.Clear();
+        // The basis picker and the lines behind it are book-scoped too. Leaving them meant the
+        // picker stayed interactive over the outgoing book's cached lines while the incoming book
+        // was still loading, and choosing a basis re-ran ProjectTrialBalance to put book A's
+        // balances back on screen under book B's label and currency.
+        Bases.Clear();
+        _postedLines = [];
         SelectedPeriodId = null;
         SelectedPeriodLabel = "No period selected";
         BalanceSummaryText = "Trial balance not loaded.";
@@ -534,17 +579,29 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
 
         try
         {
+            // Started together, applied separately. Awaiting both before applying either meant a
+            // slow or hung P&L request held back a trial balance that had already arrived, leaving
+            // both panels blank; a healthy trial balance stays usable during a P&L outage and the
+            // other way round. The revision guard is still checked before each apply, so a response
+            // for a superseded selection is dropped exactly as before.
             var trialBalanceTask = _client.GetTrialBalanceAsync(periodId, ct);
             var pnlTask = _client.GetPnlSummaryAsync(periodId, ct);
-            await Task.WhenAll(trialBalanceTask, pnlTask).ConfigureAwait(true);
 
+            var trialBalance = await trialBalanceTask.ConfigureAwait(true);
             if (revision != _periodRevision)
             {
                 return;
             }
 
-            ApplyTrialBalance(await trialBalanceTask.ConfigureAwait(true));
-            ApplyPnl(await pnlTask.ConfigureAwait(true));
+            ApplyTrialBalance(trialBalance);
+
+            var pnl = await pnlTask.ConfigureAwait(true);
+            if (revision != _periodRevision)
+            {
+                return;
+            }
+
+            ApplyPnl(pnl);
             StatusText = $"Posted journal for {SelectedBookLabel} · {SelectedPeriodLabel}.";
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)

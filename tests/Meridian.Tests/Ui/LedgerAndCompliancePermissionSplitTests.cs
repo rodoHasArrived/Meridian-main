@@ -60,6 +60,26 @@ public sealed class LedgerAndCompliancePermissionSplitTests
         granted.Should().NotHaveFlag(UserPermission.ManageLedgerReports);
     }
 
+    /// <summary>
+    /// Developer is defined as Admin minus user administration, so anything added to
+    /// AdminPermissions is inherited silently. Compliance routes previously required ManageUsers,
+    /// which Developer does not hold, so it was refused by all of them; inheriting ManageCompliance
+    /// would have handed every built-in Developer account the authority to file and decide approval
+    /// requests, extract the audit chain, and read access reviews.
+    /// </summary>
+    [Fact]
+    public void DeveloperRole_DoesNotInheritComplianceAuthorityFromAdmin()
+    {
+        var developer = RolePermissions.For(UserRole.Developer);
+
+        developer.Should().NotHaveFlag(
+            UserPermission.ManageCompliance,
+            "Developer inherits Admin minus ManageUsers, so a new admin grant must be subtracted explicitly");
+        developer.Should().NotHaveFlag(UserPermission.ManageUsers);
+        // The subtraction must not have cost Developer anything else it held.
+        developer.Should().HaveFlag(UserPermission.AdminMaintenance);
+    }
+
     [Fact]
     public void MinimalRoles_DoNotReceiveTheNewAuthority()
     {
@@ -278,7 +298,7 @@ public sealed class LedgerAndCompliancePermissionSplitTests
 
         var reads = DeclaredRoutes(app, "/api/ledger")
             .Where(route => route.Method == "GET")
-            .Where(route => !route.Pattern.StartsWith(PrivateCapitalPrefix, StringComparison.Ordinal))
+            .Where(IsLedgerReportSurface)
             .Where(route => route.Authorization.Permissions.Contains(UserPermission.ManageDirectLending))
             .ToList();
         reads.Should().NotBeEmpty("the governed ledger must map read routes");
@@ -294,6 +314,19 @@ public sealed class LedgerAndCompliancePermissionSplitTests
 
     /// <summary>The private-capital surface is a different domain, not a ledger report.</summary>
     private const string PrivateCapitalPrefix = "/api/ledger/private-capital/";
+
+    /// <summary>
+    /// Whether a route under <c>/api/ledger</c> is part of what the ledger-report grant actually
+    /// buys: the trial balance, P&amp;L, periods and posted entries. Two neighbours live under the
+    /// same path prefix without belonging to it — the private-capital surface (investor-level
+    /// detail) and the manual-journal workbench (pre-posting workflow, drafts, approver identities
+    /// and the audit trail). Both keep the domain grants they had before the split.
+    /// </summary>
+    private static bool IsLedgerReportSurface(
+        (string Method, string Pattern, EndpointAuthorizationMetadata Authorization) route)
+        => !route.Pattern.StartsWith(PrivateCapitalPrefix, StringComparison.Ordinal)
+           && !route.Pattern.Contains("manual-journal", StringComparison.OrdinalIgnoreCase)
+           && !route.Pattern.Contains("journal-entry-workbench", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// The ledger-report grant buys the trial balance, P&amp;L, periods and posted entries — not the
@@ -321,6 +354,35 @@ public sealed class LedgerAndCompliancePermissionSplitTests
             route.Authorization.Permissions.Should().Contain(
                 UserPermission.ManageDirectLending,
                 $"{route.Method} {route.Pattern} must keep its private-capital domain grant");
+        }
+    }
+
+
+    /// <summary>
+    /// The manual-journal workbench is pre-posting workflow, not a ledger report: unposted drafts
+    /// with full lines, evidence links, preparer and approver identities, validation issues,
+    /// lifecycle history and the accounting audit trail. The ledger-report grant buys the trial
+    /// balance, P&amp;L, periods and posted entries, so it must not reach this route.
+    /// </summary>
+    [Fact]
+    public async Task ManualJournalWorkbench_IsNotReachableWithTheLedgerReportGrant()
+    {
+        await using var app = await CreateLedgerAndComplianceAppAsync(UserPermission.ViewLedgerReports);
+
+        var workbench = DeclaredRoutes(app, "/api/ledger")
+            .Where(route => route.Pattern.Contains("journal-entry-workbench", StringComparison.OrdinalIgnoreCase))
+            .Where(route => route.Method == "GET")
+            .ToList();
+        workbench.Should().NotBeEmpty("the manual-journal workbench must map a read route");
+
+        foreach (var route in workbench)
+        {
+            route.Authorization.Permissions.Should().NotContain(
+                UserPermission.ViewLedgerReports,
+                $"{route.Method} {route.Pattern} exposes pre-posting workflow, not a ledger report");
+            route.Authorization.Permissions.Should().NotContain(
+                UserPermission.ManageLedgerReports,
+                $"{route.Method} {route.Pattern} exposes pre-posting workflow, not a ledger report");
         }
     }
 
