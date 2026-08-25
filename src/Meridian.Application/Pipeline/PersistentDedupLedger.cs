@@ -479,6 +479,13 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
                 // L2: use sequence + timestamp
                 resolvedPrefix + $"seq:{snap.SequenceNumber}",
 
+            Contracts.Domain.Models.AggregateBarPayload agg =>
+                // Aggregates: identity is the bar window itself (timeframe + start time),
+                // which is deterministic and replay-stable. Streaming aggregate feeds carry
+                // no provider sequence (Polygon A/AM), so sequence identity would either
+                // collide (constant 0) or defeat dedup entirely (fabricated counters).
+                resolvedPrefix + $"agg:{(byte)agg.Timeframe}:{agg.StartTime.UtcTicks}",
+
             _ =>
                 // Fallback: sequence-number identity (see the scope remarks above) — only
                 // dedups replays that preserve the original sequence numbering.

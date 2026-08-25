@@ -1129,6 +1129,30 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "779b771b226f258f785e4cfd94b36451bf122a27b79fd3f44e519a0d7049279f",
+      "kind": "normal",
+      "source": "ledger.fk_journal_legs_journal_entry on ledger.journal_legs",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_entries.journal_entry_id",
+      "target_kind": "table column",
+      "target_name": "journal_entries",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "6973fed1b69a0a792c8d904ca3f4e30ea209ae2ab540388a19b815d7d8a9ee9d",
+      "kind": "normal",
+      "source": "ledger.fk_journal_legs_journal_entry on ledger.journal_legs",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_entries_journal_entry_id_key",
+      "target_kind": "index",
+      "target_name": "journal_entries_journal_entry_id_key",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "bdd7296f789a0ecc141215a1ecf8bb88a4bef529c4f4c3433da2afef78b45894",
       "kind": "normal",
       "source": "ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations",
@@ -1186,30 +1210,6 @@
       "target": "ledger.ledger_books",
       "target_kind": "relation",
       "target_name": "ledger_books",
-      "target_schema": "ledger"
-    },
-    {
-      "fingerprint": "5c9f2a1e38660c01967207ced5b8af181659cfa9be81e13429e3968f642a83b4",
-      "kind": "normal",
-      "source": "ledger.journal_legs_journal_entry_id_fkey on ledger.journal_legs",
-      "source_kind": "table constraint",
-      "source_name": null,
-      "source_schema": "ledger",
-      "target": "ledger.journal_entries.journal_entry_id",
-      "target_kind": "table column",
-      "target_name": "journal_entries",
-      "target_schema": "ledger"
-    },
-    {
-      "fingerprint": "40ddd355c0f64142bad13a83eab64c2bd441567fc973b0fbb958e2f28d3f4862",
-      "kind": "normal",
-      "source": "ledger.journal_legs_journal_entry_id_fkey on ledger.journal_legs",
-      "source_kind": "table constraint",
-      "source_name": null,
-      "source_schema": "ledger",
-      "target": "ledger.journal_entries_journal_entry_id_key",
-      "target_kind": "index",
-      "target_name": "journal_entries_journal_entry_id_key",
       "target_schema": "ledger"
     },
     {
@@ -1553,9 +1553,40 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "e24e3b56070d72a913b1a31b89913d51fe4a8dad53a75af5b9957ddf19950505",
+  "fingerprint": "23b4941468bc09537fd54cd3faf81ec5830d3bf3fb7f6f4e56b56114e5b46b5c",
   "foreign_tables": [],
   "functions": [
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "c8febf5dc1ce5615848e7c949efa065e0f0a88ad8cd8fdbd3aae9643ff6e20f0",
+      "fingerprint": "950938772a09aabbf21584b01d24cbd2b1fdf9c5d431dcf62d54ebcc8450bfd3",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "enforce_journal_entry_balance",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "enforce_journal_entry_balance()",
+      "strict": false,
+      "volatility": "volatile"
+    },
     {
       "acl": [
         {
@@ -1584,6 +1615,68 @@
       "security_definer": false,
       "security_labels": [],
       "signature": "reject_atomic_tax_lot_audit_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "85417c1a19c8cfca924c407e68cd05b5d471e466eb9b4f078acebbb8aa3fa1df",
+      "fingerprint": "885cffaa167852e2cb1b592625903d8f949b67946ef477695003ea64452bc6f5",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_journal_entry_mutation",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_journal_entry_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "bc690f760aa629ae04920eeb8154807e6f993c9d6a034809b3409c8748e54f07",
+      "fingerprint": "08cc1ef5140fbdf012d9349268a802cb7d824ee93bb0c5679d11121af3448c98",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_journal_leg_mutation",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_journal_leg_mutation()",
       "strict": false,
       "volatility": "volatile"
     }
@@ -5944,7 +6037,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "e129a93cf84370787042d4f3d34e378e7cc75709dc6b4e4d510cb0d3df664ae6",
+      "fingerprint": "fb1ba0738017c8a5dc2a946683a553b57ae8cf6ab2e39800d2f5c83c3257091c",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -6334,7 +6427,43 @@
       "schema": "ledger",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_entries_immutable BEFORE DELETE OR UPDATE ON ledger.journal_entries FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_entry_mutation()",
+          "definition_hash": "2901c7458844dd84345a802a7222c3632d5ad4b961e879351fa58b988e5f7925",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "dce57a42b8cafecb8a077efc23736a7d77504646b7c68c8b39d091ed11bb2f32",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_entry_mutation()",
+          "level": "row",
+          "name": "trg_journal_entries_immutable",
+          "relation": "journal_entries",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_entries_truncate_guard BEFORE TRUNCATE ON ledger.journal_entries FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_entry_mutation()",
+          "definition_hash": "b59af69dc687e35f82ba4a9ab50e1cebe16b29d3ddbcfc8760f5f2eed037c3f4",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "5b4af1e0b343a38c07a1de1b5be7825496da2ee5f21754fec18486db726992b3",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_entry_mutation()",
+          "level": "statement",
+          "name": "trg_journal_entries_truncate_guard",
+          "relation": "journal_entries",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -7540,12 +7669,12 @@
           ],
           "comment": null,
           "deferrable": false,
-          "definition": "FOREIGN KEY (journal_entry_id) REFERENCES ledger.journal_entries(journal_entry_id) ON DELETE CASCADE",
-          "delete_action": "cascade",
-          "fingerprint": "1df05633dab9e260508ce902280eb8ce7fc16cd5eefe7deb0c30137cbe9a4402",
+          "definition": "FOREIGN KEY (journal_entry_id) REFERENCES ledger.journal_entries(journal_entry_id)",
+          "delete_action": "no_action",
+          "fingerprint": "651c2a24b022d7f51f0fa38bdb84964351608bf5a564f37e83cd741da946218f",
           "initially_deferred": false,
           "match_type": "simple",
-          "name": "journal_legs_journal_entry_id_fkey",
+          "name": "fk_journal_legs_journal_entry",
           "no_inherit": true,
           "referenced_columns": [
             "journal_entry_id"
@@ -7600,7 +7729,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "49dbc4129d3d9da2963f617f2e7f65876fa929249708895d9667ffa22aaa92cc",
+      "fingerprint": "a43f6913c2deaaff57f360b3d9a0e37a1ea52f7662613a004466acc43325e5a1",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -7823,7 +7952,60 @@
       "schema": "ledger",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE CONSTRAINT TRIGGER ctrg_journal_legs_entry_balanced AFTER INSERT ON ledger.journal_legs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION ledger.enforce_journal_entry_balance()",
+          "definition_hash": "0f6f4b4020b90e845b378d84bf77b65f6b3029b4a393d36287cc47126a9f4575",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "cc09759b8afe8bd2baab383b516a4161d01f1917e725ea121323c1111e5db82d",
+          "function_schema": "ledger",
+          "function_signature": "enforce_journal_entry_balance()",
+          "level": "row",
+          "name": "ctrg_journal_legs_entry_balanced",
+          "relation": "journal_legs",
+          "schema": "ledger",
+          "timing": "after"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_legs_immutable BEFORE DELETE OR UPDATE ON ledger.journal_legs FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_leg_mutation()",
+          "definition_hash": "10d9769b4255b06d4feadaa096ff2975b91325dc89c43aaa44541b8bfa69dd43",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "8bffc69e3d79df0f761bdfcef481cffc48afa8a0c091b7188ec02803fa84d855",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_leg_mutation()",
+          "level": "row",
+          "name": "trg_journal_legs_immutable",
+          "relation": "journal_legs",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_legs_truncate_guard BEFORE TRUNCATE ON ledger.journal_legs FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_leg_mutation()",
+          "definition_hash": "3c4307326b77c4fcd366e7277dcef27937b19e5ef1f446aad0304a4789d028a7",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "195b704fddd21543cbe1321c673deb29e151a7868285b1be5e3745a3ac9c8d8d",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_leg_mutation()",
+          "level": "statement",
+          "name": "trg_journal_legs_truncate_guard",
+          "relation": "journal_legs",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -17135,7 +17317,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "e129a93cf84370787042d4f3d34e378e7cc75709dc6b4e4d510cb0d3df664ae6",
+      "fingerprint": "fb1ba0738017c8a5dc2a946683a553b57ae8cf6ab2e39800d2f5c83c3257091c",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -17525,7 +17707,43 @@
       "schema": "ledger",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_entries_immutable BEFORE DELETE OR UPDATE ON ledger.journal_entries FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_entry_mutation()",
+          "definition_hash": "2901c7458844dd84345a802a7222c3632d5ad4b961e879351fa58b988e5f7925",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "dce57a42b8cafecb8a077efc23736a7d77504646b7c68c8b39d091ed11bb2f32",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_entry_mutation()",
+          "level": "row",
+          "name": "trg_journal_entries_immutable",
+          "relation": "journal_entries",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_entries_truncate_guard BEFORE TRUNCATE ON ledger.journal_entries FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_entry_mutation()",
+          "definition_hash": "b59af69dc687e35f82ba4a9ab50e1cebe16b29d3ddbcfc8760f5f2eed037c3f4",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "5b4af1e0b343a38c07a1de1b5be7825496da2ee5f21754fec18486db726992b3",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_entry_mutation()",
+          "level": "statement",
+          "name": "trg_journal_entries_truncate_guard",
+          "relation": "journal_entries",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -18480,12 +18698,12 @@
           ],
           "comment": null,
           "deferrable": false,
-          "definition": "FOREIGN KEY (journal_entry_id) REFERENCES ledger.journal_entries(journal_entry_id) ON DELETE CASCADE",
-          "delete_action": "cascade",
-          "fingerprint": "1df05633dab9e260508ce902280eb8ce7fc16cd5eefe7deb0c30137cbe9a4402",
+          "definition": "FOREIGN KEY (journal_entry_id) REFERENCES ledger.journal_entries(journal_entry_id)",
+          "delete_action": "no_action",
+          "fingerprint": "651c2a24b022d7f51f0fa38bdb84964351608bf5a564f37e83cd741da946218f",
           "initially_deferred": false,
           "match_type": "simple",
-          "name": "journal_legs_journal_entry_id_fkey",
+          "name": "fk_journal_legs_journal_entry",
           "no_inherit": true,
           "referenced_columns": [
             "journal_entry_id"
@@ -18540,7 +18758,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "49dbc4129d3d9da2963f617f2e7f65876fa929249708895d9667ffa22aaa92cc",
+      "fingerprint": "a43f6913c2deaaff57f360b3d9a0e37a1ea52f7662613a004466acc43325e5a1",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -18763,7 +18981,60 @@
       "schema": "ledger",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE CONSTRAINT TRIGGER ctrg_journal_legs_entry_balanced AFTER INSERT ON ledger.journal_legs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION ledger.enforce_journal_entry_balance()",
+          "definition_hash": "0f6f4b4020b90e845b378d84bf77b65f6b3029b4a393d36287cc47126a9f4575",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "cc09759b8afe8bd2baab383b516a4161d01f1917e725ea121323c1111e5db82d",
+          "function_schema": "ledger",
+          "function_signature": "enforce_journal_entry_balance()",
+          "level": "row",
+          "name": "ctrg_journal_legs_entry_balanced",
+          "relation": "journal_legs",
+          "schema": "ledger",
+          "timing": "after"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_legs_immutable BEFORE DELETE OR UPDATE ON ledger.journal_legs FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_leg_mutation()",
+          "definition_hash": "10d9769b4255b06d4feadaa096ff2975b91325dc89c43aaa44541b8bfa69dd43",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "8bffc69e3d79df0f761bdfcef481cffc48afa8a0c091b7188ec02803fa84d855",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_leg_mutation()",
+          "level": "row",
+          "name": "trg_journal_legs_immutable",
+          "relation": "journal_legs",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_legs_truncate_guard BEFORE TRUNCATE ON ledger.journal_legs FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_leg_mutation()",
+          "definition_hash": "3c4307326b77c4fcd366e7277dcef27937b19e5ef1f446aad0304a4789d028a7",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "195b704fddd21543cbe1321c673deb29e151a7868285b1be5e3745a3ac9c8d8d",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_leg_mutation()",
+          "level": "statement",
+          "name": "trg_journal_legs_truncate_guard",
+          "relation": "journal_legs",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -23510,6 +23781,93 @@
       "level": "row",
       "name": "trg_atomic_tax_lot_batches_immutable",
       "relation": "atomic_tax_lot_posting_batches",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_entries_immutable BEFORE DELETE OR UPDATE ON ledger.journal_entries FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_entry_mutation()",
+      "definition_hash": "2901c7458844dd84345a802a7222c3632d5ad4b961e879351fa58b988e5f7925",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "dce57a42b8cafecb8a077efc23736a7d77504646b7c68c8b39d091ed11bb2f32",
+      "function_schema": "ledger",
+      "function_signature": "reject_journal_entry_mutation()",
+      "level": "row",
+      "name": "trg_journal_entries_immutable",
+      "relation": "journal_entries",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_entries_truncate_guard BEFORE TRUNCATE ON ledger.journal_entries FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_entry_mutation()",
+      "definition_hash": "b59af69dc687e35f82ba4a9ab50e1cebe16b29d3ddbcfc8760f5f2eed037c3f4",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "5b4af1e0b343a38c07a1de1b5be7825496da2ee5f21754fec18486db726992b3",
+      "function_schema": "ledger",
+      "function_signature": "reject_journal_entry_mutation()",
+      "level": "statement",
+      "name": "trg_journal_entries_truncate_guard",
+      "relation": "journal_entries",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE CONSTRAINT TRIGGER ctrg_journal_legs_entry_balanced AFTER INSERT ON ledger.journal_legs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION ledger.enforce_journal_entry_balance()",
+      "definition_hash": "0f6f4b4020b90e845b378d84bf77b65f6b3029b4a393d36287cc47126a9f4575",
+      "enabled": "origin",
+      "events": [
+        "insert"
+      ],
+      "fingerprint": "cc09759b8afe8bd2baab383b516a4161d01f1917e725ea121323c1111e5db82d",
+      "function_schema": "ledger",
+      "function_signature": "enforce_journal_entry_balance()",
+      "level": "row",
+      "name": "ctrg_journal_legs_entry_balanced",
+      "relation": "journal_legs",
+      "schema": "ledger",
+      "timing": "after"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_legs_immutable BEFORE DELETE OR UPDATE ON ledger.journal_legs FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_leg_mutation()",
+      "definition_hash": "10d9769b4255b06d4feadaa096ff2975b91325dc89c43aaa44541b8bfa69dd43",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "8bffc69e3d79df0f761bdfcef481cffc48afa8a0c091b7188ec02803fa84d855",
+      "function_schema": "ledger",
+      "function_signature": "reject_journal_leg_mutation()",
+      "level": "row",
+      "name": "trg_journal_legs_immutable",
+      "relation": "journal_legs",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_legs_truncate_guard BEFORE TRUNCATE ON ledger.journal_legs FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_leg_mutation()",
+      "definition_hash": "3c4307326b77c4fcd366e7277dcef27937b19e5ef1f446aad0304a4789d028a7",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "195b704fddd21543cbe1321c673deb29e151a7868285b1be5e3745a3ac9c8d8d",
+      "function_schema": "ledger",
+      "function_signature": "reject_journal_leg_mutation()",
+      "level": "statement",
+      "name": "trg_journal_legs_truncate_guard",
+      "relation": "journal_legs",
       "schema": "ledger",
       "timing": "before"
     },

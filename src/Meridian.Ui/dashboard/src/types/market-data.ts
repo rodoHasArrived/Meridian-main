@@ -115,6 +115,15 @@ export interface OrderBookResponse {
   venue: string | null;
 }
 
+/**
+ * Mirrors C# `HistoricalBarPoint` (registry-checked; keep comments out of the body).
+ * `source` is the provenance label of the events aggregated into the bucket: a single
+ * vendor label, the `"mixed"` sentinel when the bucket folds together more than one
+ * provenance state (two vendors, or labeled plus unlabeled events), or null when no
+ * contributing event was labeled. `isAdjusted` is the price-adjustment regime:
+ * true/false only when every contributing event declares that same regime; mixed or
+ * undeclared regimes collapse to null (unknown).
+ */
 export interface HistoricalBarPoint {
   start: string;
   open: number;
@@ -124,8 +133,15 @@ export interface HistoricalBarPoint {
   volume: number;
   vwap: number;
   tradeCount: number;
+  source?: string | null;
+  isAdjusted?: boolean | null;
 }
 
+/**
+ * Mirrors C# `HistoricalBarsResult`. `sources` is the distinct provenance labels observed
+ * across the returned bars' contributing events (unlabeled events contribute nothing, so an
+ * empty list with non-empty `bars` means the series is entirely unattributed).
+ */
 export interface HistoricalBarsResponse {
   success: boolean;
   message: string | null;
@@ -138,4 +154,5 @@ export interface HistoricalBarsResponse {
   totalFiles: number;
   queryTimeMs: number;
   bars: HistoricalBarPoint[];
+  sources: string[];
 }

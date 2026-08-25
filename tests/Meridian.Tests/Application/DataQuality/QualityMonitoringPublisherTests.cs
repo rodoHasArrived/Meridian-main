@@ -46,7 +46,7 @@ public sealed class QualityMonitoringPublisherTests
         var inner = new RecordingPublisher();
         await using var sut = new QualityMonitoringPublisher(inner, quality);
 
-        sut.TryPublish(MarketEvent.Heartbeat(DateTimeOffset.UtcNow)).Should().BeTrue();
+        sut.TryPublish(MarketEvent.Heartbeat(DateTimeOffset.UtcNow, "TEST")).Should().BeTrue();
         sut.TryPublish(CreateTradeEvent("SPY", sequence: 1)).Should().BeTrue();
 
         // The trade published after the heartbeat has been observed, so the heartbeat
@@ -115,7 +115,7 @@ public sealed class QualityMonitoringPublisherTests
             Aggressor: AggressorSide.Buy,
             SequenceNumber: sequence);
 
-        return MarketEvent.Trade(now, symbol, trade, sequence);
+        return MarketEvent.Trade(now, symbol, trade, "TEST", sequence);
     }
 
     private static MarketEvent CreateQuoteEvent(string symbol, long sequence)
@@ -132,7 +132,7 @@ public sealed class QualityMonitoringPublisherTests
             Spread: 0.05m,
             SequenceNumber: sequence);
 
-        return MarketEvent.BboQuote(now, symbol, quote, sequence);
+        return MarketEvent.BboQuote(now, symbol, quote, "TEST", sequence);
     }
 
     private static async Task WaitUntilAsync(Func<bool> condition, int timeoutMs = 5_000)

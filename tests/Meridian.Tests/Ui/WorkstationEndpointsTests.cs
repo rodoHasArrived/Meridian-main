@@ -7382,7 +7382,7 @@ public sealed partial class WorkstationEndpointsTests
             AskPrice: 200.10m,
             AskSize: 100,
             StreamId: "TEST",
-            Venue: "TEST"));
+            Venue: "TEST", Source: "TEST"));
 
         var position = new Meridian.Execution.Models.ExecutionPosition(
             Symbol: "AAPL",
@@ -7443,7 +7443,7 @@ public sealed partial class WorkstationEndpointsTests
             Aggressor: Meridian.Contracts.Domain.Enums.AggressorSide.Buy,
             SequenceNumber: 1,
             StreamId: "TEST",
-            Venue: "TEST"));
+            Venue: "TEST", Source: "TEST"));
 
         var position = new Meridian.Execution.Models.ExecutionPosition(
             Symbol: "AAPL",
@@ -7508,7 +7508,7 @@ public sealed partial class WorkstationEndpointsTests
             AskPrice: 420.50m,
             AskSize: 200,
             StreamId: "TEST",
-            Venue: "TEST"));
+            Venue: "TEST", Source: "TEST"));
 
         var position = new Meridian.Execution.Models.ExecutionPosition(
             Symbol: "MSFT",

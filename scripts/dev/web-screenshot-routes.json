@@ -587,6 +587,21 @@
       ]
     },
     {
+      "id": "W03O",
+      "docLabel": "Accounting — Capital Call Issuance",
+      "name": "web-accounting-capital-calls",
+      "path": "/accounting/capital-calls",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForText": "Capital Call Issuance",
+      "waitForTexts": [
+        "How this run is governed",
+        "Capital-call id",
+        "This surface never posts."
+      ]
+    },
+    {
       "id": "W04",
       "name": "web-reporting-workspace",
       "path": "/reporting",

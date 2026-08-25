@@ -154,7 +154,7 @@ public class SessionStatsCollectorTests
             Aggressor: AggressorSide.Buy,
             SequenceNumber: 1,
             StreamId: "TEST",
-            Venue: "NYSE");
+            Venue: "NYSE", Source: "TEST");
 
         collector.OnTrade(update);
 
@@ -173,10 +173,10 @@ public class SessionStatsCollectorTests
         var collector = new TradeDataCollector(publisher, quotes: null, sessionStats: sessionStats);
 
         var ts = new DateTimeOffset(2026, 5, 8, 13, 30, 0, TimeSpan.Zero);
-        collector.OnTrade(new MarketTradeUpdate(ts, "SPY", 450m, 100, AggressorSide.Buy, 5, "T", "NYSE"));
+        collector.OnTrade(new MarketTradeUpdate(ts, "SPY", 450m, 100, AggressorSide.Buy, 5, "T", "NYSE", Source: "TEST"));
 
         // Out-of-order trade (lower sequence) — should be rejected without updating session stats.
-        collector.OnTrade(new MarketTradeUpdate(ts.AddMilliseconds(1), "SPY", 999m, 50, AggressorSide.Buy, 3, "T", "NYSE"));
+        collector.OnTrade(new MarketTradeUpdate(ts.AddMilliseconds(1), "SPY", 999m, 50, AggressorSide.Buy, 3, "T", "NYSE", Source: "TEST"));
 
         var stats = sessionStats.TryGet("SPY")!;
         stats.High.Should().Be(450m);

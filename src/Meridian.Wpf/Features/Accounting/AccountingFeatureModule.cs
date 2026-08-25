@@ -36,7 +36,6 @@ using Meridian.Storage;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Wpf.Features.Accounting;
 
@@ -51,6 +50,13 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddTransient<AccountingWorkspaceShellStateProvider>();
         services.AddTransient<AccountingWorkspaceShellViewModel>();
         services.AddTransient<AccountingWorkspaceShellPage>();
+        // Desktop-local fund setup lane: the fund-account and fund-structure services below
+        // persist to JSON under %LOCALAPPDATA% on this workstation only. They are not the
+        // server's Postgres fund universe and are not shared with the browser workstation,
+        // so the Fund Accounts and Entity Setup screens carry the shared data-provenance
+        // badge until this lane is migrated to the governed HTTP surface (there is no
+        // workstation API client for fund accounts yet). Reconciliation posture no longer
+        // reads from this lane — see ReconciliationReadService.
         services.AddSingleton(sp => new InMemoryFundAccountService(
             Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -173,7 +179,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetRequiredService<DailyValuationPositionService>(),
                 sp.GetRequiredService<AutomatedJournalEvidencePolicy>(),
                 sp.GetService<IAutomatedJournalCapitalAccountReconciliationResolver>(),
-                sp.GetRequiredService<TimeProvider>());
+                sp.GetRequiredService<TimeProvider>(),
+                sp.GetService<IManualJournalEntryWorkbenchService>());
         });
         services.TryAddSingleton<IAccountingClosePostingWorkbench>(sp =>
             new AccountingClosePostingWorkbenchBridge(
@@ -186,12 +193,13 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<IReconciliationBreakQueueRepository>(),
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IReportingReleaseConsistencyGate>()));
+        // The desktop registers only the deterministic worker seams. The scheduler host
+        // loops (DailyValuationSchedulerHostedService / AutomatedJournalSchedulerHostedService)
+        // run server-side via WorkstationServiceCollectionExtensions; running them in this
+        // process would execute valuation and journal automation against a composition whose
+        // ledger dependencies resolve null and would fork scheduling state from the server.
         services.TryAddSingleton<DailyValuationScheduledWorker>();
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());
         services.TryAddSingleton<AutomatedJournalScheduledWorker>();
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IHostedService, AutomatedJournalSchedulerHostedService>());
         services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
             new CapitalAccountWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),

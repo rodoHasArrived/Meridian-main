@@ -87,6 +87,14 @@ describing a different problem, and stamping either code would be wrong.
   are repaired.
 - **Repairs run at `Serializable`.** A repair racing heavy posting can fail with a serialization
   error; retry it.
+- **Run repairs through this lane, not raw SQL.** `V_ledger_030` made `journal_entries` and
+  `journal_legs` immutable at the database; the currency repair is the one governed mutation its
+  trigger admits, and only from a transaction that has declared itself via the transaction-scoped
+  `meridian.ledger_currency_repair` setting. `PostgresLedgerCurrencyBackfill` makes that
+  declaration itself, so the workflow above is unchanged — but a hand-written `update` against
+  `journal_legs`, even one that only fills currency detail, is rejected with SQLSTATE `55000`
+  unless it declares itself the same way and stamps exactly the identity-translation shape onto a
+  currency-blind leg.
 
 ## Related
 

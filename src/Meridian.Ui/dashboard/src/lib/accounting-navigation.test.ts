@@ -19,14 +19,14 @@ describe("Accounting navigation", () => {
       [group.label, group.items.map((item) => item.label)]
     ))).toEqual([
       ["Close", ["Today", "Operations continuity", "Close calendar"]],
-      ["Records", ["Ledger explorer", "Adjustments", "Capital accounts", "Security Master"]],
+      ["Records", ["Ledger explorer", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
       ["Reconciliation", ["Import statement", "Casework", "External GL"]],
       ["Review", ["Exceptions", "Approvals"]],
       ["Administration", ["Entity setup", "Configure"]]
     ]);
 
     const routes = ACCOUNTING_NAVIGATION_ITEMS.map((item) => item.route);
-    expect(routes).toHaveLength(14);
+    expect(routes).toHaveLength(15);
     expect(new Set(routes).size).toBe(routes.length);
     expect(routes).not.toContain("/accounting/reporting");
     expect(routes).not.toContain("/reporting/evidence");

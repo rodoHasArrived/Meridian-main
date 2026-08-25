@@ -7,11 +7,12 @@ using Microsoft.Extensions.Logging;
 namespace Meridian.Application.Reconciliation;
 
 /// <summary>
-/// Resolves the internal book (positions and cash) a statement run reconciles against from Meridian's
-/// own retained account records, replacing the fail-closed empty default so shipped imports actually
-/// reconcile instead of surfacing every external row as an unmatched break. Lives in the application
-/// layer so both the browser workstation service graph and the CLI command graph resolve the same
-/// retained-book provider over shared account and position stores.
+/// Resolves the internal book (positions, cash, and journal-projected ledger transactions) a
+/// statement run reconciles against from Meridian's own retained records, replacing the fail-closed
+/// empty default so shipped imports actually reconcile instead of surfacing every external row as an
+/// unmatched break. Lives in the application layer so both the browser workstation service graph and
+/// the CLI command graph resolve the same retained-book provider over shared account, position, and
+/// ledger-journal stores.
 /// </summary>
 /// <remarks>
 /// Sources and assumptions (documented for operator/domain review):
@@ -33,15 +34,21 @@ namespace Meridian.Application.Reconciliation;
 ///   <item>Internal records are labeled with the run's external (custodian) account key — the same key
 ///     the statement side normalizes to — so a statement row reconciles against Meridian's book for the
 ///     account under reconciliation regardless of the per-row account string the custodian emits.</item>
-///   <item>Ledger-transaction population is intentionally left empty (fail closed to breaks). Sourcing it
-///     is a domain decision, not a wiring gap: the reconciliation context carries no ledger-book/period
-///     scope key, the ledger journal is double-entry (each entry has several GL lines, so projecting a
-///     single custodian-visible movement — its net amount, quantity, security, external id, and type — is
-///     a modeling choice), only custodian-reconcilable postings should be projected (accruals,
-///     revaluations, and inter-book transfers never appear on a statement), and fund-scoped journal reads
-///     are tenant-authorized. Populating it wrongly would fabricate false matches or flood false
-///     internal-only breaks, both worse than the current fail-closed behavior, so it awaits an authorized
-///     period-scoped ledger source and an agreed journal→transaction projection.</item>
+///   <item>Ledger transactions are projected from posted journals by the composed
+///     <see cref="IInternalLedgerTransactionSource"/> (see
+///     <see cref="LedgerJournalInternalTransactionSource"/>): for the statement window, journals
+///     attributable to this account (metadata or line-level <c>FinancialAccountId</c> equal to the
+///     fund-account GUID, the account's ledger reference, or the external custodian key) that move a
+///     well-known cash account project into custodian-visible transactions — net cash amount per
+///     currency, canonical trade/fee/dividend/transaction type, effective date, and any stamped
+///     external (FITID) identity. Pure internal postings (accruals, valuation marks, period close,
+///     reversal pairs) are excluded by a conservative rule documented on the source. Journal reads go
+///     through the tenant-scoped <c>ILedgerJournalStore.QueryAsync</c> seam. When no journal source is
+///     composed, the store is unavailable, or nothing attributes to the account, the population stays
+///     empty exactly as before, so the matcher keeps stamping transaction breaks with the
+///     informational <c>internal-transaction-population-unavailable</c> classification instead of
+///     comparing against a fabricated book; a genuinely projected population restores full blocking
+///     authority automatically.</item>
 /// </list>
 /// Every resolution failure degrades to <see cref="InternalReconciliationPopulations.Empty"/> so the
 /// matcher never fabricates a match and the import workflow never throws.
@@ -49,7 +56,8 @@ namespace Meridian.Application.Reconciliation;
 public sealed class RetainedInternalReconciliationPopulationProvider(
     IAccountQueryService? accounts = null,
     IPositionSnapshotStore? positionSnapshots = null,
-    ILogger<RetainedInternalReconciliationPopulationProvider>? logger = null)
+    ILogger<RetainedInternalReconciliationPopulationProvider>? logger = null,
+    IInternalLedgerTransactionSource? ledgerTransactionSource = null)
     : IInternalReconciliationPopulationProvider
 {
     public async Task<InternalReconciliationPopulations> GetPopulationsAsync(
@@ -73,7 +81,7 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
             // Both sides of the match are keyed by the run's external (custodian) account so the
             // per-row account string a statement carries (an IBAN, a bank id, a broker account number)
             // does not have to equal Meridian's internal account code for the books to reconcile.
-            var accountKey = string.IsNullOrWhiteSpace(context.ExternalAccountId)
+            var accountLabel = string.IsNullOrWhiteSpace(context.ExternalAccountId)
                 ? context.FundAccountId
                 : context.ExternalAccountId.Trim();
 
@@ -83,10 +91,11 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                 ? (DateOnly?)null
                 : context.StatementPeriodEnd;
 
-            var cash = await ReadCashAsync(accounts, accountId, accountKey, asOfCeiling, ct).ConfigureAwait(false);
-            var positions = await ReadPositionsAsync(positionSnapshots, account, context.FundAccountId, accountKey, asOfCeiling, ct).ConfigureAwait(false);
+            var cash = await ReadCashAsync(accounts, accountId, accountLabel, asOfCeiling, ct).ConfigureAwait(false);
+            var positions = await ReadPositionsAsync(positionSnapshots, account, context.FundAccountId, accountLabel, asOfCeiling, ct).ConfigureAwait(false);
+            var ledgerTransactions = await ReadLedgerTransactionsAsync(ledgerTransactionSource, account, context, accountLabel, ct).ConfigureAwait(false);
 
-            return new InternalReconciliationPopulations(positions, cash, []);
+            return new InternalReconciliationPopulations(positions, cash, ledgerTransactions);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -103,7 +112,7 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
     private static async Task<IReadOnlyList<InternalCashBalance>> ReadCashAsync(
         IAccountQueryService accounts,
         Guid accountId,
-        string accountKey,
+        string accountLabel,
         DateOnly? asOfCeiling,
         CancellationToken ct)
     {
@@ -133,8 +142,8 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                     .ThenByDescending(snapshot => snapshot.RecordedAt)
                     .First();
                 return new InternalCashBalance(
-                    $"internal-cash:{accountKey}:{group.Key}",
-                    accountKey,
+                    $"internal-cash:{accountLabel}:{group.Key}",
+                    accountLabel,
                     latest.Currency,
                     latest.CashBalance,
                     $"internal:balance:{latest.SnapshotId:D}",
@@ -143,11 +152,53 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
             .ToArray();
     }
 
+    /// <summary>
+    /// Projects the account's posted journals for the statement window into custodian-visible
+    /// internal transactions. The aliases are every identifier a journal may be stamped with for
+    /// this account; the source projects only journals attributable to one of them and fails
+    /// closed to an empty population itself, so a missing or unavailable journal source degrades
+    /// the transaction lane alone — cash and positions keep reconciling.
+    /// </summary>
+    private static async Task<IReadOnlyList<InternalLedgerTransaction>> ReadLedgerTransactionsAsync(
+        IInternalLedgerTransactionSource? ledgerTransactionSource,
+        AccountSummaryDto account,
+        InternalReconciliationPopulationContext context,
+        string accountLabel,
+        CancellationToken ct)
+    {
+        if (ledgerTransactionSource is null)
+        {
+            return [];
+        }
+
+        var aliases = new List<string> { account.AccountId.ToString("D") };
+        if (!string.IsNullOrWhiteSpace(account.LedgerReference))
+        {
+            aliases.Add(account.LedgerReference.Trim());
+        }
+
+        if (!string.IsNullOrWhiteSpace(context.ExternalAccountId))
+        {
+            aliases.Add(context.ExternalAccountId.Trim());
+        }
+
+        return await ledgerTransactionSource
+            .GetTransactionsAsync(
+                new InternalLedgerTransactionQuery(
+                    accountLabel,
+                    aliases,
+                    context.StatementPeriodStart,
+                    context.StatementPeriodEnd,
+                    context.BaseCurrency),
+                ct)
+            .ConfigureAwait(false) ?? [];
+    }
+
     private static async Task<IReadOnlyList<InternalPortfolioPosition>> ReadPositionsAsync(
         IPositionSnapshotStore? positionSnapshots,
         AccountSummaryDto account,
         string accountIdText,
-        string accountKey,
+        string accountLabel,
         DateOnly? asOfCeiling,
         CancellationToken ct)
     {
@@ -173,8 +224,8 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
             }
 
             positions.Add(new InternalPortfolioPosition(
-                $"internal-pos:{accountKey}:{position.Symbol}",
-                accountKey,
+                $"internal-pos:{accountLabel}:{position.Symbol}",
+                accountLabel,
                 position.Symbol,
                 asOfDate,
                 position.Quantity,

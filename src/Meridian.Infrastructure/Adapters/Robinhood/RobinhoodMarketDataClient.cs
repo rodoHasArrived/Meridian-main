@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Core.Exceptions;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Adapters.Core;
@@ -281,7 +282,8 @@ public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketData
                     BidSize: q.BidSize ?? 0L,
                     AskPrice: ask,
                     AskSize: q.AskSize ?? 0L,
-                    StreamId: "ROBINHOOD");
+                    StreamId: "ROBINHOOD",
+                    Source: MarketDataSources.Robinhood);
 
                 var issues = ProviderDataQualityValidator.ValidateQuote("robinhood-live", update);
                 if (issues.Any(issue => issue.Severity == ProviderDataQualitySeverity.Error))
