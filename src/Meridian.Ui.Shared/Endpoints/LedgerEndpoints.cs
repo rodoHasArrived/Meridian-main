@@ -47,11 +47,8 @@ public static partial class LedgerEndpoints
             var books = await service
                 .ListBooksAsync(new LedgerBookQuery(fundProfileId, fundStructureNodeId, AccountingBasis: accountingBasis), context.RequestAborted)
                 .ConfigureAwait(false);
-            // Served in the canonical order, not the store's. The first book is what a freshly
-            // opened surface scopes itself to, so leaving the order to each client meant the
-            // browser and the desktop could open the same ledger on different books — and show
-            // different periods and figures under the same scope label. See LedgerBookOrdering
-            // for why this cannot be re-derived faithfully in the browser.
+            // Served in the canonical order rather than the store's: the first book is the scope a
+            // freshly opened surface takes. LedgerBookOrdering says why clients cannot re-derive it.
             return Results.Json(LedgerBookOrdering.Sort(books), jsonOptions);
         })
         .WithName("ListLedgerBooks").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
