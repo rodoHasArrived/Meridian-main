@@ -40,8 +40,9 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     and P&L into `AccountingPostedLedgerSection`, so **that half is no longer current state**. What
     remains open is the run-scoped panel still bound on `ViewStrategies` (which `FundAccountant` and
     `Controller` do not hold), the `ManageDirectLending` permission overload the new panel depends
-    on, the option contract multiplier that never reaches portfolio economics, and 29% of route
-    constants (250 of 862) reachable from no client layer
+    on, the option contract multiplier that never reaches portfolio economics, and an estimated 29%
+    of route constants (250 of 862) referenced by no client layer — a reference-based measure the
+    review itself qualifies as an estimate with error in both directions, not a settled count
   - [Adversarial Program Review (2026-08-24)](adversarial-program-review-2026-08-24.md) —
     independent whole-program adverse review; re-tests every headline finding of the 2026-08-18
     pass against the 218 commits landed since, verifies the three built-but-dead flagship fixes

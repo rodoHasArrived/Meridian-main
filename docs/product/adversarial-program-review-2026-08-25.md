@@ -59,7 +59,8 @@ and it is invisible to every gate the repository runs, because no gate compares 
 | Provenance at the ingress seam | **Partial** | `2361152c` threads real provider identity; the contract still permits an un-sourced print — `MarketTradeUpdate.cs:33` is `string? Source = null` |
 | Fund-economics activation | **Partial — the named alternative was skipped** | capital-call issuance wired (`CapitalCallFundingIntake.cs:236`); NAV-per-unit + unit register still at zero consumers |
 | `ContractMultiplier` on the durable fill record | **Open — and wider than reported** | §3–§4 below: the multiplier never reaches portfolio economics on any path, so option position value is understated live as well as on restore, and every number derived from it is wrong (see §4 for the per-metric breakdown — it is not a uniform 1/100 on equity or Sharpe) |
-| WPF state un-fork / desktop test job in the gate | **Open** | §7 below |
+| WPF state un-fork | **Partial** | reconciliation posture no longer reads desktop-local state and the remaining local fund-setup lane is labelled with a provenance badge (`AccountingFeatureModule.cs:53-59`); the scheduler host loops were removed from the desktop process and now run server-side (`:196-202`). Residual: fund-account and fund-structure services still persist JSON under `%LOCALAPPDATA%`, along with drafts and schedules |
+| Desktop test job in the required gate | **Open** | §7 below. Bundling this with the state un-fork, as an earlier draft did, hid the remediation above and meant neither half was actually re-tested |
 
 ## 1. The accounting workstation reads the wrong book, and the accountants are locked out of it
 
@@ -537,11 +538,17 @@ close-management product can tell.
 
 ## 9. Smaller findings worth fixing cheaply
 
-- **Governed period reopen is dark.** `LedgerCloseManagementPeriodReopen`
-  (`UiApiRoutes.cs:824`) has zero consumers in either client, while plan, late adjustments,
-  task sign-offs, evidence review, and period **lock** are all wired. An operator can lock a period
-  from the workstation and has no path to reopen it — the one direction that most needs a governed,
-  evidenced UI.
+- **Governed period reopen has two routes and only one is wired — the capability is not dark.**
+  `LedgerCloseManagementPeriodReopen` (`UiApiRoutes.cs:824`) has zero consumers in either client,
+  while plan, late adjustments, task sign-offs, evidence review, and period **lock** all use their
+  own routes. But an operator *can* reopen: the mounted `/accounting/operations-continuity` screen
+  renders a "Governed period reopen command" and submits incident, approval, justification, impact,
+  correlation and evidence through `reopenOperationsContinuityWorkflow`
+  (`operations-continuity-screen.tsx:1464-1504,2263-2366`; `app.tsx:824`), with test coverage. An
+  earlier draft of this bullet said there was "no path to reopen", which would have prioritized
+  building a workflow that already exists. The residual finding is narrower and is about the
+  *catalog*, not the operator: two reopen surfaces exist, the ledger-close one is unconsumed, and
+  nothing reconciles them — so a reader of the route catalog cannot tell which is authoritative.
 - **Provenance remains optional at the type level.** `MarketTradeUpdate.cs:33` is
   `string? Source = null`. The ingress threading landed; the contract still admits an un-sourced
   print, so the class of defect can be reintroduced by any new adapter. Making `Source` required is
@@ -591,8 +598,15 @@ close-management product can tell.
    convention, on `ExecutionReport` and `FillEvent` — and *consumed* in **every** transaction branch,
    not a subset: `ApplyBuy`, `ApplySellLong`, `ApplyShortSell` and `ApplyCoverShort` (the last two
    also feed Reg-T collateral and the ledger postings), the `MarketValue`/`SignedMarketValue`/
-   `UnrealisedPnl` projections on `PaperPosition`, and the three restore sites in
-   `PaperSessionPersistenceService`.
+   `UnrealisedPnl` projections on `PaperPosition`, the three restore sites in
+   `PaperSessionPersistenceService`, **and both margin models** — `RegTMarginModel:93,135` and
+   `PortfolioMarginModel:55-57,93-97` compute notional, maintenance and the stressed legs from
+   `position.Quantity * price` and never read the `ContractMultiplier` that
+   `PaperPosition.ToExecutionPosition` already hands them, so margin requirements and
+   excess-liquidity checks stay at 1/100 even after every transaction branch is fixed. That is a
+   *separate* margin path from the short-sale collateral in §3: one is `pos.MarginBorrowed` inside
+   the portfolio, the other is the `IMarginModel` requirement computed over it. Both need the
+   multiplier, and both need regression coverage.
    Carrying it is not the fix; multiplying by it is. Until then an option session's P&L and total
    return are off by the multiplier, its equity is wrong in the flattering direction on losses, and
    its Sharpe drifts — see §4 for the per-metric breakdown, which is *not* a uniform 1/100. Third
@@ -606,7 +620,8 @@ close-management product can tell.
    constant must be referenced by a client or appear on a declared headless allowlist — this is the
    only one of the three that would have caught the unconsumed posted-ledger routes, since no
    workspace links to them and no role check can see them; (c) the dark
-   count must not grow. These three catch §1, §6, and §9's reopen gap automatically — but **not
+   count must not grow. These three catch §1, §6, and §9's unreconciled reopen routes
+   automatically — but **not
    §5**, and the reason is worth stating because it exposes a limit of this whole review's thesis.
    The NAV kernel has no route constant and no endpoint registration:
    `ShareClassUnitRegisterProjector` and `NavPerUnitCalculator` appear only in
@@ -651,7 +666,9 @@ close-management product can tell.
    already render their failures. Consolidating those bespoke blocks onto `RegionErrorState` is
    visual standardization — worth doing so operators learn one vocabulary for "this failed", but
    lower priority than the staleness it was previously bundled with. (§8)
-9. **Close the small governed gaps.** Wire period reopen; make `MarketTradeUpdate.Source` required;
+9. **Close the small governed gaps.** Reconcile the two period-reopen surfaces — the governed
+   workflow on `/accounting/operations-continuity` is wired, `LedgerCloseManagementPeriodReopen` is
+   not, and nothing says which is authoritative; make `MarketTradeUpdate.Source` required;
    make the fund-structure snapshot loader fail loudly rather than starting empty. (§9)
 
 ## What is genuinely strong (do not regress it)
@@ -684,8 +701,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Twelve rounds of automated review challenged **40 claims** across this document. Every one was checked
-against the code, **all 40 held**, and the findings above are the corrected text. Two more — the
+Thirteen rounds of automated review challenged **45 claims** across this document. Every one was checked
+against the code, **all 45 held**, and the findings above are the corrected text. Two more — the
 quality-route count, wrong at 31 in three places, and a refuted remedy still standing in §1 — were
 caught by re-measuring and re-reading rather than by a reviewer, and are recorded with them. Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
@@ -843,6 +860,24 @@ document's own error history reproducible had a round-shaped hole in it for four
 totals in its header did not reconcile against the rows beneath. A ledger that does not foot is the
 defect this review opens by describing.
 
+**Round 13 — five, including one defect the review itself had not found:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| The multiplier remedy still omitted the margin models | `RegTMarginModel:93,135` and `PortfolioMarginModel:55-57,93-97` compute notional, maintenance and stressed legs from `position.Quantity * price`, never reading the `ContractMultiplier` that `ToExecutionPosition` hands them. Margin requirements and excess-liquidity checks stay at 1/100 after every transaction branch is fixed — a *second* margin path, distinct from the short-sale collateral found in round 11 | Improvement #3 |
+| "Governed period reopen is dark… an operator has no path to reopen" | The mounted `/accounting/operations-continuity` screen renders a governed reopen command and submits through `reopenOperationsContinuityWorkflow` (`:1464-1504,2263-2366`), with tests. The `LedgerCloseManagementPeriodReopen` route is unconsumed, but the capability is not dark. Prioritizing a reopen workflow would have duplicated one that exists | §9, improvement #9 |
+| The re-test table bundled "WPF state un-fork / desktop test job" as one **Open** item | The state half is **partial**: reconciliation posture no longer reads desktop-local state and the local fund lane carries a provenance badge (`AccountingFeatureModule.cs:53-59`), and the scheduler host loops now run server-side (`:196-202`). Bundling hid landed remediation and meant neither half was re-tested | Re-test table — split in two |
+| The docs index stated 250/862 as settled fact | §6 had been corrected to call 29% an estimate with unbounded error in both directions while the stakeholder-facing index still presented it flatly. The same dependent-text failure this section exists to record, on the surface the round-10 sweep had checked for the phrase "lower bound" and not for the unqualified number | `docs/product/README.md` |
+| The addendum recorded the run-scoped panel as "still wired, unchanged" | PR #2824 *did* change it, and introduced a defect this review had not found: the panel is now labelled "Simulation artifact" and "Strategy run (simulation)" (`accounting-screen.tsx:2899-2904`), while §1 establishes the population carries no run-mode filter and includes `BrokerLive` runs. A live operator is now explicitly told they are looking at a simulation | Addendum |
+
+The last of those is the one worth reading twice, because the causal chain runs through this review.
+Round 9 established that the run ledger is not simulation-only and made this document stop calling
+it one. PR #2824, remediating §1(b), went the other way and stamped "simulation" onto the panel in
+two places. The label is wrong for exactly the runs §1 identified, and it is worse than the ambiguity
+it replaced: an unlabelled panel invites the question "which book is this?", while a confidently
+wrong label forecloses it. A reviewer who only re-checked the claims it had already made would have
+recorded the panel as unchanged and missed it — which is what this document did until round 13.
+
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
 remedies — and are rewritten rather than softened; the multiplier correction made the defect
@@ -904,10 +939,23 @@ operator for the first time. That is the right fix, done the right way.
 
 **The class survived, three ways** — the pattern this review's headline describes, one cycle later:
 
-- **The run-scoped panel is still wired, unchanged.** `accounting-screen.view-model.ts:2940` still
-  reads `getTrialBalance: (runId) => getRunTrialBalance(runId)` — the exact line §1 cites — still
-  gated on `ViewStrategies`. The Accounting screen now carries *two* trial balances over two
-  different books, and the accounting roles still receive a 403 on one of them.
+- **The run-scoped panel is still wired, and its new labelling introduced a fresh defect.**
+  `accounting-screen.view-model.ts:2940` still reads
+  `getTrialBalance: (runId) => getRunTrialBalance(runId)` — the exact line §1 cites — still gated on
+  `ViewStrategies`. The Accounting screen now carries *two* trial balances over two different books,
+  and the accounting roles still receive a 403 on one of them.
+
+  The panel was not left untouched, though, and the change made one thing worse. PR #2824 retitled
+  it "Strategy Run Ledger Explorer" and added two labels that are **factually wrong for live runs**:
+  the description reads "Simulation artifact: this explorer reads the selected
+  strategy/reconciliation run's ledger…" and a metadata row reads "Strategy run (simulation) — not
+  the posted journal" (`accounting-screen.tsx:2899-2904`). §1 establishes that the selected
+  population carries no run-mode filter and includes `BrokerLive` runs, so **an operator inspecting a
+  live run is now explicitly told it is a simulation.** The relabelling was meant to disambiguate the
+  two books and it does disambiguate *which ledger*, but it asserts a run mode the panel does not
+  check. Correct labelling has to read the run's actual mode, not assume one. Ranked against the
+  original ambiguity this is arguably worse: an unlabelled panel invites a question, a confidently
+  wrong label prevents it.
 - **A second screen was not touched.** `finance-standard-pages-screen.tsx:299` still calls
   `getRunTrialBalance`, so the run-scoped view remains an operator-facing "trial balance" in a
   second place.
