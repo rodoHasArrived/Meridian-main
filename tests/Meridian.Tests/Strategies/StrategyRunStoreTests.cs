@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Operations;
@@ -1363,6 +1364,66 @@ public sealed class StrategyRunStoreTests
             "fund-profile" => entry with { FundProfileId = "changed-fund" },
             _ => throw new ArgumentOutOfRangeException(nameof(changedField), changedField, null)
         };
+
+    [Fact]
+    public async Task DurableStore_RetainsRealismBoundInputHash()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var realism = new ExecutionRealismDescriptor(
+                DefaultExecutionModel: ExecutionModel.BarMidpoint,
+                FillTiming: FillTiming.NextBar,
+                FillConservatism: FillConservatism.Conservative,
+                DelistingPolicy: DelistingPolicy.LiquidateAtLastPrice,
+                DelistingHaircutPercent: 0m,
+                DelistingGraceDays: 5,
+                CommissionKind: BacktestCommissionKind.PerShare,
+                CommissionRate: 0.005m,
+                CommissionMinimum: 1.00m,
+                CommissionMaximum: decimal.MaxValue,
+                SlippageBasisPoints: 5m,
+                MaxParticipationRate: 0m,
+                MarketImpactCoefficient: 0.1m,
+                OrderBookQueueAheadFraction: 0m,
+                AdjustForCorporateActions: true,
+                RiskFreeRate: 0.04);
+
+            var entry = StrategyRunEntry.Start(
+                "strategy-realism",
+                "Realism Strategy",
+                RunType.Backtest,
+                "run-realism",
+                datasetReference: "dataset:prices",
+                feedReference: null,
+                engine: "MeridianNative",
+                parameterSet: null) with
+            {
+                ExecutionRealism = realism
+            };
+
+            var hash = StrategyRunEntry.ComputeRealismBoundInputHash(entry);
+            entry = entry with { InputHashSha256 = hash };
+
+            // The durable store must accept a v4 realism-bound hash and retain it verbatim. Before
+            // this fix it threw, because the hash matched none of the v3/v2/evidence/legacy
+            // recomputations - and the research recorder swallowed that exception, so lineage
+            // vanished silently in production while in-memory-store tests stayed green.
+            await store.RecordRunAsync(entry);
+
+            var replayed = await new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot))
+                .GetRunByIdAsync("run-realism");
+
+            replayed.Should().NotBeNull();
+            replayed!.InputHashSha256.Should().Be(hash.ToLowerInvariant());
+            replayed.ExecutionRealism.Should().Be(realism);
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
 
     private static string CreateDataRoot()
     {

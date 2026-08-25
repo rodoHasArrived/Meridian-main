@@ -93,7 +93,8 @@ public sealed record StrategyRunEntry(
     IReadOnlyList<string>? ArtifactReferences = null,
     IReadOnlyList<OperationArtifactReference>? RetainedArtifacts = null,
     StrategyRunWalkForwardEvidence? WalkForwardEvidence = null,
-    string? DataProvenanceToken = null)
+    string? DataProvenanceToken = null,
+    ExecutionRealismDescriptor? ExecutionRealism = null)
 {
     public IReadOnlyList<string> OperatorAcceptanceCriteria { get; init; } =
         OperatorAcceptanceCriteria ?? [];
@@ -527,6 +528,38 @@ public sealed record StrategyRunEntry(
     /// than as "unchanged".
     /// </para>
     /// </remarks>
+    /// <summary>
+    /// Computes the v4 realism-bound hash from a fully-constructed entry. Prefer this over the
+    /// argument-list overload: it guarantees the digest is reproducible from the entry that gets
+    /// persisted. Passing a parallel argument list risks drift — notably <see langword="null"/>
+    /// collection arguments hash differently from the empty collections an entry initializes,
+    /// which yields a hash the durable store can never recompute.
+    /// </summary>
+    public static string ComputeRealismBoundInputHash(StrategyRunEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        return ComputeRealismBoundInputHash(
+            entry.StrategyId,
+            entry.StrategyName,
+            entry.RunType,
+            entry.DatasetReference,
+            entry.FeedReference,
+            entry.Engine,
+            entry.ParameterSet,
+            entry.ExecutionRealism,
+            entry.ParentRunId,
+            entry.PortfolioId,
+            entry.LedgerReference,
+            entry.AuditReference,
+            entry.FundProfileId,
+            entry.OperatorAcceptanceCriteria,
+            entry.RetainedEvidenceReferences,
+            entry.AccountingRecordReferences,
+            entry.ApprovalReferences,
+            entry.PaperValidationReferences,
+            entry.GovernedReportReferences);
+    }
+
     public static string ComputeRealismBoundInputHash(
         string strategyId,
         string strategyName,

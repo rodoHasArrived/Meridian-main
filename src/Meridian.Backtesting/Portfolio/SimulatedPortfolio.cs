@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Meridian.Ledger;
 
 namespace Meridian.Backtesting.Portfolio;
@@ -758,13 +759,17 @@ internal sealed class SimulatedPortfolio
         if (_cachedPositions is not null && _cachedPositionsVersion == _stateVersion)
             return _cachedPositions;
 
-        var built = BuildAggregatePositionsCore();
+        // Wrapped before caching: the cached instance is handed to every later reader and to
+        // TakeSnapshot, so a caller that casts the returned view to IDictionary and mutates it
+        // would otherwise corrupt subsequent reads. Rebuilding per call used to make that
+        // harmless; caching does not, so the immutability has to be real.
+        var built = new ReadOnlyDictionary<string, Position>(BuildAggregatePositionsCore());
         _cachedPositions = built;
         _cachedPositionsVersion = _stateVersion;
         return built;
     }
 
-    private IReadOnlyDictionary<string, Position> BuildAggregatePositionsCore()
+    private Dictionary<string, Position> BuildAggregatePositionsCore()
     {
         var grouped = new Dictionary<string, List<Position>>(StringComparer.OrdinalIgnoreCase);
         foreach (var account in _accounts.Values)
@@ -807,13 +812,13 @@ internal sealed class SimulatedPortfolio
         if (_cachedAccountSnapshots is not null && _cachedAccountSnapshotsVersion == _stateVersion)
             return _cachedAccountSnapshots;
 
-        var built = BuildAccountSnapshotsCore();
+        var built = new ReadOnlyDictionary<string, FinancialAccountSnapshot>(BuildAccountSnapshotsCore());
         _cachedAccountSnapshots = built;
         _cachedAccountSnapshotsVersion = _stateVersion;
         return built;
     }
 
-    private IReadOnlyDictionary<string, FinancialAccountSnapshot> BuildAccountSnapshotsCore()
+    private Dictionary<string, FinancialAccountSnapshot> BuildAccountSnapshotsCore()
     {
         return _accounts.Values.ToDictionary(
             account => account.Account.AccountId,

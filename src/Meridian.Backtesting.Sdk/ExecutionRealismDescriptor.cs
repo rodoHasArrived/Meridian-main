@@ -37,7 +37,11 @@ public sealed record ExecutionRealismDescriptor(
     decimal MarketImpactCoefficient,
     decimal OrderBookQueueAheadFraction,
     bool AdjustForCorporateActions,
-    double RiskFreeRate)
+    double RiskFreeRate,
+    double AnnualMarginRate = 0.0,
+    double AnnualShortRebateRate = 0.0,
+    string? AccountFinancingCanonical = null,
+    string? RiskFreeRateSeriesCanonical = null)
 {
     /// <summary>
     /// Field-order-stable canonical form used for hashing and for human-readable disclosure.
@@ -63,6 +67,13 @@ public sealed record ExecutionRealismDescriptor(
         Append(builder, nameof(OrderBookQueueAheadFraction), Canonical(OrderBookQueueAheadFraction));
         Append(builder, nameof(AdjustForCorporateActions), AdjustForCorporateActions ? "true" : "false");
         Append(builder, nameof(RiskFreeRate), RiskFreeRate.ToString("R", CultureInfo.InvariantCulture));
+        // Financing and the rate series feed interest accrual, short rebates, Sharpe, and Sortino.
+        // Omitting them let two runs with materially different P&L and risk metrics hash alike -
+        // the exact defect this descriptor exists to prevent.
+        Append(builder, nameof(AnnualMarginRate), AnnualMarginRate.ToString("R", CultureInfo.InvariantCulture));
+        Append(builder, nameof(AnnualShortRebateRate), AnnualShortRebateRate.ToString("R", CultureInfo.InvariantCulture));
+        Append(builder, nameof(AccountFinancingCanonical), AccountFinancingCanonical ?? string.Empty);
+        Append(builder, nameof(RiskFreeRateSeriesCanonical), RiskFreeRateSeriesCanonical ?? string.Empty);
         return builder.ToString();
     }
 

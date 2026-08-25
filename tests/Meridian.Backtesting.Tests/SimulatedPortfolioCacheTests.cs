@@ -169,4 +169,27 @@ public sealed class SimulatedPortfolioCacheTests
 
         portfolio.GetCurrentPositions().Should().NotContainKey("SPY");
     }
+
+    [Fact]
+    public void CachedPortfolioViews_RejectCallerMutation()
+    {
+        var portfolio = CreatePortfolio();
+        portfolio.ProcessFill(Fill("AAPL", 100, 150m));
+
+        var positions = portfolio.GetCurrentPositions();
+        var accounts = portfolio.GetAccountSnapshots();
+
+        // Strategy code is user-authored (plugins, QuantScript lambdas), so a cast-and-mutate is
+        // reachable. Caching made the returned instance shared with every later reader and with
+        // TakeSnapshot, so the view has to be genuinely immutable rather than merely typed as such.
+        ((System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, Position>>)positions)
+            .Invoking(collection => collection.Clear())
+            .Should().Throw<NotSupportedException>();
+
+        ((System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, FinancialAccountSnapshot>>)accounts)
+            .Invoking(collection => collection.Clear())
+            .Should().Throw<NotSupportedException>();
+
+        portfolio.GetCurrentPositions().Should().ContainKey("AAPL");
+    }
 }

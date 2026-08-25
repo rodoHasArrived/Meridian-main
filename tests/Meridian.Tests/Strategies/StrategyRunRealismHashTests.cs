@@ -189,4 +189,66 @@ public sealed class StrategyRunRealismHashTests
 
         withParameters.Should().NotBe(baseline);
     }
+
+    [Fact]
+    public void RiskFreeRateSeries_ChangesTheRealismHash()
+    {
+        // The series overrides the scalar rate on the dates it covers and drives Sharpe/Sortino,
+        // so two runs differing only here must not share an identity.
+        var baseline = new BacktestRequest(
+            new DateOnly(2024, 1, 1), new DateOnly(2024, 6, 30), RiskFreeRate: 0.04);
+        var withSeries = baseline with
+        {
+            RiskFreeRateSeries = new Dictionary<DateOnly, double>
+            {
+                [new DateOnly(2024, 3, 1)] = 0.052,
+                [new DateOnly(2024, 4, 1)] = 0.049
+            }
+        };
+
+        baseline.ToRealismDescriptor().ToCanonicalString()
+            .Should().NotBe(withSeries.ToRealismDescriptor().ToCanonicalString());
+    }
+
+    [Fact]
+    public void RiskFreeRateSeries_HashesIndependentlyOfDictionaryOrder()
+    {
+        var a = new BacktestRequest(new DateOnly(2024, 1, 1), new DateOnly(2024, 6, 30)) with
+        {
+            RiskFreeRateSeries = new Dictionary<DateOnly, double>
+            {
+                [new DateOnly(2024, 3, 1)] = 0.052,
+                [new DateOnly(2024, 4, 1)] = 0.049
+            }
+        };
+        var b = new BacktestRequest(new DateOnly(2024, 1, 1), new DateOnly(2024, 6, 30)) with
+        {
+            RiskFreeRateSeries = new Dictionary<DateOnly, double>
+            {
+                [new DateOnly(2024, 4, 1)] = 0.049,
+                [new DateOnly(2024, 3, 1)] = 0.052
+            }
+        };
+
+        a.ToRealismDescriptor().ToCanonicalString()
+            .Should().Be(b.ToRealismDescriptor().ToCanonicalString());
+    }
+
+    [Theory]
+    [InlineData(0.05, 0.02, 0.09, 0.02)]
+    [InlineData(0.05, 0.02, 0.05, 0.07)]
+    public void FinancingRates_ChangeTheRealismHash(
+        double baseMargin, double baseRebate, double otherMargin, double otherRebate)
+    {
+        // Margin interest and short rebate accrue into P&L, so they belong to run identity.
+        var a = new BacktestRequest(
+            new DateOnly(2024, 1, 1), new DateOnly(2024, 6, 30),
+            AnnualMarginRate: baseMargin, AnnualShortRebateRate: baseRebate);
+        var b = new BacktestRequest(
+            new DateOnly(2024, 1, 1), new DateOnly(2024, 6, 30),
+            AnnualMarginRate: otherMargin, AnnualShortRebateRate: otherRebate);
+
+        a.ToRealismDescriptor().ToCanonicalString()
+            .Should().NotBe(b.ToRealismDescriptor().ToCanonicalString());
+    }
 }

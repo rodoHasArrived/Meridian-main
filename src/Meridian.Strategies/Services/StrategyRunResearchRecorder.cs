@@ -45,16 +45,6 @@ public sealed class StrategyRunResearchRecorder(
         var runId = Guid.NewGuid().ToString("N");
         const string Engine = "MeridianNative";
 
-        var inputHash = StrategyRunEntry.ComputeRealismBoundInputHash(
-            descriptor.StrategyId,
-            descriptor.StrategyName,
-            RunType.Backtest,
-            descriptor.DatasetReference,
-            feedReference: null,
-            Engine,
-            descriptor.ParameterSet,
-            descriptor.ExecutionRealism);
-
         var entry = StrategyRunEntry.Start(
             descriptor.StrategyId,
             descriptor.StrategyName,
@@ -66,8 +56,15 @@ public sealed class StrategyRunResearchRecorder(
             descriptor.ParameterSet) with
         {
             CorrelationId = descriptor.CorrelationId,
-            InputHashSha256 = inputHash
+            // Retained so the durable store can recompute the v4 digest from the entry itself.
+            // Without it the store falls back to the v3 recomputation, rejects the v4 hash, and
+            // the catch below turns that into a silent loss of research lineage.
+            ExecutionRealism = descriptor.ExecutionRealism
         };
+
+        // Hash the entry we are about to persist rather than a parallel argument list, so the
+        // digest is always reproducible by the store from the same retained fields.
+        entry = entry with { InputHashSha256 = StrategyRunEntry.ComputeRealismBoundInputHash(entry) };
 
         try
         {
@@ -86,10 +83,15 @@ public sealed class StrategyRunResearchRecorder(
         }
         catch (Exception ex)
         {
+            // Fail-open keeps a store outage from killing a researcher's script, but it must stay
+            // observable: swallowing the exception type is what let a durable-store hash rejection
+            // look like success while every research run silently lost its lineage.
             logger.LogWarning(
                 ex,
-                "Could not record research backtest for strategy {StrategyId}; the run completed but has no lineage",
-                Meridian.Execution.Logging.LogSanitizer.Sanitize(descriptor.StrategyId));
+                "Could not record research backtest for strategy {StrategyId}; the run completed but has no lineage. Failure was {FailureType}: {FailureMessage}",
+                Meridian.Execution.Logging.LogSanitizer.Sanitize(descriptor.StrategyId),
+                ex.GetType().Name,
+                Meridian.Execution.Logging.LogSanitizer.Sanitize(ex.Message));
             return null;
         }
     }
