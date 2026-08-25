@@ -106,6 +106,13 @@ export interface PostedLedgerPnlViewState {
   errorText: string | null;
 }
 
+export interface PostedLedgerBookOption {
+  id: string;
+  label: string;
+  baseCurrency: string;
+  isSelected: boolean;
+}
+
 export interface AccountingPostedLedgerViewState {
   title: string;
   description: string;
@@ -115,6 +122,7 @@ export interface AccountingPostedLedgerViewState {
   periodNotice: string | null;
   /** The ledger book these periods belong to, so a multi-book deployment names its subject. */
   selectedBookLabel: string | null;
+  bookOptions: PostedLedgerBookOption[];
   /** The selected book's base currency; posted amounts are in book units, not USD. */
   baseCurrency: string | null;
   trialBalance: AccountingTrialBalanceViewState;
@@ -123,6 +131,7 @@ export interface AccountingPostedLedgerViewState {
 
 export interface AccountingPostedLedgerViewModel {
   view: AccountingPostedLedgerViewState;
+  selectBook: (ledgerBookId: string) => void;
   selectPeriod: (periodId: string) => void;
   selectBasis: (basis: AccountingBasisKind) => void;
   updateAccountFilter: (value: string) => void;
@@ -317,7 +326,8 @@ export function buildAccountingPostedLedgerViewState({
   selectedBasis,
   accountFilter,
   selectedBookLabel,
-  baseCurrency
+  baseCurrency,
+  bookOptions
 }: {
   periods: LedgerPeriod[];
   periodsLoading: boolean;
@@ -337,6 +347,7 @@ export function buildAccountingPostedLedgerViewState({
   /** Names the book the periods below belong to; null until the books land. */
   selectedBookLabel: string | null;
   baseCurrency: string | null;
+  bookOptions: PostedLedgerBookOption[];
 }): AccountingPostedLedgerViewState {
   const selectedPeriod = periods.find((period) => period.periodId === selectedPeriodId) ?? null;
   const periodLabel = selectedPeriod
@@ -385,6 +396,7 @@ export function buildAccountingPostedLedgerViewState({
     },
     periodNotice,
     selectedBookLabel,
+    bookOptions,
     baseCurrency,
     trialBalance,
     pnl: buildPostedLedgerPnlViewState({ pnl, loading: pnlLoading, error: pnlError, periodLabel })
@@ -646,6 +658,22 @@ export function useAccountingPostedLedgerViewModel(
   );
   const selectedBookLabel = selectedBook ? (selectedBook.displayName.trim() || selectedBook.ledgerBookId) : null;
   const baseCurrency = selectedBook?.baseCurrency?.trim() || null;
+  const bookOptions = useMemo<PostedLedgerBookOption[]>(
+    () => books.map((book) => ({
+      id: book.ledgerBookId,
+      label: book.displayName.trim() || book.ledgerBookId,
+      baseCurrency: book.baseCurrency,
+      isSelected: book.ledgerBookId === selectedBookId
+    })),
+    [books, selectedBookId]
+  );
+
+  const selectBook = useCallback((ledgerBookId: string) => {
+    setSelectedBookId(ledgerBookId);
+    // The incoming book's periods are a different set entirely; keeping the outgoing selection
+    // would request a period that does not belong to it.
+    setSelectedPeriodId(null);
+  }, []);
 
   const view = useMemo(
     () => buildAccountingPostedLedgerViewState({
@@ -665,11 +693,13 @@ export function useAccountingPostedLedgerViewModel(
       selectedBasis,
       accountFilter,
       selectedBookLabel,
-      baseCurrency
+      baseCurrency,
+      bookOptions
     }),
     [
       accountFilter,
       baseCurrency,
+      bookOptions,
       booksErrorText,
       selectedBookLabel,
       periodNotice,
@@ -695,6 +725,7 @@ export function useAccountingPostedLedgerViewModel(
 
   return {
     view,
+    selectBook,
     selectPeriod,
     selectBasis,
     updateAccountFilter,

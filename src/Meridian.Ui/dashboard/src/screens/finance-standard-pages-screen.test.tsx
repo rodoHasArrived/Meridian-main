@@ -278,7 +278,7 @@ describe("finance standard pages", () => {
     expect(trustSummary).toHaveTextContent("Selected ledger run");
     expect(trustSummary).toHaveTextContent("Accounting basis missing");
     expect(trustSummary).toHaveTextContent("Needs review");
-    expect(screen.getByRole("link", { name: "Open ledger activity" })).toHaveAttribute("href", "/accounting/ledger?runId=run-42");
+    expect(screen.getByRole("link", { name: "Open run ledger activity" })).toHaveAttribute("href", "/strategy/run-ledger?runId=run-42");
     expect(screen.getByRole("link", { name: "Open source journal entry" })).toHaveAttribute("href", "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42");
     expect(screen.getByRole("link", { name: "Review approvals" })).toHaveAttribute("href", "/accounting/approvals?approvalId=approval-je-1");
   });

@@ -87,6 +87,9 @@ export function StrategyRunLedgerScreen() {
     // loading, so keeping them would show run A's ledger and journal as run B's.
     setTrialBalanceRows([]);
     setJournalLines([]);
+    // The outgoing run's basis may not exist in the incoming one; leaving it selected filters the
+    // new rows to an unavailable projection and the run reads as having no trial balance at all.
+    setSelectedBasis(DEFAULT_ACCOUNTING_BASIS);
     setTrialBalanceLoading(true);
     setTrialBalanceError(null);
     setJournalErrorText(null);

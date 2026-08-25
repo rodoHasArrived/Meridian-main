@@ -191,6 +191,22 @@ export function TrialBalanceScreen() {
       scope={trialBalanceScope}
       description="Account balances from the fund's posted journal, scoped by ledger period."
       actions={
+        <>
+        {postedLedger.view.bookOptions.length > 1 ? (
+          <FormRow label="Ledger book" labelFor="trial-balance-book-select" className="w-full max-w-xs sm:w-56">
+            <Select
+              id="trial-balance-book-select"
+              value={postedLedger.view.bookOptions.find((option) => option.isSelected)?.id ?? ""}
+              onChange={(event) => postedLedger.selectBook(event.target.value)}
+            >
+              {postedLedger.view.bookOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label} · {option.baseCurrency}
+                </option>
+              ))}
+            </Select>
+          </FormRow>
+        ) : null}
         <FormRow label="Period" labelFor="trial-balance-period-select" className="w-full max-w-xs sm:w-64">
           <Select
             id="trial-balance-period-select"
@@ -204,6 +220,7 @@ export function TrialBalanceScreen() {
             ))}
           </Select>
         </FormRow>
+        </>
       }
       focus={focusSignals}
       context={

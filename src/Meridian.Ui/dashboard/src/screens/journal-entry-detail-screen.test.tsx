@@ -141,9 +141,11 @@ describe("JournalEntryDetailScreen", () => {
     );
     expect(screen.getByRole("button", { name: "Request review" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Export" })).toBeDisabled();
-    expect(screen.getByRole("link", { name: "Back to Trial Balance" })).toHaveAttribute(
+    // Run evidence lives under Strategy now; /accounting/ledger reads the posted book and
+    // ignores runId, so these links used to drop operators into the wrong book entirely.
+    expect(screen.getByRole("link", { name: "Back to Run Ledger" })).toHaveAttribute(
       "href",
-      "/accounting/ledger?view=trial-balance&runId=run-42"
+      "/strategy/run-ledger?runId=run-42"
     );
   });
 
@@ -157,9 +159,9 @@ describe("JournalEntryDetailScreen", () => {
     expect(screen.getByText(/only the run-ledger summary is available/)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Posting summary" })).toBeInTheDocument();
     expect(screen.getAllByText("$500.00").length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: "Open in Ledger Explorer" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open in Run Ledger" })).toHaveAttribute(
       "href",
-      "/accounting/ledger?runId=run-42"
+      "/strategy/run-ledger?runId=run-42"
     );
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });

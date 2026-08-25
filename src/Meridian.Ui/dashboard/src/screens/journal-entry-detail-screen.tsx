@@ -45,6 +45,39 @@ export function JournalEntryDetailScreen() {
     let cancelled = false;
     setLoading(true);
     setErrorText(null);
+    // These three sources are mutually exclusive. Clearing only on an empty id or an error left a
+    // previous period's posting on screen when the same mounted route moved to a run-scoped
+    // entry, and buildJournalEntryDetailViewState prefers postedEntry.
+    setDraft(null);
+    setJournalLine(null);
+    setPostedEntry(null);
+
+    // A period scope means the governed journal is the authority. Nesting it inside the
+    // manual-workbench continuation meant an unavailable or forbidden workbench reported the
+    // posted entry as unavailable without ever asking the period route.
+    if (periodId) {
+      getLedgerPeriodJournalEntries(periodId)
+        .then((entries) => {
+          if (cancelled) return;
+          const matched = entries.find((entry) => entry.journalEntryId === journalEntryId) ?? null;
+          setPostedEntry(matched);
+          setJournalLine(matched ? toLedgerJournalLine(matched) : null);
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setErrorText("The posted journal for this period could not be loaded. No posting detail is shown until the source responds.");
+          }
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setLoading(false);
+          }
+        });
+
+      return () => {
+        cancelled = true;
+      };
+    }
 
     getManualJournalEntryWorkbench({})
       .then((workbench) => {
@@ -58,28 +91,6 @@ export function JournalEntryDetailScreen() {
         if (matchedDraft) {
           setLoading(false);
           return;
-        }
-
-        // A period scope means the posted journal is the authority; a run scope means the
-        // simulation's. They are different books, so never fall back from one to the other.
-        if (periodId) {
-          return getLedgerPeriodJournalEntries(periodId)
-            .then((entries) => {
-              if (cancelled) {
-                return;
-              }
-
-              // Keep the whole entry: it carries the posting lines, and reducing it to the
-              // summary shape here is what made posted drill-throughs render as "summary only".
-              const matched = entries.find((entry) => entry.journalEntryId === journalEntryId) ?? null;
-              setPostedEntry(matched);
-              setJournalLine(matched ? toLedgerJournalLine(matched) : null);
-            })
-            .finally(() => {
-              if (!cancelled) {
-                setLoading(false);
-              }
-            });
         }
 
         if (!runId) {
@@ -239,7 +250,7 @@ export function JournalEntryDetailScreen() {
             </dl>
             {runId ? (
               <Button asChild size="sm" variant="outline">
-                <Link to={workstationRouteWithQuery("accountingLedger", { runId })}>Open in Ledger Explorer</Link>
+                <Link to={workstationRouteWithQuery("strategyRunLedger", { runId })}>Open in Run Ledger</Link>
               </Button>
             ) : null}
           </CardContent>
@@ -384,7 +395,7 @@ export function JournalEntryDetailScreen() {
       <div className="flex flex-wrap gap-2">
         {runId ? (
           <Button asChild size="sm" variant="outline">
-            <Link to={workstationRouteWithQuery("accountingLedger", { view: "trial-balance", runId })}>Back to Trial Balance</Link>
+            <Link to={workstationRouteWithQuery("strategyRunLedger", { runId })}>Back to Run Ledger</Link>
           </Button>
         ) : null}
         <Button asChild size="sm" variant="outline">

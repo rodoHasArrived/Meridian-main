@@ -26,6 +26,7 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
     private bool _hasLoaded;
     private int _loadRevision;
     private int _periodRevision;
+    private int _bookRevision;
     private bool _isRefreshing;
     private Guid? _selectedPeriodId;
     private string _selectedPeriodLabel = "No period selected";
@@ -421,7 +422,16 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
             return;
         }
 
+        // Switching books quickly leaves both period requests in flight on the shared page token;
+        // without a stamp the slower one wins and shows book A's periods under book B's header
+        // and currency.
+        var revision = ++_bookRevision;
         var response = await _client.GetPeriodsAsync(ledgerBookId, ct).ConfigureAwait(true);
+        if (revision != _bookRevision)
+        {
+            return;
+        }
+
         if (!response.Success || response.Data is null)
         {
             PeriodsErrorText = string.IsNullOrWhiteSpace(response.ErrorMessage)
@@ -662,11 +672,22 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
             "Open breaks",
             pnl.OpenBreakCount.ToString(CultureInfo.CurrentCulture)));
 
+        // The endpoint's totals are the period aggregate across every accounting basis, while the
+        // grid above shows one. Say so rather than letting a GAAP trial balance sit silently
+        // beside a Primary-or-double-counted P&L. Recomputing per basis is the server's to do --
+        // it owns the sign convention these totals are derived under, and inventing that here is
+        // precisely the kind of guess a ledger surface must not make.
+        if (Bases.Count > 1)
+        {
+            PnlMetrics.Add(new PostedLedgerMetricRow(
+                "Basis scope",
+                $"Period total across all {Bases.Count} bases, not {PostedLedgerProjection.DescribeBasis(SelectedBasis)} alone"));
+        }
+
         SignoffText = PostedLedgerProjection.DescribeSignoffStatus(pnl.SignoffStatus);
     }
 }
 
-/// <summary>A selectable ledger period in the desktop posted-journal surface.</summary>
 /// <summary>
 /// One ledger book the operator can scope the posted journal to. Carries the book's declared
 /// base currency so amounts are formatted in the book's own currency rather than the machine's.
@@ -717,6 +738,7 @@ public sealed class PostedLedgerBasisRow : BindableBase
     }
 }
 
+/// <summary>A selectable ledger period in the desktop posted-journal surface.</summary>
 public sealed class PostedLedgerPeriodRow : BindableBase
 {
     private bool _isSelected;

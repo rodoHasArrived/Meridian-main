@@ -381,10 +381,10 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
       </Card>
       <div className="flex flex-wrap gap-2">
         <Button asChild size="sm" variant="outline">
-          <Link to={workstationRouteWithQuery("accountingLedger", { view: "trial-balance", runId: requestedRunId || null })}>Back to Trial Balance</Link>
+          <Link to={workstationRouteWithQuery("strategyRunLedger", { runId: requestedRunId || null })}>Back to Run Ledger</Link>
         </Button>
         <Button asChild size="sm" variant="outline">
-          <Link to={workstationRouteWithQuery("accountingLedger", { runId: requestedRunId || null })}>Open ledger activity</Link>
+          <Link to={workstationRouteWithQuery("strategyRunLedger", { runId: requestedRunId || null })}>Open run ledger activity</Link>
         </Button>
         {account?.sourceJournalEntryId ? (
           <Button asChild size="sm" variant="outline">
