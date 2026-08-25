@@ -101,4 +101,19 @@ public enum UserPermission : long
 
     /// <summary>Deliver report packs and record delivery failures or retry evidence.</summary>
     DeliverReporting = 1L << 26,
+
+    // ── Ledger reporting / fund accounting ───────────────────────────────────
+    // Split out of ManageDirectLending, which had become the de facto fund-accounting
+    // grant: closing a month required "manage direct lending" even for a fund with no
+    // private-credit book. These name the authority the accounting lane actually needs,
+    // so a deployment can grant fund accounting without direct lending.
+    /// <summary>Read the governed ledger: trial balance, P&amp;L, periods, and posted journal entries.</summary>
+    ViewLedgerReports = 1L << 27,
+
+    /// <summary>Operate the governed ledger: post, close, configure accounting, and run journal automation.</summary>
+    ManageLedgerReports = 1L << 28,
+
+    // ── Compliance ───────────────────────────────────────────────────────────
+    /// <summary>File and decide compliance approvals, run access reviews, and extract the audit chain.</summary>
+    ManageCompliance = 1L << 29,
 }
