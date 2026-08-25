@@ -3525,7 +3525,7 @@
       ]
     }
   ],
-  "fingerprint": "189b34033f6d70318b21e83e36d71594ac4c2ffeae19df69fa074a493130bff7",
+  "fingerprint": "10aaf4984e5dfd2d0e6aaea096ee1391da43ed07f60dda119ad10f4f464caad3",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6647,7 +6647,7 @@
       "contract_sets": [
         "identity-access-contracts"
       ],
-      "fingerprint": "904ae2bded2b708ef4e5d5aef3fbb7d22a145a2b78bab1e970a2951430f2d367",
+      "fingerprint": "d288e36f339e4c0db4ddb80cc85ad88b2762bad27e08d0dd93ab636c00255da7",
       "mapped_schemas": [
         "identity_access"
       ],
@@ -363806,7 +363806,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "fa8eb892c4bc6243412bdd19b4377b8c9769cc4ac85de9dbf271b76aae65dcfc",
+      "fingerprint": "9e5e5761c599a1788307c2940d0d69354b265e015e05cd3224276bc663bdaa09",
       "full_name": "Meridian.Identity.Auth.PermissionCatalogItemDto",
       "id": "Meridian.Identity.Auth.PermissionCatalogItemDto",
       "kind": "record",
@@ -363825,7 +363825,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 392,
+          "source_line": 398,
           "type": "string"
         },
         {
@@ -363839,7 +363839,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 391,
+          "source_line": 397,
           "type": "string"
         },
         {
@@ -363853,7 +363853,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 389,
+          "source_line": 395,
           "type": "string"
         },
         {
@@ -363867,7 +363867,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 390,
+          "source_line": 396,
           "type": "long"
         }
       ],
@@ -363875,631 +363875,6 @@
       "namespace": "Meridian.Identity.Auth",
       "partial": false,
       "qualified_name": "Meridian.Identity.Auth.PermissionCatalogItemDto",
-      "references": [],
-      "source": {
-        "line": 388,
-        "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
-      },
-      "sources": [
-        {
-          "line": 388,
-          "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "dto",
-      "containing_type": null,
-      "contract_sets": [
-        "identity-access-contracts"
-      ],
-      "diagram": true,
-      "diagram_contract_sets": [
-        "identity-access-contracts"
-      ],
-      "enum_members": [],
-      "fingerprint": "ec5971364cdb1a22c211d5554b9e1167b74632cdf5c5177c3e7375bb08236462",
-      "full_name": "Meridian.Identity.Auth.RolePermissionCatalogDto",
-      "id": "Meridian.Identity.Auth.RolePermissionCatalogDto",
-      "kind": "record",
-      "mapped_schemas": [
-        "identity_access"
-      ],
-      "members": [
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "PermissionCatalogItemDto",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Permissions",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<PermissionCatalogItemDto>",
-          "source_line": 371,
-          "type": "IReadOnlyList<PermissionCatalogItemDto>"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "RolePermissionProfileDto",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Roles",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<RolePermissionProfileDto>",
-          "source_line": 370,
-          "type": "IReadOnlyList<RolePermissionProfileDto>"
-        }
-      ],
-      "name": "RolePermissionCatalogDto",
-      "namespace": "Meridian.Identity.Auth",
-      "partial": false,
-      "qualified_name": "Meridian.Identity.Auth.RolePermissionCatalogDto",
-      "references": [
-        "Meridian.Identity.Auth.PermissionCatalogItemDto",
-        "Meridian.Identity.Auth.RolePermissionProfileDto"
-      ],
-      "source": {
-        "line": 369,
-        "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
-      },
-      "sources": [
-        {
-          "line": 369,
-          "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "dto",
-      "containing_type": null,
-      "contract_sets": [
-        "identity-access-contracts"
-      ],
-      "diagram": true,
-      "diagram_contract_sets": [
-        "identity-access-contracts"
-      ],
-      "enum_members": [],
-      "fingerprint": "65a3cd8154238d40f2210dbabf4873b7d3559000546b605fb1034efb4e3db787",
-      "full_name": "Meridian.Identity.Auth.RolePermissionProfileAuditEventDto",
-      "id": "Meridian.Identity.Auth.RolePermissionProfileAuditEventDto",
-      "kind": "record",
-      "mapped_schemas": [
-        "identity_access"
-      ],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Actor",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 413,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "AuditId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 410,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "BaseRole",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 417,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CorrelationId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 415,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EventType",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 411,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "OccurredAtUtc",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset",
-          "source_line": 412,
-          "type": "DateTimeOffset"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "PermissionMask",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "long",
-          "source_line": 419,
-          "type": "long"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "string",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "PermissionNames",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<string>",
-          "source_line": 418,
-          "type": "IReadOnlyList<string>"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ProfileName",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 416,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Rationale",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 414,
-          "type": "string"
-        }
-      ],
-      "name": "RolePermissionProfileAuditEventDto",
-      "namespace": "Meridian.Identity.Auth",
-      "partial": false,
-      "qualified_name": "Meridian.Identity.Auth.RolePermissionProfileAuditEventDto",
-      "references": [],
-      "source": {
-        "line": 409,
-        "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
-      },
-      "sources": [
-        {
-          "line": 409,
-          "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "dto",
-      "containing_type": null,
-      "contract_sets": [
-        "identity-access-contracts"
-      ],
-      "diagram": true,
-      "diagram_contract_sets": [
-        "identity-access-contracts"
-      ],
-      "enum_members": [],
-      "fingerprint": "ffd5a1d77b2724ea14d4e43cc8e5fd9cc7dc540c2b73303942a0cc03d34c06ae",
-      "full_name": "Meridian.Identity.Auth.RolePermissionProfileDto",
-      "id": "Meridian.Identity.Auth.RolePermissionProfileDto",
-      "kind": "record",
-      "mapped_schemas": [
-        "identity_access"
-      ],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "BaseRole",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 380,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CreatedAtUtc",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset?",
-          "source_line": 382,
-          "type": "DateTimeOffset?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CreatedBy",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 381,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Description",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 376,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "DisplayName",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 375,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "IsBuiltIn",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "bool",
-          "source_line": 377,
-          "type": "bool"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "LastAuditId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 386,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "LastRationale",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 385,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "PermissionMask",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "long",
-          "source_line": 379,
-          "type": "long"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "string",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Permissions",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<string>",
-          "source_line": 378,
-          "type": "IReadOnlyList<string>"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Role",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 374,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "UpdatedAtUtc",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset?",
-          "source_line": 384,
-          "type": "DateTimeOffset?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "UpdatedBy",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 383,
-          "type": "string?"
-        }
-      ],
-      "name": "RolePermissionProfileDto",
-      "namespace": "Meridian.Identity.Auth",
-      "partial": false,
-      "qualified_name": "Meridian.Identity.Auth.RolePermissionProfileDto",
-      "references": [],
-      "source": {
-        "line": 373,
-        "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
-      },
-      "sources": [
-        {
-          "line": 373,
-          "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "dto",
-      "containing_type": null,
-      "contract_sets": [
-        "identity-access-contracts"
-      ],
-      "diagram": true,
-      "diagram_contract_sets": [
-        "identity-access-contracts"
-      ],
-      "enum_members": [],
-      "fingerprint": "56bc8a2b68712d4435a6f5f424a7914682dc15b3976b0d529492ca44ddf060af",
-      "full_name": "Meridian.Identity.Auth.RolePermissionProfileUpsertRequestDto",
-      "id": "Meridian.Identity.Auth.RolePermissionProfileUpsertRequestDto",
-      "kind": "record",
-      "mapped_schemas": [
-        "identity_access"
-      ],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "BaseRole",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 398,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CorrelationId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 402,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Description",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 397,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "DisplayName",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 396,
-          "type": "string"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "string",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "PermissionNames",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<string>",
-          "source_line": 399,
-          "type": "IReadOnlyList<string>"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ProfileName",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 395,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Rationale",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 401,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RequestedBy",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 400,
-          "type": "string"
-        }
-      ],
-      "name": "RolePermissionProfileUpsertRequestDto",
-      "namespace": "Meridian.Identity.Auth",
-      "partial": false,
-      "qualified_name": "Meridian.Identity.Auth.RolePermissionProfileUpsertRequestDto",
       "references": [],
       "source": {
         "line": 394,
@@ -364525,7 +363900,632 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "11016c452062f0486c441f5f2f3775ede84d16e28df67cc36e5d28b5c7d97cad",
+      "fingerprint": "041c7bef2a6f1729885ed1f12d7b5986119ca08e97d338da7866225339ee59a9",
+      "full_name": "Meridian.Identity.Auth.RolePermissionCatalogDto",
+      "id": "Meridian.Identity.Auth.RolePermissionCatalogDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "identity_access"
+      ],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "PermissionCatalogItemDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Permissions",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<PermissionCatalogItemDto>",
+          "source_line": 377,
+          "type": "IReadOnlyList<PermissionCatalogItemDto>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "RolePermissionProfileDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Roles",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<RolePermissionProfileDto>",
+          "source_line": 376,
+          "type": "IReadOnlyList<RolePermissionProfileDto>"
+        }
+      ],
+      "name": "RolePermissionCatalogDto",
+      "namespace": "Meridian.Identity.Auth",
+      "partial": false,
+      "qualified_name": "Meridian.Identity.Auth.RolePermissionCatalogDto",
+      "references": [
+        "Meridian.Identity.Auth.PermissionCatalogItemDto",
+        "Meridian.Identity.Auth.RolePermissionProfileDto"
+      ],
+      "source": {
+        "line": 375,
+        "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
+      },
+      "sources": [
+        {
+          "line": 375,
+          "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "identity-access-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "identity-access-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "6cd96695358019807c93fd976e9b45f1734f90600d7c791757b496560295a3ae",
+      "full_name": "Meridian.Identity.Auth.RolePermissionProfileAuditEventDto",
+      "id": "Meridian.Identity.Auth.RolePermissionProfileAuditEventDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "identity_access"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Actor",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 419,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AuditId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 416,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BaseRole",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 423,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CorrelationId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 421,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EventType",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 417,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OccurredAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 418,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PermissionMask",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "long",
+          "source_line": 425,
+          "type": "long"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PermissionNames",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 424,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProfileName",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 422,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Rationale",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 420,
+          "type": "string"
+        }
+      ],
+      "name": "RolePermissionProfileAuditEventDto",
+      "namespace": "Meridian.Identity.Auth",
+      "partial": false,
+      "qualified_name": "Meridian.Identity.Auth.RolePermissionProfileAuditEventDto",
+      "references": [],
+      "source": {
+        "line": 415,
+        "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
+      },
+      "sources": [
+        {
+          "line": 415,
+          "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "identity-access-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "identity-access-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "634d459063789eb53f6cf0202f64b433dc6369db374edfeae77014ab75813c3a",
+      "full_name": "Meridian.Identity.Auth.RolePermissionProfileDto",
+      "id": "Meridian.Identity.Auth.RolePermissionProfileDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "identity_access"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BaseRole",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 386,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CreatedAtUtc",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 388,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CreatedBy",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 387,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Description",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 382,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DisplayName",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 381,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsBuiltIn",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 383,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LastAuditId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 392,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LastRationale",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 391,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PermissionMask",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "long",
+          "source_line": 385,
+          "type": "long"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Permissions",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 384,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Role",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 380,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "UpdatedAtUtc",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 390,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "UpdatedBy",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 389,
+          "type": "string?"
+        }
+      ],
+      "name": "RolePermissionProfileDto",
+      "namespace": "Meridian.Identity.Auth",
+      "partial": false,
+      "qualified_name": "Meridian.Identity.Auth.RolePermissionProfileDto",
+      "references": [],
+      "source": {
+        "line": 379,
+        "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
+      },
+      "sources": [
+        {
+          "line": 379,
+          "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "identity-access-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "identity-access-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "71ed0fd098c4e89f5d7740f164f2b7cc3cafb0b039a8ef8f3c9d0ec4fa7ce482",
+      "full_name": "Meridian.Identity.Auth.RolePermissionProfileUpsertRequestDto",
+      "id": "Meridian.Identity.Auth.RolePermissionProfileUpsertRequestDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "identity_access"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BaseRole",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 404,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CorrelationId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 408,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Description",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 403,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DisplayName",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 402,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PermissionNames",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 405,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProfileName",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 401,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Rationale",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 407,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RequestedBy",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 406,
+          "type": "string"
+        }
+      ],
+      "name": "RolePermissionProfileUpsertRequestDto",
+      "namespace": "Meridian.Identity.Auth",
+      "partial": false,
+      "qualified_name": "Meridian.Identity.Auth.RolePermissionProfileUpsertRequestDto",
+      "references": [],
+      "source": {
+        "line": 400,
+        "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
+      },
+      "sources": [
+        {
+          "line": 400,
+          "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "identity-access-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "identity-access-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "1dae6797ba6e4a096a90237ef23774de564637cc15fe6ed5f6eea41ca4b69144",
       "full_name": "Meridian.Identity.Auth.RolePermissionProfileUpsertResultDto",
       "id": "Meridian.Identity.Auth.RolePermissionProfileUpsertResultDto",
       "kind": "record",
@@ -364544,7 +364544,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "RolePermissionProfileAuditEventDto",
-          "source_line": 407,
+          "source_line": 413,
           "type": "RolePermissionProfileAuditEventDto"
         },
         {
@@ -364558,7 +364558,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "RolePermissionCatalogDto",
-          "source_line": 406,
+          "source_line": 412,
           "type": "RolePermissionCatalogDto"
         },
         {
@@ -364572,7 +364572,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "RolePermissionProfileDto",
-          "source_line": 405,
+          "source_line": 411,
           "type": "RolePermissionProfileDto"
         }
       ],
@@ -364586,12 +364586,12 @@
         "Meridian.Identity.Auth.RolePermissionProfileDto"
       ],
       "source": {
-        "line": 404,
+        "line": 410,
         "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
       },
       "sources": [
         {
-          "line": 404,
+          "line": 410,
           "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs"
         }
       ],

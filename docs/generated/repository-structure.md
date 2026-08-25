@@ -6371,6 +6371,7 @@ Meridian-main
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── accounting-calibration-summary.view-model.ts
 │   │   │   │   │   ├── accounting-screen.approvals.ts
+│   │   │   │   │   ├── accounting-screen.basis-bridge.view-model.ts
 │   │   │   │   │   ├── accounting-screen.calibration-panel.tsx
 │   │   │   │   │   ├── accounting-screen.capital-account-workbench-panel.tsx
 │   │   │   │   │   ├── accounting-screen.capital-accounts.view-model.test.ts
