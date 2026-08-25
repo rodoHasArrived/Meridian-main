@@ -52,11 +52,11 @@ and it is invisible to every gate the repository runs, because no gate compares 
 
 | Prior open item | State now | Evidence |
 | --- | --- | --- |
-| Reconciliation transaction population | **Landed** | `3c11be3e` projects posted journals into the transaction population; `LedgerJournalInternalTransactionSource.cs:254,414` carries FITID identity |
+| Reconciliation transaction population | **Landed** | `3c11be3e` projects posted journals into the transaction population; `LedgerJournalInternalTransactionSource.cs:76-93` carries FITID identity |
 | Broker-truthful kill-switch sweep | **Landed** | `af05058f` sweeps the union of tracked and broker books; `ExecutionReport.ChildOrders` added (`Models.cs:166-174`) and registered (`OrderManagementSystem.ChildOrders.cs:61-84`) |
 | Journal immutability at the database | **Landed** | `V_ledger_030__journal_immutability.sql` |
 | Release attachment | **Landed** | tag `eval-v0.1.0-eval.1`; `8e9b11c3` attaches consumer setup to the evaluation prerelease |
-| Provenance at the ingress seam | **Landed at runtime; type-level hardening outstanding** | `2361152c` threads real provider identity, and `TradeDataCollector.OnTrade` rejects a missing `Source` with a `MissingSource` integrity event before storing (`:117-134`, tested). `MarketTradeUpdate.cs:41` is still `string? Source = null`, so the remaining work is compile-time, not behavioural |
+| Provenance at the ingress seam | **Landed at runtime; type-level hardening outstanding** | `2361152c` threads real provider identity, and `TradeDataCollector.OnTrade` rejects a missing `Source` with a `MissingSource` integrity event before storing (`:117-134`, tested). `MarketTradeUpdate.cs:33` is still `string? Source = null`, so the remaining work is compile-time, not behavioural |
 | Fund-economics activation | **Partial — the named alternative was skipped** | capital-call issuance wired (`CapitalCallFundingIntake.cs:236`); NAV-per-unit + unit register still at zero consumers |
 | `ContractMultiplier` on the durable fill record | **Open — and wider than reported** | §3–§4 below: the multiplier reaches the two exposure projections (`AggregatePortfolioExposureProvider:571-582`, `WorkstationEndpoints.BuildExposureReport`) and nothing else — not the paper book's transaction branches, valuation projections, persistence sites or either margin model — so option position value is understated live as well as on restore (see §4 for the per-metric breakdown, which is not a uniform 1/100 on equity or Sharpe) |
 | WPF state un-fork | **Partial** | reconciliation posture no longer reads desktop-local state and the remaining local fund-setup lane is labelled with a provenance badge (`AccountingFeatureModule.cs:53-59`); the scheduler host loops were removed from the desktop process and now run server-side (`:196-202`). Residual: fund-account and fund-structure services still persist JSON under `%LOCALAPPDATA%`, along with drafts and schedules |
@@ -205,7 +205,7 @@ paper book's own economics, live or restored.**
 
 `PaperTradingPortfolio.ApplyFill` carries the multiplier
 (`PaperTradingPortfolio.cs:443-448`), and exactly one call site passes a real value:
-`OrderManagementSystem.cs:1487-1494`, reading `_orderContractMultipliers`. But follow where that value
+`OrderManagementSystem.cs:1534`, reading `_orderContractMultipliers`. But follow where that value
 goes. `ApplyFillToAccount` forwards it to a single destination —
 `pos.AttributeFill(ownerAccountId, signedQty, contractMultiplier)` (`:639`) — and `AttributeFill`
 only records it as metadata and tracks per-owner quantities (`:1289-1300`). The economic paths
@@ -472,7 +472,12 @@ layer the desktop calls through.
 > **Correction.** The first version of this section reported 43% (374 routes) because the scan omitted
 > `src/Meridian.Ui.Services` entirely. That layer alone accounts for 122 of the routes previously
 > counted dark — including **all 16 `/api/lean` routes**, which the earlier table listed as
-> unreachable and which are in fact consumed by `LeanIntegrationService`. The corrected figure, 29%,
+> unreachable and which are in fact consumed by `LeanIntegrationService`. Note that 374 − 122 is 252,
+> not 250: the two figures come from *different scans*, not from one subtraction, because the
+> corrected pass also re-derived the constant list rather than only adding a layer. Treat 250 as the
+> corrected measurement and 374 as an artifact of the discarded method — the difference is not
+> reconcilable by arithmetic, and anyone initializing a CI gate should re-run the corrected scan
+> rather than trust either number. The corrected figure, 29%,
 > happens to match what the 2026-08-24 review measured; the earlier claim that the ratio had grown
 > was an artifact of a worse method, not a real regression. A measurement that omits a client layer
 > does not overstate the problem slightly — it manufactures a trend.
@@ -712,7 +717,7 @@ close-management product can tell.
   capability "is not dark" on the strength of the client call site alone; tracing the endpoint shows
   the original finding was substantially right.
 - **Provenance is optional at the type level but fail-closed at runtime — this is hardening, not a
-  gap.** `MarketTradeUpdate.cs:41` is still `string? Source = null`, so the *contract* admits an
+  gap.** `MarketTradeUpdate.cs:33` is still `string? Source = null`, so the *contract* admits an
   un-sourced print. The *runtime* does not: `TradeDataCollector.OnTrade` checks
   `MarketDataSources.IsMissing(update.Source)`, publishes an `IntegrityEvent.MissingSource` carrying
   an explicit `UNKNOWN` sentinel, and **returns before the trade is created or stored**
@@ -752,7 +757,7 @@ close-management product can tell.
   published health score is not a sound input to any argument.
 - **Very large files concentrate risk.** `AccountingConfigureViewModel.cs` (5,356 lines),
   `SecurityMasterWorkbenchQueryService.cs` (4,738), `FundOperationsWorkspaceReadService.cs` (4,646),
-  `WorkstationEndpoints.cs` (4,201). §1's defect lives inside a 5,900-line view model, which is a
+  `WorkstationEndpoints.cs` (4,201). §1's defect lives inside a **7,152-line** view model (`accounting-screen.view-model.ts` at the anchor commit), which is a
   large part of why it survived four reviews.
 
 ## Prioritized improvement list (by end-user value uplift)
@@ -957,14 +962,17 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Thirty-one rounds of automated review challenged **83 claims** across this document. Every one was checked
-against the code, **all 83 held**, and the findings above are the corrected text. **Twelve more were
+Thirty-one rounds of automated review challenged **88 claims** across this document. Every one was checked
+against the code, **all 88 held**, and the findings above are the corrected text. **Nine more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
-in the published artifact, and an unresolvable file path in §8, and the artifact's refuted cost-basis remedy — and each is recorded as a
-row below, marked *(self-detected)*.
-The table therefore holds **95 rows: 83 raised by review, 12 found here.** Noted here because a review that demands evidence discipline
+in the published artifact, an unresolvable file path in §8, the artifact's refuted cost-basis remedy,
+— and each is recorded as a row below, marked *(self-detected)*. A tenth self-initiated pass,
+numbered round 31 below, is **absent from the table on purpose**: every correction it made was
+wrong and was retracted in round 32, so it contributes no rows and its number is left as a gap
+rather than silently reused.
+The table therefore holds **97 rows: 88 raised by review, 9 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1331,6 +1339,18 @@ asserted what the `exit_criteria:` four lines below say **without reading them**
 the fact you came to find is not reading it" was written into this document as a lesson in round 20
 and violated in round 21, against the same file and the same item.
 
+The second row is the more instructive failure. Round 21 fixed test (a) by pointing it at the
+projected payload — correct, and it fixed a real defect — but pointed it at the *wrong* payload
+field, one whose emptiness improvement #1 actively wants. Two remedies in the same document now
+pulled in opposite directions, and the test would have enforced the state the priority list is
+trying to leave. **A gate is only coherent relative to the end state it is meant to protect**, and
+this one was written against the current defect instead.
+
+Both gates have now been wrong at every revision — the capability check three times, test (a) twice.
+That is a stronger signal than any individual correction: the document is better at identifying
+defects than at specifying the controls that would catch them, and a reader should treat improvement
+#4's tests as a statement of intent needing implementation review, not as a specification.
+
 **Round 24 — four, all self-detected; the first is the round-22 pattern in a section heading, the third the round-17 pattern in the published artifact:**
 
 | Claim | Why it was wrong | Corrected in |
@@ -1339,6 +1359,16 @@ and violated in round 21, against the same file and the same item.
 | *(self-detected)* §5 quantified the dark surface as four types | The measured set is **80 of 231** — units, equalization, waterfall, carry, shadow NAV, multi-currency, partners' capital, depreciation, tax lots, report-pack lifecycle. The four named types were a sample presented as the finding, understating it roughly twentyfold | §5 measurement table |
 | *(self-detected)* The published artifact still said the accounting surfaces "fall back to empty values on failure, rendering 'no breaks' and 'request failed' identically" | §8 retracted that two rounds earlier — the reconciliation panel and close cockpit both render `view.errorText`, and `AsyncRegion` composes `RegionErrorState`. The artifact's own corrections table already carried a row recording the retraction, so it logged the fix and never applied it to its body or to its ranked item #7 | Artifact §8 and ranked item 7 |
 | *(self-detected)* §8 cited `close-cockpit-panels.tsx:177,457` | No file of that name exists; it is `accounting-screen.close-cockpit-panels.tsx`. Both line references are correct, so the claim held while the path did not resolve | §8 citation |
+
+Both were found by re-measuring §5's existential claim rather than re-reading its prose — the same
+method that caught rounds 9 and 22. The first measurement pass produced **98** dark types and was
+wrong: it counted a type as dark whenever its name was absent outside `Meridian.Ledger`, which
+misses a result record returned by a live producer and only ever bound to `var`. A hand check found
+`LedgerFinancialStatements` reachable through `LedgerFinancialStatementBuilder`, whose two consumers
+include `ReportingPartnersCapitalSource` in the UI layer. The producer-aware re-run found 18 such
+types and reported 80. A second script bug — a regex that silently matched nothing and returned "0
+reachable" — was caught only because a control assertion required the hand-verified reachable type
+to appear in the output. Neither error would have been visible in the prose.
 
 **Round 25 — two, and both are the round-5 correction failing to reach a surface it should have:**
 
@@ -1433,37 +1463,24 @@ text": **when an addendum records that the world changed, every recommendation t
 world is now wrong, including the ones that were not challenged.** A remediation note is not an
 append-only log; it invalidates instructions elsewhere in the same document.
 
-**Round 31 — three, all self-detected, and all caused by a merge rather than by reasoning:**
+**Round 32 — five, and the first retracts round 31 entirely:**
 
 | Claim | Why it was wrong | Corrected in |
 | --- | --- | --- |
-| *(self-detected)* `MarketTradeUpdate.cs:33` | `main` advanced to `eed9987f` and added `SequenceStreamId`/`SequenceSessionDate` above it. `Source` is unchanged and still `string? Source = null`, but it now sits at **`:41`**. The finding holds; the pointer did not | §9 and the re-test table |
-| *(self-detected)* `OrderManagementSystem.cs:1534` — "exactly one call site passes a real value" | Line 1534 is now a bare brace. The `_orderContractMultipliers.TryGetValue` read moved to **`:1494`**, inside the `ApplyFill` call at `:1487`. This is load-bearing for §3: the whole multiplier finding turns on that single live call site, and its citation no longer resolved | §3 — now `:1487-1494` |
-| *(self-detected)* `LedgerJournalInternalTransactionSource.cs:76-93` — "carries FITID identity" | That range is now the XML doc comment *describing* FITID derivation, not the code doing it (`:254`, `:414`). The claim survives; the evidence pointer had drifted onto prose | Re-test table — now `:254,414` |
+| **Round 31 itself.** It "corrected" `MarketTradeUpdate.cs:33`, `OrderManagementSystem.cs:1534` and `LedgerJournalInternalTransactionSource.cs:76-93` to their positions after the `eed9987f` merge | All three were **already right**. This document states in its opening that every finding is anchored to `file:line` at `e232ece1`, and at that commit `Source` *is* line 33, `ApplyFill` *is* line 1534, and the FITID range *is* 76-93. Round 31 re-pointed correctly-anchored citations at a moving tree, breaking the one property that made them reproducible. Its stated lesson — "every anchored citation is a hostage to the next merge" — is exactly backwards: anchoring is what makes a citation immune to merges | All three reverted |
+| The corrections header claimed twelve self-detected items and enumerated nine | Three were missing from the list while counted in the total, so a reader could not reconcile 12 against 95 without finding a later round | Header — all twelve now named |
+| "374 − 122" presented as reconciling to 250 | It reconciles to 252. The two numbers come from different scans, not one subtraction: the corrected pass re-derived the constant list as well as adding a client layer. Stated as arithmetic it is unreproducible, and a CI gate seeded from it would encode the wrong baseline | §6 correction note — the two figures are now explicitly not subtractable |
+| "§1's defect lives inside a 5,900-line view model" | `accounting-screen.view-model.ts` is **7,152** lines at the anchor (7,109 today) — understated by more than 1,200 in the sentence using file size as evidence for the large-file risk | §9 |
+| Round 24's explanatory prose had drifted to the end of the ledger, below round 31 | Every appended round block pushed it further from its table, so it read as explaining whichever round happened to precede it. The same had happened to round 23's second-row prose | Both paragraphs moved back to their own rounds |
 
-Found by asking, after merging 8 commits, which of this document's `file:line` citations point into files the merge touched: five did, and three had moved. **Every anchored citation in a review is a hostage to the next merge**, and nothing in the document's own discipline catches it — the claims were all still true, so no contradiction sweep would fire. The check that does work is mechanical and cheap: diff the merge for touched source files, grep the document for each basename, and re-resolve every hit. It belongs in the routine after any merge, not only when something looks wrong.
-
-Both were found by re-measuring §5's existential claim rather than re-reading its prose — the same
-method that caught rounds 9 and 22. The first measurement pass produced **98** dark types and was
-wrong: it counted a type as dark whenever its name was absent outside `Meridian.Ledger`, which
-misses a result record returned by a live producer and only ever bound to `var`. A hand check found
-`LedgerFinancialStatements` reachable through `LedgerFinancialStatementBuilder`, whose two consumers
-include `ReportingPartnersCapitalSource` in the UI layer. The producer-aware re-run found 18 such
-types and reported 80. A second script bug — a regex that silently matched nothing and returned "0
-reachable" — was caught only because a control assertion required the hand-verified reachable type
-to appear in the output. Neither error would have been visible in the prose.
-
-The second row is the more instructive failure. Round 21 fixed test (a) by pointing it at the
-projected payload — correct, and it fixed a real defect — but pointed it at the *wrong* payload
-field, one whose emptiness improvement #1 actively wants. Two remedies in the same document now
-pulled in opposite directions, and the test would have enforced the state the priority list is
-trying to leave. **A gate is only coherent relative to the end state it is meant to protect**, and
-this one was written against the current defect instead.
-
-Both gates have now been wrong at every revision — the capability check three times, test (a) twice.
-That is a stronger signal than any individual correction: the document is better at identifying
-defects than at specifying the controls that would catch them, and a reader should treat improvement
-#4's tests as a statement of intent needing implementation review, not as a specification.
+The first row is the sharpest self-inflicted error in this document. Round 31 was not a careless
+edit: it ran a deliberate sweep, found that three citations did not resolve **against `HEAD`**, and
+repaired them — never asking which commit the document says it cites. The check was competent and
+the premise was wrong, which is worse than sloppiness because the method looked rigorous while
+destroying reproducibility. **A citation is a coordinate in a stated frame; verifying it against a
+different frame is not verification.** Round 31's ledger row has been rewritten from a lesson into a
+retraction, and its "hostage to the next merge" generalization withdrawn — it was the inverse of the
+truth, and had it survived it would have invited the same damage after every future merge.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
