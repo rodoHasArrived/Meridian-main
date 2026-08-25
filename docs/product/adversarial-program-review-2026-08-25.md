@@ -737,10 +737,17 @@ close-management product can tell.
 4. **Gate the catalogs against each other — with predicates that actually bite.** An
    existential check ("some role can reach it") is useless here: Admin, Developer, and Accounting
    satisfy it while `FundAccountant` and `Controller` stay locked out, so the defect passes. Three
-   tests that do bite: (a) a declared **role-to-surface expectation table** — `FundAccountant` and
-   `Controller` must reach the Accounting trial balance and P&L — asserted **against the projected
-   payload, not the permission sets**, because §1's lockout is a withheld-as-empty
-   `ReconciliationQueue` rather than a denial: every gate passes and the operator still sees nothing;
+   tests that do bite: (a) a declared **role-to-surface expectation table** asserted **against the
+   projected payload, not the permission sets** — because §1's lockout is a withheld-as-empty
+   collection rather than a denial: every gate passes and the operator still sees nothing. Two
+   assertions, not one, and the distinction matters: `FundAccountant` and `Controller` must receive a
+   **populated posted-ledger trial balance and P&L, scoped to their assigned funds**; and the
+   run-scoped explorer must be **absent from the Accounting workspace entirely**. An earlier draft
+   of this test asserted that their `ReconciliationQueue` populates, which contradicts improvement #1
+   — that item retires the run panel from Accounting and explicitly refuses `ViewStrategies`, so in
+   the intended end state withholding the strategy-run queue is *correct*. A test demanding it
+   populate would either fail the desired remediation or push toward the broad grant this document
+   rejects. Assert the posted book, not the run queue;
    (b) every route constant must be reachable **transitively from a mounted route or view**, or
    appear on a declared headless allowlist — *reference alone is not enough*, since the three dead
    quality wrappers in §6 are referenced by `lib/api.ts` and called by nothing, so a
@@ -760,9 +767,23 @@ close-management product can tell.
    `status: ready_for_acceptance` with `evidence_posture: implementation_complete`
    (`docs/roadmap/data/roadmap-items.yml`), and the roadmap decision log reserves `done` until
    operator acceptance. A gate reading only *shipped* capabilities would stay green on the NAV kernel
-   until after the acceptance it is supposed to inform. It must include **acceptance candidates whose
-   exit criteria or evidence claim a runnable operator surface** — which is exactly what
-   `W9-NAV-006`'s criteria do. (§1, §5, §6)
+   until after the acceptance it is supposed to inform.
+
+   A previous revision of this invariant then scoped it to "acceptance candidates whose exit criteria
+   or evidence claim a runnable operator surface", asserting that `W9-NAV-006`'s criteria do. **They
+   do not.** Its four exit criteria (`roadmap-items.yml:1057-1060`) require unitized NAV computed
+   from ledger-backed valuations, fees and accruals posting governed entries, waterfall and
+   commitment schedules reconciling to the partners-capital statement, and golden-file tests over the
+   kernels — every one satisfiable by a kernel with **no route, no client and no screen**, which is
+   precisely the state §5 describes. The scoped predicate therefore excluded the item it was written
+   for, for the second time.
+
+   Two ways to specify it so that it bites: cover **every `implementation_complete` acceptance
+   candidate** regardless of what its criteria mention, or add explicit **surface-expectation
+   metadata** to the roadmap schema and gate on that. The first is cheaper and needs no schema
+   change; the second is more precise and would let a genuinely headless capability declare itself.
+   What does not work is inferring a surface expectation from criteria that never mention one.
+   (§1, §5, §6)
 5. **Activate NAV per unit end-to-end.** Valuation → `ShareClassUnitRegisterProjector` → governed
    journal intake → an operator panel, following the path capital-call issuance just proved. Highest
    value-per-line change available, and the plumbing is already validated. (§5)
@@ -837,12 +858,12 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Twenty-two rounds of automated review challenged **64 claims** across this document. Every one was checked
-against the code, **all 64 held**, and the findings above are the corrected text. **Four more were
+Twenty-three rounds of automated review challenged **66 claims** across this document. Every one was checked
+against the code, **all 66 held**, and the findings above are the corrected text. **Four more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, and §3's own lead sentence — and each is recorded as a row below, marked *(self-detected)*.
-The table therefore holds **68 rows: 64 raised by review, 4 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **70 rows: 66 raised by review, 4 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1195,6 +1216,31 @@ Every cross-surface sweep this document has adopted looks for a stale claim in *
 *another* file. This one was four lines from its own refutation. The sweep that would have caught it
 is re-reading the paragraph you just wrote against the paragraph you just wrote — which is the
 cheapest check available and the only one never added.
+
+**Round 23 — two, both on gates corrected one round earlier:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| The capability gate covers "acceptance candidates whose exit criteria claim a runnable operator surface — which is exactly what `W9-NAV-006`'s criteria do" | They do not. Its four exit criteria (`roadmap-items.yml:1057-1060`) require ledger-backed NAV computation, governed fee entries, waterfall reconciliation and golden-file tests — **no route, client or screen**. Every one is satisfiable by exactly the headless kernel §5 describes, so the rescoped predicate excluded its target for the second time | Improvement #4's fourth invariant — two workable scopings given |
+| Test (a) asserts `FundAccountant`/`Controller` receive a populated `ReconciliationQueue` | That contradicts improvement #1, which retires the run panel from Accounting and refuses `ViewStrategies`. In the intended end state, withholding the strategy-run queue is **correct** — so the test would fail the desired remediation or push toward the grant this document rejects | Improvement #4 (a) — split into posted-ledger and absence assertions |
+
+The first row is the round-20 lesson recurring in the same file, three rounds later. Round 21 read
+`status:` and `evidence_posture:` in `roadmap-items.yml`, corrected the gate on that basis, and then
+asserted what the `exit_criteria:` four lines below say **without reading them**. "Reading a file for
+the fact you came to find is not reading it" was written into this document as a lesson in round 20
+and violated in round 21, against the same file and the same item.
+
+The second row is the more instructive failure. Round 21 fixed test (a) by pointing it at the
+projected payload — correct, and it fixed a real defect — but pointed it at the *wrong* payload
+field, one whose emptiness improvement #1 actively wants. Two remedies in the same document now
+pulled in opposite directions, and the test would have enforced the state the priority list is
+trying to leave. **A gate is only coherent relative to the end state it is meant to protect**, and
+this one was written against the current defect instead.
+
+Both gates have now been wrong at every revision — the capability check three times, test (a) twice.
+That is a stronger signal than any individual correction: the document is better at identifying
+defects than at specifying the controls that would catch them, and a reader should treat improvement
+#4's tests as a statement of intent needing implementation review, not as a specification.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
