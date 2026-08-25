@@ -416,7 +416,22 @@ for a cash account, zero commission, 10 calls at $2.50 against $100,000 of start
 | Net P&L, total return | **Exactly 1/100** ($−5 against $−500) |
 | Drawdown | ≈1/100, since both the peak and the trough carry the same 1/100 P&L error over a nearly-correct cash base |
 | Sharpe (`mean / stdDev * √252`, `:143`) | **Distorted, and not by a clean factor.** `RecordDayEnd` divides each change by the *previous* equity, and the two books' denominators diverge as P&L accumulates — buggy is `cash + P&L`, correct is `cash + 100×P&L`. Over a six-mark series the per-day ratio drifts (0.010000, 0.009950, 0.010049, 0.009901, 0.010148) and `mean/stdDev` lands **17.9% below** correct. Preserved only while cumulative option P&L stays negligible against initial cash — not because the book is pure-option |
-| Commissions | Unaffected — already dollar amounts, accumulated independently |
+| Commissions, fees, slippage | **It depends on the configured schedule, and two of the four are wrong.** `PaperTradingCostModel.Compute` derives `var notional = absQuantity * fillPrice` (`PaperTradingCostModel.cs:63`) with no multiplier and no percent-of-par, and both paper gateways call it that way (`PaperTradingGateway.cs:465`, `Adapters/PaperTradingGateway.cs:433`). So `BasisPointsOfNotional` commission, `FeeBasisPoints` and `SlippageBasisPoints` are all **understated by the multiplier**, while `PerShare` (`absQuantity * rate`) and `FixedPerOrder` are correct as-is. The spread term is unscaled too (`|fillPrice − mid| × absQuantity`) |
+
+**The "exactly 1/100" rows hold only where costs are zero or per-share.** Because the cost model
+mixes scale-sensitive terms (basis-point commission, fees, slippage, spread) with scale-free ones
+(per-share, fixed-per-order), a session configured with a fixed or per-share schedule carries an
+unscaled cost term against a 1/100 economic base — so net P&L is **not** a clean factor of the
+correct figure. This is the same non-uniform-scaling trap round 26 found in excess liquidity,
+in a third place: a uniform factor asserted over an expression that is not uniformly scaled.
+Any regression test here must pin the configured schedule, not a single ratio.
+
+**And percent-of-par runs the other way in this one path.** `ApplyFill` scales a face-value price to
+a fraction of par before any cash math, but the cost model receives the **raw** `fillPrice`, so a
+fixed-income fill's costs are computed on a notional **100× too large** — overstated by exactly the
+factor the rest of the fixed-income path gets right. §3 establishes that percent-of-par is otherwise
+modelled *and* consumed; this is the single place it is not, and it is the only live percent-of-par
+defect in this document.
 
 So the damage is severe where it is easiest to miss: an options session's realized P&L is off by two
 orders of magnitude while its **equity still looks plausible** — right at entry, and wrong in the
@@ -429,14 +444,18 @@ was traced and the arithmetic actually run (round 7). Every earlier version reas
 position error in isolation. That is the same mistake the document accuses the codebase of — reading
 one side of a seam and inferring the other — and it took four attempts to stop making it.
 
-This is the same defect shape as §3, in a third subsystem. Three subsystems now model instrument
-scale differently: `ExecutionPosition.ContractMultiplier` (`ExecutionPosition.cs:42`), the
-`usesFaceValuePercentageOfPar` boolean, and `FillEvent`'s implicit 1×.
+This is the same defect shape as §3, in a third subsystem — and there are **five** representations of
+instrument scale, not three: `ExecutionPosition.ContractMultiplier` (`ExecutionPosition.cs:42`), the
+`usesFaceValuePercentageOfPar` boolean, `FillEvent`'s implicit 1×, the nullable
+`OptionContractIdentity.Multiplier` string on `ExecutionReport` (`Models.cs:119`), and
+`TradeExecutedEvent`'s own `GrossValue` convention (`TradeExecutedEvent.cs:53-55`), which handles
+percent-of-par and omits the multiplier. Every count of these has been low, including this one until
+round 39.
 
 **Improvement.** Reuse and populate `ExecutionReport.OptionContract.Multiplier`; do not replace it
 with a second scale object. Add an instrument-scale value (multiplier + price convention) only where
-no representation exists, notably `FillEvent`, and resolve both records to one consumption model in
-`Meridian.Contracts`. Retire the parallel boolean and implicit conventions only after their consumers
+no representation exists — notably `FillEvent` **and `TradeExecutedEvent`, whose `GrossValue` feeds
+the accounting journal** — and resolve them to one consumption model in `Meridian.Contracts`. Retire the parallel boolean and implicit conventions only after their consumers
 migrate; otherwise this defect class will keep reappearing at each new seam.
 
 ## 5. The fund-administration lane is dark — 80 of 231 ledger types reach no consumer
@@ -515,6 +534,21 @@ mirrored from `src/Meridian.Contracts/Api/UiApiRoutes.cs`) declares **862** rout
 checked for a reference — by constant name or literal path — across all **three** client layers:
 the browser workstation, `src/Meridian.Wpf`, and `src/Meridian.Ui.Services`, the shared API-client
 layer the desktop calls through.
+
+**A third limitation, and it is in the unit of measure rather than the corpus.** The catalog keys on
+**path**, and a path is not an operation. In the endpoint layer alone, **33 of the 525 constants
+registered there carry more than one HTTP verb** — `LedgerEndpoints.cs:30` and `:80` register GET and
+POST on the same `UiApiRoutes.LedgerBooks`, and the `Get`/`Post` and `Delete`/`Get` pairings repeat
+across the accounting-system, backfill-schedule and reporting surfaces. A path-keyed reference check
+marks such a constant reached the moment *any* client touches *any* of its verbs, so a mutation with
+no caller hides behind a read with one. **Build the inventory from `(method, normalized path)`
+identities and trace clients with their verbs** — otherwise both the 29% and the gate improvement #4
+proposes inherit a blind spot that no amount of corpus-widening closes.
+
+How many of those 33 actually have a dark verb is **not measured here.** The instance this was first
+raised with does not hold: `getLedgerBooks` is GET-only (`ledger-reports-api.ts:23-25`), but
+`api.ts:1939` posts to the same endpoint key, so the create-book operation has a client after all.
+Finding real dark verbs requires the verb-aware inventory above, which is the point.
 
 | Layer | Routes reached |
 | --- | --- |
@@ -997,13 +1031,27 @@ close-management product can tell.
    the same three sites omit `ownerAccountId`. Persist the owning fund or join
    `OrderState.FundAccountId` (`Models.cs:257`) through order identity at every restore and projection
    site, and cover both scaled economics and restored fund attribution in regression tests.
+   **And scale the durable trade event, or this remedy crashes the accounting journal.**
+   `TradeExecutedEvent` carries no multiplier and computes `GrossValue` as
+   `FilledQuantity * (UsesFaceValuePercentageOfPar ? FillPrice / 100m : FillPrice)`
+   (`TradeExecutedEvent.cs:53-55`) — percent-of-par handled, under a doc comment warning about
+   precisely this class of error, and the contract multiplier absent. `LedgerPostingConsumer.BuildTradeJournal`
+   posts that value straight into the double-entry journal (`:604-635`), so a buy books at 1/100.
+   Worse, it derives `var costBasis = evt.GrossValue - evt.RealizedPnl` and **throws
+   `InvalidDataException` when that is non-positive** (`:614-616`). Scale `RealizedPnl` in the paper
+   book while `GrossValue` stays unscaled and a *profitable option sale* drives the subtraction
+   negative — turning a silent 1/100 error on the book of record into a hard posting failure.
+   The two must move together, and the durable event's persistence and replay contract with them.
    **Do not assert a uniform 1/100 anywhere in that coverage.** An option session's P&L and total
    return are off by exactly the multiplier, but its equity is correct at entry and wrong only in the
    flattering direction on losses, its Sharpe merely drifts, and excess liquidity distorts
    nonlinearly — see §4 for the per-metric breakdown. A regression test asserting one uniform factor
    would encode the wrong number, which is the error round 26 corrected. Third consecutive review to
    find this class in a new subsystem. (§3, §4)
-4. **Gate the catalogs against each other — with predicates that actually bite.** An
+4. **Gate the catalogs against each other — with predicates that actually bite, keyed by operation
+   rather than path.** Build every inventory from `(HTTP method, normalized path)`: 33 of the 525
+   constants registered in the endpoint layer carry more than one verb, so a path-keyed check
+   certifies a constant reachable when only one of its operations has a client. An
    existential check ("some role can reach it") is useless here: Admin, Developer, and Accounting
    satisfy it while `FundAccountant` and `Controller` stay locked out, so the defect passes. Three
    tests that do bite: (a) a declared **role-to-surface expectation table** asserted **against the
@@ -1190,8 +1238,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Thirty-seven rounds of automated review challenged **109 claims** across this document. Every one was checked
-against the code, **all 109 held**, and the findings above are the corrected text. **Twelve more were
+Thirty-eight rounds of automated review challenged **112 claims** across this document. Every one was checked
+against the code, **all 112 held**, and the findings above are the corrected text. **Twelve more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
@@ -1200,7 +1248,7 @@ the second addendum's miscited compliance gate lines, a sentence round 35 left m
 marked *(self-detected)*. A further self-initiated pass, numbered round 31 below, is **absent from the table on purpose**: every correction it made was
 wrong and was retracted in round 32, so it contributes no rows and its number is left as a gap
 rather than silently reused.
-The table therefore holds **121 rows: 109 raised by review, 12 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **124 rows: 112 raised by review, 12 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1876,6 +1924,33 @@ that the multiplier error is **not** a uniform 1/100 across metrics. That warnin
 round 26 corrected exactly that mistake — equity is right at entry and wrong only on losses, Sharpe
 drifts, excess liquidity distorts nonlinearly — and without it an implementer writing the regression
 tests the same paragraph asks for would encode the wrong number.
+
+**Round 39 — three from review, and one of them makes a landed remedy dangerous:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| §4's per-metric table: "Commissions — **unaffected**, already dollar amounts, accumulated independently" | Only for two of the four schedules. `PaperTradingCostModel.Compute` builds `notional = absQuantity * fillPrice` (`PaperTradingCostModel.cs:63`) with no multiplier and no percent-of-par, and both gateways call it that way (`PaperTradingGateway.cs:465`, `Adapters/PaperTradingGateway.cs:433`). `BasisPointsOfNotional`, `FeeBasisPoints`, `SlippageBasisPoints` and the spread term are all understated by the multiplier; only `PerShare` and `FixedPerOrder` survive. **And percent-of-par runs the other way here** — the model gets the raw price, so fixed-income costs are computed on a notional 100× too large, the one live percent-of-par defect in this document | §4 table and the exact-factor claims |
+| Improvement #3's checklist, as landed | Following it **breaks the accounting journal**. `TradeExecutedEvent` has no multiplier and computes `GrossValue` from quantity × price (`:53-55`); `LedgerPostingConsumer.BuildTradeJournal` posts it into the double-entry journal (`:604-635`) and derives `costBasis = GrossValue − RealizedPnl`, throwing `InvalidDataException` when that is non-positive (`:614-616`). Scale `RealizedPnl` in the paper book while `GrossValue` stays unscaled and a **profitable option sale throws** — converting a silent 1/100 error on the book of record into a hard posting failure | Improvement #3 and §4's improvement — the durable event added to the migration |
+| The reachability measure and improvement #4's gate key on **path** | A path is not an operation. **33 of the 525 constants registered in the endpoint layer carry more than one HTTP verb** — `LedgerEndpoints.cs:30` and `:80` are GET and POST on one `UiApiRoutes.LedgerBooks` — so any client touching any verb marks the constant reached and a caller-less mutation hides behind a read. Both the 29% and the proposed gate inherit the blind spot | §6 and improvement #4 — inventories keyed by `(method, normalized path)` |
+
+The second row is the sixth time a remedy in this document would have left working code worse, and
+it is the worst of the six by some distance. The others produced wrong numbers or missed a consumer;
+**this one converts a silent error into a thrown exception on the accounting book of record**, and it
+would have done so only for profitable option sales, in a code path the remedy never mentions. It
+also lands on a remedy that had *already* been corrected four times. The pattern is now precise
+enough to state as a rule: **when a fix changes the scale of a value, every consumer that arithmetically
+combines it with an unfixed sibling is a break, not a miss** — `GrossValue − RealizedPnl` is that
+combination, and it has a guard that throws.
+
+The third row is worth separating from its example, because the example fails and the finding does
+not. `getLedgerBooks` is GET-only, but `api.ts:1939` posts to the same endpoint key, so the
+create-book operation is not dark and the instance offered does not demonstrate the defect. The
+**method** flaw is real and independently measured: keying on path cannot distinguish 33 constants
+that carry two operations each. Whether any of those 33 has a genuinely dark verb is left unmeasured
+here, for the same reason the unregistered-constant scale was in round 34 — finding out requires the
+verb-aware inventory this row is asking for, and a grep would produce a number that only looked like
+one. **A correct principle can arrive with a wrong instance, and upholding it means saying which is
+which.**
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
