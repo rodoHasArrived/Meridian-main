@@ -378,16 +378,32 @@ mirror, so they are out-of-catalog and must be reported separately rather than f
 Their absence from the catalog is itself a finding — a route that never becomes a constant is
 invisible to the drift gate that keeps the mirror honest, so no tooling can notice it has no client.
 
-Counted on its own terms, the compliance surface is a complete, permission-guarded governance
-capability with no operator path, in a product whose promise is governed proof. Its **evidence
-durability is uneven**, and any activation work has to fix that first: only `actions/evaluate`,
-`audit/extract`, and `controls/attestation` touch `ImmutableAuditLogService`
-(`ComplianceEndpoints.cs:52,66,70`); approval requests and decisions live in
-`FileComplianceApprovalStore`, a JSON snapshot rewritten in place (`ComplianceApprovalStore.cs:247-250`)
-— durable but mutable, not append-only; and access reviews are held in a plain
-`List<AccessReviewRecord>` (`AccessReviewService.cs:94-95`) that is empty after restart. Wiring a UI
-onto the approval and access-review routes as they stand would present retention and tamper-evidence
-the storage does not provide. The **data-quality** surface is different in kind, and narrower than an earlier draft of this
+Counted on its own terms the compliance surface is permission-guarded and has no operator path — but
+it is **not** a complete governance capability, and two things have to land server-side before any UI
+work starts.
+
+*It has no discovery contract for approvals.* The eight routes are POST `approval-requests`, POST
+`approval-requests/{id}/decisions`, POST `actions/evaluate`, GET `audit/extract`, GET
+`controls/attestation`, POST `access-reviews/assess`, POST `access-reviews/run`, and GET
+`access-reviews` (`ComplianceEndpoints.cs:15,26,48,66,70,85,101,117`). There is **no GET for approval
+requests** — not a list, not a read-by-id — and the gap is deeper than a missing route:
+`IComplianceApprovalStore` exposes only `CreateRequest`, `RecordDecision`, and single-id `Resolve`
+(`ComplianceApprovalStore.cs:12-27`), with no enumeration at all. An approver therefore cannot
+discover what is pending; they must already hold the approval id. The review queue this surface
+implies cannot be built from what exists, so activation is not "persistence plus UI" — a scoped
+list/read contract has to be added first.
+
+*Its evidence durability is uneven.* Only `actions/evaluate`, `audit/extract`, and
+`controls/attestation` touch `ImmutableAuditLogService` (`:48,66,70`); approval requests and
+decisions live in `FileComplianceApprovalStore`, whose `Persist` serializes the whole snapshot and
+hands it to `AtomicFileWriter.Write` (`ComplianceApprovalStore.cs:247-250`). That is an **atomic
+replace, not an in-place rewrite** — a correction from an earlier draft, and the same
+`AtomicFileWriter` misreading this document already made once about the fund-structure loader. There
+is no torn-write exposure; the objection is that the snapshot is mutable and not append-only, so it
+cannot carry tamper-evidence. Access reviews are weaker still: a plain `List<AccessReviewRecord>`
+(`AccessReviewService.cs:94-95`) that is empty after restart. Wiring a UI onto the approval and
+access-review routes as they stand would present retention and tamper-evidence the storage does not
+provide. The **data-quality** surface is different in kind, and narrower than an earlier draft of this
 section claimed. The aggregate `/api/quality/dashboard` is wired, *and so is the per-symbol
 drill-down*: the mounted `DataQualityRegion` expands each symbol into component scores with
 explanations, provider freshness, open gaps with remediation actions, and current issues
@@ -553,9 +569,17 @@ close-management product can tell.
    half — the posted journal's trial balance and P&L now render in
    `AccountingPostedLedgerSection`. What remains: retire the run-scoped panel from Accounting (or
    relabel it a Strategy-run artifact and move it there), so the screen stops showing two books
-   under one name; and grant `FundAccountant` and `Controller` the permissions their screens
-   require, so the roles that own the records stop receiving a 403 on one of them. Until that lands,
-   the flagship persona still cannot open half of the flagship screen. (§1)
+   under one name; and re-gate the accounting artifact on a **ledger-specific read permission**
+   (`ViewLedgerReports` from improvement #2), so the roles that own the records stop receiving a 403.
+   **Do not close the 403 by granting `ViewStrategies`** — that flag gates eleven endpoint files,
+   among them `CoveredCallEndpoints`, `LeanEndpoints`, `QuantLabEndpoints`, `PromotionEndpoints` and
+   `StrategyLifecycleEndpoints`, so it would hand both personas covered-call results, Lean
+   configuration and algorithm history, strategy-designer drafts, run fills and attribution, and the
+   Strategy workspace. It is also self-defeating alongside the first half of this item: once the
+   run-scoped panel leaves Accounting, accountants need no strategy grant at all. An earlier draft
+   said simply "grant them the permissions their screens require", which read literally means
+   exactly the over-grant this note now rules out. Until this lands, the flagship persona still
+   cannot open half of the flagship screen. (§1, §2)
 2. **Split the overloaded permissions — and split the replacements too.** Add
    `ViewLedgerReports`/`ManageLedgerReports` and `ViewCompliance`/`ManageCompliance`; stop using
    `ManageDirectLending` as the fund-accounting grant and `ManageUsers` as the compliance grant. Note
@@ -610,11 +634,15 @@ close-management product can tell.
    27 quality routes carrying history, statistics, ranked views, comparison and reports sit behind
    a dashboard *and* a per-symbol drill-down that are already wired, so those are genuinely cheap:
    the servers are done and the operator path exists to hang them from. The 8 compliance
-   endpoints are not cheap in the same way — exactly **one** route writes to the immutable audit log
-   (`actions/evaluate`, via `auditLog.Append` at `ComplianceEndpoints.cs:61`); `audit/extract` and
-   `controls/attestation` only read it (`GetAll`/`VerifyIntegrity`), approvals live in a rewritable
-   snapshot, and access reviews do not survive restart. Durable retention has to land *before* a UI
-   presents any of it as governed proof. Register them as route constants too, so the
+   endpoints are not cheap in the same way, for two independent reasons. First, there is **no
+   discovery contract for approvals**: no GET for approval requests, and `IComplianceApprovalStore`
+   has no enumeration method (`ComplianceApprovalStore.cs:12-27`), so the approver queue cannot be
+   built from what exists — that is server work, not UI work. Second, the evidence is uneven:
+   exactly **one** route writes to the immutable audit log (`actions/evaluate`, via
+   `auditLog.Append` at `ComplianceEndpoints.cs:61`); `audit/extract` and `controls/attestation`
+   only read it (`GetAll`/`VerifyIntegrity`); approvals live in an atomically-replaced but mutable
+   snapshot; and access reviews do not survive restart. A list/read contract and durable retention
+   both have to land *before* a UI presents any of it as governed proof. Register them as route constants too, so the
    drift gate can see them. (§6)
 8. **Fix the freshness gap; standardize the error vocabulary second.** The demonstrated defect is
    staleness — break casework, approvals, and close readiness do not refresh after a mutation, so
@@ -656,8 +684,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Eleven rounds of automated review challenged **36 claims** across this document. Every one was checked
-against the code, **all 36 held**, and the findings above are the corrected text. Two more — the
+Twelve rounds of automated review challenged **40 claims** across this document. Every one was checked
+against the code, **all 40 held**, and the findings above are the corrected text. Two more — the
 quality-route count, wrong at 31 in three places, and a refuted remedy still standing in §1 — were
 caught by re-measuring and re-reading rather than by a reviewer, and are recorded with them. Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
@@ -730,6 +758,15 @@ careful.
 | --- | --- | --- |
 | "Equity is not 1/100 — cash is intact"; "Sharpe is distorted nonlinearly" | Only *initial* cash is intact. `ApplyBuy` deducts the same unscaled `notional` it books into the position (`:701-715`), so the legs are paired. Worked arithmetic: equity is **exactly correct at entry** and **overstated on losses**; net P&L and total return are **exactly 1/100**; and daily returns carry a *uniform* 1/100 factor, so **Sharpe cancels it and is approximately correct** in a pure-option book — distorted only in a mixed one | §4 — rewritten from the arithmetic |
 
+**Round 8 — three, two of them inside the round-7 fix** *(this block was omitted from the table
+until round 12 caught it; the rows are restored here in the order they were raised):*
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| "Sharpe cancels the 1/100 factor and is approximately correct in a pure-option book" — round 7's own fix | Round 7 ran the arithmetic for a *single step from entry*, where P&L is zero and both books share a denominator, then generalized to a series. `RecordDayEnd` divides each change by the **previous** equity, so the denominators diverge as P&L accumulates: buggy is `cash + P&L`, correct is `cash + 100×P&L`. Over a six-mark series the per-day ratio drifts (0.010000, 0.009950, 0.010049, 0.009901, 0.010148) and `mean/stdDev` lands **17.9% below** correct. Preserved only while option P&L stays negligible against initial cash — not because the book is pure-option. Asserting rigour is not rigour | §4 — rewritten from a multi-step simulation |
+| The headline called the two ledgers' role sets **disjoint** | The matrix four sections below it shows Admin, Developer and Accounting reaching both books. It is a persona lockout, not a partition | §1 headline |
+| 29% counts routes referenced by wrappers nothing calls | Reachability measures **reference**, not operator reach: `getQualityCompleteness`, `getQualityGaps` and `getQualityAnomalies` have zero call sites outside `lib/api.ts` yet their routes count as reached. Round 8 framed the consequence as "29% is a lower bound" — which **round 10 then refuted**, since composed URL builders push the error the other way too | §6 caveat — twice |
+
 **Round 9 — three from review, one self-detected:**
 
 | Claim | Why it was wrong | Corrected in |
@@ -788,6 +825,23 @@ inherits the blind spots of the trace that produced it.** §3 was built by follo
 `ApplyFillToAccount` to `AttributeFill`, so the remedy listed the sites that trace passed through.
 Every correction since has sharpened the *description* of the defect while leaving the *site list*
 exactly as the original walk left it.
+
+**Round 12 — four, one of them about this table:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| **Round 8 was missing from this section entirely** | The table jumped from round 7 to round 9, so the visible headings accounted for 33 of the 36 challenged claims and the totals did not reconcile. Worse, it left round 7's *refuted* pure-option Sharpe explanation standing as the last recorded word on §4 — the audit trail of a document about audit trails, with a round missing | Restored above |
+| The compliance surface is "a complete, permission-guarded governance capability" | It has **no discovery contract for approvals**: no GET for approval requests, and `IComplianceApprovalStore` exposes only `CreateRequest`, `RecordDecision` and single-id `Resolve` with no enumeration (`ComplianceApprovalStore.cs:12-27`). An approver cannot find what is pending. Activation is not "persistence plus UI" | §6, improvement #7 |
+| The approval snapshot is "rewritten in place" | `Persist` hands the serialized snapshot to `AtomicFileWriter.Write` (`:247-250`) — an atomic replace. The mutability objection stands; the implied torn-write exposure does not. **The same `AtomicFileWriter` misreading this document already corrected once in round 1**, about the fund-structure loader | §6 |
+| "Grant `FundAccountant` and `Controller` the permissions their screens require" | Read literally against the current gate that means `ViewStrategies`, which covers eleven endpoint files — covered calls, Lean configuration and algorithms, QuantLab, promotions, lifecycle, strategy-designer drafts, run fills and attribution. It is also self-defeating: the same improvement moves the panel out of Accounting, after which accountants need no strategy grant at all | Improvement #1 |
+
+Two of these four are repeats of classes this document had already corrected elsewhere — the
+`AtomicFileWriter` misreading from round 1, and a remedy phrased loosely enough to authorize the
+opposite of what it intends. The missing round 8 is the one that should worry a reader most, because
+it is not a claim about the codebase at all: the section whose entire purpose is to make the
+document's own error history reproducible had a round-shaped hole in it for four rounds, and the
+totals in its header did not reconcile against the rows beneath. A ledger that does not foot is the
+defect this review opens by describing.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
