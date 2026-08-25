@@ -135,6 +135,74 @@ public sealed class LedgerJournalInternalTransactionSourceTests
     }
 
     [Fact]
+    public async Task GetTransactionsAsync_TradeFillJournalAsThePostingConsumerBuildsIt_ExactMatchesThroughFitIdRule()
+    {
+        // Mirrors exactly what LedgerPostingConsumer.BuildTradeJournal/BuildPostingMetadata now
+        // emit for a buy fill: activity "trade-fill" (not in the projection's activity vocabulary,
+        // so classification must come from the Securities line), tradeFill.* audit tags, and the
+        // opt-in `quantity`/`externalTransactionId` identity tags. No `settlementDate` tag is
+        // stamped — the execution report carries none — so the projection defaults settlement to
+        // the trade date and the statement row here settles same-day.
+        var fillId = Guid.NewGuid();
+        var trade = Journal(
+            Timestamp(2026, 5, 28),
+            "Buy 12.5 MSFT @ 100.2500",
+            new JournalEntryMetadata(
+                ActivityType: "trade-fill",
+                Symbol: "MSFT",
+                FillId: fillId,
+                FinancialAccountId: AccountLabel,
+                EffectiveDate: new DateOnly(2026, 5, 28),
+                Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["source.orderId"] = "ord-recon",
+                    ["tradeFill.side"] = "Buy",
+                    ["tradeFill.quantity"] = "12.5",
+                    ["quantity"] = "12.5",
+                    ["externalTransactionId"] = fillId.ToString("D"),
+                }),
+            (LedgerAccounts.Securities("MSFT", AccountLabel), 1253.125m, 0m),
+            (LedgerAccounts.CashAccount(AccountLabel), 0m, 1253.125m));
+
+        var internalTransactions = await Source(trade).GetTransactionsAsync(Query());
+
+        var projected = internalTransactions.Should().ContainSingle().Subject;
+        projected.TransactionType.Should().Be("trade");
+        projected.Quantity.Should().Be(12.5m);
+        projected.ExternalTransactionId.Should().Be(fillId.ToString("D"));
+        projected.SettlementDate.Should().Be(new DateOnly(2026, 5, 28), "no settlement tag defaults to the trade date");
+
+        var statementRow = new NormalizedStatementTransaction(
+            "import-1:7",
+            fillId.ToString("D"),
+            AccountLabel,
+            "MSFT",
+            "USD",
+            new DateOnly(2026, 5, 28),
+            new DateOnly(2026, 5, 28),
+            "trade",
+            12.5m,
+            -1253.125m,
+            "import-1:7");
+
+        var result = new StatementMatchingEngine().Run(new StatementMatchingRequest(
+            [],
+            [],
+            [statementRow],
+            [],
+            [],
+            internalTransactions,
+            new StatementMatchingToleranceProfile(0m, 0m, 0m, 0m, 0m)));
+
+        var match = result.Results.Should().ContainSingle().Subject;
+        match.MatchTier.Should().Be(
+            StatementMatchTier.Exact,
+            "a fill journal stamped with the canonical fill id and quantity must exact-match instead of degrading to the candidate stage");
+        match.RuleIds.Should().Contain("statement-transaction-external-id-v1");
+        match.InternalEvidenceReference.Should().Be($"internal:journal:{trade.JournalEntryId:D}");
+    }
+
+    [Fact]
     public async Task GetTransactionsAsync_ExcludesEntriesOutsideTheStatementWindow()
     {
         // The fake store returns the out-of-window record regardless of the query filter; the

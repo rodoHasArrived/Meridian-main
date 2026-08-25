@@ -30,6 +30,14 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
     private static readonly TimeSpan DefaultDrainTimeout = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan DefaultCancellationTimeout = TimeSpan.FromSeconds(1);
 
+    private const string TradeFillActivityType = "trade-fill";
+
+    // Opt-in trade-identity tags the statement-reconciliation projection
+    // (LedgerJournalInternalTransactionSource) reads to exact-match a posted trade journal
+    // against a custodian statement row through the matcher's FITID rule.
+    private const string ReconciliationQuantityTag = "quantity";
+    private const string ReconciliationExternalTransactionIdTag = "externalTransactionId";
+
     private readonly ITradeFillLedgerPostingTarget _postingTarget;
     private readonly Ledger.Ledger? _projectionLedger;
     private readonly Channel<PendingTradeFillPosting> _channel;
@@ -577,7 +585,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         TradeExecutedEvent evt,
         LedgerPostingSecurityGateResult securityGate)
     {
-        const string activityType = "trade-fill";
+        const string activityType = TradeFillActivityType;
         var journalId = CreateDeterministicGuid(evt.FillId, activityType, "journal");
         var description = evt.Side switch
         {
@@ -797,6 +805,22 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
                 activityType,
                 lines)
         };
+
+        if (string.Equals(activityType, TradeFillActivityType, StringComparison.Ordinal))
+        {
+            // Trade-identity tags for statement reconciliation: the journal→custodian-transaction
+            // projection reads these opt-in tags so the posted trade exact-matches a statement row
+            // instead of degrading to the candidate stage. The canonical fill id is the only
+            // transaction-granular identity the execution report carries (order ids repeat across
+            // partial fills) and it is content-derived, so replay stamps the same value. No
+            // `settlementDate` is stamped — the execution report carries no settlement date, and
+            // estimating T+n conventions is a policy decision this consumer must not make; the
+            // projection then defaults settlement to the trade date. The commission journal is
+            // deliberately left untagged: a share quantity does not apply to a fee movement, and a
+            // fabricated fee FITID could never equal a custodian's.
+            tags[ReconciliationQuantityTag] = FormatDecimal(evt.FilledQuantity);
+            tags[ReconciliationExternalTransactionIdTag] = evt.FillId.ToString("D");
+        }
 
         return new JournalEntryMetadata(
             ActivityType: activityType,
