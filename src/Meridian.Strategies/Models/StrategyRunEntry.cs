@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Text;
+using System.Text.Json.Serialization;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
@@ -127,6 +129,37 @@ public sealed record StrategyRunEntry(
     /// </summary>
     public IReadOnlyDictionary<string, string> OutputMetadata { get; init; } =
         new Dictionary<string, string>(StringComparer.Ordinal);
+
+    /// <summary><see cref="OutputMetadata"/> key holding the fill count of a size-bounded run.</summary>
+    public const string RetainedFillCountMetadataKey = "fillCount";
+
+    /// <summary><see cref="OutputMetadata"/> key holding the journal-entry count of a size-bounded run.</summary>
+    public const string RetainedJournalEntryCountMetadataKey = "journalEntryCount";
+
+    /// <summary>
+    /// The number of fills the run actually produced. A research run is size-bounded before
+    /// retention — its <see cref="Metrics"/> carries empty detail collections with the true counts
+    /// recorded in <see cref="OutputMetadata"/> — so reading <c>Metrics.Fills.Count</c> directly
+    /// reports zero for exactly the runs that filled the most. Every consumer that surfaces a fill
+    /// count must read this instead.
+    /// </summary>
+    [JsonIgnore]
+    public int RetainedFillCount =>
+        Math.Max(Metrics?.Fills?.Count ?? 0, GetRetainedCount(RetainedFillCountMetadataKey));
+
+    /// <summary>
+    /// The number of journal entries the run's ledger actually posted, surviving the same retention
+    /// bounding as <see cref="RetainedFillCount"/>.
+    /// </summary>
+    [JsonIgnore]
+    public int RetainedJournalEntryCount =>
+        Math.Max(Metrics?.Ledger?.JournalEntryCount ?? 0, GetRetainedCount(RetainedJournalEntryCountMetadataKey));
+
+    private int GetRetainedCount(string key) =>
+        OutputMetadata.TryGetValue(key, out var text) &&
+        int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out var count)
+            ? count
+            : 0;
 
     /// <summary>Creates a new run entry with a generated run ID and current timestamp.</summary>
     public static StrategyRunEntry Start(string strategyId, string strategyName, RunType runType)

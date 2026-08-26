@@ -122,7 +122,10 @@ public sealed class StrategyRunResearchRecorder(
     /// </summary>
     private static BacktestResult BoundResultForRetention(BacktestResult result)
     {
-        if (result.Snapshots.Count == 0 && result.CashFlows.Count == 0 && result.Fills.Count == 0)
+        if (result.Snapshots.Count == 0 &&
+            result.CashFlows.Count == 0 &&
+            result.Fills.Count == 0 &&
+            (result.Ledger?.JournalEntryCount ?? 0) == 0)
         {
             return result;
         }
@@ -132,16 +135,28 @@ public sealed class StrategyRunResearchRecorder(
             Snapshots = [],
             CashFlows = [],
             Fills = [],
-            TradeTickets = null
+            TradeTickets = null,
+            // The ledger is the other unbounded collection: its JSON converter writes the complete
+            // journal, so a fill-dense run that posts entries could still blow past the store's
+            // snapshot cap after the lists above were cleared — losing lineage for exactly the
+            // runs this bounding exists to keep.
+            Ledger = new Meridian.Ledger.Ledger()
         };
     }
 
-    /// <summary>Counts of the detail dropped by <see cref="BoundResultForRetention"/>.</summary>
+    /// <summary>
+    /// Counts of the detail dropped by <see cref="BoundResultForRetention"/>. Consumers read them
+    /// back through <see cref="StrategyRunEntry.RetainedFillCount"/> and
+    /// <see cref="StrategyRunEntry.RetainedJournalEntryCount"/>, so a bounded run still reports
+    /// what its simulation actually produced.
+    /// </summary>
     private static Dictionary<string, string> DescribeTrimmedDetail(BacktestResult result) => new(StringComparer.Ordinal)
     {
         ["retainedDetail"] = "summary",
         ["snapshotCount"] = result.Snapshots.Count.ToString(CultureInfo.InvariantCulture),
         ["cashFlowCount"] = result.CashFlows.Count.ToString(CultureInfo.InvariantCulture),
-        ["fillCount"] = result.Fills.Count.ToString(CultureInfo.InvariantCulture)
+        [StrategyRunEntry.RetainedFillCountMetadataKey] = result.Fills.Count.ToString(CultureInfo.InvariantCulture),
+        [StrategyRunEntry.RetainedJournalEntryCountMetadataKey] =
+            (result.Ledger?.JournalEntryCount ?? 0).ToString(CultureInfo.InvariantCulture)
     };
 }

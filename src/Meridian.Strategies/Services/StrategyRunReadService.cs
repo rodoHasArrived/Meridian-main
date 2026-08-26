@@ -679,7 +679,7 @@ public sealed class StrategyRunReadService
                 FinalEquity: metrics?.FinalEquity,
                 MaxDrawdown: metrics?.MaxDrawdown,
                 SharpeRatio: metrics?.SharpeRatio,
-                FillCount: run.Metrics?.Fills.Count ?? 0,
+                FillCount: run.RetainedFillCount,
                 LastUpdatedAt: GetLastUpdatedAt(run),
                 PromotionState: BuildPromotionSummary(run, promotionLookup).State,
                 HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
@@ -762,7 +762,7 @@ public sealed class StrategyRunReadService
                 TotalTrades: metrics?.TotalTrades ?? 0,
                 WinningTrades: metrics?.WinningTrades ?? 0,
                 LosingTrades: metrics?.LosingTrades ?? 0,
-                FillCount: run.Metrics?.Fills.Count ?? 0,
+                FillCount: run.RetainedFillCount,
                 TotalCommissions: metrics?.TotalCommissions ?? 0m,
                 TotalMarginInterest: metrics?.TotalMarginInterest ?? 0m,
                 TotalShortRebates: metrics?.TotalShortRebates ?? 0m,
@@ -799,7 +799,7 @@ public sealed class StrategyRunReadService
     private static ComparisonContinuitySignals BuildComparisonContinuity(StrategyRunEntry run)
     {
         var hasLedgerReference = !string.IsNullOrWhiteSpace(run.LedgerReference);
-        var ledgerEntryCount = run.Metrics?.Ledger?.Journal?.Count ?? 0;
+        var ledgerEntryCount = run.RetainedJournalEntryCount;
         var hasLedgerEntryCoverage = hasLedgerReference && ledgerEntryCount > 0;
         var cashFlowEntries = run.Metrics?.CashFlows?.Count ?? 0;
         var hasCashFlowCoverage = cashFlowEntries > 0;
@@ -837,7 +837,7 @@ public sealed class StrategyRunReadService
             HasPortfolio: !string.IsNullOrWhiteSpace(run.PortfolioId),
             HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
             HasCashFlow: run.Metrics?.CashFlows.Count > 0,
-            HasFills: run.Metrics?.Fills.Count > 0,
+            HasFills: run.RetainedFillCount > 0,
             HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference));
     }
 
@@ -961,7 +961,7 @@ public sealed class StrategyRunReadService
             NetPnl: metrics?.NetPnl,
             TotalReturn: metrics?.TotalReturn,
             FinalEquity: metrics?.FinalEquity,
-            FillCount: run.Metrics?.Fills.Count ?? 0,
+            FillCount: run.RetainedFillCount,
             LastUpdatedAt: GetLastUpdatedAt(run),
             AuditReference: run.AuditReference,
             Identity: BuildIdentity(run, promotionLookup),
@@ -999,7 +999,7 @@ public sealed class StrategyRunReadService
     {
         var metrics = run.Metrics?.Metrics;
         return new StrategyRunExecutionSummary(
-            FillCount: run.Metrics?.Fills.Count ?? 0,
+            FillCount: run.RetainedFillCount,
             TotalTrades: metrics?.TotalTrades ?? 0,
             WinningTrades: metrics?.WinningTrades ?? 0,
             LosingTrades: metrics?.LosingTrades ?? 0,
