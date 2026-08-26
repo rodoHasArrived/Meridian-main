@@ -4,7 +4,6 @@
     "src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs": 1,
     "src/Meridian.Audit/Compliance/ComplianceModels.cs": 1,
     "src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs": 1,
-    "src/Meridian.Backtesting/CorporateActionAdjustmentService.cs": 1,
     "src/Meridian.Execution/Events/LedgerPostingConsumer.cs": 2,
     "src/Meridian.Execution/Events/TradeFillPostingStore.cs": 1,
     "src/Meridian.FinancialOperations/Banking/PaymentBankEvidenceFactory.cs": 1,
@@ -13,16 +12,11 @@
     "src/Meridian.Infrastructure/Reconciliation/BrokerStatementInfrastructure.cs": 1,
     "src/Meridian.Infrastructure/Reconciliation/IbFlexStatementService.cs": 1,
     "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs": 2,
-    "src/Meridian.Ledger/DailyPortfolioPricingDraftBuilder.cs": 1,
-    "src/Meridian.Ledger/FundAdministrationEventLog.cs": 1,
-    "src/Meridian.Ledger/PeriodCloseDraftBuilder.cs": 1,
     "src/Meridian.LifecycleSupervisor/LifecycleStartupOutcome.cs": 3,
     "src/Meridian.Setup/InstallationTransaction.cs": 1,
     "src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs": 1,
-    "src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs": 1,
-    "src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs": 2,
-    "src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs": 1
+    "src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs": 1
   },
-  "total": 28,
+  "total": 21,
   "tracked_call": "SHA256.HashData"
 }

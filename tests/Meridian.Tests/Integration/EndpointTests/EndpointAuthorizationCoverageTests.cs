@@ -17,6 +17,7 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Read routes are deliberately out of scope here: the workstation grants broad read access by
 /// role, and read-side tenancy is covered by the per-workspace tenant-scope suites.
 /// </summary>
+[Collection("Endpoint")]
 public sealed class EndpointAuthorizationCoverageTests : EndpointIntegrationTestBase
 {
     public EndpointAuthorizationCoverageTests(EndpointTestFixture fixture)
