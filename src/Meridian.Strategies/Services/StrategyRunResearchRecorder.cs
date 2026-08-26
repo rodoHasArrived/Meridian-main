@@ -2,6 +2,8 @@ using System.Globalization;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Operations;
 using Meridian.Strategies.Interfaces;
+using System.Text.Json;
+using Meridian.Strategies.Serialization;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Storage;
 using Microsoft.Extensions.Logging;
@@ -74,15 +76,24 @@ public sealed class StrategyRunResearchRecorder(
             // The engine has already finished by the time the host records it, so Start/Complete
             // would otherwise stamp a multi-minute backtest as near-zero duration and sort it by
             // persistence time. Derive the real start from the run's own elapsed time.
-            var completed = entry.Complete(BoundResultForRetention(result));
+            var completed = entry.Complete(result);
             var startedAt = completed.EndedAt is { } endedAt && result.ElapsedTime > TimeSpan.Zero
                 ? endedAt - result.ElapsedTime
                 : completed.StartedAt;
-            completed = completed with
+            completed = completed with { StartedAt = startedAt };
+
+            // Trim only if the snapshot would actually breach the store's cap. Trimming every run
+            // that merely has a fill would zero out the fill counts that StrategyRunReadService and
+            // StrategyRunContinuityService read from Metrics.Fills, reporting a missing fill seam
+            // for runs that executed perfectly well.
+            if (ExceedsRetentionLimit(completed))
             {
-                StartedAt = startedAt,
-                OutputMetadata = DescribeTrimmedDetail(result)
-            };
+                completed = completed with
+                {
+                    Metrics = BoundResultForRetention(result),
+                    OutputMetadata = DescribeTrimmedDetail(result)
+                };
+            }
 
             await store.RecordRunAsync(completed, ct).ConfigureAwait(false);
             // Preserve raw lineage in storage; sanitize caller-controlled metadata only at the log boundary.
@@ -113,35 +124,57 @@ public sealed class StrategyRunResearchRecorder(
     }
 
     /// <summary>
-    /// Trims the per-event detail from a result before it is retained. The durable store caps a run
-    /// snapshot at <see cref="OperationalCaseHistoryHashing.MaxDataValueLength"/> characters, and a
-    /// long or fill-dense backtest serializes every snapshot, cash flow, fill, and ledger entry —
-    /// so the runs most worth tracking were exactly the ones whose recording failed and was
-    /// swallowed. Metrics, universe, and bias disclosure are what lineage and run comparison read,
-    /// so they are kept; the bulk collections are dropped and their sizes recorded instead.
+    /// Reports whether the entry would breach the durable store's per-snapshot character cap.
+    /// Serializing to measure costs one pass, which is far cheaper than the alternative: the store
+    /// throws past the cap and the fail-open catch converts that into a silently unrecorded run.
     /// </summary>
-    private static BacktestResult BoundResultForRetention(BacktestResult result)
-    {
-        if (result.Snapshots.Count == 0 && result.CashFlows.Count == 0 && result.Fills.Count == 0)
-        {
-            return result;
-        }
+    private static readonly int RetentionSafetyLimit =
+        (int)(OperationalCaseHistoryHashing.MaxDataValueLength * 0.95);
 
-        return result with
+    private static bool ExceedsRetentionLimit(StrategyRunEntry entry)
+    {
+        try
         {
-            Snapshots = [],
-            CashFlows = [],
-            Fills = [],
-            TradeTickets = null
-        };
+            var json = JsonSerializer.Serialize(entry, StrategyRunPersistenceJson.Options);
+
+            // Measured against a margin rather than the exact cap: the store measures after its own
+            // normalization pass, so this estimate is close but not identical. Erring toward
+            // trimming costs some detail; erring the other way costs the run its lineage entirely.
+            return json.Length > RetentionSafetyLimit;
+        }
+        catch (NotSupportedException)
+        {
+            // Unmeasurable rather than oversized. Trim so a serialization quirk cannot cost the
+            // run its lineage.
+            return true;
+        }
     }
 
-    /// <summary>Counts of the detail dropped by <see cref="BoundResultForRetention"/>.</summary>
+    /// <summary>
+    /// Drops per-event detail from an oversized result, keeping what lineage and run comparison
+    /// read: metrics, universe, request, and bias disclosure. The ledger is bounded too — its
+    /// journal is serialized in full by the retention converter, so a journal-heavy run can breach
+    /// the cap even with no fills at all.
+    /// </summary>
+    private static BacktestResult BoundResultForRetention(BacktestResult result) => result with
+    {
+        Snapshots = [],
+        CashFlows = [],
+        Fills = [],
+        TradeTickets = null,
+        Ledger = new Meridian.Ledger.Ledger()
+    };
+
+    /// <summary>
+    /// Records what <see cref="BoundResultForRetention"/> dropped, so a trimmed run reports real
+    /// counts rather than appearing to have produced nothing.
+    /// </summary>
     private static Dictionary<string, string> DescribeTrimmedDetail(BacktestResult result) => new(StringComparer.Ordinal)
     {
         ["retainedDetail"] = "summary",
         ["snapshotCount"] = result.Snapshots.Count.ToString(CultureInfo.InvariantCulture),
         ["cashFlowCount"] = result.CashFlows.Count.ToString(CultureInfo.InvariantCulture),
-        ["fillCount"] = result.Fills.Count.ToString(CultureInfo.InvariantCulture)
+        ["fillCount"] = result.Fills.Count.ToString(CultureInfo.InvariantCulture),
+        ["journalEntryCount"] = result.Ledger.JournalEntryCount.ToString(CultureInfo.InvariantCulture)
     };
 }

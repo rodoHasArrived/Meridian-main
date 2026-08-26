@@ -251,4 +251,24 @@ public sealed class StrategyRunRealismHashTests
         a.ToRealismDescriptor().ToCanonicalString()
             .Should().NotBe(b.ToRealismDescriptor().ToCanonicalString());
     }
+
+    [Fact]
+    public void DefaultBrokerageAccount_ChangesTheRealismHash()
+    {
+        // With several brokerage accounts the default routes any order that omits an AccountId,
+        // moving cash and financing between accounts and potentially changing P&L.
+        var accounts = new[]
+        {
+            FinancialAccount.CreateDefaultBrokerage(100_000m, 0.05, 0.02, "broker-a"),
+            FinancialAccount.CreateDefaultBrokerage(100_000m, 0.09, 0.02, "broker-b")
+        };
+
+        var a = new BacktestRequest(
+            new DateOnly(2024, 1, 1), new DateOnly(2024, 6, 30),
+            Accounts: accounts, DefaultBrokerageAccountId: "broker-a");
+        var b = a with { DefaultBrokerageAccountId = "broker-b" };
+
+        a.ToRealismDescriptor().ToCanonicalString()
+            .Should().NotBe(b.ToRealismDescriptor().ToCanonicalString());
+    }
 }

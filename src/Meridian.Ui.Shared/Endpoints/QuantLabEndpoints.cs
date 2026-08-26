@@ -248,9 +248,12 @@ public static class QuantLabEndpoints
 
         if (backtest.Request.Symbols is { Count: > 0 })
         {
-            parameters["symbols"] = string.Join(
-                ',',
-                backtest.Request.Symbols.OrderBy(static symbol => symbol, StringComparer.Ordinal));
+            // Recorded in request order, not sorted. BacktestEngine.ResolveReplaySymbolOrder
+            // preserves request order and MultiSymbolMergeEnumerator uses the resulting stream
+            // index to break ties between events sharing a timestamp, so [A, B] and [B, A] can
+            // produce different callbacks and orders. Sorting is right for a set and wrong for an
+            // engine-significant sequence.
+            parameters["symbols"] = string.Join(',', backtest.Request.Symbols);
         }
 
         if (!string.IsNullOrWhiteSpace(scope?.TenantId))

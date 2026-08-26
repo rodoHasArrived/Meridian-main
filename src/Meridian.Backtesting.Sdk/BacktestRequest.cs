@@ -175,6 +175,10 @@ public sealed record BacktestRequest(
     private string CanonicalAccountFinancing()
     {
         var builder = new StringBuilder();
+        // The default routes any order that omits an AccountId, and the engine hands it to both
+        // SimulatedPortfolio and BacktestContext. With several brokerage accounts, changing it
+        // moves cash and financing and can change P&L, so it belongs in run identity.
+        builder.Append("default=").Append(DefaultBrokerageAccountId).Append(';');
         foreach (var account in ResolveAccounts().OrderBy(a => a.AccountId, StringComparer.Ordinal))
         {
             var rules = account.Rules ?? new FinancialAccountRules();

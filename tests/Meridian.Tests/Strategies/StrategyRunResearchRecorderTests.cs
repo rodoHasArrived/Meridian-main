@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
+using Meridian.Ledger;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Storage.Operations;
@@ -254,6 +255,70 @@ public sealed class StrategyRunResearchRecorderTests
             recorded!.Metrics.Should().NotBeNull();
             recorded.OutputMetadata.Should().ContainKey("fillCount");
             recorded.OutputMetadata["fillCount"].Should().Be("20000");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task RecordAsync_NormalRunKeepsItsFillsForDownstreamConsumers()
+    {
+        var recorder = CreateRecorder(out var store);
+        var fills = Enumerable.Range(0, 12)
+            .Select(i => new FillEvent(
+                Guid.NewGuid(), Guid.NewGuid(), "SPY", 10L, 400m + i, 1m,
+                DateTimeOffset.UtcNow.AddSeconds(i), "acct-1"))
+            .ToList();
+
+        var runId = await recorder.RecordAsync(
+            new ResearchRunDescriptor("strat-normal", "Normal"), Result() with { Fills = fills });
+
+        var recorded = await store.GetRunByIdAsync(runId!);
+
+        // StrategyRunReadService derives FillCount from Metrics.Fills and
+        // StrategyRunContinuityService turns a zero count into a missing fill seam, so an
+        // ordinary run must keep its fills rather than being trimmed for merely having some.
+        recorded!.Metrics!.Fills.Should().HaveCount(12);
+    }
+
+    [Fact]
+    public async Task RecordAsync_RetainsLineageForJournalHeavyResult()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-research-recorder", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var recorder = new StrategyRunResearchRecorder(store, NullLogger<StrategyRunResearchRecorder>.Instance);
+
+            // Journal entries alone, no fills: the retention converter serializes the whole journal,
+            // so a ledger-heavy run can breach the cap even though the earlier fill-only test passed.
+            var ledger = new Meridian.Ledger.Ledger();
+            for (var i = 0; i < 4_000; i++)
+            {
+                var journalId = Guid.NewGuid();
+                var timestamp = DateTimeOffset.UtcNow.AddSeconds(i);
+                var description = $"Research posting {i} with enough descriptive text to occupy the journal";
+                ledger.Post(new JournalEntry(
+                    journalId,
+                    timestamp,
+                    description,
+                    [
+                        new LedgerEntry(Guid.NewGuid(), journalId, timestamp, LedgerAccounts.Cash, 10m, 0m, description),
+                        new LedgerEntry(Guid.NewGuid(), journalId, timestamp, LedgerAccounts.CapitalAccount, 0m, 10m, description)
+                    ]));
+            }
+
+            var runId = await recorder.RecordAsync(
+                new ResearchRunDescriptor("strat-journal", "Journal"), Result() with { Ledger = ledger });
+
+            runId.Should().NotBeNull();
+            var recorded = await store.GetRunByIdAsync(runId!);
+            recorded.Should().NotBeNull();
+            recorded!.OutputMetadata.Should().ContainKey("journalEntryCount");
+            recorded.OutputMetadata["journalEntryCount"].Should().Be("4000");
         }
         finally
         {
