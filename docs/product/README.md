@@ -57,7 +57,13 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     review itself qualifies as an estimate with error in both directions, not a settled count. The
     denominator is itself imperfect: at least two catalog constants are registered by no server
     route and reach the browser through the generated mirror, and the review states plainly that
-    the scale of that class is unmeasured. **Completeness caveat:** the 41-round adversarial loop
+    the scale of that class is unmeasured. A fourth addendum records `main` at `8c0c6e36`
+    (PR #2807) and rechecks no claims at all: it measures which of the 79 files the review cites are
+    byte-identical between the anchor and that tree — **59 are**, including all three carrying the
+    headline finding — so those citations resolve in both frames unchanged. `main` has advanced
+    eight times since the anchor and all eight are merged in here, but **only three of the eight
+    have a claim-level addendum**; the fourth states that limit rather than covering it over.
+    **Completeness caveat:** the 41-round adversarial loop
     behind this document stopped when the reviewer hit a usage limit, not on convergence — the last
     three rounds produced two new codebase defects and two self-inflicted contradictions — so every
     claim in it has been checked but the set of claims is not exhausted

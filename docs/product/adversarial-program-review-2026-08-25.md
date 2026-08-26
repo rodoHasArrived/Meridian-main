@@ -2263,6 +2263,66 @@ period selection — which is adjacent to §1 but not the same surface: its new
 re-verification of the whole document against a new tree, which is neither necessary — the findings
 are anchored — nor something a merge occasions.
 
+### Fourth addendum — `main` at `8c0c6e36`: which citations still resolve
+
+`main` has now advanced **eight times** since the anchor, and this branch carries all eight:
+`054e2d27` (#2824), `bc9a94f9` (#2819), `bb43e0e6` (#2825), `eed9987f` (#2827), `3eb6961a` (#2828),
+`9503e296` (#2830), `baf25c0c` (#2801) and `8c0c6e36` (#2807). **Three of those eight have an
+addendum; five do not**, and this addendum does not give them one.
+
+It answers a narrower question instead, and answers it mechanically. The third addendum rechecked
+five claims and its first draft called that "every open item survives the merge" — the overstatement
+is recorded in the ledger. So rather than recheck claims and risk the same inflation, this one
+measures the property that frame discipline actually turns on: **for each file this document cites,
+is the file byte-identical between the anchor `e232ece1` and the merged tree `8c0c6e36`?** Where it
+is, every `file:line` coordinate into it resolves the same in both frames, with no translation and no
+judgement call. `build/scripts` holds no checker for this; the script used is recorded in the PR.
+
+One caveat the count carries about itself: it is measured over this document **including this
+addendum**, so naming a file here adds it to the corpus. Every filename below was already cited
+elsewhere, which is why the total holds at 79. Getting there took two passes. A draft wrote two of
+them as the suffix fragments `` `.view-model.ts` `` and `` `.test.tsx` ``, and the scanner counted
+each as a filename in its own right, reporting 81; writing them out in full brought it back to 79,
+but only until the sentence explaining that *quoted the fragments again* and pushed it back to 81.
+The fault was the scanner's, not the prose's — a filename cannot begin with a dot — so the fix is a
+leading-alphanumeric anchor in the pattern, and the total is now stable however this paragraph
+discusses a file. §9's doc-health TODO finding is the same shape: a document that measures itself
+moves what it measures by being written.
+
+Of the **79 distinct files this document cites**:
+
+| | Count | What it means |
+| --- | ---: | --- |
+| Byte-identical, anchor → `8c0c6e36` | **59** | Every citation into these resolves in both frames unchanged |
+| Changed | 17 | Citations stay valid at `e232ece1`; chasing them into the new tree is the round-31 error |
+| Absent at the anchor | 3 | Created by the remediation, so cited only by the addenda, never by a finding |
+
+**The three files carrying the headline are all in the identical set.**
+`WorkstationEndpoints.AccountingWorkspace.cs` — which holds both halves of §1's mechanism, the
+`StrategyRuns` scope resolution at `:255-258` and the empty-`ReconciliationQueue` substitution at
+`:132-137` — is unchanged, as are `FundProfileScopeEndpointFilters.cs` (the cross-tenant, fail-open
+gate) and `WorkstationEndpoints.Trading.cs` (§3's unscaled Trading-screen rows). So the review's
+sharpest claim and its two most load-bearing supports sit on code the eight merges did not touch.
+
+The 17 changed files group as **2 + 1 + 2 + 6 + 1 + 5**, and every one is named here so the total can
+be checked: the two `Meridian.Identity` permission files (`RolePermissions.cs`, `UserPermission.cs`);
+`ComplianceEndpoints.cs`; two ledger-server files (`LedgerEndpoints.cs`,
+`LedgerJournalInternalTransactionSource.cs`); six browser-client files (`accounting-screen.tsx`,
+`accounting-screen.view-model.ts`, `accounting-screen.test.tsx`,
+`finance-standard-pages-screen.tsx`, `api.ts`, `app.tsx`); the WPF
+`AccountingFeatureModule.cs`; and **five that sit outside this review's findings entirely**
+(`OrderManagementSystem.cs` and its `.ChildOrders` partial, `MarketTradeUpdate.cs`,
+`TradeDataCollector.cs`, `StrategyRunEntry.cs`). The first twelve are the remediation territory the
+earlier addenda already describe. The
+three absent files (`accounting-screen.posted-ledger-panel.tsx`, `ledger-reports-api.ts`,
+`posted-ledger-route-scope.ts`) did not exist at the anchor; each was created by a remediation and is
+cited only where an addendum discusses that remediation.
+
+**What this does not establish.** An unchanged file means a citation resolves, not that the finding
+built on it is still true — a finding can be falsified by a change in a *different* file, and nothing
+here rules that out. Five of the eight merges still have no claim-level recheck. Read this as a map
+of which coordinates survived, not as a verdict on the findings.
+
 ## Relationship to existing planning
 
 This review is independent input. Live delivery status stays in the roadmap registry
