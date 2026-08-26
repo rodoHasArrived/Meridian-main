@@ -1271,16 +1271,16 @@ close-management product can tell.
 ## Corrections applied after automated review
 
 Forty rounds of automated review challenged **117 claims** across this document. Every one was checked
-against the code, **all 117 held**, and the findings above are the corrected text. **Twelve more were
+against the code, **all 117 held**, and the findings above are the corrected text. **Thirteen more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
 in the published artifact, an unresolvable file path in §8, the artifact's refuted cost-basis remedy,
-the second addendum's miscited compliance gate lines, a sentence round 35 left mangled in §2, and a round-17 block header that never footed — and each is recorded as a row below,
+the second addendum's miscited compliance gate lines, a sentence round 35 left mangled in §2, a round-17 block header that never footed, and the published artifact's corrections header contradicting itself within one sentence — and each is recorded as a row below,
 marked *(self-detected)*. A further self-initiated pass, numbered round 31 below, is **absent from the table on purpose**: every correction it made was
 wrong and was retracted in round 32, so it contributes no rows and its number is left as a gap
 rather than silently reused.
-The table therefore holds **129 rows: 117 raised by review, 12 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **130 rows: 117 raised by review, 13 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -2030,6 +2030,19 @@ never lands**, because neither is where the evidence sits and neither repeats th
 practical form: when a finding changes, re-read the *first* and *last* paragraph of every section it
 touches, not just the passage that changed. Both rows here would have been caught by exactly that.
 
+**Post-loop — one self-detected, found in the published artifact rather than in this file:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| The published artifact's corrections header: "all 117 held, and **ten** more were caught by re-measuring… — **129 rows in all: 117 raised by review, 12 found here**" *(self-detected)* | The sentence contradicts itself: "ten" and "12" are the same quantity, stated eight words apart, and twelve is the correct one. It was published that way. The mechanical checker that asserts every count claim in this document reads **only this file** — the artifact is a second surface carrying the same numbers with no check on it, which is why the ledger already holds two other rows for artifact text that went stale while the source was correct. Found only because a publish gate required reading the live page end to end | The artifact's corrections header, corrected to "twelve" |
+
+The lesson is not about the word. **A number restated on a second surface needs the check to follow it
+there**, and this one did not: the checker was built after the artifact existed and was pointed at the
+document alone. Three of the thirteen self-detected rows are now artifact-only drift, all of the same
+shape — the source corrected, the published copy left behind. This row is filed outside the round
+numbering on purpose: the review loop had already ended, and folding it into round 41 would date it
+wrongly and inflate that round's count.
+
 **The review loop ended here, and not because it converged.** After round 41 the automated reviewer
 posted that it had reached its usage limit for code reviews. That is worth stating plainly, because
 the alternative reading — forty-one rounds and nothing left to find — is the one a reader will reach
@@ -2038,7 +2051,7 @@ for and it is not supported. The evidence points the other way: rounds 39 and 40
 introduced by round 40 itself. The rate of findings was not falling when the budget ran out.
 
 So the honest statement of this document's completeness is: **every claim in it has been checked, and
-the set of claims has not been exhausted.** The 129 corrections record what forty-one rounds of
+the set of claims has not been exhausted.** The 130 corrections record what forty-one rounds of
 adversarial reading found; they do not bound what a forty-second would. Two areas are flagged as
 deliberately unmeasured — the unregistered-constant population and the dark-verb count — and both
 would need the `EndpointDataSource` inventory §6 specifies rather than another pass over the same
