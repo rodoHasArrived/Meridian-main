@@ -1835,91 +1835,91 @@
     {
       "method": "GET",
       "path": "/api/lean/config",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:63",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:66",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/lean/verify",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:90",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:93",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/algorithms",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:153",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:156",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/lean/sync",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:188",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:191",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/sync/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:198",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:201",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/lean/backtest/start",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:205",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:208",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/backtest/{backtestId}/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:215",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:218",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/backtest/{backtestId}/results",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:223",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:226",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/lean/backtest/{backtestId}/stop",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:232",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:239",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/backtest/history",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:248",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:250",
       "documented": false
     },
     {
       "method": "DELETE",
       "path": "/api/lean/backtest/{backtestId}/delete",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:289",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:291",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/auto-export",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:303",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:305",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/lean/auto-export/configure",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:334",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:336",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/lean/results/ingest",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:370",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:372",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/symbol-map",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:464",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:466",
       "documented": false
     },
     {
