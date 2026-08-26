@@ -218,6 +218,51 @@ describe("StatementImportPanel", () => {
     }));
   });
 
+  it("tells the user which commit fields the preview is waiting on", async () => {
+    // The gate above is real, but it used to be silent: uploading a file cleared the preview and
+    // its error and showed nothing, so there was no way to learn what was missing.
+    const user = userEvent.setup();
+    const services = makeServices();
+    renderWithRouter(<StatementImportPanel services={services} />, {
+      initialEntries: ["/accounting/statement-import"]
+    });
+
+    await waitFor(() => expect(screen.getByLabelText("Connector")).toBeEnabled());
+    const fileInput = screen.getByLabelText<HTMLInputElement>("Statement file", { selector: "input" });
+    await user.upload(fileInput, new File(["Symbol\nAAPL"], "june-statement.csv", { type: "text/csv" }));
+
+    expect(await screen.findByText(/Preview is waiting on the commit details/)).toBeInTheDocument();
+    // Assert on the notice's own detail line; the upload control also echoes the file name.
+    const detail = screen.getByText(/Meridian reads june-statement\.csv/);
+    expect(detail).toHaveTextContent("Source institution");
+    expect(detail).toHaveTextContent("Fund account");
+    expect(detail).toHaveTextContent("Period end");
+    expect(detail).toHaveTextContent("Commit import");
+
+    await user.type(screen.getByLabelText("Source institution"), "Interactive Brokers");
+    await user.type(screen.getByLabelText("Fund account"), "FUND-A");
+    await user.type(screen.getByLabelText("External account"), "U-100");
+    await user.type(screen.getByLabelText("Period start"), "2026-06-01");
+    await user.type(screen.getByLabelText("Period end"), "2026-06-30");
+
+    await waitFor(() =>
+      expect(screen.queryByText(/Preview is waiting on the commit details/)).not.toBeInTheDocument()
+    );
+  });
+
+  it("fills Source institution from the connector the user picks", async () => {
+    const user = userEvent.setup();
+    const services = makeServices();
+    renderWithRouter(<StatementImportPanel services={services} />, {
+      initialEntries: ["/accounting/statement-import"]
+    });
+
+    await waitFor(() => expect(screen.getByLabelText("Connector")).toBeEnabled());
+    await user.selectOptions(screen.getByLabelText("Connector"), "generic-csv");
+
+    expect(screen.getByLabelText<HTMLInputElement>("Source institution").value).toBe("Generic CSV");
+  });
+
   it("renders the source controls, previews an uploaded file, and stays accessible", async () => {
     const user = userEvent.setup();
     const services = makeServices();
