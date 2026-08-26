@@ -223,6 +223,110 @@ describe("accounting-screen reconciliation view model", () => {
     expect(state.tabs.every((tab) => !tab.disabled)).toBe(true);
   });
 
+  it("reports match counts as not reported on rows derived from the queue", () => {
+    // With no statement runs the desk synthesizes rows from the reconciliation queue, which carries
+    // no match totals. Printing the placeholder zeros would tell an operator the statement matched
+    // nothing, when the truth is that Meridian has no match data for the run.
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: null,
+      loading: false,
+      error: null
+    });
+
+    expect(state.rows.length).toBeGreaterThan(0);
+    expect(state.rows[0].matchCountLabel).toBe("—");
+    expect(state.rows[0].unavailableReason).toContain("Match counts");
+    expect(state.rows[0].ariaLabel).toContain("match counts not reported");
+    expect(state.rows[0].ariaLabel).not.toContain("0 matches");
+  });
+
+  it("keeps break and case counts on derived rows, since the queue does report those", () => {
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: null,
+      loading: false,
+      error: null
+    });
+
+    expect(state.rows[0].breakCountLabel).not.toBe("—");
+    expect(state.rows[0].caseCountLabel).not.toBe("—");
+  });
+
+  it("does not credit the reconciliation service for totals it never supplied", () => {
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: null,
+      loading: false,
+      error: null
+    });
+
+    for (const id of ["positions", "cash", "transactions"]) {
+      const tab = state.tabs.find((entry) => entry.id === id);
+      expect(tab?.badgeLabel).toBeNull();
+      expect(tab?.description).toContain("not reported");
+      expect(tab?.description).not.toContain("supplied by the reconciliation service");
+    }
+  });
+
+  it("still shows reported match counts when the service supplies a run", () => {
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [
+        {
+          runId: "statement-run-1",
+          importId: "import-1",
+          startedAtUtc: "2026-05-01T00:00:00Z",
+          completedAtUtc: "2026-05-01T00:03:00Z",
+          positionMatches: 8,
+          cashMatches: 3,
+          transactionMatches: 13,
+          openExceptionCount: 2
+        }
+      ],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: null,
+      loading: false,
+      error: null
+    });
+
+    expect(state.rows[0].matchCountLabel).toBe("24");
+    expect(state.rows[0].unavailableReason ?? "").not.toContain("Match counts");
+    expect(state.tabs.find((entry) => entry.id === "positions")?.badgeLabel).toBe("8");
+    expect(state.tabs.find((entry) => entry.id === "positions")?.description).toContain(
+      "supplied by the reconciliation service"
+    );
+  });
+
+  it("reports a genuine zero as zero, not as unreported", () => {
+    // A service-reported run that truly matched nothing must still read 0 -- the point of the
+    // change is to separate that fact from "we do not know".
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [
+        {
+          runId: "statement-run-zero",
+          importId: "import-zero",
+          startedAtUtc: "2026-05-01T00:00:00Z",
+          completedAtUtc: "2026-05-01T00:03:00Z",
+          positionMatches: 0,
+          cashMatches: 0,
+          transactionMatches: 0,
+          openExceptionCount: 4
+        }
+      ],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: null,
+      loading: false,
+      error: null
+    });
+
+    expect(state.rows[0].matchCountLabel).toBe("0");
+    expect(state.rows[0].ariaLabel).toContain("0 matches");
+    expect(state.tabs.find((entry) => entry.id === "cash")?.badgeLabel).toBe("0");
+  });
+
   it("selects the first available statement run when the requested run is not in the statement list", () => {
     const state = buildReconciliationStatementRunsViewState({
       statementRuns: [
