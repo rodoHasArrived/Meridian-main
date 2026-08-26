@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-24 (independent verification pass, post-resolution; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-08-26 (scheduled institutional-requirements pass; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -49,6 +49,13 @@ risks that compound as new asset classes land.
 > it: no catalog-to-validator parity guard, and a CSV import path that fails for **every** asset
 > class because the parser never populates the terms payloads the create path requires. See
 > [Independent verification pass](#independent-verification-pass--2026-08-24-post-resolution).
+>
+> **Scheduled institutional-requirements pass, 2026-08-26.** Re-read against `2917848a`. The verdict
+> stands; both surviving findings above are still open; six new items are filed. See
+> [Scheduled institutional-requirements pass — 2026-08-26](#scheduled-institutional-requirements-pass--2026-08-26).
+> Its highest-severity finding is new: `CashSweep` and `StructuredCredit` share the
+> `AssetFamily.StructuredCash` label and the accounting adapter reads that label as securitized, so
+> cash-sweep vehicles resolve to an asset-backed-security accounting class.
 
 ---
 
@@ -675,6 +682,165 @@ a non-envelope patch now refuses rather than silently discarding the requested v
 (`SecurityMasterService.cs:921-949`), and a repin resolves its class from the submitted envelope
 (`:88-107, 894-919`) — but the shape is unchanged and the hard-coded tables have grown. It stays
 part of the standing eleven-registry cost in finding 4 rather than a separate item.
+
+---
+
+## Scheduled institutional-requirements pass — 2026-08-26
+
+Re-read against `2917848a` (254 commits after `780aeb9e`, of which seven touch Security Master).
+The verdict above stands unchanged. The prior passes' two open verification findings were re-checked
+against current source and **both remain open**; five findings below are new to this document. No
+code was changed by this pass and no tests were run — every claim is a source read.
+
+### Re-verified as still open
+
+| # | Item | Evidence at `2917848a` |
+| --- | --- | --- |
+| V1 | No catalog-to-validator coverage guard | `AssetClassValidatorRegistry` still appears in `tests/Meridian.Tests/` only as a constructed dependency; no test asserts `SupportedAssetClasses` against `SecurityAssetClassCatalog`. Parity currently *holds* — all 26 catalog classes have a validator — which is exactly why the missing guard is invisible until the next class lands. |
+| V2 | CSV import is broken for every asset class | `SecurityMasterCsvParser.cs:146-147` still hardcodes `CommonTerms` and `AssetSpecificTerms` to `{}`, and `SecurityMasterMapping.cs:216-217` still requires `displayName` and `currency`. The path is live in **both** UI lanes — `SecurityMasterViewModel` (WPF) and `SecurityMasterEndpoints.cs:901` (HTTP) — so it is an operator-facing dead route, not a dormant one. |
+
+The three declared-and-deferred items are unchanged and remain governed rather than drifting: the
+15 unprojected classes are still enumerated in `SecurityAssetTermsSchemaTests.IntentionallyUnprojectedAssetClasses`
+and locked to "projected ∪ declared-gap = catalog", terms still have no valid-time history, and both
+codec arms remain hand-written behind the round-trip guard.
+
+### N1 — `CashSweep` and `StructuredCredit` share an asset family, and accounting reads the family as securitized
+
+The highest-severity item this pass. Three independently reasonable decisions compose into a
+cross-asset misclassification:
+
+1. `AssetClassRegistry` assigns `Family = AssetFamily.StructuredCash` to **both** `CashSweep`
+   (`SecurityMaster.fs:667`) and `StructuredCredit` (`:675`).
+2. `AssetFamily.StructuredCash` serializes to the literal string `"StructuredCash"`
+   (`SecurityClassification.fs:105`), which is what reaches `SecurityEconomicDefinitionRecord.AssetFamily`.
+3. `SecurityMasterAccountingEventSourceAdapter.IsStructuredCredit` matches that exact literal
+   (`:725-727`), and `ResolveAccountingAssetClass` (`:643`) tests it against `AssetFamily` among four
+   fields.
+
+So every `CashSweep` record resolves to accounting asset class `"AssetBackedSecurity"`. It then passes
+`SecurityMasterAccountingEventService.IsFixedIncome` (`:291-303`) and enters the fixed-income slice.
+Because `ToAccountingRule` returns null unless the record carries an `accountingClassification`
+(`:341-351`), the typical cash-sweep record raises `SECURITY_ACCOUNTING_RULE_MISSING` at
+**High** severity (`SecurityMasterAccountingEventService.cs:222-231`) — where correct classification
+would have produced the benign `SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT` at **Info** (`:211-220`). A
+sweep vehicle carrying an `accountingClassification` is worse, not better: it proceeds into coupon and
+factor coverage validation it has no terms to satisfy.
+
+The mechanism is certain from source. What is not established without a test is how many cash-sweep
+positions reach the accounting event path in practice, and therefore how much spurious close-blocking
+break volume this produces today. That test is the cheapest way to size it.
+
+The root cause is the shared family label, not the predicate: `StructuredCash` is being asked to mean
+both "structured cash vehicle" and "securitized credit". Splitting the family (`StructuredCash` for
+sweep vehicles, a distinct `SecuritizedCredit` for tranches) fixes it at the source and removes the
+need for `IsStructuredCredit` to special-case a family name at all.
+
+### N2 — The coverage read model routes securitized evidence to `CustomAsset`, against ADR-022
+
+`MultiAssetCoverageReadService.CandidateAssetClass` (`:339`) and `ScheduleAssetClass` (`:357`) both
+return `"CustomAsset"` when `IsStructuredAssetEvidence` (`:386`) fires. ADR-022, accepted two days
+earlier, makes `StructuredCredit` the canonical home for MBS/ABS/CLO/CMBS and the validator now warns
+`SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL` for exactly that modeling
+(`AssetClassValidatorRegistry.cs:314`). The read model therefore steers operators toward the class the
+write model has just been taught to warn against.
+
+Both methods also classify by substring-sniffing a concatenation of five free-text fields
+(`CandidateType`, `RequiredFeed`, `Symbol`, `SecurityDisplayName`, `Reason`), so any security whose
+display name or reason text happens to contain "loan", "structured", "trustee", or "warehouse" is
+classified accordingly. This is the same shape as `ResolveAccountingAssetClass` in N1: asset class
+inferred from prose rather than read from the record.
+
+### N3 — `SecurityAssetPackRegistry` declares 18 asset classes the domain cannot represent
+
+The resolution pass closed the direction that was tested — every catalog class is now claimed by a
+pack. The reverse direction is unguarded, and diverges: the packs name
+
+`Art`, `BankAccount`, `Cash`, `CreditFacility`, `ExchangeTradedFund`, `Forward`, `Guarantee`,
+`InsurancePolicy`, `IntercompanyLoan`, `Mortgage`, `PartnershipInterest`, `PrivateCredit`,
+`PrivateFund`, `RealEstate`, `RealEstateInterest`, `SpecializedHolding`, `UnfundedCommitment`, `Vehicle`
+
+— none of which has a `SecurityKind` arm, a terms schema entry, or a validator. `Cash` and
+`BankAccount` are the ones that matter for fund operations: the registry advertises deep accounting
+automation for a cash-and-bank pack whose two headline classes do not exist as instruments.
+
+This surfaces to operators. `SecurityMasterOperationalReadinessService:295` projects
+`SecurityAssetPackRegistry.All` into the readiness report, so the readiness surface reports asset-pack
+coverage for instruments the system cannot hold. The fix is a second parity guard mirroring the first.
+
+### N4 — `ValidateAll()` cannot report the overlap rule it implements
+
+`ValidateCandidateSet` filters its asset-class-overlap check to groups containing at least one
+*candidate* pack (`SecurityAssetPackRegistry.cs:280`). `ValidateAll()` calls it with an empty candidate
+list (`:249-252`), so `candidateIds` is empty and the filter rejects every group: the built-in overlap
+rule can never fire. Two overlaps stand today — `DirectLoan` claimed by both `private-loan-credit` and
+`mortgage-facility-intercompany`, and `CreditFacility` by three packs — so `FindByAssetClass` returns
+an ambiguous set for them while an identical claim from a new pack would be rejected as Critical. The
+rule is asymmetric between incumbents and newcomers, which is the opposite of what a registry guard
+should be.
+
+### N5 — The pack registry's "contract schema" is one shared prose object, not a per-pack contract
+
+Every pack is constructed with the same three static instances — `ContractSchema` (`:37`),
+`StandardValidationRules` (`:117`), `StandardReportingTaxonomy` (`:153`) — whose members are English
+phrases (`"issuer"`, `"trade date"`, `"cash variance"`, `"market price without market identifier or
+retained price evidence"`). `ValidateDescriptor` checks them only for non-emptiness
+(`RequireNonEmpty`, `:508-521`), so the validation cannot fail for any pack and cannot distinguish
+one pack's contract from another's. `InferLifecycleEvent` (`:464-500`) then derives a pack's lifecycle
+mapping by substring-matching those English journal-template names, so a template renamed for clarity
+can silently re-route to a different lifecycle event.
+
+Read as documentation-as-code the registry is useful. Read as the extensibility seam its docstring
+claims — "introducing asset packs without changing core ledger contracts" — it enforces nothing an
+asset pack could get wrong. Worth either promoting the fields to structured, per-pack, checkable
+values, or restating the type as descriptive metadata so no future work mistakes it for a gate.
+
+### N6 — Projection fan-out writes to every asset class on every upsert
+
+`UpsertProjectionCoreAsync` runs all 11 registered writers for every record
+(`PostgresSecurityMasterStore.cs:386-389`), and each writer whose class does not match issues a
+delete instead of returning (`:392-402`). A single equity upsert therefore issues roughly seventeen
+`DELETE` statements — four for the bond tables, one per remaining projected class — against rows that
+by construction cannot exist. The registry design is right (adding a class is one additive line); the
+per-record cost is what bulk vendor ingest will feel. A `record.AssetClass`-keyed lookup plus a
+targeted cleanup on observed class *change* would keep the registry and drop the amplification.
+
+### Smaller notes, not filed as findings
+
+- **Derivative families are imprecise.** `Swap`, `Cfd`, and `Warrant` all carry
+  `AssetFamily.ListedDerivative` (`SecurityMaster.fs:671, 689, 691`); OTC swaps and CFDs are not
+  listed. `AssetFamily` is the grouping key for certified report packs
+  (`ReportGenerationService.cs:243`, `CertifiedReportingSnapshotBuilder.cs:141`), so the label is a
+  reporting rollup, not a cosmetic tag. `FxSpot` carries `AssetClass.Other` with no family at all
+  (`:653`), which lands FX under "Other" in the same rollups.
+- **Option projections are identifier-keyed while every other projection is security-keyed.**
+  `option_contract_projection` has `contract_symbol` as primary key with a nullable `security_id`
+  (migration 006); the child tables cascade from it correctly, so this is a shape inconsistency
+  rather than a leak.
+- **`AssetSpecificTermsSchema` skips version 2** (`Legacy = 1`, `CustomAssetProfile = 3`) because
+  version 2 belongs to the economic-terms family. The facade documents the split well; the numbering
+  gap is worth a one-line comment where the constants are declared so nobody reads it as a missing
+  migration.
+
+### Priorities from this pass
+
+Ordered by institutional risk per unit of work, and read as a delta on the standing Top 5 above:
+
+1. **Split the `StructuredCash` family (N1).** A correctness defect with a close-readiness blast
+   radius, fixed at the source in the one table that governs classification. Pair it with a test that
+   asserts a `CashSweep` record resolves to a cash-equivalent accounting class.
+2. **Add the two missing parity guards (V1, N3).** Validator-vs-catalog and packs-vs-catalog, both
+   mirroring four guards that already exist. Still the cheapest durable items in this document.
+3. **Fix or retire CSV import (V2).** It is wired into two operator surfaces and works in neither.
+   Whichever way it goes, it should stop being reachable in its current state.
+4. **Retire classification-by-prose (N1, N2).** `ResolveAccountingAssetClass` and the
+   `MultiAssetCoverage` routers should read a declared capability off `SecurityAssetClassCatalog`
+   rather than substring-matching four fields and five concatenated free-text values. This is the
+   generalization that makes the next asset class safe by default instead of safe by coincidence.
+5. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
+   Unchanged from the standing list, and unchanged in importance: `DirectLoan`, `StructuredCredit`,
+   `PrivateFundInterest`, `RealEstateHolding`, and `CommitmentGuarantee` are precisely the classes
+   fund operations queries by issuer, maturity, and commitment, and precisely the ones with no
+   indexed path.
 
 ---
 
