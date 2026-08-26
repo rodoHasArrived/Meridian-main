@@ -36,6 +36,7 @@ public sealed class DailyValuationBatchLifecycleService
         var fundProfileId = RequireText(request.FundProfileId, nameof(request.FundProfileId));
         var actor = RequireText(request.Actor, nameof(request.Actor));
         var notes = RequireText(request.Notes, nameof(request.Notes));
+        var actionOrigin = request.ActionOrigin;
         var tenantId = NormalizeOptional(request.TenantId);
         var companyId = NormalizeOptional(request.CompanyId);
 
@@ -131,6 +132,7 @@ public sealed class DailyValuationBatchLifecycleService
                             actor,
                             notes,
                             batchCorrelationId,
+                            actionOrigin,
                             lifecycleEvidence,
                             ct).ConfigureAwait(false);
                         drafts[index] = validation.JournalEntry;
@@ -159,6 +161,7 @@ public sealed class DailyValuationBatchLifecycleService
                             actor,
                             notes,
                             batchCorrelationId,
+                            actionOrigin,
                             lifecycleEvidence,
                             ct).ConfigureAwait(false);
                     }
@@ -235,6 +238,7 @@ public sealed class DailyValuationBatchLifecycleService
         string actor,
         string notes,
         string batchCorrelationId,
+        OperationsActionOriginDto actionOrigin,
         IReadOnlyList<string> callerEvidence,
         CancellationToken ct)
     {
@@ -247,6 +251,7 @@ public sealed class DailyValuationBatchLifecycleService
                 actor,
                 notes,
                 batchCorrelationId,
+                actionOrigin,
                 callerEvidence,
                 ct).ConfigureAwait(false)).JournalEntry;
         }
@@ -259,6 +264,7 @@ public sealed class DailyValuationBatchLifecycleService
                 actor,
                 notes,
                 batchCorrelationId,
+                actionOrigin,
                 callerEvidence,
                 ct).ConfigureAwait(false)).JournalEntry;
         }
@@ -271,6 +277,7 @@ public sealed class DailyValuationBatchLifecycleService
                 actor,
                 notes,
                 batchCorrelationId,
+                actionOrigin,
                 callerEvidence,
                 ct).ConfigureAwait(false)).JournalEntry;
         }
@@ -290,6 +297,7 @@ public sealed class DailyValuationBatchLifecycleService
         string actor,
         string notes,
         string batchCorrelationId,
+        OperationsActionOriginDto actionOrigin,
         IReadOnlyList<string> callerEvidence,
         CancellationToken ct)
     {
@@ -313,6 +321,11 @@ public sealed class DailyValuationBatchLifecycleService
                 Notes: $"{notes} Daily valuation batch {batchCorrelationId}.",
                 CorrelationId: BuildActionCorrelationId(batchCorrelationId, draft.JournalEntryId, action),
                 EvidenceLinks: evidence,
+                // Propagated rather than left to default: JournalEntryLifecycleActionRequestDto
+                // defaults ActionOrigin to HumanOperator, so omitting it here handed every batch
+                // -- including one driven by a service credential -- the human standing that
+                // ManualJournalEntryWorkbenchService's EnsureHumanOrigin gate checks for (#2673).
+                ActionOrigin: actionOrigin,
                 LedgerBookId: draft.LedgerBookId,
                 TenantId: draft.TenantId,
                 CompanyId: draft.CompanyId),
