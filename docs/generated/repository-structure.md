@@ -1871,6 +1871,7 @@ Meridian-main
 │   │   ├── adversarial-program-review-2026-07.md
 │   │   ├── adversarial-program-review-2026-08-18.md
 │   │   ├── adversarial-program-review-2026-08-24.md
+│   │   ├── adversarial-program-review-2026-08-25.md
 │   │   ├── adversarial-program-review-2026-08.md
 │   │   ├── adversarial-review-2026-08-remediation-plan.md
 │   │   ├── data-provider-accounting-brainstorm-2026-07.md
