@@ -1,11 +1,11 @@
 {
   "total_files": 657,
-  "total_lines": 134836,
+  "total_lines": 135072,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 251,
-  "average_lines": 205.2,
+  "average_lines": 205.6,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1041,7 +1041,7 @@
     },
     {
       "path": "docs/adr/022-canonical-asset-class-homes.md",
-      "line_count": 141,
+      "line_count": 144,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1609,7 +1609,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 695,
+      "line_count": 920,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2457,7 +2457,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-02.md",
-      "line_count": 593,
+      "line_count": 590,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2465,7 +2465,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-03.md",
-      "line_count": 168,
+      "line_count": 176,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2625,7 +2625,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10611,
+      "line_count": 10614,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-26 (scheduled institutional-requirements pass; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-08-26 (resolution pass; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -56,6 +56,12 @@ risks that compound as new asset classes land.
 > Its highest-severity finding is new: `CashSweep` and `StructuredCredit` share the
 > `AssetFamily.StructuredCash` label and the accounting adapter reads that label as securitized, so
 > cash-sweep vehicles resolve to an asset-backed-security accounting class.
+>
+> **Resolution pass, 2026-08-26.** Four items from that pass are closed — the family split (N1), both
+> parity guards (V1 and N3), CSV import (V2), and the prose-sniffing classification it shared with
+> N2. N4, N5 and N6 stay open. See
+> [Resolution pass — 2026-08-26](#resolution-pass--2026-08-26), which also records the intended
+> behaviour deltas.
 
 ---
 
@@ -841,6 +847,59 @@ Ordered by institutional risk per unit of work, and read as a delta on the stand
    `PrivateFundInterest`, `RealEstateHolding`, and `CommitmentGuarantee` are precisely the classes
    fund operations queries by issuer, maturity, and commitment, and precisely the ones with no
    indexed path.
+
+---
+
+## Resolution pass — 2026-08-26
+
+An implementation pass on the four items prioritised out of the pass above. **No local build or test
+run was available in the authoring environment (no .NET SDK), so every claim below is a source-level
+change validated by CI, not by a local run.**
+
+### Closed this pass
+
+| # | Item | What landed |
+| --- | --- | --- |
+| N1 | `CashSweep` accounts as an asset-backed security | `AssetFamily.SecuritizedCredit` splits the securitized family out of `StructuredCash`; `StructuredCredit` moves to it and `CashSweep` keeps `StructuredCash`. The adapter no longer reads the family at all (see N2/N4 below), so the family is a reporting rollup again rather than an instrument identity. `SecurityAccountingInstrumentClassTests` locks the regression: a cash sweep resolves to no accounting class, which the event service reports at Info instead of raising a High-severity `SECURITY_ACCOUNTING_RULE_MISSING`. |
+| V1 | No catalog-to-validator parity guard | `SecurityAssetClassParityGuardTests.ValidatorRegistry_CoversExactlyTheCatalogAssetClasses` — the fifth guard mirroring the four that existed. |
+| N3 | Packs declare 18 classes the domain cannot represent | `SecurityAssetPackDescriptor.PlannedAssetClasses` carries anticipated coverage; `AssetClasses` now names only catalog classes. `ValidateDescriptor` enforces both directions at runtime (`asset-pack.asset-class-not-in-catalog`, `asset-pack.planned-asset-class-already-modeled`), and the parity tests guard them. The readiness DTO reports the planned set separately so a reader cannot mistake it for present coverage. |
+| V2 | CSV import broken for every asset class | The parser builds the `displayName`/`currency`/`exchange` common-terms payload it already parsed and stamps the asset-specific-terms schema version, so rows reach the create path intact. The accepted set derives from a new catalog capability, `SupportsIdentifierOnlyImport`, instead of a private table. |
+| — | Prose-sniffing classification | `ResolveAccountingAssetClass` is a lookup over `SecurityAssetClassCatalog.ResolveAccountingInstrumentClass`, not substring matching across four fields. `MultiAssetCoverageReadService` reads the class a referenced security DECLARES (via `ISecurityMasterQueryService`) and only falls back to inference for evidence naming no security — and that fallback now reads feed SHAPE fields only, never the security's symbol, display name, or reason text. |
+| N2 | Coverage read model contradicts ADR-022 | Structured evidence resolves to `StructuredCredit`; NAV/capital-call/distribution evidence resolves to `PrivateFundInterest` instead of being swept into `CustomAsset` alongside it. |
+
+### Behaviour deltas worth knowing
+
+These are intended and stated rather than incidental:
+
+- **Securitized vendor spellings collapse to one accounting class.** `MortgageBacked`,
+  `MortgageBackedSecurity` and `Mbs` previously resolved to a distinct `MortgageBackedSecurity`
+  accounting class; they now resolve to `AssetBackedSecurity` like every other securitized spelling.
+  Both pass the fixed-income gate identically and nothing downstream discriminates between them, so
+  the only difference is the string in an issue message. This follows ADR-022: the MBS-vs-ABS
+  distinction is a collateral fact, not a class name.
+- **Records admitted only because their class string read "Loan" no longer are.** Canonical
+  `DirectLoan` records were never admitted to this accounting slice; records whose class string
+  happened to be `Loan` or `AmortizingLoan` were. The canonical class now decides uniformly. This
+  removes an inconsistency rather than a capability — admitting direct loans to the slice is a
+  product decision, not a refactor, and is left unmade.
+- **CSV import accepts two asset classes, not nine.** `Equity` and `InvestmentFund` are the only
+  classes whose asset-specific terms are entirely optional, so they are the only ones a
+  ticker/name/currency row can create. The other seven the parser used to name were rejected at
+  create time anyway; they are now refused at parse time with a message that says why. A parity test
+  ties the capability to `SecurityAssetTermsSchema`, so the flag cannot drift from the contract it
+  describes.
+
+### Still open from the pass above
+
+- **N4 — `ValidateAll()` cannot fire its own overlap rule.** Untouched. `DirectLoan` remains claimed
+  by both `private-loan-credit` and `mortgage-facility-intercompany` (the latter's other three
+  claims are now planned coverage), and the candidate-only filter still means a built-in overlap
+  cannot be reported.
+- **N5 — the per-pack contract schema is one shared prose object.** Untouched.
+- **N6 — projection fan-out writes to every asset class on every upsert.** Untouched.
+- The three long-standing deferred items — relational projections for the private/alternative
+  classes, valid-time term history, and codec generation from `SecurityAssetTermsSchema` — are
+  unchanged.
 
 ---
 

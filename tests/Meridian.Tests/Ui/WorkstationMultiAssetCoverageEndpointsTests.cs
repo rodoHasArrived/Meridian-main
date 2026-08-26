@@ -77,9 +77,13 @@ public sealed partial class WorkstationEndpointsTests
         payload.AssetPacks.Should().Contain(static pack =>
             pack.PackId == "controlled-other-asset" &&
             pack.AutomationDepth == "WideCapture" &&
-            pack.AssetClasses.Contains("Art") &&
-            pack.AssetClasses.Contains("InsurancePolicy") &&
-            pack.AssetClasses.Contains("Vehicle") &&
+            pack.AssetClasses.Contains("OtherSecurity") &&
+            pack.AssetClasses.Contains("CustomAsset") &&
+            // Art, insurance policies and vehicles are anticipated coverage, not modelled classes,
+            // so they are reported apart from what the pack actually covers today.
+            pack.PlannedAssetClasses.Contains("Art") &&
+            pack.PlannedAssetClasses.Contains("InsurancePolicy") &&
+            pack.PlannedAssetClasses.Contains("Vehicle") &&
             pack.LifecycleCoverage.Any(coverage =>
                 coverage.LifecycleEvent == "Maturity" &&
                 coverage.AccountingAutomationStatus == "ManualReviewRequired") &&

@@ -8554,6 +8554,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasDto"
     },
     {
@@ -19583,6 +19589,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ResolveSecurityRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses"
     },
     {
       "kind": "contract-set-member",
@@ -42769,7 +42781,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "bf577aac1a1738361670ec1c3e29fe7e37cb2630093dcce28e4c287bb9cd5eb9",
+  "fingerprint": "fe8310bb0058251eafb7507992b8eafb0ff81448041d7e0b4b4a194df60b11e4",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -51371,6 +51383,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.ResolveSecurityRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.ResolveSecurityRequest"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses"
     },
     {
       "classification": "dto",
@@ -62399,10 +62417,10 @@
   ],
   "summary": {
     "contract_references": 2934,
-    "contract_set_memberships": 3363,
-    "edges": 7109,
+    "contract_set_memberships": 3365,
+    "edges": 7111,
     "foreign_keys": 98,
     "logical_references": 6,
-    "nodes": 3380
+    "nodes": 3381
   }
 }
