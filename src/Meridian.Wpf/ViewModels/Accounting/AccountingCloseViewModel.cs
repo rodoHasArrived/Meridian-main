@@ -1771,12 +1771,26 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
                 issue.TargetId ?? closePlan.ClosePlanId));
         }
 
+        // Operating-coverage evidence belongs in the same review surface as task, sign-off, and
+        // late-adjustment evidence. The coverage grid shows only a count, so without this an
+        // operator reviewing a blocked control could see that evidence existed and had no way to
+        // reach it (ACCT-CHECKLIST-07). Added before the empty check below so the "no retained
+        // evidence" row cannot claim there is none while coverage evidence is present.
+        foreach (var coverage in closePlan.OperatingCoverage)
+        {
+            AddEvidenceReviewRows(
+                CloseEvidenceReviewRows,
+                $"operating-coverage:{coverage.ControlId}",
+                coverage.EvidenceLinks,
+                coverage.Label);
+        }
+
         if (CloseEvidenceReviewRows.Count == 0)
         {
             CloseEvidenceReviewRows.Add(new AccountingWorkbenchRow(
                 "No retained evidence",
                 "Missing",
-                "The close plan does not expose retained setup, task, sign-off, or late-adjustment evidence.",
+                "The close plan does not expose retained setup, task, sign-off, late-adjustment, or operating-coverage evidence.",
                 "Retain close setup evidence before production certification.",
                 closePlan.ClosePlanId));
         }
