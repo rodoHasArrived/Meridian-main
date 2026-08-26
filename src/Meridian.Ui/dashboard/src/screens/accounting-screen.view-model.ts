@@ -2605,6 +2605,12 @@ export interface AccountingCloseOperatingCoverageRowViewModel {
   blockerLabel: string;
   requiredAction: string;
   issueLabels: string[];
+  /**
+   * The retained evidence references themselves, not just the count in `evidenceLabel`. The shared
+   * close plan carries these per control; showing only the count told an operator reviewing a
+   * blocked control that evidence exists while giving them no way to reach it (ACCT-CHECKLIST-07).
+   */
+  evidenceReferences: string[];
 }
 
 export interface AccountingClosePostingBalanceRowViewModel {
