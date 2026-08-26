@@ -541,6 +541,13 @@ export manifest from the close cockpit; the browser displays artifact id, format
 generation time, content hash, route, evidence count, certification state, and disabled external
 posting posture while Financial Operations remains responsible for artifact generation and
 certification mutation.
+An empty holdings table on the Portfolio desk offers the step that actually fills it rather than
+only stating that it is empty: a loaded workspace with no holdings routes to statement import, and
+an empty paper session routes to the trading desk. The offered step follows the same branch as the
+sentence printed beside it, so the two can never disagree, and a workspace that failed to load gets
+no button — that is a load failure, not an empty desk, and routing elsewhere would hide it. The
+multi-asset coverage presenters live in `portfolio-screen.multi-asset-coverage.ts`; the row and
+group types stay owned by the view model and are imported type-only.
 `FinancialRecordExplorerShell` is the browser presentation for the shared Financial Record Explorer
 DTO. Accounting loads the `ledger` and Accounting-hosted `security-instrument` explorers from
 `/api/workstation/financial-record-explorers/{explorerId}`, Portfolio loads `portfolio`, Reporting
