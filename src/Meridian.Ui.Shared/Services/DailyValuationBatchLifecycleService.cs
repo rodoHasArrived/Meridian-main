@@ -354,7 +354,20 @@ public sealed class DailyValuationBatchLifecycleService
         string? companyId)
         => BuildLifecycleEvidenceRoute(
             action,
-            draft.LedgerBookId ?? Guid.Empty,
+            // Not coerced to Guid.Empty. Every other component that meets a ledger book treats an
+            // all-zeros id as invalid and refuses it -- AccountingPostingCommandValidator,
+            // TradeFillLedgerPostingTarget, DailyMarkToMarketService, ShadowBookValuationService and
+            // the wash-sale query among them -- so substituting one here stamped an evidence route
+            // with a scope no reader would accept (ACCT-CHECKLIST-01).
+            //
+            // Unreachable in practice: ApproveAndPostAsync blocks any draft whose LedgerBookId does
+            // not equal the schedule's non-nullable book before a draft reaches this path. Requiring
+            // it states that invariant instead of silently standing in for it, and both callers of
+            // this overload already convert InvalidOperationException into a visible batch blocker,
+            // so an unscoped draft would surface rather than post under a fabricated scope.
+            draft.LedgerBookId ?? throw new InvalidOperationException(
+                $"Daily valuation draft '{journalEntryId:D}' reached evidence-route construction with no "
+                + "ledger book; the batch scope check should have blocked it."),
             draft.PeriodId,
             journalEntryId,
             tenantId,
