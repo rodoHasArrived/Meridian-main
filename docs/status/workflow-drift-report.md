@@ -71,5 +71,5 @@
 - `build/scripts/ci/check-file-size.py`
 - `build/scripts/ci/check-inline-sha256.py`
 - `build/scripts/ci/check-lane-manifest.py`
+- `build/scripts/ci/check-posture-env-serialization.py`
 - `build/scripts/ci/check-sample-config-datasources.py`
-- `build/scripts/ci/check-test-skip-register.py`

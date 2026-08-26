@@ -1105,6 +1105,7 @@ Meridian-main
 │       │   ├── check-file-size.py
 │       │   ├── check-inline-sha256.py
 │       │   ├── check-lane-manifest.py
+│       │   ├── check-posture-env-serialization.py
 │       │   ├── check-sample-config-datasources.py
 │       │   ├── check-test-skip-register.py
 │       │   ├── check-warning-suppressions.py
@@ -10408,6 +10409,7 @@ Meridian-main
 │   │   ├── test_check_endpoint_cancellation.py
 │   │   ├── test_check_file_size_ratchet.py
 │   │   ├── test_check_inline_sha256.py
+│   │   ├── test_check_posture_env_serialization.py
 │   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_check_status_delivery_claims.py
 │   │   ├── test_check_test_skip_register.py
