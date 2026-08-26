@@ -100,7 +100,7 @@ public static class AccountingSystemEndpoints
             {
                 Profile = trustedProfile,
                 Actor = ResolveMutationActor(context, request.Actor),
-                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
             };
             try
             {
@@ -169,7 +169,7 @@ public static class AccountingSystemEndpoints
             {
                 Profile = trustedProfile,
                 Actor = ResolveMutationActor(context, request.Actor),
-                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
             };
             try
             {
@@ -211,7 +211,7 @@ public static class AccountingSystemEndpoints
                     Actor = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId,
                     CompanyId = tenantContext.CompanyId,
-                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                 };
                 var result = await service.ExecuteAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -281,7 +281,7 @@ public static class AccountingSystemEndpoints
                 {
                     Artifact = trustedArtifact,
                     Actor = ResolveMutationActor(context, request.Actor),
-                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                 };
                 var result = await store.UpsertAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -343,9 +343,11 @@ public static class AccountingSystemEndpoints
 
             try
             {
-                // The principal's origin, not the body's: ActionOrigin is bound from the request
-                // and defaults to HumanOperator, so this gate used to be self-declared (#2673).
-                EnsureHumanOrigin(EndpointAuthorization.ResolveTrustedActionOrigin(context));
+                // Judge the narrower of the body's declaration and the principal's standing.
+                // ActionOrigin is bound from the request and defaults to HumanOperator, so this
+                // gate used to be satisfiable by omitting the field; declared automation is still
+                // believed and refused (#2673).
+                EnsureHumanOrigin(EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin));
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 _ = ResolveMutationActor(context, request.Actor);
                 var trustedPlan = request.Plan with
@@ -498,7 +500,7 @@ public static class AccountingSystemEndpoints
             {
                 TenantId = tenantContext.TenantId,
                 CompanyId = tenantContext.CompanyId,
-                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
             };
             try
             {
@@ -580,7 +582,7 @@ public static class AccountingSystemEndpoints
             {
                 TenantId = tenantContext.TenantId,
                 CompanyId = tenantContext.CompanyId,
-                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
             };
             try
             {
@@ -670,7 +672,7 @@ public static class AccountingSystemEndpoints
                     Actor = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId,
                     CompanyId = tenantContext.CompanyId,
-                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                 };
                 var result = await service.CertifyExportPackageAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return result is null

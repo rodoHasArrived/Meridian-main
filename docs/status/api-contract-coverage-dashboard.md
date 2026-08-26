@@ -21,14 +21,14 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Method | Route | Status | Source |
 |---|---|---|---|
-| `GET` | `/api/accounting-system/export-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:535` |
-| `POST` | `/api/accounting-system/export-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:568` |
-| `POST` | `/api/accounting-system/export-packages/certification` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:655` |
-| `GET` | `/api/accounting-system/export-packages/{exportPackageId}/manifest` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:617` |
-| `GET` | `/api/accounting-system/import/latest` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:399` |
-| `POST` | `/api/accounting-system/import/preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:374` |
-| `GET` | `/api/accounting-system/mapping-profiles` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:457` |
-| `POST` | `/api/accounting-system/mapping-profiles` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:486` |
+| `GET` | `/api/accounting-system/export-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:537` |
+| `POST` | `/api/accounting-system/export-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:570` |
+| `POST` | `/api/accounting-system/export-packages/certification` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:657` |
+| `GET` | `/api/accounting-system/export-packages/{exportPackageId}/manifest` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:619` |
+| `GET` | `/api/accounting-system/import/latest` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:401` |
+| `POST` | `/api/accounting-system/import/preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:376` |
+| `GET` | `/api/accounting-system/mapping-profiles` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:459` |
+| `POST` | `/api/accounting-system/mapping-profiles` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:488` |
 | `GET` | `/api/accounting-system/migration-run-artifacts` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:234` |
 | `POST` | `/api/accounting-system/migration-run-artifacts` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:262` |
 | `POST` | `/api/accounting-system/migration-runs` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:196` |
@@ -38,7 +38,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/accounting-system/production-certification-profile` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:152` |
 | `POST` | `/api/accounting-system/production-readiness` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:36` |
 | `GET` | `/api/accounting-system/providers` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:21` |
-| `GET` | `/api/accounting-system/reconciliation/latest` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:428` |
+| `GET` | `/api/accounting-system/reconciliation/latest` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:430` |
 | `GET` | `/api/accounting-system/tenant-administration-profile` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:59` |
 | `POST` | `/api/accounting-system/tenant-administration-profile` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:83` |
 | `POST` | `/api/admin/cleanup/execute` | Gap | `src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs:272` |
@@ -615,8 +615,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/strategies/covered-call/runs/{runId}/cancel` | Gap | `src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:167` |
 | `GET` | `/api/strategies/covered-call/runs/{runId}/result` | Gap | `src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:118` |
 | `GET` | `/api/strategies/covered-call/runs/{runId}/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:88` |
-| `GET` | `/api/strategies/runs/compare` | Gap | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2906` |
-| `GET` | `/api/strategies/{strategyId}/runs` | Gap | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2765` |
+| `GET` | `/api/strategies/runs/compare` | Gap | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2907` |
+| `GET` | `/api/strategies/{strategyId}/runs` | Gap | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2766` |
 | `GET` | `/api/subscriptions/active` | Gap | `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:22` |
 | `POST` | `/api/subscriptions/subscribe` | Gap | `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:44` |
 | `POST` | `/api/subscriptions/unsubscribe/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:73` |

@@ -506,7 +506,7 @@ public static partial class LedgerEndpoints
                         Actor = ResolveMutationActor(context, request.Actor),
                         TenantId = tenantContext.TenantId,
                         CompanyId = tenantContext.CompanyId,
-                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -734,9 +734,10 @@ public static partial class LedgerEndpoints
             TenantId = tenantContext.TenantId,
             CompanyId = tenantContext.CompanyId,
             ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
-            // Re-derived like Actor and tenant scope above: the bound value decides whether the
-            // human-operator governance gate applies, and it arrived in the request body (#2673).
-            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+            // Narrowed against the principal, like Actor and tenant scope above: the bound value
+            // decides whether the human-operator governance gate applies and it arrived in the
+            // request body, but a declared automation origin is preserved, not overwritten (#2673).
+            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
         };
     }
 
@@ -765,9 +766,10 @@ public static partial class LedgerEndpoints
             TenantId = tenantContext.TenantId,
             CompanyId = tenantContext.CompanyId,
             ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
-            // Re-derived like Actor and tenant scope above: the bound value decides whether the
-            // human-operator governance gate applies, and it arrived in the request body (#2673).
-            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+            // Narrowed against the principal, like Actor and tenant scope above: the bound value
+            // decides whether the human-operator governance gate applies and it arrived in the
+            // request body, but a declared automation origin is preserved, not overwritten (#2673).
+            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
         };
     }
 }

@@ -253,7 +253,7 @@ public static partial class LedgerEndpoints
                         request with
                         {
                             ClosedBy = actor,
-                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                         },
                         context.RequestAborted)
                     .ConfigureAwait(false);
@@ -623,7 +623,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.Actor ?? string.Empty);
                 var result = await service
                     .ConfigurePeriodPlanScopedAsync(
-                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context) },
+                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -685,7 +685,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.RequestedBy);
                 var result = await service
                     .RequestLateAdjustmentScopedAsync(
-                        request with { RequestedBy = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context) },
+                        request with { RequestedBy = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -747,7 +747,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
                     .ReviewLateAdjustmentScopedAsync(
-                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context) },
+                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -809,7 +809,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
                     .SignOffCloseTaskScopedAsync(
-                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context) },
+                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -871,7 +871,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
                     .ReviewCloseEvidenceScopedAsync(
-                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context) },
+                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -943,8 +943,8 @@ public static partial class LedgerEndpoints
                         request with
                         {
                             Actor = actor,
-                            // Resolved from the principal, not asserted (#2673).
-                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context),
+                            // Narrower of declaration and principal standing (#2673).
+                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
                             ControllerRole = controllerRole
                         },
                         actor,
@@ -1013,7 +1013,7 @@ public static partial class LedgerEndpoints
                         {
                             Actor = actor,
                             Role = controllerRole,
-                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                         },
                         actor,
                         scope.TenantContext.TenantId,
@@ -1131,7 +1131,7 @@ public static partial class LedgerEndpoints
                         Actor = actor,
                         TenantId = tenantContext.TenantId,
                         CompanyId = tenantContext.CompanyId,
-                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1701,7 +1701,7 @@ public static partial class LedgerEndpoints
                     TenantId = tenantContext.TenantId,
                     CompanyId = tenantContext.CompanyId,
                     ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
-                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -1747,7 +1747,7 @@ public static partial class LedgerEndpoints
                     TenantId = tenantContext.TenantId,
                     CompanyId = tenantContext.CompanyId,
                     ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
-                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -1792,7 +1792,7 @@ public static partial class LedgerEndpoints
                         TenantId = tenantContext.TenantId,
                         CompanyId = tenantContext.CompanyId,
                         ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
-                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);

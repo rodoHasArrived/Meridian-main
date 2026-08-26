@@ -8,6 +8,12 @@ gate simply by omitting the field: the control stopped only automation that decl
 honestly. Several endpoints did derive it server-side, but by asserting the constant HumanOperator,
 which stamped an API-key caller as a human and satisfied the same gate.
 
+The fix is not to overwrite the body outright. Automation that declares itself honestly must still
+be refused -- that is the capability the control exists for -- so the resolver takes the *narrower*
+of the declaration and the principal's standing, and a call site must therefore pass the declared
+value in. A one-argument call would be the overwrite this guard exists to prevent, so the pattern
+this checks for is the two-argument form.
+
 The endpoints already knew the pattern -- they re-derive Actor, TenantId and CompanyId from the
 authenticated principal in a `request with { ... }` block -- they just did not apply it to this one
 field. So this fails CI when a route handler binds a DTO carrying ActionOrigin without the value
@@ -129,8 +135,10 @@ def main() -> int:
             for line, dto in sites:
                 print(f"  {rel}:{line}  {dto}", file=sys.stderr)
         print(
-            f"\nSet `ActionOrigin = EndpointAuthorization.{TRUSTED_RESOLVER}(context)` in the same "
-            "`request with {{ ... }}` block that re-derives Actor and tenant scope.".replace("{{", "{").replace("}}", "}"),
+            f"\nSet `ActionOrigin = EndpointAuthorization.{TRUSTED_RESOLVER}(context, "
+            "request.ActionOrigin)` in the same `request with { ... }` block that re-derives Actor "
+            "and tenant scope. Pass the declared value in: the resolver returns the narrower of it "
+            "and the principal's standing, so automation that declares itself is still refused.",
             file=sys.stderr,
         )
         return 1

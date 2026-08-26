@@ -542,12 +542,13 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            // ActionOrigin arrives in the body and defaults to HumanOperator, so it is
-            // re-derived here alongside ResolvedBy before anything downstream reads it (#2673).
+            // ActionOrigin arrives in the body and defaults to HumanOperator, so it is narrowed
+            // against the principal here, alongside ResolvedBy, before anything downstream reads
+            // it. A declared automation origin is preserved and still refused (#2673).
             var trustedRequest = request with
             {
                 ResolvedBy = currentUser,
-                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
             };
 
             var transition = await ResolveBreakAsync(repository, queueScope, trustedRequest, context.RequestAborted).ConfigureAwait(false);

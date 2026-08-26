@@ -283,22 +283,28 @@ public static class EndpointAuthorization
     }
 
     /// <summary>
-    /// Resolves the action origin the server is willing to vouch for, from the authenticated
-    /// principal rather than from the request body.
+    /// Resolves the action origin the governance gate should judge, from the authenticated
+    /// principal and the caller's own declaration, taking whichever is narrower.
     /// </summary>
     /// <remarks>
     /// <para>
     /// <see cref="OperationsActionOriginDto"/> decides whether the "reviewed automation may not
-    /// perform this action; a human operator is required" control applies. It arrives as an
-    /// ordinary bound member of the request DTOs and defaults to the permissive
+    /// perform this action; a human operator is required" control applies. It arrives as an ordinary
+    /// bound member of the request DTOs and defaults to the permissive
     /// <see cref="OperationsActionOriginDto.HumanOperator"/>, so a caller used to satisfy the gate
-    /// simply by omitting the field — the control stopped only automation that declared itself
-    /// honestly (#2673). Endpoints must overwrite the bound value with this one, in the same
-    /// <c>request with { ... }</c> block that already re-derives <c>Actor</c> and tenant scope.
+    /// simply by omitting the field (#2673).
     /// </para>
     /// <para>
-    /// <see cref="OperationsActionOriginDto.HumanOperator"/> is returned only for a validated
-    /// interactive workstation session, under the same four conditions
+    /// The declaration is not discarded, though — it is <b>binding when it narrows</b>. Automation
+    /// that declares itself honestly must still be refused, which is the capability the control was
+    /// written for; overwriting the body outright would make the gate unforgeable and, in the same
+    /// stroke, untriggerable for anything holding a session. So a declared non-human origin is
+    /// carried through as-is, keeping the specific kind for evidence, and only a declared
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/> is re-derived.
+    /// </para>
+    /// <para>
+    /// Re-derivation yields <see cref="OperationsActionOriginDto.HumanOperator"/> only for a
+    /// validated interactive workstation session, under the same four conditions
     /// <see cref="RequireAuthenticatedSession{TBuilder}"/> enforces: an actor resolves, a permission
     /// snapshot resolves, the principal is not an API key, and it is not the optional-auth anonymous
     /// principal. Deliberately the same predicate rather than a similar one, so the two cannot drift
@@ -307,14 +313,21 @@ public static class EndpointAuthorization
     /// assistant acting with a delegated token" case the control exists to stop.
     /// </para>
     /// <para>
-    /// Every other case yields <see cref="OperationsActionOriginDto.AutomationAssistant"/>, so this
-    /// fails closed: an unrecognised or partially-populated principal is treated as automation and
-    /// refused, never waved through.
+    /// The result is monotone: the caller's claim can only ever narrow its own privilege, never widen
+    /// it. Omitting the field no longer buys human standing that the principal does not have, and
+    /// claiming automation is still believed.
     /// </para>
     /// </remarks>
-    public static OperationsActionOriginDto ResolveTrustedActionOrigin(HttpContext context)
+    public static OperationsActionOriginDto ResolveTrustedActionOrigin(
+        HttpContext context,
+        OperationsActionOriginDto declaredOrigin)
     {
         ArgumentNullException.ThrowIfNull(context);
+
+        if (declaredOrigin != OperationsActionOriginDto.HumanOperator)
+        {
+            return declaredOrigin;
+        }
 
         var isInteractiveSession =
             TryResolveActor(context, out _) &&
