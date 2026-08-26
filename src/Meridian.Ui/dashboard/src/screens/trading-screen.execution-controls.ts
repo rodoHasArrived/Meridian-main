@@ -3,10 +3,7 @@ import type {
   ExecutionControlSnapshot,
   TradingActionResult
 } from "@/types";
-import type {
-  ExecutionControlsPanel,
-  TradingConfirmAction
-} from "@/screens/trading-screen.view-model";
+import type { ExecutionControlsPanel } from "@/screens/trading-screen.view-model";
 
 export function buildExecutionControlsPanel(snapshot: ExecutionControlSnapshot): ExecutionControlsPanel {
   const breakerOpen = snapshot.circuitBreaker.isOpen;
