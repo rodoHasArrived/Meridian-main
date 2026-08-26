@@ -12,13 +12,12 @@ export type PaymentApprovalStatusOrdinal = number;
 
 /**
  * Origin of a governed action. This enum *is* string-converted on the wire, so
- * the request bodies below send the name.
+ * the request bodies below send the name. Re-exported from the shared barrel,
+ * which already declares the same union for the operations-continuity surface.
  */
-export type OperationsActionOrigin =
-  | "HumanOperator"
-  | "AutomationSuggestion"
-  | "AssistantDraft"
-  | "AutomationAssistant";
+import type { OperationsActionOrigin } from "@/types";
+
+export type { OperationsActionOrigin };
 
 export interface PendingPayment {
   pendingPaymentId: string;

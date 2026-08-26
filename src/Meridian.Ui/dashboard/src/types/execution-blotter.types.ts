@@ -83,11 +83,11 @@ export interface ExecutionPositionActionRequest {
   fundAccountId?: string;
 }
 
-/** Result of a blotter-driven execution action. */
-export interface TradingActionResult {
-  actionId: string;
-  status: string;
-  message: string;
-  occurredAt: string;
-  auditId?: string | null;
-}
+/**
+ * Result of a blotter-driven execution action.
+ *
+ * Re-exported from the shared barrel rather than redeclared: the close action on
+ * this same C# record already uses that definition, and a second one here would
+ * let the two drift apart.
+ */
+export type { TradingActionResult } from "@/types";
