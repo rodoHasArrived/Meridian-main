@@ -902,6 +902,65 @@ public sealed class StrategyRunStoreTests
     }
 
     [Fact]
+    public async Task RecordLifecycleEventAsync_DeferredActivation_IsRetainedAndCanStillActivate()
+    {
+        // #2726: a promoted run the live engine declines must reach a visible state on the run.
+        // Written against the real store rather than a test double on purpose — LiveTradingEngine's
+        // own suite uses an in-memory repository that does not consult IsAllowedTransition, so it
+        // would pass even while this store rejected the write with InvalidOperationException and
+        // left the run with no visible state at all.
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var store = new StrategyRunStore(history);
+            var startedAt = new DateTimeOffset(2026, 8, 26, 12, 0, 0, TimeSpan.Zero);
+            var started = StrategyRunEntry.Start("designer-strategy", "Designer Strategy", RunType.Paper, "run-deferred") with
+            {
+                StartedAt = startedAt,
+                LifecycleEventAtUtc = startedAt
+            };
+            await store.RecordRunAsync(started);
+
+            var deferredAt = startedAt.AddSeconds(1);
+            var deferred = started.ActivationDeferred("No live strategy implementation is registered for 'designer-strategy'.") with
+            {
+                LifecycleEventAtUtc = deferredAt
+            };
+            await store.RecordLifecycleEventAsync(deferred, StrategyRunLifecycleEventType.ActivationDeferred);
+
+            var retained = await store.GetRunByIdAsync(started.RunId);
+            retained.Should().NotBeNull();
+            retained!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.ActivationDeferred);
+            retained.Reason.Should().Contain("No live strategy implementation is registered");
+            retained.EndedAt.Should().BeNull("a deferred run is retained open, not ended");
+
+            // The engine's startup resume sweep retries every open run, so a run still waiting on the
+            // same missing source re-defers on each restart.
+            var redeferredAt = deferredAt.AddMinutes(5);
+            var redeferred = deferred.ActivationDeferred("Still no live strategy implementation is registered.") with
+            {
+                LifecycleEventAtUtc = redeferredAt
+            };
+            var redefer = () => store.RecordLifecycleEventAsync(redeferred, StrategyRunLifecycleEventType.ActivationDeferred);
+            await redefer.Should().NotThrowAsync("a re-attempt that defers again must not be rejected");
+
+            // And the point of retaining it: once a source resolves the strategy, it activates.
+            var activatedAt = redeferredAt.AddMinutes(5);
+            var activated = redeferred.Started() with { LifecycleEventAtUtc = activatedAt };
+            var activate = () => store.RecordLifecycleEventAsync(activated, StrategyRunLifecycleEventType.Started);
+            await activate.Should().NotThrowAsync("a deferred run must be able to activate later");
+
+            (await store.GetRunByIdAsync(started.RunId))!
+                .LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Started);
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task RecordRunAsync_RejectsRegressionAfterCompletedRun()
     {
         var dataRoot = CreateDataRoot();
