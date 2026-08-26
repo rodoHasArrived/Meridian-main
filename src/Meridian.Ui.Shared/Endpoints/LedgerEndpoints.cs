@@ -252,7 +252,8 @@ public static partial class LedgerEndpoints
                         periodId,
                         request with
                         {
-                            ClosedBy = actor
+                            ClosedBy = actor,
+                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                         },
                         context.RequestAborted)
                     .ConfigureAwait(false);
@@ -622,7 +623,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.Actor ?? string.Empty);
                 var result = await service
                     .ConfigurePeriodPlanScopedAsync(
-                        request with { Actor = actor },
+                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -684,7 +685,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.RequestedBy);
                 var result = await service
                     .RequestLateAdjustmentScopedAsync(
-                        request with { RequestedBy = actor },
+                        request with { RequestedBy = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -746,7 +747,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
                     .ReviewLateAdjustmentScopedAsync(
-                        request with { Actor = actor },
+                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -808,7 +809,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
                     .SignOffCloseTaskScopedAsync(
-                        request with { Actor = actor },
+                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -870,7 +871,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
                     .ReviewCloseEvidenceScopedAsync(
-                        request with { Actor = actor },
+                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -942,7 +943,8 @@ public static partial class LedgerEndpoints
                         request with
                         {
                             Actor = actor,
-                            ActionOrigin = OperationsActionOriginDto.HumanOperator,
+                            // Narrower of declaration and principal standing (#2673).
+                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
                             ControllerRole = controllerRole
                         },
                         actor,
@@ -1010,7 +1012,8 @@ public static partial class LedgerEndpoints
                         request with
                         {
                             Actor = actor,
-                            Role = controllerRole
+                            Role = controllerRole,
+                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                         },
                         actor,
                         scope.TenantContext.TenantId,
@@ -1127,7 +1130,8 @@ public static partial class LedgerEndpoints
                     {
                         Actor = actor,
                         TenantId = tenantContext.TenantId,
-                        CompanyId = tenantContext.CompanyId
+                        CompanyId = tenantContext.CompanyId,
+                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1696,7 +1700,8 @@ public static partial class LedgerEndpoints
                     Actor = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId,
                     CompanyId = tenantContext.CompanyId,
-                    ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+                    ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
+                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -1741,7 +1746,8 @@ public static partial class LedgerEndpoints
                     Actor = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId,
                     CompanyId = tenantContext.CompanyId,
-                    ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+                    ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
+                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -1785,7 +1791,8 @@ public static partial class LedgerEndpoints
                         Actor = ResolveMutationActor(context, request.Actor),
                         TenantId = tenantContext.TenantId,
                         CompanyId = tenantContext.CompanyId,
-                        ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+                        ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
+                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -2140,90 +2147,6 @@ public static partial class LedgerEndpoints
         => EndpointAuthorization.TryResolveActor(context, out var actor) && !string.IsNullOrWhiteSpace(actor)
             ? actor
             : suppliedActor;
-
-    private static UpsertChartOfAccountsNodeRequest WithAccessContext(
-        UpsertChartOfAccountsNodeRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
-
-    private static UpsertJournalEntryTemplateRequest WithAccessContext(
-        UpsertJournalEntryTemplateRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
-
-    private static UpsertPostingRuleRequest WithAccessContext(
-        UpsertPostingRuleRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
-
-    private static ApprovePostingRulePromotionRequest WithAccessContext(
-        ApprovePostingRulePromotionRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
-
-    private static UpsertAccountingRuleTestCaseRequest WithAccessContext(
-        UpsertAccountingRuleTestCaseRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
-
-    private static ActivateAccountingConfigurationRequest WithAccessContext(
-        ActivateAccountingConfigurationRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
 
     private static IResult MapServiceException(LedgerBookServiceException exception)
         => exception switch
@@ -2819,5 +2742,4 @@ public static partial class LedgerEndpoints
 
         return LedgerDimensionTags.HasAnyDimension(canonical) ? canonical : null;
     }
-
 }

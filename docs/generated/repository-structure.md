@@ -1097,6 +1097,7 @@ Meridian-main
 │       │   └── promptfoo_adapter.py
 │       ├── ci
 │       │   ├── apiclient-caller-baseline.json
+│       │   ├── check-action-origin-derivation.py
 │       │   ├── check-apiclient-callers.py
 │       │   ├── check-contract-type-parity.py
 │       │   ├── check-dashboard-type-barrel.py
@@ -1105,7 +1106,9 @@ Meridian-main
 │       │   ├── check-file-size.py
 │       │   ├── check-inline-sha256.py
 │       │   ├── check-lane-manifest.py
+│       │   ├── check-posture-env-serialization.py
 │       │   ├── check-sample-config-datasources.py
+│       │   ├── check-store-concurrency-posture.py
 │       │   ├── check-test-skip-register.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
@@ -9444,6 +9447,7 @@ Meridian-main
 │   │   │   │   ├── StatusEndpointTests.cs
 │   │   │   │   ├── StorageEndpointTests.cs
 │   │   │   │   ├── SymbolEndpointTests.cs
+│   │   │   │   ├── TrustedActionOriginTests.cs
 │   │   │   │   └── UiEndpointsJsonOptionsTests.cs
 │   │   │   ├── ConfigurableTickerDataCollectionTests.cs
 │   │   │   ├── ConnectionRetryIntegrationTests.cs
@@ -10400,6 +10404,7 @@ Meridian-main
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_buildctl_validation_runner.py
 │   │   ├── test_central_package_versions.py
+│   │   ├── test_check_action_origin_derivation.py
 │   │   ├── test_check_apiclient_callers.py
 │   │   ├── test_check_codex_memory.py
 │   │   ├── test_check_codex_skills.py
@@ -10410,8 +10415,10 @@ Meridian-main
 │   │   ├── test_check_endpoint_cancellation.py
 │   │   ├── test_check_file_size_ratchet.py
 │   │   ├── test_check_inline_sha256.py
+│   │   ├── test_check_posture_env_serialization.py
 │   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_check_status_delivery_claims.py
+│   │   ├── test_check_store_concurrency_posture.py
 │   │   ├── test_check_test_skip_register.py
 │   │   ├── test_check_workflow_docs_parity.py
 │   │   ├── test_ci_summary.py

@@ -1,6 +1,5 @@
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ledger;
 
@@ -69,7 +68,7 @@ public static class PeriodCloseDraftBuilder
                 .ThenBy(static line => LedgerLineDimensionSetFields.BuildScopeKey(line.Dimensions), StringComparer.Ordinal)
                 .Select(static line => FormattableString.Invariant(
                     $"{line.Account.AccountType}|{line.Account.Name}|{line.Account.Symbol}|{line.Account.FinancialAccountId}|{line.PeriodBalance}|{LedgerLineDimensionSetFields.BuildScopeKey(line.Dimensions)}")));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonical));
-        return Convert.ToHexString(hash.AsSpan(0, 12)).ToLowerInvariant();
+        var hash = Sha256Digest.ComputeBytesUtf8(canonical);
+        return Convert.ToHexStringLower(hash.AsSpan(0, 12));
     }
 }

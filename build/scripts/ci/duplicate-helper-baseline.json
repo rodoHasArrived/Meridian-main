@@ -1,11 +1,5 @@
 {
-  "body_clones": {
-    "src/Meridian.Ledger/LedgerAccounts.cs": 1,
-    "src/Meridian.Ledger/LedgerLineDimensionSetNormalizer.cs": 1,
-    "src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs": 1,
-    "src/Meridian.Ledger/ProjectLedgerBook.cs": 1,
-    "src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs": 1
-  },
+  "body_clones": {},
   "description": "Per-file counts of private declarations of helpers owned by Meridian.Contracts.Text.TextPrimitives. CI fails when a file exceeds its count or a new file appears; migration batches shrink this toward empty. body_clones counts declarations under any other name whose canonical body is one TextPrimitives owns.",
   "files": {
     "src/Meridian.Application/Integrations/ProviderIntegrationMappedRecordIdentity.cs": 1,
@@ -76,7 +70,7 @@
     "src/Meridian.Wpf/Services/FundLedgerReadService.cs": 1,
     "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.TextHelpers.cs": 1
   },
-  "total": 81,
+  "total": 76,
   "tracked_helpers": [
     "NormalizeOptional",
     "RequireText",

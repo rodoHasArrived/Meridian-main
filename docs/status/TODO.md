@@ -57,7 +57,7 @@ Total items: **239**
 | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` | 33 | `NOTE` | ❌ | // NOTE: GET /schedules, GET /schedules/{id}, POST /schedules, POST /schedules/{id}/enable, |
 | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` | 116 | `NOTE` | ❌ | // NOTE: POST /schedules/{id}/enable and POST /schedules/{id}/disable are registered |
 | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataProviders.cs` | 136 | `NOTE` | ❌ | Note: note, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementCaseworkAuthority.cs` | 110 | `NOTE` | ❌ | Note: request.ResolutionNote, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementCaseworkAuthority.cs` | 113 | `NOTE` | ❌ | Note: request.ResolutionNote, |
 | `src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs` | 103 | `NOTE` | ❌ | Note: request.Note.Trim(), |
 | `src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs` | 819 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note) ?? $"Scheduled delivery for {normalizedTemplateId}.", |
 | `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2044 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
