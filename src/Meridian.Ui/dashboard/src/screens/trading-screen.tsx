@@ -1,4 +1,4 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, OctagonX, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -74,6 +74,7 @@ import {
   type TradingWorkflowCommandState,
   type TradingConfirmViewModel
 } from "@/screens/trading-screen.view-model";
+import { ExecutionControlsHeader } from "@/screens/trading-screen.execution-controls-header";
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
@@ -686,47 +687,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               />
             </div>
             <div className="mt-3 rounded-xl border border-border/70 bg-background/80 p-4">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                  {executionEvidence.controlsPanel?.title ?? "Execution controls snapshot"}
-                </p>
-                <div className="panel-action-zone">
-                  {executionEvidence.controlsPanel && (
-                    <Button
-                      size="sm"
-                      variant={executionEvidence.controlsPanel.breakerAction.kind === "open-circuit-breaker" ? "destructive" : "outline"}
-                      onClick={() => confirmVm.openConfirm(executionEvidence.controlsPanel!.breakerAction)}
-                      disabled={executionEvidence.controlsPanel.breakerActionDisabled}
-                      disabledReason={executionEvidence.controlsPanel.breakerActionDisabledReason}
-                      aria-label={executionEvidence.controlsPanel.breakerActionAriaLabel}
-                      title={executionEvidence.controlsPanel.breakerActionAriaLabel}
-                    >
-                      <OctagonX className="mr-2 h-4 w-4" />
-                      {executionEvidence.controlsPanel.breakerActionLabel}
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => { void executionEvidence.refresh(); }}
-                    disabled={executionEvidence.refreshDisabled}
-                    disabledReason={executionEvidence.refreshDisabledReason}
-                    busy={executionEvidence.loading}
-                    busyLabel={executionEvidence.refreshBusyLabel}
-                    aria-label={executionEvidence.refreshAriaLabel}
-                  >
-                    {executionEvidence.refreshButtonLabel}
-                  </Button>
-                  <span
-                    className={cn(
-                      "text-xs font-semibold uppercase tracking-[0.14em]",
-                      executionEvidence.controlsPanel?.statusTone === "danger" ? "text-danger" : "text-success"
-                    )}
-                  >
-                    {executionEvidence.controlsPanel?.statusLabel ?? "Snapshot unavailable"}
-                  </span>
-                </div>
-              </div>
+              <ExecutionControlsHeader
+                executionEvidence={executionEvidence}
+                onConfirm={confirmVm.openConfirm}
+              />
               <span className="sr-only" aria-live="polite">{executionEvidence.statusAnnouncement}</span>
               {executionEvidence.errorText && (
                 <p role="alert" className="mb-2 rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs text-warning">
