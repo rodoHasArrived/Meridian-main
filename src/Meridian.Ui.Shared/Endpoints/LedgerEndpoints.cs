@@ -47,7 +47,9 @@ public static partial class LedgerEndpoints
             var books = await service
                 .ListBooksAsync(new LedgerBookQuery(fundProfileId, fundStructureNodeId, AccountingBasis: accountingBasis), context.RequestAborted)
                 .ConfigureAwait(false);
-            return Results.Json(books, jsonOptions);
+            // Served in the canonical order rather than the store's: the first book is the scope a
+            // freshly opened surface takes. LedgerBookOrdering says why clients cannot re-derive it.
+            return Results.Json(LedgerBookOrdering.Sort(books), jsonOptions);
         })
         .WithName("ListLedgerBooks").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)

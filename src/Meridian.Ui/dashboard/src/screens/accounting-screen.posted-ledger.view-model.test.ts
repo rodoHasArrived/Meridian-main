@@ -8,7 +8,6 @@ import {
   resolveDefaultPostedLedgerPeriodId,
   resolvePostedEntryDimensions,
   resolvePostedEntryEntityId,
-  sortLedgerBooks,
   sortLedgerPeriodsDescending,
   toLedgerJournalLine,
   toTrialBalanceLine,
@@ -173,65 +172,6 @@ function makePostedEntry(overrides: Partial<LedgerPostedJournalEntry> = {}): Led
   };
 }
 
-describe("sortLedgerBooks", () => {
-  it("orders by display name with a stable id tie-break, matching the desktop projection", () => {
-    // Taking the store's own order meant the browser default followed
-    // `fund_profile_id, display_name, ledger_book_id` while the desktop followed display name
-    // alone, so the two co-equal views of the same ledger opened on different books.
-    const sorted = sortLedgerBooks([
-      makeBook({ ledgerBookId: "book-z", displayName: "Zeta Fund" }),
-      makeBook({ ledgerBookId: "book-b", displayName: "Alpha Fund" }),
-      makeBook({ ledgerBookId: "book-a", displayName: "Alpha Fund" })
-    ]);
-
-    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-a", "book-b", "book-z"]);
-  });
-
-  it("collates ordinally, not by the operator's locale", () => {
-    // localeCompare collates by locale, so an accented name can order differently in the browser
-    // than under the desktop's StringComparer.OrdinalIgnoreCase -- and differently for two
-    // operators. That would reintroduce a locale-dependent default book.
-    const sorted = sortLedgerBooks([
-      makeBook({ ledgerBookId: "book-z", displayName: "Zulu Fund" }),
-      makeBook({ ledgerBookId: "book-a", displayName: "\u00C1lpha Fund" })
-    ]);
-
-    // "Á" (U+00C1) sorts after "Z" (U+005A) ordinally, whereas most locales collate it with "A".
-    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-z", "book-a"]);
-  });
-
-  it("folds case one-to-one, without full Unicode expansion", () => {
-    // toUpperCase() applies full case mapping: "ß" becomes "SS", which would tie a book named
-    // "ß Fund" with one named "SS Fund" and drop the browser to the id tie-break while the desktop
-    // still separates them by name. char.ToUpperInvariant leaves a code unit with no
-    // single-character uppercase alone, and so does this.
-    const sorted = sortLedgerBooks([
-      makeBook({ ledgerBookId: "book-sharp", displayName: "\u00DF Fund" }),
-      makeBook({ ledgerBookId: "book-ss", displayName: "SS Fund" })
-    ]);
-
-    // "ß" (U+00DF) sorts after "S" (U+0053), so the two names stay distinct and ordered by name.
-    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-ss", "book-sharp"]);
-  });
-
-  it("ignores case, as the desktop comparator does", () => {
-    const sorted = sortLedgerBooks([
-      makeBook({ ledgerBookId: "book-b", displayName: "beta Fund" }),
-      makeBook({ ledgerBookId: "book-a", displayName: "Alpha Fund" })
-    ]);
-
-    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-a", "book-b"]);
-  });
-
-  it("falls back to the id for a book with no display name", () => {
-    const sorted = sortLedgerBooks([
-      makeBook({ ledgerBookId: "zzz", displayName: "   " }),
-      makeBook({ ledgerBookId: "book-m", displayName: "Master Fund" })
-    ]);
-
-    expect(sorted.map((book) => book.ledgerBookId)).toEqual(["book-m", "zzz"]);
-  });
-});
 
 describe("resolvePostedEntryDimensions", () => {
   it("reports the shared scope when every line was posted to it", () => {
@@ -727,6 +667,34 @@ describe("useAccountingPostedLedgerViewModel", () => {
     });
     await waitFor(() => {
       expect(result.current.view.selectedBookLabel).toBe("Feeder Fund");
+    });
+  });
+
+  it("scopes to the first book the API served, without reordering them", async () => {
+    // The order decides the default book, and it is decided on the server (LedgerBookOrdering)
+    // because neither StringComparer.OrdinalIgnoreCase nor Guid order can be reproduced here:
+    // JavaScript has no simple-uppercase mapping, its case data is a different Unicode version
+    // from the runtime's, and Guid orders by .NET's byte groups rather than by the textual form.
+    // Re-sorting the response by any client-side rule is what made the two workstations open the
+    // same governed ledger on different books.
+    const services = makeServices({
+      getBooks: vi.fn().mockResolvedValue([
+        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Zulu Feeder Fund" }),
+        makeBook({ displayName: "Alpha Master Fund" })
+      ])
+    });
+    const { result } = renderHook(() => useAccountingPostedLedgerViewModel("ledger", services));
+
+    await waitFor(() => {
+      expect(services.getPeriods).toHaveBeenCalled();
+    });
+
+    // Served first though it sorts last by name, so any client-side re-sort would pick the other.
+    expect(services.getPeriods).toHaveBeenCalledWith({
+      ledgerBookId: "00000000-0000-0000-0000-0000000000cc"
+    });
+    await waitFor(() => {
+      expect(result.current.view.selectedBookLabel).toBe("Zulu Feeder Fund");
     });
   });
 
