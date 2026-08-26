@@ -6265,7 +6265,8 @@ Meridian-main
 │   │   │   │   │   │   ├── reporting-runs.api.test.ts
 │   │   │   │   │   │   ├── reporting-runs.api.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.test.ts
-│   │   │   │   │   │   └── security-master-workbench.api.ts
+│   │   │   │   │   │   ├── security-master-workbench.api.ts
+│   │   │   │   │   │   └── statement-run-detail.api.ts
 │   │   │   │   │   ├── companion-pane
 │   │   │   │   │   │   ├── chrome-bridge.test.ts
 │   │   │   │   │   │   ├── chrome-bridge.ts
@@ -6442,6 +6443,10 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.security-master-detail-panels.tsx
 │   │   │   │   │   ├── accounting-screen.security-master-panels.tsx
 │   │   │   │   │   ├── accounting-screen.security-master-presenters.ts
+│   │   │   │   │   ├── accounting-screen.statement-run-detail.test.tsx
+│   │   │   │   │   ├── accounting-screen.statement-run-detail.tsx
+│   │   │   │   │   ├── accounting-screen.statement-run-detail.view-model.test.ts
+│   │   │   │   │   ├── accounting-screen.statement-run-detail.view-model.ts
 │   │   │   │   │   ├── accounting-screen.styles.ts
 │   │   │   │   │   ├── accounting-screen.task-mode-view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.task-mode-view-model.ts
@@ -6729,6 +6734,7 @@ Meridian-main
 │   │   │   │   │   ├── provider-accounting.ts
 │   │   │   │   │   ├── provider-setup.ts
 │   │   │   │   │   ├── reporting-governance.ts
+│   │   │   │   │   ├── statement-run-detail.types.ts
 │   │   │   │   │   ├── workstation-1.ts
 │   │   │   │   │   ├── workstation-2.ts
 │   │   │   │   │   ├── workstation-3.ts

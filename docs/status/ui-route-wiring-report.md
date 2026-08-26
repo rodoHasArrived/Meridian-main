@@ -13,16 +13,22 @@ declares the path and nothing else mentions it. `unwired` means no dashboard mod
 references it at all. Comments are stripped before scanning, so a route named in a doc
 comment is not mistaken for a call.
 
+A route is *excluded by design* when it is not the browser's to call: probes and
+webhooks, `410 Gone` tombstones, desktop handoffs, and superseded contracts a file
+deliberately keeps mapped behind a `#pragma warning disable CS0618` suppression, whose
+canonical replacement is mapped over the same service. Each exclusion is listed with
+its reason rather than dropped.
+
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | Mapped backend routes (path + verb) | 1153 |
-| Wired — called by a dashboard module | 486 |
+| Wired — called by a dashboard module | 489 |
 | Registry-only — declared in the endpoint registry, no caller | 92 |
-| Unwired — no dashboard reference at all | 575 |
-| Actionable (unwired or registry-only, not excluded by design) | 619 |
-| Excluded by design (probes, webhooks, tombstones, desktop-only) | 48 |
+| Unwired — no dashboard reference at all | 572 |
+| Actionable (unwired or registry-only, not excluded by design) | 612 |
+| Excluded by design (probes, webhooks, tombstones, desktop-only) | 52 |
 
 ## Actionable routes
 
@@ -562,19 +568,6 @@ comment is not mistaken for a call.
 | POST | `/api/security-master/money-market-funds/{securityId:guid}/rebuild` | unwired | — |
 | GET | `/api/security-master/money-market-funds/{securityId:guid}/sweep-profile` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementReconciliationReport.cs` (8)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| POST | `/api/workstation/reconciliation/statement-reconciliation-report` | unwired | — |
-| GET | `/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}` | unwired | — |
-| GET | `/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/artifacts/{artifactId}` | unwired | — |
-| POST | `/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/resume` | unwired | — |
-| POST | `/api/workstation/reconciliation/statement-to-report` | unwired | — |
-| GET | `/api/workstation/reconciliation/statement-to-report/{workflowId}` | unwired | — |
-| GET | `/api/workstation/reconciliation/statement-to-report/{workflowId}/artifacts/{artifactId}` | unwired | — |
-| POST | `/api/workstation/reconciliation/statement-to-report/{workflowId}/resume` | unwired | — |
-
 ### `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` (7)
 
 | Method | Route | State | Notes |
@@ -667,17 +660,6 @@ comment is not mistaken for a call.
 | GET | `/api/events/stream` | unwired | — |
 | GET | `/api/providers/latency` | registry-only | — |
 | GET | `/health/detailed` | unwired | — |
-
-### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs` (6)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| GET | `/api/workstation/reconciliation/cases` | unwired | called by WPF |
-| GET | `/api/workstation/reconciliation/queue-status` | unwired | called by WPF |
-| GET | `/api/workstation/reconciliation/statement-breaks` | unwired | called by WPF |
-| GET | `/api/workstation/reconciliation/statement-runs/{runId}/breaks` | unwired | — |
-| POST | `/api/workstation/reconciliation/statement-runs/{runId}/reconcile` | unwired | — |
-| GET | `/api/workstation/reconciliation/statement-runs/{runId}/validation` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs` (5)
 
@@ -811,6 +793,15 @@ comment is not mistaken for a call.
 | GET | `/api/sampling/saved` | unwired | — |
 | GET | `/api/sampling/{sampleId}` | unwired | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementReconciliationReport.cs` (4)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/workstation/reconciliation/statement-reconciliation-report` | unwired | — |
+| GET | `/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}` | unwired | — |
+| GET | `/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/artifacts/{artifactId}` | unwired | — |
+| POST | `/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/resume` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs` (3)
 
 | Method | Route | State | Notes |
@@ -938,6 +929,14 @@ comment is not mistaken for a call.
 | GET | `/api/workstation/family-office/balance-sheet` | unwired | — |
 | GET | `/api/workstation/family-office/entities` | unwired | — |
 | GET | `/api/workstation/family-office/ownership-graph` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs` (3)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/workstation/reconciliation/cases` | unwired | called by WPF |
+| GET | `/api/workstation/reconciliation/queue-status` | unwired | called by WPF |
+| GET | `/api/workstation/reconciliation/statement-breaks` | unwired | called by WPF |
 
 ### `src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs` (2)
 
@@ -1133,6 +1132,10 @@ comment is not mistaken for a call.
 | GET | `/api/v1/risk/rules/{ruleName}/config` | Versioned alias of an /api route the workstation already calls. |
 | PUT | `/api/v1/risk/rules/{ruleName}/config` | Versioned alias of an /api route the workstation already calls. |
 | GET | `/api/v1/risk/rules/{ruleName}/status` | Versioned alias of an /api route the workstation already calls. |
+| POST | `/api/workstation/reconciliation/statement-to-report` | Superseded contract retained behind a CS0618 suppression: Endpoint metadata intentionally retains the pre-rename contract. |
+| GET | `/api/workstation/reconciliation/statement-to-report/{workflowId}` | Superseded contract retained behind a CS0618 suppression: Endpoint metadata intentionally retains the pre-rename contract. |
+| GET | `/api/workstation/reconciliation/statement-to-report/{workflowId}/artifacts/{artifactId}` | Superseded contract retained behind a CS0618 suppression: Endpoint metadata intentionally retains the pre-rename contract. |
+| POST | `/api/workstation/reconciliation/statement-to-report/{workflowId}/resume` | Superseded contract retained behind a CS0618 suppression: Endpoint metadata intentionally retains the pre-rename contract. |
 | POST | `/hooks/reporting/distribution/{transportId}/deliveries/{jobId}/receipts` | Inbound provider callback authenticated by signature, never called by a browser. |
 | GET | `/workstation/evidence/vault/{vaultId}` | Static workstation asset route served by the host. |
 | GET | `/workstation/evidence/{subjectKind}/{subjectId}/{fileName}` | Static workstation asset route served by the host. |

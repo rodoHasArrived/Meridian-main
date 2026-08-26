@@ -76,7 +76,10 @@ import {
   reconciliationBreakTransitionEndpoint,
   reconciliationBreakWaiveEndpoint,
   reconciliationRunEndpoint,
+  reconciliationStatementRunBreaksEndpoint,
   reconciliationStatementRunEndpoint,
+  reconciliationStatementRunReconcileEndpoint,
+  reconciliationStatementRunValidationEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
   securityMasterAssetProfileApproveEndpoint,
@@ -702,6 +705,15 @@ describe("workstation API endpoint catalog", () => {
     expect(reconciliationRunEndpoint("recon / 1")).toBe("/api/workstation/reconciliation/runs/recon%20%2F%201");
     expect(reconciliationStatementRunEndpoint("statement / 1")).toBe(
       "/api/workstation/reconciliation/statement-runs/statement%20%2F%201"
+    );
+    expect(reconciliationStatementRunValidationEndpoint("statement / 1")).toBe(
+      "/api/workstation/reconciliation/statement-runs/statement%20%2F%201/validation"
+    );
+    expect(reconciliationStatementRunBreaksEndpoint("statement / 1")).toBe(
+      "/api/workstation/reconciliation/statement-runs/statement%20%2F%201/breaks"
+    );
+    expect(reconciliationStatementRunReconcileEndpoint("statement / 1")).toBe(
+      "/api/workstation/reconciliation/statement-runs/statement%20%2F%201/reconcile"
     );
     expect(reconciliationBreakQueueEndpoint({ status: "Open", fundAccountId: "fund / 1" })).toBe(
       "/api/workstation/reconciliation/break-queue?status=Open&fundAccountId=fund+%2F+1"

@@ -63,6 +63,7 @@ STANDALONE_MODULES = {
     "family-office.types",
     "execution-blotter.types",
     "banking-payments.types",
+    "statement-run-detail.types",
 }
 
 # A trailing `// note` is allowed: without it the whole entry failed to match, so the module

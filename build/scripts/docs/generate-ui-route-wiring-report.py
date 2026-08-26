@@ -159,6 +159,33 @@ MAP_CALL_RE = re.compile(
     r"(?:(\w+)\s*\.\s*)?Map(" + "|".join(HTTP_VERBS) + r")\s*\(\s*(?:\[[^\]]*\]\s*)?"
     r"((?:[^,()]|\([^()]*\))*)")
 ROOT_BUILDER_NAMES = {"app", "builder", "endpoints", "routes"}
+OBSOLETE_PRAGMA_RE = re.compile(
+    r"#pragma\s+warning\s+(disable|restore)\s+CS0618[^\S\n]*(?://\s*(?P<note>.*))?")
+
+
+def obsolete_spans(source: str) -> list[tuple[int, int, str]]:
+    """Find regions where a file suppresses CS0618 (\"member is obsolete\").
+
+    A route mapped inside one is deliberately serving a superseded contract:
+    the canonical route is mapped outside the region over the same service, and
+    the alias only exists so retained links stay recoverable. Such a route is
+    not a gap in the UI, so it is reported with the suppression's own note
+    rather than counted as work to do.
+    """
+    spans: list[tuple[int, int, str]] = []
+    open_at: Optional[tuple[int, str]] = None
+    for match in OBSOLETE_PRAGMA_RE.finditer(source):
+        if match.group(1) == "disable":
+            if open_at is None:
+                open_at = (match.start(), (match.group("note") or "").strip())
+        elif open_at is not None:
+            spans.append((open_at[0], match.end(), open_at[1]))
+            open_at = None
+    if open_at is not None:
+        spans.append((open_at[0], len(source), open_at[1]))
+    return spans
+
+
 ABSOLUTE_MARKER = "\0ABS"
 
 
@@ -357,6 +384,7 @@ def collect_backend_routes(constants: dict[str, str]) -> tuple[list[dict], list[
     routes: dict[tuple[str, str], dict] = {}
     unresolved: list[dict] = []
     for entry in files:
+        suppressions = obsolete_spans(entry["source"])
         for match in MAP_CALL_RE.finditer(entry["source"]):
             variable, verb, route_expression = match.groups()
             resolved = resolve_route_expression(route_expression, constants)
@@ -389,12 +417,19 @@ def collect_backend_routes(constants: dict[str, str]) -> tuple[list[dict], list[
                     "method": verb.upper(),
                     "files": set(),
                     "constant": constant.group(1) if constant else None,
+                    "obsolete_reason": None,
                 })
                 route["files"].add(entry["path"])
+                note = next((n for start, end, n in suppressions if start <= match.start() <= end), None)
+                if note is not None and route["obsolete_reason"] is None:
+                    route["obsolete_reason"] = (
+                        f"Superseded contract retained behind a CS0618 suppression: {note}"
+                        if note else "Superseded contract retained behind a CS0618 suppression.")
 
     inventory = [
         {"path": route["path"], "method": route["method"],
-         "constant": route["constant"], "files": sorted(route["files"])}
+         "constant": route["constant"], "files": sorted(route["files"]),
+         "obsolete_reason": route["obsolete_reason"]}
         for route in routes.values()
     ]
     inventory.sort(key=lambda item: (item["path"], item["method"]))
@@ -761,7 +796,7 @@ def classify(inventory: Sequence[dict], called_by_app: set[str], called_by_regis
         classified.append({
             **route,
             "state": state,
-            "excluded_reason": excluded_reason(route["path"]),
+            "excluded_reason": excluded_reason(route["path"]) or route.get("obsolete_reason"),
             "test_only_reference": state != "wired" and route_is_called(key, called_by_tests, test_index),
             "called_by_wpf": route_is_called(key, called_by_wpf, wpf_index),
         })
@@ -793,6 +828,12 @@ def render_markdown(classified: Sequence[dict], unresolved: Sequence[dict],
         "declares the path and nothing else mentions it. `unwired` means no dashboard module",
         "references it at all. Comments are stripped before scanning, so a route named in a doc",
         "comment is not mistaken for a call.",
+        "",
+        "A route is *excluded by design* when it is not the browser's to call: probes and",
+        "webhooks, `410 Gone` tombstones, desktop handoffs, and superseded contracts a file",
+        "deliberately keeps mapped behind a `#pragma warning disable CS0618` suppression, whose",
+        "canonical replacement is mapped over the same service. Each exclusion is listed with",
+        "its reason rather than dropped.",
         "",
         "## Summary",
         "",

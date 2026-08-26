@@ -69,6 +69,7 @@ import {
   reconciliationQueueColumns,
 } from "@/screens/accounting-screen.operations-panels";
 import { BankingPaymentApprovalsPanel } from "@/screens/accounting-screen.payment-approvals";
+import { StatementRunDetailTabs } from "@/screens/accounting-screen.statement-run-detail";
 import {
   ChartAccountPathBuilder,
   ConfigureActivationRail,
@@ -2728,28 +2729,12 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                 ariaLabel={reconciliation.statementRunsView.tableLabel}
                 caption={reconciliation.statementRunsView.tableCaption}
               />
-              <Tabs
-                id={reconciliation.statementRunsView.detailPanelId}
-                aria-label="Statement run detail tabs"
-                tabs={reconciliation.statementRunsView.tabs.map((tab) => ({
-                  ariaLabel: tab.ariaLabel,
-                  count: tab.badgeLabel,
-                  disabled: tab.disabled,
-                  id: tab.id,
-                  label: tab.label
-                }))}
-              >
-                {reconciliation.statementRunsView.tabs.map((tab) => (
-                  <TabPanel key={tab.id}>
-                    <StatusBanner
-                      role={tab.disabled ? "status" : undefined}
-                      tone={tab.disabled ? "warning" : "info"}
-                      title={tab.label}
-                      detail={tab.disabledReason ?? tab.description}
-                    />
-                  </TabPanel>
-                ))}
-              </Tabs>
+              <StatementRunDetailTabs
+                panelId={reconciliation.statementRunsView.detailPanelId}
+                runId={reconciliation.selectedRunId}
+                tabs={reconciliation.statementRunsView.tabs}
+                onRunReconciled={() => void reconciliation.refreshStatementRuns()}
+              />
               <p className="text-xs text-muted-foreground">
                 Matching, tolerance, validation, and case-state decisions remain in reconciliation services; this view shows service-reviewed results.
               </p>

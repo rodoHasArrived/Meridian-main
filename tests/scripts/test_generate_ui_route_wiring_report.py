@@ -134,5 +134,54 @@ class ExclusionTests(unittest.TestCase):
         self.assertIsNone(wiring.excluded_reason("/api/maintenance/status"))
 
 
+class ObsoleteSuppressionTests(unittest.TestCase):
+    def test_a_suppressed_region_is_bounded_by_its_restore(self) -> None:
+        source = (
+            "before\n"
+            "#pragma warning disable CS0618 // retained pre-rename contract.\n"
+            "inside\n"
+            "#pragma warning restore CS0618\n"
+            "after\n"
+        )
+        spans = wiring.obsolete_spans(source)
+
+        self.assertEqual(1, len(spans))
+        start, end, note = spans[0]
+        self.assertEqual("retained pre-rename contract.", note)
+        self.assertLess(start, source.index("inside"))
+        self.assertGreater(end, source.index("inside"))
+        self.assertLess(end, source.index("after"))
+
+    def test_an_unrestored_suppression_runs_to_the_end_of_the_file(self) -> None:
+        spans = wiring.obsolete_spans("#pragma warning disable CS0618\ntail\n")
+
+        self.assertEqual(1, len(spans))
+        self.assertEqual("", spans[0][2])
+
+    def test_a_file_without_the_pragma_reports_no_span(self) -> None:
+        self.assertEqual([], wiring.obsolete_spans("#pragma warning disable CS8618\nunrelated\n"))
+
+    def test_the_retained_statement_to_report_aliases_carry_a_reason(self) -> None:
+        # Both names are mapped over one service; the browser calls the canonical
+        # one, so the alias is not an unwired surface.
+        inventory, _ = wiring.collect_backend_routes(wiring.load_route_constants())
+        by_path = {(route["path"], route["method"]): route for route in inventory}
+
+        alias = by_path[("/api/workstation/reconciliation/statement-to-report", "POST")]
+        canonical = by_path[("/api/workstation/reconciliation/statement-reconciliation-report", "POST")]
+
+        self.assertIsNotNone(alias["obsolete_reason"])
+        self.assertIsNone(canonical["obsolete_reason"])
+
+    def test_the_suppression_does_not_leak_past_its_region(self) -> None:
+        inventory, _ = wiring.collect_backend_routes(wiring.load_route_constants())
+        suppressed = [route["path"] for route in inventory if route["obsolete_reason"]]
+
+        self.assertTrue(suppressed)
+        self.assertTrue(
+            all("/statement-to-report" in path for path in suppressed),
+            suppressed)
+
+
 if __name__ == "__main__":
     unittest.main()

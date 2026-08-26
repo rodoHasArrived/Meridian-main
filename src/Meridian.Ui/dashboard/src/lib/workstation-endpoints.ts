@@ -1625,6 +1625,18 @@ export function reconciliationStatementRunEndpoint(runId: string): string {
   return routeWithParam(UI_API_ROUTES.ReconciliationStatementRunById, "runId", runId);
 }
 
+export function reconciliationStatementRunValidationEndpoint(runId: string): string {
+  return routeWithParam(UI_API_ROUTES.ReconciliationStatementRunValidation, "runId", runId);
+}
+
+export function reconciliationStatementRunBreaksEndpoint(runId: string): string {
+  return routeWithParam(UI_API_ROUTES.ReconciliationStatementRunBreaks, "runId", runId);
+}
+
+export function reconciliationStatementRunReconcileEndpoint(runId: string): string {
+  return routeWithParam(UI_API_ROUTES.ReconciliationStatementRunReconcile, "runId", runId);
+}
+
 export function reconciliationStatementExceptionsEndpoint(): string {
   return RECONCILIATION_API_ENDPOINTS.statementExceptions;
 }
