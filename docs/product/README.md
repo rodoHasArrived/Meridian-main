@@ -57,7 +57,10 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     review itself qualifies as an estimate with error in both directions, not a settled count. The
     denominator is itself imperfect: at least two catalog constants are registered by no server
     route and reach the browser through the generated mirror, and the review states plainly that
-    the scale of that class is unmeasured
+    the scale of that class is unmeasured. **Completeness caveat:** the 41-round adversarial loop
+    behind this document stopped when the reviewer hit a usage limit, not on convergence — the last
+    three rounds produced two new codebase defects and two self-inflicted contradictions — so every
+    claim in it has been checked but the set of claims is not exhausted
   - [Adversarial Program Review (2026-08-24)](adversarial-program-review-2026-08-24.md) —
     independent whole-program adverse review; re-tests every headline finding of the 2026-08-18
     pass against the 218 commits landed since, verifies the three built-but-dead flagship fixes

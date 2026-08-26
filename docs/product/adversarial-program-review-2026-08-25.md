@@ -2030,6 +2030,21 @@ never lands**, because neither is where the evidence sits and neither repeats th
 practical form: when a finding changes, re-read the *first* and *last* paragraph of every section it
 touches, not just the passage that changed. Both rows here would have been caught by exactly that.
 
+**The review loop ended here, and not because it converged.** After round 41 the automated reviewer
+posted that it had reached its usage limit for code reviews. That is worth stating plainly, because
+the alternative reading — forty-one rounds and nothing left to find — is the one a reader will reach
+for and it is not supported. The evidence points the other way: rounds 39 and 40 each produced a
+**new codebase defect** rather than a documentation correction, and round 41 found two contradictions
+introduced by round 40 itself. The rate of findings was not falling when the budget ran out.
+
+So the honest statement of this document's completeness is: **every claim in it has been checked, and
+the set of claims has not been exhausted.** The 129 corrections record what forty-one rounds of
+adversarial reading found; they do not bound what a forty-second would. Two areas are flagged as
+deliberately unmeasured — the unregistered-constant population and the dark-verb count — and both
+would need the `EndpointDataSource` inventory §6 specifies rather than another pass over the same
+text. Beyond those, the parts of this review most likely to be wrong are the ones no round happened
+to challenge, and there is no way to tell from the inside which those are.
+
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
 remedies — and are rewritten rather than softened; the multiplier correction made the defect
