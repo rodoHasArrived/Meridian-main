@@ -251,4 +251,42 @@ public sealed class StrategyRunRealismHashTests
         a.ToRealismDescriptor().ToCanonicalString()
             .Should().NotBe(b.ToRealismDescriptor().ToCanonicalString());
     }
+
+    // ── Default brokerage account routing ────────────────────────────────────
+
+    [Fact]
+    public void DefaultBrokerageAccount_ChangesTheRealismHash()
+    {
+        // With multiple accounts, the engine routes every order that names no account to the
+        // default brokerage account, changing cash, financing, and potentially P&L. The account
+        // list itself is identical here — only the routing default differs — so without the
+        // dedicated field these two materially different runs would share one identity.
+        IReadOnlyList<FinancialAccount> accounts =
+        [
+            new("brokerage-a", "Brokerage A", FinancialAccountKind.Brokerage, InitialCash: 50_000m),
+            new("brokerage-b", "Brokerage B", FinancialAccountKind.Brokerage, InitialCash: 50_000m)
+        ];
+        var routedToA = new BacktestRequest(
+            new DateOnly(2024, 1, 1), new DateOnly(2024, 6, 30),
+            Accounts: accounts, DefaultBrokerageAccountId: "brokerage-a");
+        var routedToB = routedToA with { DefaultBrokerageAccountId = "brokerage-b" };
+
+        routedToA.ToRealismDescriptor().ToCanonicalString()
+            .Should().NotBe(routedToB.ToRealismDescriptor().ToCanonicalString());
+    }
+
+    [Fact]
+    public void DefaultBrokerageAccount_AbsentFromDescriptorsPersistedBeforeTheFieldExisted()
+    {
+        // Descriptors stored before the field existed deserialize with a null default account and
+        // must recompute their original canonical form, or the durable store would reject every
+        // lifecycle update on a previously recorded run. Only the null case may omit the field.
+        var legacy = Realism() with { DefaultBrokerageAccountId = null };
+        var current = Realism() with { DefaultBrokerageAccountId = "brokerage:default" };
+
+        legacy.ToCanonicalString().Should().NotContain(nameof(ExecutionRealismDescriptor.DefaultBrokerageAccountId));
+        current.ToCanonicalString().Should().Contain(
+            $"{nameof(ExecutionRealismDescriptor.DefaultBrokerageAccountId)}=brokerage:default");
+        legacy.ToCanonicalString().Should().NotBe(current.ToCanonicalString());
+    }
 }
