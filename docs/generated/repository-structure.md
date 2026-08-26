@@ -2267,7 +2267,6 @@ Meridian-main
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
-│   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
 │   │   ├── workflow-drift-report.md
 │   │   ├── workflow-manifest.json
