@@ -1207,7 +1207,8 @@ public sealed class StrategyRunStore : IStrategyRepository
                 StrategyRunLifecycleEventType.Started or
                 StrategyRunLifecycleEventType.StartFailed or
                 StrategyRunLifecycleEventType.Cancelled or
-                StrategyRunLifecycleEventType.EvidencePersistenceFailed,
+                StrategyRunLifecycleEventType.EvidencePersistenceFailed or
+                StrategyRunLifecycleEventType.ActivationDeferred,
             StrategyRunLifecycleEventType.Started => current is
                 StrategyRunLifecycleEventType.StartFailed or
                 StrategyRunLifecycleEventType.PauseRequested or
@@ -1217,7 +1218,8 @@ public sealed class StrategyRunStore : IStrategyRepository
                 StrategyRunLifecycleEventType.Completed or
                 StrategyRunLifecycleEventType.Failed or
                 StrategyRunLifecycleEventType.Cancelled or
-                StrategyRunLifecycleEventType.RecoveryAttempted,
+                StrategyRunLifecycleEventType.RecoveryAttempted or
+                StrategyRunLifecycleEventType.ActivationDeferred,
             StrategyRunLifecycleEventType.Paused => current is
                 StrategyRunLifecycleEventType.PauseRequested or
                 StrategyRunLifecycleEventType.PauseFailed or
@@ -1266,6 +1268,19 @@ public sealed class StrategyRunStore : IStrategyRepository
             StrategyRunLifecycleEventType.Cancelled =>
                 current == StrategyRunLifecycleEventType.RecoveryAttempted,
             StrategyRunLifecycleEventType.RecoveryAttempted => false,
+
+            // A deferred run is retained intact and re-attempted -- the engine's startup resume
+            // sweep retries every open run -- so it must be able to reach Started when a live
+            // strategy source finally resolves it, and to defer again meanwhile. Without the
+            // self-transition every restart would reject the re-deferral of a run that is still
+            // waiting for the same missing source (#2726).
+            StrategyRunLifecycleEventType.ActivationDeferred => current is
+                StrategyRunLifecycleEventType.Started or
+                StrategyRunLifecycleEventType.ActivationDeferred or
+                StrategyRunLifecycleEventType.StartFailed or
+                StrategyRunLifecycleEventType.Failed or
+                StrategyRunLifecycleEventType.Cancelled or
+                StrategyRunLifecycleEventType.RecoveryAttempted,
             _ => false
         };
     }

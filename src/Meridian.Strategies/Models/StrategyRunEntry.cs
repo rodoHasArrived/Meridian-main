@@ -466,6 +466,30 @@ public sealed record StrategyRunEntry(
         };
     }
 
+    /// <summary>
+    /// Records that a promoted run was retained but not activated by the live engine.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately not <see cref="StartFailed"/>: nothing failed and nothing is lost. The run stays
+    /// intact and activates on a later attempt if the condition that blocked it changes — a live
+    /// strategy source registered for it, live runs enabled on the host, brokerage routing turned on.
+    /// Before this existed the deferral reached only an execution-audit row and a log line, neither
+    /// of which an operator reads, so a promoted run could sit forever looking promoted and never
+    /// run (#2726).
+    /// </remarks>
+    public StrategyRunEntry ActivationDeferred(string reason, string actorId = "system")
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        var now = DateTimeOffset.UtcNow;
+        return this with
+        {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.ActivationDeferred,
+            LifecycleEventAtUtc = now,
+            ActorId = actorId,
+            Reason = reason
+        };
+    }
+
     public StrategyRunEntry EvidencePersistenceFailed(
         Exception exception,
         string reason,

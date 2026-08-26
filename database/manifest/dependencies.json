@@ -30093,6 +30093,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.DailyValuationBatchLifecycleRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.DailyValuationScheduleStatusDto",
       "target": "contract:Meridian.Contracts.Workstation.DailyValuationScheduleStateDto"
     },
@@ -42763,7 +42769,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "228781bc77d30e8f34596701d5a0d9e952ad67d3795d7065ae5490bdafda8fae",
+  "fingerprint": "bf577aac1a1738361670ec1c3e29fe7e37cb2630093dcce28e4c287bb9cd5eb9",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -62392,9 +62398,9 @@
     }
   ],
   "summary": {
-    "contract_references": 2933,
+    "contract_references": 2934,
     "contract_set_memberships": 3363,
-    "edges": 7108,
+    "edges": 7109,
     "foreign_keys": 98,
     "logical_references": 6,
     "nodes": 3380
