@@ -236,7 +236,10 @@ public static class DataQualityEndpoints
             guard.HandleSync(() => Json(qualityService.SequenceTracker.GetStatistics()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityErrorsTopSymbols, (int? count) =>
-            guard.HandleSync(() => Json(qualityService.SequenceTracker.GetSymbolsWithMostErrors(count ?? 10)))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
+            guard.HandleSync(() => Json(qualityService.SequenceTracker
+                .GetSymbolsWithMostErrors(count ?? 10)
+                .Select(entry => new QualityTopErrorSymbolResponse(entry.Symbol, entry.ErrorCount))
+                .ToArray()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // ==================== ANOMALIES ====================
 
@@ -308,7 +311,10 @@ public static class DataQualityEndpoints
             guard.HandleSync(() => Json(ToResponse(qualityService.LatencyHistogram.GetStatistics())))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityLatencyHigh, (double? thresholdMs) =>
-            guard.HandleSync(() => Json(qualityService.LatencyHistogram.GetHighLatencySymbols(thresholdMs ?? 100)))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
+            guard.HandleSync(() => Json(qualityService.LatencyHistogram
+                .GetHighLatencySymbols(thresholdMs ?? 100)
+                .Select(entry => new QualityHighLatencySymbolResponse(entry.Symbol, entry.P99Ms))
+                .ToArray()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // ==================== CROSS-PROVIDER COMPARISON ====================
 

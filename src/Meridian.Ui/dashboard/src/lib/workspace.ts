@@ -142,16 +142,12 @@ export const SETTINGS_PROVIDER_SCREEN_ROUTE_PATTERNS = [
 
 /**
  * Routes whose screens have no data source wired yet — they render a permanent
- * "not connected" empty state (Family Office is mounted without an
- * entityStructure; the Formula Workbench has no formula catalog endpoint).
- * They stay routable for deep links and legacy bookmarks, but are kept out of
- * primary navigation and the command palette so operators are not steered into
- * dead ends. Remove a route from this set when its read model lands.
+ * "not connected" empty state (the Formula Workbench has no formula catalog
+ * endpoint). They stay routable for deep links and legacy bookmarks, but are kept
+ * out of primary navigation and the command palette so operators are not steered
+ * into dead ends. Remove a route from this set when its read model lands.
  */
 export const UNWIRED_WORKSTATION_ROUTES: ReadonlySet<string> = new Set<string>([
-  // FamilyOfficeScreen is mounted without an entityStructure prop, so it defaults to null and
-  // always renders the "Family office data is not connected" empty state.
-  WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice,
   // The Quant Lab formulas tab renders a hardcoded "not connected" card; the built
   // strategy-formula-workbench component has no formula-catalog endpoint behind it. Only the
   // formulas deep link is unwired — the Quant Lab route itself stays navigable.

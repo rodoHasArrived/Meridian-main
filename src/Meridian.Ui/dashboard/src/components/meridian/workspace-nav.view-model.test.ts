@@ -106,13 +106,12 @@ describe("workspace nav view model", () => {
       "/portfolio/attribution",
       "/portfolio/asset-detail",
       "/portfolio/brokerage-sync",
-      "/portfolio/cash-ladder"
+      "/portfolio/cash-ladder",
+      "/portfolio/family-office"
     ]);
-    // Family Office is in UNWIRED_WORKSTATION_ROUTES because the screen is mounted without an
-    // entityStructure and can only render "not connected". It stays routable for deep links and
-    // old bookmarks, but must not appear in primary navigation — including while the operator is
-    // standing on it, which is exactly when a nav entry would look most trustworthy.
-    expect(portfolio?.subItems.find((item) => item.route === "/portfolio/family-office")).toBeUndefined();
+    // Family Office left UNWIRED_WORKSTATION_ROUTES once the screen started loading
+    // /api/workstation/family-office/overview, so it belongs in primary navigation again.
+    expect(portfolio?.subItems.find((item) => item.route === "/portfolio/family-office")).toBeDefined();
 
     const cashLadder = buildWorkspaceNavViewModel("/portfolio/cash-ladder")
       .items.find((item) => item.key === "portfolio")

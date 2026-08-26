@@ -180,6 +180,10 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   reportingScheduleRunNow: UI_API_ROUTES.ReportingScheduleRunNow
 } as const;
 
+export const FAMILY_OFFICE_API_ENDPOINTS = {
+  overview: UI_API_ROUTES.WorkstationFamilyOfficeOverview
+} as const;
+
 export const WORKSTATION_API_ENDPOINT_TEMPLATES = {
   runLedger: UI_API_ROUTES.RunsLedger,
   runContinuity: UI_API_ROUTES.RunsContinuity,
@@ -201,8 +205,31 @@ export const EXECUTION_API_ENDPOINTS = {
   controls: UI_API_ROUTES.ExecutionControls,
   defaultPositionLimit: UI_API_ROUTES.ExecutionControlsDefaultPositionLimit,
   symbolPositionLimits: "/api/execution/controls/position-limits",
-  manualOverrides: UI_API_ROUTES.ExecutionControlsManualOverrides
+  manualOverrides: UI_API_ROUTES.ExecutionControlsManualOverrides,
+  health: "/api/execution/health",
+  account: "/api/execution/account",
+  positionsBlotter: "/api/execution/positions/blotter",
+  positionsActionUpsize: "/api/execution/positions/actions/upsize"
 } as const;
+
+export const BANKING_API_ENDPOINTS = {
+  pendingPayments: "/api/banking/payments/pending",
+  paymentApprove: "/api/banking/payments/{pendingPaymentId}/approve",
+  paymentReject: "/api/banking/payments/{pendingPaymentId}/reject",
+  transactions: "/api/banking/transactions"
+} as const;
+
+export function bankingPaymentApproveEndpoint(pendingPaymentId: string): string {
+  return routeWithParam(BANKING_API_ENDPOINTS.paymentApprove, "pendingPaymentId", pendingPaymentId);
+}
+
+export function bankingPaymentRejectEndpoint(pendingPaymentId: string): string {
+  return routeWithParam(BANKING_API_ENDPOINTS.paymentReject, "pendingPaymentId", pendingPaymentId);
+}
+
+export function bankingTransactionsEndpoint(entityId?: string): string {
+  return `${BANKING_API_ENDPOINTS.transactions}${queryString({ entityId })}`;
+}
 
 export const RISK_API_ENDPOINTS = {
   rules: "/api/risk/rules",
@@ -417,7 +444,10 @@ export const RECONCILIATION_API_ENDPOINTS = {
   statementRuns: UI_API_ROUTES.ReconciliationStatementRuns,
   statementExceptions: UI_API_ROUTES.ReconciliationStatementExceptions,
   breakQueue: UI_API_ROUTES.ReconciliationBreakQueue,
-  calibrationSummary: UI_API_ROUTES.ReconciliationCalibrationSummary
+  breakQueueTaxonomy: UI_API_ROUTES.ReconciliationCaseTaxonomy,
+  calibrationSummary: UI_API_ROUTES.ReconciliationCalibrationSummary,
+  openCases: UI_API_ROUTES.ReconciliationOpenCases,
+  queueStatus: UI_API_ROUTES.ReconciliationQueueStatus
 } as const;
 
 export const STATEMENT_CONNECTOR_API_ENDPOINTS = {
@@ -521,7 +551,16 @@ export const QUALITY_API_ENDPOINTS = {
   dashboard: UI_API_ROUTES.QualityDashboard,
   gaps: UI_API_ROUTES.QualityGaps,
   anomalies: UI_API_ROUTES.QualityAnomalies,
-  completeness: UI_API_ROUTES.QualityCompleteness
+  anomaliesStale: UI_API_ROUTES.QualityAnomaliesStale,
+  anomaliesUnacknowledged: UI_API_ROUTES.QualityAnomaliesUnacknowledged,
+  completeness: UI_API_ROUTES.QualityCompleteness,
+  completenessLow: UI_API_ROUTES.QualityCompletenessLow,
+  completenessSummary: UI_API_ROUTES.QualityCompletenessSummary,
+  errorsTopSymbols: UI_API_ROUTES.QualityErrorsTopSymbols,
+  health: UI_API_ROUTES.QualityHealth,
+  healthUnhealthy: UI_API_ROUTES.QualityHealthUnhealthy,
+  latencyHigh: UI_API_ROUTES.QualityLatencyHigh,
+  latencyStatistics: UI_API_ROUTES.QualityLatencyStatistics
 } as const;
 
 export const MARKET_DATA_API_ENDPOINTS = {
@@ -577,8 +616,32 @@ export const MAINTENANCE_API_ENDPOINTS = {
   scheduleEnable: UI_API_ROUTES.MaintenanceSchedulesEnable,
   scheduleDisable: UI_API_ROUTES.MaintenanceSchedulesDisable,
   scheduleRun: UI_API_ROUTES.MaintenanceSchedulesRun,
-  scheduleHistory: UI_API_ROUTES.MaintenanceSchedulesHistory
+  scheduleHistory: UI_API_ROUTES.MaintenanceSchedulesHistory,
+  scheduleSummary: "/api/maintenance/schedules/summary",
+  status: "/api/maintenance/status",
+  statistics: "/api/maintenance/statistics",
+  taskTypes: "/api/maintenance/task-types",
+  executions: "/api/maintenance/executions",
+  failedExecutions: "/api/maintenance/executions/failed",
+  execute: "/api/maintenance/execute",
+  executionCancel: "/api/maintenance/executions/{executionId}/cancel"
 } as const;
+
+export function maintenanceExecutionsEndpoint(limit?: number): string {
+  return `${MAINTENANCE_API_ENDPOINTS.executions}${queryString({ limit })}`;
+}
+
+export function maintenanceFailedExecutionsEndpoint(limit?: number): string {
+  return `${MAINTENANCE_API_ENDPOINTS.failedExecutions}${queryString({ limit })}`;
+}
+
+export function maintenanceStatisticsEndpoint(hours?: number): string {
+  return `${MAINTENANCE_API_ENDPOINTS.statistics}${queryString({ hours })}`;
+}
+
+export function maintenanceExecutionCancelEndpoint(executionId: string): string {
+  return routeWithParam(MAINTENANCE_API_ENDPOINTS.executionCancel, "executionId", executionId);
+}
 
 export const DIAGNOSTICS_API_ENDPOINTS = {
   quickCheck: UI_API_ROUTES.DiagnosticsQuickCheck,
@@ -1170,6 +1233,12 @@ export function executionAuditEndpoint(take = 20): string {
   return `${EXECUTION_API_ENDPOINTS.audit}${queryString({ take })}`;
 }
 
+export function executionAuditSearchEndpoint(
+  query: Record<string, string | number | undefined> = {}
+): string {
+  return `${EXECUTION_API_ENDPOINTS.audit}/search${queryString(query)}`;
+}
+
 export function executionManualOverrideClearEndpoint(overrideId: string): string {
   return routeWithParam(UI_API_ROUTES.ExecutionControlsManualOverrideClear, "overrideId", overrideId);
 }
@@ -1566,6 +1635,70 @@ export function reconciliationStatementRunsEndpoint(): string {
 
 export function reconciliationStatementRunEndpoint(runId: string): string {
   return routeWithParam(UI_API_ROUTES.ReconciliationStatementRunById, "runId", runId);
+}
+
+export function reconciliationQueueStatusEndpoint(): string {
+  return RECONCILIATION_API_ENDPOINTS.queueStatus;
+}
+
+export function reconciliationOpenCasesEndpoint(): string {
+  return RECONCILIATION_API_ENDPOINTS.openCases;
+}
+
+export function reconciliationBreakQueueTaxonomyEndpoint(): string {
+  return RECONCILIATION_API_ENDPOINTS.breakQueueTaxonomy;
+}
+
+export function qualityHealthEndpoint(): string {
+  return QUALITY_API_ENDPOINTS.health;
+}
+
+export function qualityUnhealthySymbolsEndpoint(): string {
+  return QUALITY_API_ENDPOINTS.healthUnhealthy;
+}
+
+export function qualityLatencyStatisticsEndpoint(): string {
+  return QUALITY_API_ENDPOINTS.latencyStatistics;
+}
+
+export function qualityHighLatencySymbolsEndpoint(thresholdMs?: number): string {
+  return `${QUALITY_API_ENDPOINTS.latencyHigh}${queryString({ thresholdMs })}`;
+}
+
+export function qualityTopErrorSymbolsEndpoint(count?: number): string {
+  return `${QUALITY_API_ENDPOINTS.errorsTopSymbols}${queryString({ count })}`;
+}
+
+export function qualityCompletenessSummaryEndpoint(): string {
+  return QUALITY_API_ENDPOINTS.completenessSummary;
+}
+
+export function qualityLowCompletenessEndpoint(options: { date?: string; threshold?: number } = {}): string {
+  return `${QUALITY_API_ENDPOINTS.completenessLow}${queryString({ ...options })}`;
+}
+
+export function qualityUnacknowledgedAnomaliesEndpoint(count?: number): string {
+  return `${QUALITY_API_ENDPOINTS.anomaliesUnacknowledged}${queryString({ count })}`;
+}
+
+export function qualityStaleSymbolsEndpoint(): string {
+  return QUALITY_API_ENDPOINTS.anomaliesStale;
+}
+
+export function reconciliationBreakRebuiltSnapshotEndpoint(breakId: string): string {
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakRebuiltSnapshot, "breakId", breakId);
+}
+
+export function reconciliationStatementRunValidationEndpoint(runId: string): string {
+  return routeWithParam(UI_API_ROUTES.ReconciliationStatementRunValidation, "runId", runId);
+}
+
+export function reconciliationStatementRunBreaksEndpoint(runId: string): string {
+  return routeWithParam(UI_API_ROUTES.ReconciliationStatementRunBreaks, "runId", runId);
+}
+
+export function reconciliationStatementRunReconcileEndpoint(runId: string): string {
+  return routeWithParam(UI_API_ROUTES.ReconciliationStatementRunReconcile, "runId", runId);
 }
 
 export function reconciliationStatementExceptionsEndpoint(): string {
