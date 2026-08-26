@@ -444,7 +444,10 @@ export const RECONCILIATION_API_ENDPOINTS = {
   statementRuns: UI_API_ROUTES.ReconciliationStatementRuns,
   statementExceptions: UI_API_ROUTES.ReconciliationStatementExceptions,
   breakQueue: UI_API_ROUTES.ReconciliationBreakQueue,
-  calibrationSummary: UI_API_ROUTES.ReconciliationCalibrationSummary
+  breakQueueTaxonomy: UI_API_ROUTES.ReconciliationCaseTaxonomy,
+  calibrationSummary: UI_API_ROUTES.ReconciliationCalibrationSummary,
+  openCases: UI_API_ROUTES.ReconciliationOpenCases,
+  queueStatus: UI_API_ROUTES.ReconciliationQueueStatus
 } as const;
 
 export const STATEMENT_CONNECTOR_API_ENDPOINTS = {
@@ -548,7 +551,16 @@ export const QUALITY_API_ENDPOINTS = {
   dashboard: UI_API_ROUTES.QualityDashboard,
   gaps: UI_API_ROUTES.QualityGaps,
   anomalies: UI_API_ROUTES.QualityAnomalies,
-  completeness: UI_API_ROUTES.QualityCompleteness
+  anomaliesStale: UI_API_ROUTES.QualityAnomaliesStale,
+  anomaliesUnacknowledged: UI_API_ROUTES.QualityAnomaliesUnacknowledged,
+  completeness: UI_API_ROUTES.QualityCompleteness,
+  completenessLow: UI_API_ROUTES.QualityCompletenessLow,
+  completenessSummary: UI_API_ROUTES.QualityCompletenessSummary,
+  errorsTopSymbols: UI_API_ROUTES.QualityErrorsTopSymbols,
+  health: UI_API_ROUTES.QualityHealth,
+  healthUnhealthy: UI_API_ROUTES.QualityHealthUnhealthy,
+  latencyHigh: UI_API_ROUTES.QualityLatencyHigh,
+  latencyStatistics: UI_API_ROUTES.QualityLatencyStatistics
 } as const;
 
 export const MARKET_DATA_API_ENDPOINTS = {
@@ -1623,6 +1635,58 @@ export function reconciliationStatementRunsEndpoint(): string {
 
 export function reconciliationStatementRunEndpoint(runId: string): string {
   return routeWithParam(UI_API_ROUTES.ReconciliationStatementRunById, "runId", runId);
+}
+
+export function reconciliationQueueStatusEndpoint(): string {
+  return RECONCILIATION_API_ENDPOINTS.queueStatus;
+}
+
+export function reconciliationOpenCasesEndpoint(): string {
+  return RECONCILIATION_API_ENDPOINTS.openCases;
+}
+
+export function reconciliationBreakQueueTaxonomyEndpoint(): string {
+  return RECONCILIATION_API_ENDPOINTS.breakQueueTaxonomy;
+}
+
+export function qualityHealthEndpoint(): string {
+  return QUALITY_API_ENDPOINTS.health;
+}
+
+export function qualityUnhealthySymbolsEndpoint(): string {
+  return QUALITY_API_ENDPOINTS.healthUnhealthy;
+}
+
+export function qualityLatencyStatisticsEndpoint(): string {
+  return QUALITY_API_ENDPOINTS.latencyStatistics;
+}
+
+export function qualityHighLatencySymbolsEndpoint(thresholdMs?: number): string {
+  return `${QUALITY_API_ENDPOINTS.latencyHigh}${queryString({ thresholdMs })}`;
+}
+
+export function qualityTopErrorSymbolsEndpoint(count?: number): string {
+  return `${QUALITY_API_ENDPOINTS.errorsTopSymbols}${queryString({ count })}`;
+}
+
+export function qualityCompletenessSummaryEndpoint(): string {
+  return QUALITY_API_ENDPOINTS.completenessSummary;
+}
+
+export function qualityLowCompletenessEndpoint(options: { date?: string; threshold?: number } = {}): string {
+  return `${QUALITY_API_ENDPOINTS.completenessLow}${queryString({ ...options })}`;
+}
+
+export function qualityUnacknowledgedAnomaliesEndpoint(count?: number): string {
+  return `${QUALITY_API_ENDPOINTS.anomaliesUnacknowledged}${queryString({ count })}`;
+}
+
+export function qualityStaleSymbolsEndpoint(): string {
+  return QUALITY_API_ENDPOINTS.anomaliesStale;
+}
+
+export function reconciliationBreakRebuiltSnapshotEndpoint(breakId: string): string {
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakRebuiltSnapshot, "breakId", breakId);
 }
 
 export function reconciliationStatementRunValidationEndpoint(runId: string): string {

@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ArchiveMaintenanceOperations } from "@/screens/data-operations-maintenance";
+import { DataQualityWatch } from "@/screens/data-quality-watch";
 import {
   applyIngestionOperationAction,
   executeStorageMaintenance,
@@ -171,6 +172,7 @@ export function StorageAssuranceWorkstream() {
             {preview ? <div className="space-y-2 rounded-[2px] border border-warning/50 bg-warning/5 p-3"><div className="font-semibold">Preview: {preview.action}</div><div className="text-xs text-muted-foreground">{preview.candidates.length} candidates · {formatBytes(preview.affectedBytes)} · expires {formatDate(preview.expiresAt)}</div><label className="block space-y-1 text-xs font-medium">Rationale<Input value={rationale} onChange={(event) => setRationale(event.target.value)} /></label><label className="block space-y-1 text-xs font-medium">Type “{preview.confirmationText}”<Input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} /></label><Button variant="destructive" className="w-full" disabled={busy || !rationale.trim() || confirmation !== preview.confirmationText} onClick={() => void executePreview()}>Execute guarded action</Button></div> : null}
           </CardContent></Card>
         </div>
+        <DataQualityWatch />
         <ArchiveMaintenanceOperations />
       </CardContent>
     </section>

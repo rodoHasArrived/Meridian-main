@@ -69,6 +69,8 @@ import {
   reconciliationQueueColumns,
 } from "@/screens/accounting-screen.operations-panels";
 import { BankingPaymentApprovalsPanel } from "@/screens/accounting-screen.payment-approvals";
+import { BreakAuditRebuildCheck } from "@/screens/accounting-screen.break-audit-rebuild";
+import { ReconciliationReadinessPanel } from "@/screens/accounting-screen.reconciliation-readiness";
 import { StatementRunDetailTabs } from "@/screens/accounting-screen.statement-run-detail";
 import {
   ChartAccountPathBuilder,
@@ -1622,6 +1624,7 @@ function AccountingCaseWorkbench({
                 <AccountingValue label="Raw category" value={selectedBreakDetail?.rawCategoryLabel ?? "No category"} />
                 <AccountingValue label="Audit packet" value={detailActions?.auditPacketLabel ?? "Open after selecting a break"} />
               </div>
+              <BreakAuditRebuildCheck breakId={selectedBreak?.breakId ?? null} />
             </TechnicalDetails>
           </CardContent>
         </Card>
@@ -2665,6 +2668,10 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
             <a className="workspace-section-jump" href="#accounting-actions">Actions</a>
           </div>
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+          <div className="xl:col-span-2">
+            <ReconciliationReadinessPanel />
+          </div>
+
           <div className="xl:col-span-2">
             <ReconciliationComparisonPanel view={reconciliation.comparisonView} />
           </div>

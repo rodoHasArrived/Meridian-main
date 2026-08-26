@@ -24,10 +24,10 @@ its reason rather than dropped.
 | Metric | Count |
 | --- | ---: |
 | Mapped backend routes (path + verb) | 1153 |
-| Wired — called by a dashboard module | 489 |
+| Wired — called by a dashboard module | 502 |
 | Registry-only — declared in the endpoint registry, no caller | 92 |
-| Unwired — no dashboard reference at all | 572 |
-| Actionable (unwired or registry-only, not excluded by design) | 612 |
+| Unwired — no dashboard reference at all | 559 |
+| Actionable (unwired or registry-only, not excluded by design) | 599 |
 | Excluded by design (probes, webhooks, tombstones, desktop-only) | 52 |
 
 ## Actionable routes
@@ -93,43 +93,6 @@ its reason rather than dropped.
 | GET | `/api/servicer-reports/{batchId:guid}` | unwired | — |
 | GET | `/api/servicer-reports/{batchId:guid}/position-lines` | unwired | — |
 | GET | `/api/servicer-reports/{batchId:guid}/transaction-lines` | unwired | — |
-
-### `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs` (32)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| GET | `/api/quality/anomalies/stale` | unwired | — |
-| GET | `/api/quality/anomalies/statistics` | unwired | — |
-| GET | `/api/quality/anomalies/unacknowledged` | unwired | — |
-| GET | `/api/quality/anomalies/{symbol}` | unwired | — |
-| GET | `/api/quality/comparison/discrepancies` | unwired | — |
-| GET | `/api/quality/comparison/statistics` | unwired | — |
-| GET | `/api/quality/comparison/{symbol}` | unwired | — |
-| GET | `/api/quality/completeness/low` | unwired | — |
-| GET | `/api/quality/completeness/summary` | unwired | — |
-| GET | `/api/quality/completeness/{symbol}` | unwired | — |
-| GET | `/api/quality/errors` | unwired | — |
-| GET | `/api/quality/errors/statistics` | unwired | — |
-| GET | `/api/quality/errors/top-symbols` | unwired | — |
-| GET | `/api/quality/errors/{symbol}` | unwired | — |
-| GET | `/api/quality/gaps/timeline/{symbol}` | unwired | — |
-| GET | `/api/quality/health` | unwired | — |
-| GET | `/api/quality/health/unhealthy` | unwired | — |
-| GET | `/api/quality/health/{symbol}` | unwired | — |
-| GET | `/api/quality/latency` | unwired | — |
-| GET | `/api/quality/latency/high` | unwired | — |
-| GET | `/api/quality/latency/statistics` | unwired | — |
-| GET | `/api/quality/latency/{symbol}` | unwired | — |
-| GET | `/api/quality/latency/{symbol}/histogram` | unwired | — |
-| GET | `/api/quality/metrics` | unwired | — |
-| GET | `/api/quality/reports/daily` | unwired | — |
-| POST | `/api/quality/reports/export` | unwired | — |
-| GET | `/api/quality/reports/weekly` | unwired | — |
-| GET | `/api/sla/health` | unwired | — |
-| GET | `/api/sla/metrics` | unwired | — |
-| GET | `/api/sla/status` | unwired | — |
-| GET | `/api/sla/status/{symbol}` | unwired | — |
-| GET | `/api/sla/violations` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs` (32)
 
@@ -237,6 +200,34 @@ its reason rather than dropped.
 | POST | `/api/fund-structure/reporting/templates/{templateName}/versions/{version:int}/submit` | unwired | — |
 | POST | `/api/fund-structure/sleeves` | unwired | — |
 | POST | `/api/fund-structure/vehicles` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs` (23)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/quality/anomalies/statistics` | unwired | — |
+| GET | `/api/quality/anomalies/{symbol}` | unwired | — |
+| GET | `/api/quality/comparison/discrepancies` | unwired | — |
+| GET | `/api/quality/comparison/statistics` | unwired | — |
+| GET | `/api/quality/comparison/{symbol}` | unwired | — |
+| GET | `/api/quality/completeness/{symbol}` | unwired | — |
+| GET | `/api/quality/errors` | unwired | — |
+| GET | `/api/quality/errors/statistics` | unwired | — |
+| GET | `/api/quality/errors/{symbol}` | unwired | — |
+| GET | `/api/quality/gaps/timeline/{symbol}` | unwired | — |
+| GET | `/api/quality/health/{symbol}` | unwired | — |
+| GET | `/api/quality/latency` | unwired | — |
+| GET | `/api/quality/latency/{symbol}` | unwired | — |
+| GET | `/api/quality/latency/{symbol}/histogram` | unwired | — |
+| GET | `/api/quality/metrics` | unwired | — |
+| GET | `/api/quality/reports/daily` | unwired | — |
+| POST | `/api/quality/reports/export` | unwired | — |
+| GET | `/api/quality/reports/weekly` | unwired | — |
+| GET | `/api/sla/health` | unwired | — |
+| GET | `/api/sla/metrics` | unwired | — |
+| GET | `/api/sla/status` | unwired | — |
+| GET | `/api/sla/status/{symbol}` | unwired | — |
+| GET | `/api/sla/violations` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs` (21)
 
@@ -474,21 +465,6 @@ its reason rather than dropped.
 | GET | `/api/analytics/rate-limits` | unwired | — |
 | GET | `/api/analytics/throughput` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` (10)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| GET | `/api/workstation/data-operations` | unwired | dashboard tests only |
-| GET | `/api/workstation/data/replacement-cost` | unwired | — |
-| GET | `/api/workstation/governance` | unwired | dashboard tests only |
-| GET | `/api/workstation/portfolio/summary` | registry-only | dashboard tests only |
-| GET | `/api/workstation/reconciliation/break-queue/bulk/{bulkActionId}/result` | registry-only | dashboard tests only |
-| GET | `/api/workstation/reconciliation/break-queue/taxonomy` | unwired | — |
-| GET | `/api/workstation/reconciliation/break-queue/{breakId}/rebuilt-snapshot` | unwired | — |
-| GET | `/api/workstation/research` | unwired | dashboard tests only |
-| GET | `/api/workstation/research/briefing` | unwired | — |
-| GET | `/api/workstation/runs/lineage-timeline` | unwired | — |
-
 ### `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs` (9)
 
 | Method | Route | State | Notes |
@@ -567,6 +543,19 @@ its reason rather than dropped.
 | GET | `/api/security-master/money-market-funds/{securityId:guid}/liquidity` | unwired | — |
 | POST | `/api/security-master/money-market-funds/{securityId:guid}/rebuild` | unwired | — |
 | GET | `/api/security-master/money-market-funds/{securityId:guid}/sweep-profile` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` (8)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/workstation/data-operations` | unwired | dashboard tests only |
+| GET | `/api/workstation/data/replacement-cost` | unwired | — |
+| GET | `/api/workstation/governance` | unwired | dashboard tests only |
+| GET | `/api/workstation/portfolio/summary` | registry-only | dashboard tests only |
+| GET | `/api/workstation/reconciliation/break-queue/bulk/{bulkActionId}/result` | registry-only | dashboard tests only |
+| GET | `/api/workstation/research` | unwired | dashboard tests only |
+| GET | `/api/workstation/research/briefing` | unwired | — |
+| GET | `/api/workstation/runs/lineage-timeline` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` (7)
 
@@ -930,14 +919,6 @@ its reason rather than dropped.
 | GET | `/api/workstation/family-office/entities` | unwired | — |
 | GET | `/api/workstation/family-office/ownership-graph` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs` (3)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| GET | `/api/workstation/reconciliation/cases` | unwired | called by WPF |
-| GET | `/api/workstation/reconciliation/queue-status` | unwired | called by WPF |
-| GET | `/api/workstation/reconciliation/statement-breaks` | unwired | called by WPF |
-
 ### `src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs` (2)
 
 | Method | Route | State | Notes |
@@ -1065,6 +1046,12 @@ its reason rather than dropped.
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
 | GET | `/api/portfolio/symbols/{symbol}/exposure` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs` (1)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/workstation/reconciliation/statement-breaks` | unwired | called by WPF |
 
 ### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReportingAuthority.cs` (1)
 

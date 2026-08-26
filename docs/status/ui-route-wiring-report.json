@@ -8471,7 +8471,7 @@
         "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -8497,7 +8497,7 @@
         "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -8588,7 +8588,7 @@
         "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -8601,7 +8601,7 @@
         "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -8692,7 +8692,7 @@
         "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -8783,7 +8783,7 @@
         "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -8796,7 +8796,7 @@
         "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -8835,7 +8835,7 @@
         "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -8848,7 +8848,7 @@
         "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -13347,7 +13347,7 @@
         "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -13453,7 +13453,7 @@
         "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -13600,7 +13600,7 @@
         "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": true
@@ -13640,7 +13640,7 @@
         "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": true
