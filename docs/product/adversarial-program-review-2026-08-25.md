@@ -316,11 +316,16 @@ own `ownerAccountId` argument, and neither `ExecutionReport` nor `PaperSessionFi
 fund-scoped portfolio views are incomplete after any restart. Two missing pieces of durable identity,
 one record — and fixing either alone still leaves the restored book wrong.
 
-**Scope: options only.** Fixed income is *not* affected, and the contrast is the whole lesson.
+**Scope: options only *in the paper book* — with one exception outside it, and the contrast is still
+the whole lesson.** Fixed income survives every path traced in this section.
 `ExecutionReport` carries `UsesFaceValuePercentageOfPar` as a first-class persisted field
 (`Models.cs:186`), `CloneExecutionReport` preserves it, and `ApplyFill` reads it off the record
 regardless of the parameter (`PaperTradingPortfolio.cs:469`) — then applies it to the price before
-any cash or cost-basis math runs. Percent-of-par is modeled *and consumed*. The contract multiplier
+any cash or cost-basis math runs. Percent-of-par is modeled *and consumed*. **The exception is the
+cost model, and it runs the other way:** `PaperTradingCostModel.Compute` receives the raw
+`fillPrice`, so a face-value fill's basis-point commission, fees, slippage and spread are computed on
+a notional **100× too large** — see §4. Any scale migration therefore has to carry fixed-income cost
+handling too; reading this scope line as "fixed income needs nothing" would omit it. The contract multiplier
 exists only in nullable `OptionContract` metadata, is not stamped consistently, and is not consumed
 by paper-book arithmetic even when passed separately to the portfolio.
 
@@ -839,8 +844,11 @@ can never receive does not fail a merge — it hangs it, indefinitely and with n
 at. That asymmetry is the strongest argument for the first option: the workflow that already handles
 `merge_group` is the one to hang the desktop job from. Also
 promote a first-mile subset of the Integration category (bootstrap + role authorization) into the
-required lane. A gate that cannot fail on the supported platform or on the authorization model is
-not measuring the product's supported surface.
+required lane. A gate that cannot fail on the supported platform, or on authorization **as an
+endpoint enforces it**, is not measuring the product's supported surface. The permission model itself
+*is* covered — `RolePermissionsTests` runs in the required lane — and stating otherwise, as an earlier
+version of this sentence did, argues for duplicating coverage that already passes instead of adding
+the endpoint coverage that does not exist.
 
 ## 8. Freshness is pushed where it is cheap and polled where it is expensive
 
@@ -1262,8 +1270,8 @@ close-management product can tell.
 
 ## Corrections applied after automated review
 
-Thirty-nine rounds of automated review challenged **115 claims** across this document. Every one was checked
-against the code, **all 115 held**, and the findings above are the corrected text. **Twelve more were
+Forty rounds of automated review challenged **117 claims** across this document. Every one was checked
+against the code, **all 117 held**, and the findings above are the corrected text. **Twelve more were
 caught by re-measuring and re-reading rather than by a reviewer** — the quality-route count (wrong at
 31 in three places), a refuted remedy still standing in §1, the re-test table's categorical multiplier
 claim, §3's own lead sentence, §5's title, §5's four-type undercount, a retracted §8 claim still live
@@ -1272,7 +1280,7 @@ the second addendum's miscited compliance gate lines, a sentence round 35 left m
 marked *(self-detected)*. A further self-initiated pass, numbered round 31 below, is **absent from the table on purpose**: every correction it made was
 wrong and was retracted in round 32, so it contributes no rows and its number is left as a gap
 rather than silently reused.
-The table therefore holds **127 rows: 115 raised by review, 12 found here.** Noted here because a review that demands evidence discipline
+The table therefore holds **129 rows: 117 raised by review, 12 found here.** Noted here because a review that demands evidence discipline
 owes the same discipline about its own errors.
 
 This header was itself stale from round 3 until round 7, still reading "two rounds / eleven claims"
@@ -1999,6 +2007,28 @@ said to re-read every recommendation whenever an addendum lands. That rule is no
 brief and was still not enough here, because improvement #1's text was not *about* the addendum's
 subject in any way a grep for its terms would surface. The only reliable form is re-reading the
 prioritized list in full — which is what the second row's fix and this one both came from.
+
+**Round 41 — two from review, and both are round 40's own corrections failing to reach their twin:**
+
+| Claim | Why it was wrong | Corrected in |
+| --- | --- | --- |
+| §3's "**Scope: options only.** Fixed income is *not* affected, and the contrast is the whole lesson" | Round 39 had already established the opposite one section later: the cost model receives the raw percent-of-par price, so a face-value fill's basis-point commission, fees, slippage and spread are computed on a notional **100× too large**. Read as written, the scope line tells an implementer to leave fixed-income cost handling out of the scale migration — the one place the review's own settled evidence requires it | §3 — scope narrowed to the paper book, with the cost-model exception named and pointed at §4 |
+| §7's closing sentence: "a gate that cannot fail on the supported platform or **on the authorization model**…" | Restores verbatim the overbroad claim round 40 corrected **twenty-five lines above it**. The required lane does run `RolePermissionsTests`; what it cannot exercise is authorization at the HTTP boundary. Left standing it would send remediation toward duplicate permission-model tests instead of the missing bootstrap, session, middleware and route coverage | §7 closing — narrowed to endpoint enforcement, with the covered case stated explicitly |
+
+Both rows are the same failure and it is the one this document has recorded more often than any
+other: **a correction that reaches the paragraph and not the sentence that summarises it.** What makes
+this instance worth more than another tally mark is that both halves were *written in the same round*.
+Round 40 corrected §7's paragraph and left §7's punchline restating the error; round 39 added the
+cost-model defect to §4 and left §3's categorical scope line contradicting it. The correction and the
+contradiction were minutes apart, by the same hand, in the same file.
+
+So the round-30 rule — re-read every dependent recommendation when something changes — is necessary
+and demonstrably not sufficient, and round 40 already found one reason (stale text sharing no phrase
+with the change). This round supplies the second, and it is structural rather than lexical:
+**a section's opening scope line and its closing summary are the two places a correction to its middle
+never lands**, because neither is where the evidence sits and neither repeats the changed wording. The
+practical form: when a finding changes, re-read the *first* and *last* paragraph of every section it
+touches, not just the passage that changed. Both rows here would have been caught by exactly that.
 
 The core findings survive, several in sharper form. Four were materially wrong as first stated — the
 role-access table, the fixed-income claim, the multiplier's blast radius, and two of the proposed
