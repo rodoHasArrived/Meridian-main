@@ -49,11 +49,14 @@ public static partial class WorkstationEndpoints
         // Authentication proves the executing operator. Origin and privilege are always derived
         // server-side; independent approval evidence remains an explicit retained input and is
         // normalized here before the repository validates its presence and actor separation.
+        // Origin is resolved from the principal rather than asserted: this used to hardcode
+        // HumanOperator, which stamped an API-key caller as a human and satisfied the very gate
+        // that exists to stop a service credential performing a material action (#2673).
         var trusted = request with
         {
             Actor = currentUser,
             Source = "workstation-reconciliation-casework",
-            ActionOrigin = OperationsActionOriginDto.HumanOperator,
+            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context),
             Privileged = HasGovernedWorkflowReopenPermission(context),
             ApprovalActor = NormalizeOptional(request.ApprovalActor),
             ApprovalReference = NormalizeOptional(request.ApprovalReference)
@@ -114,7 +117,8 @@ public static partial class WorkstationEndpoints
         {
             Actor = currentUser,
             Source = "workstation-reconciliation-bulk-casework",
-            ActionOrigin = OperationsActionOriginDto.HumanOperator,
+            // Resolved from the principal, not asserted -- see the single-case handler above (#2673).
+            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context),
             ApprovalActor = NormalizeOptional(request.ApprovalActor),
             ApprovalReference = NormalizeOptional(request.ApprovalReference)
         };

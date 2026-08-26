@@ -542,7 +542,13 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var trustedRequest = request with { ResolvedBy = currentUser };
+            // ActionOrigin arrives in the body and defaults to HumanOperator, so it is
+            // re-derived here alongside ResolvedBy before anything downstream reads it (#2673).
+            var trustedRequest = request with
+            {
+                ResolvedBy = currentUser,
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+            };
 
             var transition = await ResolveBreakAsync(repository, queueScope, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch

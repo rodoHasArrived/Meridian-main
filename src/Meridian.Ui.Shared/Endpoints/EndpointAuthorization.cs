@@ -1,3 +1,4 @@
+using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Identity;
 using Microsoft.AspNetCore.Builder;
@@ -279,6 +280,51 @@ public static class EndpointAuthorization
 
         actor = string.Empty;
         return false;
+    }
+
+    /// <summary>
+    /// Resolves the action origin the server is willing to vouch for, from the authenticated
+    /// principal rather than from the request body.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <see cref="OperationsActionOriginDto"/> decides whether the "reviewed automation may not
+    /// perform this action; a human operator is required" control applies. It arrives as an
+    /// ordinary bound member of the request DTOs and defaults to the permissive
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/>, so a caller used to satisfy the gate
+    /// simply by omitting the field — the control stopped only automation that declared itself
+    /// honestly (#2673). Endpoints must overwrite the bound value with this one, in the same
+    /// <c>request with { ... }</c> block that already re-derives <c>Actor</c> and tenant scope.
+    /// </para>
+    /// <para>
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/> is returned only for a validated
+    /// interactive workstation session, under the same four conditions
+    /// <see cref="RequireAuthenticatedSession{TBuilder}"/> enforces: an actor resolves, a permission
+    /// snapshot resolves, the principal is not an API key, and it is not the optional-auth anonymous
+    /// principal. Deliberately the same predicate rather than a similar one, so the two cannot drift
+    /// into disagreeing about what an interactive session is. An API key is a non-interactive
+    /// credential by construction, which is exactly the "service credential, scheduled job, or
+    /// assistant acting with a delegated token" case the control exists to stop.
+    /// </para>
+    /// <para>
+    /// Every other case yields <see cref="OperationsActionOriginDto.AutomationAssistant"/>, so this
+    /// fails closed: an unrecognised or partially-populated principal is treated as automation and
+    /// refused, never waved through.
+    /// </para>
+    /// </remarks>
+    public static OperationsActionOriginDto ResolveTrustedActionOrigin(HttpContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        var isInteractiveSession =
+            TryResolveActor(context, out _) &&
+            TryGetPermissions(context, out _) &&
+            !context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey) &&
+            !context.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey);
+
+        return isInteractiveSession
+            ? OperationsActionOriginDto.HumanOperator
+            : OperationsActionOriginDto.AutomationAssistant;
     }
 
     public static IReadOnlyList<string> ResolveReportGroupPrincipalIds(HttpContext context)

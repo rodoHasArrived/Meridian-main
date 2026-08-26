@@ -155,6 +155,9 @@ verify_dotnet() {
   run_step "Enforce posture-environment test serialization" \
     "$python_cmd" build/scripts/ci/check-posture-env-serialization.py
 
+  run_step "Enforce server-derived ActionOrigin at endpoints" \
+    "$python_cmd" build/scripts/ci/check-action-origin-derivation.py
+
   run_step "Build web workstation .NET lane" \
     bash -c 'set -euo pipefail; dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore -p:EnableWindowsTargeting=true -p:UseAppHost=false 2>&1 | tee artifacts/build-logs/web-workstation-build.log'
 
