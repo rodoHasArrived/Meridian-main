@@ -3525,7 +3525,7 @@
       ]
     }
   ],
-  "fingerprint": "10aaf4984e5dfd2d0e6aaea096ee1391da43ed07f60dda119ad10f4f464caad3",
+  "fingerprint": "02d58135fb76256788440750185a4b176df3a3c564d479ffe454eec8382f1a3b",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5673,7 +5673,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "d0f9d7129a6d5796ca6a9f43a5792832a5db29fba99d5a74919adffe7cbc4a93",
+      "fingerprint": "1c501c5f07d9af0d967308160815fc025fd56a49682e44c50529f4651b83a4f5",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -230403,12 +230403,27 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "607ca8d0edd47d1df06d9e4aacfe2a5cc881da8a48ed47a79bb134edd8a26140",
+      "fingerprint": "dcdf3dac7bc52f759f7feb979536e5d70267f669e5f26b85b061005b887ff4d6",
       "full_name": "Meridian.Contracts.Workstation.DailyValuationBatchLifecycleRequestDto",
       "id": "Meridian.Contracts.Workstation.DailyValuationBatchLifecycleRequestDto",
       "kind": "record",
       "mapped_schemas": [],
       "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "OperationsActionOriginDto.AutomationAssistant",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ActionOrigin",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "OperationsActionOriginDto",
+          "source_line": 67,
+          "type": "OperationsActionOriginDto"
+        },
         {
           "collection": false,
           "collection_kind": null,
@@ -230449,7 +230464,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 63,
+          "source_line": 69,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -230514,7 +230529,9 @@
       "namespace": "Meridian.Contracts.Workstation",
       "partial": false,
       "qualified_name": "Meridian.Contracts.Workstation.DailyValuationBatchLifecycleRequestDto",
-      "references": [],
+      "references": [
+        "Meridian.Contracts.Workstation.OperationsActionOriginDto"
+      ],
       "source": {
         "line": 54,
         "path": "src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs"
@@ -230537,7 +230554,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "5bd14e0ca03f24efc6112973bdeb165d9685a9b53b324efe535a2afc5e216419",
+      "fingerprint": "fe5d72d573e356a5fe4fa941082389b95cb89ecf3d7a67c877df0995e7cf224f",
       "full_name": "Meridian.Contracts.Workstation.DailyValuationBatchLifecycleResultDto",
       "id": "Meridian.Contracts.Workstation.DailyValuationBatchLifecycleResultDto",
       "kind": "record",
@@ -230554,7 +230571,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 69,
+          "source_line": 75,
           "type": "string"
         },
         {
@@ -230568,7 +230585,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 75,
+          "source_line": 81,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -230582,7 +230599,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 70,
+          "source_line": 76,
           "type": "bool"
         },
         {
@@ -230596,7 +230613,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<Guid>",
-          "source_line": 71,
+          "source_line": 77,
           "type": "IReadOnlyList<Guid>"
         },
         {
@@ -230610,7 +230627,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<Guid>",
-          "source_line": 72,
+          "source_line": 78,
           "type": "IReadOnlyList<Guid>"
         },
         {
@@ -230624,7 +230641,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 68,
+          "source_line": 74,
           "type": "string"
         }
       ],
@@ -230634,12 +230651,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.DailyValuationBatchLifecycleResultDto",
       "references": [],
       "source": {
-        "line": 67,
+        "line": 73,
         "path": "src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs"
       },
       "sources": [
         {
-          "line": 67,
+          "line": 73,
           "path": "src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs"
         }
       ],
@@ -256648,7 +256665,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "131c68f2e7d839991f5a195fc76e7293e1ff8bd14b31fa2c6ca3924eac90b4b6",
+      "fingerprint": "8952ab149e33862e66b57ad61a42025f633a30d722f16424525523d8249043db",
       "full_name": "Meridian.Contracts.Workstation.IDailyValuationScheduleStatusSource",
       "id": "Meridian.Contracts.Workstation.IDailyValuationScheduleStatusSource",
       "kind": "interface",
@@ -256660,12 +256677,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.IDailyValuationScheduleStatusSource",
       "references": [],
       "source": {
-        "line": 82,
+        "line": 88,
         "path": "src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs"
       },
       "sources": [
         {
-          "line": 82,
+          "line": 88,
           "path": "src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs"
         }
       ],

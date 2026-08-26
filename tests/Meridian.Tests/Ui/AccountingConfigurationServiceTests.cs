@@ -1552,7 +1552,12 @@ public sealed class AccountingConfigurationServiceTests
             configured.FundProfileId,
             "controller",
             "Approve and post the complete trusted closing-mark batch.",
-            ["evidence://accounting/valuation/initial-batch"]));
+            ["evidence://accounting/valuation/initial-batch"],
+            // Declared explicitly now that the request defaults to AutomationAssistant. This test
+            // drives the real ManualJournalEntryWorkbenchService, whose RequireHumanOperator gate
+            // it previously satisfied on the DTO's old permissive default rather than on anything
+            // the caller established -- which is the hole the new default closes (#2673).
+            ActionOrigin: OperationsActionOriginDto.HumanOperator));
 
         initialPosting.IsComplete.Should().BeTrue();
         initialPosting.JournalEntryIds.Should().HaveCount(2);
@@ -1596,7 +1601,8 @@ public sealed class AccountingConfigurationServiceTests
             configured.FundProfileId,
             "controller",
             "Approve and post both corrected same-day marks.",
-            ["evidence://accounting/valuation/correction-batch"]));
+            ["evidence://accounting/valuation/correction-batch"],
+            ActionOrigin: OperationsActionOriginDto.HumanOperator));
 
         correctionPosting.IsComplete.Should().BeTrue();
         correctionPosting.JournalEntryIds.Should().HaveCount(2);
