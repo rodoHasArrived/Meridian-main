@@ -1108,6 +1108,7 @@ Meridian-main
 │       │   ├── check-lane-manifest.py
 │       │   ├── check-posture-env-serialization.py
 │       │   ├── check-sample-config-datasources.py
+│       │   ├── check-store-concurrency-posture.py
 │       │   ├── check-test-skip-register.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
@@ -10416,6 +10417,7 @@ Meridian-main
 │   │   ├── test_check_posture_env_serialization.py
 │   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_check_status_delivery_claims.py
+│   │   ├── test_check_store_concurrency_posture.py
 │   │   ├── test_check_test_skip_register.py
 │   │   ├── test_check_workflow_docs_parity.py
 │   │   ├── test_ci_summary.py
