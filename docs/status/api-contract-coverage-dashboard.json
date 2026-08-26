@@ -3773,13 +3773,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2766",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2769",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2907",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2910",
       "documented": false
     }
   ],
