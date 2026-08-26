@@ -93,7 +93,8 @@ public sealed record StrategyRunEntry(
     IReadOnlyList<string>? ArtifactReferences = null,
     IReadOnlyList<OperationArtifactReference>? RetainedArtifacts = null,
     StrategyRunWalkForwardEvidence? WalkForwardEvidence = null,
-    string? DataProvenanceToken = null)
+    string? DataProvenanceToken = null,
+    ExecutionRealismDescriptor? ExecutionRealism = null)
 {
     public IReadOnlyList<string> OperatorAcceptanceCriteria { get; init; } =
         OperatorAcceptanceCriteria ?? [];
@@ -503,6 +504,116 @@ public sealed record StrategyRunEntry(
         AppendCanonicalCollection(builder, nameof(ApprovalReferences), approvalReferences);
         AppendCanonicalCollection(builder, nameof(PaperValidationReferences), paperValidationReferences);
         AppendCanonicalCollection(builder, nameof(GovernedReportReferences), governedReportReferences);
+
+        return Sha256Digest.ComputeUtf8(builder.ToString());
+    }
+
+    /// <summary>
+    /// Computes the v4 canonical SHA-256 hash: everything
+    /// <see cref="ComputeEvidenceBoundInputHash"/> covers, plus the execution-realism settings that
+    /// determine what numbers the run produces.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// v2 and v3 hash strategy inputs and evidence but no execution-realism setting, so two runs
+    /// differing only in fill timing, fill conservatism, or cost model hash identically while
+    /// producing materially different P&amp;L. Callers that know their realism configuration should
+    /// use this overload; the earlier versions remain for entries written before realism was
+    /// captured.
+    /// </para>
+    /// <para>
+    /// The version prefix keeps the schemes disjoint: a v4 digest can never collide with a v2 or v3
+    /// digest for the same inputs, so a hash produced under one scheme is never mistaken for
+    /// agreement with another. Comparers must treat differing schemes as "not comparable" rather
+    /// than as "unchanged".
+    /// </para>
+    /// </remarks>
+    /// <summary>
+    /// Computes the v4 realism-bound hash from a fully-constructed entry. Prefer this over the
+    /// argument-list overload: it guarantees the digest is reproducible from the entry that gets
+    /// persisted. Passing a parallel argument list risks drift — notably <see langword="null"/>
+    /// collection arguments hash differently from the empty collections an entry initializes,
+    /// which yields a hash the durable store can never recompute.
+    /// </summary>
+    public static string ComputeRealismBoundInputHash(StrategyRunEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        return ComputeRealismBoundInputHash(
+            entry.StrategyId,
+            entry.StrategyName,
+            entry.RunType,
+            entry.DatasetReference,
+            entry.FeedReference,
+            entry.Engine,
+            entry.ParameterSet,
+            entry.ExecutionRealism,
+            entry.ParentRunId,
+            entry.PortfolioId,
+            entry.LedgerReference,
+            entry.AuditReference,
+            entry.FundProfileId,
+            entry.OperatorAcceptanceCriteria,
+            entry.RetainedEvidenceReferences,
+            entry.AccountingRecordReferences,
+            entry.ApprovalReferences,
+            entry.PaperValidationReferences,
+            entry.GovernedReportReferences);
+    }
+
+    public static string ComputeRealismBoundInputHash(
+        string strategyId,
+        string strategyName,
+        RunType runType,
+        string? datasetReference,
+        string? feedReference,
+        string? engine,
+        IReadOnlyDictionary<string, string>? parameterSet,
+        ExecutionRealismDescriptor? executionRealism,
+        string? parentRunId = null,
+        string? portfolioId = null,
+        string? ledgerReference = null,
+        string? auditReference = null,
+        string? fundProfileId = null,
+        IReadOnlyList<string>? operatorAcceptanceCriteria = null,
+        IReadOnlyList<string>? retainedEvidenceReferences = null,
+        IReadOnlyList<string>? accountingRecordReferences = null,
+        IReadOnlyList<string>? approvalReferences = null,
+        IReadOnlyList<string>? paperValidationReferences = null,
+        IReadOnlyList<string>? governedReportReferences = null)
+    {
+        var builder = new StringBuilder();
+        AppendCanonical(builder, "meridian.strategy-run-input.v4");
+        AppendCanonical(builder, strategyId);
+        AppendCanonical(builder, strategyName);
+        AppendCanonical(builder, runType.ToString());
+        AppendCanonical(builder, datasetReference);
+        AppendCanonical(builder, feedReference);
+        AppendCanonical(builder, engine);
+        AppendCanonical(builder, parentRunId);
+        AppendCanonical(builder, portfolioId);
+        AppendCanonical(builder, ledgerReference);
+        AppendCanonical(builder, auditReference);
+        AppendCanonical(builder, fundProfileId);
+
+        foreach (var parameter in parameterSet?.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                     ?? Enumerable.Empty<KeyValuePair<string, string>>())
+        {
+            AppendCanonical(builder, parameter.Key);
+            AppendCanonical(builder, parameter.Value);
+        }
+
+        AppendCanonicalCollection(builder, nameof(OperatorAcceptanceCriteria), operatorAcceptanceCriteria);
+        AppendCanonicalCollection(builder, nameof(RetainedEvidenceReferences), retainedEvidenceReferences);
+        AppendCanonicalCollection(builder, nameof(AccountingRecordReferences), accountingRecordReferences);
+        AppendCanonicalCollection(builder, nameof(ApprovalReferences), approvalReferences);
+        AppendCanonicalCollection(builder, nameof(PaperValidationReferences), paperValidationReferences);
+        AppendCanonicalCollection(builder, nameof(GovernedReportReferences), governedReportReferences);
+
+        // A run whose realism is unknown and a run explicitly configured with defaults are not the
+        // same claim, so the absent case gets its own marker rather than the default descriptor's
+        // canonical form.
+        AppendCanonical(builder, "ExecutionRealism");
+        AppendCanonical(builder, executionRealism?.ToCanonicalString() ?? "unspecified");
 
         return Sha256Digest.ComputeUtf8(builder.ToString());
     }

@@ -209,8 +209,12 @@ public static class WorkstationServiceCollectionExtensions
 
         services.TryAddSingleton<IOperationalCaseHistoryStore>(sp =>
             new FileOperationalCaseHistoryStore(ResolveConfigDataRoot(sp)));
-        services.TryAddSingleton<IStrategyRepository>(sp =>
+        // The concrete store is the single instance: StrategyRunStore holds in-memory state, so
+        // registering it separately per interface would split that state between consumers.
+        services.TryAddSingleton(sp =>
             new StrategyRunStore(sp.GetRequiredService<IOperationalCaseHistoryStore>()));
+        services.TryAddSingleton<IStrategyRepository>(sp => sp.GetRequiredService<StrategyRunStore>());
+        services.TryAddSingleton<IResearchRunRecorder, StrategyRunResearchRecorder>();
         services.TryAddSingleton<PromotionRecordStoreOptions>(sp =>
             new PromotionRecordStoreOptions(Path.Combine(ResolveConfigDataRoot(sp), "strategies", "promotions")));
         services.TryAddSingleton<IPromotionRecordStore>(sp =>
@@ -1164,22 +1168,12 @@ public static class WorkstationServiceCollectionExtensions
             .BindConfiguration(CoveredCallBacktestOptions.SectionName);
 
         services.TryAddSingleton<ICoveredCallChainProviderFactory, CoveredCallChainProviderFactory>();
-        services.TryAddSingleton<Func<BacktestRequest, BacktestEngine>>(sp =>
-        {
-            BacktestEngine CreateEngine(BacktestRequest request)
-            {
-                var storageOptions = new StorageOptions { RootPath = request.DataRoot };
-                var catalogService = new StorageCatalogService(request.DataRoot, storageOptions);
-                return new BacktestEngine(
-                    sp.GetRequiredService<ILogger<BacktestEngine>>(),
-                    catalogService,
-                    sp.GetService<ContractSecurityMasterQueryService>(),
-                    sp.GetService<ICorporateActionAdjustmentService>(),
-                    sp.GetService<IBacktestPreflightService>());
-            }
 
-            return CreateEngine;
-        });
+        // The engine factory and preflight service now compose from the Backtesting module itself
+        // rather than being assembled here. Registration is identical: AddMeridianBacktesting uses
+        // TryAdd throughout, and ContractSecurityMasterQueryService is a using alias for the same
+        // ISecurityMasterQueryService the extension resolves.
+        services.AddMeridianBacktesting();
 
         services.TryAddSingleton<CoveredCallBacktestService>(sp => new CoveredCallBacktestService(
             engineFactory: sp.GetRequiredService<Func<BacktestRequest, BacktestEngine>>(),

@@ -2951,19 +2951,19 @@
     {
       "method": "POST",
       "path": "/api/quant/run",
-      "source": "src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:37",
+      "source": "src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:39",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/quant/parameters",
-      "source": "src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:89",
+      "source": "src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:92",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/quant/templates",
-      "source": "src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:126",
+      "source": "src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:129",
       "documented": false
     },
     {
