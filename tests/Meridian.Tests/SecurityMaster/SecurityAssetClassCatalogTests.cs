@@ -462,14 +462,19 @@ public sealed class SecurityAssetClassCatalogTests
     [Fact]
     public void AssetPackRegistry_ValidateCandidateSet_ShouldAdmitNewPackWithoutMutatingBuiltIns()
     {
+        // A pack drafted ahead of the domain work covers nothing today, so RoyaltyStream — which the
+        // Security Master does not model as a class — is declared as PLANNED coverage. Naming it under
+        // AssetClasses would claim coverage the system cannot deliver, which the readiness report
+        // would then publish to operators.
         var candidate = SecurityAssetPackRegistry.CreateCandidateDescriptor(
             "royalty-stream",
             "Royalty streams",
-            ["RoyaltyStream"],
+            [],
             ["Purchase", "Sale", "Distribution", "Appraisal", "Impairment", "Amendment"],
             ["DiscountedCashFlow", "UserEstimate", "ExternalModel"],
             [],
-            AssetPackAutomationDepth.WideCapture);
+            AssetPackAutomationDepth.WideCapture,
+            plannedAssetClasses: ["RoyaltyStream"]);
 
         var result = SecurityAssetPackRegistry.ValidateCandidateSet([candidate]);
 
@@ -557,13 +562,19 @@ public sealed class SecurityAssetClassCatalogTests
     public void AssetPackRegistry_FindByAssetClass_ShouldMapAssetClassToPackWithoutLedgerChanges()
     {
         var loanPacks = SecurityAssetPackRegistry.FindByAssetClass("DirectLoan");
-        var etfPacks = SecurityAssetPackRegistry.FindByAssetClass("ExchangeTradedFund");
+        // Exchange-traded funds are modelled as InvestmentFund. Routing is by the class a record can
+        // actually carry, so "ExchangeTradedFund" — business vocabulary the Security Master does not
+        // model — routes nowhere and is declared as planned coverage on the pack instead.
+        var etfPacks = SecurityAssetPackRegistry.FindByAssetClass("InvestmentFund");
         var structuredCreditPacks = SecurityAssetPackRegistry.FindByAssetClass("StructuredCredit");
         var commitmentPacks = SecurityAssetPackRegistry.FindByAssetClass("CommitmentGuarantee");
 
         loanPacks.Should().Contain(static pack => pack.PackId == "private-loan-credit");
         etfPacks.Should().ContainSingle(static pack => pack.PackId == "public-equity-etf");
         etfPacks[0].LedgerExtensionPolicy.Should().Contain("journal templates");
+        SecurityAssetPackRegistry.FindByAssetClass("ExchangeTradedFund").Should().BeEmpty();
+        SecurityAssetPackRegistry.Find("public-equity-etf")!.PlannedAssetClasses
+            .Should().Contain("ExchangeTradedFund");
         structuredCreditPacks.Should().ContainSingle(static pack => pack.PackId == "fixed-income");
         commitmentPacks.Should().ContainSingle(static pack => pack.PackId == "commitment-guarantee");
     }

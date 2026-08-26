@@ -3527,7 +3527,7 @@
       ]
     }
   ],
-  "fingerprint": "f6c4609c66e4bb356134cd910b4d81200146ee4bc1d06f0576ac60eb7e1749ba",
+  "fingerprint": "ac1b17f06823be83d6ad37c23d792c855cb6d70ebabacfda85ae58301b0a8d51",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5358,7 +5358,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "e0ed4c76f67fbe2d1e1358a5960402d0c5557f0f030e09e3954deec576ea3e95",
+      "fingerprint": "631351fad90d7d7339af7d1fae2ced37eacdf0698f05418124af880cc0abe433",
       "mapped_schemas": [
         "security_master"
       ],
@@ -196510,7 +196510,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ef67d74980cdd725989843d277d002e7cad8b7b0d990b7807876dfe89eac44f9",
+      "fingerprint": "69e534945846cc0796974440eba5b14a6a9aaef09e95b0b546a2c6a249968075",
       "full_name": "Meridian.Contracts.SecurityMaster.AssetPackAccountingRules",
       "id": "Meridian.Contracts.SecurityMaster.AssetPackAccountingRules",
       "kind": "record",
@@ -196529,7 +196529,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 836,
+          "source_line": 856,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -196543,7 +196543,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 837,
+          "source_line": 857,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -196557,7 +196557,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 838,
+          "source_line": 858,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -196571,7 +196571,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 834,
+          "source_line": 854,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -196585,7 +196585,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<AssetPackJournalTemplateRule>",
-          "source_line": 835,
+          "source_line": 855,
           "type": "IReadOnlyList<AssetPackJournalTemplateRule>"
         }
       ],
@@ -196597,12 +196597,12 @@
         "Meridian.Contracts.SecurityMaster.AssetPackJournalTemplateRule"
       ],
       "source": {
-        "line": 833,
+        "line": 853,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
       },
       "sources": [
         {
-          "line": 833,
+          "line": 853,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
         }
       ],
@@ -196621,7 +196621,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "cbcb2401ce7c8f80b1de4847f408319be12a16f64d19cd81de1836a6b82f1a62",
+      "fingerprint": "ab403e5bf0a542078ff32e49735b1a14327a8225dcd809d851457bbcac26161c",
       "full_name": "Meridian.Contracts.SecurityMaster.AssetPackAdmissionPolicy",
       "id": "Meridian.Contracts.SecurityMaster.AssetPackAdmissionPolicy",
       "kind": "record",
@@ -196640,7 +196640,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 811,
+          "source_line": 831,
           "type": "string"
         },
         {
@@ -196654,7 +196654,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 809,
+          "source_line": 829,
           "type": "bool"
         },
         {
@@ -196668,7 +196668,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 814,
+          "source_line": 834,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -196682,7 +196682,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 813,
+          "source_line": 833,
           "type": "string"
         },
         {
@@ -196696,7 +196696,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 812,
+          "source_line": 832,
           "type": "string"
         },
         {
@@ -196710,7 +196710,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 810,
+          "source_line": 830,
           "type": "bool"
         }
       ],
@@ -196720,12 +196720,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.AssetPackAdmissionPolicy",
       "references": [],
       "source": {
-        "line": 808,
+        "line": 828,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
       },
       "sources": [
         {
-          "line": 808,
+          "line": 828,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
         }
       ],
@@ -196747,17 +196747,17 @@
         {
           "explicit_value": true,
           "name": "WideCapture",
-          "source_line": 778,
+          "source_line": 798,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "DeepAccountingAutomation",
-          "source_line": 779,
+          "source_line": 799,
           "value": "1"
         }
       ],
-      "fingerprint": "8658e793a269006279b2ed24f19990fa3cfeb3ea70f86cb2f6725be8232e1742",
+      "fingerprint": "db70b2158988fd6832ed123fc54317d09b728d7639f9ba6e72df13454a638c89",
       "full_name": "Meridian.Contracts.SecurityMaster.AssetPackAutomationDepth",
       "id": "Meridian.Contracts.SecurityMaster.AssetPackAutomationDepth",
       "kind": "enum",
@@ -196771,12 +196771,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.AssetPackAutomationDepth",
       "references": [],
       "source": {
-        "line": 776,
+        "line": 796,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
       },
       "sources": [
         {
-          "line": 776,
+          "line": 796,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
         }
       ],
@@ -196795,7 +196795,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "5a5abcc8d22cdc08081b8dedc21a4528662e220abfc8489a605fe321cf592b9e",
+      "fingerprint": "9f9a73a78ee55782cae8d2f1a69785ebef79b1a14f674a3ea1db348bde7da278",
       "full_name": "Meridian.Contracts.SecurityMaster.AssetPackContractSchema",
       "id": "Meridian.Contracts.SecurityMaster.AssetPackContractSchema",
       "kind": "record",
@@ -196814,7 +196814,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 829,
+          "source_line": 849,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -196828,7 +196828,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 824,
+          "source_line": 844,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -196842,7 +196842,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 826,
+          "source_line": 846,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -196856,7 +196856,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 825,
+          "source_line": 845,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -196870,7 +196870,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 831,
+          "source_line": 851,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -196884,7 +196884,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 827,
+          "source_line": 847,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -196898,7 +196898,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 830,
+          "source_line": 850,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -196912,7 +196912,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 828,
+          "source_line": 848,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -196926,7 +196926,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 823,
+          "source_line": 843,
           "type": "IReadOnlyList<string>"
         }
       ],
@@ -196936,12 +196936,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.AssetPackContractSchema",
       "references": [],
       "source": {
-        "line": 822,
+        "line": 842,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
       },
       "sources": [
         {
-          "line": 822,
+          "line": 842,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
         }
       ],
@@ -196960,7 +196960,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "07af8fbc96c5b64c5999198b4905ce8cd08d369bbcf935a115e1a96bc4287413",
+      "fingerprint": "3b1a79989089dc267c94f34c923db65a012c1bda01afa3715fe37be3cb4df6df",
       "full_name": "Meridian.Contracts.SecurityMaster.AssetPackJournalTemplateRule",
       "id": "Meridian.Contracts.SecurityMaster.AssetPackJournalTemplateRule",
       "kind": "record",
@@ -196979,7 +196979,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 843,
+          "source_line": 863,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -196993,7 +196993,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 844,
+          "source_line": 864,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -197007,7 +197007,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 845,
+          "source_line": 865,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -197021,7 +197021,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 841,
+          "source_line": 861,
           "type": "string"
         },
         {
@@ -197035,7 +197035,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 842,
+          "source_line": 862,
           "type": "string"
         }
       ],
@@ -197045,12 +197045,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.AssetPackJournalTemplateRule",
       "references": [],
       "source": {
-        "line": 840,
+        "line": 860,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
       },
       "sources": [
         {
-          "line": 840,
+          "line": 860,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
         }
       ],
@@ -197069,7 +197069,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "12f23eb07acaf25ef7a9d4a86f1f2d4bc69232df8762a248f6faeaa26a2dc6ae",
+      "fingerprint": "6a273713327148358caa8478b420574a194ce2dd321173e1cf1cc2fb1fcb498c",
       "full_name": "Meridian.Contracts.SecurityMaster.AssetPackLifecycleCoverage",
       "id": "Meridian.Contracts.SecurityMaster.AssetPackLifecycleCoverage",
       "kind": "record",
@@ -197088,7 +197088,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 819,
+          "source_line": 839,
           "type": "string"
         },
         {
@@ -197102,7 +197102,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 818,
+          "source_line": 838,
           "type": "string"
         },
         {
@@ -197116,7 +197116,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 820,
+          "source_line": 840,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -197130,7 +197130,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 817,
+          "source_line": 837,
           "type": "string"
         }
       ],
@@ -197140,12 +197140,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.AssetPackLifecycleCoverage",
       "references": [],
       "source": {
-        "line": 816,
+        "line": 836,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
       },
       "sources": [
         {
-          "line": 816,
+          "line": 836,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
         }
       ],
@@ -197164,7 +197164,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "1f32151da68c1fd7c3106a3a7a5232964868eb371e45af7011926f2fd5874316",
+      "fingerprint": "80514223292c2b2a82c7aa5fd8ae0f933696ce1e791b126e1395b1565c105583",
       "full_name": "Meridian.Contracts.SecurityMaster.AssetPackRegistryValidationIssue",
       "id": "Meridian.Contracts.SecurityMaster.AssetPackRegistryValidationIssue",
       "kind": "record",
@@ -197183,7 +197183,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 852,
+          "source_line": 872,
           "type": "string"
         },
         {
@@ -197197,7 +197197,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 855,
+          "source_line": 875,
           "type": "string"
         },
         {
@@ -197211,7 +197211,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 853,
+          "source_line": 873,
           "type": "string"
         },
         {
@@ -197225,7 +197225,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 854,
+          "source_line": 874,
           "type": "string"
         }
       ],
@@ -197235,12 +197235,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.AssetPackRegistryValidationIssue",
       "references": [],
       "source": {
-        "line": 851,
+        "line": 871,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
       },
       "sources": [
         {
-          "line": 851,
+          "line": 871,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
         }
       ],
@@ -197259,7 +197259,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "5530ce24b0e9240a9ee965bd6900a5dbf7012ddeddc977896a4e0c2455629a5f",
+      "fingerprint": "a4b59a1736f3d308e4adc0654d49bb1671341b1febe967c7b9c3f128a6428c33",
       "full_name": "Meridian.Contracts.SecurityMaster.AssetPackRegistryValidationResult",
       "id": "Meridian.Contracts.SecurityMaster.AssetPackRegistryValidationResult",
       "kind": "record",
@@ -197278,7 +197278,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<AssetPackRegistryValidationIssue>",
-          "source_line": 849,
+          "source_line": 869,
           "type": "IReadOnlyList<AssetPackRegistryValidationIssue>"
         },
         {
@@ -197292,7 +197292,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 848,
+          "source_line": 868,
           "type": "bool"
         }
       ],
@@ -197304,12 +197304,12 @@
         "Meridian.Contracts.SecurityMaster.AssetPackRegistryValidationIssue"
       ],
       "source": {
-        "line": 847,
+        "line": 867,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
       },
       "sources": [
         {
-          "line": 847,
+          "line": 867,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
         }
       ],
@@ -197328,7 +197328,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "542010836a4aeb5bdde1dff54608fcb29fdc6badd6e67fb572657a93e8f39136",
+      "fingerprint": "d1dc6f27ff8db762ecfeb6f4a831ec908d958d57c3eb94a5ce87931ffea3fbd9",
       "full_name": "Meridian.Contracts.SecurityMaster.AssetPackReportingTaxonomy",
       "id": "Meridian.Contracts.SecurityMaster.AssetPackReportingTaxonomy",
       "kind": "record",
@@ -197347,7 +197347,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 864,
+          "source_line": 884,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -197361,7 +197361,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 870,
+          "source_line": 890,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -197375,7 +197375,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 866,
+          "source_line": 886,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -197389,7 +197389,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 867,
+          "source_line": 887,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -197403,7 +197403,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 865,
+          "source_line": 885,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -197417,7 +197417,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 868,
+          "source_line": 888,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -197431,7 +197431,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 869,
+          "source_line": 889,
           "type": "IReadOnlyList<string>"
         }
       ],
@@ -197441,12 +197441,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.AssetPackReportingTaxonomy",
       "references": [],
       "source": {
-        "line": 863,
+        "line": 883,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
       },
       "sources": [
         {
-          "line": 863,
+          "line": 883,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
         }
       ],
@@ -197465,7 +197465,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "17582d563f00a9c446b798c1441c0031f60c22799b52fc4b2bc935d9a7c039e3",
+      "fingerprint": "c93c49cebe76571d670e9770ff75f575e311756bc6265e2b1b77c36c047d1cb6",
       "full_name": "Meridian.Contracts.SecurityMaster.AssetPackValidationRules",
       "id": "Meridian.Contracts.SecurityMaster.AssetPackValidationRules",
       "kind": "record",
@@ -197484,7 +197484,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 859,
+          "source_line": 879,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -197498,7 +197498,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 861,
+          "source_line": 881,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -197512,7 +197512,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 858,
+          "source_line": 878,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -197526,7 +197526,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 860,
+          "source_line": 880,
           "type": "IReadOnlyList<string>"
         }
       ],
@@ -197536,12 +197536,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.AssetPackValidationRules",
       "references": [],
       "source": {
-        "line": 857,
+        "line": 877,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
       },
       "sources": [
         {
-          "line": 857,
+          "line": 877,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
         }
       ],
@@ -205937,7 +205937,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "8f84ebc67af1147d19743eadfba683db8a74b6c1a3006d90a359b6f99b62e17c",
+      "fingerprint": "c5ee6454542a40ba14dadb0355bccc1883dda4c2ad8beca288055f4ed371355e",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetPackDescriptor",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetPackDescriptor",
       "kind": "record",
@@ -205956,7 +205956,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetPackAccountingRules",
-          "source_line": 801,
+          "source_line": 821,
           "type": "AssetPackAccountingRules"
         },
         {
@@ -205970,7 +205970,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetPackAdmissionPolicy",
-          "source_line": 805,
+          "source_line": 825,
           "type": "AssetPackAdmissionPolicy"
         },
         {
@@ -205984,7 +205984,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 789,
+          "source_line": 809,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -205998,7 +205998,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetPackAutomationDepth",
-          "source_line": 804,
+          "source_line": 824,
           "type": "AssetPackAutomationDepth"
         },
         {
@@ -206012,7 +206012,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetPackContractSchema",
-          "source_line": 795,
+          "source_line": 815,
           "type": "AssetPackContractSchema"
         },
         {
@@ -206026,7 +206026,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 784,
+          "source_line": 804,
           "type": "string"
         },
         {
@@ -206040,7 +206040,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 806,
+          "source_line": 826,
           "type": "string"
         },
         {
@@ -206054,7 +206054,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<AssetPackLifecycleCoverage>",
-          "source_line": 798,
+          "source_line": 818,
           "type": "IReadOnlyList<AssetPackLifecycleCoverage>"
         },
         {
@@ -206068,7 +206068,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 796,
+          "source_line": 816,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -206082,7 +206082,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 783,
+          "source_line": 803,
           "type": "string"
         },
         {
@@ -206096,7 +206096,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 794,
+          "source_line": 814,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -206110,7 +206110,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetPackReportingTaxonomy",
-          "source_line": 803,
+          "source_line": 823,
           "type": "AssetPackReportingTaxonomy"
         },
         {
@@ -206124,7 +206124,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 797,
+          "source_line": 817,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -206138,7 +206138,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 800,
+          "source_line": 820,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -206152,7 +206152,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetPackValidationRules",
-          "source_line": 802,
+          "source_line": 822,
           "type": "AssetPackValidationRules"
         },
         {
@@ -206166,7 +206166,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 799,
+          "source_line": 819,
           "type": "IReadOnlyList<string>"
         }
       ],
@@ -206184,12 +206184,12 @@
         "Meridian.Contracts.SecurityMaster.AssetPackValidationRules"
       ],
       "source": {
-        "line": 782,
+        "line": 802,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
       },
       "sources": [
         {
-          "line": 782,
+          "line": 802,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs"
         }
       ],

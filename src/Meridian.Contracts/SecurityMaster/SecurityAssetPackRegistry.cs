@@ -324,7 +324,7 @@ public static class SecurityAssetPackRegistry
         var issues = new List<AssetPackRegistryValidationIssue>();
         RequireText(pack.PackId, "PackId", "asset-pack.pack-id-required", issues);
         RequireText(pack.DisplayName, "DisplayName", "asset-pack.display-name-required", issues);
-        RequireNonEmpty(pack.AssetClasses, "AssetClasses", "asset-pack.asset-class-required", issues);
+        RequireClaimedOrPlannedAssetClasses(pack, issues);
         RequireCatalogAssetClasses(pack, issues);
         RequireSchema(pack.ContractSchema, issues);
         RequireSupportedValues(pack.LifecycleEvents, pack.SupportedLifecycleEvents, "LifecycleEvents", "asset-pack.unsupported-lifecycle-event", issues);
@@ -522,6 +522,26 @@ public static class SecurityAssetPackRegistry
             "-",
             value.Split([' ', '/', '_'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             .ToLowerInvariant();
+
+    /// <summary>
+    /// A pack must name at least one asset class SOMEWHERE. Present coverage and planned coverage are
+    /// both admissible: a pack drafted ahead of the domain work — the extension path this registry
+    /// exists to support — legitimately covers nothing yet and declares only planned classes.
+    /// </summary>
+    private static void RequireClaimedOrPlannedAssetClasses(
+        SecurityAssetPackDescriptor pack,
+        List<AssetPackRegistryValidationIssue> issues)
+    {
+        if (pack.AssetClasses.Count == 0 && pack.PlannedAssetClasses.Count == 0)
+        {
+            issues.Add(Issue(
+                "asset-pack.asset-class-required",
+                "Critical",
+                "AssetClasses",
+                "A pack must name at least one asset class under AssetClasses (covered today) or "
+                + "PlannedAssetClasses (anticipated)."));
+        }
+    }
 
     /// <summary>
     /// Holds the pack registry to the asset-class catalog in BOTH directions. The claimed set must
