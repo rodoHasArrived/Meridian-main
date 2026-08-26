@@ -1,3 +1,4 @@
+using System.Net.Http;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
@@ -14,6 +15,8 @@ internal sealed class FakeWorkstationReconciliationApiClient : IWorkstationRecon
 
     public VerifiedOperationOutcome? ReviewOutcome { get; set; }
     public VerifiedOperationOutcome? ResolveOutcome { get; set; }
+    public ISet<string> UnavailableRunIds { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    public Action? LatestRunDetailReadStarted { get; set; }
 
     public FakeWorkstationReconciliationApiClient(
         IEnumerable<ReconciliationBreakQueueItem>? breakQueueItems = null,
@@ -63,6 +66,15 @@ internal sealed class FakeWorkstationReconciliationApiClient : IWorkstationRecon
 
     public Task<ReconciliationRunDetail?> GetLatestRunDetailAsync(string runId, CancellationToken ct = default)
     {
+        LatestRunDetailReadStarted?.Invoke();
+        ct.ThrowIfCancellationRequested();
+
+        if (UnavailableRunIds.Contains(runId))
+        {
+            return Task.FromException<ReconciliationRunDetail?>(
+                new HttpRequestException($"Run detail is unavailable for '{runId}'."));
+        }
+
         _runDetailsByRunId.TryGetValue(runId, out var detail);
         return Task.FromResult(detail);
     }

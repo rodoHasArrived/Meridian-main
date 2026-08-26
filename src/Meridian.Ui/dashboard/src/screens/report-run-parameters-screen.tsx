@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { describeApiError } from "@/lib/api-errors";
 import { assessReportingRunReadiness, getManualJournalEntryWorkbench, runReportingNow } from "@/lib/api";
+import { ACTIVATION_OUTCOME_KEYS, recordActivationOutcome } from "@/lib/first-run/activation";
 import { todayIsoDate } from "@/lib/reporting-periods";
 import {
   normalizeReportingWorkspace,
@@ -373,6 +374,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
           items: [result.run.runId]
         }
       });
+      void recordActivationOutcome(ACTIVATION_OUTCOME_KEYS.reportRun);
       navigate(workstationRouteWithQuery("reportingRunDetail", { runId: result.run.runId }));
     } catch (error) {
       const description = describeApiError(error, `${identity.name} run failed.`);

@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Text.Json;
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.QuantScript.Compilation;
@@ -63,6 +65,7 @@ public static class QuantLabEndpoints
             try
             {
                 var result = await runner.RunAsync(request.Source, parameters, ct).ConfigureAwait(false);
+                await RecordResearchRunsAsync(services, request, result, ct).ConfigureAwait(false);
                 return Results.Json(QuantRunResponse.From(result), jsonOptions);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -131,6 +134,147 @@ public static class QuantLabEndpoints
         .Produces(200);
     }
 
+    /// <summary>
+    /// Records any backtests the script ran into the shared strategy-run store.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Recording happens here rather than inside the script because a script executes in the
+    /// QuantScript worker sandbox, whose only sanctioned route to host state is the typed
+    /// market-data RPC seam. Handing that process a writable path into the run store would widen
+    /// the isolation boundary the worker exists to enforce, so the host records the results the
+    /// worker returned.
+    /// </para>
+    /// <para>
+    /// This is a no-op unless the caller supplies a strategy identity and the host has registered a
+    /// recorder, so existing callers are unaffected. Failures are logged and swallowed: a recording
+    /// problem must not discard a completed run, and an unrecorded run simply carries no lineage.
+    /// </para>
+    /// </remarks>
+    private static async Task RecordResearchRunsAsync(
+        IServiceProvider services,
+        QuantRunRequest request,
+        ScriptRunResult result,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.StrategyId) || result.CapturedBacktests.Count == 0)
+        {
+            return;
+        }
+
+        var recorder = services.GetService<IResearchRunRecorder>();
+        if (recorder is null)
+        {
+            return;
+        }
+
+        var strategyName = string.IsNullOrWhiteSpace(request.StrategyName)
+            ? request.StrategyId
+            : request.StrategyName;
+
+        // Scope comes from authenticated middleware, never the request body. An entry that
+        // declares neither tenant nor company is treated as a legacy unscoped run and becomes
+        // visible under every scope, so omitting it would leak one tenant's research into another's
+        // run lists, comparisons, and promotion paths.
+        var scope = services.GetService<IWorkstationTenantContextAccessor>() is { } accessor &&
+            accessor.TryGetCurrent(out var trusted)
+                ? trusted
+                : null;
+
+        for (var index = 0; index < result.CapturedBacktests.Count; index++)
+        {
+            var backtest = result.CapturedBacktests[index];
+
+            // One descriptor per captured backtest. A single script can run several backtests with
+            // different symbols, windows, cash, and fill settings; reusing one identity for all of
+            // them gave materially different experiments the same input hash. The realism
+            // descriptor and the per-run inputs come from the backtest's own request.
+            var descriptor = new ResearchRunDescriptor(
+                StrategyId: request.StrategyId,
+                StrategyName: strategyName,
+                CorrelationId: BuildCorrelationId(request.CorrelationId, index),
+                DatasetReference: backtest.Request.DataRoot,
+                ParameterSet: BuildParameterSet(backtest, index, scope),
+                ExecutionRealism: backtest.Request.ToRealismDescriptor());
+
+            try
+            {
+                await recorder.RecordAsync(descriptor, backtest, ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                services.GetService<ILoggerFactory>()?
+                    .CreateLogger("QuantLabEndpoints")
+                    .LogWarning(
+                        ex,
+                        "Could not record a Quant Lab backtest for strategy {StrategyId}",
+                        Meridian.Execution.Logging.LogSanitizer.Sanitize(request.StrategyId));
+            }
+        }
+    }
+
+    private const string WorkstationTenantParameterKey = "workstationTenantId";
+    private const string WorkstationCompanyParameterKey = "workstationCompanyId";
+
+    /// <summary>
+    /// Distinguishes each captured backtest within one script execution so two runs from the same
+    /// cell are not conflated in lineage.
+    /// </summary>
+    private static string? BuildCorrelationId(string? requestCorrelationId, int index) =>
+        string.IsNullOrWhiteSpace(requestCorrelationId)
+            ? null
+            : $"{requestCorrelationId}#backtest:{index}";
+
+    /// <summary>
+    /// Retains the per-run inputs that distinguish one captured backtest from another, plus the
+    /// trusted workstation scope that governs run visibility. Internal for direct test coverage of
+    /// the identity-significant canonicalization choices.
+    /// </summary>
+    internal static IReadOnlyDictionary<string, string> BuildParameterSet(
+        BacktestResult backtest,
+        int index,
+        WorkstationTenantContext? scope)
+    {
+        var parameters = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["captureIndex"] = index.ToString(CultureInfo.InvariantCulture),
+            ["from"] = backtest.Request.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            ["to"] = backtest.Request.To.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            ["initialCash"] = backtest.Request.InitialCash.ToString(CultureInfo.InvariantCulture)
+        };
+
+        if (backtest.Request.Symbols is { Count: > 0 })
+        {
+            // Request order is engine-significant: BacktestEngine.ResolveReplaySymbolOrder replays
+            // symbols in request order and MultiSymbolMergeEnumerator breaks same-timestamp ties by
+            // stream index, so [A, B] and [B, A] can fill differently. Sorting here gave those two
+            // materially different runs one identity; retain the replay order instead, normalized
+            // the same way the engine normalizes it (trim, uppercase, first-occurrence dedup).
+            parameters["symbols"] = string.Join(
+                ',',
+                backtest.Request.Symbols
+                    .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))
+                    .Select(static symbol => symbol.Trim().ToUpperInvariant())
+                    .Distinct(StringComparer.Ordinal));
+        }
+
+        if (!string.IsNullOrWhiteSpace(scope?.TenantId))
+        {
+            parameters[WorkstationTenantParameterKey] = scope.TenantId!;
+        }
+
+        if (!string.IsNullOrWhiteSpace(scope?.CompanyId))
+        {
+            parameters[WorkstationCompanyParameterKey] = scope.CompanyId!;
+        }
+
+        return parameters;
+    }
+
     private static bool HasQuantLabExecutionPermission(HttpContext context)
     {
         if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
@@ -153,9 +297,24 @@ public static class QuantLabEndpoints
 }
 
 /// <summary>Body of a POST to <c>/api/quant/run</c>.</summary>
+/// <param name="Source">Script source to compile and execute.</param>
+/// <param name="Parameters">Parameter overrides bound into the run.</param>
+/// <param name="StrategyId">
+/// Optional stable strategy identity. When supplied together with a recorder registration, any
+/// backtest the script runs is recorded to the shared strategy-run store so the work carries the
+/// same lineage as a Studio run. Omitted, the run executes exactly as before and is not recorded.
+/// </param>
+/// <param name="StrategyName">Optional display name for the recorded run.</param>
+/// <param name="CorrelationId">
+/// Optional pointer back to the artifact that produced the run — for a notebook, the notebook and
+/// cell — so a recorded run can be traced to the work that created it.
+/// </param>
 public sealed record QuantRunRequest(
     string Source,
-    IReadOnlyDictionary<string, object?>? Parameters);
+    IReadOnlyDictionary<string, object?>? Parameters,
+    string? StrategyId = null,
+    string? StrategyName = null,
+    string? CorrelationId = null);
 
 /// <summary>Body of a POST to <c>/api/quant/parameters</c>.</summary>
 public sealed record QuantParametersRequest(string Source);

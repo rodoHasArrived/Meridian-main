@@ -14,6 +14,17 @@ const goals = [
   ["collect-market-data", "Collect trusted market data"]
 ] as const;
 
+/**
+ * What each choice actually leads to. The Ready screen leads with the matching surface
+ * (see FirstRunExperienceService.BuildRecommendations), so these promises are kept.
+ */
+const dataChoiceDescriptions: Record<string, string> = {
+  upload: "Meridian opens statement import right after setup so you can bring in your file.",
+  provider: "Meridian opens provider setup right after setup. Paper and read-only options come first.",
+  sample: "Works offline and needs no provider credentials.",
+  skip: "You can add data later from your desk."
+};
+
 const dataChoices = [
   ["upload", "Upload a statement or holdings file"],
   ["provider", "Connect a provider"],
@@ -96,7 +107,7 @@ export function FirstRunScreen({ initialStatus, onStatusChange }: { initialStatu
           {step === 2 ? <>
             <h1 id="first-run-title" className="text-3xl font-semibold">Choose your starting data</h1>
             <p className="mt-3 text-slate-300">Sample mode is clearly labelled and can never place live trades or post production accounting.</p>
-            <div className="mt-7 grid gap-3 md:grid-cols-2">{dataChoices.map(([id, label]) => <Choice key={id} selected={dataChoice === id} onClick={() => setDataChoice(id)} title={label} description={id === "sample" ? "Works offline and needs no provider credentials." : id === "skip" ? "You can add data later from your desk." : "Meridian will guide the next step after setup."} />)}</div>
+            <div className="mt-7 grid gap-3 md:grid-cols-2">{dataChoices.map(([id, label]) => <Choice key={id} selected={dataChoice === id} onClick={() => setDataChoice(id)} title={label} description={dataChoiceDescriptions[id]} />)}</div>
           </> : null}
 
           {step === 3 ? <>

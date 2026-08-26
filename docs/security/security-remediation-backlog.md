@@ -149,6 +149,21 @@ This backlog converts the threat-model residual concerns into tracked remediatio
 - **Target date:** **gated on a multi-tenant deployment decision** (as SEC-005).
 - **Done evidence:** PR adding the tenant stamp and the scope check in `RecordDecision`, with tests; threat-model update reclassifying the residual.
 
+### SEC-009 — Access-review history is a global, untenanted read
+
+- **Affected module/path:** `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs` (`GET /api/compliance/access-reviews`); `AccessReviewService.GetReviews` in `src/Meridian.Audit/Compliance/AccessReviewService.cs`; `AccessReviewRecord` in `src/Meridian.Audit/Compliance/ComplianceModels.cs`.
+- **Risk rating:** **Low–Medium** (deployment-conditional cross-company information disclosure; **not reachable** under the single-company-per-deployment boundary SEC-005 documents).
+- **What it is:** `AccessReviewService` holds one process-wide `List<AccessReviewRecord>` and `GetReviews` returns all of it. `AccessReviewRecord` carries no tenant or company field — exactly as with `AuditEvent` in SEC-006 and `ComplianceApprovalRequestRecord` in SEC-008 — so there is nothing to filter on even if the route wanted to. Any holder of `ManageCompliance` therefore reads every access review on the host, including the actor ids, reviewer ids, and before/after role sets of accounts in other companies. That is an account inventory with privilege detail attached, which is materially more useful to an attacker than most of the data SEC-006 and SEC-007 expose.
+- **Why this surfaced now:** the 2026-08-25 review's least-privilege split moved this surface from `ManageUsers` to `ManageCompliance` so a compliance officer no longer needs user administration to read their own review history. The grant is correct — reading access-review evidence is a compliance function — so, as in SEC-006 and SEC-008, the scope is the gap and not the gate. The sibling `POST /api/compliance/access-reviews/run` deliberately kept `ManageUsers`, because it removes roles from the named account; that decision is unchanged.
+- **Current security boundary (documented, relied upon):** the same one SEC-005 through SEC-008 rest on — one company per deployment, `TenantId == CompanyId`, multi-tenant separation design-stage rather than realized. In a single-company deployment every review in the store belongs to the only company, so the read discloses nothing cross-company.
+- **Required code/tests to close:**
+  - Stamp the resolved tenant/company onto `AccessReviewRecord` when the review is recorded (server-resolved, never body-supplied), with the same additive/legacy treatment SEC-006 needs.
+  - Filter `GetReviews` by the caller's resolved scope, and scope `AssessDormantPermissionsAsync` the same way so an out-of-scope actor id cannot be probed for its role set.
+  - Regression test proving a company-A operator cannot read a company-B review, and that an unstamped legacy review still resolves for its own deployment.
+- **Owner:** `@platform-security` + `@fund-operations`.
+- **Target date:** **gated on a multi-tenant deployment decision** (as SEC-005).
+- **Done evidence:** PR adding the tenant stamp and the scope filter in `GetReviews`, with tests; threat-model update reclassifying the residual.
+
 ## Threat-model traceability
 
 | Backlog ID | Threat-model section | Threat-model source lines | Residual concern excerpt |

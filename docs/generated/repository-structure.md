@@ -1097,6 +1097,7 @@ Meridian-main
 │       │   └── promptfoo_adapter.py
 │       ├── ci
 │       │   ├── apiclient-caller-baseline.json
+│       │   ├── check-action-origin-derivation.py
 │       │   ├── check-apiclient-callers.py
 │       │   ├── check-contract-type-parity.py
 │       │   ├── check-dashboard-type-barrel.py
@@ -1105,7 +1106,10 @@ Meridian-main
 │       │   ├── check-file-size.py
 │       │   ├── check-inline-sha256.py
 │       │   ├── check-lane-manifest.py
+│       │   ├── check-ledger-book-scope.py
+│       │   ├── check-posture-env-serialization.py
 │       │   ├── check-sample-config-datasources.py
+│       │   ├── check-store-concurrency-posture.py
 │       │   ├── check-test-skip-register.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
@@ -1869,6 +1873,7 @@ Meridian-main
 │   │   ├── adversarial-program-review-2026-07.md
 │   │   ├── adversarial-program-review-2026-08-18.md
 │   │   ├── adversarial-program-review-2026-08-24.md
+│   │   ├── adversarial-program-review-2026-08-25.md
 │   │   ├── adversarial-program-review-2026-08.md
 │   │   ├── adversarial-review-2026-08-remediation-plan.md
 │   │   ├── data-provider-accounting-brainstorm-2026-07.md
@@ -2055,6 +2060,7 @@ Meridian-main
 │   │   │   ├── wpf-portfolio-import.png
 │   │   │   ├── wpf-portfolio-shell.png
 │   │   │   ├── wpf-position-blotter.png
+│   │   │   ├── wpf-posted-ledger.png
 │   │   │   ├── wpf-provider-health.png
 │   │   │   ├── wpf-provider.png
 │   │   │   ├── wpf-quant-script.png
@@ -3685,6 +3691,7 @@ Meridian-main
 │   │   ├── WalkForward
 │   │   │   ├── WalkForwardContracts.cs
 │   │   │   └── WalkForwardService.cs
+│   │   ├── BacktestingServiceCollectionExtensions.cs
 │   │   ├── BacktestPreflightService.cs
 │   │   ├── BacktestStudioContracts.cs
 │   │   ├── BacktestStudioRunOrchestrator.cs
@@ -3723,6 +3730,7 @@ Meridian-main
 │   │   ├── CashFlowEntry.cs
 │   │   ├── ClosedLot.cs
 │   │   ├── ExecutionRealism.cs
+│   │   ├── ExecutionRealismDescriptor.cs
 │   │   ├── FillEvent.cs
 │   │   ├── FinancialAccount.cs
 │   │   ├── FinancialAccountSnapshot.cs
@@ -3730,6 +3738,7 @@ Meridian-main
 │   │   ├── IBacktestContext.cs
 │   │   ├── IBacktestStrategy.cs
 │   │   ├── IntermediateMetrics.cs
+│   │   ├── IResearchRunRecorder.cs
 │   │   ├── LotSelectionMethod.cs
 │   │   ├── Meridian.Backtesting.Sdk.csproj
 │   │   ├── OpenLot.cs
@@ -4415,6 +4424,7 @@ Meridian-main
 │   │   ├── Meridian.Execution.csproj
 │   │   ├── OrderManagementSystem.AccountingHandoff.cs
 │   │   ├── OrderManagementSystem.Audit.cs
+│   │   ├── OrderManagementSystem.Cancellation.cs
 │   │   ├── OrderManagementSystem.ChildOrders.cs
 │   │   ├── OrderManagementSystem.cs
 │   │   ├── OrderManagementSystem.ExecutionReportSubscriptions.cs
@@ -4442,6 +4452,7 @@ Meridian-main
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IExecutionGatewayModeProvider.cs
+│   │   ├── IExplicitOrderCancellationGateway.cs
 │   │   ├── IFaceValueOrderSizingGateway.cs
 │   │   ├── INotionalOrderSizingGateway.cs
 │   │   ├── IOrderManager.cs
@@ -4723,6 +4734,7 @@ Meridian-main
 │   │   ├── Adapters
 │   │   │   ├── Alpaca
 │   │   │   │   ├── AlpacaAssetStreamAdapters.cs
+│   │   │   │   ├── AlpacaBrokerageGateway.Cancellation.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.cs
 │   │   │   │   ├── AlpacaConstants.cs
 │   │   │   │   ├── AlpacaCorporateActionProvider.cs
@@ -5541,7 +5553,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_027__atomic_tax_lot_posting.sql
 │   │   │   │   ├── V_ledger_028__wash_sale_activation.sql
 │   │   │   │   ├── V_ledger_029__journal_leg_currency_backfill.sql
-│   │   │   │   └── V_ledger_030__journal_immutability.sql
+│   │   │   │   ├── V_ledger_030__journal_immutability.sql
+│   │   │   │   └── V_ledger_031__journal_aggregate_seal.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -5837,6 +5850,7 @@ Meridian-main
 │   │   │   ├── StrategyLifecycleManager.cs
 │   │   │   ├── StrategyRunContinuityService.cs
 │   │   │   ├── StrategyRunReadService.cs
+│   │   │   ├── StrategyRunResearchRecorder.cs
 │   │   │   └── StrategyRunScopeMetadataResolver.cs
 │   │   ├── Storage
 │   │   │   ├── JsonlPromotionRecordStore.cs
@@ -6206,8 +6220,11 @@ Meridian-main
 │   │   │   │   │   ├── accounting
 │   │   │   │   │   │   └── accountingCloseModels.ts
 │   │   │   │   │   ├── first-run
+│   │   │   │   │   │   ├── activation-progress.test.tsx
 │   │   │   │   │   │   ├── activation-progress.tsx
 │   │   │   │   │   │   ├── first-run-screen.tsx
+│   │   │   │   │   │   ├── getting-started.view-model.test.ts
+│   │   │   │   │   │   ├── getting-started.view-model.ts
 │   │   │   │   │   │   └── types.ts
 │   │   │   │   │   └── fund-structure
 │   │   │   │   │       ├── entity-setup-wizard.test.tsx
@@ -6256,6 +6273,9 @@ Meridian-main
 │   │   │   │   │   ├── dev-fixtures
 │   │   │   │   │   │   ├── fixture-resolver.ts
 │   │   │   │   │   │   └── market-data-fixtures.ts
+│   │   │   │   │   ├── first-run
+│   │   │   │   │   │   ├── activation.test.ts
+│   │   │   │   │   │   └── activation.ts
 │   │   │   │   │   ├── historical-chart
 │   │   │   │   │   │   ├── indicators-worker-client.ts
 │   │   │   │   │   │   ├── indicators.test.ts
@@ -6532,6 +6552,7 @@ Meridian-main
 │   │   │   │   │   ├── portfolio-screen.view-model.test.ts
 │   │   │   │   │   ├── portfolio-screen.view-model.ts
 │   │   │   │   │   ├── portfolio-screen.workflow-continuity.ts
+│   │   │   │   │   ├── posted-ledger-route-scope.ts
 │   │   │   │   │   ├── price-alerts-screen.test.tsx
 │   │   │   │   │   ├── price-alerts-screen.tsx
 │   │   │   │   │   ├── price-alerts-screen.view-model.test.ts
@@ -6559,6 +6580,7 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.exports-runner.tsx
 │   │   │   │   │   ├── reporting-screen.linked-context.ts
 │   │   │   │   │   ├── reporting-screen.operator-focus.ts
+│   │   │   │   │   ├── reporting-screen.presenters.ts
 │   │   │   │   │   ├── reporting-screen.private-capital-readiness.tsx
 │   │   │   │   │   ├── reporting-screen.report-writer-helpers.ts
 │   │   │   │   │   ├── reporting-screen.report-writer.tsx
@@ -7148,6 +7170,7 @@ Meridian-main
 │   │   │   ├── InvestmentAccountingTransactionLabService.cs
 │   │   │   ├── IProviderModuleSetupService.cs
 │   │   │   ├── LedgerAmountProvenanceService.cs
+│   │   │   ├── LedgerBookOrdering.cs
 │   │   │   ├── LedgerClientReportExportService.cs
 │   │   │   ├── LedgerDimensionMapper.cs
 │   │   │   ├── LedgerMarkToMarketCarryingValueSource.cs
@@ -7686,6 +7709,7 @@ Meridian-main
 │   │   │   ├── FundLedgerViewModel.cs
 │   │   │   ├── FundLedgerViewModel.PrivateCapitalCloseScope.cs
 │   │   │   ├── FundLedgerViewModel.Reconciliation.cs
+│   │   │   ├── FundLedgerViewModel.ReconciliationAvailability.cs
 │   │   │   ├── FundLedgerViewModel.ReviewedAutomation.cs
 │   │   │   ├── FundLedgerViewModel.Sections.cs
 │   │   │   ├── FundLedgerViewModel.StatementReconciliation.cs
@@ -8135,6 +8159,7 @@ Meridian-main
 │   │   ├── MeridianNativeBacktestStudioEngineTests.cs
 │   │   ├── MultiSymbolMergeEnumeratorTests.cs
 │   │   ├── OptionsOverwriteStrategyTests.cs
+│   │   ├── SimulatedPortfolioCacheTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   ├── StageTelemetryTests.cs
 │   │   ├── TcaReporterTests.cs
@@ -8771,6 +8796,7 @@ Meridian-main
 │   │   │       ├── ZiggyCreatures.FusionCache.dll
 │   │   │       ├── ZiggyCreatures.FusionCache.Serialization.SystemTextJson.dll
 │   │   │       └── ZstdSharp.dll
+│   │   ├── BacktestProxyRealismTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.QuantScript.Tests.csproj
 │   │   ├── NotebookExecutionSessionTests.cs
@@ -8782,7 +8808,8 @@ Meridian-main
 │   │   ├── QuantScriptWorkerProtocolTests.cs
 │   │   ├── RoslynScriptCompilerTests.cs
 │   │   ├── ScriptRunnerTests.cs
-│   │   └── StatisticsEngineTests.cs
+│   │   ├── StatisticsEngineTests.cs
+│   │   └── TechnicalSeriesExtensionsTests.cs
 │   ├── Meridian.Setup.Tests
 │   │   ├── InstallationTransactionTests.cs
 │   │   ├── Meridian.Setup.Tests.csproj
@@ -9428,6 +9455,7 @@ Meridian-main
 │   │   │   │   ├── StatusEndpointTests.cs
 │   │   │   │   ├── StorageEndpointTests.cs
 │   │   │   │   ├── SymbolEndpointTests.cs
+│   │   │   │   ├── TrustedActionOriginTests.cs
 │   │   │   │   └── UiEndpointsJsonOptionsTests.cs
 │   │   │   ├── ConfigurableTickerDataCollectionTests.cs
 │   │   │   ├── ConnectionRetryIntegrationTests.cs
@@ -9807,6 +9835,8 @@ Meridian-main
 │   │   │   ├── StrategyRunContinuityServiceTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
 │   │   │   ├── StrategyRunReadServiceTests.cs
+│   │   │   ├── StrategyRunRealismHashTests.cs
+│   │   │   ├── StrategyRunResearchRecorderTests.cs
 │   │   │   └── StrategyRunStoreTests.cs
 │   │   ├── SymbolSearch
 │   │   │   ├── OpenFigiClientAmbiguityTests.cs
@@ -9946,6 +9976,7 @@ Meridian-main
 │   │   │   ├── ProviderLedgerReconciliationServiceTests.cs
 │   │   │   ├── ProviderReadinessEndpointTests.cs
 │   │   │   ├── ProviderRoutingEndpointsTests.cs
+│   │   │   ├── QuantLabParameterSetTests.cs
 │   │   │   ├── ReconciliationApiServiceTests.cs
 │   │   │   ├── ReconciliationBreakQueueProjectionTests.cs
 │   │   │   ├── ReconciliationLegacyBulkActionTests.cs
@@ -10255,6 +10286,7 @@ Meridian-main
 │   │   │   ├── ExportPresetsViewModelTests.cs
 │   │   │   ├── FinancialRecordExplorerViewModelTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
+│   │   │   ├── FundLedgerReconciliationReadStateTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
 │   │   │   ├── FundStructureSetupViewModelTests.cs
 │   │   │   ├── HomeWorkspaceViewModelTests.cs
@@ -10380,6 +10412,7 @@ Meridian-main
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_buildctl_validation_runner.py
 │   │   ├── test_central_package_versions.py
+│   │   ├── test_check_action_origin_derivation.py
 │   │   ├── test_check_apiclient_callers.py
 │   │   ├── test_check_codex_memory.py
 │   │   ├── test_check_codex_skills.py
@@ -10390,8 +10423,11 @@ Meridian-main
 │   │   ├── test_check_endpoint_cancellation.py
 │   │   ├── test_check_file_size_ratchet.py
 │   │   ├── test_check_inline_sha256.py
+│   │   ├── test_check_ledger_book_scope.py
+│   │   ├── test_check_posture_env_serialization.py
 │   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_check_status_delivery_claims.py
+│   │   ├── test_check_store_concurrency_posture.py
 │   │   ├── test_check_test_skip_register.py
 │   │   ├── test_check_workflow_docs_parity.py
 │   │   ├── test_ci_summary.py

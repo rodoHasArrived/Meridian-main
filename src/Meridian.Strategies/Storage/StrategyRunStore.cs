@@ -432,6 +432,7 @@ public sealed class StrategyRunStore : IStrategyRepository
         var evidenceBoundInputHash = ComputeEvidenceBoundInputHash(entry);
         var v2InputHash = ComputeV2InputHash(entry);
         var legacyInputHash = ComputeLegacyInputHash(entry);
+        var realismBoundInputHash = ComputeRealismBoundInputHash(entry);
         if (!string.Equals(
                 entry.InputHashSha256,
                 canonicalInputHash,
@@ -443,6 +444,10 @@ public sealed class StrategyRunStore : IStrategyRepository
             !string.Equals(
                 entry.InputHashSha256,
                 evidenceBoundInputHash,
+                StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(
+                entry.InputHashSha256,
+                realismBoundInputHash,
                 StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(
                 entry.InputHashSha256,
@@ -768,16 +773,25 @@ public sealed class StrategyRunStore : IStrategyRepository
         var evidenceBoundInputHash = ComputeEvidenceBoundInputHash(entry);
         var v2InputHash = ComputeV2InputHash(entry);
         var legacyInputHash = ComputeLegacyInputHash(entry);
+        var realismBoundInputHash = ComputeRealismBoundInputHash(entry);
+        var matchesRealismBound =
+            string.Equals(entry.InputHashSha256, realismBoundInputHash, StringComparison.OrdinalIgnoreCase);
         if (!string.IsNullOrWhiteSpace(entry.InputHashSha256) &&
             !string.Equals(entry.InputHashSha256, inputHash, StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(entry.InputHashSha256, v2InputHash, StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(entry.InputHashSha256, evidenceBoundInputHash, StringComparison.OrdinalIgnoreCase) &&
+            !matchesRealismBound &&
             !string.Equals(entry.InputHashSha256, legacyInputHash, StringComparison.OrdinalIgnoreCase))
         {
             throw new ArgumentException(
                 "Strategy run input hash does not match the canonical hash recomputed from its retained inputs.",
                 nameof(entry));
         }
+
+        // A v4 realism-bound hash is strictly more specific than the canonical v3 digest, so it is
+        // retained verbatim. Overwriting it with the v3 recomputation would silently discard the
+        // execution-realism settings the caller asked to bind into run identity.
+        var retainedInputHash = matchesRealismBound ? realismBoundInputHash : inputHash;
 
         return entry with
         {
@@ -786,7 +800,7 @@ public sealed class StrategyRunStore : IStrategyRepository
             ActorId = string.IsNullOrWhiteSpace(entry.ActorId) ? "system" : entry.ActorId.Trim(),
             CorrelationId = string.IsNullOrWhiteSpace(entry.CorrelationId) ? entry.RunId : entry.CorrelationId.Trim(),
             Reason = string.IsNullOrWhiteSpace(entry.Reason) ? DefaultReason(eventType) : entry.Reason.Trim(),
-            InputHashSha256 = inputHash.ToLowerInvariant(),
+            InputHashSha256 = retainedInputHash.ToLowerInvariant(),
             AttemptId = string.IsNullOrWhiteSpace(entry.AttemptId) ? entry.RunId : entry.AttemptId.Trim(),
             AttemptNumber = Math.Max(1, entry.AttemptNumber)
         };
@@ -1108,6 +1122,20 @@ public sealed class StrategyRunStore : IStrategyRepository
             entry.PaperValidationReferences,
             entry.GovernedReportReferences);
 
+    /// <summary>
+    /// Recomputes the v4 realism-bound hash from the entry's retained inputs. Returns
+    /// <see langword="null"/> when the entry carries no realism descriptor, so entries written
+    /// before realism was captured keep validating against the earlier schemes.
+    /// </summary>
+    /// <summary>
+    /// Recomputes the v4 realism-bound hash from the entry's retained inputs. Computed for every
+    /// entry, not only those carrying a realism descriptor: a caller may legitimately record a v4
+    /// digest with no realism captured, and refusing to recompute that case would reject the very
+    /// hash the recorder produced.
+    /// </summary>
+    private static string ComputeRealismBoundInputHash(StrategyRunEntry entry) =>
+        StrategyRunEntry.ComputeRealismBoundInputHash(entry);
+
     private static string ComputeV2InputHash(StrategyRunEntry entry) =>
         StrategyRunEntry.ComputeInputHash(
             entry.StrategyId,
@@ -1179,7 +1207,8 @@ public sealed class StrategyRunStore : IStrategyRepository
                 StrategyRunLifecycleEventType.Started or
                 StrategyRunLifecycleEventType.StartFailed or
                 StrategyRunLifecycleEventType.Cancelled or
-                StrategyRunLifecycleEventType.EvidencePersistenceFailed,
+                StrategyRunLifecycleEventType.EvidencePersistenceFailed or
+                StrategyRunLifecycleEventType.ActivationDeferred,
             StrategyRunLifecycleEventType.Started => current is
                 StrategyRunLifecycleEventType.StartFailed or
                 StrategyRunLifecycleEventType.PauseRequested or
@@ -1189,7 +1218,8 @@ public sealed class StrategyRunStore : IStrategyRepository
                 StrategyRunLifecycleEventType.Completed or
                 StrategyRunLifecycleEventType.Failed or
                 StrategyRunLifecycleEventType.Cancelled or
-                StrategyRunLifecycleEventType.RecoveryAttempted,
+                StrategyRunLifecycleEventType.RecoveryAttempted or
+                StrategyRunLifecycleEventType.ActivationDeferred,
             StrategyRunLifecycleEventType.Paused => current is
                 StrategyRunLifecycleEventType.PauseRequested or
                 StrategyRunLifecycleEventType.PauseFailed or
@@ -1238,6 +1268,19 @@ public sealed class StrategyRunStore : IStrategyRepository
             StrategyRunLifecycleEventType.Cancelled =>
                 current == StrategyRunLifecycleEventType.RecoveryAttempted,
             StrategyRunLifecycleEventType.RecoveryAttempted => false,
+
+            // A deferred run is retained intact and re-attempted -- the engine's startup resume
+            // sweep retries every open run -- so it must be able to reach Started when a live
+            // strategy source finally resolves it, and to defer again meanwhile. Without the
+            // self-transition every restart would reject the re-deferral of a run that is still
+            // waiting for the same missing source (#2726).
+            StrategyRunLifecycleEventType.ActivationDeferred => current is
+                StrategyRunLifecycleEventType.Started or
+                StrategyRunLifecycleEventType.ActivationDeferred or
+                StrategyRunLifecycleEventType.StartFailed or
+                StrategyRunLifecycleEventType.Failed or
+                StrategyRunLifecycleEventType.Cancelled or
+                StrategyRunLifecycleEventType.RecoveryAttempted,
             _ => false
         };
     }

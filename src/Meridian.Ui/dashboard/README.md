@@ -17,6 +17,12 @@ recommendations, and completed activation outcomes. Sample mode stays offline-ca
 and visibly labelled `SAMPLE · PAPER` throughout the shell. Until activation status is known, the
 normal shell stays closed and a failed status read exposes a retry instead of assuming setup is complete.
 
+After setup the masthead `Getting started n/m` chip opens the activation checklist, which lists
+every outcome the host tracks and routes to the surface that completes the next one. Completion is
+reported by the surface that did the work -- statement import commit, reconciliation break
+resolution, report run, and analysis export each call `recordActivationOutcome` in
+`src/lib/first-run/activation.ts` -- so the count never advances on a page visit alone.
+
 ## Purpose
 
 Browser workstation dashboard is the active browser operator workstation.
@@ -113,6 +119,12 @@ browser renders retained documents with classification, source hash, typed chann
 tenant/scope, extraction status, reviewer state, linked operational objects, open support-request
 count, support-only authority posture, and manifest links, while keeping intake and readiness policy
 in shared contracts/endpoints.
+Statement import previews an uploaded file against the fund account and reporting period from the
+Commit import form, so the panel cannot parse anything until those fields are complete. That
+dependency is stated on the panel: selecting a file with the form still blank names the outstanding
+fields instead of silently doing nothing, and the commit control reports the same fields rather than
+asking for a preview it is holding back. Picking a connector fills Source institution from that
+connector's display name when the field is still blank; fund account and period are never guessed.
 Statement import accepts either a bounded file upload or a remote fetch through a fetch-capable
 provider connection. The scheduled-fetch tab previews remote activity with the same canonical
 column-confidence and per-kind breakdown as file import, then lets operators create, edit, pause,

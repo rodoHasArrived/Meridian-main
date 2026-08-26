@@ -1449,6 +1449,39 @@ describe("accounting-screen view model", () => {
     expect(result.current.transactionLabView.canPreview).toBe(true);
   });
 
+  it("gives two rows differing only in a late dimension distinct identities", () => {
+    // The summary shows the first three dimensions and a "+N" count, so these two rows read
+    // identically. Keying on it produced duplicate React keys and made selecting the second row
+    // resolve the first row's detail and evidence.
+    const scoped = (customerId: string) => ({
+      accountName: "Cash",
+      accountType: "Asset",
+      symbol: null,
+      financialAccountId: "acct-cash",
+      balance: 100,
+      entryCount: 1,
+      security: null,
+      accountingBasis: "Primary" as const,
+      dimensions: {
+        organizationId: "org-1",
+        fundId: "fund-alpha",
+        entityId: "entity-alpha",
+        customerId
+      }
+    });
+
+    const state = buildAccountingTrialBalanceViewState({
+      runId: "run-42",
+      rows: [scoped("cust-1"), scoped("cust-2")],
+      loading: false,
+      error: null
+    });
+
+    expect(state.rows).toHaveLength(2);
+    expect(state.rows[0].dimensionLabel).toBe(state.rows[1].dimensionLabel);
+    expect(state.rows[0].rowId).not.toBe(state.rows[1].rowId);
+  });
+
   it("computes the balance control from the whole basis, not the filtered rows", () => {
     // The control answers "does this book tie", which is a property of the book. Summing only the
     // rows an account search left visible declared the book out of balance by the value of
@@ -1497,8 +1530,11 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({ id: "Primary", rowCount: 2, rowCountLabel: "2 rows", isSelected: true }),
       expect.objectContaining({ id: "Gaap", rowCount: 0, rowCountLabel: "0 rows", isSelected: false })
     ]));
+    // Identity is the full dimension set, not the truncated summary: two rows differing only in a
+    // dimension past the third shared the summary string, so React saw duplicate keys and
+    // selecting the second resolved the first row's detail.
     expect(state.rows[0]).toMatchObject({
-      rowId: "Primary-Cash-Asset-acct-cash-Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +3",
+      rowId: "Primary-Cash-Asset-acct-cash-Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit | Cost center: ops-close | External class: private-fund | External department: finance",
       accountLabel: "Cash",
       accountTypeLabel: "Asset",
       basisLabel: "Primary basis",
@@ -1513,7 +1549,7 @@ describe("accounting-screen view model", () => {
       detailPanelId: "trial-balance-account-detail",
       isExpanded: true
     });
-    expect(state.selectedRowId).toBe("Primary-Cash-Asset-acct-cash-Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +3");
+    expect(state.selectedRowId).toBe("Primary-Cash-Asset-acct-cash-Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit | Cost center: ops-close | External class: private-fund | External department: finance");
     expect(state.selectedDetail).toMatchObject({
       eyebrow: "Trial-balance detail",
       title: "Cash",
@@ -1572,7 +1608,7 @@ describe("accounting-screen view model", () => {
       statusVariant: "danger"
     });
     expect(selectedFinancing.selectedDetail?.fields).toEqual(expect.arrayContaining([
-      { label: "Dimensions", value: "No fund, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, or external GL dimensions are attached." },
+      { label: "Dimensions", value: "No ledger dimensions are attached to this row." },
       { label: "Journal entries", value: "No journal entry references linked" },
       { label: "Source events", value: "No source events linked" },
       { label: "Approvals", value: "No approvals linked" }
@@ -1657,7 +1693,7 @@ describe("accounting-screen view model", () => {
     expect(state.rows[1]).toMatchObject({
       rowId: "journal-unscoped",
       dimensionLabel: "No dimensions",
-      dimensionDetailLabel: "No fund, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, or external GL dimensions are attached."
+      dimensionDetailLabel: "No ledger dimensions are attached to this row."
     });
 
     const filtered = buildAccountingLedgerJournalEvidenceViewState({

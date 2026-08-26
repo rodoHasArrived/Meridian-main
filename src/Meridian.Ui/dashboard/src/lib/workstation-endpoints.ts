@@ -18,6 +18,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   assetOperations: "/api/workstation/assets",
   firstRunStatus: "/api/workstation/first-run/",
   firstRunComplete: "/api/workstation/first-run/complete",
+  firstRunOutcomeComplete: "/api/workstation/first-run/outcomes/complete",
   desktopLaunch: "/api/workstation/desktop/launch",
   financialRecordExplorer: UI_API_ROUTES.WorkstationFinancialRecordExplorer,
   financialRecordExplorerRecord: UI_API_ROUTES.WorkstationFinancialRecordExplorerRecord,

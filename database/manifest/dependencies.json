@@ -30093,6 +30093,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.DailyValuationBatchLifecycleRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.DailyValuationScheduleStatusDto",
       "target": "contract:Meridian.Contracts.Workstation.DailyValuationScheduleStateDto"
     },
@@ -38597,6 +38603,12 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_journal_entry_integrity_seals_leg_count on ledger.journal_entry_integrity_seals",
+      "target": "database:ledger.journal_entry_integrity_seals.leg_count"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_journal_leg_currency_affirmations_currency on ledger.journal_leg_currency_affirmations",
       "target": "database:ledger.journal_leg_currency_affirmations.affirmed_currency"
     },
@@ -38898,6 +38910,44 @@
       "kind": "normal",
       "label": "",
       "source": "database:ledger.fk_journal_legs_journal_entry on ledger.journal_legs",
+      "target": "database:ledger.journal_entries_journal_entry_id_key"
+    },
+    {
+      "constraint": "journal_entry_integrity_seals_journal_entry_id_fkey",
+      "kind": "foreign-key",
+      "label": "journal_entry_id",
+      "source": "database:ledger.journal_entry_integrity_seals",
+      "target": "database:ledger.journal_entries"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.journal_entry_integrity_seals_journal_entry_id_fkey on ledger.journal_entry_integrity_seals",
+      "target": "database:ledger.journal_entries.journal_entry_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.journal_entry_integrity_seals_journal_entry_id_fkey on ledger.journal_entry_integrity_seals",
+      "target": "database:ledger.journal_entries_journal_entry_id_key"
+    },
+    {
+      "constraint": "journal_entry_open_postings_journal_entry_id_fkey",
+      "kind": "foreign-key",
+      "label": "journal_entry_id",
+      "source": "database:ledger.journal_entry_open_postings",
+      "target": "database:ledger.journal_entries"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.journal_entry_open_postings_journal_entry_id_fkey on ledger.journal_entry_open_postings",
+      "target": "database:ledger.journal_entries.journal_entry_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.journal_entry_open_postings_journal_entry_id_fkey on ledger.journal_entry_open_postings",
       "target": "database:ledger.journal_entries_journal_entry_id_key"
     },
     {
@@ -42003,6 +42053,18 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.journal_entry_integrity_seals"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.journal_entry_open_postings"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.journal_leg_currency_affirmations"
     },
     {
@@ -42707,7 +42769,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "4b8a01396aba99b29e0f4dad52606cf78ed79ba8a3053496f805dd0b049e03f6",
+  "fingerprint": "bf577aac1a1738361670ec1c3e29fe7e37cb2630093dcce28e4c287bb9cd5eb9",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -59013,6 +59075,11 @@
       "label": "ledger.ck_journal_entries_posting_kind on ledger.journal_entries"
     },
     {
+      "id": "database:ledger.ck_journal_entry_integrity_seals_leg_count on ledger.journal_entry_integrity_seals",
+      "kind": "database-object",
+      "label": "ledger.ck_journal_entry_integrity_seals_leg_count on ledger.journal_entry_integrity_seals"
+    },
+    {
       "id": "database:ledger.ck_journal_leg_currency_affirmations_currency on ledger.journal_leg_currency_affirmations",
       "kind": "database-object",
       "label": "ledger.ck_journal_leg_currency_affirmations_currency on ledger.journal_leg_currency_affirmations"
@@ -59204,6 +59271,33 @@
       "id": "database:ledger.journal_entries_journal_entry_id_key",
       "kind": "database-object",
       "label": "ledger.journal_entries_journal_entry_id_key"
+    },
+    {
+      "id": "database:ledger.journal_entry_integrity_seals",
+      "kind": "database-table",
+      "label": "ledger.journal_entry_integrity_seals",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.journal_entry_integrity_seals.leg_count",
+      "kind": "database-object",
+      "label": "ledger.journal_entry_integrity_seals.leg_count"
+    },
+    {
+      "id": "database:ledger.journal_entry_integrity_seals_journal_entry_id_fkey on ledger.journal_entry_integrity_seals",
+      "kind": "database-object",
+      "label": "ledger.journal_entry_integrity_seals_journal_entry_id_fkey on ledger.journal_entry_integrity_seals"
+    },
+    {
+      "id": "database:ledger.journal_entry_open_postings",
+      "kind": "database-table",
+      "label": "ledger.journal_entry_open_postings",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.journal_entry_open_postings_journal_entry_id_fkey on ledger.journal_entry_open_postings",
+      "kind": "database-object",
+      "label": "ledger.journal_entry_open_postings_journal_entry_id_fkey on ledger.journal_entry_open_postings"
     },
     {
       "id": "database:ledger.journal_leg_currency_affirmations",
@@ -62304,11 +62398,11 @@
     }
   ],
   "summary": {
-    "contract_references": 2933,
+    "contract_references": 2934,
     "contract_set_memberships": 3363,
-    "edges": 7099,
-    "foreign_keys": 96,
+    "edges": 7109,
+    "foreign_keys": 98,
     "logical_references": 6,
-    "nodes": 3374
+    "nodes": 3380
   }
 }

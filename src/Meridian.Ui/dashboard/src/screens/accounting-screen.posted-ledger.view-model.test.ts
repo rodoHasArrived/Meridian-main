@@ -7,6 +7,7 @@ import {
   collectPostedLedgerRelatedSecurities,
   resolveDefaultPostedLedgerPeriodId,
   resolvePostedEntryDimensions,
+  resolvePostedEntryEntityId,
   sortLedgerPeriodsDescending,
   toLedgerJournalLine,
   toTrialBalanceLine,
@@ -171,6 +172,7 @@ function makePostedEntry(overrides: Partial<LedgerPostedJournalEntry> = {}): Led
   };
 }
 
+
 describe("resolvePostedEntryDimensions", () => {
   it("reports the shared scope when every line was posted to it", () => {
     // LedgerJournalEntryDto declares no dimensions of its own. Reading `entry.dimensions` meant
@@ -186,6 +188,42 @@ describe("resolvePostedEntryDimensions", () => {
 
     expect(resolvePostedEntryDimensions(entry)).toEqual(dimensions);
     expect(toLedgerJournalLine(entry).dimensions).toEqual(dimensions);
+  });
+
+  it("names the entry's entity scope so consumers do not claim it spans every entity", () => {
+    // Consumers fall back to "all entities" on a null scope, which is an affirmative claim about
+    // an entry posted to exactly one.
+    const scoped = makePostedEntry({
+      lines: [makePostedEntryLine({ dimensions: { entityId: "entity-lux" } })]
+    });
+    expect(toLedgerJournalLine(scoped).entityScopeDisplayName).toBe("entity-lux");
+    expect(toLedgerJournalLine(scoped).entityScopeId).toBe("entity-lux");
+
+    // Lines that disagree have no single entity, which is not the same as spanning all of them.
+    const mixed = makePostedEntry({
+      lines: [
+        makePostedEntryLine({ entryId: "entry-1", dimensions: { entityId: "entity-lux" } }),
+        makePostedEntryLine({ entryId: "entry-2", debit: 0, credit: 1200, dimensions: { entityId: "entity-cay" } })
+      ]
+    });
+    expect(toLedgerJournalLine(mixed).entityScopeDisplayName).toBeNull();
+  });
+
+  it("names the entity when every line agrees on it, whatever else differs", () => {
+    // The ordinary case: a debit and a credit sharing an entity but posted to different accounts.
+    // Requiring the whole dimension sets to match reported "not scoped to one entity" for exactly
+    // the entries an operator most expects to see scoped.
+    const entry = makePostedEntry({
+      lines: [
+        makePostedEntryLine({ entryId: "entry-1", dimensions: { entityId: "entity-lux", accountId: "1000" } }),
+        makePostedEntryLine({ entryId: "entry-2", debit: 0, credit: 1200, dimensions: { entityId: "entity-lux", accountId: "2000" } })
+      ]
+    });
+
+    expect(resolvePostedEntryEntityId(entry)).toBe("entity-lux");
+    expect(toLedgerJournalLine(entry).entityScopeDisplayName).toBe("entity-lux");
+    // The whole-set match still declines, which is right for the dimension set as a whole.
+    expect(resolvePostedEntryDimensions(entry)).toBeNull();
   });
 
   it("reports no scope for an entry whose lines disagree", () => {
@@ -448,6 +486,68 @@ describe("useAccountingPostedLedgerViewModel", () => {
     expect(result.current.view.pnl.state).toBe("ready");
   });
 
+  it("stops reporting a period load that the book scope cancelled", async () => {
+    // A retained consumer pauses with `enabled: false`, which cancels an in-flight period request.
+    // Cancellation deliberately suppresses that request's own `finally`, and no replacement runs
+    // once the book is gone -- so the hook went on reporting a period load that would never
+    // finish. Any consumer that gates on periodSelector.loading, as the trial balance does, would
+    // sit on its loading card for good.
+    let releasePeriods: ((rows: LedgerPeriod[]) => void) | null = null;
+    const services = makeServices({
+      getPeriods: vi.fn().mockImplementation(() =>
+        new Promise<LedgerPeriod[]>((resolve) => { releasePeriods = resolve; })),
+      getBooks: vi.fn().mockResolvedValue([makeBook()])
+    });
+
+    const { result, rerender } = renderHook(
+      ({ enabled }: { enabled: boolean }) =>
+        useAccountingPostedLedgerViewModel("ledger", services, { enabled }),
+      { initialProps: { enabled: true } }
+    );
+
+    await waitFor(() => {
+      expect(result.current.view.periodSelector.loading).toBe(true);
+    });
+    expect(releasePeriods).not.toBeNull();
+
+    // The books go away while that request is still outstanding, so nothing will replace it.
+    services.getBooks = vi.fn().mockRejectedValue(new Error("Ledger books are unavailable."));
+    rerender({ enabled: false });
+
+    await waitFor(() => {
+      expect(result.current.view.periodSelector.loading).toBe(false);
+    });
+  });
+
+  it("loads the period the operator picked even while the route still names another", async () => {
+    // The route-scope binding suppresses period-scoped loads while the route names a period this
+    // hook cannot resolve. A period the operator picked from the list in front of them is not that
+    // case -- it is the scope on screen. Left suppressed, the pick showed in the selector and
+    // never loaded anything, and it stayed that way for as long as the route disagreed.
+    const services = makeServices({
+      getPeriods: vi.fn().mockRejectedValue(new Error("Ledger periods are unavailable."))
+    });
+
+    const { result } = renderHook(() =>
+      useAccountingPostedLedgerViewModel("ledger", services, {
+        // What a stale shared route says, which this hook has no way to resolve while its own
+        // period request is failing.
+        requestedPeriodId: "period-named-by-the-route"
+      }));
+
+    await waitFor(() => {
+      expect(result.current.view.periodSelector.errorText).toBe("Ledger periods are unavailable.");
+    });
+
+    act(() => {
+      result.current.selectPeriod("period-picked-by-the-operator");
+    });
+
+    await waitFor(() => {
+      expect(services.getTrialBalance).toHaveBeenCalledWith("period-picked-by-the-operator");
+    });
+  });
+
   it("does not call the ledger API outside the ledger workstream", async () => {
     const services = makeServices();
     renderHook(() => useAccountingPostedLedgerViewModel("reconciliation", services));
@@ -570,6 +670,34 @@ describe("useAccountingPostedLedgerViewModel", () => {
     });
   });
 
+  it("scopes to the first book the API served, without reordering them", async () => {
+    // The order decides the default book, and it is decided on the server (LedgerBookOrdering)
+    // because neither StringComparer.OrdinalIgnoreCase nor Guid order can be reproduced here:
+    // JavaScript has no simple-uppercase mapping, its case data is a different Unicode version
+    // from the runtime's, and Guid orders by .NET's byte groups rather than by the textual form.
+    // Re-sorting the response by any client-side rule is what made the two workstations open the
+    // same governed ledger on different books.
+    const services = makeServices({
+      getBooks: vi.fn().mockResolvedValue([
+        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Zulu Feeder Fund" }),
+        makeBook({ displayName: "Alpha Master Fund" })
+      ])
+    });
+    const { result } = renderHook(() => useAccountingPostedLedgerViewModel("ledger", services));
+
+    await waitFor(() => {
+      expect(services.getPeriods).toHaveBeenCalled();
+    });
+
+    // Served first though it sorts last by name, so any client-side re-sort would pick the other.
+    expect(services.getPeriods).toHaveBeenCalledWith({
+      ledgerBookId: "00000000-0000-0000-0000-0000000000cc"
+    });
+    await waitFor(() => {
+      expect(result.current.view.selectedBookLabel).toBe("Zulu Feeder Fund");
+    });
+  });
+
   it("selects a basis the incoming period actually carries", async () => {
     // Carrying GAAP across a period change filtered every row out of a Primary-only period, and
     // the period read as having no trial balance even though it loaded successfully.
@@ -604,7 +732,7 @@ describe("useAccountingPostedLedgerViewModel", () => {
     const services = makeServices({
       getBooks: vi.fn().mockResolvedValue([
         makeBook(),
-        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Feeder Fund" })
+        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Zulu Feeder Fund" })
       ]),
       getTrialBalance: vi.fn().mockResolvedValue([makeLine()])
     });
@@ -630,7 +758,7 @@ describe("useAccountingPostedLedgerViewModel", () => {
     const services = makeServices({
       getBooks: vi.fn().mockResolvedValue([
         makeBook(),
-        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Feeder Fund" })
+        makeBook({ ledgerBookId: "00000000-0000-0000-0000-0000000000cc", displayName: "Zulu Feeder Fund" })
       ]),
       getTrialBalance: vi.fn().mockResolvedValue([makeLine()])
     });

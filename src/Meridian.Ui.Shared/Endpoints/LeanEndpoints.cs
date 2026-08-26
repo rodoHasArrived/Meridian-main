@@ -49,9 +49,12 @@ public static class LeanEndpoints
                 leanPath,
                 dataPath,
                 version,
-                activeBacktests = s_backtests.Count(b => b.Value.Status == "running"),
                 // Meridian neither launches Lean backtests nor runs sync jobs (those routes answer
-                // 501), so nothing is ever "running" here: the only records are ingested results.
+                // 501), so neither can ever be non-zero. Reported as constants rather than counted:
+                // the only records held here are results ingested after an external run finished,
+                // all of them "completed", so filtering them for "running" only read as though it
+                // could return something.
+                activeBacktests = 0,
                 activeSyncs = 0,
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
@@ -228,20 +231,19 @@ public static class LeanEndpoints
         .WithName("GetLeanBacktestResults").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(StatusCodes.Status501NotImplemented);
 
-        // Stop backtest
-        group.MapPost(UiApiRoutes.LeanBacktestStop, (string backtestId) =>
-        {
-            if (!s_backtests.TryGetValue(backtestId, out var info))
-                return Results.NotFound(new { error = $"Backtest '{backtestId}' not found" });
-
-            info = info with { Status = "stopped" };
-            s_backtests[backtestId] = info;
-            return Results.Json(new { backtestId, status = "stopped" }, jsonOptions);
-        })
+        // Stop backtest. Meridian never launched one, so there is nothing here to stop: the only
+        // records this route could find are results ingested *after* an external Lean run had
+        // already finished. Marking one "stopped" claimed an action Meridian cannot perform and
+        // overwrote a completed result's status while doing it, which is the fabrication the rest
+        // of this lifecycle was already retired for (#2726).
+        group.MapPost(UiApiRoutes.LeanBacktestStop, (string backtestId, HttpContext context) =>
+            ApiProblemDetails.NotImplemented(
+                context,
+                "No Lean engine integration exists: Meridian does not launch Lean backtests and cannot stop one. "
+                + "Stop the run with the Lean CLI that started it."))
         .WithName("StopLeanBacktest")
         .RequirePermission(UserPermission.ManageStrategies)
-        .Produces(200)
-        .Produces(404)
+        .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Backtest history

@@ -40,7 +40,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway
+public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway
 {
     /// <inheritdoc />
     public bool UsesFaceValuePercentageOfPar(OrderRequest request)
@@ -78,6 +78,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     private const string BrokerApiSandboxBaseUrl = "https://broker-api.sandbox.alpaca.markets";
     private const string BrokerApiLiveBaseUrl = "https://broker-api.alpaca.markets";
     private const int AccountActivityPageSize = 100;
+    private const int OpenOrderPageSize = 500;
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AlpacaOptions _options;
@@ -251,53 +252,6 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     }
 
     /// <inheritdoc />
-    public async Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(orderId);
-        ObjectDisposedException.ThrowIf(_disposed, this);
-        EnsureConnected();
-
-        using var client = CreateHttpClient();
-
-        // Fetch current order details so the report carries the correct symbol and side.
-        AlpacaOrderResponse? existing = null;
-        try
-        {
-            var getResponse = await client.GetAsync($"{BaseUrl}/v2/orders/{orderId}", ct).ConfigureAwait(false);
-            if (getResponse.IsSuccessStatusCode)
-                existing = await getResponse.Content.ReadFromJsonAsync(
-                    AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponse, ct).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Alpaca failed to fetch order {OrderId} before cancel", orderId);
-        }
-
-        var deleteResponse = await client.DeleteAsync($"{BaseUrl}/v2/orders/{orderId}", ct).ConfigureAwait(false);
-
-        if (!deleteResponse.IsSuccessStatusCode)
-        {
-            var errorBody = await deleteResponse.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            _logger.LogWarning("Alpaca cancel failed for {OrderId}: {Body}", orderId, errorBody);
-        }
-
-        var report = new ExecutionReport
-        {
-            OrderId = orderId,
-            ClientOrderId = existing?.ClientOrderId,
-            ReportType = deleteResponse.IsSuccessStatusCode ? ExecutionReportType.Cancelled : ExecutionReportType.Rejected,
-            Symbol = existing?.Symbol ?? string.Empty,
-            Side = existing?.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
-            OrderStatus = deleteResponse.IsSuccessStatusCode ? OrderStatus.Cancelled : OrderStatus.Rejected,
-            RejectReason = deleteResponse.IsSuccessStatusCode ? null : "Cancel request failed",
-            GatewayOrderId = orderId,
-            Timestamp = DateTimeOffset.UtcNow,
-        };
-        await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
-        return report;
-    }
-
-    /// <inheritdoc />
     public async Task<ExecutionReport> ModifyOrderAsync(
         string orderId, OrderModification modification, CancellationToken ct = default)
     {
@@ -424,21 +378,46 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
         // nested=true so bracket/OCO child legs are returned under their parents regardless of
         // how the flat listing treats held legs; they are flattened below so the kill-switch
-        // sweep and reconciliation see every order the broker is actually working.
-        var response = await client.GetAsync($"{BaseUrl}/v2/orders?status=open&nested=true", ct).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-
-        var orders = await response.Content.ReadFromJsonAsync(
-            AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponseArray, ct).ConfigureAwait(false);
-
-        if (orders is null)
-            return Array.Empty<BrokerOrder>();
-
+        // sweep and reconciliation see every order the broker is actually working. Alpaca's list
+        // is bounded (50 by default, 500 maximum), so walk the broker-ID cursor until the final
+        // short page; a kill-switch cannot equate "first page" with "open book".
         var flattened = new List<BrokerOrder>();
         var seenOrderIds = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var order in orders)
+        var seenCursors = new HashSet<string>(StringComparer.Ordinal);
+        string? beforeOrderId = null;
+
+        while (true)
         {
-            AppendOrderWithLegs(order, flattened, seenOrderIds);
+            var cursorQuery = beforeOrderId is null
+                ? string.Empty
+                : $"&before_order_id={Uri.EscapeDataString(beforeOrderId)}";
+            using var response = await client.GetAsync(
+                $"{BaseUrl}/v2/orders?status=open&nested=true&limit={OpenOrderPageSize}&direction=desc{cursorQuery}",
+                ct).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            var page = await response.Content.ReadFromJsonAsync(
+                AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponseArray, ct).ConfigureAwait(false)
+                ?? [];
+
+            foreach (var order in page)
+            {
+                AppendOrderWithLegs(order, flattened, seenOrderIds);
+            }
+
+            if (page.Length < OpenOrderPageSize)
+            {
+                break;
+            }
+
+            var nextCursor = page[^1].Id;
+            if (string.IsNullOrWhiteSpace(nextCursor) || !seenCursors.Add(nextCursor))
+            {
+                throw new InvalidDataException(
+                    "Alpaca returned a full open-order page without a usable advancing broker-order cursor.");
+            }
+
+            beforeOrderId = nextCursor;
         }
 
         return flattened.AsReadOnly();

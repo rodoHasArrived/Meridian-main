@@ -43,6 +43,8 @@ namespace Meridian.Infrastructure.Adapters.Polygon;
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 public sealed class PolygonMarketDataClient : WebSocketProviderBase
 {
+    private static readonly TimeZoneInfo UsEasternTimeZone = ResolveUsEasternTimeZone();
+
     private readonly IMarketEventPublisher _publisher;
     private readonly TradeDataCollector _tradeCollector;
     private readonly QuoteCollector _quoteCollector;
@@ -668,10 +670,11 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
             var seq = elem.TryGetProperty("q", out var seqProp) && seqProp.TryGetInt64(out var providerSeq) && providerSeq > 0
                 ? providerSeq
                 : 0L;
+            var tradeTimestamp = timestamp > 0
+                ? DateTimeOffset.FromUnixTimeMilliseconds(timestamp)
+                : DateTimeOffset.UtcNow;
             var trade = new MarketTradeUpdate(
-                Timestamp: timestamp > 0
-                    ? DateTimeOffset.FromUnixTimeMilliseconds(timestamp)
-                    : DateTimeOffset.UtcNow,
+                Timestamp: tradeTimestamp,
                 Symbol: symbol,
                 Price: price,
                 Size: size,
@@ -682,8 +685,15 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 RawConditions: rawConditions,
                 Source: MarketDataSources.Polygon,
                 // Polygon's "q" is unique and increasing per ticker but not dense, so a
-                // jump between consecutive values is normal interleaving, not data loss.
-                SequenceIsContiguous: false);
+                // jump between consecutive values is normal interleaving, not data loss. Its
+                // sequence domain is per ticker across trade IDs and venues, so continuity uses
+                // the symbol-owned POLYGON stream while the published StreamId still retains i.
+                SequenceIsContiguous: false,
+                SequenceStreamId: MarketDataSources.Polygon,
+                // Polygon resets q per U.S. equities session. Midnight UTC can still be the
+                // prior Eastern trading date, so the adapter — which owns provider semantics —
+                // stamps the America/New_York market date into the continuity key.
+                SequenceSessionDate: ResolveUsEquitiesSessionDate(tradeTimestamp));
 
             _tradeCollector.OnTrade(trade);
         }
@@ -691,6 +701,31 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         {
             Log.Warning(ex, "Failed to process Polygon trade message");
         }
+    }
+
+    private static DateOnly ResolveUsEquitiesSessionDate(DateTimeOffset timestamp) =>
+        DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(timestamp, UsEasternTimeZone).DateTime);
+
+    private static TimeZoneInfo ResolveUsEasternTimeZone()
+    {
+        foreach (var timeZoneId in new[] { "America/New_York", "Eastern Standard Time" })
+        {
+            try
+            {
+                return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                // Try the platform's alternate IANA/Windows identifier below.
+            }
+            catch (InvalidTimeZoneException)
+            {
+                // Treat a broken installation like a missing identifier and try the alternate.
+            }
+        }
+
+        throw new TimeZoneNotFoundException(
+            "Neither America/New_York nor Eastern Standard Time is available for Polygon session scoping.");
     }
 
     /// <summary>

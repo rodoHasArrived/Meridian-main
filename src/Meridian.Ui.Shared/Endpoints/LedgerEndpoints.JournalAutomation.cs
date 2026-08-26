@@ -405,6 +405,11 @@ public static partial class LedgerEndpoints
                 var result = await service.ApproveAndPostAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
+                    // Derived alongside Actor and tenant scope. This batch approves and posts
+                    // journal entries through a service that gates them on RequireHumanOperator, so
+                    // an origin taken from the body would let a service credential satisfy the very
+                    // control that exists to require a human (#2673).
+                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
                     TenantId = tenantContext.TenantId,
                     CompanyId = tenantContext.CompanyId
                 }, context.RequestAborted).ConfigureAwait(false);

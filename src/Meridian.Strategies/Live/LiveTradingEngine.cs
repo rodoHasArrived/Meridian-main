@@ -773,9 +773,41 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
 
     private async Task<RunLaunchResult> DeferAsync(StrategyRunEntry run, string reason, CancellationToken ct)
     {
+        // Normalised here rather than trusted from the caller: the catalog path passes
+        // `failureReason ?? "..."`, which substitutes for null but not for a whitespace reason, and a
+        // blank one would make the lifecycle transition below throw and cost the run its visible state.
+        reason = string.IsNullOrWhiteSpace(reason) ? "No live strategy implementation available." : reason.Trim();
+
         _logger.LogWarning(
             "Run {RunId} (strategy {StrategyId}) was not activated: {Reason}",
             run.RunId, run.StrategyId, reason);
+
+        // The deferral has to reach the run itself, not only the audit trail. An operator reads run
+        // state, not execution-audit rows, and RecordAuditAsync below no-ops entirely when no audit
+        // trail is registered -- so a promoted run could sit looking promoted, never activate, and
+        // leave nothing but a log line to say why (#2726). Recorded first for that reason: if only
+        // one channel can retain the deferral, it should be the operator-visible one.
+        try
+        {
+            await _repository.RecordLifecycleEventAsync(
+                    run.ActivationDeferred(reason),
+                    StrategyRunLifecycleEventType.ActivationDeferred,
+                    ct)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Deferral is not itself a failure, so this must not throw: doing so would turn a run the
+            // engine declined into an exception on the promotion path and could stall the launch of
+            // every run behind it. The audit row below remains as the second channel.
+            _logger.LogError(
+                ex,
+                "Run {RunId} was deferred ({Reason}) but the deferral could not be recorded on the run, "
+                + "so it is not visible in run state.",
+                run.RunId,
+                reason);
+        }
+
         await RecordAuditAsync(run, "LiveRunActivationDeferred", "Deferred", reason, ct).ConfigureAwait(false);
         return RunLaunchResult.Deferred(reason);
     }

@@ -156,6 +156,75 @@ public sealed class FirstRunExperienceServiceTests
     }
 
     [Fact]
+    public async Task GetAsync_ProviderDataChoice_LeadsWithProviderSetup()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(GetAsync_ProviderDataChoice_LeadsWithProviderSetup));
+        var config = new ConfigStore(Path.Combine(artifacts.RootPath, "appsettings.json"));
+        await config.SaveAsync(new AppConfig(DataRoot: artifacts.RootPath));
+        var service = new FirstRunExperienceService(config);
+
+        // Setup tells a "Connect a provider" user that Meridian guides the next step, so the Ready
+        // screen must lead with provider setup rather than with a desk that has no data yet.
+        await service.CompleteAsync("local-admin", new CompleteFirstRunRequestDto(
+            "collect-market-data", "market-data", "provider", false));
+        var status = await service.GetAsync("local-admin");
+
+        status.DataChoice.Should().Be("provider");
+        status.RecommendedActions[0].Route.Should().Be("/settings/providers");
+        status.RecommendedActions.Should().Contain(action => action.Route == "/data");
+    }
+
+    [Fact]
+    public async Task GetAsync_UploadDataChoice_LeadsWithStatementImport()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(GetAsync_UploadDataChoice_LeadsWithStatementImport));
+        var config = new ConfigStore(Path.Combine(artifacts.RootPath, "appsettings.json"));
+        await config.SaveAsync(new AppConfig(DataRoot: artifacts.RootPath));
+        var service = new FirstRunExperienceService(config);
+
+        await service.CompleteAsync("local-admin", new CompleteFirstRunRequestDto(
+            "monitor-investments", "personal-portfolio", "upload", false));
+        var status = await service.GetAsync("local-admin");
+
+        status.DataChoice.Should().Be("upload");
+        status.RecommendedActions[0].Route.Should().Be("/accounting/statement-import");
+        status.RecommendedActions[0].Label.Should().Contain("Import");
+    }
+
+    [Fact]
+    public async Task GetAsync_SkipDataChoice_LeadsWithTheChosenDesk()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(GetAsync_SkipDataChoice_LeadsWithTheChosenDesk));
+        var config = new ConfigStore(Path.Combine(artifacts.RootPath, "appsettings.json"));
+        await config.SaveAsync(new AppConfig(DataRoot: artifacts.RootPath));
+        var service = new FirstRunExperienceService(config);
+
+        await service.CompleteAsync("local-admin", new CompleteFirstRunRequestDto(
+            "research-strategies", "strategy-research", "skip", false));
+        var status = await service.GetAsync("local-admin");
+
+        status.RecommendedActions[0].Route.Should().Be("/strategy");
+        status.RecommendedActions.Should().Contain(action => action.Route == "/accounting/statement-import");
+    }
+
+    [Fact]
+    public async Task GetAsync_SampleDataChoice_KeepsDeskFirstAndPointsAtTheSampleStatement()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(GetAsync_SampleDataChoice_KeepsDeskFirstAndPointsAtTheSampleStatement));
+        var config = new ConfigStore(Path.Combine(artifacts.RootPath, "appsettings.json"));
+        await config.SaveAsync(new AppConfig(DataRoot: artifacts.RootPath));
+        var service = new FirstRunExperienceService(config);
+
+        // Sample workspaces are already populated, so the desk stays the lead action.
+        await service.CompleteAsync("local-admin", new CompleteFirstRunRequestDto(
+            "monitor-investments", "personal-portfolio", "sample", true));
+        var status = await service.GetAsync("local-admin");
+
+        status.RecommendedActions[0].Route.Should().Be("/portfolio");
+        status.RecommendedActions[1].Label.Should().Be("Review the sample statement");
+    }
+
+    [Fact]
     public async Task CompleteOutcomeAsync_RejectsUnknownOutcome()
     {
         using var artifacts = TestArtifactDirectory.Create(nameof(CompleteOutcomeAsync_RejectsUnknownOutcome));
