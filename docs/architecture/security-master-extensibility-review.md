@@ -852,9 +852,23 @@ Ordered by institutional risk per unit of work, and read as a delta on the stand
 
 ## Resolution pass — 2026-08-26
 
-An implementation pass on the four items prioritised out of the pass above. **No local build or test
-run was available in the authoring environment (no .NET SDK), so every claim below is a source-level
-change validated by CI, not by a local run.**
+An implementation pass on the four items prioritised out of the pass above.
+
+**Validation.** The authoring environment had no .NET SDK preinstalled; one was installed and the
+work was built and tested locally. `dotnet build Meridian.sln -c Release` succeeds with 0 errors, the
+full `Meridian.Tests` suite runs 13,806 passed / 226 skipped / 2 failed, and `Meridian.FSharp.Tests`
+passes 447/447. Both remaining failures are pre-existing and unrelated to this pass, each verified
+rather than assumed:
+
+- `StrategyDesignServiceTests.Scenario_MultiSymbolRebalance_…` reproduces identically on the base
+  commit `2917848a` in a clean worktree. The QuantScript worker is a separate process launched via
+  `dotnet exec`, and the locally installed SDK does not resolve its native dependencies — an
+  artefact of the authoring container, not of the tree. CI's own QuantScript project passes 166/166.
+- `LeanEndpointTests.StopBacktest_UnknownId_Returns404` expects 404 and gets 501, because
+  `f5f4b192` changed the Lean stop route to answer 501 without updating the test. It sits under
+  `Meridian.Tests.Integration`, which every CI `dotnet test` invocation excludes twice over, so CI
+  never runs it. Worth someone fixing — a test outside CI's reach rots silently — but it belongs to
+  the Lean surface, not here.
 
 ### Closed this pass
 
