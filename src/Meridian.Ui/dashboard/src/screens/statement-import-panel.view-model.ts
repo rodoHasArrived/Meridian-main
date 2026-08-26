@@ -7,6 +7,7 @@ import {
   upsertStatementMappingProfile
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { ACTIVATION_OUTCOME_KEYS, recordActivationOutcome } from "@/lib/first-run/activation";
 import type {
   StatementColumnConfidence,
   StatementConnectorDescriptor,
@@ -709,6 +710,9 @@ export function useStatementImportPanelViewModel(
       }
 
       setCommitResult(result);
+      // A duplicate commit still means this statement's data is in the workspace, so both
+      // outcomes satisfy the "import sample or real data" activation step.
+      void recordActivationOutcome(ACTIVATION_OUTCOME_KEYS.dataImported);
     } catch (error) {
       if (!mountedRef.current) {
         return;

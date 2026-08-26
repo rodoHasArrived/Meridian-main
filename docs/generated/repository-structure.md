@@ -2056,6 +2056,7 @@ Meridian-main
 │   │   │   ├── wpf-portfolio-import.png
 │   │   │   ├── wpf-portfolio-shell.png
 │   │   │   ├── wpf-position-blotter.png
+│   │   │   ├── wpf-posted-ledger.png
 │   │   │   ├── wpf-provider-health.png
 │   │   │   ├── wpf-provider.png
 │   │   │   ├── wpf-quant-script.png
@@ -2268,7 +2269,6 @@ Meridian-main
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
-│   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
 │   │   ├── workflow-drift-report.md
 │   │   ├── workflow-manifest.json
@@ -6215,8 +6215,11 @@ Meridian-main
 │   │   │   │   │   ├── accounting
 │   │   │   │   │   │   └── accountingCloseModels.ts
 │   │   │   │   │   ├── first-run
+│   │   │   │   │   │   ├── activation-progress.test.tsx
 │   │   │   │   │   │   ├── activation-progress.tsx
 │   │   │   │   │   │   ├── first-run-screen.tsx
+│   │   │   │   │   │   ├── getting-started.view-model.test.ts
+│   │   │   │   │   │   ├── getting-started.view-model.ts
 │   │   │   │   │   │   └── types.ts
 │   │   │   │   │   └── fund-structure
 │   │   │   │   │       ├── entity-setup-wizard.test.tsx
@@ -6265,6 +6268,9 @@ Meridian-main
 │   │   │   │   │   ├── dev-fixtures
 │   │   │   │   │   │   ├── fixture-resolver.ts
 │   │   │   │   │   │   └── market-data-fixtures.ts
+│   │   │   │   │   ├── first-run
+│   │   │   │   │   │   ├── activation.test.ts
+│   │   │   │   │   │   └── activation.ts
 │   │   │   │   │   ├── historical-chart
 │   │   │   │   │   │   ├── indicators-worker-client.ts
 │   │   │   │   │   │   ├── indicators.test.ts

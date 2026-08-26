@@ -17,6 +17,12 @@ recommendations, and completed activation outcomes. Sample mode stays offline-ca
 and visibly labelled `SAMPLE · PAPER` throughout the shell. Until activation status is known, the
 normal shell stays closed and a failed status read exposes a retry instead of assuming setup is complete.
 
+After setup the masthead `Getting started n/m` chip opens the activation checklist, which lists
+every outcome the host tracks and routes to the surface that completes the next one. Completion is
+reported by the surface that did the work -- statement import commit, reconciliation break
+resolution, report run, and analysis export each call `recordActivationOutcome` in
+`src/lib/first-run/activation.ts` -- so the count never advances on a page visit alone.
+
 ## Purpose
 
 Browser workstation dashboard is the active browser operator workstation.

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { runAnalysisExport } from "@/lib/api";
 import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError, isAbortError } from "@/lib/api-errors";
+import { ACTIVATION_OUTCOME_KEYS, recordActivationOutcome } from "@/lib/first-run/activation";
 import {
   EXPORT_API_ENDPOINTS,
   exportPreviewEndpoint,
@@ -870,6 +871,7 @@ export function useReportingScreenViewModel(
         return;
       }
       setExportStatus(buildExportStatusResult(profileId, profileName, result));
+      void recordActivationOutcome(ACTIVATION_OUTCOME_KEYS.resultSaved);
     } catch (error) {
       if (exportCommandRevisionRef.current !== commandRevision || isAbortError(error)) {
         return;

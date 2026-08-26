@@ -17,6 +17,13 @@ clients consume these endpoints instead of defining client-only setup policy. In
 local-account creation reuses the governed identity store through a loopback-only,
 one-use bootstrap token.
 
+The first-run recommendations returned to clients are derived from the starting-data choice the
+user made during setup: `provider` leads with provider setup, `upload` leads with statement
+import, and `sample`/`skip` lead with the starter kit's desk. Activation outcomes beyond
+`workspace-opened` (and `data-imported` for sample workspaces) are only recorded when a client
+reports the completed work to `POST /api/workstation/first-run/outcomes/complete`, so the
+checklist reflects finished work rather than page visits.
+
 ## Purpose
 
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser

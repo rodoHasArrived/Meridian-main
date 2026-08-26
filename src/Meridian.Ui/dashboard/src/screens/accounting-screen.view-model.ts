@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { ACTIVATION_OUTCOME_KEYS, recordActivationOutcome } from "@/lib/first-run/activation";
 import {
   getCorporateActions,
   getReferenceDataWorkbenchCoverage,
@@ -4105,6 +4106,7 @@ export function useAccountingReconciliationViewModel(
       });
       const updated = requireSuccessfulReconciliationCasework(operation);
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
+      void recordActivationOutcome(ACTIVATION_OUTCOME_KEYS.validationResolved);
     } catch (err) {
       setBreakActionError(describeApiError(err, "Break resolution failed."));
     } finally {
