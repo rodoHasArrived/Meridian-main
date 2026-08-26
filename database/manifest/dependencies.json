@@ -1366,6 +1366,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.Quality.QualityHighLatencySymbolResponse"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse"
     },
     {
@@ -1409,6 +1415,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.Quality.QualitySymbolHealthResponse"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.Quality.QualityTopErrorSymbolResponse"
     },
     {
       "kind": "contract-set-member",
@@ -42769,7 +42781,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "bf577aac1a1738361670ec1c3e29fe7e37cb2630093dcce28e4c287bb9cd5eb9",
+  "fingerprint": "df11ba168e6721637cec56b3b139e4fd58223401790bc63a8db7db7d4a40c431",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -44186,6 +44198,12 @@
     },
     {
       "classification": "response",
+      "id": "contract:Meridian.Contracts.Api.Quality.QualityHighLatencySymbolResponse",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.Quality.QualityHighLatencySymbolResponse"
+    },
+    {
+      "classification": "response",
       "id": "contract:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse"
@@ -44231,6 +44249,12 @@
       "id": "contract:Meridian.Contracts.Api.Quality.QualitySymbolHealthResponse",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.Quality.QualitySymbolHealthResponse"
+    },
+    {
+      "classification": "response",
+      "id": "contract:Meridian.Contracts.Api.Quality.QualityTopErrorSymbolResponse",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.Quality.QualityTopErrorSymbolResponse"
     },
     {
       "classification": "response",
@@ -62399,10 +62423,10 @@
   ],
   "summary": {
     "contract_references": 2934,
-    "contract_set_memberships": 3363,
-    "edges": 7109,
+    "contract_set_memberships": 3365,
+    "edges": 7111,
     "foreign_keys": 98,
     "logical_references": 6,
-    "nodes": 3380
+    "nodes": 3382
   }
 }
