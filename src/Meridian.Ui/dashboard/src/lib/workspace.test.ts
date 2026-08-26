@@ -336,8 +336,10 @@ describe("workspace metadata", () => {
   it("keeps every unwired route out of navigation but still routable", () => {
     // These screens render a permanent "not connected" state. They stay in the route catalog so
     // deep links and old bookmarks resolve, but the nav and command palette filter them out.
-    expect(UNWIRED_WORKSTATION_ROUTES.has("/portfolio/family-office")).toBe(true);
     expect(UNWIRED_WORKSTATION_ROUTES.has("/strategy/quant-lab?view=formulas")).toBe(true);
+
+    // Family Office loads /api/workstation/family-office/overview, so it is navigable again.
+    expect(UNWIRED_WORKSTATION_ROUTES.has("/portfolio/family-office")).toBe(false);
 
     // The wired parent route must stay navigable — only the formulas deep link is unwired.
     expect(UNWIRED_WORKSTATION_ROUTES.has("/strategy/quant-lab")).toBe(false);

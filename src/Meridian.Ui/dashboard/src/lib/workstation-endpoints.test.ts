@@ -77,7 +77,23 @@ import {
   reconciliationBreakTransitionEndpoint,
   reconciliationBreakWaiveEndpoint,
   reconciliationRunEndpoint,
+  qualityCompletenessSummaryEndpoint,
+  qualityHealthEndpoint,
+  qualityHighLatencySymbolsEndpoint,
+  qualityLatencyStatisticsEndpoint,
+  qualityLowCompletenessEndpoint,
+  qualityStaleSymbolsEndpoint,
+  qualityTopErrorSymbolsEndpoint,
+  qualityUnacknowledgedAnomaliesEndpoint,
+  qualityUnhealthySymbolsEndpoint,
+  reconciliationBreakQueueTaxonomyEndpoint,
+  reconciliationBreakRebuiltSnapshotEndpoint,
+  reconciliationOpenCasesEndpoint,
+  reconciliationQueueStatusEndpoint,
+  reconciliationStatementRunBreaksEndpoint,
   reconciliationStatementRunEndpoint,
+  reconciliationStatementRunReconcileEndpoint,
+  reconciliationStatementRunValidationEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
   securityMasterAssetProfileApproveEndpoint,
@@ -703,6 +719,35 @@ describe("workstation API endpoint catalog", () => {
     expect(reconciliationRunEndpoint("recon / 1")).toBe("/api/workstation/reconciliation/runs/recon%20%2F%201");
     expect(reconciliationStatementRunEndpoint("statement / 1")).toBe(
       "/api/workstation/reconciliation/statement-runs/statement%20%2F%201"
+    );
+    expect(qualityHealthEndpoint()).toBe("/api/quality/health");
+    expect(qualityUnhealthySymbolsEndpoint()).toBe("/api/quality/health/unhealthy");
+    expect(qualityLatencyStatisticsEndpoint()).toBe("/api/quality/latency/statistics");
+    expect(qualityStaleSymbolsEndpoint()).toBe("/api/quality/anomalies/stale");
+    expect(qualityCompletenessSummaryEndpoint()).toBe("/api/quality/completeness/summary");
+    // Omitted query parameters leave the route bare so the server's own default applies.
+    expect(qualityHighLatencySymbolsEndpoint()).toBe("/api/quality/latency/high");
+    expect(qualityHighLatencySymbolsEndpoint(250)).toBe("/api/quality/latency/high?thresholdMs=250");
+    expect(qualityTopErrorSymbolsEndpoint(5)).toBe("/api/quality/errors/top-symbols?count=5");
+    expect(qualityUnacknowledgedAnomaliesEndpoint(25)).toBe("/api/quality/anomalies/unacknowledged?count=25");
+    expect(qualityLowCompletenessEndpoint()).toBe("/api/quality/completeness/low");
+    expect(qualityLowCompletenessEndpoint({ date: "2026-08-26", threshold: 0.5 }))
+      .toBe("/api/quality/completeness/low?date=2026-08-26&threshold=0.5");
+    expect(reconciliationQueueStatusEndpoint()).toBe("/api/workstation/reconciliation/queue-status");
+    expect(reconciliationBreakRebuiltSnapshotEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/rebuilt-snapshot"
+    );
+
+    expect(reconciliationOpenCasesEndpoint()).toBe("/api/workstation/reconciliation/cases");
+    expect(reconciliationBreakQueueTaxonomyEndpoint()).toBe("/api/workstation/reconciliation/break-queue/taxonomy");
+    expect(reconciliationStatementRunValidationEndpoint("statement / 1")).toBe(
+      "/api/workstation/reconciliation/statement-runs/statement%20%2F%201/validation"
+    );
+    expect(reconciliationStatementRunBreaksEndpoint("statement / 1")).toBe(
+      "/api/workstation/reconciliation/statement-runs/statement%20%2F%201/breaks"
+    );
+    expect(reconciliationStatementRunReconcileEndpoint("statement / 1")).toBe(
+      "/api/workstation/reconciliation/statement-runs/statement%20%2F%201/reconcile"
     );
     expect(reconciliationBreakQueueEndpoint({ status: "Open", fundAccountId: "fund / 1" })).toBe(
       "/api/workstation/reconciliation/break-queue?status=Open&fundAccountId=fund+%2F+1"
