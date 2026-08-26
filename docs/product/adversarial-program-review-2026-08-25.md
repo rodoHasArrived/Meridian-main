@@ -2276,18 +2276,18 @@ period selection — which is adjacent to §1 but not the same surface: its new
 re-verification of the whole document against a new tree, which is neither necessary — the findings
 are anchored — nor something a merge occasions.
 
-### Fourth addendum — `main` at `8c0c6e36`: which citations still resolve
+### Fourth addendum — `main` at `7d675f40`: which citations still resolve
 
-`main` has now advanced **eight times** since the anchor, and this branch carries all eight:
+`main` has now advanced **nine times** since the anchor, and this branch carries all nine:
 `054e2d27` (#2824), `bc9a94f9` (#2819), `bb43e0e6` (#2825), `eed9987f` (#2827), `3eb6961a` (#2828),
-`9503e296` (#2830), `baf25c0c` (#2801) and `8c0c6e36` (#2807). **Three of those eight have an
-addendum; five do not**, and this addendum does not give them one.
+`9503e296` (#2830), `baf25c0c` (#2801), `8c0c6e36` (#2807) and `7d675f40` (#2831). **Three of those
+nine have an addendum; six do not**, and this addendum does not give them one.
 
 It answers a narrower question instead, and answers it mechanically. The third addendum rechecked
 five claims and its first draft called that "every open item survives the merge" — the overstatement
 is recorded in the ledger. So rather than recheck claims and risk the same inflation, this one
 measures the property that frame discipline actually turns on: **for each file this document cites,
-is the file byte-identical between the anchor `e232ece1` and the merged tree `8c0c6e36`?** Where it
+is the file byte-identical between the anchor `e232ece1` and the merged tree `7d675f40`?** Where it
 is, every `file:line` coordinate into it resolves the same in both frames, with no translation and no
 judgement call. `build/scripts` holds no checker for this; the script used is recorded in the PR.
 
@@ -2306,9 +2306,15 @@ Of the **79 distinct files this document cites**:
 
 | | Count | What it means |
 | --- | ---: | --- |
-| Byte-identical, anchor → `8c0c6e36` | **59** | Every citation into these resolves in both frames unchanged |
+| Byte-identical, anchor → `7d675f40` | **59** | Every citation into these resolves in both frames unchanged |
 | Changed | 17 | Citations stay valid at `e232ece1`; chasing them into the new tree is the round-31 error |
 | Absent at the anchor | 3 | Created by the remediation, so cited only by the addenda, never by a finding |
+
+The same three counts were measured one merge earlier, against `8c0c6e36`, and came out
+**identical** — 79, 59, 17, 3. #2831 touched `StrategyRunEntry.cs`, already in the changed set, and
+otherwise only files this review does not cite. That the figures survive a merge unchanged is weak
+evidence rather than none: it says this particular merge missed the cited surface, not that future
+ones will.
 
 **The three files carrying the headline are all in the identical set.**
 `WorkstationEndpoints.AccountingWorkspace.cs` — which holds both halves of §1's mechanism, the
@@ -2333,7 +2339,7 @@ cited only where an addendum discusses that remediation.
 
 **What this does not establish.** An unchanged file means a citation resolves, not that the finding
 built on it is still true — a finding can be falsified by a change in a *different* file, and nothing
-here rules that out. Five of the eight merges still have no claim-level recheck. Read this as a map
+here rules that out. Six of the nine merges still have no claim-level recheck. Read this as a map
 of which coordinates survived, not as a verdict on the findings.
 
 ## Relationship to existing planning
