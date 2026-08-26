@@ -1,12 +1,14 @@
 using System.Text.Json;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -101,6 +103,11 @@ public static class RiskEndpoints
             }
 
             var statuses = await runtime.GetAllStatusesAsync(context.RequestAborted).ConfigureAwait(false);
+            if (await ShouldRedactViolationDetailAsync(context).ConfigureAwait(false))
+            {
+                statuses = statuses.Select(RedactViolations).ToArray();
+            }
+
             return Results.Json(statuses, jsonOptions);
         })
         .RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ManageOrders)
@@ -122,7 +129,17 @@ public static class RiskEndpoints
             }
 
             var status = await runtime.GetStatusAsync(ruleName, context.RequestAborted).ConfigureAwait(false);
-            return status is null ? Results.NotFound() : Results.Json(status, jsonOptions);
+            if (status is null)
+            {
+                return Results.NotFound();
+            }
+
+            if (await ShouldRedactViolationDetailAsync(context).ConfigureAwait(false))
+            {
+                status = RedactViolations(status);
+            }
+
+            return Results.Json(status, jsonOptions);
         })
         .RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ManageOrders)
         .Produces<RiskRuleStatusDto>(200)
@@ -475,6 +492,97 @@ public static class RiskEndpoints
         }
 
         return "operator";
+    }
+
+    /// <summary>
+    /// Decides whether the caller may read the full text of a rule's recent violations. Those
+    /// messages name traded symbols, order quantities, and entered prices, and the rules routes
+    /// gate only on the global ViewTrades/ManageOrders bits -- so an operator whose entitlement is
+    /// limited to particular accounts would otherwise read every account's activity.
+    /// </summary>
+    /// <remarks>
+    /// This is redaction rather than scoping because the violation records carry no account
+    /// attribution to scope by: the risk-decision audit metadata records rule, code, message,
+    /// severity, observed, and limit, and nothing identifies the fund the order belonged to. A
+    /// scoped filter would have nothing to pass as a scope id. Attributing violations durably is
+    /// its own change.
+    ///
+    /// An absent <see cref="IScopedAccessAssignmentService"/> means the composition has no scoped
+    /// access model at all, so no operator in it is scope-limited and the host-wide view is what
+    /// every ViewTrades holder is entitled to -- redacting there would hide data from fully
+    /// entitled operators with no confidentiality gain. The paths that signal genuine uncertainty
+    /// do fail closed: an unresolvable actor, or a lookup that throws, redacts.
+    /// </remarks>
+    private static async Task<bool> ShouldRedactViolationDetailAsync(HttpContext context)
+    {
+        // Same administrative bypass the manual-override and config routes in this file already use.
+        if (EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+        {
+            return false;
+        }
+
+        var assignments = context.RequestServices.GetService<IScopedAccessAssignmentService>();
+        if (assignments is null)
+        {
+            return false;
+        }
+
+        if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+        {
+            return true;
+        }
+
+        try
+        {
+            var held = await assignments
+                .QueryAsync(new UserAccessAssignmentQueryDto(PrincipalId: actor), context.RequestAborted)
+                .ConfigureAwait(false);
+
+            // Any non-global assignment means this principal's entitlement is bounded to a subset of
+            // the book, whatever the scope kind -- account, fund, portfolio, or legal entity.
+            return held.Any(assignment => assignment.ScopeKind != AccessScopeKindDto.Global);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // Unable to establish that the caller is unrestricted is not a reason to hand them the
+            // host-wide view. Recorded so a directory outage reads as an outage rather than as
+            // every operator silently losing violation detail.
+            context.RequestServices
+                .GetService<ILoggerFactory>()
+                ?.CreateLogger(nameof(RiskEndpoints))
+                .LogWarning(
+                    ex,
+                    "Scoped access lookup failed for {Actor}; redacting risk violation detail.",
+                    actor);
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Replaces violation text with a count that names no symbol, quantity, or price, mirroring the
+    /// count-only shape the runtime already uses for parked escalations. The list is replaced rather
+    /// than emptied so a breached rule still reads as explained: the browser renders one row per
+    /// message, and an empty list on a Constrained rule would look like a rule with no cause.
+    /// </summary>
+    private static RiskRuleStatusDto RedactViolations(RiskRuleStatusDto status)
+    {
+        if (status.RecentViolations.Count == 0)
+        {
+            return status;
+        }
+
+        var count = status.RecentViolations.Count;
+        return status with
+        {
+            RecentViolations = new[]
+            {
+                $"{count} recent {status.RuleName} violation(s). Detail is limited to operators entitled to the whole book."
+            }
+        };
     }
 
     private static bool HasRiskConfigPermission(HttpContext context)
