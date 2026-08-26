@@ -100,6 +100,78 @@ export function validateStatementImportCommitForm(
   return errors;
 }
 
+/** Human labels for the commit fields, so blocked-preview messages can name them. */
+export const STATEMENT_IMPORT_COMMIT_FIELD_LABELS: Record<StatementImportCommitFormField, string> = {
+  sourceKind: "Source kind",
+  sourceInstitution: "Source institution",
+  fundAccountId: "Fund account",
+  externalAccountId: "External account",
+  periodStart: "Period start",
+  periodEnd: "Period end",
+  toleranceProfileId: "Tolerance profile"
+};
+
+/** Order the fields the way the Commit import form lays them out, so the list reads as a path. */
+const STATEMENT_IMPORT_COMMIT_FIELD_ORDER: StatementImportCommitFormField[] = [
+  "sourceKind",
+  "sourceInstitution",
+  "fundAccountId",
+  "externalAccountId",
+  "periodStart",
+  "periodEnd",
+  "toleranceProfileId"
+];
+
+export interface StatementImportPreviewRequirements {
+  /** True when a file is selected but the commit form still holds the preview back. */
+  blocked: boolean;
+  missingFields: StatementImportCommitFormField[];
+  missingLabels: string[];
+  title: string;
+  detail: string;
+}
+
+/**
+ * Explains why a selected statement has not been previewed yet.
+ *
+ * The preview request carries the commit form's account and period, so the panel cannot parse a
+ * file until those are supplied. That dependency used to be invisible: dropping a file with the
+ * form still blank cleared the preview and its error and left no message at all, while the commit
+ * button reported "Preview the statement before committing" -- a loop with no way out. This names
+ * the fields the preview is waiting on so the user can act.
+ */
+export function buildStatementImportPreviewRequirements(
+  form: StatementImportCommitFormState,
+  file: File | null
+): StatementImportPreviewRequirements {
+  const errors = validateStatementImportCommitForm(form, file);
+  const missingFields = STATEMENT_IMPORT_COMMIT_FIELD_ORDER.filter((field) => field in errors);
+  const blocked = file !== null && missingFields.length > 0;
+  const missingLabels = missingFields.map((field) => STATEMENT_IMPORT_COMMIT_FIELD_LABELS[field]);
+
+  return {
+    blocked,
+    missingFields,
+    missingLabels,
+    title: blocked ? "Preview is waiting on the commit details" : "",
+    detail: blocked
+      ? `Meridian reads ${file?.name ?? "the statement"} against a fund account and reporting period, so it cannot preview until you complete ${formatFieldList(missingLabels)} under Commit import below.`
+      : ""
+  };
+}
+
+function formatFieldList(labels: string[]): string {
+  if (labels.length === 0) {
+    return "the commit details";
+  }
+
+  if (labels.length === 1) {
+    return labels[0];
+  }
+
+  return `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
+}
+
 export interface StatementMappingProfileFieldDraft {
   canonicalField: string;
   sourceColumn: string;
@@ -258,6 +330,8 @@ export interface StatementImportPanelViewModel {
   selectedKind: string | null;
   selectedKindSummary: StatementKindSummary | null;
   selectKind: (kind: string) => void;
+  /** Why a selected file has not been previewed yet; blocked is false once nothing is missing. */
+  previewRequirements: StatementImportPreviewRequirements;
   selectFile: (file: File | null) => void;
   selectConnector: (connectorId: string) => void;
   selectProfile: (profileId: string) => void;
@@ -469,6 +543,17 @@ export function useStatementImportPanelViewModel(
       nextProfileId = connector.defaultProfileId;
       setSelectedProfileId(nextProfileId);
     }
+
+    // The connector is the institution, so fill that blocking field in rather than making the user
+    // retype what they just picked. Only ever fills a blank: a value the user typed is theirs.
+    // Fund account and period are deliberately not guessed -- a wrong one misfiles the statement.
+    if (connector?.displayName) {
+      setCommitForm((current) => (
+        current.sourceInstitution.trim()
+          ? current
+          : { ...current, sourceInstitution: connector.displayName }
+      ));
+    }
   }, [connectors, selectedProfileId]);
 
   const selectProfile = useCallback((profileId: string) => {
@@ -637,9 +722,20 @@ export function useStatementImportPanelViewModel(
     [kindSummaries, selectedKind]
   );
 
+  const previewRequirements = useMemo(
+    () => buildStatementImportPreviewRequirements(commitForm, selectedFile),
+    [commitForm, selectedFile]
+  );
+
   const commitDisabledReason = useMemo(() => {
     if (!selectedFile) {
       return "Select a statement file before committing the import.";
+    }
+
+    // Report the field that actually holds things up rather than asking for a preview the panel
+    // is itself refusing to run.
+    if (previewRequirements.blocked) {
+      return `Complete ${previewRequirements.missingLabels.join(", ")} below so Meridian can preview the statement.`;
     }
 
     if (commitBusy) {
@@ -663,7 +759,7 @@ export function useStatementImportPanelViewModel(
     }
 
     return null;
-  }, [commitBusy, hasBlockingIssues, preview, previewBusy, previewError, selectedFile]);
+  }, [commitBusy, hasBlockingIssues, preview, previewBusy, previewError, previewRequirements, selectedFile]);
 
   const commit = useCallback(async () => {
     if (commitBusy) {
@@ -767,6 +863,7 @@ export function useStatementImportPanelViewModel(
     selectedKind,
     selectedKindSummary,
     selectKind: setSelectedKind,
+    previewRequirements,
     selectFile,
     selectConnector,
     selectProfile,
