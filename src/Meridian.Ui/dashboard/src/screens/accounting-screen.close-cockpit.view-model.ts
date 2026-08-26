@@ -2018,8 +2018,8 @@ function buildCloseOperatingCoverageRows(closePlan: ClosePeriodPlan): Accounting
     evidenceLabel: formatCount(item.evidenceCount, "evidence link"),
     blockerLabel: formatCount(item.blockingIssueCount, "blocking issue"),
     requiredAction: item.requiredAction,
-    issueLabels: (item.blockingIssues ?? []).map((issue) =>
-      `${issue.severity} | ${issue.code}${issue.targetId ? ` | ${issue.targetId}` : ""}`)
+    issueLabels: (item.blockingIssues ?? []).map((issue) => `${issue.severity} | ${issue.code}${issue.targetId ? ` | ${issue.targetId}` : ""}`),
+    evidenceReferences: (item.evidenceLinks ?? []).filter((link) => link.trim().length > 0)
   }));
 }
 

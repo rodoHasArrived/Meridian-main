@@ -1433,9 +1433,14 @@ public sealed partial class FinancialRecordExplorerReadService
         AddDimensionFilter(filters, "investor", "Investor", dimensions.Select(static value => value.InvestorId));
         AddDimensionFilter(filters, "capital-account", "Capital Account", dimensions.Select(static value => value.CapitalAccountId));
         AddDimensionFilter(filters, "instrument", "Instrument", dimensions.Select(static value => value.InstrumentId?.ToString("D")));
+        AddDimensionFilter(filters, "position", "Position", dimensions.Select(static value => value.PositionId?.ToString("D")));
         AddDimensionFilter(filters, "tax-lot", "Tax Lot", dimensions.Select(static value => value.TaxLotId));
         AddDimensionFilter(filters, "cost-center", "Cost Center", dimensions.Select(static value => value.CostCenterId));
         AddDimensionFilter(filters, "counterparty", "Counterparty", dimensions.Select(static value => value.CounterpartyId));
+        AddDimensionFilter(filters, "organization", "Organization", dimensions.Select(static value => value.OrganizationId));
+        AddDimensionFilter(filters, "customer", "Customer", dimensions.Select(static value => value.CustomerId));
+        AddDimensionFilter(filters, "vendor", "Vendor", dimensions.Select(static value => value.VendorId));
+        AddDimensionFilter(filters, "project", "Project", dimensions.Select(static value => value.ProjectId));
 
         var externalGlDimensions = dimensions
             .SelectMany(static value => value.ExternalGlDimensions)
@@ -1490,6 +1495,10 @@ public sealed partial class FinancialRecordExplorerReadService
         AddDimensionField(fields, "Tax Lot", dimensions.TaxLotId);
         AddDimensionField(fields, "Cost Center", dimensions.CostCenterId);
         AddDimensionField(fields, "Counterparty", dimensions.CounterpartyId);
+        AddDimensionField(fields, "Organization", dimensions.OrganizationId);
+        AddDimensionField(fields, "Customer", dimensions.CustomerId);
+        AddDimensionField(fields, "Vendor", dimensions.VendorId);
+        AddDimensionField(fields, "Project", dimensions.ProjectId);
 
         foreach (var pair in dimensions.ExternalGlDimensions
             .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
