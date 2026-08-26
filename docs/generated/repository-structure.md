@@ -6249,11 +6249,13 @@ Meridian-main
 │   │   │   │   │   │   └── types.ts
 │   │   │   │   │   ├── api
 │   │   │   │   │   │   ├── archive-maintenance.api.ts
+│   │   │   │   │   │   ├── banking-payments.api.ts
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
 │   │   │   │   │   │   ├── covered-call.api.test.ts
 │   │   │   │   │   │   ├── covered-call.api.ts
 │   │   │   │   │   │   ├── data-operations-assurance.api.ts
 │   │   │   │   │   │   ├── execution-audit.api.ts
+│   │   │   │   │   │   ├── execution-blotter.api.ts
 │   │   │   │   │   │   ├── family-office.api.ts
 │   │   │   │   │   │   ├── portfolio-cash-ladder.api.ts
 │   │   │   │   │   │   ├── promotion.contracts.ts
@@ -6424,6 +6426,10 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.operations-panels.tsx
 │   │   │   │   │   ├── accounting-screen.operator-focus.test.ts
 │   │   │   │   │   ├── accounting-screen.operator-focus.ts
+│   │   │   │   │   ├── accounting-screen.payment-approvals.test.tsx
+│   │   │   │   │   ├── accounting-screen.payment-approvals.tsx
+│   │   │   │   │   ├── accounting-screen.payment-approvals.view-model.test.ts
+│   │   │   │   │   ├── accounting-screen.payment-approvals.view-model.ts
 │   │   │   │   │   ├── accounting-screen.posted-ledger-panel.test.tsx
 │   │   │   │   │   ├── accounting-screen.posted-ledger-panel.tsx
 │   │   │   │   │   ├── accounting-screen.posted-ledger.view-model.test.ts
@@ -6658,6 +6664,10 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.audit-trail.view-model.test.ts
 │   │   │   │   │   ├── trading-screen.audit-trail.view-model.ts
 │   │   │   │   │   ├── trading-screen.evidence-timeline.ts
+│   │   │   │   │   ├── trading-screen.execution-blotter.test.tsx
+│   │   │   │   │   ├── trading-screen.execution-blotter.tsx
+│   │   │   │   │   ├── trading-screen.execution-blotter.view-model.test.ts
+│   │   │   │   │   ├── trading-screen.execution-blotter.view-model.ts
 │   │   │   │   │   ├── trading-screen.governed-approvals.test.ts
 │   │   │   │   │   ├── trading-screen.governed-approvals.ts
 │   │   │   │   │   ├── trading-screen.linked-context.ts
@@ -6702,10 +6712,12 @@ Meridian-main
 │   │   │   │   │   └── verified-operation-outcome.ts
 │   │   │   │   ├── types
 │   │   │   │   │   ├── archive-maintenance.types.ts
+│   │   │   │   │   ├── banking-payments.types.ts
 │   │   │   │   │   ├── canonical-symbol.ts
 │   │   │   │   │   ├── covered-call.types.ts
 │   │   │   │   │   ├── data-operations-assurance.ts
 │   │   │   │   │   ├── execution-audit.types.ts
+│   │   │   │   │   ├── execution-blotter.types.ts
 │   │   │   │   │   ├── family-office.types.ts
 │   │   │   │   │   ├── instrument-accounting.test.ts
 │   │   │   │   │   ├── instrument-accounting.ts

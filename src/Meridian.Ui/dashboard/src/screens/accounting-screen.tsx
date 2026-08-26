@@ -68,6 +68,7 @@ import {
   TradingParametersPanel,
   reconciliationQueueColumns,
 } from "@/screens/accounting-screen.operations-panels";
+import { BankingPaymentApprovalsPanel } from "@/screens/accounting-screen.payment-approvals";
 import {
   ChartAccountPathBuilder,
   ConfigureActivationRail,
@@ -2502,6 +2503,10 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
 
       {sectionVisibility.showApprovals ? (
         <AccountingApprovalsWorkstream />
+      ) : null}
+
+      {sectionVisibility.showApprovals ? (
+        <BankingPaymentApprovalsPanel />
       ) : null}
 
       {sectionVisibility.showExceptionWorkbench ? (

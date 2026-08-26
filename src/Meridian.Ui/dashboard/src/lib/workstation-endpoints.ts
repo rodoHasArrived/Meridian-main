@@ -205,8 +205,31 @@ export const EXECUTION_API_ENDPOINTS = {
   controls: UI_API_ROUTES.ExecutionControls,
   defaultPositionLimit: UI_API_ROUTES.ExecutionControlsDefaultPositionLimit,
   symbolPositionLimits: "/api/execution/controls/position-limits",
-  manualOverrides: UI_API_ROUTES.ExecutionControlsManualOverrides
+  manualOverrides: UI_API_ROUTES.ExecutionControlsManualOverrides,
+  health: "/api/execution/health",
+  account: "/api/execution/account",
+  positionsBlotter: "/api/execution/positions/blotter",
+  positionsActionUpsize: "/api/execution/positions/actions/upsize"
 } as const;
+
+export const BANKING_API_ENDPOINTS = {
+  pendingPayments: "/api/banking/payments/pending",
+  paymentApprove: "/api/banking/payments/{pendingPaymentId}/approve",
+  paymentReject: "/api/banking/payments/{pendingPaymentId}/reject",
+  transactions: "/api/banking/transactions"
+} as const;
+
+export function bankingPaymentApproveEndpoint(pendingPaymentId: string): string {
+  return routeWithParam(BANKING_API_ENDPOINTS.paymentApprove, "pendingPaymentId", pendingPaymentId);
+}
+
+export function bankingPaymentRejectEndpoint(pendingPaymentId: string): string {
+  return routeWithParam(BANKING_API_ENDPOINTS.paymentReject, "pendingPaymentId", pendingPaymentId);
+}
+
+export function bankingTransactionsEndpoint(entityId?: string): string {
+  return `${BANKING_API_ENDPOINTS.transactions}${queryString({ entityId })}`;
+}
 
 export const RISK_API_ENDPOINTS = {
   rules: "/api/risk/rules",

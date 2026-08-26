@@ -1255,7 +1255,7 @@
       "files": [
         "src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs"
       ],
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -1267,7 +1267,7 @@
       "files": [
         "src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs"
       ],
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -1303,7 +1303,7 @@
       "files": [
         "src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs"
       ],
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -1315,7 +1315,7 @@
       "files": [
         "src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs"
       ],
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -2455,7 +2455,7 @@
       "files": [
         "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs"
       ],
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -2611,7 +2611,7 @@
       "files": [
         "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs"
       ],
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -2731,7 +2731,7 @@
       "files": [
         "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs"
       ],
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": true
@@ -2743,7 +2743,7 @@
       "files": [
         "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs"
       ],
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": true

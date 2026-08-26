@@ -18,10 +18,10 @@ comment is not mistaken for a call.
 | Metric | Count |
 | --- | ---: |
 | Mapped backend routes (path + verb) | 1153 |
-| Wired — called by a dashboard module | 478 |
+| Wired — called by a dashboard module | 486 |
 | Registry-only — declared in the endpoint registry, no caller | 92 |
-| Unwired — no dashboard reference at all | 583 |
-| Actionable (unwired or registry-only, not excluded by design) | 627 |
+| Unwired — no dashboard reference at all | 575 |
+| Actionable (unwired or registry-only, not excluded by design) | 619 |
 | Excluded by design (probes, webhooks, tombstones, desktop-only) | 48 |
 
 ## Actionable routes
@@ -258,27 +258,6 @@ comment is not mistaken for a call.
 | GET | `/api/storage/tiers/plan` | unwired | — |
 | GET | `/api/storage/tiers/statistics` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` (16)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| GET | `/api/execution/account` | unwired | — |
-| GET | `/api/execution/accounts` | unwired | — |
-| GET | `/api/execution/accounts/{accountId}` | unwired | called by WPF |
-| GET | `/api/execution/accounts/{accountId}/positions` | unwired | — |
-| GET | `/api/execution/capabilities` | unwired | — |
-| POST | `/api/execution/controls/circuit-breaker` | unwired | called by WPF |
-| GET | `/api/execution/health` | unwired | — |
-| GET | `/api/execution/orders` | unwired | — |
-| GET | `/api/execution/orders/{orderId}` | unwired | — |
-| GET | `/api/execution/portfolio` | unwired | — |
-| GET | `/api/execution/portfolio/aggregate` | unwired | — |
-| GET | `/api/execution/positions` | unwired | — |
-| POST | `/api/execution/positions/actions/upsize` | unwired | called by WPF |
-| GET | `/api/execution/positions/blotter` | unwired | called by WPF |
-| POST | `/api/execution/positions/{symbol}/close` | unwired | — |
-| GET | `/api/execution/sessions/{sessionId}/tca` | unwired | — |
-
 ### `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs` (16)
 
 | Method | Route | State | Notes |
@@ -357,6 +336,23 @@ comment is not mistaken for a call.
 | GET | `/api/environment-designer/versions/current` | unwired | — |
 | GET | `/api/environment-designer/versions/{versionId:guid}` | unwired | — |
 | POST | `/api/environment-designer/versions/{versionId:guid}/rollback` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` (12)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/execution/accounts` | unwired | — |
+| GET | `/api/execution/accounts/{accountId}` | unwired | called by WPF |
+| GET | `/api/execution/accounts/{accountId}/positions` | unwired | — |
+| GET | `/api/execution/capabilities` | unwired | — |
+| POST | `/api/execution/controls/circuit-breaker` | unwired | called by WPF |
+| GET | `/api/execution/orders` | unwired | — |
+| GET | `/api/execution/orders/{orderId}` | unwired | — |
+| GET | `/api/execution/portfolio` | unwired | — |
+| GET | `/api/execution/portfolio/aggregate` | unwired | — |
+| GET | `/api/execution/positions` | unwired | — |
+| POST | `/api/execution/positions/{symbol}/close` | unwired | — |
+| GET | `/api/execution/sessions/{sessionId}/tca` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingGovernance.cs` (12)
 
@@ -603,18 +599,6 @@ comment is not mistaken for a call.
 | GET | `/api/backfill/providers/statuses` | unwired | — |
 | GET | `/api/backfill/status` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs` (7)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| POST | `/api/banking/payments` | unwired | — |
-| GET | `/api/banking/payments/pending` | unwired | — |
-| POST | `/api/banking/payments/{pendingPaymentId:guid}/approve` | unwired | — |
-| POST | `/api/banking/payments/{pendingPaymentId:guid}/bank-evidence` | unwired | — |
-| POST | `/api/banking/payments/{pendingPaymentId:guid}/currency-remediation` | unwired | — |
-| POST | `/api/banking/payments/{pendingPaymentId:guid}/reject` | unwired | — |
-| GET | `/api/banking/transactions` | unwired | — |
-
 ### `src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs` (7)
 
 | Method | Route | State | Notes |
@@ -834,6 +818,14 @@ comment is not mistaken for a call.
 | POST | `/api/auth/login` | unwired | called by WPF |
 | POST | `/api/auth/logout` | unwired | — |
 | GET | `/api/auth/me` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs` (3)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/banking/payments` | unwired | — |
+| POST | `/api/banking/payments/{pendingPaymentId:guid}/bank-evidence` | unwired | — |
+| POST | `/api/banking/payments/{pendingPaymentId:guid}/currency-remediation` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/CalendarEndpoints.cs` (3)
 
