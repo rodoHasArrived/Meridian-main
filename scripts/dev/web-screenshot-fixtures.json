@@ -1920,6 +1920,234 @@
         }
       }
     ],
+    "/api/ledger/books": [
+      {
+        "ledgerBookId": "00000000-0000-0000-0000-0000000000aa",
+        "fundProfileId": "fund-alpha",
+        "fundStructureNodeId": "00000000-0000-0000-0000-0000000000bb",
+        "fundStructureNodeKind": "Fund",
+        "displayName": "Fund Alpha Master Book",
+        "baseCurrency": "USD",
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-07-31T00:00:00Z",
+        "description": "Governed posting book for Fund Alpha.",
+        "accountingBasis": "Primary",
+        "accountingPolicyId": "fund-alpha-gaap",
+        "accountingPolicyVersion": "2026.1"
+      }
+    ],
+    "/api/ledger/periods": [
+      {
+        "periodId": "11111111-1111-1111-1111-111111111111",
+        "ledgerBookId": "00000000-0000-0000-0000-0000000000aa",
+        "fiscalYear": 2026,
+        "periodNo": 6,
+        "label": "June 2026",
+        "startDate": "2026-06-01",
+        "endDate": "2026-06-30",
+        "status": "HardClosed",
+        "openedAt": "2026-06-01T00:00:00Z",
+        "closedAt": "2026-07-02T00:00:00Z",
+        "version": 1,
+        "accountingBasis": "Primary",
+        "accountingPolicyId": "fund-alpha-gaap",
+        "accountingPolicyVersion": "2026.1"
+      }
+    ],
+    "/api/ledger/periods/11111111-1111-1111-1111-111111111111/trial-balance": [
+      {
+        "accountName": "Cash",
+        "accountType": "Asset",
+        "symbol": null,
+        "financialAccountId": "acct-cash",
+        "debitTotal": 120500,
+        "creditTotal": 0,
+        "balance": 120500,
+        "entryCount": 3,
+        "accountingBasis": "Primary",
+        "accountingPolicyId": "fund-alpha-gaap",
+        "accountingPolicyVersion": "2026.1",
+        "sourceJournalEntryId": "je-cash-1",
+        "dimensions": {
+          "fundId": "fund-alpha",
+          "entityId": "entity-fund-alpha"
+        }
+      },
+      {
+        "accountName": "Public Investments",
+        "accountType": "Asset",
+        "symbol": null,
+        "financialAccountId": "acct-investments",
+        "debitTotal": 380000,
+        "creditTotal": 0,
+        "balance": 380000,
+        "entryCount": 2,
+        "accountingBasis": "Primary",
+        "accountingPolicyId": "fund-alpha-gaap",
+        "accountingPolicyVersion": "2026.1",
+        "sourceJournalEntryId": "je-invest-1",
+        "dimensions": {
+          "fundId": "fund-alpha",
+          "entityId": "entity-fund-alpha"
+        }
+      },
+      {
+        "accountName": "Contributed Capital",
+        "accountType": "Equity",
+        "symbol": null,
+        "financialAccountId": "acct-capital",
+        "debitTotal": 0,
+        "creditTotal": 500500,
+        "balance": 500500,
+        "entryCount": 1,
+        "accountingBasis": "Primary",
+        "accountingPolicyId": "fund-alpha-gaap",
+        "accountingPolicyVersion": "2026.1",
+        "sourceJournalEntryId": "je-capital-1",
+        "dimensions": {
+          "fundId": "fund-alpha",
+          "entityId": "entity-fund-alpha"
+        }
+      }
+    ],
+    "/api/ledger/periods/11111111-1111-1111-1111-111111111111/journal-entries": [
+      {
+        "journalEntryId": "je-cash-1",
+        "periodId": "11111111-1111-1111-1111-111111111111",
+        "ledgerBookId": "00000000-0000-0000-0000-0000000000aa",
+        "timestamp": "2026-06-30T00:00:00Z",
+        "description": "Cash sweep",
+        "totalDebits": 500,
+        "totalCredits": 500,
+        "isBalanced": true,
+        "accountingBasis": "Primary",
+        "lines": [
+          {
+            "entryId": "je-cash-1-line-1",
+            "journalEntryId": "je-cash-1",
+            "timestamp": "2026-06-30T00:00:00Z",
+            "accountName": "Cash",
+            "accountType": "Asset",
+            "symbol": null,
+            "financialAccountId": "acct-cash",
+            "debit": 500,
+            "credit": 0,
+            "description": "Cash sweep receipt",
+            "dimensions": {
+              "fundId": "fund-alpha",
+              "entityId": "entity-fund-alpha",
+              "instrumentId": "cash-usd"
+            }
+          },
+          {
+            "entryId": "je-cash-1-line-2",
+            "journalEntryId": "je-cash-1",
+            "timestamp": "2026-06-30T00:00:00Z",
+            "accountName": "Public Investments",
+            "accountType": "Asset",
+            "symbol": null,
+            "financialAccountId": "acct-investments",
+            "debit": 0,
+            "credit": 500,
+            "description": "Cash sweep funding",
+            "dimensions": {
+              "fundId": "fund-alpha",
+              "entityId": "entity-fund-alpha"
+            }
+          }
+        ]
+      },
+      {
+        "journalEntryId": "je-capital-1",
+        "periodId": "11111111-1111-1111-1111-111111111111",
+        "ledgerBookId": "00000000-0000-0000-0000-0000000000aa",
+        "timestamp": "2026-06-15T00:00:00Z",
+        "description": "Capital contribution",
+        "totalDebits": 500500,
+        "totalCredits": 500500,
+        "isBalanced": true,
+        "accountingBasis": "Primary",
+        "lines": [
+          {
+            "entryId": "je-capital-1-line-1",
+            "journalEntryId": "je-capital-1",
+            "timestamp": "2026-06-15T00:00:00Z",
+            "accountName": "Cash",
+            "accountType": "Asset",
+            "symbol": null,
+            "financialAccountId": "acct-cash",
+            "debit": 500500,
+            "credit": 0,
+            "description": "Investor contribution received",
+            "dimensions": {
+              "fundId": "fund-alpha",
+              "entityId": "entity-fund-alpha",
+              "investorId": "investor-1"
+            }
+          },
+          {
+            "entryId": "je-capital-1-line-2",
+            "journalEntryId": "je-capital-1",
+            "timestamp": "2026-06-15T00:00:00Z",
+            "accountName": "Contributed Capital",
+            "accountType": "Equity",
+            "symbol": null,
+            "financialAccountId": "acct-capital",
+            "debit": 0,
+            "credit": 500500,
+            "description": "Investor contribution recorded",
+            "dimensions": {
+              "fundId": "fund-alpha",
+              "entityId": "entity-fund-alpha",
+              "investorId": "investor-1"
+            }
+          }
+        ]
+      }
+    ],
+    "/api/ledger/periods/11111111-1111-1111-1111-111111111111/pnl-summary": {
+      "periodId": "11111111-1111-1111-1111-111111111111",
+      "ledgerBookId": "00000000-0000-0000-0000-0000000000aa",
+      "fiscalYear": 2026,
+      "periodNo": 6,
+      "label": "June 2026",
+      "totalRevenue": 18400,
+      "totalExpenses": 6200,
+      "netIncome": 12200,
+      "periodOnPeriodVariance": 1450,
+      "openBreakCount": 0,
+      "signoffStatus": "SignedOff",
+      "completedAt": "2026-07-02T00:00:00Z",
+      "accountingBasis": "Primary",
+      "accountingPolicyId": "fund-alpha-gaap",
+      "accountingPolicyVersion": "2026.1",
+      "revenueLines": [
+        {
+          "accountName": "Realized Gains",
+          "accountType": "Revenue",
+          "symbol": null,
+          "financialAccountId": "acct-realized-gains",
+          "debitTotal": 0,
+          "creditTotal": 18400,
+          "balance": 18400,
+          "entryCount": 4,
+          "accountingBasis": "Primary"
+        }
+      ],
+      "expenseLines": [
+        {
+          "accountName": "Management Fees",
+          "accountType": "Expense",
+          "symbol": null,
+          "financialAccountId": "acct-management-fees",
+          "debitTotal": 6200,
+          "creditTotal": 0,
+          "balance": 6200,
+          "entryCount": 1,
+          "accountingBasis": "Primary"
+        }
+      ]
+    },
     "/api/accounting-system/import/preview": {
       "summary": {
         "importId": "qbo-fixture-20260131",
@@ -4779,21 +5007,396 @@
       "filters": [],
       "columns": [
         {
-          "id": "accountName",
-          "label": "Account",
-          "width": 220
+          "columnId": "accountName",
+          "header": "Account",
+          "cellKind": "text",
+          "width": 220,
+          "isRightAligned": false
         },
         {
-          "id": "balance",
-          "label": "Balance",
-          "kind": "money",
+          "columnId": "balance",
+          "header": "Balance",
+          "cellKind": "money",
           "width": 120,
           "isRightAligned": true
         }
       ],
-      "rows": [],
-      "selectedRecord": null,
-      "proofActions": []
+      "rows": [
+        {
+          "recordId": "ledger:run-42:acct-cash",
+          "recordType": "ledger-account",
+          "label": "Cash",
+          "source": "Strategy run run-42",
+          "status": "Simulated",
+          "tone": "Success",
+          "sourceRunId": "run-42",
+          "cells": [
+            {
+              "columnId": "accountName",
+              "displayValue": "Cash",
+              "rawValue": "Cash",
+              "tone": "Default",
+              "linkHref": "/accounting/accounts/detail?accountId=acct-cash&runId=run-42"
+            },
+            {
+              "columnId": "balance",
+              "displayValue": "$120,500.00",
+              "rawValue": "120500.0",
+              "tone": "Success",
+              "linkHref": ""
+            }
+          ],
+          "detail": {
+            "recordId": "ledger:run-42:acct-cash",
+            "recordType": "ledger-account",
+            "title": "Cash",
+            "subtitle": "Asset · Strategy run run-42",
+            "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
+            "tone": "Success",
+            "fields": [
+              {
+                "label": "Account type",
+                "value": "Asset",
+                "detail": "",
+                "tone": "Default"
+              },
+              {
+                "label": "Balance",
+                "value": "$120,500.00",
+                "detail": "Run-scoped simulated balance.",
+                "tone": "Success"
+              },
+              {
+                "label": "Entity",
+                "value": "Fund Alpha",
+                "detail": "",
+                "tone": "Default"
+              }
+            ],
+            "proofActions": [
+              {
+                "actionId": "open-journal:je-cash-1",
+                "label": "Open source journal entry",
+                "description": "Open the run journal entry that produced this balance.",
+                "href": "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "usedIn": [
+              {
+                "relationshipId": "journal:je-cash-1",
+                "label": "Cash sweep",
+                "description": "Journal entry je-cash-1 posted this account's run balance.",
+                "href": "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "impacts": [
+              {
+                "relationshipId": "trial-balance:ledger:run-42:acct-cash",
+                "label": "Run trial balance",
+                "description": "Included in the strategy run's simulated trial balance.",
+                "href": "/strategy/run-ledger?runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "fullRecordHref": "/accounting/accounts/detail?accountId=acct-cash&runId=run-42"
+          }
+        },
+        {
+          "recordId": "ledger:run-42:acct-investments",
+          "recordType": "ledger-account",
+          "label": "Public Investments",
+          "source": "Strategy run run-42",
+          "status": "Simulated",
+          "tone": "Default",
+          "sourceRunId": "run-42",
+          "cells": [
+            {
+              "columnId": "accountName",
+              "displayValue": "Public Investments",
+              "rawValue": "Public Investments",
+              "tone": "Default",
+              "linkHref": "/accounting/accounts/detail?accountId=acct-investments&runId=run-42"
+            },
+            {
+              "columnId": "balance",
+              "displayValue": "$380,000.00",
+              "rawValue": "380000.0",
+              "tone": "Default",
+              "linkHref": ""
+            }
+          ],
+          "detail": {
+            "recordId": "ledger:run-42:acct-investments",
+            "recordType": "ledger-account",
+            "title": "Public Investments",
+            "subtitle": "Asset · Strategy run run-42",
+            "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
+            "tone": "Default",
+            "fields": [
+              {
+                "label": "Account type",
+                "value": "Asset",
+                "detail": "",
+                "tone": "Default"
+              },
+              {
+                "label": "Balance",
+                "value": "$380,000.00",
+                "detail": "Run-scoped simulated balance.",
+                "tone": "Default"
+              },
+              {
+                "label": "Entity",
+                "value": "Fund Alpha",
+                "detail": "",
+                "tone": "Default"
+              }
+            ],
+            "proofActions": [
+              {
+                "actionId": "open-journal:je-invest-1",
+                "label": "Open source journal entry",
+                "description": "Open the run journal entry that produced this balance.",
+                "href": "/accounting/journal-entries/detail?journalEntryId=je-invest-1&runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "usedIn": [
+              {
+                "relationshipId": "journal:je-invest-1",
+                "label": "Position revaluation",
+                "description": "Journal entry je-invest-1 posted this account's run balance.",
+                "href": "/accounting/journal-entries/detail?journalEntryId=je-invest-1&runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "impacts": [
+              {
+                "relationshipId": "trial-balance:ledger:run-42:acct-investments",
+                "label": "Run trial balance",
+                "description": "Included in the strategy run's simulated trial balance.",
+                "href": "/strategy/run-ledger?runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "fullRecordHref": "/accounting/accounts/detail?accountId=acct-investments&runId=run-42"
+          }
+        },
+        {
+          "recordId": "ledger:run-42:acct-capital",
+          "recordType": "ledger-account",
+          "label": "Contributed Capital",
+          "source": "Strategy run run-42",
+          "status": "Simulated",
+          "tone": "Default",
+          "sourceRunId": "run-42",
+          "cells": [
+            {
+              "columnId": "accountName",
+              "displayValue": "Contributed Capital",
+              "rawValue": "Contributed Capital",
+              "tone": "Default",
+              "linkHref": "/accounting/accounts/detail?accountId=acct-capital&runId=run-42"
+            },
+            {
+              "columnId": "balance",
+              "displayValue": "($500,500.00)",
+              "rawValue": "-500500.0",
+              "tone": "Default",
+              "linkHref": ""
+            }
+          ],
+          "detail": {
+            "recordId": "ledger:run-42:acct-capital",
+            "recordType": "ledger-account",
+            "title": "Contributed Capital",
+            "subtitle": "Equity · Strategy run run-42",
+            "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
+            "tone": "Default",
+            "fields": [
+              {
+                "label": "Account type",
+                "value": "Equity",
+                "detail": "",
+                "tone": "Default"
+              },
+              {
+                "label": "Balance",
+                "value": "($500,500.00)",
+                "detail": "Run-scoped simulated balance.",
+                "tone": "Default"
+              },
+              {
+                "label": "Entity",
+                "value": "Fund Alpha",
+                "detail": "",
+                "tone": "Default"
+              }
+            ],
+            "proofActions": [
+              {
+                "actionId": "open-journal:je-capital-1",
+                "label": "Open source journal entry",
+                "description": "Open the run journal entry that produced this balance.",
+                "href": "/accounting/journal-entries/detail?journalEntryId=je-capital-1&runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "usedIn": [
+              {
+                "relationshipId": "journal:je-capital-1",
+                "label": "Capital contribution",
+                "description": "Journal entry je-capital-1 posted this account's run balance.",
+                "href": "/accounting/journal-entries/detail?journalEntryId=je-capital-1&runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "impacts": [
+              {
+                "relationshipId": "trial-balance:ledger:run-42:acct-capital",
+                "label": "Run trial balance",
+                "description": "Included in the strategy run's simulated trial balance.",
+                "href": "/strategy/run-ledger?runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "fullRecordHref": "/accounting/accounts/detail?accountId=acct-capital&runId=run-42"
+          }
+        }
+      ],
+      "selectedRecord": {
+        "recordId": "ledger:run-42:acct-cash",
+        "recordType": "ledger-account",
+        "title": "Cash",
+        "subtitle": "Asset · Strategy run run-42",
+        "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
+        "tone": "Success",
+        "fields": [
+          {
+            "label": "Account type",
+            "value": "Asset",
+            "detail": "",
+            "tone": "Default"
+          },
+          {
+            "label": "Balance",
+            "value": "$120,500.00",
+            "detail": "Run-scoped simulated balance.",
+            "tone": "Success"
+          },
+          {
+            "label": "Entity",
+            "value": "Fund Alpha",
+            "detail": "",
+            "tone": "Default"
+          }
+        ],
+        "proofActions": [
+          {
+            "actionId": "open-journal:je-cash-1",
+            "label": "Open source journal entry",
+            "description": "Open the run journal entry that produced this balance.",
+            "href": "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42",
+            "tone": "Default"
+          }
+        ],
+        "usedIn": [
+          {
+            "relationshipId": "journal:je-cash-1",
+            "label": "Cash sweep",
+            "description": "Journal entry je-cash-1 posted this account's run balance.",
+            "href": "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42",
+            "tone": "Default"
+          }
+        ],
+        "impacts": [
+          {
+            "relationshipId": "trial-balance:ledger:run-42:acct-cash",
+            "label": "Run trial balance",
+            "description": "Included in the strategy run's simulated trial balance.",
+            "href": "/strategy/run-ledger?runId=run-42",
+            "tone": "Default"
+          }
+        ],
+        "fullRecordHref": "/accounting/accounts/detail?accountId=acct-cash&runId=run-42"
+      },
+      "proofActions": [
+        {
+          "actionId": "open-run-trial-balance",
+          "label": "Open run trial balance",
+          "description": "Review the full simulated trial balance for run run-42.",
+          "href": "/strategy/run-ledger?runId=run-42",
+          "tone": "Default"
+        }
+      ],
+      "recordGraph": {
+        "nodes": [
+          {
+            "nodeId": "ledger:run-42:acct-cash",
+            "label": "Cash",
+            "nodeType": "ledger-account",
+            "tone": "Success",
+            "href": "/accounting/accounts/detail?accountId=acct-cash&runId=run-42"
+          },
+          {
+            "nodeId": "rel:journal:je-cash-1",
+            "label": "Cash sweep",
+            "nodeType": "relationship",
+            "tone": "Default",
+            "href": "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42"
+          },
+          {
+            "nodeId": "ledger:run-42:acct-investments",
+            "label": "Public Investments",
+            "nodeType": "ledger-account",
+            "tone": "Default",
+            "href": "/accounting/accounts/detail?accountId=acct-investments&runId=run-42"
+          },
+          {
+            "nodeId": "rel:journal:je-invest-1",
+            "label": "Position revaluation",
+            "nodeType": "relationship",
+            "tone": "Default",
+            "href": "/accounting/journal-entries/detail?journalEntryId=je-invest-1&runId=run-42"
+          },
+          {
+            "nodeId": "ledger:run-42:acct-capital",
+            "label": "Contributed Capital",
+            "nodeType": "ledger-account",
+            "tone": "Default",
+            "href": "/accounting/accounts/detail?accountId=acct-capital&runId=run-42"
+          },
+          {
+            "nodeId": "rel:journal:je-capital-1",
+            "label": "Capital contribution",
+            "nodeType": "relationship",
+            "tone": "Default",
+            "href": "/accounting/journal-entries/detail?journalEntryId=je-capital-1&runId=run-42"
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "ledger:run-42:acct-cash",
+            "targetNodeId": "rel:journal:je-cash-1",
+            "label": "used in",
+            "tone": "Default"
+          },
+          {
+            "sourceNodeId": "ledger:run-42:acct-investments",
+            "targetNodeId": "rel:journal:je-invest-1",
+            "label": "used in",
+            "tone": "Default"
+          },
+          {
+            "sourceNodeId": "ledger:run-42:acct-capital",
+            "targetNodeId": "rel:journal:je-capital-1",
+            "label": "used in",
+            "tone": "Default"
+          }
+        ]
+      }
     }
   }
 }

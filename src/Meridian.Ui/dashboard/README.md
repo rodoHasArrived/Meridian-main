@@ -119,6 +119,13 @@ browser renders retained documents with classification, source hash, typed chann
 tenant/scope, extraction status, reviewer state, linked operational objects, open support-request
 count, support-only authority posture, and manifest links, while keeping intake and readiness policy
 in shared contracts/endpoints.
+When the statement-run service returns nothing, the reconciliation desk derives run rows from the
+reconciliation queue. The queue carries break and case counts but no match totals, so derived rows
+report match counts as not reported (`—`, with the reason on the row) rather than printing the
+placeholder zeros, and the Positions, Cash, and Transactions detail tabs drop their badge and say
+the totals were not reported instead of crediting the reconciliation service for them. A
+service-reported run that genuinely matched nothing still reads `0`: zero and unknown are different
+facts in a reconciliation.
 Statement import previews an uploaded file against the fund account and reporting period from the
 Commit import form, so the panel cannot parse anything until those fields are complete. That
 dependency is stated on the panel: selecting a file with the form still blank names the outstanding
