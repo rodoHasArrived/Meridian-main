@@ -75,7 +75,6 @@ import {
   type TradingConfirmViewModel
 } from "@/screens/trading-screen.view-model";
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
-import { ExecutionAuditTrailPanel } from "@/screens/trading-screen.audit-trail";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
@@ -762,7 +761,6 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </CardContent>
         </Card>
       </section>
-      <ExecutionAuditTrailPanel />
       </section>
       ) : null}
 
