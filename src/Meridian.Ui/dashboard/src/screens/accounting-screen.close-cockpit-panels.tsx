@@ -755,6 +755,13 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                         ))}
                       </ul>
                     ) : null}
+                    {row.evidenceReferences.length > 0 ? (
+                      <ul className="mt-2 space-y-1" aria-label={`Evidence references for ${row.label}`}>
+                        {row.evidenceReferences.map((reference) => (
+                          <li key={`${row.controlId}-${reference}`} className="break-all font-mono text-xs text-muted-foreground">{reference}</li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </div>
                 ))}
               </div>
