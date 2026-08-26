@@ -2148,96 +2148,6 @@ public static partial class LedgerEndpoints
             ? actor
             : suppliedActor;
 
-    private static UpsertChartOfAccountsNodeRequest WithAccessContext(
-        UpsertChartOfAccountsNodeRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
-
-    private static UpsertJournalEntryTemplateRequest WithAccessContext(
-        UpsertJournalEntryTemplateRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
-
-    private static UpsertPostingRuleRequest WithAccessContext(
-        UpsertPostingRuleRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
-
-    private static ApprovePostingRulePromotionRequest WithAccessContext(
-        ApprovePostingRulePromotionRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
-            // Re-derived like Actor and tenant scope above: the bound value decides whether the
-            // human-operator governance gate applies, and it arrived in the request body (#2673).
-            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
-        };
-    }
-
-    private static UpsertAccountingRuleTestCaseRequest WithAccessContext(
-        UpsertAccountingRuleTestCaseRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
-
-    private static ActivateAccountingConfigurationRequest WithAccessContext(
-        ActivateAccountingConfigurationRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
-            // Re-derived like Actor and tenant scope above: the bound value decides whether the
-            // human-operator governance gate applies, and it arrived in the request body (#2673).
-            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
-        };
-    }
-
     private static IResult MapServiceException(LedgerBookServiceException exception)
         => exception switch
         {
@@ -2832,5 +2742,4 @@ public static partial class LedgerEndpoints
 
         return LedgerDimensionTags.HasAnyDimension(canonical) ? canonical : null;
     }
-
 }
