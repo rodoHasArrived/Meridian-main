@@ -1,11 +1,11 @@
 {
   "total_files": 657,
-  "total_lines": 134908,
+  "total_lines": 134915,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 251,
-  "average_lines": 205.3,
+  "average_lines": 205.4,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
