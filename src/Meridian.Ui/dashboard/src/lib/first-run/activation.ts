@@ -40,8 +40,12 @@ export function subscribeToActivationProgress(listener: ActivationListener): () 
   };
 }
 
+// Defensive about the cached shape: whatever the host returned is held here, and a response that
+// is not a first-run status must not poison every later report with a TypeError.
 function isAlreadyComplete(key: ActivationOutcomeKey): boolean {
-  return cachedStatus?.outcomes.some((outcome) => outcome.key === key && outcome.isComplete) ?? false;
+  const outcomes = cachedStatus?.outcomes;
+  return Array.isArray(outcomes)
+    && outcomes.some((outcome) => outcome?.key === key && outcome.isComplete === true);
 }
 
 /**
@@ -50,31 +54,40 @@ function isAlreadyComplete(key: ActivationOutcomeKey): boolean {
  * so the promise always resolves.
  */
 export function recordActivationOutcome(key: ActivationOutcomeKey): Promise<void> {
-  if (isAlreadyComplete(key)) {
+  try {
+    if (isAlreadyComplete(key)) {
+      return Promise.resolve();
+    }
+
+    const pending = inFlight.get(key);
+    if (pending) {
+      return pending;
+    }
+
+    // Dispatch through a resolved promise so a synchronous throw from the request layer becomes a
+    // rejection this chain handles, rather than unwinding into the caller's own try/catch and
+    // turning a workflow that succeeded into a reported failure.
+    const request = Promise.resolve()
+      .then(() => apiPostJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunOutcomeComplete, { key }))
+      .then((status) => {
+        cachedStatus = status;
+        for (const listener of listeners) {
+          listener(status);
+        }
+      })
+      .catch(() => {
+        // Activation evidence is advisory; the completed workflow stands either way.
+      })
+      .finally(() => {
+        inFlight.delete(key);
+      });
+
+    inFlight.set(key, request);
+    return request;
+  } catch {
+    // Same contract as the rejection path above, for anything that fails before dispatch.
     return Promise.resolve();
   }
-
-  const pending = inFlight.get(key);
-  if (pending) {
-    return pending;
-  }
-
-  const request = apiPostJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunOutcomeComplete, { key })
-    .then((status) => {
-      cachedStatus = status;
-      for (const listener of listeners) {
-        listener(status);
-      }
-    })
-    .catch(() => {
-      // Activation evidence is advisory; the completed workflow stands either way.
-    })
-    .finally(() => {
-      inFlight.delete(key);
-    });
-
-  inFlight.set(key, request);
-  return request;
 }
 
 /** Test seam: drop cached status, subscribers, and in-flight posts. */

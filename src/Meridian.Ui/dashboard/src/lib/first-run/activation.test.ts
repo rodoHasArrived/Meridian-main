@@ -95,6 +95,26 @@ describe("recordActivationOutcome", () => {
     expect(postJson).toHaveBeenCalledTimes(2);
   });
 
+  it("survives a host response that is not a first-run status", async () => {
+    // Regression: the returned payload is cached, and a cached shape without `outcomes` used to
+    // make the next report throw synchronously into the caller -- turning an export or import that
+    // had already succeeded into a reported failure.
+    postJson.mockResolvedValue({ jobId: "export-1", success: true });
+
+    await recordActivationOutcome(ACTIVATION_OUTCOME_KEYS.resultSaved);
+
+    expect(() => recordActivationOutcome(ACTIVATION_OUTCOME_KEYS.resultSaved)).not.toThrow();
+    await expect(recordActivationOutcome(ACTIVATION_OUTCOME_KEYS.resultSaved)).resolves.toBeUndefined();
+  });
+
+  it("resolves instead of propagating when the request layer throws synchronously", async () => {
+    postJson.mockImplementation(() => {
+      throw new Error("no transport");
+    });
+
+    await expect(recordActivationOutcome(ACTIVATION_OUTCOME_KEYS.reportRun)).resolves.toBeUndefined();
+  });
+
   it("stops notifying a subscriber once it unsubscribes", async () => {
     postJson.mockResolvedValue(status(true));
     const listener = vi.fn();

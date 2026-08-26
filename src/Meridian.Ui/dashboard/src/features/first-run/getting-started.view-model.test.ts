@@ -41,6 +41,13 @@ describe("buildGettingStartedViewModel", () => {
     expect(buildGettingStartedViewModel(status({ outcomes: [] })).visible).toBe(false);
   });
 
+  it("stays hidden when the status carries no outcome list at all", () => {
+    // The chip renders on every screen; a malformed status must hide it, not crash the masthead.
+    const malformed = { ...status(), outcomes: undefined } as unknown as FirstRunStatus;
+
+    expect(buildGettingStartedViewModel(malformed).visible).toBe(false);
+  });
+
   it("counts host-recorded completions rather than page visits", () => {
     const model = buildGettingStartedViewModel(status());
 

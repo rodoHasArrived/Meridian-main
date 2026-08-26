@@ -47,7 +47,9 @@ const EMPTY: GettingStartedViewModel = {
  * offer next, so the checklist can never claim progress the host has not recorded.
  */
 export function buildGettingStartedViewModel(status?: FirstRunStatus | null): GettingStartedViewModel {
-  if (!status?.isComplete || status.outcomes.length === 0) {
+  // Guard the shape as well as the flag: the shell renders this on every screen, so a malformed
+  // status must degrade to a hidden chip rather than crash the masthead.
+  if (!status?.isComplete || !Array.isArray(status.outcomes) || status.outcomes.length === 0) {
     return EMPTY;
   }
 
