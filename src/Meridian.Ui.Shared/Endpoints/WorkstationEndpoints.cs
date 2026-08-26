@@ -1961,8 +1961,11 @@ public static partial class WorkstationEndpoints
                     request with
                     {
                         ResolvedBy = ResolveCurrentActor(context),
-                        // Narrowed against the principal; the bound value decides a governance gate (#2673).
-                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+                        // Derived from the principal, discarding the body: this is the statement
+                        // legacy-resolve adapter, which is authoritative over the caller's identity
+                        // like the rest of the reconciliation casework routes. Before #2673 the
+                        // origin was left as the browser sent it. See DeriveActionOriginFromPrincipal.
+                        ActionOrigin = EndpointAuthorization.DeriveActionOriginFromPrincipal(context)
                     },
                     context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);

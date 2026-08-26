@@ -13,11 +13,13 @@ automation that declares itself honestly must still be refused -- that is the ca
 exists for -- so ResolveTrustedActionOrigin takes the *narrower* of the declaration and the
 principal's standing, and a call site there passes the declared value in.
 
-The reconciliation casework adapters are the deliberate exception: they are authoritative over the
-caller's identity, replacing Actor/ResolvedBy with the principal rather than believing the body, and
-the origin is part of that same identity. Those call DeriveActionOriginFromPrincipal, which ignores
-the declaration. Either way the origin comes from the principal when it matters, so neither form can
-let a non-interactive credential reach HumanOperator.
+The reconciliation break casework routes are the deliberate exception: their bodies are legacy
+browser-supplied input the server is authoritative over, and two endpoint tests pin that the
+declared origin is discarded there along with the declared actor. Those call
+DeriveActionOriginFromPrincipal. Which family a route belongs to is a trust decision about that
+route, not something inferable from the handler's shape -- most governed endpoints re-derive Actor
+too. Either way the origin comes from the principal when it matters, so neither form can let a
+non-interactive credential reach HumanOperator, which is what #2673 required.
 
 The endpoints already knew the pattern -- they re-derive Actor, TenantId and CompanyId from the
 authenticated principal in a `request with { ... }` block -- they just did not apply it to this one
@@ -150,9 +152,11 @@ def main() -> int:
             "request.ActionOrigin)` in the same `request with { ... }` block that re-derives Actor "
             "and tenant scope. Pass the declared value in: the resolver returns the narrower of it "
             "and the principal's standing, so automation that declares itself is still refused.\n"
-            f"\nIf the handler is authoritative over the caller's identity -- it overwrites Actor or "
-            f"ResolvedBy rather than believing the body -- use `{PRINCIPAL_RESOLVER}(context)` "
-            "instead, which discards the declaration along with the rest of it.",
+            f"\nThe reconciliation break casework routes use `{PRINCIPAL_RESOLVER}(context)` "
+            "instead, which discards the declaration entirely. That is a per-route trust decision, "
+            "not something to infer from the shape of the handler -- most governed endpoints also "
+            "re-derive Actor, so overwriting the actor does not make a route one of them. Default "
+            f"to `{TRUSTED_RESOLVER}` unless you are adding to that casework family.",
             file=sys.stderr,
         )
         return 1

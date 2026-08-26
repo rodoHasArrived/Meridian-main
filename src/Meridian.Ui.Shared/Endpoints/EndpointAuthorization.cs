@@ -337,17 +337,22 @@ public static class EndpointAuthorization
     /// </summary>
     /// <remarks>
     /// <para>
-    /// For the reconciliation casework adapters the body is legacy browser-supplied input that the
-    /// server is authoritative over: those handlers already overwrite <c>Actor</c>/<c>ResolvedBy</c>
-    /// with the authenticated principal rather than trusting the caller's, and the origin travels
-    /// with them as part of the same identity. Keeping a caller's declaration there would let the
-    /// browser label a casework decision, which is the thing those routes exist to prevent.
+    /// This is for the reconciliation break casework routes, whose bodies are legacy
+    /// browser-supplied input the server is authoritative over. Keeping a caller's declaration
+    /// there would let the browser label a casework decision, which is what those routes exist to
+    /// prevent, and two endpoint tests pin that the declared origin is discarded along with the
+    /// declared actor.
     /// </para>
     /// <para>
-    /// Use <see cref="ResolveTrustedActionOrigin"/> instead wherever the declaration is meaningful
-    /// — the governance-gated material commands, where automation declaring itself honestly must
-    /// still be refused. The two differ only in whether a declared non-human origin is believed;
-    /// both derive the same way, so neither can let a non-interactive principal reach
+    /// <b>Which family a route belongs to is a trust decision about that route, not something to
+    /// read off the handler.</b> Most governance-gated endpoints re-derive <c>Actor</c> as well, so
+    /// overwriting the actor does not make a route identity-authoritative in this sense. Default to
+    /// <see cref="ResolveTrustedActionOrigin"/> — the declaration is meaningful there, and
+    /// automation declaring itself honestly must still be refused.
+    /// </para>
+    /// <para>
+    /// The two differ only in whether a declared non-human origin is believed; both derive the same
+    /// way, so neither can let a non-interactive principal reach
     /// <see cref="OperationsActionOriginDto.HumanOperator"/> and both close #2673.
     /// </para>
     /// </remarks>
