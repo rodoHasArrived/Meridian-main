@@ -1,4 +1,4 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, OctagonX, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -691,6 +691,20 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   {executionEvidence.controlsPanel?.title ?? "Execution controls snapshot"}
                 </p>
                 <div className="panel-action-zone">
+                  {executionEvidence.controlsPanel && (
+                    <Button
+                      size="sm"
+                      variant={executionEvidence.controlsPanel.breakerAction.kind === "open-circuit-breaker" ? "destructive" : "outline"}
+                      onClick={() => confirmVm.openConfirm(executionEvidence.controlsPanel!.breakerAction)}
+                      disabled={executionEvidence.controlsPanel.breakerActionDisabled}
+                      disabledReason={executionEvidence.controlsPanel.breakerActionDisabledReason}
+                      aria-label={executionEvidence.controlsPanel.breakerActionAriaLabel}
+                      title={executionEvidence.controlsPanel.breakerActionAriaLabel}
+                    >
+                      <OctagonX className="mr-2 h-4 w-4" />
+                      {executionEvidence.controlsPanel.breakerActionLabel}
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="outline"

@@ -88,6 +88,7 @@ import type {
   FinancialRecordExplorerSavedViewSaveRequestDto,
   FinancialRecordExplorerSelectedRecordDto,
   ExportAnalysisResult,
+  ExecutionCircuitBreakerActivationResponse,
   ExecutionControlSnapshot,
   ExecutionAuditEntry,
   AccountingWorkspaceResponse,
@@ -234,6 +235,7 @@ import type {
   WorkflowPresetSaveRequest,
   CreateExecutionManualOverrideRequest,
   ExecutionManualOverride,
+  UpdateExecutionCircuitBreakerRequest,
   UpdateExecutionPositionLimitRequest,
   FeatureCapabilitySettingsResponse,
   LedgerMappingAssignmentRequest,
@@ -2756,6 +2758,10 @@ export function getExecutionAudit(take = 20) {
 
 export function getExecutionControls() {
   return getJson<ExecutionControlSnapshot>(EXECUTION_API_ENDPOINTS.controls);
+}
+
+export function updateExecutionCircuitBreaker(request: UpdateExecutionCircuitBreakerRequest) {
+  return postJson<ExecutionCircuitBreakerActivationResponse>(EXECUTION_API_ENDPOINTS.circuitBreaker, request);
 }
 
 export function updateExecutionDefaultPositionLimit(request: UpdateExecutionPositionLimitRequest) {

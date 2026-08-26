@@ -955,11 +955,43 @@ export interface ExecutionControlSnapshot {
   symbolPositionLimits: Record<string, number>;
   manualOverrides: ExecutionManualOverride[];
   asOf: string;
+  version: number;
 }
 
 export interface UpdateExecutionPositionLimitRequest {
   maxPositionSize: number | null;
   reason?: string | null;
+}
+
+export interface UpdateExecutionCircuitBreakerRequest {
+  isOpen: boolean;
+  reason?: string | null;
+  correlationId?: string | null;
+}
+
+export type KillSwitchSweepOutcome = "Completed" | "Partial" | "Failed";
+
+export interface KillSwitchSweepFailure {
+  orderId: string;
+  symbol: string | null;
+  reason: string;
+}
+
+export interface KillSwitchSweepResult {
+  outcome: KillSwitchSweepOutcome;
+  requested: number;
+  cancelled: number;
+  stillWorking: KillSwitchSweepFailure[];
+  brokerViewUnavailable?: boolean | null;
+  brokerViewError?: string | null;
+}
+
+/**
+ * Opening the breaker returns the snapshot plus the coupled cancel-all sweep. Closing it - or any
+ * composition without an `IOrderManager` - returns a bare snapshot, so `sweep` stays optional.
+ */
+export interface ExecutionCircuitBreakerActivationResponse extends ExecutionControlSnapshot {
+  sweep?: KillSwitchSweepResult | null;
 }
 
 export interface RiskRuleStatus {

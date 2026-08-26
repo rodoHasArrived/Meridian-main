@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
 import {
   AUTH_API_ENDPOINTS,
   ACCOUNTING_SYSTEM_API_ENDPOINTS,
@@ -837,6 +838,7 @@ describe("execution control route contract parity", () => {
   const CONTRACT_EXECUTION_MANUAL_OVERRIDES = "/api/execution/controls/manual-overrides" as const;
   const CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR_TEMPLATE =
     "/api/execution/controls/manual-overrides/{overrideId}/clear" as const;
+  const CONTRACT_EXECUTION_CIRCUIT_BREAKER = "/api/execution/controls/circuit-breaker" as const;
 
   it("keeps frontend helper constants aligned with backend contracts", () => {
     expect(
@@ -858,5 +860,17 @@ describe("execution control route contract parity", () => {
       executionManualOverrideClearEndpoint("override-1"),
       "frontend helper diverged from backend contract: manual override clear route template"
     ).toBe(CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR_TEMPLATE.replace("{overrideId}", "override-1"));
+
+    expect(
+      EXECUTION_API_ENDPOINTS.circuitBreaker,
+      "frontend helper diverged from backend contract: circuit-breaker route"
+    ).toBe(CONTRACT_EXECUTION_CIRCUIT_BREAKER);
+  });
+
+  it("keeps the kill switch reachable from the browser lane", () => {
+    expect(
+      EXECUTION_API_ENDPOINTS.circuitBreaker,
+      "the browser workstation must be able to open the execution circuit breaker, not only WPF"
+    ).toBe(UI_API_ROUTES.ExecutionControlsCircuitBreaker);
   });
 });

@@ -199,6 +199,7 @@ export const EXECUTION_API_ENDPOINTS = {
   sessionsCreate: UI_API_ROUTES.ExecutionSessionCreate,
   audit: UI_API_ROUTES.ExecutionAudit,
   controls: UI_API_ROUTES.ExecutionControls,
+  circuitBreaker: UI_API_ROUTES.ExecutionControlsCircuitBreaker,
   defaultPositionLimit: UI_API_ROUTES.ExecutionControlsDefaultPositionLimit,
   symbolPositionLimits: "/api/execution/controls/position-limits",
   manualOverrides: UI_API_ROUTES.ExecutionControlsManualOverrides
