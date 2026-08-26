@@ -164,6 +164,9 @@ verify_dotnet() {
   run_step "Enforce ledger-book-native accounting scope" \
     "$python_cmd" build/scripts/ci/check-ledger-book-scope.py
 
+  run_step "Enforce ledger dimension coverage across surfaces" \
+    "$python_cmd" build/scripts/ci/check-ledger-dimension-coverage.py
+
   run_step "Build web workstation .NET lane" \
     bash -c 'set -euo pipefail; dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore -p:EnableWindowsTargeting=true -p:UseAppHost=false 2>&1 | tee artifacts/build-logs/web-workstation-build.log'
 

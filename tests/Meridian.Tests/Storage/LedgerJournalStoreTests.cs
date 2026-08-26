@@ -7,6 +7,7 @@ using Meridian.Storage.Ledger;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using System.Data;
+using System.Reflection;
 using System.Text.Json;
 
 namespace Meridian.Tests.Storage;
@@ -2304,4 +2305,112 @@ public sealed class LedgerJournalStoreTests
 
         throw new DirectoryNotFoundException("Unable to locate Meridian repository root.");
     }
+
+    /// <summary>
+    /// Every dimension declared on <see cref="LedgerLineDimensionSet"/> must survive
+    /// canonicalization and reach the JSONB containment predicate.
+    ///
+    /// Both paths rebuild the field list by hand -- <c>CanonicalizeLineDimensions</c> reconstructs
+    /// the record field by field, and <c>BuildLineDimensionContainmentJson</c> re-lists every key --
+    /// and neither can reach <c>LedgerLineDimensionSetFields</c>, which is internal to
+    /// Meridian.Ledger. A dimension added to the record but not threaded through them fails
+    /// silently in the worst way: canonicalization strips it before persistence, and the
+    /// containment predicate ignores it, so a dimension-scoped journal query returns rows that do
+    /// not match the requested scope. No exception, no log -- wrong rows (ACCT-CHECKLIST-03).
+    ///
+    /// Reflecting over the record turns that drift into a build failure here instead.
+    /// </summary>
+    [Fact]
+    public void LineDimensions_CarryEveryDeclaredDimensionThroughCanonicalizationAndContainment()
+    {
+        var populated = FullyPopulatedLineDimensions();
+        var declared = typeof(LedgerLineDimensionSet)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .OrderBy(static property => property.Name, StringComparer.Ordinal)
+            .ToArray();
+
+        // Check the fixture first, so a newly declared dimension reports as an unset fixture rather
+        // than as a mysterious missing key in one of the assertions below.
+        foreach (var property in declared)
+        {
+            HasDimensionValue(property, populated).Should().BeTrue(
+                "{0} is declared on LedgerLineDimensionSet but this fixture leaves it unset; populate "
+                + "it so the canonicalization and containment assertions actually cover it",
+                property.Name);
+        }
+
+        var canonical = PostgresLedgerJournalStore.CanonicalizeLineDimensions(populated);
+
+        canonical.Should().NotBeNull();
+        foreach (var property in declared)
+        {
+            HasDimensionValue(property, canonical!).Should().BeTrue(
+                "canonicalization must preserve {0}; it rebuilds the record field by field, so a "
+                + "dimension it does not list is stripped before the line is ever persisted",
+                property.Name);
+        }
+
+        var json = PostgresLedgerJournalStore.BuildLineDimensionContainmentJson(populated);
+
+        json.Should().NotBeNull();
+        using var document = JsonDocument.Parse(json!);
+        var containmentKeys = document.RootElement
+            .EnumerateObject()
+            .Select(static property => property.Name)
+            .ToHashSet(StringComparer.Ordinal);
+
+        foreach (var property in declared)
+        {
+            containmentKeys.Should().Contain(
+                ToCamelCase(property.Name),
+                "the containment predicate must filter on {0}; a dimension missing from it is ignored "
+                + "by dimension-scoped journal queries, which then return rows outside the requested scope",
+                property.Name);
+        }
+    }
+
+    /// <summary>
+    /// A <see cref="LedgerLineDimensionSet"/> with every declared dimension populated. Kept beside
+    /// the reflection test that consumes it: when a dimension is added to the record, that test
+    /// fails here first and names the field to add.
+    /// </summary>
+    private static LedgerLineDimensionSet FullyPopulatedLineDimensions()
+        => new(
+            FundId: "fund-alpha",
+            EntityId: "entity-master",
+            SleeveId: "sleeve-core",
+            StrategyId: "strategy-momentum",
+            InvestorId: "investor-lp-1",
+            CapitalAccountId: "capital-account-1",
+            InstrumentId: Guid.Parse("2a9e5505-f6c6-4ce4-aac5-a80ab95968f2"),
+            TaxLotId: "tax-lot-1",
+            CostCenterId: "fund-accounting",
+            CounterpartyId: "administrator",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "FundAccounting"
+            },
+            OrganizationId: "organization-1",
+            PortfolioId: "portfolio-1",
+            BookId: "book-1",
+            AccountId: "account-1",
+            CustomerId: "customer-1",
+            VendorId: "vendor-1",
+            ProjectId: "project-1")
+        {
+            PositionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70")
+        };
+
+    private static bool HasDimensionValue(PropertyInfo property, LedgerLineDimensionSet dimensions)
+        => property.GetValue(dimensions) switch
+        {
+            null => false,
+            string text => !string.IsNullOrWhiteSpace(text),
+            // Never null -- it defaults to an empty dictionary -- so emptiness is what "unset" means.
+            IReadOnlyDictionary<string, string> externalGlDimensions => externalGlDimensions.Count > 0,
+            _ => true
+        };
+
+    private static string ToCamelCase(string name)
+        => char.ToLowerInvariant(name[0]) + name[1..];
 }
