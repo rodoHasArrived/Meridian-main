@@ -8,15 +8,26 @@ using Microsoft.AspNetCore.Http;
 namespace Meridian.Tests.Integration.EndpointTests;
 
 /// <summary>
-/// Covers <see cref="EndpointAuthorization.ResolveTrustedActionOrigin"/>, which decides the origin
-/// the human-operator governance gate judges.
+/// Covers the two entry points that decide the origin the human-operator governance gate judges:
+/// <see cref="EndpointAuthorization.ResolveTrustedActionOrigin"/> and
+/// <see cref="EndpointAuthorization.DeriveActionOriginFromPrincipal"/>.
 /// </summary>
 /// <remarks>
+/// <para>
 /// The endpoint suites already prove that a <i>declared</i> automation origin is refused. What they
 /// cannot show is the hole #2673 actually reported: that <b>omitting</b> the field used to grant
 /// human standing to a caller that does not have it, because the DTO default is the permissive
 /// <see cref="OperationsActionOriginDto.HumanOperator"/>. These tests pin both directions, and the
 /// monotonicity property that keeps them from trading off against each other.
+/// </para>
+/// <para>
+/// The two entry points exist because two route families have different trust contracts. On the
+/// governance-gated material commands the declaration is meaningful and binding when it narrows.
+/// On the reconciliation casework adapters the body is legacy browser-supplied input the server is
+/// authoritative over — those replace <c>Actor</c> outright, and the origin goes with it. What both
+/// must guarantee, and what the last test here pins, is that neither lets a non-interactive
+/// principal reach <see cref="OperationsActionOriginDto.HumanOperator"/>.
+/// </para>
 /// </remarks>
 public sealed class TrustedActionOriginTests
 {
@@ -121,5 +132,44 @@ public sealed class TrustedActionOriginTests
             OperationsOriginGuard.IsHumanOperator(fromSession).Should().BeFalse(
                 "declaring automation is binding even on a session");
         }
+    }
+
+    [Fact]
+    public void DerivingFromThePrincipalIgnoresTheBody_ButStillRefusesAnApiKey()
+    {
+        // The casework adapters' contract: the browser does not get to label the decision, in
+        // either direction. What #2673 required of them is the second assertion -- the constant
+        // HumanOperator they used to stamp is gone.
+        EndpointAuthorization.DeriveActionOriginFromPrincipal(InteractiveSession())
+            .Should().Be(OperationsActionOriginDto.HumanOperator);
+
+        EndpointAuthorization.DeriveActionOriginFromPrincipal(ApiKeyPrincipal())
+            .Should().Be(OperationsActionOriginDto.AutomationAssistant);
+    }
+
+    [Fact]
+    public void DerivingFromAnUnrecognisedPrincipal_FailsClosed()
+    {
+        EndpointAuthorization.DeriveActionOriginFromPrincipal(new DefaultHttpContext())
+            .Should().Be(OperationsActionOriginDto.AutomationAssistant);
+    }
+
+    [Theory]
+    [InlineData(OperationsActionOriginDto.HumanOperator)]
+    [InlineData(OperationsActionOriginDto.AutomationSuggestion)]
+    [InlineData(OperationsActionOriginDto.AssistantDraft)]
+    [InlineData(OperationsActionOriginDto.AutomationAssistant)]
+    public void NeitherEntryPointLetsANonInteractivePrincipalReachHumanStanding(
+        OperationsActionOriginDto declared)
+    {
+        // The property that has to hold across both route families, or #2673 is only half closed.
+        // Stated over both entry points together so a future third one cannot quietly opt out.
+        OperationsOriginGuard.IsHumanOperator(
+                EndpointAuthorization.ResolveTrustedActionOrigin(ApiKeyPrincipal(), declared))
+            .Should().BeFalse();
+
+        OperationsOriginGuard.IsHumanOperator(
+                EndpointAuthorization.DeriveActionOriginFromPrincipal(ApiKeyPrincipal()))
+            .Should().BeFalse();
     }
 }

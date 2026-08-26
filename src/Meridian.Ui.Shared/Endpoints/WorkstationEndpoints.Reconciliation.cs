@@ -542,13 +542,15 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            // ActionOrigin arrives in the body and defaults to HumanOperator, so it is narrowed
-            // against the principal here, alongside ResolvedBy, before anything downstream reads
-            // it. A declared automation origin is preserved and still refused (#2673).
+            // This legacy adapter is authoritative over the caller's identity: ResolvedBy is
+            // replaced with the principal rather than believed, and ActionOrigin travels with it as
+            // part of the same identity, so it is derived rather than narrowed. Before #2673 it was
+            // the constant HumanOperator, which stamped an API-key caller as a human; deriving it
+            // keeps the browser from labelling the decision either way.
             var trustedRequest = request with
             {
                 ResolvedBy = currentUser,
-                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+                ActionOrigin = EndpointAuthorization.DeriveActionOriginFromPrincipal(context)
             };
 
             var transition = await ResolveBreakAsync(repository, queueScope, trustedRequest, context.RequestAborted).ConfigureAwait(false);

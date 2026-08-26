@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 import sys
 import tempfile
 import unittest
@@ -80,7 +81,28 @@ app.MapPost("/thing", async (CloseThingRequest request, HttpContext context) =>
     var trustedRequest = request with
     {
         Actor = ResolveMutationActor(context, request.Actor),
-        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context)
+        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+    };
+    return await service.CloseAsync(trustedRequest, context.RequestAborted);
+});
+"""
+            }
+        )
+
+        self.assertEqual(found, {})
+
+    def test_binding_that_derives_from_the_principal_alone_is_not_flagged(self) -> None:
+        """The casework adapters discard the declaration outright, because they are authoritative
+        over the caller's identity. That is a derivation too, so it must not be flagged."""
+        found = scan(
+            {
+                "ThingEndpoints.cs": """
+app.MapPost("/thing", async (CloseThingRequest request, HttpContext context) =>
+{
+    var trustedRequest = request with
+    {
+        Actor = ResolveMutationActor(context, request.Actor),
+        ActionOrigin = EndpointAuthorization.DeriveActionOriginFromPrincipal(context)
     };
     return await service.CloseAsync(trustedRequest, context.RequestAborted);
 });
@@ -159,26 +181,32 @@ app.MapPost("/new", async (BrandNewGovernedRequest request, HttpContext context)
 
     def test_declared_deriving_helpers_really_derive(self) -> None:
         """DERIVING_HELPERS exempts a handler that forwards to one of these, so each must actually
-        call the resolver. A helper that stopped deriving would silently exempt its callers."""
+        derive. A helper that stopped deriving would silently exempt its callers.
+
+        The check is against the file that *declares* the helper, not any file mentioning it: a
+        caller's own unrelated derivation would otherwise satisfy this vacuously, which is exactly
+        what an earlier version of this test did."""
         endpoints = REPO_ROOT / "src" / "Meridian.Ui.Shared" / "Endpoints"
-        sources = [p.read_text(encoding="utf-8", errors="replace") for p in endpoints.rglob("*.cs")]
+        sources = {p: p.read_text(encoding="utf-8", errors="replace") for p in endpoints.rglob("*.cs")}
+        resolvers = (guard.TRUSTED_RESOLVER, guard.PRINCIPAL_RESOLVER)
 
         for helper in guard.DERIVING_HELPERS:
             with self.subTest(helper=helper):
-                declaring = [
-                    text
-                    for text in sources
-                    if f" {helper}(" in text and "private static" in text or f"{helper}(\n" in text
-                ]
-                self.assertTrue(declaring, f"{helper} is declared nowhere in the endpoint surface")
-                self.assertTrue(
-                    any(
-                        guard.TRUSTED_RESOLVER in text
-                        for text in sources
-                        if f"{helper}(" in text
-                    ),
-                    f"{helper} is exempted as a deriving helper but never calls {guard.TRUSTED_RESOLVER}",
+                declaration = re.compile(
+                    r"^[ \t]*(?:private|internal|public|protected)\b[^\n(]*?\b"
+                    + re.escape(helper)
+                    + r"\s*(?:<[^>(]*>)?\s*\(",
+                    re.MULTILINE,
                 )
+                declaring = [path for path, text in sources.items() if declaration.search(text)]
+
+                self.assertTrue(declaring, f"{helper} is declared nowhere in the endpoint surface")
+                for path in declaring:
+                    self.assertTrue(
+                        any(resolver in sources[path] for resolver in resolvers),
+                        f"{helper} is exempted as a deriving helper, but {path.name} declares it "
+                        f"without calling either of {resolvers}",
+                    )
 
     def test_repository_endpoints_derive_every_action_origin(self) -> None:
         """The live invariant: no endpoint in this repo trusts a body-supplied ActionOrigin."""

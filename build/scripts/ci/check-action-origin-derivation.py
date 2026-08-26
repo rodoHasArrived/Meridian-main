@@ -8,11 +8,16 @@ gate simply by omitting the field: the control stopped only automation that decl
 honestly. Several endpoints did derive it server-side, but by asserting the constant HumanOperator,
 which stamped an API-key caller as a human and satisfied the same gate.
 
-The fix is not to overwrite the body outright. Automation that declares itself honestly must still
-be refused -- that is the capability the control exists for -- so the resolver takes the *narrower*
-of the declaration and the principal's standing, and a call site must therefore pass the declared
-value in. A one-argument call would be the overwrite this guard exists to prevent, so the pattern
-this checks for is the two-argument form.
+The fix is not to overwrite the body outright everywhere. On the governance-gated material commands
+automation that declares itself honestly must still be refused -- that is the capability the control
+exists for -- so ResolveTrustedActionOrigin takes the *narrower* of the declaration and the
+principal's standing, and a call site there passes the declared value in.
+
+The reconciliation casework adapters are the deliberate exception: they are authoritative over the
+caller's identity, replacing Actor/ResolvedBy with the principal rather than believing the body, and
+the origin is part of that same identity. Those call DeriveActionOriginFromPrincipal, which ignores
+the declaration. Either way the origin comes from the principal when it matters, so neither form can
+let a non-interactive credential reach HumanOperator.
 
 The endpoints already knew the pattern -- they re-derive Actor, TenantId and CompanyId from the
 authenticated principal in a `request with { ... }` block -- they just did not apply it to this one
@@ -38,6 +43,12 @@ CONTRACTS_ROOT = REPO_ROOT / "src" / "Meridian.Contracts"
 ENDPOINTS_ROOT = REPO_ROOT / "src" / "Meridian.Ui.Shared" / "Endpoints"
 
 TRUSTED_RESOLVER = "ResolveTrustedActionOrigin"
+
+# The reconciliation casework adapters are authoritative over the caller's identity -- they replace
+# Actor/ResolvedBy with the principal -- so they discard the declared origin outright rather than
+# narrowing against it. Both entry points derive the same way, so neither can let a non-interactive
+# principal reach HumanOperator; they differ only in whether a declared non-human origin is believed.
+PRINCIPAL_RESOLVER = "DeriveActionOriginFromPrincipal"
 
 # Helpers that re-derive the origin themselves, so a handler forwarding a bound request to one of
 # them is covered. Each must call the resolver in its own body -- asserted by a test.
@@ -93,7 +104,7 @@ def find_untrusted_bindings(
         return {}
 
     binding = re.compile(r"\b(" + "|".join(sorted(dtos)) + r")\??\s+\w+\s*[,)]")
-    covered = (TRUSTED_RESOLVER,) + DERIVING_HELPERS
+    covered = (TRUSTED_RESOLVER, PRINCIPAL_RESOLVER) + DERIVING_HELPERS
     repo_root = endpoints_root.parents[2]
 
     violations: dict[str, list[tuple[int, str]]] = {}
@@ -138,7 +149,10 @@ def main() -> int:
             f"\nSet `ActionOrigin = EndpointAuthorization.{TRUSTED_RESOLVER}(context, "
             "request.ActionOrigin)` in the same `request with { ... }` block that re-derives Actor "
             "and tenant scope. Pass the declared value in: the resolver returns the narrower of it "
-            "and the principal's standing, so automation that declares itself is still refused.",
+            "and the principal's standing, so automation that declares itself is still refused.\n"
+            f"\nIf the handler is authoritative over the caller's identity -- it overwrites Actor or "
+            f"ResolvedBy rather than believing the body -- use `{PRINCIPAL_RESOLVER}(context)` "
+            "instead, which discards the declaration along with the rest of it.",
             file=sys.stderr,
         )
         return 1
