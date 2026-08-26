@@ -1127,151 +1127,151 @@
     {
       "method": "GET",
       "path": "/api/quality/anomalies",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:243",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:246",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/quality/anomalies/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:269",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:272",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/quality/anomalies/unacknowledged",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:272",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:275",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/quality/anomalies/{anomalyId}/acknowledge",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:275",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:278",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/quality/anomalies/statistics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:284",
-      "documented": false
-    },
-    {
-      "method": "GET",
-      "path": "/api/quality/anomalies/stale",
       "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:287",
       "documented": false
     },
     {
       "method": "GET",
-      "path": "/api/quality/latency",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:292",
+      "path": "/api/quality/anomalies/stale",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:290",
       "documented": false
     },
     {
       "method": "GET",
-      "path": "/api/quality/latency/{symbol}",
+      "path": "/api/quality/latency",
       "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:295",
       "documented": false
     },
     {
       "method": "GET",
-      "path": "/api/quality/latency/{symbol}/histogram",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:304",
+      "path": "/api/quality/latency/{symbol}",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:298",
       "documented": false
     },
     {
       "method": "GET",
-      "path": "/api/quality/latency/statistics",
+      "path": "/api/quality/latency/{symbol}/histogram",
       "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:307",
       "documented": false
     },
     {
       "method": "GET",
-      "path": "/api/quality/latency/high",
+      "path": "/api/quality/latency/statistics",
       "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:310",
       "documented": false
     },
     {
       "method": "GET",
+      "path": "/api/quality/latency/high",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:313",
+      "documented": false
+    },
+    {
+      "method": "GET",
       "path": "/api/quality/comparison/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:315",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:321",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/quality/comparison/discrepancies",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:322",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:328",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/quality/comparison/statistics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:334",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:340",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/quality/reports/daily",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:339",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:345",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/quality/reports/weekly",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:347",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:353",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/quality/reports/export",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:366",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:372",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/quality/health",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:381",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:387",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/quality/health/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:405",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:411",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/quality/health/unhealthy",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:414",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:420",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/sla/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:610",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:616",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/sla/status/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:614",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:620",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/sla/violations",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:624",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:630",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/sla/health",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:641",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:647",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/sla/metrics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:668",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:674",
       "documented": false
     },
     {

@@ -1169,6 +1169,7 @@ Meridian-main
 │       │   ├── generate-pilot-readiness-dashboard.py
 │       │   ├── generate-prompts.py
 │       │   ├── generate-structure-docs.py
+│       │   ├── generate-ui-route-wiring-report.py
 │       │   ├── generate-workflow-manifest.py
 │       │   ├── handoff-packet-generator.py
 │       │   ├── lint-command-snippets.py
@@ -2278,6 +2279,8 @@ Meridian-main
 │   │   ├── run-contract.schema.json
 │   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
+│   │   ├── ui-route-wiring-report.json
+│   │   ├── ui-route-wiring-report.md
 │   │   ├── workflow-drift-report.md
 │   │   ├── workflow-manifest.json
 │   │   ├── workflow-validation-summary.json
@@ -6249,18 +6252,27 @@ Meridian-main
 │   │   │   │   │   │   ├── store.tsx
 │   │   │   │   │   │   └── types.ts
 │   │   │   │   │   ├── api
+│   │   │   │   │   │   ├── archive-maintenance.api.ts
+│   │   │   │   │   │   ├── banking-payments.api.ts
+│   │   │   │   │   │   ├── break-audit-rebuild.api.ts
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
 │   │   │   │   │   │   ├── covered-call.api.test.ts
 │   │   │   │   │   │   ├── covered-call.api.ts
 │   │   │   │   │   │   ├── data-operations-assurance.api.ts
+│   │   │   │   │   │   ├── data-quality-watch.api.ts
+│   │   │   │   │   │   ├── execution-audit.api.ts
+│   │   │   │   │   │   ├── execution-blotter.api.ts
+│   │   │   │   │   │   ├── family-office.api.ts
 │   │   │   │   │   │   ├── portfolio-cash-ladder.api.ts
 │   │   │   │   │   │   ├── promotion.contracts.ts
 │   │   │   │   │   │   ├── provider-modules.api.test.ts
 │   │   │   │   │   │   ├── provider-modules.api.ts
+│   │   │   │   │   │   ├── reconciliation-readiness.api.ts
 │   │   │   │   │   │   ├── reporting-runs.api.test.ts
 │   │   │   │   │   │   ├── reporting-runs.api.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.test.ts
-│   │   │   │   │   │   └── security-master-workbench.api.ts
+│   │   │   │   │   │   ├── security-master-workbench.api.ts
+│   │   │   │   │   │   └── statement-run-detail.api.ts
 │   │   │   │   │   ├── companion-pane
 │   │   │   │   │   │   ├── chrome-bridge.test.ts
 │   │   │   │   │   │   ├── chrome-bridge.ts
@@ -6395,6 +6407,10 @@ Meridian-main
 │   │   │   │   │   ├── accounting-calibration-summary.view-model.ts
 │   │   │   │   │   ├── accounting-screen.approvals.ts
 │   │   │   │   │   ├── accounting-screen.basis-bridge.view-model.ts
+│   │   │   │   │   ├── accounting-screen.break-audit-rebuild.test.tsx
+│   │   │   │   │   ├── accounting-screen.break-audit-rebuild.tsx
+│   │   │   │   │   ├── accounting-screen.break-audit-rebuild.view-model.test.ts
+│   │   │   │   │   ├── accounting-screen.break-audit-rebuild.view-model.ts
 │   │   │   │   │   ├── accounting-screen.calibration-panel.tsx
 │   │   │   │   │   ├── accounting-screen.capital-account-workbench-panel.tsx
 │   │   │   │   │   ├── accounting-screen.capital-accounts.view-model.test.ts
@@ -6422,17 +6438,29 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.operations-panels.tsx
 │   │   │   │   │   ├── accounting-screen.operator-focus.test.ts
 │   │   │   │   │   ├── accounting-screen.operator-focus.ts
+│   │   │   │   │   ├── accounting-screen.payment-approvals.test.tsx
+│   │   │   │   │   ├── accounting-screen.payment-approvals.tsx
+│   │   │   │   │   ├── accounting-screen.payment-approvals.view-model.test.ts
+│   │   │   │   │   ├── accounting-screen.payment-approvals.view-model.ts
 │   │   │   │   │   ├── accounting-screen.posted-ledger-panel.test.tsx
 │   │   │   │   │   ├── accounting-screen.posted-ledger-panel.tsx
 │   │   │   │   │   ├── accounting-screen.posted-ledger.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.posted-ledger.view-model.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation-panels.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-queue-utils.ts
+│   │   │   │   │   ├── accounting-screen.reconciliation-readiness.test.tsx
+│   │   │   │   │   ├── accounting-screen.reconciliation-readiness.tsx
+│   │   │   │   │   ├── accounting-screen.reconciliation-readiness.view-model.test.ts
+│   │   │   │   │   ├── accounting-screen.reconciliation-readiness.view-model.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.ts
 │   │   │   │   │   ├── accounting-screen.security-master-detail-panels.tsx
 │   │   │   │   │   ├── accounting-screen.security-master-panels.tsx
 │   │   │   │   │   ├── accounting-screen.security-master-presenters.ts
+│   │   │   │   │   ├── accounting-screen.statement-run-detail.test.tsx
+│   │   │   │   │   ├── accounting-screen.statement-run-detail.tsx
+│   │   │   │   │   ├── accounting-screen.statement-run-detail.view-model.test.ts
+│   │   │   │   │   ├── accounting-screen.statement-run-detail.view-model.ts
 │   │   │   │   │   ├── accounting-screen.styles.ts
 │   │   │   │   │   ├── accounting-screen.task-mode-view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.task-mode-view-model.ts
@@ -6464,7 +6492,15 @@ Meridian-main
 │   │   │   │   │   ├── daily-control-tower-screen.tsx
 │   │   │   │   │   ├── data-operations-assurance-workstreams.test.tsx
 │   │   │   │   │   ├── data-operations-assurance-workstreams.tsx
+│   │   │   │   │   ├── data-operations-maintenance.test.tsx
+│   │   │   │   │   ├── data-operations-maintenance.tsx
+│   │   │   │   │   ├── data-operations-maintenance.view-model.test.ts
+│   │   │   │   │   ├── data-operations-maintenance.view-model.ts
 │   │   │   │   │   ├── data-provider-display-view-model.ts
+│   │   │   │   │   ├── data-quality-watch.test.tsx
+│   │   │   │   │   ├── data-quality-watch.tsx
+│   │   │   │   │   ├── data-quality-watch.view-model.test.ts
+│   │   │   │   │   ├── data-quality-watch.view-model.ts
 │   │   │   │   │   ├── data-screen-navigation-panels.tsx
 │   │   │   │   │   ├── data-screen.analytics-status.test.tsx
 │   │   │   │   │   ├── data-screen.analytics-status.tsx
@@ -6511,6 +6547,9 @@ Meridian-main
 │   │   │   │   │   ├── evidence-workbench-screen.tsx
 │   │   │   │   │   ├── evidence-workbench-screen.view-model.test.tsx
 │   │   │   │   │   ├── evidence-workbench-screen.view-model.ts
+│   │   │   │   │   ├── family-office-screen.mapper.test-fixture.ts
+│   │   │   │   │   ├── family-office-screen.mapper.test.ts
+│   │   │   │   │   ├── family-office-screen.mapper.ts
 │   │   │   │   │   ├── family-office-screen.test.tsx
 │   │   │   │   │   ├── family-office-screen.tsx
 │   │   │   │   │   ├── family-office-screen.view-model.test.ts
@@ -6645,7 +6684,15 @@ Meridian-main
 │   │   │   │   │   ├── strategy-screen.workflow-continuity.ts
 │   │   │   │   │   ├── trading-screen.a11y.test.tsx
 │   │   │   │   │   ├── trading-screen.acceptance-panel.tsx
+│   │   │   │   │   ├── trading-screen.audit-trail.test.tsx
+│   │   │   │   │   ├── trading-screen.audit-trail.tsx
+│   │   │   │   │   ├── trading-screen.audit-trail.view-model.test.ts
+│   │   │   │   │   ├── trading-screen.audit-trail.view-model.ts
 │   │   │   │   │   ├── trading-screen.evidence-timeline.ts
+│   │   │   │   │   ├── trading-screen.execution-blotter.test.tsx
+│   │   │   │   │   ├── trading-screen.execution-blotter.tsx
+│   │   │   │   │   ├── trading-screen.execution-blotter.view-model.test.ts
+│   │   │   │   │   ├── trading-screen.execution-blotter.view-model.ts
 │   │   │   │   │   ├── trading-screen.governed-approvals.test.ts
 │   │   │   │   │   ├── trading-screen.governed-approvals.ts
 │   │   │   │   │   ├── trading-screen.linked-context.ts
@@ -6689,9 +6736,15 @@ Meridian-main
 │   │   │   │   │   ├── setup.ts
 │   │   │   │   │   └── verified-operation-outcome.ts
 │   │   │   │   ├── types
+│   │   │   │   │   ├── archive-maintenance.types.ts
+│   │   │   │   │   ├── banking-payments.types.ts
 │   │   │   │   │   ├── canonical-symbol.ts
 │   │   │   │   │   ├── covered-call.types.ts
 │   │   │   │   │   ├── data-operations-assurance.ts
+│   │   │   │   │   ├── data-quality-watch.types.ts
+│   │   │   │   │   ├── execution-audit.types.ts
+│   │   │   │   │   ├── execution-blotter.types.ts
+│   │   │   │   │   ├── family-office.types.ts
 │   │   │   │   │   ├── instrument-accounting.test.ts
 │   │   │   │   │   ├── instrument-accounting.ts
 │   │   │   │   │   ├── jest-axe.d.ts
@@ -6700,7 +6753,9 @@ Meridian-main
 │   │   │   │   │   ├── portfolio-cash-ladder.types.ts
 │   │   │   │   │   ├── provider-accounting.ts
 │   │   │   │   │   ├── provider-setup.ts
+│   │   │   │   │   ├── reconciliation-readiness.types.ts
 │   │   │   │   │   ├── reporting-governance.ts
+│   │   │   │   │   ├── statement-run-detail.types.ts
 │   │   │   │   │   ├── workstation-1.ts
 │   │   │   │   │   ├── workstation-2.ts
 │   │   │   │   │   ├── workstation-3.ts
@@ -10452,6 +10507,7 @@ Meridian-main
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
 │   │   ├── test_generate_program_state_summary.py
 │   │   ├── test_generate_ui_api_routes_ts.py
+│   │   ├── test_generate_ui_route_wiring_report.py
 │   │   ├── test_generate_workspace_catalog_ts.py
 │   │   ├── test_golden_path_validation_workflow.py
 │   │   ├── test_lane_manifest.py
