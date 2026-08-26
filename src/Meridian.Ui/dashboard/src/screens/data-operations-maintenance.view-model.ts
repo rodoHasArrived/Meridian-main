@@ -9,7 +9,7 @@
  */
 
 import type {
-  MaintenanceExecution,
+  ArchiveMaintenanceExecution,
   MaintenanceScheduleSummary,
   MaintenanceServiceStatus,
   MaintenanceStatistics,
@@ -91,7 +91,7 @@ export function maintenanceTaskTypeLabel(
 }
 
 export function buildMaintenanceExecutionRow(
-  execution: MaintenanceExecution,
+  execution: ArchiveMaintenanceExecution,
   taskTypes: readonly MaintenanceTaskTypeOption[]
 ): MaintenanceExecutionRowViewModel {
   return {

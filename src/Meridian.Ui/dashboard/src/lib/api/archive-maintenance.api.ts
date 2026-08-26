@@ -17,7 +17,7 @@ import {
 } from "@/lib/workstation-endpoints";
 import type {
   ExecuteMaintenanceRequest,
-  MaintenanceExecution,
+  ArchiveMaintenanceExecution,
   MaintenanceScheduleSummary,
   MaintenanceServiceStatus,
   MaintenanceStatistics,
@@ -48,22 +48,22 @@ export function getMaintenanceTaskTypes(options: ApiRequestOptions = {}): Promis
 export function getMaintenanceExecutions(
   limit?: number,
   options: ApiRequestOptions = {}
-): Promise<MaintenanceExecution[]> {
-  return apiGetJson<MaintenanceExecution[]>(maintenanceExecutionsEndpoint(limit), options);
+): Promise<ArchiveMaintenanceExecution[]> {
+  return apiGetJson<ArchiveMaintenanceExecution[]>(maintenanceExecutionsEndpoint(limit), options);
 }
 
 export function getFailedMaintenanceExecutions(
   limit?: number,
   options: ApiRequestOptions = {}
-): Promise<MaintenanceExecution[]> {
-  return apiGetJson<MaintenanceExecution[]>(maintenanceFailedExecutionsEndpoint(limit), options);
+): Promise<ArchiveMaintenanceExecution[]> {
+  return apiGetJson<ArchiveMaintenanceExecution[]>(maintenanceFailedExecutionsEndpoint(limit), options);
 }
 
 export function executeMaintenanceTask(
   request: ExecuteMaintenanceRequest,
   options: ApiRequestOptions = {}
-): Promise<MaintenanceExecution> {
-  return apiPostJson<MaintenanceExecution>(MAINTENANCE_API_ENDPOINTS.execute, request, options);
+): Promise<ArchiveMaintenanceExecution> {
+  return apiPostJson<ArchiveMaintenanceExecution>(MAINTENANCE_API_ENDPOINTS.execute, request, options);
 }
 
 export function cancelMaintenanceExecution(

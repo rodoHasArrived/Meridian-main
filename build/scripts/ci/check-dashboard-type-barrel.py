@@ -54,6 +54,13 @@ STANDALONE_MODULES = {
     "covered-call.types",
     "data-operations-assurance",
     "provider-setup",
+    # Feature-local endpoint contracts imported by path from a single screen each.
+    # archive-maintenance also cannot join the barrel: the /api/maintenance group
+    # serializes enums as ordinals, so its execution shape differs from the barrel's
+    # string-enum `MaintenanceExecution` in types/workstation-8.ts.
+    "archive-maintenance.types",
+    "execution-audit.types",
+    "family-office.types",
 }
 
 # A trailing `// note` is allowed: without it the whole entry failed to match, so the module

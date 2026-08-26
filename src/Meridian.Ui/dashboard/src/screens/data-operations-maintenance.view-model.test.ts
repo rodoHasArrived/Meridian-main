@@ -7,7 +7,7 @@ import {
   maintenanceTaskTypeLabel
 } from "@/screens/data-operations-maintenance.view-model";
 import type {
-  MaintenanceExecution,
+  ArchiveMaintenanceExecution,
   MaintenanceScheduleSummary,
   MaintenanceServiceStatus,
   MaintenanceStatistics,
@@ -21,7 +21,7 @@ const taskTypes: MaintenanceTaskTypeOption[] = [
   { value: "Defragmentation", name: "Defragmentation", description: "Defragment small files." }
 ];
 
-function execution(overrides: Partial<MaintenanceExecution> = {}): MaintenanceExecution {
+function execution(overrides: Partial<ArchiveMaintenanceExecution> = {}): ArchiveMaintenanceExecution {
   return {
     executionId: "exec-1",
     scheduleId: "schedule-1",

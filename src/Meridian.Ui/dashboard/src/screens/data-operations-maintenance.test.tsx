@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as maintenanceApi from "@/lib/api/archive-maintenance.api";
 import { ArchiveMaintenanceOperations } from "@/screens/data-operations-maintenance";
-import type { MaintenanceExecution } from "@/types/archive-maintenance.types";
+import type { ArchiveMaintenanceExecution } from "@/types/archive-maintenance.types";
 
 vi.mock("@/lib/api/archive-maintenance.api", () => ({
   getMaintenanceServiceStatus: vi.fn(),
@@ -18,7 +18,7 @@ vi.mock("@/lib/api/archive-maintenance.api", () => ({
 
 const api = vi.mocked(maintenanceApi);
 
-const runningExecution: MaintenanceExecution = {
+const runningExecution: ArchiveMaintenanceExecution = {
   executionId: "exec-running",
   scheduleId: null,
   scheduleName: null,
@@ -37,7 +37,7 @@ const runningExecution: MaintenanceExecution = {
   logMessages: []
 };
 
-const failedExecution: MaintenanceExecution = {
+const failedExecution: ArchiveMaintenanceExecution = {
   ...runningExecution,
   executionId: "exec-failed",
   taskType: 0,

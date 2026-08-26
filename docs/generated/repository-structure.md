@@ -1131,6 +1131,7 @@ Meridian-main
 │       │   │   ├── test_check_codex_memory.py
 │       │   │   ├── test_generate_api_contract_coverage_dashboard.py
 │       │   │   ├── test_generate_structure_docs.py
+│       │   │   ├── test_generate_ui_route_wiring_report.py
 │       │   │   ├── test_markdown_generation_lint.py
 │       │   │   ├── test_pilot_readiness_dashboard.py
 │       │   │   ├── test_run_docs_automation_pilot_optin.py
@@ -1167,6 +1168,7 @@ Meridian-main
 │       │   ├── generate-pilot-readiness-dashboard.py
 │       │   ├── generate-prompts.py
 │       │   ├── generate-structure-docs.py
+│       │   ├── generate-ui-route-wiring-report.py
 │       │   ├── generate-workflow-manifest.py
 │       │   ├── handoff-packet-generator.py
 │       │   ├── lint-command-snippets.py
@@ -2274,6 +2276,8 @@ Meridian-main
 │   │   ├── run-contract.schema.json
 │   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
+│   │   ├── ui-route-wiring-report.json
+│   │   ├── ui-route-wiring-report.md
 │   │   ├── workflow-drift-report.md
 │   │   ├── workflow-manifest.json
 │   │   ├── workflow-validation-summary.json
@@ -6245,10 +6249,13 @@ Meridian-main
 │   │   │   │   │   │   ├── store.tsx
 │   │   │   │   │   │   └── types.ts
 │   │   │   │   │   ├── api
+│   │   │   │   │   │   ├── archive-maintenance.api.ts
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
 │   │   │   │   │   │   ├── covered-call.api.test.ts
 │   │   │   │   │   │   ├── covered-call.api.ts
 │   │   │   │   │   │   ├── data-operations-assurance.api.ts
+│   │   │   │   │   │   ├── execution-audit.api.ts
+│   │   │   │   │   │   ├── family-office.api.ts
 │   │   │   │   │   │   ├── portfolio-cash-ladder.api.ts
 │   │   │   │   │   │   ├── promotion.contracts.ts
 │   │   │   │   │   │   ├── provider-modules.api.test.ts
@@ -6460,6 +6467,10 @@ Meridian-main
 │   │   │   │   │   ├── daily-control-tower-screen.tsx
 │   │   │   │   │   ├── data-operations-assurance-workstreams.test.tsx
 │   │   │   │   │   ├── data-operations-assurance-workstreams.tsx
+│   │   │   │   │   ├── data-operations-maintenance.test.tsx
+│   │   │   │   │   ├── data-operations-maintenance.tsx
+│   │   │   │   │   ├── data-operations-maintenance.view-model.test.ts
+│   │   │   │   │   ├── data-operations-maintenance.view-model.ts
 │   │   │   │   │   ├── data-provider-display-view-model.ts
 │   │   │   │   │   ├── data-screen-navigation-panels.tsx
 │   │   │   │   │   ├── data-screen.analytics-status.test.tsx
@@ -6507,6 +6518,9 @@ Meridian-main
 │   │   │   │   │   ├── evidence-workbench-screen.tsx
 │   │   │   │   │   ├── evidence-workbench-screen.view-model.test.tsx
 │   │   │   │   │   ├── evidence-workbench-screen.view-model.ts
+│   │   │   │   │   ├── family-office-screen.mapper.test-fixture.ts
+│   │   │   │   │   ├── family-office-screen.mapper.test.ts
+│   │   │   │   │   ├── family-office-screen.mapper.ts
 │   │   │   │   │   ├── family-office-screen.test.tsx
 │   │   │   │   │   ├── family-office-screen.tsx
 │   │   │   │   │   ├── family-office-screen.view-model.test.ts
@@ -6640,6 +6654,10 @@ Meridian-main
 │   │   │   │   │   ├── strategy-screen.workflow-continuity.ts
 │   │   │   │   │   ├── trading-screen.a11y.test.tsx
 │   │   │   │   │   ├── trading-screen.acceptance-panel.tsx
+│   │   │   │   │   ├── trading-screen.audit-trail.test.tsx
+│   │   │   │   │   ├── trading-screen.audit-trail.tsx
+│   │   │   │   │   ├── trading-screen.audit-trail.view-model.test.ts
+│   │   │   │   │   ├── trading-screen.audit-trail.view-model.ts
 │   │   │   │   │   ├── trading-screen.evidence-timeline.ts
 │   │   │   │   │   ├── trading-screen.governed-approvals.test.ts
 │   │   │   │   │   ├── trading-screen.governed-approvals.ts
@@ -6684,9 +6702,12 @@ Meridian-main
 │   │   │   │   │   ├── setup.ts
 │   │   │   │   │   └── verified-operation-outcome.ts
 │   │   │   │   ├── types
+│   │   │   │   │   ├── archive-maintenance.types.ts
 │   │   │   │   │   ├── canonical-symbol.ts
 │   │   │   │   │   ├── covered-call.types.ts
 │   │   │   │   │   ├── data-operations-assurance.ts
+│   │   │   │   │   ├── execution-audit.types.ts
+│   │   │   │   │   ├── family-office.types.ts
 │   │   │   │   │   ├── instrument-accounting.test.ts
 │   │   │   │   │   ├── instrument-accounting.ts
 │   │   │   │   │   ├── jest-axe.d.ts

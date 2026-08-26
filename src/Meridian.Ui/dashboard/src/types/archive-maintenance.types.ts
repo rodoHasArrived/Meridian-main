@@ -25,7 +25,7 @@ export interface MaintenanceTaskTypeOption {
 export interface MaintenanceServiceStatus {
   isRunning: boolean;
   queuedExecutions: number;
-  currentExecution: MaintenanceExecution | null;
+  currentExecution: ArchiveMaintenanceExecution | null;
   nextScheduledExecution?: string | null;
   activeSchedules: number;
   totalExecutionsToday: number;
@@ -65,8 +65,15 @@ export interface MaintenanceScheduleSummary {
   nextDueScheduleName?: string | null;
 }
 
-/** One maintenance run, scheduled or manually triggered. */
-export interface MaintenanceExecution {
+/**
+ * One maintenance run, scheduled or manually triggered.
+ *
+ * Named apart from the barrel's `MaintenanceExecution` (`types/workstation-8.ts`)
+ * deliberately: that one models the same server object with `status` and `taskType`
+ * as strings, which is not what this endpoint group puts on the wire. Sharing the
+ * name would let an import resolve to the wrong representation silently.
+ */
+export interface ArchiveMaintenanceExecution {
   executionId: string;
   scheduleId?: string | null;
   scheduleName?: string | null;

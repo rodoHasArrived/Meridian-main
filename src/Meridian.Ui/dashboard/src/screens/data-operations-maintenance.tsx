@@ -29,7 +29,7 @@ import {
   type MaintenanceTone
 } from "@/screens/data-operations-maintenance.view-model";
 import type {
-  MaintenanceExecution,
+  ArchiveMaintenanceExecution,
   MaintenanceScheduleSummary,
   MaintenanceServiceStatus,
   MaintenanceStatistics,
@@ -43,7 +43,7 @@ export function ArchiveMaintenanceOperations() {
   const [statistics, setStatistics] = useState<MaintenanceStatistics | null>(null);
   const [scheduleSummary, setScheduleSummary] = useState<MaintenanceScheduleSummary | null>(null);
   const [taskTypes, setTaskTypes] = useState<MaintenanceTaskTypeOption[]>([]);
-  const [executions, setExecutions] = useState<MaintenanceExecution[]>([]);
+  const [executions, setExecutions] = useState<ArchiveMaintenanceExecution[]>([]);
   const [failedOnly, setFailedOnly] = useState(false);
   const [selectedTaskType, setSelectedTaskType] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
