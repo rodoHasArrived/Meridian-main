@@ -787,6 +787,11 @@ python3 generate-api-contract-coverage-dashboard.py \
   --output docs/status/api-contract-coverage-dashboard.md \
   --json-output docs/status/api-contract-coverage-dashboard.json \
   --summary
+
+python3 generate-ui-route-wiring-report.py \
+  --output docs/status/ui-route-wiring-report.md \
+  --json-output docs/status/ui-route-wiring-report.json \
+  --summary
 ```
 
 **Expected outputs:**
@@ -796,6 +801,17 @@ python3 generate-api-contract-coverage-dashboard.py \
 - `docs/status/evidence-continuity-dashboard.md` + `.json`
 - `docs/status/governance-readiness-dashboard.md` + `.json`
 - `docs/status/api-contract-coverage-dashboard.md` + `.json`
+- `docs/status/ui-route-wiring-report.md` + `.json`
+
+The UI route wiring report answers which mapped backend routes the browser workstation never
+calls. It resolves both sides symbolically — backend routes through `UiApiRoutes` constants,
+`MapGroup` prefixes (including prefixes handed to a helper through a `RouteGroupBuilder`
+parameter), and `*Subroute` helpers; dashboard call sites through the endpoint registry modules
+in `src/Meridian.Ui/dashboard/src/lib/`. A route is `wired` when a non-registry dashboard module
+resolves to it, `registry-only` when just the registry declares it, and `unwired` otherwise.
+Routes the browser is not meant to call (probes, provider webhooks, `410 Gone` tombstones,
+desktop-only handoffs) are listed separately with the reason, not silently dropped. Use
+`--fail-on-unresolved` to gate on route expressions the analyzer cannot fold to a literal.
 
 The pilot readiness dashboard derives readiness from the artifact stage-gate details and evidence
 graph, including required golden-path stage coverage and self-edge checks. Do not treat top-level

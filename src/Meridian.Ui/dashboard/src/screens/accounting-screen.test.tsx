@@ -40,6 +40,22 @@ import type {
 } from "@/types";
 import { requireFirst, requirePresent } from "@/test/fixtures";
 
+/**
+ * Finds the alert carrying a given message. The screen renders several alert
+ * regions at once — a failed section load and a failed action are independent —
+ * so a bare `getByRole("alert")` only resolves while exactly one happens to be
+ * on screen.
+ */
+async function findAlertContaining(text: string): Promise<HTMLElement> {
+  const alerts = await screen.findAllByRole("alert");
+  const match = alerts.find((alert) => alert.textContent?.includes(text));
+  if (!match) {
+    throw new Error(`No alert contains "${text}". Alerts: ${alerts.map((a) => a.textContent).join(" | ")}`);
+  }
+
+  return match;
+}
+
 vi.mock("@/lib/ledger-reports-api", () => ({
   getLedgerBooks: vi.fn().mockResolvedValue([{
     ledgerBookId: "00000000-0000-0000-0000-0000000000aa",
@@ -4514,8 +4530,7 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("Calibration API offline");
+    const alert = await findAlertContaining("Calibration API offline");
     expect(alert).toHaveTextContent("Meridian service returned 503. Open diagnostics for technical details.");
     expect(alert).toHaveTextContent("Provider unavailable");
     const retry = screen.getByRole("button", { name: "Retry calibration summary load" });
@@ -5584,8 +5599,7 @@ describe("AccountingScreen", () => {
     await user.type(rationaleInput, "Reviewed cash mismatch");
     await user.click(screen.getByRole("button", { name: /confirm resolve/i }));
 
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("Break action failed: Ledger write rejected");
+    const alert = await findAlertContaining("Break action failed: Ledger write rejected");
     expect(within(alert).getByText("Meridian service returned 409. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("operatorRationale: Operator rationale must cite the balancing ledger entry.")).toBeInTheDocument();
   });

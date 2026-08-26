@@ -68,6 +68,10 @@ import {
   TradingParametersPanel,
   reconciliationQueueColumns,
 } from "@/screens/accounting-screen.operations-panels";
+import { BankingPaymentApprovalsPanel } from "@/screens/accounting-screen.payment-approvals";
+import { BreakAuditRebuildCheck } from "@/screens/accounting-screen.break-audit-rebuild";
+import { ReconciliationReadinessPanel } from "@/screens/accounting-screen.reconciliation-readiness";
+import { StatementRunDetailTabs } from "@/screens/accounting-screen.statement-run-detail";
 import {
   ChartAccountPathBuilder,
   ConfigureActivationRail,
@@ -1620,6 +1624,7 @@ function AccountingCaseWorkbench({
                 <AccountingValue label="Raw category" value={selectedBreakDetail?.rawCategoryLabel ?? "No category"} />
                 <AccountingValue label="Audit packet" value={detailActions?.auditPacketLabel ?? "Open after selecting a break"} />
               </div>
+              <BreakAuditRebuildCheck breakId={selectedBreak?.breakId ?? null} />
             </TechnicalDetails>
           </CardContent>
         </Card>
@@ -2504,6 +2509,10 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         <AccountingApprovalsWorkstream />
       ) : null}
 
+      {sectionVisibility.showApprovals ? (
+        <BankingPaymentApprovalsPanel />
+      ) : null}
+
       {sectionVisibility.showExceptionWorkbench ? (
         <OperationalExceptionWorkbenchPanel view={reconciliation.exceptionWorkbench} />
       ) : null}
@@ -2660,6 +2669,10 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
           </div>
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <div className="xl:col-span-2">
+            <ReconciliationReadinessPanel />
+          </div>
+
+          <div className="xl:col-span-2">
             <ReconciliationComparisonPanel view={reconciliation.comparisonView} />
           </div>
 
@@ -2723,28 +2736,12 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                 ariaLabel={reconciliation.statementRunsView.tableLabel}
                 caption={reconciliation.statementRunsView.tableCaption}
               />
-              <Tabs
-                id={reconciliation.statementRunsView.detailPanelId}
-                aria-label="Statement run detail tabs"
-                tabs={reconciliation.statementRunsView.tabs.map((tab) => ({
-                  ariaLabel: tab.ariaLabel,
-                  count: tab.badgeLabel,
-                  disabled: tab.disabled,
-                  id: tab.id,
-                  label: tab.label
-                }))}
-              >
-                {reconciliation.statementRunsView.tabs.map((tab) => (
-                  <TabPanel key={tab.id}>
-                    <StatusBanner
-                      role={tab.disabled ? "status" : undefined}
-                      tone={tab.disabled ? "warning" : "info"}
-                      title={tab.label}
-                      detail={tab.disabledReason ?? tab.description}
-                    />
-                  </TabPanel>
-                ))}
-              </Tabs>
+              <StatementRunDetailTabs
+                panelId={reconciliation.statementRunsView.detailPanelId}
+                runId={reconciliation.selectedRunId}
+                tabs={reconciliation.statementRunsView.tabs}
+                onRunReconciled={() => void reconciliation.refreshStatementRuns()}
+              />
               <p className="text-xs text-muted-foreground">
                 Matching, tolerance, validation, and case-state decisions remain in reconciliation services; this view shows service-reviewed results.
               </p>
