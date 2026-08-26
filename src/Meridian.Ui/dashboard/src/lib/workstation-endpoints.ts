@@ -180,6 +180,10 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   reportingScheduleRunNow: UI_API_ROUTES.ReportingScheduleRunNow
 } as const;
 
+export const FAMILY_OFFICE_API_ENDPOINTS = {
+  overview: UI_API_ROUTES.WorkstationFamilyOfficeOverview
+} as const;
+
 export const WORKSTATION_API_ENDPOINT_TEMPLATES = {
   runLedger: UI_API_ROUTES.RunsLedger,
   runContinuity: UI_API_ROUTES.RunsContinuity,
@@ -577,8 +581,32 @@ export const MAINTENANCE_API_ENDPOINTS = {
   scheduleEnable: UI_API_ROUTES.MaintenanceSchedulesEnable,
   scheduleDisable: UI_API_ROUTES.MaintenanceSchedulesDisable,
   scheduleRun: UI_API_ROUTES.MaintenanceSchedulesRun,
-  scheduleHistory: UI_API_ROUTES.MaintenanceSchedulesHistory
+  scheduleHistory: UI_API_ROUTES.MaintenanceSchedulesHistory,
+  scheduleSummary: "/api/maintenance/schedules/summary",
+  status: "/api/maintenance/status",
+  statistics: "/api/maintenance/statistics",
+  taskTypes: "/api/maintenance/task-types",
+  executions: "/api/maintenance/executions",
+  failedExecutions: "/api/maintenance/executions/failed",
+  execute: "/api/maintenance/execute",
+  executionCancel: "/api/maintenance/executions/{executionId}/cancel"
 } as const;
+
+export function maintenanceExecutionsEndpoint(limit?: number): string {
+  return `${MAINTENANCE_API_ENDPOINTS.executions}${queryString({ limit })}`;
+}
+
+export function maintenanceFailedExecutionsEndpoint(limit?: number): string {
+  return `${MAINTENANCE_API_ENDPOINTS.failedExecutions}${queryString({ limit })}`;
+}
+
+export function maintenanceStatisticsEndpoint(hours?: number): string {
+  return `${MAINTENANCE_API_ENDPOINTS.statistics}${queryString({ hours })}`;
+}
+
+export function maintenanceExecutionCancelEndpoint(executionId: string): string {
+  return routeWithParam(MAINTENANCE_API_ENDPOINTS.executionCancel, "executionId", executionId);
+}
 
 export const DIAGNOSTICS_API_ENDPOINTS = {
   quickCheck: UI_API_ROUTES.DiagnosticsQuickCheck,
@@ -1168,6 +1196,12 @@ export function executionSessionReplayEndpoint(sessionId: string): string {
 
 export function executionAuditEndpoint(take = 20): string {
   return `${EXECUTION_API_ENDPOINTS.audit}${queryString({ take })}`;
+}
+
+export function executionAuditSearchEndpoint(
+  query: Record<string, string | number | undefined> = {}
+): string {
+  return `${EXECUTION_API_ENDPOINTS.audit}/search${queryString(query)}`;
 }
 
 export function executionManualOverrideClearEndpoint(overrideId: string): string {
