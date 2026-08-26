@@ -316,11 +316,13 @@
       "docLabel": "Accounting — Trial Balance Detail",
       "waitForText": "Trial Balance",
       "requiredApiRoutes": [
-        "/api/workstation/accounting"
+        "/api/workstation/accounting",
+        "/api/ledger/books",
+        "/api/ledger/periods"
       ],
       "waitForTexts": [
-        "Pick a ledger run",
-        "basis-aware account balances"
+        "Account balances from the fund's posted journal, scoped by ledger period.",
+        "Trial balance scope"
       ]
     },
     {
@@ -399,11 +401,14 @@
       "waitForText": "Ledger Explorer",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
-        "/api/workstation/runs/run-42/ledger/journal"
+        "/api/workstation/runs/run-42/ledger/journal",
+        "/api/ledger/books",
+        "/api/ledger/periods"
       ],
       "waitForTexts": [
         "Search by account, amount, journal ID, source, security, entity",
-        "Saved views",
+        "Ledger book",
+        "Ledger period",
         "Ledger search results"
       ]
     },
@@ -420,7 +425,7 @@
       "waitForTexts": [
         "Cash",
         "$120,500.00",
-        "Open ledger activity",
+        "Open run ledger activity",
         "Open source journal entry"
       ]
     },
