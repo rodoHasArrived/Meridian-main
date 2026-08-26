@@ -41,7 +41,8 @@ public sealed record ExecutionRealismDescriptor(
     double AnnualMarginRate = 0.0,
     double AnnualShortRebateRate = 0.0,
     string? AccountFinancingCanonical = null,
-    string? RiskFreeRateSeriesCanonical = null)
+    string? RiskFreeRateSeriesCanonical = null,
+    string? DefaultBrokerageAccountId = null)
 {
     /// <summary>
     /// Field-order-stable canonical form used for hashing and for human-readable disclosure.
@@ -74,6 +75,16 @@ public sealed record ExecutionRealismDescriptor(
         Append(builder, nameof(AnnualShortRebateRate), AnnualShortRebateRate.ToString("R", CultureInfo.InvariantCulture));
         Append(builder, nameof(AccountFinancingCanonical), AccountFinancingCanonical ?? string.Empty);
         Append(builder, nameof(RiskFreeRateSeriesCanonical), RiskFreeRateSeriesCanonical ?? string.Empty);
+        // The default brokerage account routes every order that names no account, so with an
+        // explicit multi-account list two runs differing only in this value produce different
+        // cash, financing, and P&L. Emitted only when present: descriptors persisted before the
+        // field existed deserialize as null and must recompute their original canonical form, or
+        // the durable store would reject every lifecycle update on a previously recorded run.
+        if (DefaultBrokerageAccountId is not null)
+        {
+            Append(builder, nameof(DefaultBrokerageAccountId), DefaultBrokerageAccountId);
+        }
+
         return builder.ToString();
     }
 

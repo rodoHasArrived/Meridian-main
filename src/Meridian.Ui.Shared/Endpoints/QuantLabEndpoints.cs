@@ -231,9 +231,10 @@ public static class QuantLabEndpoints
 
     /// <summary>
     /// Retains the per-run inputs that distinguish one captured backtest from another, plus the
-    /// trusted workstation scope that governs run visibility.
+    /// trusted workstation scope that governs run visibility. Internal for direct test coverage of
+    /// the identity-significant canonicalization choices.
     /// </summary>
-    private static IReadOnlyDictionary<string, string> BuildParameterSet(
+    internal static IReadOnlyDictionary<string, string> BuildParameterSet(
         BacktestResult backtest,
         int index,
         WorkstationTenantContext? scope)
@@ -248,9 +249,17 @@ public static class QuantLabEndpoints
 
         if (backtest.Request.Symbols is { Count: > 0 })
         {
+            // Request order is engine-significant: BacktestEngine.ResolveReplaySymbolOrder replays
+            // symbols in request order and MultiSymbolMergeEnumerator breaks same-timestamp ties by
+            // stream index, so [A, B] and [B, A] can fill differently. Sorting here gave those two
+            // materially different runs one identity; retain the replay order instead, normalized
+            // the same way the engine normalizes it (trim, uppercase, first-occurrence dedup).
             parameters["symbols"] = string.Join(
                 ',',
-                backtest.Request.Symbols.OrderBy(static symbol => symbol, StringComparer.Ordinal));
+                backtest.Request.Symbols
+                    .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))
+                    .Select(static symbol => symbol.Trim().ToUpperInvariant())
+                    .Distinct(StringComparer.Ordinal));
         }
 
         if (!string.IsNullOrWhiteSpace(scope?.TenantId))

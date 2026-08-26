@@ -165,7 +165,8 @@ public sealed record BacktestRequest(
         AnnualMarginRate,
         AnnualShortRebateRate,
         CanonicalAccountFinancing(),
-        CanonicalRiskFreeRateSeries());
+        CanonicalRiskFreeRateSeries(),
+        DefaultBrokerageAccountId);
 
     /// <summary>
     /// Canonical form of the resolved account financing configuration. Uses <see cref="ResolveAccounts"/>
