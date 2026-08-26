@@ -1,3 +1,4 @@
+using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Identity;
 using Microsoft.AspNetCore.Builder;
@@ -280,6 +281,100 @@ public static class EndpointAuthorization
         actor = string.Empty;
         return false;
     }
+
+    /// <summary>
+    /// Resolves the action origin the governance gate should judge, from the authenticated
+    /// principal and the caller's own declaration, taking whichever is narrower.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <see cref="OperationsActionOriginDto"/> decides whether the "reviewed automation may not
+    /// perform this action; a human operator is required" control applies. It arrives as an ordinary
+    /// bound member of the request DTOs and defaults to the permissive
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/>, so a caller used to satisfy the gate
+    /// simply by omitting the field (#2673).
+    /// </para>
+    /// <para>
+    /// The declaration is not discarded, though — it is <b>binding when it narrows</b>. Automation
+    /// that declares itself honestly must still be refused, which is the capability the control was
+    /// written for; overwriting the body outright would make the gate unforgeable and, in the same
+    /// stroke, untriggerable for anything holding a session. So a declared non-human origin is
+    /// carried through as-is, keeping the specific kind for evidence, and only a declared
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/> is re-derived.
+    /// </para>
+    /// <para>
+    /// Re-derivation goes through <see cref="DeriveActionOriginFromPrincipal"/>, which yields
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/> only for a validated interactive
+    /// workstation session. An API key is a non-interactive credential by construction, which is
+    /// exactly the "service credential, scheduled job, or assistant acting with a delegated token"
+    /// case the control exists to stop.
+    /// </para>
+    /// <para>
+    /// The result is monotone: the caller's claim can only ever narrow its own privilege, never widen
+    /// it. Omitting the field no longer buys human standing that the principal does not have, and
+    /// claiming automation is still believed.
+    /// </para>
+    /// <para>
+    /// The reconciliation casework adapters are the deliberate exception and call
+    /// <see cref="DeriveActionOriginFromPrincipal"/> directly — see its remarks for why the body is
+    /// discarded outright there.
+    /// </para>
+    /// </remarks>
+    public static OperationsActionOriginDto ResolveTrustedActionOrigin(
+        HttpContext context,
+        OperationsActionOriginDto declaredOrigin)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        return declaredOrigin == OperationsActionOriginDto.HumanOperator
+            ? DeriveActionOriginFromPrincipal(context)
+            : declaredOrigin;
+    }
+
+    /// <summary>
+    /// Resolves the action origin from the authenticated principal alone, discarding whatever the
+    /// request body declared.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is for the reconciliation break casework routes, whose bodies are legacy
+    /// browser-supplied input the server is authoritative over. Keeping a caller's declaration
+    /// there would let the browser label a casework decision, which is what those routes exist to
+    /// prevent, and two endpoint tests pin that the declared origin is discarded along with the
+    /// declared actor.
+    /// </para>
+    /// <para>
+    /// <b>Which family a route belongs to is a trust decision about that route, not something to
+    /// read off the handler.</b> Most governance-gated endpoints re-derive <c>Actor</c> as well, so
+    /// overwriting the actor does not make a route identity-authoritative in this sense. Default to
+    /// <see cref="ResolveTrustedActionOrigin"/> — the declaration is meaningful there, and
+    /// automation declaring itself honestly must still be refused.
+    /// </para>
+    /// <para>
+    /// The two differ only in whether a declared non-human origin is believed; both derive the same
+    /// way, so neither can let a non-interactive principal reach
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/> and both close #2673.
+    /// </para>
+    /// </remarks>
+    public static OperationsActionOriginDto DeriveActionOriginFromPrincipal(HttpContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        return IsInteractiveOperatorSession(context)
+            ? OperationsActionOriginDto.HumanOperator
+            : OperationsActionOriginDto.AutomationAssistant;
+    }
+
+    /// <summary>
+    /// The four conditions <see cref="RequireAuthenticatedSession{TBuilder}"/> enforces, in one
+    /// place so the gate and the origin derivation cannot drift into disagreeing about what an
+    /// interactive session is.
+    /// </summary>
+    private static bool IsInteractiveOperatorSession(HttpContext context)
+        => TryResolveActor(context, out _) &&
+           TryGetPermissions(context, out _) &&
+           !context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey) &&
+           !context.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey);
 
     public static IReadOnlyList<string> ResolveReportGroupPrincipalIds(HttpContext context)
     {

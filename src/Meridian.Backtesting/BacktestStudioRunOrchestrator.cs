@@ -253,6 +253,10 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
             }
         }
 
+        // Deliberately NOT routed through Sha256Digest (which lowercases): this hash is persisted
+        // on StrategyRunEntry.SweepDefinitionHash and StrategyRunReadService groups sweep runs by
+        // $"{SweepId}|{SweepDefinitionHash}" under StringComparer.Ordinal, so changing the casing
+        // would split each existing sweep into a pre-change and a post-change group (#2691).
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
         return Convert.ToHexString(bytes);
     }

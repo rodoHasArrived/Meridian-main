@@ -1,6 +1,6 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ledger;
 
@@ -221,8 +221,10 @@ public sealed class FundAdministrationEventLog : IFundAdministrationEventSink
 
         AppendField(builder, evt.PreviousHash ?? string.Empty);
 
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
-        return Convert.ToHexString(bytes);
+        // Canonical lowercase hex. VerifyIntegrity recomputes through this same method and
+        // compares Ordinal, and the chain never leaves this in-memory log, so producer and
+        // verifier move together and no persisted digest can be orphaned by the casing.
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static void AppendField(StringBuilder builder, string value)

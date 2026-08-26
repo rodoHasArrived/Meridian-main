@@ -787,10 +787,10 @@ public sealed partial class FileEvidenceArtifactStore
             throw new ArgumentException("Evidence vault id is invalid.", nameof(vaultId));
         }
 
-        var normalizedDocumentId = RequireTrimmed(documentId, nameof(documentId));
-        var normalizedTenantId = RequireTrimmed(tenantId, nameof(tenantId));
-        var normalizedScope = RequireTrimmed(scope, nameof(scope));
-        var reviewer = RequireTrimmed(request.Reviewer, nameof(request.Reviewer));
+        var normalizedDocumentId = RequireText(documentId, nameof(documentId));
+        var normalizedTenantId = RequireText(tenantId, nameof(tenantId));
+        var normalizedScope = RequireText(scope, nameof(scope));
+        var reviewer = RequireText(request.Reviewer, nameof(request.Reviewer));
 
         // Avoid retaining a process-lifetime lock for a vault that does not exist. The identity is
         // read again after acquiring the lock so a concurrent review still operates on the latest
