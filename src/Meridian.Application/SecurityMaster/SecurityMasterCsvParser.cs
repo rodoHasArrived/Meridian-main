@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
@@ -7,22 +8,17 @@ namespace Meridian.Application.SecurityMaster;
 /// Parses CSV files for Security Master bulk import.
 /// Expected header columns (case-insensitive):
 /// Ticker, Name, AssetClass, Currency, Exchange, ISIN, CUSIP, FIGI
+/// <para>
+/// The accepted asset classes are DERIVED from
+/// <see cref="SecurityAssetClassCatalog.IdentifierOnlyImportableAssetClasses"/> rather than kept in a
+/// private table here: a CSV row carries identity only, so it can create exactly the classes whose
+/// asset-specific terms are all optional. A class with a required term (an option's strike, a bond's
+/// maturity) is refused with a message that says so, because the alternative — defaulting the term —
+/// would mint a governed record on an economic fact nobody supplied.
+/// </para>
 /// </summary>
 public sealed class SecurityMasterCsvParser
 {
-    private static readonly Dictionary<string, string> AssetClassMapping = new(StringComparer.OrdinalIgnoreCase)
-    {
-        { "Equity", "Equity" },
-        { "Option", "Option" },
-        { "Future", "Future" },
-        { "Bond", "Bond" },
-        { "Crypto", "CryptoCurrency" },
-        { "CryptoCurrency", "CryptoCurrency" },
-        { "Commodity", "Commodity" },
-        { "CFD", "Cfd" },
-        { "Warrant", "Warrant" },
-    };
-
     /// <summary>
     /// Parses CSV content and returns a list of CreateSecurityRequest objects.
     /// Errors during parsing are collected in the out parameter.
@@ -109,10 +105,16 @@ public sealed class SecurityMasterCsvParser
             return null;
         }
 
-        // Map asset class
-        if (!AssetClassMapping.TryGetValue(assetClassInput, out var assetClass))
+        // Map asset class. Canonical names and the catalog's registered vendor aliases both resolve;
+        // a class that needs asset-specific terms this file cannot carry is refused by name.
+        var assetClass = SecurityAssetClassCatalog.ResolveIdentifierOnlyImportableAssetClass(assetClassInput);
+        if (assetClass is null)
         {
-            error = $"Row {rowNumber}: Unknown AssetClass '{assetClassInput}'. Valid values: {string.Join(", ", AssetClassMapping.Keys)}";
+            var importable = string.Join(", ", SecurityAssetClassCatalog.IdentifierOnlyImportableAssetClasses);
+            error = SecurityAssetClassCatalog.GetOrDefault(assetClassInput).AssetClass == "Unknown"
+                ? $"Row {rowNumber}: Unknown AssetClass '{assetClassInput}'. Importable values: {importable}"
+                : $"Row {rowNumber}: AssetClass '{assetClassInput}' requires asset-specific terms that a CSV " +
+                  $"import cannot supply. Importable values: {importable}";
             return null;
         }
 
@@ -121,6 +123,7 @@ public sealed class SecurityMasterCsvParser
         if (string.IsNullOrWhiteSpace(currency))
             currency = "USD";
 
+        fields.TryGetValue("Exchange", out var exchange);
         fields.TryGetValue("ISIN", out var isin);
         fields.TryGetValue("CUSIP", out var cusip);
         fields.TryGetValue("FIGI", out var figi);
@@ -143,8 +146,8 @@ public sealed class SecurityMasterCsvParser
         return new CreateSecurityRequest(
             SecurityId: Guid.NewGuid(),
             AssetClass: assetClass,
-            CommonTerms: System.Text.Json.JsonDocument.Parse("{}").RootElement,
-            AssetSpecificTerms: System.Text.Json.JsonDocument.Parse("{}").RootElement,
+            CommonTerms: BuildCommonTerms(name, currency, exchange),
+            AssetSpecificTerms: BuildAssetSpecificTerms(),
             Identifiers: identifiers,
             EffectiveFrom: DateTimeOffset.UtcNow,
             SourceSystem: "SecurityMasterImport",
@@ -153,6 +156,38 @@ public sealed class SecurityMasterCsvParser
             Reason: null
         );
     }
+
+    /// <summary>
+    /// Builds the common-terms payload the create path requires. <c>displayName</c> and
+    /// <c>currency</c> are mandatory there, so a row that parsed them must carry them through —
+    /// emitting an empty document instead made every import row fail at create time.
+    /// </summary>
+    private static JsonElement BuildCommonTerms(string name, string currency, string? exchange)
+    {
+        var commonTerms = new Dictionary<string, object?>
+        {
+            ["displayName"] = name,
+            ["currency"] = currency
+        };
+
+        if (!string.IsNullOrWhiteSpace(exchange))
+        {
+            commonTerms["exchange"] = exchange;
+        }
+
+        return JsonSerializer.SerializeToElement(commonTerms);
+    }
+
+    /// <summary>
+    /// The asset-specific-terms payload for an identity-only import: the schema-version stamp and
+    /// nothing else. Every importable class declares its terms optional, so an empty term set is the
+    /// complete, honest contract for the row — no term is invented for a column the file never had.
+    /// </summary>
+    private static JsonElement BuildAssetSpecificTerms()
+        => JsonSerializer.SerializeToElement(new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms
+        });
 
     /// <summary>
     /// Splits a CSV line respecting quoted values and escaped quotes.

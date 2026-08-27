@@ -288,8 +288,16 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         return securitiesBySymbol.TryGetValue(position.Symbol, out var securityBySymbol) ? securityBySymbol : null;
     }
 
+    /// <summary>
+    /// The gate for this first accounting slice. The canonical producer
+    /// (<c>SecurityMasterAccountingEventSourceAdapter</c>) now emits only the declared
+    /// <see cref="SecurityAccountingInstrumentClasses"/> values, resolved from the catalog rather
+    /// than inferred from classification prose; the remaining spellings stay accepted as read
+    /// tolerance for securities supplied by other adapters or by older callers.
+    /// </summary>
     private static bool IsFixedIncome(string assetClass) =>
-        assetClass.Equals("Bond", StringComparison.OrdinalIgnoreCase) ||
+        assetClass.Equals(SecurityAccountingInstrumentClasses.Bond, StringComparison.OrdinalIgnoreCase) ||
+        assetClass.Equals(SecurityAccountingInstrumentClasses.AssetBackedSecurity, StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("CertificateOfDeposit", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("CommercialPaper", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("TreasuryBill", StringComparison.OrdinalIgnoreCase) ||
@@ -297,7 +305,6 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         assetClass.Equals("MortgageBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("Mbs", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("AssetBacked", StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals("AssetBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("Abs", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("Loan", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("AmortizingLoan", StringComparison.OrdinalIgnoreCase);

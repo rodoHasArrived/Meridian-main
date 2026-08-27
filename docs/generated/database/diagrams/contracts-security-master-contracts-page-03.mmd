@@ -1,5 +1,12 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto["SecurityValidationSnapshotRequestDto"] {
+        +string? Actor
+        +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
+        +string Reason
+        +SecurityValidationWorkflowDto Workflow
+        +string? WorkflowReference
+    }
     class Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto["SecurityValidationWorkflowDto"] {
     }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine["StructuredCashFlowLedgerLine"] {
@@ -143,6 +150,7 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry
