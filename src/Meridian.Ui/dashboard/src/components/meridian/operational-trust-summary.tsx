@@ -78,13 +78,26 @@ export function OperationalTrustSummary({
               <div key={id} className="min-w-0 rounded-[2px] border border-border/70 bg-secondary/20 px-3 py-2">
                 <dt className="text-xs font-medium text-muted-foreground">{factLabel}</dt>
                 <dd className="mt-1 min-w-0">
-                  <div className="flex min-w-0 items-start gap-2">
+                  {/*
+                    The status pill never shrinks, so on a 12rem tile it leaves the value roughly
+                    100px -- narrower than a single long word like "unavailable". `break-words` then
+                    splits that word mid-character rather than moving it down, which is how the
+                    control tower came to read "Timestamp unavailabl / e". The squeeze only happens
+                    once a blocker adds a fifth tile, so it appeared exactly when an operator most
+                    needed to read the status.
+
+                    `basis-28` gives the value a 7rem hypothetical width, so when less than that is
+                    free beside the pill the whole value wraps onto its own full-width line and
+                    breaks at spaces again. Wider tiles still keep pill and value side by side.
+                    `break-words` stays as the last resort for a genuinely unbreakable token.
+                  */}
+                  <div className="flex min-w-0 flex-wrap items-start gap-x-2 gap-y-1">
                     <span
                       className={cn("inline-flex shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium", toneClasses[tone])}
                     >
                       {toneLabels[tone]}
                     </span>
-                    <span className="min-w-0 break-words text-sm font-semibold leading-5 text-foreground">{fact.value}</span>
+                    <span className="min-w-0 grow basis-28 break-words text-sm font-semibold leading-5 text-foreground">{fact.value}</span>
                   </div>
                   {fact.detail ? (
                     <p className="mt-1 break-words text-xs leading-5 text-muted-foreground">{fact.detail}</p>
