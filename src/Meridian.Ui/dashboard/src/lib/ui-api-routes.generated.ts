@@ -644,6 +644,7 @@ export const UI_API_ROUTES = {
   ReconciliationMarginControl: "/api/workstation/reconciliation/margin-control",
   ReconciliationMarginCertifications: "/api/workstation/reconciliation/margin-control/certifications",
   ReconciliationOpenCases: "/api/workstation/reconciliation/cases",
+  DirectLendingPortfolioSummary: "/api/loans/portfolio",
   DirectLendingServicerStatementPreview: "/api/loans/servicer-statements/preview",
   DirectLendingServicerStatementImport: "/api/loans/servicer-statements/import",
   DirectLendingServicerStatementById: "/api/loans/servicer-statements/{batchId}",

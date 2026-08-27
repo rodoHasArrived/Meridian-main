@@ -66,6 +66,7 @@ STANDALONE_MODULES = {
     "statement-run-detail.types",
     "reconciliation-readiness.types",
     "data-quality-watch.types",
+    "direct-lending.types",
 }
 
 # A trailing `// note` is allowed: without it the whole entry failed to match, so the module
