@@ -122,6 +122,17 @@ describe("loan book view model", () => {
     expect(row.statusTone).toBe("default");
   });
 
+  it("does not announce NaN when the server omits a status count", () => {
+    // The counts are non-nullable in the contract but arrive as unchecked JSON. Summing an
+    // absent one would read out as "NaN needing attention" to a screen reader.
+    const view = buildLoanBookViewModel(summary({ workoutLoans: undefined as unknown as number }));
+
+    expect(view.statusAnnouncement).not.toContain("NaN");
+    expect(view.statusAnnouncement).toBe(
+      "Loan book loaded with 1 facility, at least 1 needing attention; some status counts were not reported."
+    );
+  });
+
   it("reports an empty loan book as empty rather than as unloaded", () => {
     const view = buildLoanBookViewModel(summary({ loans: [], totalLoans: 0, activeLoans: 0, defaultedLoans: 0 }));
 

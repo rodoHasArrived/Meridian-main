@@ -141,6 +141,24 @@ export function buildLoanBookRow(loan: LoanSummary): LoanBookRowViewModel {
   };
 }
 
+/**
+ * Totals the facilities needing attention.
+ *
+ * The three status counts are non-nullable in the contract, but they reach the browser as
+ * unchecked JSON, and adding an absent one yields `NaN` — which would be read out as
+ * "NaN needing attention". Absent counts are skipped and the shortfall reported, so the
+ * census degrades to "at least N" rather than to a nonsense number.
+ */
+function impairedCount(summary: LoanPortfolioSummary): { total: number; complete: boolean } {
+  const parts = [summary.defaultedLoans, summary.nonPerformingLoans, summary.workoutLoans];
+  const reported = parts.filter(isReportedNumber);
+
+  return {
+    total: reported.reduce((sum, value) => sum + value, 0),
+    complete: reported.length === parts.length
+  };
+}
+
 function countMetric(id: string, label: string, value: number, tone: LoanBookTone): LoanBookMetricViewModel {
   const rendered = formatNumber(value, { maximumFractionDigits: 0, fallback: NOT_REPORTED });
   return {
@@ -206,7 +224,10 @@ export function buildLoanBookViewModel(summary: LoanPortfolioSummary | null): Lo
   ];
 
   const rows = (summary.loans ?? []).map(buildLoanBookRow);
-  const impaired = summary.defaultedLoans + summary.nonPerformingLoans + summary.workoutLoans;
+  const impaired = impairedCount(summary);
+  const attention = impaired.complete
+    ? `${impaired.total} needing attention.`
+    : `at least ${impaired.total} needing attention; some status counts were not reported.`;
 
   return {
     ...base,
@@ -217,6 +238,6 @@ export function buildLoanBookViewModel(summary: LoanPortfolioSummary | null): Lo
     statusAnnouncement:
       rows.length === 0
         ? "Loan book loaded with no facilities."
-        : `Loan book loaded with ${rows.length} ${rows.length === 1 ? "facility" : "facilities"}, ${impaired} needing attention.`
+        : `Loan book loaded with ${rows.length} ${rows.length === 1 ? "facility" : "facilities"}, ${attention}`
   };
 }
