@@ -3730,8 +3730,8 @@ export function getSecurityMasterQualityReport() {
   return getJson<import("@/types").SecurityMasterQualityReport>(SECURITY_MASTER_API_ENDPOINTS.qualityReportLatest);
 }
 
-export function applyCorporateActionInboxProposal(request: import("@/types").CorporateActionInboxApplyRequest) {
-  return postJson<unknown>(SECURITY_MASTER_API_ENDPOINTS.corporateActionInboxApply, request);
+export function acceptCorporateActionInboxProposal(request: import("@/types").CorporateActionInboxAcceptRequest) {
+  return postJson<import("@/types").CorporateActionInboxAcceptResult>(SECURITY_MASTER_API_ENDPOINTS.corporateActionInboxApply, request);
 }
 
 export function getQualityAnomalies() {

@@ -150,6 +150,62 @@ public sealed class NullSecurityMasterCorporateActionCommandService : ISecurityM
             "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable corporate action appends."));
 }
 
+public sealed class NullCorporateActionOperationsService : ICorporateActionOperationsService
+{
+    private static Task<T> NotConfigured<T>() =>
+        Task.FromException<T>(new CorporateActionOperationException(
+            CorporateActionProblemCodes.PersistenceUnavailable,
+            "Security Master corporate-action persistence is not configured."));
+
+    public Task<CorporateActionSourceProposalDto> RecordSourceProposalAsync(RecordCorporateActionSourceProposalRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionSourceProposalDto>();
+
+    public Task<CorporateActionSourceProposalDto?> GetSourceProposalAsync(Guid proposalId, CancellationToken ct = default) =>
+        Task.FromResult<CorporateActionSourceProposalDto?>(null);
+
+    public Task<IReadOnlyList<CorporateActionSourceProposalDto>> ListSourceProposalsAsync(Guid? securityId, string? state, int take, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<CorporateActionSourceProposalDto>>([]);
+
+    public Task<IReadOnlyList<CorporateActionSourceProposalDto>> ListActionableSourceProposalsAsync(Guid? securityId, int take, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<CorporateActionSourceProposalDto>>([]);
+
+    public Task<CorporateActionDurableInboxDto> GetInboxAsync(CorporateActionCaseScopeDto acceptanceScope, int take, CancellationToken ct = default) =>
+        Task.FromResult(new CorporateActionDurableInboxDto(null, 0, 0, 0, [], [], []));
+
+    public Task<CorporateActionSourceProposalAcceptanceResultDto> AcceptSourceProposalAsync(AcceptCorporateActionSourceProposalRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionSourceProposalAcceptanceResultDto>();
+
+    public Task<CorporateActionSourceProposalDecisionResultDto> RejectSourceProposalAsync(RejectCorporateActionSourceProposalRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionSourceProposalDecisionResultDto>();
+
+    public Task<CorporateActionProcessingCaseDto?> GetCaseAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default) =>
+        Task.FromResult<CorporateActionProcessingCaseDto?>(null);
+
+    public Task<IReadOnlyList<CorporateActionProcessingCaseDto>> ListCasesAsync(string tenantId, string companyId, Guid? securityId, string? state, int take, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<CorporateActionProcessingCaseDto>>([]);
+
+    public Task<CorporateActionConflictDto?> GetConflictAsync(Guid caseId, Guid conflictId, string tenantId, string companyId, CancellationToken ct = default) =>
+        Task.FromResult<CorporateActionConflictDto?>(null);
+
+    public Task<IReadOnlyList<CorporateActionConflictDto>> ListConflictsAsync(Guid caseId, string tenantId, string companyId, string? state, int take, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<CorporateActionConflictDto>>([]);
+
+    public Task<CorporateActionEvidenceMutationResultDto> AddEvidenceAsync(AddCorporateActionEvidenceRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionEvidenceMutationResultDto>();
+
+    public Task<CorporateActionConflictMutationResultDto> RecordConflictAsync(RecordCorporateActionConflictRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionConflictMutationResultDto>();
+
+    public Task<CorporateActionConflictResolutionResultDto> ResolveConflictAsync(ResolveCorporateActionConflictRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionConflictResolutionResultDto>();
+
+    public Task<CorporateActionProcessingOptionMutationResultDto> UpsertOptionAsync(UpsertCorporateActionProcessingOptionRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionProcessingOptionMutationResultDto>();
+
+    public Task<CorporateActionCaseTransitionResultDto> TransitionCaseAsync(TransitionCorporateActionCaseRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionCaseTransitionResultDto>();
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Conflict service — returns empty lists (no conflicts to show when not configured)
 // ──────────────────────────────────────────────────────────────────────────────

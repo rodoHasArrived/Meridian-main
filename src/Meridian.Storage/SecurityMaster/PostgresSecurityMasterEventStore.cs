@@ -242,7 +242,8 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 lifecycle_state,
                 supersedes_corp_act_id,
                 redemption_price_percent_of_par,
-                payload)
+                payload,
+                payload_schema_version)
             values (
                 @corp_act_id,
                 @security_id,
@@ -262,7 +263,8 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 @lifecycle_state,
                 @supersedes_corp_act_id,
                 @redemption_price_percent_of_par,
-                @payload)
+                @payload,
+                @payload_schema_version)
             on conflict (corp_act_id) do nothing;
             """;
 
@@ -290,6 +292,7 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 ? payload.GetRawText()
                 : DBNull.Value,
         });
+        command.Parameters.AddWithValue("payload_schema_version", action.PayloadSchemaVersion);
 
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
@@ -335,7 +338,8 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                    lifecycle_state,
                    supersedes_corp_act_id,
                    redemption_price_percent_of_par,
-                   payload
+                   payload,
+                   payload_schema_version
             from {Qualified("corporate_actions")}
             where security_id = @security_id
             order by ex_date;
@@ -368,7 +372,8 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 LifecycleState: reader.IsDBNull(15) ? null : reader.GetString(15),
                 SupersedesCorpActId: reader.IsDBNull(16) ? null : reader.GetGuid(16),
                 RedemptionPricePercentOfPar: reader.IsDBNull(17) ? null : reader.GetDecimal(17),
-                Payload: reader.IsDBNull(18) ? null : ParsePayload(reader.GetString(18))));
+                Payload: reader.IsDBNull(18) ? null : ParsePayload(reader.GetString(18)),
+                PayloadSchemaVersion: reader.GetInt32(19)));
         }
 
         return results;

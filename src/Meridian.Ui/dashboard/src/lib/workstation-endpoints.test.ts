@@ -104,6 +104,8 @@ import {
   securityMasterAmendEndpoint,
   securityMasterConflictsEndpoint,
   securityMasterConflictResolveEndpoint,
+  securityMasterCorporateActionCaseConflictEndpoint,
+  securityMasterCorporateActionCaseConflictsEndpoint,
   securityMasterCorporateActionsEndpoint,
   securityMasterEntryEndpoint,
   securityMasterTradingParametersEndpoint,
@@ -194,6 +196,18 @@ import {
 } from "@/lib/workstation-endpoints";
 
 describe("workstation API endpoint catalog", () => {
+  it("builds durable corporate-action conflict recovery routes", () => {
+    expect(securityMasterCorporateActionCaseConflictsEndpoint("case / 1")).toBe(
+      "/api/security-master/corporate-actions/cases/case%20%2F%201/conflicts"
+    );
+    expect(securityMasterCorporateActionCaseConflictsEndpoint("case-1", { state: "Open", take: 25 })).toBe(
+      "/api/security-master/corporate-actions/cases/case-1/conflicts?state=Open&take=25"
+    );
+    expect(securityMasterCorporateActionCaseConflictEndpoint("case-1", "conflict / 2")).toBe(
+      "/api/security-master/corporate-actions/cases/case-1/conflicts/conflict%20%2F%202"
+    );
+  });
+
   it("builds posted-journal ledger reporting routes over the governed book", () => {
     expect(ledgerPeriodsEndpoint()).toBe("/api/ledger/periods");
     expect(ledgerPeriodsEndpoint({ ledgerBookId: "book-1", status: "HardClosed" })).toBe(

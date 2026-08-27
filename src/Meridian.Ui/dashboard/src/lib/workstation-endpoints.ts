@@ -314,6 +314,34 @@ export function securityMasterCoverageDraftEndpoint(symbol: string): string {
   return UI_API_ROUTES.SecurityMasterCoverageDraft.replace("{symbol}", encodeURIComponent(symbol));
 }
 
+export function securityMasterCorporateActionCaseConflictsEndpoint(
+  caseId: string,
+  query: { state?: string | null; take?: number | null } = {}
+): string {
+  const route = UI_API_ROUTES.SecurityMasterCorporateActionCaseConflicts.replace(
+    "{caseId:guid}",
+    encodeURIComponent(caseId)
+  );
+  const params = new URLSearchParams();
+  if (query.state) {
+    params.set("state", query.state);
+  }
+  if (query.take != null) {
+    params.set("take", String(query.take));
+  }
+  const suffix = params.toString();
+  return suffix ? `${route}?${suffix}` : route;
+}
+
+export function securityMasterCorporateActionCaseConflictEndpoint(
+  caseId: string,
+  conflictId: string
+): string {
+  return UI_API_ROUTES.SecurityMasterCorporateActionCaseConflict
+    .replace("{caseId:guid}", encodeURIComponent(caseId))
+    .replace("{conflictId:guid}", encodeURIComponent(conflictId));
+}
+
 /**
  * Passport Workbench governed-write routes. Each carries a `{securityId:guid}` path segment that is
  * authoritative server-side, so the helpers substitute it explicitly rather than relying on the body.

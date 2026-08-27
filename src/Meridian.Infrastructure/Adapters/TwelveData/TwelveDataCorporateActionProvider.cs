@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -47,6 +48,9 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
     }
 
     public string ProviderId => "twelvedata";
+
+    public CorporateActionProviderReleaseStatusDto ReleaseStatus =>
+        CorporateActionProviderReleaseStatusDto.ReviewOnly;
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
