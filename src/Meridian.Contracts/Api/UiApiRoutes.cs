@@ -771,6 +771,7 @@ public static class UiApiRoutes
     public const string ReconciliationMarginControl = "/api/workstation/reconciliation/margin-control";
     public const string ReconciliationMarginCertifications = "/api/workstation/reconciliation/margin-control/certifications";
     public const string ReconciliationOpenCases = "/api/workstation/reconciliation/cases";
+    public const string DirectLendingPortfolioSummary = "/api/loans/portfolio";
     public const string DirectLendingServicerStatementPreview = "/api/loans/servicer-statements/preview";
     public const string DirectLendingServicerStatementImport = "/api/loans/servicer-statements/import";
     public const string DirectLendingServicerStatementById = "/api/loans/servicer-statements/{batchId}";

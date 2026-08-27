@@ -98,7 +98,8 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Asset detail", route: WORKSTATION_ROUTE_CATALOG.portfolioAssetDetail },
     { label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync },
     { label: "Cash ladder", route: WORKSTATION_ROUTE_CATALOG.portfolioCashLadder },
-    { label: "Family office", route: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice }
+    { label: "Family office", route: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice },
+    { label: "Loan book", route: WORKSTATION_ROUTE_CATALOG.portfolioLoanBook }
   ],
   reporting: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.reporting, match: "exact" },

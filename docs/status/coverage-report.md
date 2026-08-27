@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**1248 / 8862** items documented (**14.1%**) &mdash; Grade: **F**
+**1247 / 8861** items documented (**14.1%**) &mdash; Grade: **F**
 
 ```text
 [===-----------------] 14.1%
@@ -16,7 +16,7 @@
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
 | Public Classes / Interfaces | 1147 | 8390 | 13.7% | F |
-| API Endpoints | 89 | 329 | 27.1% | F |
+| API Endpoints | 88 | 328 | 26.8% | F |
 | Configuration Options | 1 | 132 | 0.8% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
@@ -106,33 +106,33 @@
 | `/api/compliance/access-reviews/assess` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:85` |
 | `/api/compliance/access-reviews/run` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:101` |
 | `/api/compliance/access-reviews` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:123` |
-| `/api/loans` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:37` |
-| `/api/loans/{loanId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:67` |
-| `/api/loans/{loanId}/projections/contract` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:82` |
-| `/api/loans/{loanId}/history` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:97` |
-| `/api/loans/{loanId}/rebuild-state` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:111` |
-| `/api/loans/{loanId}/terms-versions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:129` |
-| `/api/loans/{loanId}/projections/terms-versions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:143` |
-| `/api/loans/{loanId}/terms` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:157` |
-| `/api/loans/{loanId}/activate` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:188` |
-| `/api/loans/{loanId}/servicing-state` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:211` |
-| `/api/loans/{loanId}/projections/servicing` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:226` |
-| `/api/loans/{loanId}/projections/drawdown-lots` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:241` |
-| `/api/loans/{loanId}/projections/revisions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:255` |
-| `/api/loans/{loanId}/projections/accruals` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:269` |
-| `/api/loans/{loanId}/drawdowns` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:283` |
-| `/api/loans/{loanId}/rate-resets` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:314` |
-| `/api/loans/{loanId}/payments/principal` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:345` |
-| `/api/loans/{loanId}/accruals/daily` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:376` |
-| `/api/loans/{loanId}/payments` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:407` |
-| `/api/loans/{loanId}/cash-transactions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:434` |
-| `/api/loans/{loanId}/payment-allocations` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:442` |
-| `/api/loans/{loanId}/fees` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:450` |
-| `/api/loans/{loanId}/fee-balances` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:477` |
-| `/api/loans/operations` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:485` |
-| `/api/loans/servicer-statements/preview` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:498` |
-| `/api/loans/servicer-statements/import` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:522` |
-| `/api/loans/servicer-statements/{batchId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:546` |
+| `/api/loans` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:38` |
+| `/api/loans/{loanId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:68` |
+| `/api/loans/{loanId}/projections/contract` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:83` |
+| `/api/loans/{loanId}/history` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:98` |
+| `/api/loans/{loanId}/rebuild-state` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:112` |
+| `/api/loans/{loanId}/terms-versions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:130` |
+| `/api/loans/{loanId}/projections/terms-versions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:144` |
+| `/api/loans/{loanId}/terms` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:158` |
+| `/api/loans/{loanId}/activate` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:189` |
+| `/api/loans/{loanId}/servicing-state` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:212` |
+| `/api/loans/{loanId}/projections/servicing` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:227` |
+| `/api/loans/{loanId}/projections/drawdown-lots` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:242` |
+| `/api/loans/{loanId}/projections/revisions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:256` |
+| `/api/loans/{loanId}/projections/accruals` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:270` |
+| `/api/loans/{loanId}/drawdowns` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:284` |
+| `/api/loans/{loanId}/rate-resets` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:315` |
+| `/api/loans/{loanId}/payments/principal` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:346` |
+| `/api/loans/{loanId}/accruals/daily` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:377` |
+| `/api/loans/{loanId}/payments` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:408` |
+| `/api/loans/{loanId}/cash-transactions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:435` |
+| `/api/loans/{loanId}/payment-allocations` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:443` |
+| `/api/loans/{loanId}/fees` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:451` |
+| `/api/loans/{loanId}/fee-balances` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:478` |
+| `/api/loans/operations` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:486` |
+| `/api/loans/servicer-statements/preview` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:499` |
+| `/api/loans/servicer-statements/import` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:523` |
+| `/api/loans/servicer-statements/{batchId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:547` |
 | ... and 190 more | |
 
 ### Configuration Options (131 undocumented)

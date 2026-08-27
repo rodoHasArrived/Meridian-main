@@ -5126,7 +5126,7 @@
         "recipient": "investor-anchor-lp",
         "recipientKind": "Company",
         "destination": "Secure portal package",
-        "subject": "Investor Monthly Statement — May 2026",
+        "subject": "Investor Monthly Statement \u2014 May 2026",
         "state": "Delivered",
         "attemptCount": 1,
         "maxAttempts": 3,
@@ -5167,7 +5167,7 @@
         "recipient": "investor-anchor-lp",
         "recipientKind": "Company",
         "destination": "statements@anchor-lp.example",
-        "subject": "Investor Monthly Statement — May 2026",
+        "subject": "Investor Monthly Statement \u2014 May 2026",
         "state": "Retrying",
         "attemptCount": 2,
         "maxAttempts": 3,
@@ -5252,7 +5252,7 @@
       "scopeItems": [
         {
           "label": "Ledger source",
-          "value": "Strategy run (simulation) — not the posted journal",
+          "value": "Strategy run (simulation) \u2014 not the posted journal",
           "tone": "Default"
         },
         {
@@ -5316,7 +5316,7 @@
             "recordId": "ledger:run-42:acct-cash",
             "recordType": "ledger-account",
             "title": "Cash",
-            "subtitle": "Asset · Strategy run run-42",
+            "subtitle": "Asset \u00b7 Strategy run run-42",
             "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
             "tone": "Success",
             "fields": [
@@ -5397,7 +5397,7 @@
             "recordId": "ledger:run-42:acct-investments",
             "recordType": "ledger-account",
             "title": "Public Investments",
-            "subtitle": "Asset · Strategy run run-42",
+            "subtitle": "Asset \u00b7 Strategy run run-42",
             "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
             "tone": "Default",
             "fields": [
@@ -5478,7 +5478,7 @@
             "recordId": "ledger:run-42:acct-capital",
             "recordType": "ledger-account",
             "title": "Contributed Capital",
-            "subtitle": "Equity · Strategy run run-42",
+            "subtitle": "Equity \u00b7 Strategy run run-42",
             "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
             "tone": "Default",
             "fields": [
@@ -5536,7 +5536,7 @@
         "recordId": "ledger:run-42:acct-cash",
         "recordType": "ledger-account",
         "title": "Cash",
-        "subtitle": "Asset · Strategy run run-42",
+        "subtitle": "Asset \u00b7 Strategy run run-42",
         "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
         "tone": "Success",
         "fields": [
@@ -5663,6 +5663,89 @@
           }
         ]
       }
+    },
+    "/api/loans/portfolio": {
+      "totalLoans": 4,
+      "activeLoans": 3,
+      "defaultedLoans": 1,
+      "nonPerformingLoans": 0,
+      "workoutLoans": 0,
+      "totalCommitment": 24000000,
+      "totalPrincipalOutstanding": 16850000,
+      "totalInterestAccruedUnpaid": 128400,
+      "totalPenaltyAccruedUnpaid": 15200,
+      "totalAvailableToDraw": 7150000,
+      "totalCollateralValue": 29400000,
+      "loans": [
+        {
+          "loanId": "3f1a6d2e-8c47-4b19-9f03-5a7c2e814d60",
+          "facilityName": "Senior Term Facility A",
+          "borrowerId": "9b2c4f18-7d35-4e62-a1c8-3f6d905b27ae",
+          "borrowerName": "Harbour Logistics",
+          "status": "Active",
+          "baseCurrency": "USD",
+          "commitmentAmount": 9000000,
+          "principalOutstanding": 6400000,
+          "interestAccruedUnpaid": 41200,
+          "penaltyAccruedUnpaid": 0,
+          "availableToDraw": 2600000,
+          "originationDate": "2025-02-14",
+          "maturityDate": "2030-02-14",
+          "lastAccrualDate": "2026-05-28",
+          "lastPaymentDate": "2026-05-01"
+        },
+        {
+          "loanId": "c5e70a91-4b62-49d8-8f13-2a6b48e0c375",
+          "facilityName": "Revolving Credit Facility B",
+          "borrowerId": "1d84e73a-52f9-4c07-b6e1-8c9507f3ab24",
+          "borrowerName": "Meridian Growth Partners",
+          "status": "Active",
+          "baseCurrency": "USD",
+          "commitmentAmount": 7500000,
+          "principalOutstanding": 4100000,
+          "interestAccruedUnpaid": 27600,
+          "penaltyAccruedUnpaid": 0,
+          "availableToDraw": 3400000,
+          "originationDate": "2025-07-01",
+          "maturityDate": "2028-07-01",
+          "lastAccrualDate": "2026-05-28",
+          "lastPaymentDate": "2026-05-15"
+        },
+        {
+          "loanId": "7a3d1c68-9e04-4f75-b28a-6d40e51c9832",
+          "facilityName": "Mezzanine Note C",
+          "borrowerId": "4e69b207-3a15-48cd-9072-b5813fe6a49c",
+          "borrowerName": "Cedarline Manufacturing",
+          "status": "Defaulted",
+          "baseCurrency": "USD",
+          "commitmentAmount": 5000000,
+          "principalOutstanding": 4850000,
+          "interestAccruedUnpaid": 48300,
+          "penaltyAccruedUnpaid": 15200,
+          "availableToDraw": 0,
+          "originationDate": "2024-09-30",
+          "maturityDate": "2027-09-30",
+          "lastAccrualDate": "2026-05-28",
+          "lastPaymentDate": "2026-01-31"
+        },
+        {
+          "loanId": "e0b94f35-6d81-4a27-8c53-9fa2b706d418",
+          "facilityName": "Bridge Facility D",
+          "borrowerId": "8c07d3b5-1f4e-4629-a83d-70b2e5c19f46",
+          "borrowerName": "Northgate Real Estate",
+          "status": "Active",
+          "baseCurrency": "EUR",
+          "commitmentAmount": 2500000,
+          "principalOutstanding": 1500000,
+          "interestAccruedUnpaid": 11300,
+          "penaltyAccruedUnpaid": 0,
+          "availableToDraw": 1000000,
+          "originationDate": "2026-01-12",
+          "maturityDate": "2027-01-12",
+          "lastAccrualDate": "2026-05-28",
+          "lastPaymentDate": null
+        }
+      ]
     }
   }
 }

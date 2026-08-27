@@ -547,6 +547,15 @@ export const SYMBOL_API_ENDPOINTS = {
   bulkAdd: UI_API_ROUTES.SymbolsBulkAdd
 } as const;
 
+/** Direct-lending read surface. Servicing writes stay desktop-owned for now. */
+export const DIRECT_LENDING_API_ENDPOINTS = {
+  portfolioSummary: UI_API_ROUTES.DirectLendingPortfolioSummary
+} as const;
+
+export function directLendingPortfolioSummaryEndpoint(): string {
+  return DIRECT_LENDING_API_ENDPOINTS.portfolioSummary;
+}
+
 export const QUALITY_API_ENDPOINTS = {
   dashboard: UI_API_ROUTES.QualityDashboard,
   gaps: UI_API_ROUTES.QualityGaps,

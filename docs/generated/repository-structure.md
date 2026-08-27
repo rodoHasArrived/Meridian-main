@@ -6260,6 +6260,7 @@ Meridian-main
 │   │   │   │   │   │   ├── covered-call.api.ts
 │   │   │   │   │   │   ├── data-operations-assurance.api.ts
 │   │   │   │   │   │   ├── data-quality-watch.api.ts
+│   │   │   │   │   │   ├── direct-lending.api.ts
 │   │   │   │   │   │   ├── execution-audit.api.ts
 │   │   │   │   │   │   ├── execution-blotter.api.ts
 │   │   │   │   │   │   ├── family-office.api.ts
@@ -6564,6 +6565,10 @@ Meridian-main
 │   │   │   │   │   ├── live-quotes-screen.tsx
 │   │   │   │   │   ├── live-quotes-screen.view-model.test.ts
 │   │   │   │   │   ├── live-quotes-screen.view-model.ts
+│   │   │   │   │   ├── loan-book-screen.test.tsx
+│   │   │   │   │   ├── loan-book-screen.tsx
+│   │   │   │   │   ├── loan-book-screen.view-model.test.ts
+│   │   │   │   │   ├── loan-book-screen.view-model.ts
 │   │   │   │   │   ├── margin-control-center-screen.test.tsx
 │   │   │   │   │   ├── margin-control-center-screen.tsx
 │   │   │   │   │   ├── market-data-screen.test.tsx
@@ -6742,6 +6747,7 @@ Meridian-main
 │   │   │   │   │   ├── covered-call.types.ts
 │   │   │   │   │   ├── data-operations-assurance.ts
 │   │   │   │   │   ├── data-quality-watch.types.ts
+│   │   │   │   │   ├── direct-lending.types.ts
 │   │   │   │   │   ├── execution-audit.types.ts
 │   │   │   │   │   ├── execution-blotter.types.ts
 │   │   │   │   │   ├── family-office.types.ts
