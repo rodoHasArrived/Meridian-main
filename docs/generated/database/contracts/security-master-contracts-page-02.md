@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 3
 
-Objects 81-160 of 180. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 181. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -13,6 +13,8 @@ classDiagram
         +SecurityIdentifierKind IdentifierKind
         +string IdentifierValue
         +string? Provider
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAccountingInstrumentClasses["SecurityAccountingInstrumentClasses"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityAliasDto["SecurityAliasDto"] {
         +Guid AliasId
@@ -32,8 +34,10 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassCatalog["SecurityAssetClassCatalog"] {
         +IReadOnlyList~string~ AssetClasses
+        +IReadOnlyList~string~ IdentifierOnlyImportableAssetClasses
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor["SecurityAssetClassDescriptor"] {
+        +string? AccountingInstrumentClass
         +IReadOnlyList~string~? Aliases
         +bool AmortizesTowardPar
         +string AssetClass
@@ -42,6 +46,7 @@ classDiagram
         +bool RequiresMaturity
         +bool SupportsBasicCreateWorkflow
         +bool SupportsCashflowScheduleByDefault
+        +bool SupportsIdentifierOnlyImport
         +bool SupportsProfileBackedTerms
         +bool UsesFaceValueLots
     }
@@ -56,8 +61,8 @@ classDiagram
         +IReadOnlyList~AssetPackLifecycleCoverage~ LifecycleCoverage
         +IReadOnlyList~string~ LifecycleEvents
         +string PackId
+        +IReadOnlyList~string~ PlannedAssetClasses
         +AssetPackReportingTaxonomy ReportingTaxonomy
-        +IReadOnlyList~string~ SupportedLifecycleEvents
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetPackRegistry["SecurityAssetPackRegistry"] {
     }
@@ -528,13 +533,6 @@ classDiagram
         +SecurityValidationWorkflowDto Workflow
         +string? WorkflowReference
     }
-    class Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto["SecurityValidationSnapshotRequestDto"] {
-        +string? Actor
-        +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
-        +string Reason
-        +SecurityValidationWorkflowDto Workflow
-        +string? WorkflowReference
-    }
     Meridian_Contracts_SecurityMaster_ResolveSecurityRequest --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
     Meridian_Contracts_SecurityMaster_SecurityAliasDto --> Meridian_Contracts_SecurityMaster_SecurityAliasScope
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
@@ -589,5 +587,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityValidationReportDto --> Meridian_Contracts_SecurityMaster_SecurityValidationIssueDto
     Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityValidationReportDto
-    Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
 ```

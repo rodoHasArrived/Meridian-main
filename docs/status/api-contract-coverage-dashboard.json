@@ -8331,37 +8331,37 @@
     },
     {
       "name": "MultiAssetCoverageSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1043",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1048",
       "documented": false
     },
     {
       "name": "WorkstationDataProviderDiagnostic",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1062",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1067",
       "documented": false
     },
     {
       "name": "WorkstationDataProviderRoutingSummary",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1072",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1077",
       "documented": false
     },
     {
       "name": "WorkstationDataProviderRecord",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1084",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1089",
       "documented": false
     },
     {
       "name": "WorkstationDataBackfillRecord",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1106",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1111",
       "documented": false
     },
     {
       "name": "WorkstationDataExportRecord",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1117",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1122",
       "documented": false
     },
     {
       "name": "WorkstationDataPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1129",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1134",
       "documented": false
     },
     {
