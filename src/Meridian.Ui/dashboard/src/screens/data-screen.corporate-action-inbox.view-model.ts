@@ -19,7 +19,7 @@ export type CorporateActionIdempotencyKeyFactory = () => string;
 export type InboxRowTone = "warning" | "neutral";
 
 export interface CorporateActionInboxRowModel {
-  key: string;
+  rowId: string;
   caseIdLabel: string;
   proposalIdLabel: string;
   versionLabel: string;
@@ -39,6 +39,9 @@ export interface CorporateActionInboxRowModel {
   daysUntilEx: number | null;
   countdownLabel: string;
   valueLabel: string;
+  sourceEventLabel: string;
+  sourceObservedAtLabel: string;
+  sourceEvidenceReference: string | null;
   /** e.g. "2/3 sources agree" — dissent is what the operator reviews. */
   consensusLabel: string;
   winningSource: string;
@@ -174,22 +177,18 @@ function deriveCaseFields(
   proposal: CorporateActionProposalEntry,
   compactCase: CorporateActionProcessingCaseDto | null
 ) {
-  const durableCase = proposal.case ?? (compactCase ? adaptCorporateActionProcessingCase(compactCase) : null);
+  const durableCase = compactCase ? adaptCorporateActionProcessingCase(compactCase) : null;
   const hasDissent = proposal.dissentingSources.length > 0;
   const permissionState = durableCase?.permissionState ?? null;
-  const caseAvailability = durableCase?.actionAvailability;
   const proposalAvailability = proposal.actionAvailability ?? null;
-  const proposalId = proposal.proposalId ?? durableCase?.proposalId ?? null;
-  const expectedVersion = proposal.version ?? durableCase?.version ?? null;
-  const acceptanceScope = proposal.acceptanceScope ?? durableCase?.scope ?? null;
+  const proposalId = proposal.proposalId ?? null;
+  const expectedVersion = proposal.version ?? null;
+  const acceptanceScope = proposal.acceptanceScope ?? null;
   const hasScope = Boolean(acceptanceScope?.tenantId.trim() && acceptanceScope.companyId.trim());
-  const explicitlyAllowed = proposalAvailability
-    ? proposalAvailability.canAccept
-    : caseAvailability?.canAcceptCanonicalFact === true;
-  const contractComplete = Boolean(proposalId && expectedVersion !== null && expectedVersion > 0 && hasScope);
   const serverBlocker = proposalAvailability?.blockers[0]
-    ?? caseAvailability?.acceptCanonicalFactDisabledReason
     ?? null;
+  const explicitlyAllowed = proposalAvailability?.canAccept === true && serverBlocker === null;
+  const contractComplete = Boolean(proposalId && expectedVersion !== null && expectedVersion > 0 && hasScope);
   const missingContractReason = !proposalId
     ? "Server did not supply a durable proposal ID."
     : expectedVersion === null
@@ -200,7 +199,7 @@ function deriveCaseFields(
         ? "Server did not supply an exact tenant and company scope for case creation."
         : null;
   const permissionLabel = proposalAvailability
-    ? proposalAvailability.canAccept
+    ? explicitlyAllowed
       ? "Allowed by server policy"
       : "Denied by server policy"
     : permissionState === "Allowed"
@@ -242,7 +241,7 @@ function buildProposalRow(
   const totalSources = proposal.agreeingSources.length + proposal.dissentingSources.length;
   const caseFields = deriveCaseFields(proposal, compactCase);
   return {
-    key: caseFields.proposalIdLabel !== "Not supplied"
+    rowId: caseFields.proposalIdLabel !== "Not supplied"
       ? caseFields.proposalIdLabel
       : `${proposal.securityId}:${proposal.actionType}:${proposal.exDate}`,
     ...caseFields,
@@ -253,6 +252,9 @@ function buildProposalRow(
     daysUntilEx,
     countdownLabel: formatCountdown(daysUntilEx),
     valueLabel: formatValue(proposal),
+    sourceEventLabel: "Not supplied",
+    sourceObservedAtLabel: "Not supplied",
+    sourceEvidenceReference: null,
     consensusLabel: `${proposal.agreeingSources.length}/${totalSources} source${totalSources === 1 ? "" : "s"} agree`,
     winningSource: proposal.winningSource,
     agreeingSources: proposal.agreeingSources,
@@ -266,12 +268,39 @@ function buildProposalRow(
 
 function buildCaseOnlyRow(
   processingCase: CorporateActionProcessingCaseDto,
+  todayUtc: number,
   retainedSourceRow: CorporateActionInboxRowModel | null = null
 ): CorporateActionInboxRowModel {
   const durableCase = adaptCorporateActionProcessingCase(processingCase);
-  const isWarning = processingCase.state === "Disputed" || processingCase.state === "Blocked";
+  const snapshot = processingCase.sourceSnapshot ?? null;
+  const action = snapshot?.proposedAction ?? null;
+  const display = snapshot?.displayMetadata ?? null;
+  const providerId = snapshot?.providerIdentity.providerId.trim() || null;
+  const winningSource = display?.winningSource.trim() || providerId || retainedSourceRow?.winningSource || "Not supplied";
+  const agreeingSources = display?.agreeingSources.length
+    ? display.agreeingSources
+    : providerId
+      ? [providerId]
+      : retainedSourceRow?.agreeingSources ?? [];
+  const dissentingSources = display?.dissentingSources ?? retainedSourceRow?.dissentingSources ?? [];
+  const totalSources = agreeingSources.length + dissentingSources.length;
+  const exDateLabel = action?.exDate ?? retainedSourceRow?.exDateLabel ?? "Not supplied";
+  const daysUntilEx = action
+    ? Math.round((new Date(`${action.exDate}T00:00:00Z`).getTime() - todayUtc) / 86_400_000)
+    : retainedSourceRow?.daysUntilEx ?? null;
+  const valueLabel = action
+    ? formatValue({
+        amount: action.dividendPerShare,
+        currency: action.currency,
+        splitFromFactor: action.splitRatio == null ? null : 1,
+        splitToFactor: action.splitRatio
+      })
+    : retainedSourceRow?.valueLabel ?? "Not supplied";
+  const isWarning = processingCase.state === "Disputed"
+    || processingCase.state === "Blocked"
+    || dissentingSources.length > 0;
   return {
-    key: processingCase.proposalId,
+    rowId: processingCase.proposalId,
     caseIdLabel: processingCase.caseId,
     proposalIdLabel: processingCase.proposalId,
     versionLabel: `case v${processingCase.version}`,
@@ -284,18 +313,29 @@ function buildCaseOnlyRow(
     canAcceptCanonicalFact: false,
     acceptCanonicalFactDisabledReason: "The canonical source proposal has already been accepted into this durable case.",
     securityId: processingCase.securityId,
-    ticker: retainedSourceRow?.ticker ?? "Not supplied",
-    actionType: retainedSourceRow?.actionType ?? "Not supplied",
-    exDateLabel: retainedSourceRow?.exDateLabel ?? "Not supplied",
-    daysUntilEx: retainedSourceRow?.daysUntilEx ?? null,
-    countdownLabel: retainedSourceRow?.countdownLabel ?? "Not supplied",
-    valueLabel: retainedSourceRow?.valueLabel ?? "Not supplied",
-    consensusLabel: retainedSourceRow?.consensusLabel ?? "Source consensus not supplied",
-    winningSource: retainedSourceRow?.winningSource ?? "Not supplied",
-    agreeingSources: retainedSourceRow?.agreeingSources ?? [],
-    dissentingSources: retainedSourceRow?.dissentingSources ?? [],
-    recordDateLabel: retainedSourceRow?.recordDateLabel ?? "Not supplied",
-    payableDateLabel: retainedSourceRow?.payableDateLabel ?? "Not supplied",
+    ticker: display?.ticker.trim() || retainedSourceRow?.ticker || (snapshot ? processingCase.securityId : "Not supplied"),
+    actionType: action?.eventType ?? retainedSourceRow?.actionType ?? "Not supplied",
+    exDateLabel,
+    daysUntilEx,
+    countdownLabel: daysUntilEx === null ? retainedSourceRow?.countdownLabel ?? "Not supplied" : formatCountdown(daysUntilEx),
+    valueLabel,
+    sourceEventLabel: snapshot
+      ? `${snapshot.providerIdentity.sourceEventId} · ${snapshot.providerIdentity.sourceEventVersion}`
+      : retainedSourceRow?.sourceEventLabel ?? "Not supplied",
+    sourceObservedAtLabel: snapshot?.providerIdentity.observedAtUtc
+      ?? retainedSourceRow?.sourceObservedAtLabel
+      ?? "Not supplied",
+    sourceEvidenceReference: snapshot?.providerIdentity.evidenceReference
+      ?? retainedSourceRow?.sourceEvidenceReference
+      ?? null,
+    consensusLabel: totalSources > 0
+      ? `${agreeingSources.length}/${totalSources} source${totalSources === 1 ? "" : "s"} agree`
+      : retainedSourceRow?.consensusLabel ?? "Source consensus not supplied",
+    winningSource,
+    agreeingSources,
+    dissentingSources,
+    recordDateLabel: action?.recordDate ?? retainedSourceRow?.recordDateLabel ?? "Not supplied",
+    payableDateLabel: action?.payDate ?? retainedSourceRow?.payableDateLabel ?? "Not supplied",
     tone: isWarning ? "warning" : retainedSourceRow?.tone ?? "neutral",
     durableCase,
     compactCase: processingCase,
@@ -328,6 +368,7 @@ export function buildCorporateActionInboxModel(
       .filter((processingCase) => !stagedProposalIds.has(processingCase.proposalId))
       .map((processingCase) => buildCaseOnlyRow(
         processingCase,
+        todayUtc,
         retainedRowByProposalId.get(processingCase.proposalId) ?? null
       ))
   ];
@@ -433,9 +474,9 @@ export function useCorporateActionInboxPanel(
       modelRef.current = nextModel;
       setModel(nextModel);
       setSelectedRowKey((current) => (
-        current && nextModel.rows.some((row) => row.key === current)
+        current && nextModel.rows.some((row) => row.rowId === current)
           ? current
-          : nextModel.rows[0]?.key ?? null
+          : nextModel.rows[0]?.rowId ?? null
       ));
       return true;
     } catch (fetchError) {
@@ -459,7 +500,7 @@ export function useCorporateActionInboxPanel(
     [filters, model?.rows]
   );
   const selectedRow = useMemo(
-    () => rows.find((row) => row.key === selectedRowKey) ?? rows[0] ?? null,
+    () => rows.find((row) => row.rowId === selectedRowKey) ?? rows[0] ?? null,
     [rows, selectedRowKey]
   );
 
@@ -472,7 +513,7 @@ export function useCorporateActionInboxPanel(
       idempotencyKey: createIdempotencyKey(),
       scope: row.acceptanceScope
     });
-    setAcceptErrors((current) => ({ ...current, [row.key]: "" }));
+    setAcceptErrors((current) => ({ ...current, [row.rowId]: "" }));
   }, [createIdempotencyKey]);
 
   const cancelAcceptance = useCallback(() => {
@@ -486,8 +527,8 @@ export function useCorporateActionInboxPanel(
     const row = pendingAcceptance;
     const request = pendingAcceptanceRequest;
     if (!row || !request || !row.canAcceptCanonicalFact) return;
-    setAcceptingKey(row.key);
-    setAcceptErrors((current) => ({ ...current, [row.key]: "" }));
+    setAcceptingKey(row.rowId);
+    setAcceptErrors((current) => ({ ...current, [row.rowId]: "" }));
     try {
       const result = await acceptProposal(request);
       setPendingAcceptance(null);
@@ -504,7 +545,7 @@ export function useCorporateActionInboxPanel(
     } catch (acceptError) {
       setAcceptErrors((current) => ({
         ...current,
-        [row.key]: describeApiError(acceptError, "The canonical fact could not be accepted.").summary
+        [row.rowId]: describeApiError(acceptError, "The canonical fact could not be accepted.").summary
       }));
     } finally {
       setAcceptingKey(null);
@@ -522,7 +563,7 @@ export function useCorporateActionInboxPanel(
     rows,
     filters,
     setFilters,
-    selectedRowKey: selectedRow?.key ?? null,
+    selectedRowKey: selectedRow?.rowId ?? null,
     selectedRow,
     selectRow: setSelectedRowKey,
     refresh,

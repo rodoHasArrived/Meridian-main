@@ -18,6 +18,10 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
 {
     public const string ClearwaterMethodologyProfileId = "clearwater-corporate-actions/v1";
 
+    internal const int MaximumIndexedIdentityUtf8Bytes = 256;
+    internal const int MaximumScopeIdentityUtf8Bytes = 256;
+    internal const int MaximumCompositeScopeIdentityUtf8Bytes = 2_048;
+
     private static readonly JsonSerializerOptions FingerprintJsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly ICorporateActionOperationsStore _store;
@@ -595,7 +599,11 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
     {
         ArgumentNullException.ThrowIfNull(request);
         ValidateCaseMutation(request.CaseId, request.ExpectedVersion, request.IdempotencyKey, request.Actor, request.TenantId, request.CompanyId);
-        RequireCorporateActionText(request.OptionCode, "OptionCode");
+        var normalizedOptionCode = request.OptionCode?.Trim();
+        RequireBoundedCorporateActionText(
+            normalizedOptionCode,
+            "OptionCode",
+            MaximumIndexedIdentityUtf8Bytes);
         RequireCorporateActionText(request.Label, "Label");
         RequireCorporateActionText(request.Description, "Description");
         if (!CorporateActionProcessingOptionStates.IsKnown(request.State))
@@ -609,7 +617,7 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             CompanyId = request.CompanyId.Trim(),
             IdempotencyKey = request.IdempotencyKey.Trim(),
             Actor = request.Actor.Trim(),
-            OptionCode = request.OptionCode.Trim(),
+            OptionCode = normalizedOptionCode!,
             Label = request.Label.Trim(),
             Description = request.Description.Trim(),
             SourceMethodology = NormalizeOptional(request.SourceMethodology),
@@ -757,7 +765,9 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             ActionAvailability = new CorporateActionSourceProposalActionAvailabilityDto(
                 CanAccept: blockers.Count == 0,
                 CanReject: CorporateActionSourceProposalStates.CanDecide(proposal.State),
-                CanCompareEvidence: true,
+                // The compact inbox projection does not carry the per-source field candidates
+                // and retained evidence references required for an operable comparison.
+                CanCompareEvidence: false,
                 blockers),
         };
     }
@@ -837,7 +847,7 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             proposal.Version,
             proposal.State,
             scope,
-            proposal.ActionAvailability ?? new CorporateActionSourceProposalActionAvailabilityDto(false, false, true, ["Action availability was not projected."]));
+            proposal.ActionAvailability ?? new CorporateActionSourceProposalActionAvailabilityDto(false, false, false, ["Action availability was not projected."]));
     }
 
     private static CorporateActionProviderEventIdentityDto NormalizeProviderIdentity(
@@ -908,7 +918,7 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
                 "Corporate-action case commands require exact non-empty tenant and company scope.");
         }
 
-        return scope with
+        var normalized = scope with
         {
             TenantId = scope.TenantId.Trim(),
             CompanyId = scope.CompanyId.Trim(),
@@ -923,14 +933,61 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             FunctionalCurrency = NormalizeOptional(scope.FunctionalCurrency)?.ToUpperInvariant(),
             Jurisdiction = NormalizeOptional(scope.Jurisdiction)?.ToUpperInvariant(),
         };
+
+        var identities = new (string Name, string? Value)[]
+        {
+            (nameof(scope.TenantId), normalized.TenantId),
+            (nameof(scope.CompanyId), normalized.CompanyId),
+            (nameof(scope.StructureNodeId), normalized.StructureNodeId),
+            (nameof(scope.FundProfileId), normalized.FundProfileId),
+            (nameof(scope.FinancialAccountId), normalized.FinancialAccountId),
+            (nameof(scope.PortfolioId), normalized.PortfolioId),
+            (nameof(scope.CustodyAccountId), normalized.CustodyAccountId),
+            (nameof(scope.LedgerBookId), normalized.LedgerBookId),
+            (nameof(scope.PeriodId), normalized.PeriodId),
+            (nameof(scope.AccountingBasis), normalized.AccountingBasis),
+            (nameof(scope.FunctionalCurrency), normalized.FunctionalCurrency),
+            (nameof(scope.Jurisdiction), normalized.Jurisdiction),
+        };
+        var totalUtf8Bytes = 0;
+        foreach (var (name, value) in identities)
+        {
+            if (value is null)
+            {
+                continue;
+            }
+
+            var utf8Bytes = RequireBoundedCorporateActionText(
+                value,
+                name,
+                MaximumScopeIdentityUtf8Bytes);
+            totalUtf8Bytes = checked(totalUtf8Bytes + utf8Bytes);
+        }
+
+        if (totalUtf8Bytes > MaximumCompositeScopeIdentityUtf8Bytes)
+        {
+            throw new CorporateActionScopeMismatchException(
+                $"Corporate-action case scope identity cannot exceed {MaximumCompositeScopeIdentityUtf8Bytes} UTF-8 bytes in total.");
+        }
+
+        return normalized;
     }
 
     private static void ValidateProviderIdentity(CorporateActionProviderEventIdentityDto identity)
     {
         ArgumentNullException.ThrowIfNull(identity);
-        RequireCorporateActionText(identity.ProviderId, "ProviderId");
-        RequireCorporateActionText(identity.SourceEventId, "SourceEventId");
-        RequireCorporateActionText(identity.SourceEventVersion, "SourceEventVersion");
+        RequireBoundedCorporateActionText(
+            identity.ProviderId?.Trim(),
+            "ProviderId",
+            MaximumIndexedIdentityUtf8Bytes);
+        RequireBoundedCorporateActionText(
+            identity.SourceEventId?.Trim(),
+            "SourceEventId",
+            MaximumIndexedIdentityUtf8Bytes);
+        RequireBoundedCorporateActionText(
+            identity.SourceEventVersion?.Trim(),
+            "SourceEventVersion",
+            MaximumIndexedIdentityUtf8Bytes);
         if (identity.ObservedAtUtc == default)
         {
             throw new CorporateActionValidationException("Corporate-action provider identity requires ObservedAtUtc.");
@@ -950,7 +1007,10 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             throw new CorporateActionValidationException("ExpectedVersion must be greater than zero.");
         }
 
-        RequireCorporateActionText(idempotencyKey, "IdempotencyKey");
+        RequireBoundedCorporateActionText(
+            idempotencyKey?.Trim(),
+            "IdempotencyKey",
+            MaximumIndexedIdentityUtf8Bytes);
         RequireActor(actor);
     }
 
@@ -982,6 +1042,19 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
         {
             throw new CorporateActionValidationException($"{name} is required.");
         }
+    }
+
+    private static int RequireBoundedCorporateActionText(string? value, string name, int maximumUtf8Bytes)
+    {
+        RequireCorporateActionText(value, name);
+        var utf8Bytes = Encoding.UTF8.GetByteCount(value!);
+        if (utf8Bytes > maximumUtf8Bytes)
+        {
+            throw new CorporateActionValidationException(
+                $"{name} cannot exceed {maximumUtf8Bytes} UTF-8 bytes.");
+        }
+
+        return utf8Bytes;
     }
 
     private static int NormalizeTake(int take) => Math.Clamp(take <= 0 ? 100 : take, 1, 500);

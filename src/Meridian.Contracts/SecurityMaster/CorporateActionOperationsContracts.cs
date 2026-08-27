@@ -449,6 +449,16 @@ public sealed record CorporateActionDurableInboxDto(
     IReadOnlyList<string> Errors,
     IReadOnlyList<CorporateActionProcessingCaseDto> Cases);
 
+/// <summary>
+/// Immutable provider observation retained with a processing-case read. The case owns workflow
+/// state and scope; this snapshot supplies the source/action identity needed to identify and audit
+/// the case after its accepted proposal leaves the actionable inbox.
+/// </summary>
+public sealed record CorporateActionCaseSourceSnapshotDto(
+    CorporateActionDto ProposedAction,
+    CorporateActionProviderEventIdentityDto ProviderIdentity,
+    CorporateActionSourceDisplayMetadataDto? DisplayMetadata);
+
 public sealed record CorporateActionProcessingCaseDto(
     Guid CaseId,
     Guid ProposalId,
@@ -464,7 +474,8 @@ public sealed record CorporateActionProcessingCaseDto(
     DateTimeOffset CreatedAtUtc,
     string UpdatedBy,
     DateTimeOffset UpdatedAtUtc,
-    CorporateActionCaseActionAvailabilityDto? ActionAvailability = null);
+    CorporateActionCaseActionAvailabilityDto? ActionAvailability = null,
+    CorporateActionCaseSourceSnapshotDto? SourceSnapshot = null);
 
 /// <summary>Server-owned action posture consumed by browser and desktop clients.</summary>
 public sealed record CorporateActionCaseActionAvailabilityDto(

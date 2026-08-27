@@ -21,10 +21,10 @@ public sealed partial class PostgresCorporateActionOperationsStore
         CancellationToken ct = default)
         => await ExecutePersistenceReadAsync(async () =>
         {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        return await LoadCaseAsync(
-            connection, transaction: null, caseId, tenantId, companyId, forUpdate: false, ct)
-            .ConfigureAwait(false);
+            await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+            return await LoadCaseAsync(
+                connection, transaction: null, caseId, tenantId, companyId, forUpdate: false, ct)
+                .ConfigureAwait(false);
         }, "processing case read").ConfigureAwait(false);
 
     public async Task<IReadOnlyList<CorporateActionProcessingCaseDto>> ListCasesAsync(
@@ -36,38 +36,38 @@ public sealed partial class PostgresCorporateActionOperationsStore
         CancellationToken ct = default)
         => await ExecutePersistenceReadAsync(async () =>
         {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var command = connection.CreateCommand();
-        command.CommandText =
-            $"""
+            await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+            await using var command = connection.CreateCommand();
+            command.CommandText =
+                $"""
             {CaseSelect}
-            where tenant_id = @tenant_id
-              and company_id = @company_id
-              and (@security_id is null or security_id = @security_id)
-              and (@state is null or state = @state)
-            order by updated_at desc, case_id
+            where pc.tenant_id = @tenant_id
+              and pc.company_id = @company_id
+              and (@security_id is null or pc.security_id = @security_id)
+              and (@state is null or pc.state = @state)
+            order by pc.updated_at desc, pc.case_id
             limit @take;
             """;
-        command.Parameters.AddWithValue("tenant_id", tenantId);
-        command.Parameters.AddWithValue("company_id", companyId);
-        command.Parameters.Add(new NpgsqlParameter("security_id", NpgsqlDbType.Uuid)
-        {
-            Value = (object?)securityId ?? DBNull.Value,
-        });
-        command.Parameters.Add(new NpgsqlParameter("state", NpgsqlDbType.Text)
-        {
-            Value = string.IsNullOrWhiteSpace(state) ? DBNull.Value : state.Trim(),
-        });
-        command.Parameters.AddWithValue("take", Math.Clamp(take, 1, 500));
+            command.Parameters.AddWithValue("tenant_id", tenantId);
+            command.Parameters.AddWithValue("company_id", companyId);
+            command.Parameters.Add(new NpgsqlParameter("security_id", NpgsqlDbType.Uuid)
+            {
+                Value = (object?)securityId ?? DBNull.Value,
+            });
+            command.Parameters.Add(new NpgsqlParameter("state", NpgsqlDbType.Text)
+            {
+                Value = string.IsNullOrWhiteSpace(state) ? DBNull.Value : state.Trim(),
+            });
+            command.Parameters.AddWithValue("take", Math.Clamp(take, 1, 500));
 
-        var cases = new List<CorporateActionProcessingCaseDto>();
-        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        while (await reader.ReadAsync(ct).ConfigureAwait(false))
-        {
-            cases.Add(ReadCase(reader));
-        }
+            var cases = new List<CorporateActionProcessingCaseDto>();
+            await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                cases.Add(ReadCase(reader));
+            }
 
-        return cases;
+            return cases;
         }, "processing case list").ConfigureAwait(false);
 
     public async Task<CorporateActionConflictDto?> GetConflictAsync(
@@ -967,10 +967,10 @@ public sealed partial class PostgresCorporateActionOperationsStore
         command.CommandText =
             $"""
             {CaseSelect}
-            where case_id = @case_id
-              and (@tenant_id is null or tenant_id = @tenant_id)
-              and (@company_id is null or company_id = @company_id)
-            {(forUpdate ? "for update" : string.Empty)};
+            where pc.case_id = @case_id
+              and (@tenant_id is null or pc.tenant_id = @tenant_id)
+              and (@company_id is null or pc.company_id = @company_id)
+            {(forUpdate ? "for update of pc" : string.Empty)};
             """;
         command.Parameters.AddWithValue("case_id", caseId);
         command.Parameters.Add(new NpgsqlParameter("tenant_id", NpgsqlDbType.Text)
@@ -1000,6 +1000,39 @@ public sealed partial class PostgresCorporateActionOperationsStore
             reader.IsDBNull(13) ? null : reader.GetString(13),
             reader.IsDBNull(14) ? null : reader.GetString(14),
             reader.IsDBNull(15) ? null : reader.GetString(15));
+        var proposedAction = JsonSerializer.Deserialize<CorporateActionDto>(reader.GetString(25), JsonOptions)
+            ?? throw new InvalidOperationException("Stored corporate-action case has no source action payload.");
+        if (!Enum.TryParse<CorporateActionProviderReleaseStatusDto>(
+                reader.GetString(32), ignoreCase: false, out var releaseStatus)
+            || !Enum.IsDefined(releaseStatus))
+        {
+            throw new InvalidOperationException("Stored corporate-action case has an unknown provider release status.");
+        }
+
+        var providerIdentity = new CorporateActionProviderEventIdentityDto(
+            reader.GetString(26),
+            reader.GetString(27),
+            reader.GetString(28),
+            ReadTimestamp(reader, 29),
+            reader.IsDBNull(30) ? null : reader.GetString(30),
+            reader.IsDBNull(31) ? null : reader.GetString(31),
+            releaseStatus);
+        var displayMetadata = reader.IsDBNull(33) && reader.IsDBNull(34) && reader.IsDBNull(37)
+            ? null
+            : new CorporateActionSourceDisplayMetadataDto(
+                reader.IsDBNull(33) ? string.Empty : reader.GetString(33),
+                reader.IsDBNull(34) ? providerIdentity.ProviderId : reader.GetString(34),
+                JsonSerializer.Deserialize<IReadOnlyList<string>>(reader.GetString(35), JsonOptions) ?? [],
+                JsonSerializer.Deserialize<IReadOnlyList<string>>(reader.GetString(36), JsonOptions) ?? [],
+                reader.IsDBNull(37)
+                    ? []
+                    : JsonSerializer.Deserialize<IReadOnlyList<CorporateActionDissentFieldDto>>(
+                        reader.GetString(37), JsonOptions) ?? []);
+        var sourceSnapshot = new CorporateActionCaseSourceSnapshotDto(
+            proposedAction,
+            providerIdentity,
+            displayMetadata);
+
         return new CorporateActionProcessingCaseDto(
             reader.GetGuid(0),
             reader.GetGuid(1),
@@ -1014,7 +1047,8 @@ public sealed partial class PostgresCorporateActionOperationsStore
             reader.GetString(21),
             ReadTimestamp(reader, 22),
             reader.GetString(23),
-            ReadTimestamp(reader, 24));
+            ReadTimestamp(reader, 24),
+            SourceSnapshot: sourceSnapshot);
     }
 
     private static CorporateActionConflictDto ReadConflict(NpgsqlDataReader reader) =>
@@ -1037,12 +1071,17 @@ public sealed partial class PostgresCorporateActionOperationsStore
 
     private string CaseSelect =>
         $"""
-        select case_id, proposal_id, corp_act_id, security_id, tenant_id, company_id,
-               structure_node_id, fund_profile_id, financial_account_id, portfolio_id,
-               custody_account_id, ledger_book_id, period_id, accounting_basis,
-               functional_currency, jurisdiction, state, version, methodology_profile_id,
-               assigned_to, blocked_reason, created_by, created_at, updated_by, updated_at
-        from {Qualified("corporate_action_processing_cases")}
+        select pc.case_id, pc.proposal_id, pc.corp_act_id, pc.security_id, pc.tenant_id, pc.company_id,
+               pc.structure_node_id, pc.fund_profile_id, pc.financial_account_id, pc.portfolio_id,
+               pc.custody_account_id, pc.ledger_book_id, pc.period_id, pc.accounting_basis,
+               pc.functional_currency, pc.jurisdiction, pc.state, pc.version, pc.methodology_profile_id,
+               pc.assigned_to, pc.blocked_reason, pc.created_by, pc.created_at, pc.updated_by, pc.updated_at,
+               p.proposed_action::text, p.provider_id, p.source_event_id, p.source_event_version,
+               p.observed_at, p.evidence_hash, p.evidence_reference, p.provider_release_status,
+               p.display_ticker, p.winning_source, p.agreeing_sources::text,
+               p.dissenting_sources::text, p.dissent_fields::text
+        from {Qualified("corporate_action_processing_cases")} pc
+        join {Qualified("corporate_action_source_proposals")} p on p.proposal_id = pc.proposal_id
         """;
 
     private string ConflictSelect =>

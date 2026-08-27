@@ -1716,6 +1716,7 @@ Meridian-main
 │   │   └── README.md
 │   ├── domain
 │   │   ├── brokerage-account-snapshot.md
+│   │   ├── corporate-action-case.md
 │   │   ├── fund-event.md
 │   │   ├── operational-evidence-graph.md
 │   │   ├── README.md
@@ -3525,6 +3526,7 @@ Meridian-main
 │   │   │   │   ├── CorporateActionCommandService.cs
 │   │   │   │   ├── CorporateActionInboxState.cs
 │   │   │   │   ├── CorporateActionIngestOrchestrator.cs
+│   │   │   │   ├── CorporateActionOperationsService.cs
 │   │   │   │   ├── CorporateActionRestatementTrigger.cs
 │   │   │   │   ├── CorporateActionValidation.cs
 │   │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
@@ -3788,6 +3790,7 @@ Meridian-main
 │   │   ├── AssetOperations
 │   │   │   ├── AssetAccountingEventDtos.cs
 │   │   │   ├── AssetOperationsDtos.cs
+│   │   │   ├── CorporateActionAccountingDtos.cs
 │   │   │   ├── InstrumentPositionDtos.cs
 │   │   │   ├── PortfolioCashLadderDtos.cs
 │   │   │   └── RetainedEvidenceIdentityDto.cs
@@ -3985,11 +3988,15 @@ Meridian-main
 │   │   │   ├── EventSchema.cs
 │   │   │   └── ISchemaUpcaster.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── CorporateActionEconomicFingerprint.cs
 │   │   │   ├── CorporateActionEffectiveStateProjector.cs
 │   │   │   ├── CorporateActionEventTypeNormalization.cs
 │   │   │   ├── CorporateActionEventTypes.cs
 │   │   │   ├── CorporateActionLifecycleStates.cs
+│   │   │   ├── CorporateActionOperationsContracts.cs
 │   │   │   ├── CorporateActionPayloads.cs
+│   │   │   ├── CorporateActionPayloadSchemaCatalog.cs
+│   │   │   ├── CorporateActionSourceProposalReplayComparer.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalog.cs
 │   │   │   ├── DataVendorEntitlement.cs
 │   │   │   ├── DayCountConventions.cs
@@ -4945,6 +4952,12 @@ Meridian-main
 │   │   ├── AssetOperations
 │   │   │   ├── AssetObligationProjectionService.cs
 │   │   │   ├── AssetOperationsReadService.cs
+│   │   │   ├── ClearwaterCorporateActionRuleProfileV1.cs
+│   │   │   ├── CorporateActionAccountingProjectionService.cs
+│   │   │   ├── CorporateActionAccountingProjectionService.Fingerprints.cs
+│   │   │   ├── CorporateActionAccountingProjectionService.LotPlans.cs
+│   │   │   ├── CorporateActionAssetAccountingEventMapper.cs
+│   │   │   ├── CorporateActionMappedAccountingEffectAttestor.cs
 │   │   │   ├── FactorPaydownProjectionService.cs
 │   │   │   └── PortfolioCashLadderEngine.cs
 │   │   ├── CertificatesOfDeposit
@@ -5693,11 +5706,13 @@ Meridian-main
 │   │   │   │   ├── 026_security_master_operator_override_approvals.sql
 │   │   │   │   ├── 027_security_master_field_provenance.sql
 │   │   │   │   ├── 028_security_master_revision_values_and_versioned_provenance.sql
-│   │   │   │   └── 029_security_master_corp_action_payload.sql
+│   │   │   │   ├── 029_security_master_corp_action_payload.sql
+│   │   │   │   └── 030_security_master_corporate_action_operations.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
 │   │   │   ├── ICommodityReferenceProjectionStore.cs
+│   │   │   ├── ICorporateActionOperationsStore.cs
 │   │   │   ├── ICryptoReferenceProjectionStore.cs
 │   │   │   ├── IDataVendorEntitlementStore.cs
 │   │   │   ├── IDepositReferenceProjectionStore.cs
@@ -5719,6 +5734,9 @@ Meridian-main
 │   │   │   ├── PostgresBondReferenceProjectionStore.cs
 │   │   │   ├── PostgresCertificateOfDepositReferenceProjectionStore.cs
 │   │   │   ├── PostgresCommodityReferenceProjectionStore.cs
+│   │   │   ├── PostgresCorporateActionCanonicalStore.cs
+│   │   │   ├── PostgresCorporateActionOperationsStore.Cases.cs
+│   │   │   ├── PostgresCorporateActionOperationsStore.cs
 │   │   │   ├── PostgresCryptoReferenceProjectionStore.cs
 │   │   │   ├── PostgresDataVendorEntitlementStore.cs
 │   │   │   ├── PostgresDepositReferenceProjectionStore.cs
@@ -6256,6 +6274,7 @@ Meridian-main
 │   │   │   │   │   │   ├── banking-payments.api.ts
 │   │   │   │   │   │   ├── break-audit-rebuild.api.ts
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
+│   │   │   │   │   │   ├── corporate-actions.api.ts
 │   │   │   │   │   │   ├── covered-call.api.test.ts
 │   │   │   │   │   │   ├── covered-call.api.ts
 │   │   │   │   │   │   ├── data-operations-assurance.api.ts
@@ -6326,6 +6345,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-navigation.ts
 │   │   │   │   │   ├── api-errors.test.ts
 │   │   │   │   │   ├── api-errors.ts
+│   │   │   │   │   ├── api.corporate-actions.test.ts
 │   │   │   │   │   ├── api.extensibility.test.ts
 │   │   │   │   │   ├── api.operations-continuity.test.ts
 │   │   │   │   │   ├── api.private-capital.test.ts
@@ -6426,6 +6446,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.configure-panel.tsx
 │   │   │   │   │   ├── accounting-screen.configure-panel.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.configure-panel.view-model.ts
+│   │   │   │   │   ├── accounting-screen.corporate-action-formatting.ts
 │   │   │   │   │   ├── accounting-screen.corporate-actions-panel.tsx
 │   │   │   │   │   ├── accounting-screen.evidence-timeline.ts
 │   │   │   │   │   ├── accounting-screen.formatting.ts
@@ -6513,6 +6534,8 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.ts
 │   │   │   │   │   ├── data-screen.cell-actions.test.tsx
 │   │   │   │   │   ├── data-screen.cell-actions.tsx
+│   │   │   │   │   ├── data-screen.corporate-action-inbox.test.tsx
+│   │   │   │   │   ├── data-screen.corporate-action-inbox.tsx
 │   │   │   │   │   ├── data-screen.corporate-action-inbox.view-model.test.ts
 │   │   │   │   │   ├── data-screen.corporate-action-inbox.view-model.ts
 │   │   │   │   │   ├── data-screen.coverage-gaps.view-model.test.ts
@@ -6769,7 +6792,8 @@ Meridian-main
 │   │   │   │   │   ├── workstation-5.ts
 │   │   │   │   │   ├── workstation-6.ts
 │   │   │   │   │   ├── workstation-7.ts
-│   │   │   │   │   └── workstation-8.ts
+│   │   │   │   │   ├── workstation-8.ts
+│   │   │   │   │   └── workstation-corporate-actions.ts
 │   │   │   │   ├── app-shell.command-palette.ts
 │   │   │   │   ├── app-shell.data-provenance-badge.test.ts
 │   │   │   │   ├── app-shell.data-provenance-badge.ts
@@ -7062,6 +7086,7 @@ Meridian-main
 │   │   │   ├── RiskEndpoints.cs
 │   │   │   ├── SamplingEndpoints.cs
 │   │   │   ├── SecureReportingDistributionEndpoints.cs
+│   │   │   ├── SecurityMasterEndpoints.CorporateActionOperations.cs
 │   │   │   ├── SecurityMasterEndpoints.cs
 │   │   │   ├── StatusEndpoints.cs
 │   │   │   ├── StorageEndpoints.cs
@@ -8886,6 +8911,7 @@ Meridian-main
 │   │   │   │   ├── DailyValuationPolicyTests.cs
 │   │   │   │   └── SyntheticMarkProvenanceTests.cs
 │   │   │   ├── Auth
+│   │   │   │   ├── CorporateActionRolePermissionsTests.cs
 │   │   │   │   ├── RolePermissionsTests.cs
 │   │   │   │   └── ScopedAccessServiceTests.cs
 │   │   │   ├── Backfill
@@ -8938,6 +8964,7 @@ Meridian-main
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
 │   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── HostStartupLifecycleTests.cs
+│   │   │   │   ├── LedgerFeatureRegistrationTests.cs
 │   │   │   │   ├── LegacySnapshotStartupTests.cs
 │   │   │   │   ├── MaintenanceFeatureRegistrationTests.cs
 │   │   │   │   ├── PipelineFeatureRegistrationTests.cs
@@ -9092,6 +9119,9 @@ Meridian-main
 │   │   │   ├── AssetObligationProjectionServiceTests.cs
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
+│   │   │   ├── ClearwaterCorporateActionRuleProfileV1Tests.cs
+│   │   │   ├── CorporateActionAccountingProjectionServiceTests.cs
+│   │   │   ├── CorporateActionAssetAccountingEventMapperTests.cs
 │   │   │   ├── FactorPaydownProjectionServiceTests.cs
 │   │   │   ├── InMemoryAssetAccountingEventProjectionStoreTests.cs
 │   │   │   ├── InMemoryInstrumentPositionProjectionStoreSlice3Tests.cs
@@ -9709,13 +9739,18 @@ Meridian-main
 │   │   │   ├── CorporateActionIngestOrchestratorTests.cs
 │   │   │   ├── CorporateActionLedgerInvariants.cs
 │   │   │   ├── CorporateActionLedgerKnownDefectTests.cs
+│   │   │   ├── CorporateActionOperationsContractTests.cs
+│   │   │   ├── CorporateActionOperationsMigrationTests.cs
+│   │   │   ├── CorporateActionOperationsServiceTests.cs
 │   │   │   ├── CorporateActionPayloadsTests.cs
+│   │   │   ├── CorporateActionSourceRevisionPolicyTests.cs
 │   │   │   ├── CorporateActionTaxonomyPropertyTests.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalogTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── DayCountConventionsTests.cs
 │   │   │   ├── FaceValueLotTests.cs
 │   │   │   ├── KeyedGatePoolTests.cs
+│   │   │   ├── NullCorporateActionOperationsServiceTests.cs
 │   │   │   ├── NullOperatorOverridesStoreTests.cs
 │   │   │   ├── PostgresOperatorOverridesStoreTests.cs
 │   │   │   ├── PostgresSecurityMasterConflictServiceTests.cs
@@ -9994,6 +10029,8 @@ Meridian-main
 │   │   │   ├── CashOperationsOrchestratorServiceTests.cs
 │   │   │   ├── CollateralExposureServiceTests.cs
 │   │   │   ├── CookieCsrfProtectionTests.cs
+│   │   │   ├── CorporateActionOperationsAuthorizationTests.cs
+│   │   │   ├── CorporateActionOperationsEndpointTests.cs
 │   │   │   ├── CredentialCompatibilityEndpointsTests.cs
 │   │   │   ├── CronEndpointsTests.cs
 │   │   │   ├── DailyValuationBatchLifecycleServiceTests.cs

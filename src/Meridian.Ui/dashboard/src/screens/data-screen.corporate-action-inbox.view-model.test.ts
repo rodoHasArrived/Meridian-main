@@ -6,12 +6,14 @@ import {
   useCorporateActionInboxPanel
 } from "./data-screen.corporate-action-inbox.view-model";
 import type {
-  CorporateActionCaseProjection,
   CorporateActionInboxAcceptResult,
   CorporateActionInboxResponse,
   CorporateActionProcessingCaseDto,
   CorporateActionProposalEntry
 } from "@/types";
+
+const FAN_OUT_BLOCKER =
+  "Corporate-action source decisions are read-only until an authoritative service can enumerate every affected tenant/company scope and apply the decision atomically.";
 
 function proposal(overrides: Partial<CorporateActionProposalEntry> = {}): CorporateActionProposalEntry {
   return {
@@ -75,45 +77,66 @@ function compactCase(overrides: Partial<CorporateActionProcessingCaseDto> = {}):
       allowedTransitionTargets: ["ElectionPending"],
       blockers: []
     },
+    sourceSnapshot: {
+      proposedAction: {
+        corpActId: "observed-action-100",
+        securityId: "3f0c9a53-3f8f-4b04-9c1e-0f8f4b049c1e",
+        eventType: "Dividend",
+        exDate: "2026-08-14",
+        payDate: "2026-08-28",
+        dividendPerShare: 0.24,
+        currency: "USD",
+        splitRatio: null,
+        newSecurityId: null,
+        distributionRatio: null,
+        acquirerSecurityId: null,
+        exchangeRatio: null,
+        subscriptionPricePerShare: null,
+        rightsPerShare: null,
+        recordDate: "2026-08-15",
+        lifecycleState: "Announced",
+        supersedesCorpActId: null,
+        redemptionPricePercentOfPar: null,
+        payload: { taxability: "source-assertion-only" },
+        payloadSchemaVersion: 1
+      },
+      providerIdentity: {
+        providerId: "finnhub",
+        sourceEventId: "event-100",
+        sourceEventVersion: "v3",
+        observedAtUtc: "2026-07-05T11:55:00Z",
+        evidenceHash: "sha256:evidence-100",
+        evidenceReference: "evidence://event-100/v3",
+        releaseStatus: "AcceptanceEligible"
+      },
+      displayMetadata: {
+        ticker: "GME",
+        winningSource: "finnhub",
+        agreeingSources: ["finnhub"],
+        dissentingSources: []
+      }
+    },
     ...overrides
   };
 }
 
-function durableCase(overrides: Partial<CorporateActionCaseProjection> = {}): CorporateActionCaseProjection {
-  return {
-    caseId: "case-100",
+function actionableProposal(overrides: Partial<CorporateActionProposalEntry> = {}): CorporateActionProposalEntry {
+  return proposal({
     proposalId: "proposal-100",
     version: 7,
-    status: "AccountingReview",
-    assignedTo: "Casey Operator",
-    conflictState: "Resolved",
-    permissionState: "Allowed",
-    scope: {
+    proposalState: "ReviewRequired",
+    acceptanceScope: {
       tenantId: "tenant-meridian",
-      companyId: "company-alpha",
-      fundProfileId: "fund-alpha",
-      ledgerBookId: "book-primary",
-      accountingBasis: "GAAP"
+      companyId: "company-alpha"
     },
-    receivedAt: "2026-07-05T11:55:00Z",
-    dueAt: "2026-08-13T17:00:00Z",
-    sourceFacts: [],
-    entitlement: null,
-    elections: [],
-    basisComparisons: [],
-    lotPreview: [],
-    journalPreview: [],
-    reconciliation: [],
-    history: [],
-    proofReferences: [],
     actionAvailability: {
-      canAcceptCanonicalFact: true,
-      canSubmitElection: false,
-      canApproveTreatment: false,
-      canPost: false
+      canAccept: true,
+      canReject: true,
+      canCompareEvidence: true,
+      blockers: []
     },
     ...overrides
-  };
+  });
 }
 
 function acceptResult(): CorporateActionInboxAcceptResult {
@@ -226,19 +249,20 @@ describe("buildCorporateActionInboxModel", () => {
     expect(model.summary).toContain("No staged corporate actions");
   });
 
-  it("projects explicit durable case identity, version, assignment, conflict, and authorization", () => {
+  it("projects staged command identity alongside the matching durable case", () => {
     const model = buildCorporateActionInboxModel(response({
-      staged: [proposal({ case: durableCase() })]
+      staged: [actionableProposal()],
+      cases: [compactCase()]
     }), new Date("2026-07-05T15:00:00Z"));
 
     expect(model.rows[0]).toMatchObject({
-      key: "proposal-100",
-      caseIdLabel: "case-100",
+      rowId: "proposal-100",
+      caseIdLabel: "case-compact-100",
       proposalIdLabel: "proposal-100",
       versionLabel: "v7",
-      statusLabel: "AccountingReview",
+      statusLabel: "TermsConfirmed",
       assignmentLabel: "Casey Operator",
-      conflictLabel: "Resolved",
+      conflictLabel: "Not supplied",
       permissionLabel: "Allowed by server policy",
       canAcceptCanonicalFact: true
     });
@@ -260,6 +284,64 @@ describe("buildCorporateActionInboxModel", () => {
     });
   });
 
+  it("preserves server blockers even when the availability flag is inconsistent", () => {
+    const model = buildCorporateActionInboxModel(response({
+      staged: [actionableProposal({
+        actionAvailability: {
+          canAccept: true,
+          canReject: true,
+          canCompareEvidence: true,
+          blockers: ["Provider evidence is still under review."]
+        }
+      })]
+    }));
+
+    expect(model.rows[0]).toMatchObject({
+      permissionLabel: "Denied by server policy",
+      canAcceptCanonicalFact: false,
+      acceptCanonicalFactDisabledReason: "Provider evidence is still under review."
+    });
+  });
+
+  it("keeps proposal review readable but never prepares a decision while fan-out authority is unavailable", async () => {
+    const fetchInbox = vi.fn().mockResolvedValue(response({
+      staged: [actionableProposal({
+        actionAvailability: {
+          canAccept: false,
+          canReject: false,
+          canCompareEvidence: true,
+          blockers: [FAN_OUT_BLOCKER]
+        }
+      })],
+      cases: [compactCase()]
+    }));
+    const acceptProposal = vi.fn().mockResolvedValue(acceptResult());
+    const { result } = renderHook(() => useCorporateActionInboxPanel(
+      fetchInbox,
+      acceptProposal,
+      () => "test-b"
+    ));
+
+    await waitFor(() => expect(result.current.selectedRow?.rowId).toBe("proposal-100"));
+    expect(result.current.selectedRow).toMatchObject({
+      ticker: "GME",
+      actionType: "Dividend",
+      valueLabel: "0.24 USD",
+      caseIdLabel: "case-compact-100",
+      permissionLabel: "Denied by server policy",
+      canAcceptCanonicalFact: false,
+      acceptCanonicalFactDisabledReason: FAN_OUT_BLOCKER
+    });
+
+    act(() => result.current.requestAcceptance(result.current.selectedRow!));
+    await act(async () => {
+      await result.current.confirmAcceptance();
+    });
+
+    expect(result.current.pendingAcceptance).toBeNull();
+    expect(acceptProposal).not.toHaveBeenCalled();
+  });
+
   it("merges a top-level compact backend case into its staged proposal", () => {
     const model = buildCorporateActionInboxModel(response({
       staged: [proposal({
@@ -274,7 +356,7 @@ describe("buildCorporateActionInboxModel", () => {
 
     expect(model.rows).toHaveLength(1);
     expect(model.rows[0]).toMatchObject({
-      key: "proposal-100",
+      rowId: "proposal-100",
       caseIdLabel: "case-compact-100",
       proposalIdLabel: "proposal-100",
       versionLabel: "v4",
@@ -283,6 +365,24 @@ describe("buildCorporateActionInboxModel", () => {
       canAcceptCanonicalFact: true
     });
     expect(model.rows[0].compactCase?.corporateActionId).toBe("corporate-action-100");
+  });
+
+  it("never falls back to a processing-case version or availability for proposal acceptance", () => {
+    const model = buildCorporateActionInboxModel(response({
+      staged: [proposal({
+        proposalId: "proposal-100",
+        acceptanceScope: { tenantId: "tenant-meridian", companyId: "company-alpha" },
+        actionAvailability: { canAccept: true, canReject: true, canCompareEvidence: true, blockers: [] }
+      })],
+      cases: [compactCase({ version: 99 })]
+    }));
+
+    expect(model.rows[0]).toMatchObject({
+      versionLabel: "Not supplied",
+      expectedVersion: null,
+      canAcceptCanonicalFact: false,
+      acceptCanonicalFactDisabledReason: "Server did not supply the proposal version required for concurrency control."
+    });
   });
 
   it("keeps an accepted durable case visible after its proposal leaves staged", () => {
@@ -294,14 +394,16 @@ describe("buildCorporateActionInboxModel", () => {
 
     expect(model.rows).toHaveLength(1);
     expect(model.rows[0]).toMatchObject({
-      key: "proposal-100",
+      rowId: "proposal-100",
       caseIdLabel: "case-compact-100",
       versionLabel: "case v5",
       statusLabel: "AccountingReview",
       expectedVersion: null,
       canAcceptCanonicalFact: false,
-      ticker: "Not supplied",
-      actionType: "Not supplied"
+      ticker: "GME",
+      actionType: "Dividend",
+      sourceEventLabel: "event-100 · v3",
+      sourceEvidenceReference: "evidence://event-100/v3"
     });
     expect(model.rows[0].durableCase?.status).toBe("AccountingReview");
     expect(model.summary).toContain("1 durable processing case");
@@ -311,17 +413,21 @@ describe("buildCorporateActionInboxModel", () => {
     const model = buildCorporateActionInboxModel(response({
       stagedCount: 2,
       staged: [
-        proposal({ ticker: "MSFT", exDate: "2026-09-15", case: durableCase({ status: "AccountingReview" }) }),
-        proposal({
+        actionableProposal({ ticker: "MSFT", exDate: "2026-09-15" }),
+        actionableProposal({
+          proposalId: "proposal-aapl",
           ticker: "AAPL",
           exDate: "2026-07-20",
-          case: durableCase({
-            caseId: "case-aapl",
-            proposalId: "proposal-aapl",
-            status: "Disputed",
-            assignedTo: null,
-            conflictState: "Open"
-          })
+          dissentingSources: ["custodian-feed"]
+        })
+      ],
+      cases: [
+        compactCase({ state: "AccountingReview" }),
+        compactCase({
+          caseId: "case-aapl",
+          proposalId: "proposal-aapl",
+          state: "Disputed",
+          assignedTo: null
         })
       ]
     }), new Date("2026-07-05T15:00:00Z"));
@@ -330,7 +436,7 @@ describe("buildCorporateActionInboxModel", () => {
       search: "aapl",
       status: "Disputed",
       assignment: "Unassigned",
-      conflict: "Open"
+      conflict: "Source dissent"
     });
 
     expect(filtered.map((row) => row.ticker)).toEqual(["AAPL"]);
@@ -339,16 +445,16 @@ describe("buildCorporateActionInboxModel", () => {
 
   it("retains the append receipt and reports partial success when the queue refresh fails", async () => {
     const fetchInbox = vi.fn()
-      .mockResolvedValueOnce(response({ staged: [proposal({ case: durableCase() })] }))
+      .mockResolvedValueOnce(response({ staged: [actionableProposal()] }))
       .mockRejectedValueOnce(new Error("refresh failed"));
     const acceptProposal = vi.fn().mockResolvedValue(acceptResult());
     const { result } = renderHook(() => useCorporateActionInboxPanel(
       fetchInbox,
       acceptProposal,
-      () => "idempotency-proposal-100-v7"
+      () => "test-b"
     ));
 
-    await waitFor(() => expect(result.current.selectedRow?.key).toBe("proposal-100"));
+    await waitFor(() => expect(result.current.selectedRow?.rowId).toBe("proposal-100"));
     act(() => result.current.requestAcceptance(result.current.selectedRow!));
     await act(async () => {
       await result.current.confirmAcceptance();
@@ -357,13 +463,10 @@ describe("buildCorporateActionInboxModel", () => {
     expect(acceptProposal).toHaveBeenCalledWith({
       proposalId: "proposal-100",
       expectedVersion: 7,
-      idempotencyKey: "idempotency-proposal-100-v7",
+      idempotencyKey: "test-b",
       scope: {
         tenantId: "tenant-meridian",
-        companyId: "company-alpha",
-        fundProfileId: "fund-alpha",
-        ledgerBookId: "book-primary",
-        accountingBasis: "GAAP"
+        companyId: "company-alpha"
       }
     });
     expect(result.current.acceptanceReceipt?.result.audit.auditId).toBe("audit-accepted");
@@ -374,7 +477,7 @@ describe("buildCorporateActionInboxModel", () => {
 
   it("retains the accepted case after a successful refresh removes the staged proposal", async () => {
     const fetchInbox = vi.fn()
-      .mockResolvedValueOnce(response({ staged: [proposal({ case: durableCase() })] }))
+      .mockResolvedValueOnce(response({ staged: [actionableProposal()] }))
       .mockResolvedValueOnce(response({
         stagedCount: 0,
         staged: [],
@@ -384,10 +487,10 @@ describe("buildCorporateActionInboxModel", () => {
     const { result } = renderHook(() => useCorporateActionInboxPanel(
       fetchInbox,
       acceptProposal,
-      () => "idempotency-proposal-100-v7"
+      () => "test-b"
     ));
 
-    await waitFor(() => expect(result.current.selectedRow?.key).toBe("proposal-100"));
+    await waitFor(() => expect(result.current.selectedRow?.rowId).toBe("proposal-100"));
     act(() => result.current.requestAcceptance(result.current.selectedRow!));
     await act(async () => {
       await result.current.confirmAcceptance();
@@ -396,7 +499,7 @@ describe("buildCorporateActionInboxModel", () => {
     expect(result.current.acceptanceReceipt?.queueRefreshWarning).toBeNull();
     expect(result.current.model?.rows).toHaveLength(1);
     expect(result.current.selectedRow).toMatchObject({
-      key: "proposal-100",
+      rowId: "proposal-100",
       caseIdLabel: "case-compact-100",
       statusLabel: "TermsConfirmed",
       canAcceptCanonicalFact: false,

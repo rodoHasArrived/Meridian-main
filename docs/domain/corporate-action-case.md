@@ -103,12 +103,25 @@ ReadyForApproval -> Approved -> Scheduled -> Posted -> Reconciled -> Reported ->
 
 ## Accounting Integration Boundary
 
-The currently exposed HTTP workflow creates one tenant-and-company-scoped case for an accepted
-canonical fact. It does not yet fan that fact out into the authoritative fund, account, portfolio,
-custody, ledger-book, period, basis, currency, and jurisdiction assignments described above.
-Until those assignments can be resolved from trusted system data, the endpoints reject supplied
-narrow scope on acceptance and hide or deny mutations for narrowly scoped cases. This is a
-deliberate fail-closed boundary, not a claim that tenant/company scope is sufficient for posting.
+The current foundation does not have an authoritative service that can enumerate every affected
+tenant and company, resolve the corresponding fund, account, portfolio, custody, ledger-book,
+period, basis, currency, and jurisdiction assignments, and apply one source decision to all scoped
+cases atomically. A decision against the global source proposal would otherwise let the first
+tenant accept or reject the observation for every other tenant.
+
+The public HTTP workflow is therefore explicitly read-only at the source-decision boundary.
+Proposal inbox, list, detail, retained source evidence, and existing scoped case views remain
+available. Their server-owned action availability sets both `CanAccept` and `CanReject` to false,
+sets `CanCompareEvidence` to false because the compact inbox does not yet carry the retained
+per-source candidates needed for an operable comparison, and returns a stable authoritative-fan-out
+blocker. Canonical accept and reject commands return the typed
+`corporate_action_persistence_unavailable` response without calling the decision service. The
+retired unscoped inbox-apply route remains a `410 Gone` tombstone. This hard boundary is not an
+operator-configurable feature toggle and must remain closed until trusted fan-out authority exists.
+
+The endpoints also reject caller-supplied narrow scope on acceptance and hide or deny mutations for
+narrowly scoped cases. These controls are deliberate fail-closed boundaries, not a claim that
+tenant/company scope is sufficient for posting.
 
 Production composition registers the deterministic corporate-action accounting projector and the
 Asset Accounting Event Spine mapper as singleton services. Registration makes the pure preparation

@@ -12,6 +12,14 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class SecurityMasterEndpoints
 {
+    private const string CorporateActionSourceDecisionFanOutBlocker =
+        "Corporate-action source decisions are read-only until an authoritative service can enumerate every affected tenant/company scope and apply the decision atomically.";
+
+    // This foundation retains global source proposals but does not yet own authoritative
+    // multi-tenant case fan-out. Keep the public decision boundary hard-disabled until that
+    // authority exists; this must not become an operator-configurable presentation toggle.
+    private static bool CorporateActionSourceDecisionsEnabled => false;
+
     private static void MapCorporateActionOperationsEndpoints(
         RouteGroupBuilder group,
         JsonSerializerOptions jsonOptions)
@@ -75,77 +83,24 @@ public static partial class SecurityMasterEndpoints
         })
         .WithName("GetSecurityMasterCorporateActionInbox")
         .RequirePermission(UserPermission.ViewCorporateActions)
+        .RequireWorkstationTenantCompanyScope()
         .Produces<CorporateActionDurableInboxDto>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
 
-        // Legacy URL retained for browser compatibility; command semantics are the strong durable
-        // accept contract and never consume an in-memory row before the transaction commits.
-        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsInboxApply, async (
-            AcceptCorporateActionSourceProposalRequestDto? request,
-            HttpContext context,
-            [FromServices] ICorporateActionOperationsService service,
-            CancellationToken ct) =>
-        {
-            if (request is null)
-            {
-                return CorporateActionProblem(
-                    context,
-                    new CorporateActionValidationException("A durable source-proposal acceptance request is required."));
-            }
-
-            if (!TryResolveCorporateActionScope(context, out var trustedScope))
-            {
-                return CorporateActionProblem(
-                    context,
-                    new CorporateActionScopeMismatchException(
-                        "A tenant- and company-scoped workstation request context is required."));
-            }
-
-            if (!MatchesTrustedScope(request.Scope, trustedScope))
-            {
-                return CorporateActionProblem(
-                    context,
-                    new CorporateActionScopeMismatchException(
-                        "Acceptance scope tenant/company does not match the authenticated workstation scope."));
-            }
-
-            if (HasNarrowCorporateActionScope(request.Scope))
-            {
-                return CorporateActionProblem(
-                    context,
-                    new CorporateActionScopeMismatchException(
-                        "Fund, account, portfolio, custody, ledger-book, basis, and other narrow corporate-action scope fields are denied until the endpoint can resolve them from an authoritative scoped assignment."));
-            }
-
-            try
-            {
-                var trustedRequest = request with
-                {
-                    Scope = request.Scope with
-                    {
-                        TenantId = trustedScope.TenantId,
-                        CompanyId = trustedScope.CompanyId,
-                    },
-                    Actor = ResolveActor(context),
-                    CorrelationId = context.TraceIdentifier,
-                };
-                var result = await service.AcceptSourceProposalAsync(trustedRequest, ct).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (CorporateActionOperationException exception)
-            {
-                return CorporateActionProblem(context, exception);
-            }
-        })
-        .WithName("AcceptSecurityMasterCorporateActionInboxProposal")
-        .RequirePermission(UserPermission.ModifySecurityMaster)
-        .RequirePermission(UserPermission.ResolveCorporateActionTerms)
-        .Accepts<AcceptCorporateActionSourceProposalRequestDto>("application/json")
-        .Produces<CorporateActionSourceProposalAcceptanceResultDto>(StatusCodes.Status200OK)
-        .ProducesProblem(StatusCodes.Status403Forbidden)
-        .ProducesProblem(StatusCodes.Status409Conflict)
-        .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+        // The browser previously posted acceptance commands to this unscoped collection route.
+        // Keep an explicit tombstone so stale clients cannot silently mutate durable state.
+        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsInboxApply, () =>
+            Results.Problem(
+                statusCode: StatusCodes.Status410Gone,
+                title: "Legacy corporate-action acceptance route retired",
+                detail: "Use the source-proposal acceptance route with the durable proposal identifier."))
+        .WithName("RetiredSecurityMasterCorporateActionInboxApply")
+        .RequireAllPermissions(
+            UserPermission.ModifySecurityMaster,
+            UserPermission.ResolveCorporateActionTerms)
+        .RequireWorkstationTenantCompanyScope()
+        .ProducesProblem(StatusCodes.Status410Gone)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost(UiApiRoutes.SecurityMasterCorporateActionSourceProposals, async (
@@ -211,6 +166,7 @@ public static partial class SecurityMasterEndpoints
         })
         .WithName("ResolveCorporateActionCaseConflict")
         .RequirePermission(UserPermission.ResolveCorporateActionTerms)
+        .RequireWorkstationTenantCompanyScope()
         .Produces<CorporateActionConflictResolutionResultDto>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status404NotFound)
@@ -276,11 +232,14 @@ public static partial class SecurityMasterEndpoints
             CancellationToken ct) =>
             await AcceptSourceProposalAsync(proposalId, request, context, service, jsonOptions, ct).ConfigureAwait(false))
         .WithName("AcceptCorporateActionSourceProposal")
-        .RequirePermission(UserPermission.ModifySecurityMaster)
-        .RequirePermission(UserPermission.ResolveCorporateActionTerms)
+        .RequireAllPermissions(
+            UserPermission.ModifySecurityMaster,
+            UserPermission.ResolveCorporateActionTerms)
+        .RequireWorkstationTenantCompanyScope()
         .Produces<CorporateActionSourceProposalAcceptanceResultDto>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status409Conflict)
         .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+        .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost(UiApiRoutes.SecurityMasterCorporateActionSourceProposalReject, async (
@@ -295,6 +254,11 @@ public static partial class SecurityMasterEndpoints
                 return CorporateActionProblem(
                     context,
                     new CorporateActionValidationException("Route proposalId must match the request ProposalId."));
+            }
+
+            if (!CorporateActionSourceDecisionsEnabled)
+            {
+                return CorporateActionSourceDecisionsUnavailable(context);
             }
 
             try
@@ -314,10 +278,12 @@ public static partial class SecurityMasterEndpoints
             }
         })
         .WithName("RejectCorporateActionSourceProposal")
-        .RequirePermission(UserPermission.ModifySecurityMaster)
-        .RequirePermission(UserPermission.ResolveCorporateActionTerms)
+        .RequireAllPermissions(
+            UserPermission.ModifySecurityMaster,
+            UserPermission.ResolveCorporateActionTerms)
         .Produces<CorporateActionSourceProposalDecisionResultDto>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.SecurityMasterCorporateActionCases, async (
@@ -350,6 +316,7 @@ public static partial class SecurityMasterEndpoints
         })
         .WithName("ListCorporateActionCases")
         .RequirePermission(UserPermission.ViewCorporateActions)
+        .RequireWorkstationTenantCompanyScope()
         .Produces<IReadOnlyList<CorporateActionProcessingCaseDto>>(StatusCodes.Status200OK);
 
         group.MapGet(UiApiRoutes.SecurityMasterCorporateActionCase, async (
@@ -386,6 +353,7 @@ public static partial class SecurityMasterEndpoints
         })
         .WithName("GetCorporateActionCase")
         .RequirePermission(UserPermission.ViewCorporateActions)
+        .RequireWorkstationTenantCompanyScope()
         .Produces<CorporateActionProcessingCaseDto>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status404NotFound);
 
@@ -435,6 +403,7 @@ public static partial class SecurityMasterEndpoints
         })
         .WithName("ListCorporateActionCaseConflicts")
         .RequirePermission(UserPermission.ViewCorporateActions)
+        .RequireWorkstationTenantCompanyScope()
         .Produces<IReadOnlyList<CorporateActionConflictDto>>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status404NotFound)
@@ -488,6 +457,7 @@ public static partial class SecurityMasterEndpoints
         })
         .WithName("GetCorporateActionCaseConflict")
         .RequirePermission(UserPermission.ViewCorporateActions)
+        .RequireWorkstationTenantCompanyScope()
         .Produces<CorporateActionConflictDto>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status404NotFound)
@@ -513,6 +483,7 @@ public static partial class SecurityMasterEndpoints
             UserPermission.ResolveCorporateActionTerms,
             UserPermission.RecordCorporateActionElection,
             UserPermission.PrepareCorporateActionAccounting)
+        .RequireWorkstationTenantCompanyScope()
         .Produces<CorporateActionEvidenceMutationResultDto>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status409Conflict)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -534,6 +505,7 @@ public static partial class SecurityMasterEndpoints
                 }, ct), jsonOptions).ConfigureAwait(false))
         .WithName("RecordCorporateActionCaseConflict")
         .RequirePermission(UserPermission.ResolveCorporateActionTerms)
+        .RequireWorkstationTenantCompanyScope()
         .Produces<CorporateActionConflictMutationResultDto>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status409Conflict)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -555,6 +527,7 @@ public static partial class SecurityMasterEndpoints
                 }, ct), jsonOptions).ConfigureAwait(false))
         .WithName("UpsertCorporateActionCaseOption")
         .RequirePermission(UserPermission.PrepareCorporateActionAccounting)
+        .RequireWorkstationTenantCompanyScope()
         .Produces<CorporateActionProcessingOptionMutationResultDto>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status409Conflict)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -582,6 +555,7 @@ public static partial class SecurityMasterEndpoints
             UserPermission.PrepareCorporateActionAccounting,
             UserPermission.OverrideCorporateActionPolicy,
             UserPermission.ReopenCorporateActionCase)
+        .RequireWorkstationTenantCompanyScope()
         .Produces<CorporateActionCaseTransitionResultDto>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status409Conflict)
         .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
@@ -620,6 +594,11 @@ public static partial class SecurityMasterEndpoints
         {
             return CorporateActionProblem(context, new CorporateActionScopeMismatchException(
                 "Fund, account, portfolio, custody, ledger-book, basis, and other narrow corporate-action scope fields are denied until the endpoint can resolve them from an authoritative scoped assignment."));
+        }
+
+        if (!CorporateActionSourceDecisionsEnabled)
+        {
+            return CorporateActionSourceDecisionsUnavailable(context);
         }
 
         try
@@ -704,7 +683,7 @@ public static partial class SecurityMasterEndpoints
         {
             ActionAvailability = ApplyCallerActionAvailability(
                 proposal.ActionAvailability
-                    ?? new CorporateActionSourceProposalActionAvailabilityDto(false, false, true, ["Action availability was not projected."]),
+                    ?? new CorporateActionSourceProposalActionAvailabilityDto(false, false, false, ["Action availability was not projected."]),
                 context),
         };
 
@@ -717,15 +696,34 @@ public static partial class SecurityMasterEndpoints
         var permissionBlocker = canResolve
             ? null
             : "Accepting or rejecting a canonical fact requires ModifySecurityMaster and ResolveCorporateActionTerms.";
+        var blockers = availability.Blockers.ToList();
+        if (permissionBlocker is not null
+            && !blockers.Contains(permissionBlocker, StringComparer.Ordinal))
+        {
+            blockers.Add(permissionBlocker);
+        }
+
+        if (!CorporateActionSourceDecisionsEnabled
+            && !blockers.Contains(CorporateActionSourceDecisionFanOutBlocker, StringComparer.Ordinal))
+        {
+            blockers.Add(CorporateActionSourceDecisionFanOutBlocker);
+        }
+
         return availability with
         {
-            CanAccept = availability.CanAccept && canResolve,
-            CanReject = availability.CanReject && canResolve,
-            Blockers = permissionBlocker is null
-                ? availability.Blockers
-                : availability.Blockers.Concat([permissionBlocker]).Distinct(StringComparer.Ordinal).ToArray(),
+            CanAccept = availability.CanAccept && canResolve && CorporateActionSourceDecisionsEnabled,
+            CanReject = availability.CanReject && canResolve && CorporateActionSourceDecisionsEnabled,
+            // Staged inbox rows do not yet carry enough retained per-source evidence to make a
+            // comparison control truthful. Keep this unavailable even if a stale projection says otherwise.
+            CanCompareEvidence = false,
+            Blockers = blockers,
         };
     }
+
+    private static IResult CorporateActionSourceDecisionsUnavailable(HttpContext context) =>
+        CorporateActionProblem(
+            context,
+            new CorporateActionPersistenceUnavailableException(CorporateActionSourceDecisionFanOutBlocker));
 
     private static CorporateActionProcessingCaseDto ApplyCallerActionAvailability(
         CorporateActionProcessingCaseDto processingCase,

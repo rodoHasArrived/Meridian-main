@@ -171,9 +171,9 @@ public sealed partial class PostgresCorporateActionOperationsStore : ICorporateA
         CancellationToken ct = default)
         => await ExecutePersistenceReadAsync(async () =>
         {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        return await LoadProposalAsync(connection, transaction: null, proposalId, forUpdate: false, ct)
-            .ConfigureAwait(false);
+            await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+            return await LoadProposalAsync(connection, transaction: null, proposalId, forUpdate: false, ct)
+                .ConfigureAwait(false);
         }, "source proposal read").ConfigureAwait(false);
 
     public async Task<IReadOnlyList<CorporateActionSourceProposalDto>> ListSourceProposalsAsync(
@@ -183,34 +183,34 @@ public sealed partial class PostgresCorporateActionOperationsStore : ICorporateA
         CancellationToken ct = default)
         => await ExecutePersistenceReadAsync(async () =>
         {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var command = connection.CreateCommand();
-        command.CommandText =
-            $"""
+            await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+            await using var command = connection.CreateCommand();
+            command.CommandText =
+                $"""
             {ProposalSelect}
             where (@security_id is null or security_id = @security_id)
               and (@state is null or state = @state)
             order by observed_at desc, proposal_id
             limit @take;
             """;
-        command.Parameters.Add(new NpgsqlParameter("security_id", NpgsqlDbType.Uuid)
-        {
-            Value = (object?)securityId ?? DBNull.Value,
-        });
-        command.Parameters.Add(new NpgsqlParameter("state", NpgsqlDbType.Text)
-        {
-            Value = string.IsNullOrWhiteSpace(state) ? DBNull.Value : state.Trim(),
-        });
-        command.Parameters.AddWithValue("take", Math.Clamp(take, 1, 500));
+            command.Parameters.Add(new NpgsqlParameter("security_id", NpgsqlDbType.Uuid)
+            {
+                Value = (object?)securityId ?? DBNull.Value,
+            });
+            command.Parameters.Add(new NpgsqlParameter("state", NpgsqlDbType.Text)
+            {
+                Value = string.IsNullOrWhiteSpace(state) ? DBNull.Value : state.Trim(),
+            });
+            command.Parameters.AddWithValue("take", Math.Clamp(take, 1, 500));
 
-        var proposals = new List<CorporateActionSourceProposalDto>();
-        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        while (await reader.ReadAsync(ct).ConfigureAwait(false))
-        {
-            proposals.Add(ReadProposal(reader));
-        }
+            var proposals = new List<CorporateActionSourceProposalDto>();
+            await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                proposals.Add(ReadProposal(reader));
+            }
 
-        return proposals;
+            return proposals;
         }, "source proposal list").ConfigureAwait(false);
 
     public async Task<IReadOnlyList<CorporateActionSourceProposalDto>> ListActionableSourceProposalsAsync(
@@ -219,32 +219,32 @@ public sealed partial class PostgresCorporateActionOperationsStore : ICorporateA
         CancellationToken ct = default)
         => await ExecutePersistenceReadAsync(async () =>
         {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var command = connection.CreateCommand();
-        command.CommandText =
-            $"""
+            await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+            await using var command = connection.CreateCommand();
+            command.CommandText =
+                $"""
             {ProposalSelect}
             where (@security_id is null or security_id = @security_id)
               and state in (@observed_state, @review_required_state)
             order by observed_at desc, proposal_id
             limit @take;
             """;
-        command.Parameters.Add(new NpgsqlParameter("security_id", NpgsqlDbType.Uuid)
-        {
-            Value = (object?)securityId ?? DBNull.Value,
-        });
-        command.Parameters.AddWithValue("observed_state", CorporateActionSourceProposalStates.Observed);
-        command.Parameters.AddWithValue("review_required_state", CorporateActionSourceProposalStates.ReviewRequired);
-        command.Parameters.AddWithValue("take", Math.Clamp(take, 1, 500));
+            command.Parameters.Add(new NpgsqlParameter("security_id", NpgsqlDbType.Uuid)
+            {
+                Value = (object?)securityId ?? DBNull.Value,
+            });
+            command.Parameters.AddWithValue("observed_state", CorporateActionSourceProposalStates.Observed);
+            command.Parameters.AddWithValue("review_required_state", CorporateActionSourceProposalStates.ReviewRequired);
+            command.Parameters.AddWithValue("take", Math.Clamp(take, 1, 500));
 
-        var proposals = new List<CorporateActionSourceProposalDto>();
-        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        while (await reader.ReadAsync(ct).ConfigureAwait(false))
-        {
-            proposals.Add(ReadProposal(reader));
-        }
+            var proposals = new List<CorporateActionSourceProposalDto>();
+            await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                proposals.Add(ReadProposal(reader));
+            }
 
-        return proposals;
+            return proposals;
         }, "actionable source proposal list").ConfigureAwait(false);
 
     public async Task<CorporateActionSourceProposalAcceptanceResultDto?> GetAcceptanceReceiptAsync(
@@ -254,17 +254,17 @@ public sealed partial class PostgresCorporateActionOperationsStore : ICorporateA
         CancellationToken ct = default)
         => await ExecutePersistenceReadAsync(async () =>
         {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        var receipt = await ReadReceiptAsync<CorporateActionSourceProposalAcceptanceResultDto>(
-                connection,
-                transaction: null,
-                AcceptOperation,
-                proposalId,
-                idempotencyKey,
-                requestFingerprint,
-                ct)
-            .ConfigureAwait(false);
-        return receipt is null ? null : receipt with { Replayed = true };
+            await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+            var receipt = await ReadReceiptAsync<CorporateActionSourceProposalAcceptanceResultDto>(
+                    connection,
+                    transaction: null,
+                    AcceptOperation,
+                    proposalId,
+                    idempotencyKey,
+                    requestFingerprint,
+                    ct)
+                .ConfigureAwait(false);
+            return receipt is null ? null : receipt with { Replayed = true };
         }, "acceptance receipt read").ConfigureAwait(false);
 
     public async Task<CorporateActionSourceProposalAcceptanceResultDto> AcceptSourceProposalAsync(
@@ -364,10 +364,10 @@ public sealed partial class PostgresCorporateActionOperationsStore : ICorporateA
             .ConfigureAwait(false)
             ?? throw new CorporateActionNotFoundException("Corporate-action source proposal", request.ProposalId);
 
-        await AcquireTransactionLockAsync(
+        await PostgresCorporateActionCanonicalStore.AcquireSecurityChainLockAsync(
             connection,
             transaction,
-            $"corporate-action-security-chain:{proposal.SecurityId:D}",
+            proposal.SecurityId,
             ct).ConfigureAwait(false);
 
         EnsureVersion(proposal.ProposalId, request.ExpectedVersion, proposal.Version);
@@ -387,22 +387,34 @@ public sealed partial class PostgresCorporateActionOperationsStore : ICorporateA
             CorpActId = corporateActionId,
             SupersedesCorpActId = canonicalSupersedesId,
         };
-        var existingCorporateAction = await LoadCanonicalActionByEconomicIdentityAsync(
+        var candidateEconomicFingerprint = CorporateActionEconomicFingerprint.Compute(candidateCorporateAction);
+        if (!string.Equals(
+                candidateEconomicFingerprint,
+                proposal.EconomicFingerprint,
+                StringComparison.Ordinal))
+        {
+            throw new CorporateActionSourceConflictException(
+                "The retained proposal fingerprint does not match its canonical economic terms; retain corrected source evidence before acceptance.");
+        }
+
+        var existingCorporateAction = await PostgresCorporateActionCanonicalStore.LoadOrReconcileByEconomicIdentityAsync(
                 connection,
                 transaction,
+                Qualified("corporate_actions"),
                 proposal.SecurityId,
-                proposal.EconomicFingerprint,
+                candidateEconomicFingerprint,
                 candidateCorporateAction.LifecycleState,
                 canonicalSupersedesId,
                 ct)
             .ConfigureAwait(false);
         var corporateAction = existingCorporateAction ?? candidateCorporateAction;
-        await ValidateCanonicalSuccessorAsync(connection, transaction, corporateAction, ct)
+        await PostgresCorporateActionCanonicalStore.ValidateSuccessorAsync(
+                connection, transaction, Qualified("corporate_actions"), corporateAction, ct)
             .ConfigureAwait(false);
         if (existingCorporateAction is null)
         {
             await InsertCorporateActionAsync(
-                    connection, transaction, corporateAction, proposal.EconomicFingerprint, ct)
+                    connection, transaction, corporateAction, candidateEconomicFingerprint, ct)
                 .ConfigureAwait(false);
         }
 
@@ -433,7 +445,11 @@ public sealed partial class PostgresCorporateActionOperationsStore : ICorporateA
                 CreatedBy: request.Actor,
                 CreatedAtUtc: now,
                 UpdatedBy: request.Actor,
-                UpdatedAtUtc: now);
+                UpdatedAtUtc: now,
+                SourceSnapshot: new CorporateActionCaseSourceSnapshotDto(
+                    proposal.ProposedAction,
+                    proposal.ProviderIdentity,
+                    proposal.DisplayMetadata));
             await InsertCaseAsync(connection, transaction, processingCase, ct).ConfigureAwait(false);
             if (restatement is not null)
             {
@@ -1015,86 +1031,6 @@ public sealed partial class PostgresCorporateActionOperationsStore : ICorporateA
         return acceptedCanonicalParent;
     }
 
-    private async Task ValidateCanonicalSuccessorAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        CorporateActionDto candidate,
-        CancellationToken ct)
-    {
-        if (candidate.SupersedesCorpActId is not { } parentId)
-        {
-            return;
-        }
-
-        Guid parentSecurityId;
-        string parentEventType;
-        string? parentLifecycle;
-        await using (var parentCommand = connection.CreateCommand())
-        {
-            parentCommand.Transaction = transaction;
-            parentCommand.CommandText =
-                $"""
-                select security_id, event_type, lifecycle_state
-                from {Qualified("corporate_actions")}
-                where corp_act_id = @parent_id
-                for update;
-                """;
-            parentCommand.Parameters.AddWithValue("parent_id", parentId);
-            await using var reader = await parentCommand.ExecuteReaderAsync(ct).ConfigureAwait(false);
-            if (!await reader.ReadAsync(ct).ConfigureAwait(false))
-            {
-                throw new CorporateActionNotFoundException("Superseded canonical corporate action", parentId);
-            }
-
-            parentSecurityId = reader.GetGuid(0);
-            parentEventType = reader.GetString(1);
-            parentLifecycle = reader.IsDBNull(2) ? null : reader.GetString(2);
-        }
-
-        if (parentSecurityId != candidate.SecurityId)
-        {
-            throw new CorporateActionSourceConflictException(
-                "A canonical corporate-action successor must reference a predecessor on the same security.");
-        }
-
-        if (!string.Equals(
-                CorporateActionEventTypes.Normalize(parentEventType),
-                CorporateActionEventTypes.Normalize(candidate.EventType),
-                StringComparison.Ordinal))
-        {
-            throw new CorporateActionSourceConflictException(
-                "A canonical corporate-action successor must retain its predecessor's event type.");
-        }
-
-        if (CorporateActionLifecycleStates.Rank(candidate.LifecycleState)
-            < CorporateActionLifecycleStates.Rank(parentLifecycle))
-        {
-            throw new CorporateActionStateConflictException(
-                parentId,
-                "A canonical corporate-action successor cannot move the source lifecycle backwards.");
-        }
-
-        await using var successorCommand = connection.CreateCommand();
-        successorCommand.Transaction = transaction;
-        successorCommand.CommandText =
-            $"""
-            select corp_act_id
-            from {Qualified("corporate_actions")}
-            where supersedes_corp_act_id = @parent_id
-              and corp_act_id <> @candidate_id
-            limit 1;
-            """;
-        successorCommand.Parameters.AddWithValue("parent_id", parentId);
-        successorCommand.Parameters.AddWithValue("candidate_id", candidate.CorpActId);
-        var existingSuccessor = await successorCommand.ExecuteScalarAsync(ct).ConfigureAwait(false);
-        if (existingSuccessor is Guid successorId)
-        {
-            throw new CorporateActionStateConflictException(
-                parentId,
-                $"Canonical corporate action '{parentId:D}' is already superseded by '{successorId:D}'; supersede the chain tip instead.");
-        }
-    }
-
     private async Task InsertRestatementObligationAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
@@ -1165,94 +1101,6 @@ public sealed partial class PostgresCorporateActionOperationsStore : ICorporateA
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
-    private async Task<CorporateActionDto?> LoadCanonicalActionByEconomicIdentityAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        Guid securityId,
-        string economicFingerprint,
-        string? lifecycleState,
-        Guid? supersedesCorporateActionId,
-        CancellationToken ct)
-    {
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            $"""
-            select corp_act_id, security_id, event_type, ex_date, pay_date, dividend_per_share,
-                   currency, split_ratio, new_security_id, distribution_ratio,
-                   acquirer_security_id, exchange_ratio, subscription_price_per_share,
-                   rights_per_share, record_date, lifecycle_state, supersedes_corp_act_id,
-                   redemption_price_percent_of_par, payload, payload_schema_version
-            from {Qualified("corporate_actions")}
-            where security_id = @security_id
-              and economic_fingerprint = @economic_fingerprint
-              and coalesce(nullif(lifecycle_state, ''), @confirmed_state) = @lifecycle_state
-              and supersedes_corp_act_id is not distinct from @supersedes_corp_act_id
-            limit 1
-            for update;
-            """;
-        command.Parameters.AddWithValue("security_id", securityId);
-        command.Parameters.AddWithValue("economic_fingerprint", economicFingerprint);
-        command.Parameters.AddWithValue("confirmed_state", CorporateActionLifecycleStates.Confirmed);
-        command.Parameters.AddWithValue(
-            "lifecycle_state",
-            string.IsNullOrWhiteSpace(lifecycleState)
-                ? CorporateActionLifecycleStates.Confirmed
-                : lifecycleState.Trim());
-        command.Parameters.Add(new NpgsqlParameter("supersedes_corp_act_id", NpgsqlDbType.Uuid)
-        {
-            Value = (object?)supersedesCorporateActionId ?? DBNull.Value,
-        });
-
-        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        return await reader.ReadAsync(ct).ConfigureAwait(false)
-            ? ReadCorporateAction(reader)
-            : null;
-    }
-
-    private static CorporateActionDto ReadCorporateAction(NpgsqlDataReader reader)
-    {
-        var exDate = DateOnly.FromDateTime(reader.GetDateTime(3));
-        DateOnly? payDate = reader.IsDBNull(4) ? null : DateOnly.FromDateTime(reader.GetDateTime(4));
-        DateOnly? recordDate = reader.IsDBNull(14) ? null : DateOnly.FromDateTime(reader.GetDateTime(14));
-        JsonElement? payload = null;
-        if (!reader.IsDBNull(18))
-        {
-            try
-            {
-                using var document = JsonDocument.Parse(reader.GetString(18));
-                payload = document.RootElement.Clone();
-            }
-            catch (JsonException)
-            {
-                // Preserve legacy read tolerance; a malformed historical envelope is treated as
-                // absent and will not match a newly computed economic fingerprint.
-            }
-        }
-
-        return new CorporateActionDto(
-            reader.GetGuid(0),
-            reader.GetGuid(1),
-            reader.GetString(2),
-            exDate,
-            payDate,
-            reader.IsDBNull(5) ? null : reader.GetDecimal(5),
-            reader.IsDBNull(6) ? null : reader.GetString(6),
-            reader.IsDBNull(7) ? null : reader.GetDecimal(7),
-            reader.IsDBNull(8) ? null : reader.GetGuid(8),
-            reader.IsDBNull(9) ? null : reader.GetDecimal(9),
-            reader.IsDBNull(10) ? null : reader.GetGuid(10),
-            reader.IsDBNull(11) ? null : reader.GetDecimal(11),
-            reader.IsDBNull(12) ? null : reader.GetDecimal(12),
-            reader.IsDBNull(13) ? null : reader.GetDecimal(13),
-            recordDate,
-            reader.IsDBNull(15) ? null : reader.GetString(15),
-            reader.IsDBNull(16) ? null : reader.GetGuid(16),
-            reader.IsDBNull(17) ? null : reader.GetDecimal(17),
-            payload,
-            reader.GetInt32(19));
-    }
-
     private async Task InsertCaseAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
@@ -1318,21 +1166,21 @@ public sealed partial class PostgresCorporateActionOperationsStore : ICorporateA
         command.CommandText =
             $"""
             {CaseSelect}
-            where corp_act_id = @corp_act_id
-              and tenant_id = @tenant_id
-              and company_id = @company_id
-              and structure_node_id is not distinct from @structure_node_id
-              and fund_profile_id is not distinct from @fund_profile_id
-              and financial_account_id is not distinct from @financial_account_id
-              and portfolio_id is not distinct from @portfolio_id
-              and custody_account_id is not distinct from @custody_account_id
-              and ledger_book_id is not distinct from @ledger_book_id
-              and period_id is not distinct from @period_id
-              and accounting_basis is not distinct from @accounting_basis
-              and functional_currency is not distinct from @functional_currency
-              and jurisdiction is not distinct from @jurisdiction
+            where pc.corp_act_id = @corp_act_id
+              and pc.tenant_id = @tenant_id
+              and pc.company_id = @company_id
+              and pc.structure_node_id is not distinct from @structure_node_id
+              and pc.fund_profile_id is not distinct from @fund_profile_id
+              and pc.financial_account_id is not distinct from @financial_account_id
+              and pc.portfolio_id is not distinct from @portfolio_id
+              and pc.custody_account_id is not distinct from @custody_account_id
+              and pc.ledger_book_id is not distinct from @ledger_book_id
+              and pc.period_id is not distinct from @period_id
+              and pc.accounting_basis is not distinct from @accounting_basis
+              and pc.functional_currency is not distinct from @functional_currency
+              and pc.jurisdiction is not distinct from @jurisdiction
             limit 1
-            for update;
+            for update of pc;
             """;
         command.Parameters.AddWithValue("corp_act_id", corporateActionId);
         command.Parameters.AddWithValue("tenant_id", scope.TenantId);

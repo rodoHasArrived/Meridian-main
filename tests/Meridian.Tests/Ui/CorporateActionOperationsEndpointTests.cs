@@ -23,9 +23,11 @@ public sealed class CorporateActionOperationsEndpointTests
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private static readonly Guid SecurityId = Guid.Parse("40fac25c-9613-45df-9450-5a2eed01c5ce");
     private static readonly Guid ProposalId = Guid.Parse("bb390ac9-90e8-474b-9d90-bc5e673a6f75");
+    private const string FanOutBlocker =
+        "Corporate-action source decisions are read-only until an authoritative service can enumerate every affected tenant/company scope and apply the decision atomically.";
 
     [Fact]
-    public async Task Inbox_ReadsTrustedScopeAndReturnsDurableStrongIdentityShape()
+    public async Task Inbox_RemainsReadableButLocksSourceDecisionsUntilAuthoritativeFanOutExists()
     {
         var service = Substitute.For<ICorporateActionOperationsService>();
         service.GetInboxAsync(Arg.Any<CorporateActionCaseScopeDto>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
@@ -46,7 +48,15 @@ public sealed class CorporateActionOperationsEndpointTests
         entry.Version.Should().Be(7);
         entry.AcceptanceScope.TenantId.Should().Be("tenant-a");
         entry.AcceptanceScope.CompanyId.Should().Be("company-a");
-        entry.ActionAvailability.CanAccept.Should().BeTrue();
+        entry.ActionAvailability.CanAccept.Should().BeFalse();
+        entry.ActionAvailability.CanReject.Should().BeFalse();
+        entry.ActionAvailability.CanCompareEvidence.Should().BeFalse();
+        entry.ActionAvailability.Blockers.Should().ContainSingle().Which.Should().Be(FanOutBlocker);
+        var processingCase = payload.Cases.Should().ContainSingle().Subject;
+        processingCase.SourceSnapshot.Should().NotBeNull();
+        processingCase.SourceSnapshot!.ProposedAction.EventType.Should().Be(CorporateActionEventTypes.Dividend);
+        processingCase.SourceSnapshot.ProviderIdentity.SourceEventId.Should().Be("event-1");
+        processingCase.SourceSnapshot.DisplayMetadata!.Ticker.Should().Be("ACME");
         await service.Received(1).GetInboxAsync(
             Arg.Is<CorporateActionCaseScopeDto>(scope =>
                 scope.TenantId == "tenant-a" && scope.CompanyId == "company-a"),
@@ -85,7 +95,7 @@ public sealed class CorporateActionOperationsEndpointTests
         await using var app = await CreateAppAsync(service, incompleteGrant);
 
         var response = await app.GetTestClient().PostAsJsonAsync(
-            "/api/security-master/corporate-actions/inbox/apply",
+            $"/api/security-master/corporate-actions/source-proposals/{ProposalId:D}/accept",
             AcceptRequest(new CorporateActionCaseScopeDto("tenant-a", "company-a")),
             JsonOptions);
 
@@ -104,7 +114,7 @@ public sealed class CorporateActionOperationsEndpointTests
             UserPermission.ModifySecurityMaster | UserPermission.ResolveCorporateActionTerms);
 
         var response = await app.GetTestClient().PostAsJsonAsync(
-            "/api/security-master/corporate-actions/inbox/apply",
+            $"/api/security-master/corporate-actions/source-proposals/{ProposalId:D}/accept",
             AcceptRequest(new CorporateActionCaseScopeDto("tenant-a", "company-b")),
             JsonOptions);
 
@@ -118,38 +128,44 @@ public sealed class CorporateActionOperationsEndpointTests
     }
 
     [Fact]
-    public async Task AcceptCanonicalFact_UsesTrustedActorAndScope()
+    public async Task AcceptCanonicalFact_WhenFanOutIsUnavailable_ReturnsTypedServiceUnavailableWithoutServiceCall()
     {
         var service = Substitute.For<ICorporateActionOperationsService>();
-        service.AcceptSourceProposalAsync(
-                Arg.Any<AcceptCorporateActionSourceProposalRequestDto>(),
-                Arg.Any<CancellationToken>())
-            .Returns(call => CreateAcceptance(call.Arg<AcceptCorporateActionSourceProposalRequestDto>()));
         await using var app = await CreateAppAsync(
             service,
             UserPermission.ModifySecurityMaster | UserPermission.ResolveCorporateActionTerms);
 
-        var request = AcceptRequest(new CorporateActionCaseScopeDto("tenant-a", "company-a")) with
-        {
-            Actor = "forged-browser-actor",
-            CorrelationId = "forged-browser-correlation",
-        };
         var response = await app.GetTestClient().PostAsJsonAsync(
-            "/api/security-master/corporate-actions/inbox/apply",
-            request,
+            $"/api/security-master/corporate-actions/source-proposals/{ProposalId:D}/accept",
+            AcceptRequest(new CorporateActionCaseScopeDto("tenant-a", "company-a")),
             JsonOptions);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        await service.Received(1).AcceptSourceProposalAsync(
-            Arg.Is<AcceptCorporateActionSourceProposalRequestDto>(accepted =>
-                accepted.ProposalId == ProposalId &&
-                accepted.ExpectedVersion == 7 &&
-                accepted.IdempotencyKey == "accept:proposal:v7" &&
-                accepted.Scope.TenantId == "tenant-a" &&
-                accepted.Scope.CompanyId == "company-a" &&
-                accepted.Actor == "operations-user" &&
-                accepted.CorrelationId != "forged-browser-correlation" &&
-                !string.IsNullOrWhiteSpace(accepted.CorrelationId)),
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        problem.RootElement.GetProperty("code").GetString()
+            .Should().Be(CorporateActionProblemCodes.PersistenceUnavailable);
+        problem.RootElement.GetProperty("detail").GetString().Should().Be(FanOutBlocker);
+        await service.DidNotReceive().AcceptSourceProposalAsync(
+            Arg.Any<AcceptCorporateActionSourceProposalRequestDto>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task LegacyInboxApplyRoute_IsAnAuthorizedGoneTombstone()
+    {
+        var service = Substitute.For<ICorporateActionOperationsService>();
+        await using var app = await CreateAppAsync(
+            service,
+            UserPermission.ModifySecurityMaster | UserPermission.ResolveCorporateActionTerms);
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/security-master/corporate-actions/inbox/apply",
+            AcceptRequest(new CorporateActionCaseScopeDto("tenant-a", "company-a")),
+            JsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Gone);
+        await service.DidNotReceive().AcceptSourceProposalAsync(
+            Arg.Any<AcceptCorporateActionSourceProposalRequestDto>(),
             Arg.Any<CancellationToken>());
     }
 
@@ -209,33 +225,31 @@ public sealed class CorporateActionOperationsEndpointTests
     }
 
     [Fact]
-    public async Task AcceptCanonicalFact_VersionConflictReturnsReloadMetadata()
+    public async Task RejectSourceProposal_WhenFanOutIsUnavailable_ReturnsTypedServiceUnavailableWithoutServiceCall()
     {
         var service = Substitute.For<ICorporateActionOperationsService>();
-        service.AcceptSourceProposalAsync(
-                Arg.Any<AcceptCorporateActionSourceProposalRequestDto>(),
-                Arg.Any<CancellationToken>())
-            .Returns(Task.FromException<CorporateActionSourceProposalAcceptanceResultDto>(
-                new CorporateActionVersionConflictException(ProposalId, 7, 8)));
         await using var app = await CreateAppAsync(
             service,
             UserPermission.ModifySecurityMaster | UserPermission.ResolveCorporateActionTerms);
 
         var response = await app.GetTestClient().PostAsJsonAsync(
-            "/api/security-master/corporate-actions/inbox/apply",
-            AcceptRequest(new CorporateActionCaseScopeDto("tenant-a", "company-a")),
+            $"/api/security-master/corporate-actions/source-proposals/{ProposalId:D}/reject",
+            new RejectCorporateActionSourceProposalRequestDto(
+                ProposalId,
+                ExpectedVersion: 7,
+                IdempotencyKey: "reject:proposal:v7",
+                Actor: "browser",
+                Reason: "Provider observation does not match retained evidence."),
             JsonOptions);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
         using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         problem.RootElement.GetProperty("code").GetString()
-            .Should().Be(CorporateActionProblemCodes.VersionConflict);
-        problem.RootElement.GetProperty("expectedVersion").GetInt64().Should().Be(7);
-        problem.RootElement.GetProperty("currentVersion").GetInt64().Should().Be(8);
-        problem.RootElement.GetProperty("currentETag").GetString().Should().Be("W/\"8\"");
-        problem.RootElement.GetProperty("changedFields").EnumerateArray()
-            .Select(static item => item.GetString())
-            .Should().Equal("version");
+            .Should().Be(CorporateActionProblemCodes.PersistenceUnavailable);
+        problem.RootElement.GetProperty("detail").GetString().Should().Be(FanOutBlocker);
+        await service.DidNotReceive().RejectSourceProposalAsync(
+            Arg.Any<RejectCorporateActionSourceProposalRequestDto>(),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -308,9 +322,20 @@ public sealed class CorporateActionOperationsEndpointTests
             (true, new[] { UserPermission.ViewCorporateActions }));
         AssertPermissions(
             app,
-            "AcceptSecurityMasterCorporateActionInboxProposal",
-            (true, new[] { UserPermission.ModifySecurityMaster }),
-            (true, new[] { UserPermission.ResolveCorporateActionTerms }));
+            "AcceptCorporateActionSourceProposal",
+            (true, new[]
+            {
+                UserPermission.ModifySecurityMaster,
+                UserPermission.ResolveCorporateActionTerms,
+            }));
+        AssertPermissions(
+            app,
+            "RetiredSecurityMasterCorporateActionInboxApply",
+            (true, new[]
+            {
+                UserPermission.ModifySecurityMaster,
+                UserPermission.ResolveCorporateActionTerms,
+            }));
         AssertPermissions(
             app,
             "AddCorporateActionCaseEvidence",
@@ -431,7 +456,7 @@ public sealed class CorporateActionOperationsEndpointTests
             DuplicatesSkippedLastRun: 0,
             Staged: [entry],
             Errors: [],
-            Cases: []);
+            Cases: [TermsConfirmedCase()]);
     }
 
     private static CorporateActionProcessingCaseDto TermsConfirmedCase()
@@ -460,7 +485,22 @@ public sealed class CorporateActionOperationsEndpointTests
                 CanTransition: true,
                 CanApproveAccounting: false,
                 CorporateActionCaseTransitionPolicy.GetAllowedTargets(CorporateActionCaseStates.TermsConfirmed),
-                Blockers: []));
+                Blockers: []),
+            SourceSnapshot: new CorporateActionCaseSourceSnapshotDto(
+                Dividend(),
+                new CorporateActionProviderEventIdentityDto(
+                    "provider-a",
+                    "event-1",
+                    "v1",
+                    now,
+                    EvidenceHash: new string('a', 64),
+                    EvidenceReference: "provider-event://provider-a/event-1/v1",
+                    ReleaseStatus: CorporateActionProviderReleaseStatusDto.AcceptanceEligible),
+                new CorporateActionSourceDisplayMetadataDto(
+                    "ACME",
+                    "provider-a",
+                    ["provider-a", "provider-b"],
+                    [])));
     }
 
     private static CorporateActionConflictDto Conflict(Guid caseId) =>

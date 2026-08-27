@@ -143,6 +143,159 @@ public sealed class CorporateActionOperationsServiceTests
     }
 
     [Fact]
+    public async Task RecordSourceProposal_ProviderIdentityAtUtf8ByteLimit_ReachesStore()
+    {
+        var fixture = CreateFixture(SourceProposal(Dividend()));
+        fixture.Store.RecordSourceProposalAsync(
+                Arg.Any<CorporateActionSourceProposalDto>(), Arg.Any<CancellationToken>())
+            .Returns(call => call.ArgAt<CorporateActionSourceProposalDto>(0));
+        var request = new RecordCorporateActionSourceProposalRequestDto(
+            Dividend(),
+            new CorporateActionProviderEventIdentityDto(
+                new string('p', CorporateActionOperationsService.MaximumIndexedIdentityUtf8Bytes),
+                new string('e', CorporateActionOperationsService.MaximumIndexedIdentityUtf8Bytes),
+                new string('v', CorporateActionOperationsService.MaximumIndexedIdentityUtf8Bytes),
+                Now),
+            Actor: "ingest");
+
+        var result = await fixture.Service.RecordSourceProposalAsync(request);
+
+        result.ProviderIdentity.ProviderId.Should().HaveLength(
+            CorporateActionOperationsService.MaximumIndexedIdentityUtf8Bytes);
+        await fixture.Store.Received(1).RecordSourceProposalAsync(
+            Arg.Any<CorporateActionSourceProposalDto>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("ProviderId")]
+    [InlineData("SourceEventId")]
+    [InlineData("SourceEventVersion")]
+    public async Task RecordSourceProposal_ProviderIdentityOverUtf8ByteLimit_FailsBeforeStore(string field)
+    {
+        var fixture = CreateFixture(SourceProposal(Dividend()));
+        var oversized = new string('\u00e9', 129);
+        var identity = new CorporateActionProviderEventIdentityDto(
+            field == "ProviderId" ? oversized : "provider-a",
+            field == "SourceEventId" ? oversized : "event-100",
+            field == "SourceEventVersion" ? oversized : "v1",
+            Now);
+
+        var act = () => fixture.Service.RecordSourceProposalAsync(
+            new RecordCorporateActionSourceProposalRequestDto(Dividend(), identity, Actor: "ingest"));
+
+        await act.Should().ThrowAsync<CorporateActionValidationException>()
+            .WithMessage("*256 UTF-8 bytes*");
+        await fixture.Store.DidNotReceive().RecordSourceProposalAsync(
+            Arg.Any<CorporateActionSourceProposalDto>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RejectSourceProposal_IdempotencyKeyUsesPostTrimUtf8ByteLimit()
+    {
+        var proposal = SourceProposal(Dividend());
+        var fixture = CreateFixture(proposal);
+        fixture.Store.RejectSourceProposalAsync(
+                Arg.Any<RejectCorporateActionSourceProposalRequestDto>(),
+                Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => new CorporateActionSourceProposalDecisionResultDto(
+                proposal with
+                {
+                    State = CorporateActionSourceProposalStates.Rejected,
+                    Version = proposal.Version + 1,
+                },
+                Replayed: false));
+        var maximumKey = new string('\u00e9', 128);
+        var valid = new RejectCorporateActionSourceProposalRequestDto(
+            ProposalId, 4, $" {maximumKey} ", "operations-user", "Duplicate provider notice.");
+
+        await fixture.Service.RejectSourceProposalAsync(valid);
+
+        await fixture.Store.Received(1).RejectSourceProposalAsync(
+            Arg.Is<RejectCorporateActionSourceProposalRequestDto>(request => request.IdempotencyKey == maximumKey),
+            Arg.Any<string>(),
+            Arg.Any<CancellationToken>());
+
+        var act = () => fixture.Service.RejectSourceProposalAsync(
+            valid with { IdempotencyKey = new string('\u00e9', 129) });
+
+        await act.Should().ThrowAsync<CorporateActionValidationException>()
+            .WithMessage("*256 UTF-8 bytes*");
+        await fixture.Store.Received(1).RejectSourceProposalAsync(
+            Arg.Any<RejectCorporateActionSourceProposalRequestDto>(),
+            Arg.Any<string>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetInbox_ScopeIdentityEnforcesIndividualAndCompositeUtf8ByteLimits()
+    {
+        var fixture = CreateFixture(SourceProposal(Dividend()));
+        fixture.Store.ListActionableSourceProposalsAsync(
+                Arg.Any<Guid?>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<CorporateActionSourceProposalDto>());
+        fixture.Store.ListCasesAsync(
+                Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Guid?>(), Arg.Any<string?>(),
+                Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<CorporateActionProcessingCaseDto>());
+        var segment = new string('s', CorporateActionOperationsService.MaximumScopeIdentityUtf8Bytes);
+        var maximumScope = new CorporateActionCaseScopeDto(
+            segment,
+            segment,
+            StructureNodeId: segment,
+            FundProfileId: segment,
+            FinancialAccountId: segment,
+            PortfolioId: segment,
+            CustodyAccountId: segment,
+            LedgerBookId: segment);
+
+        await fixture.Service.GetInboxAsync(maximumScope, take: 10);
+
+        var aggregateAct = () => fixture.Service.GetInboxAsync(
+            maximumScope with { PeriodId = "p" },
+            take: 10);
+        await aggregateAct.Should().ThrowAsync<CorporateActionScopeMismatchException>()
+            .WithMessage("*2048 UTF-8 bytes in total*");
+
+        var individualAct = () => fixture.Service.GetInboxAsync(
+            maximumScope with
+            {
+                TenantId = new string('t', CorporateActionOperationsService.MaximumScopeIdentityUtf8Bytes + 1),
+                StructureNodeId = null,
+            },
+            take: 10);
+        await individualAct.Should().ThrowAsync<CorporateActionValidationException>()
+            .WithMessage("*256 UTF-8 bytes*");
+    }
+
+    [Fact]
+    public async Task UpsertOption_IndexedOptionCodeOverUtf8ByteLimit_FailsBeforeStore()
+    {
+        var fixture = CreateFixture(SourceProposal(Dividend()));
+        var request = new UpsertCorporateActionProcessingOptionRequestDto(
+            CaseId: Guid.NewGuid(),
+            ExpectedVersion: 1,
+            IdempotencyKey: "option:v1",
+            TenantId: "tenant-a",
+            CompanyId: "company-a",
+            OptionCode: new string('\u00e9', 129),
+            Label: "Direct exchange",
+            Description: "Conserve book value and holding period.",
+            State: CorporateActionProcessingOptionStates.Proposed,
+            Actor: "operations-user");
+
+        var act = () => fixture.Service.UpsertOptionAsync(request);
+
+        await act.Should().ThrowAsync<CorporateActionValidationException>()
+            .WithMessage("*256 UTF-8 bytes*");
+        await fixture.Store.DidNotReceive().UpsertOptionAsync(
+            Arg.Any<UpsertCorporateActionProcessingOptionRequestDto>(),
+            Arg.Any<Guid>(),
+            Arg.Any<string>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task AcceptSourceProposal_SameIdempotencyKeyAndPayloadWithNewTrace_ReplaysCommittedOutcome()
     {
         var fixture = CreateFixture(SourceProposal(Dividend()));
@@ -614,7 +767,11 @@ public sealed class CorporateActionOperationsServiceTests
             CreatedBy: "operations-user",
             CreatedAtUtc: Now.AddHours(-1),
             UpdatedBy: "accountant-a",
-            UpdatedAtUtc: Now);
+            UpdatedAtUtc: Now,
+            SourceSnapshot: new CorporateActionCaseSourceSnapshotDto(
+                accepted.ProposedAction,
+                accepted.ProviderIdentity,
+                accepted.DisplayMetadata));
         var fixture = CreateFixture(accepted);
         fixture.Store.ListActionableSourceProposalsAsync(
                 null, Arg.Any<int>(), Arg.Any<CancellationToken>())
@@ -635,6 +792,10 @@ public sealed class CorporateActionOperationsServiceTests
         retainedCase.ProposalId.Should().Be(accepted.ProposalId);
         retainedCase.Version.Should().Be(6);
         retainedCase.Scope.Should().BeEquivalentTo(scope);
+        retainedCase.SourceSnapshot.Should().NotBeNull();
+        retainedCase.SourceSnapshot!.ProposedAction.Should().BeEquivalentTo(accepted.ProposedAction);
+        retainedCase.SourceSnapshot.ProviderIdentity.Should().BeEquivalentTo(accepted.ProviderIdentity);
+        retainedCase.SourceSnapshot.DisplayMetadata.Should().BeEquivalentTo(accepted.DisplayMetadata);
         retainedCase.ActionAvailability.Should().NotBeNull();
         retainedCase.ActionAvailability!.AllowedTransitionTargets
             .Should().Contain(CorporateActionCaseStates.RestatementRequired);

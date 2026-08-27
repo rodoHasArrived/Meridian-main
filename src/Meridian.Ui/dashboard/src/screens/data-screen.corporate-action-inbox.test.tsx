@@ -5,7 +5,6 @@ import { describe, expect, it, vi } from "vitest";
 import { CorporateActionInboxRegion, CORPORATE_ACTION_CASE_WORKSPACE_ID } from "@/screens/data-screen.corporate-action-inbox";
 import { useCorporateActionInboxPanel } from "@/screens/data-screen.corporate-action-inbox.view-model";
 import type {
-  CorporateActionCaseProjection,
   CorporateActionInboxAcceptResult,
   CorporateActionInboxAcceptRequest,
   CorporateActionInboxResponse,
@@ -13,83 +12,8 @@ import type {
   CorporateActionProposalEntry
 } from "@/types";
 
-function durableCase(): CorporateActionCaseProjection {
-  return {
-    caseId: "case-aapl-dividend",
-    proposalId: "proposal-aapl-dividend-v3",
-    version: 3,
-    status: "AccountingReview",
-    assignedTo: "Avery Reviewer",
-    conflictState: "Resolved",
-    permissionState: "Allowed",
-    scope: {
-      tenantId: "tenant-meridian",
-      companyId: "company-alpha",
-      fundProfileId: "fund-alpha",
-      ledgerBookId: "book-primary",
-      periodId: "2026-07",
-      accountingBasis: "GAAP",
-      functionalCurrency: "USD"
-    },
-    receivedAt: "2026-07-05T10:00:00Z",
-    dueAt: "2026-07-19T17:00:00Z",
-    sourceFacts: [{
-      field: "Dividend per share",
-      value: "0.25 USD",
-      source: "exchange-feed",
-      agreesWithWinner: true,
-      observedAt: "2026-07-05T09:55:00Z",
-      evidenceId: "evidence-dividend-25"
-    }],
-    entitlement: {
-      scopeLabel: "Fund A · primary book",
-      recordDatePosition: "1,000 shares",
-      entitledQuantity: "1,000 shares",
-      expectedCash: "250.00 USD",
-      evidenceVersion: "positions-v44"
-    },
-    elections: [],
-    basisComparisons: [{
-      basis: "GAAP",
-      treatment: "Cash dividend",
-      taxability: "Policy review",
-      bookValueEffect: "None",
-      gainLossRecognition: "Income",
-      holdingPeriodTreatment: "No change",
-      policyVersion: "corp-actions-v5",
-      status: "Preview"
-    }],
-    lotPreview: [],
-    journalPreview: [{
-      lineId: "line-1",
-      basis: "GAAP",
-      account: "Dividend receivable",
-      debit: "250.00",
-      credit: "0.00",
-      currency: "USD"
-    }],
-    reconciliation: [],
-    history: [{
-      eventId: "history-1",
-      atUtc: "2026-07-05T10:00:00Z",
-      actor: "provider-ingest",
-      action: "Case detected",
-      fromStatus: null,
-      toStatus: "Detected",
-      evidenceId: "evidence-dividend-25"
-    }],
-    proofReferences: ["proof-sha256-a1"],
-    actionAvailability: {
-      canAcceptCanonicalFact: true,
-      canSubmitElection: false,
-      submitElectionDisabledReason: "This dividend has no holder election.",
-      canApproveTreatment: false,
-      approveTreatmentDisabledReason: "Maker-checker review is pending.",
-      canPost: false,
-      postDisabledReason: "Journal preview is not yet approved."
-    }
-  };
-}
+const FAN_OUT_BLOCKER =
+  "Corporate-action source decisions are read-only until an authoritative service can enumerate every affected tenant/company scope and apply the decision atomically.";
 
 function proposal(overrides: Partial<CorporateActionProposalEntry> = {}): CorporateActionProposalEntry {
   return {
@@ -107,7 +31,19 @@ function proposal(overrides: Partial<CorporateActionProposalEntry> = {}): Corpor
     agreeingSources: ["exchange-feed", "custodian-feed"],
     dissentingSources: [],
     autoApplied: false,
-    case: durableCase(),
+    proposalId: "proposal-aapl-dividend-v3",
+    version: 3,
+    proposalState: "ReviewRequired",
+    acceptanceScope: {
+      tenantId: "tenant-meridian",
+      companyId: "company-alpha"
+    },
+    actionAvailability: {
+      canAccept: true,
+      canReject: true,
+      canCompareEvidence: true,
+      blockers: []
+    },
     ...overrides
   };
 }
@@ -128,25 +64,27 @@ function inbox(): CorporateActionInboxResponse {
         agreeingSources: ["finnhub"],
         dissentingSources: ["custodian-feed"],
         winningSource: "finnhub",
-        case: null
+        proposalId: "proposal-gme-dividend-v2",
+        version: 2,
+        actionAvailability: null
       })
     ],
     errors: ["custodian-feed: timed out"],
-    cases: []
+    cases: [processingCase()]
   };
 }
 
-function acceptedProcessingCase(): CorporateActionProcessingCaseDto {
+function processingCase(overrides: Partial<CorporateActionProcessingCaseDto> = {}): CorporateActionProcessingCaseDto {
   return {
-    caseId: "case-accepted-aapl-dividend",
-    proposalId: "proposal-accepted-aapl-dividend",
+    caseId: "case-aapl-dividend",
+    proposalId: "proposal-aapl-dividend-v3",
     corporateActionId: "ca-aapl-dividend",
     securityId: "sec-aapl",
     scope: {
       tenantId: "tenant-meridian",
       companyId: "company-alpha"
     },
-    state: "TermsConfirmed",
+    state: "AccountingReview",
     version: 1,
     methodologyProfileId: "clearwater-corporate-actions/v1",
     assignedTo: "Avery Reviewer",
@@ -164,7 +102,47 @@ function acceptedProcessingCase(): CorporateActionProcessingCaseDto {
       canApproveAccounting: false,
       allowedTransitionTargets: ["ElectionPending"],
       blockers: []
-    }
+    },
+    sourceSnapshot: {
+      proposedAction: {
+        corpActId: "observed-aapl-dividend",
+        securityId: "sec-aapl",
+        eventType: "Dividend",
+        exDate: "2026-07-20",
+        payDate: "2026-08-01",
+        dividendPerShare: 0.25,
+        currency: "USD",
+        splitRatio: null,
+        newSecurityId: null,
+        distributionRatio: null,
+        acquirerSecurityId: null,
+        exchangeRatio: null,
+        subscriptionPricePerShare: null,
+        rightsPerShare: null,
+        recordDate: "2026-07-21",
+        lifecycleState: "Announced",
+        supersedesCorpActId: null,
+        redemptionPricePercentOfPar: null,
+        payload: { declaredAmount: 0.25 },
+        payloadSchemaVersion: 1
+      },
+      providerIdentity: {
+        providerId: "exchange-feed",
+        sourceEventId: "event-aapl-dividend",
+        sourceEventVersion: "v3",
+        observedAtUtc: "2026-07-05T09:55:00Z",
+        evidenceHash: "sha256:evidence-dividend-25",
+        evidenceReference: "evidence://dividend-25",
+        releaseStatus: "AcceptanceEligible"
+      },
+      displayMetadata: {
+        ticker: "AAPL",
+        winningSource: "exchange-feed",
+        agreeingSources: ["exchange-feed", "custodian-feed"],
+        dissentingSources: []
+      }
+    },
+    ...overrides
   };
 }
 
@@ -230,7 +208,7 @@ async function defaultAcceptProposal() {
 }
 
 function defaultIdempotencyKey() {
-  return "idempotency-aapl-dividend-v3";
+  return "test-a";
 }
 
 function Harness({
@@ -245,6 +223,41 @@ function Harness({
 }
 
 describe("CorporateActionInboxRegion", () => {
+  it("preserves source and case review while the server locks source decisions", async () => {
+    const user = userEvent.setup();
+    const acceptProposal = vi.fn().mockResolvedValue(acceptResult());
+    const fetchInbox = vi.fn().mockResolvedValue({
+      ...inbox(),
+      stagedCount: 1,
+      staged: [proposal({
+        actionAvailability: {
+          canAccept: false,
+          canReject: false,
+          canCompareEvidence: true,
+          blockers: [FAN_OUT_BLOCKER]
+        }
+      })],
+      errors: []
+    });
+    render(<Harness fetchInbox={fetchInbox} acceptProposal={acceptProposal} />);
+
+    const row = await screen.findByRole("row", { name: /Inspect corporate action case for Dividend on AAPL/i });
+    await user.click(row);
+
+    expect(screen.getAllByText("case-aapl-dividend").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Denied by server policy").length).toBeGreaterThan(0);
+    const sourceFacts = screen.getByRole("table", { name: "Corporate action source facts and provenance" });
+    expect(within(sourceFacts).getByText("0.25 USD")).toBeInTheDocument();
+    const accept = screen.getByRole("button", { name: "Accept canonical fact" });
+    expect(accept).toBeDisabled();
+    expect(accept).toHaveAttribute("title", FAN_OUT_BLOCKER);
+    expect(screen.queryByRole("button", { name: /reject/i })).not.toBeInTheDocument();
+
+    await user.click(accept);
+    expect(screen.queryByRole("dialog", { name: /Accept Dividend as a canonical fact/i })).not.toBeInTheDocument();
+    expect(acceptProposal).not.toHaveBeenCalled();
+  });
+
   it("supports dense keyboard drill-in, locked server actions, precise acceptance, and receipt proof", async () => {
     const user = userEvent.setup();
     const acceptProposal = vi.fn().mockResolvedValue(acceptResult());
@@ -270,9 +283,12 @@ describe("CorporateActionInboxRegion", () => {
     expect(gmeRow).toHaveFocus();
 
     await user.click(aaplRow);
-    expect(screen.getByText("Dividend per share")).toBeInTheDocument();
-    expect(screen.getByText("positions-v44")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Post accounting" })).toBeDisabled();
+    expect(screen.getByText("Entitlement not supplied")).toBeInTheDocument();
+    expect(screen.getByText("Basis treatment not supplied")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Submit election" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Approve treatment" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Post accounting" })).not.toBeInTheDocument();
+    expect(screen.getByText(/Election submission, treatment approval, and accounting posting remain outside/i)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Accept canonical fact" }));
 
     const dialog = screen.getByRole("dialog", { name: "Accept Dividend as a canonical fact?" });
@@ -286,15 +302,10 @@ describe("CorporateActionInboxRegion", () => {
     expect(acceptProposal).toHaveBeenCalledWith({
       proposalId: "proposal-aapl-dividend-v3",
       expectedVersion: 3,
-      idempotencyKey: "idempotency-aapl-dividend-v3",
+      idempotencyKey: "test-a",
       scope: {
         tenantId: "tenant-meridian",
-        companyId: "company-alpha",
-        fundProfileId: "fund-alpha",
-        ledgerBookId: "book-primary",
-        periodId: "2026-07",
-        accountingBasis: "GAAP",
-        functionalCurrency: "USD"
+        companyId: "company-alpha"
       }
     });
   });
@@ -352,7 +363,11 @@ describe("CorporateActionInboxRegion", () => {
       ...inbox(),
       stagedCount: 0,
       staged: [],
-      cases: [acceptedProcessingCase()]
+      cases: [processingCase({
+        caseId: "case-accepted-aapl-dividend",
+        proposalId: "proposal-accepted-aapl-dividend",
+        state: "TermsConfirmed"
+      })]
     });
     render(<Harness fetchInbox={fetchInbox} />);
 

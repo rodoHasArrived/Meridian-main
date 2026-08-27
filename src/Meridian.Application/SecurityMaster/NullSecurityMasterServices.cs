@@ -161,16 +161,16 @@ public sealed class NullCorporateActionOperationsService : ICorporateActionOpera
         NotConfigured<CorporateActionSourceProposalDto>();
 
     public Task<CorporateActionSourceProposalDto?> GetSourceProposalAsync(Guid proposalId, CancellationToken ct = default) =>
-        Task.FromResult<CorporateActionSourceProposalDto?>(null);
+        NotConfigured<CorporateActionSourceProposalDto?>();
 
     public Task<IReadOnlyList<CorporateActionSourceProposalDto>> ListSourceProposalsAsync(Guid? securityId, string? state, int take, CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<CorporateActionSourceProposalDto>>([]);
+        NotConfigured<IReadOnlyList<CorporateActionSourceProposalDto>>();
 
     public Task<IReadOnlyList<CorporateActionSourceProposalDto>> ListActionableSourceProposalsAsync(Guid? securityId, int take, CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<CorporateActionSourceProposalDto>>([]);
+        NotConfigured<IReadOnlyList<CorporateActionSourceProposalDto>>();
 
     public Task<CorporateActionDurableInboxDto> GetInboxAsync(CorporateActionCaseScopeDto acceptanceScope, int take, CancellationToken ct = default) =>
-        Task.FromResult(new CorporateActionDurableInboxDto(null, 0, 0, 0, [], [], []));
+        NotConfigured<CorporateActionDurableInboxDto>();
 
     public Task<CorporateActionSourceProposalAcceptanceResultDto> AcceptSourceProposalAsync(AcceptCorporateActionSourceProposalRequestDto request, CancellationToken ct = default) =>
         NotConfigured<CorporateActionSourceProposalAcceptanceResultDto>();
@@ -179,16 +179,16 @@ public sealed class NullCorporateActionOperationsService : ICorporateActionOpera
         NotConfigured<CorporateActionSourceProposalDecisionResultDto>();
 
     public Task<CorporateActionProcessingCaseDto?> GetCaseAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default) =>
-        Task.FromResult<CorporateActionProcessingCaseDto?>(null);
+        NotConfigured<CorporateActionProcessingCaseDto?>();
 
     public Task<IReadOnlyList<CorporateActionProcessingCaseDto>> ListCasesAsync(string tenantId, string companyId, Guid? securityId, string? state, int take, CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<CorporateActionProcessingCaseDto>>([]);
+        NotConfigured<IReadOnlyList<CorporateActionProcessingCaseDto>>();
 
     public Task<CorporateActionConflictDto?> GetConflictAsync(Guid caseId, Guid conflictId, string tenantId, string companyId, CancellationToken ct = default) =>
-        Task.FromResult<CorporateActionConflictDto?>(null);
+        NotConfigured<CorporateActionConflictDto?>();
 
     public Task<IReadOnlyList<CorporateActionConflictDto>> ListConflictsAsync(Guid caseId, string tenantId, string companyId, string? state, int take, CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<CorporateActionConflictDto>>([]);
+        NotConfigured<IReadOnlyList<CorporateActionConflictDto>>();
 
     public Task<CorporateActionEvidenceMutationResultDto> AddEvidenceAsync(AddCorporateActionEvidenceRequestDto request, CancellationToken ct = default) =>
         NotConfigured<CorporateActionEvidenceMutationResultDto>();

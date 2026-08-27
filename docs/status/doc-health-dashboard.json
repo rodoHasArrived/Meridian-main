@@ -1,11 +1,11 @@
 {
-  "total_files": 657,
-  "total_lines": 135181,
+  "total_files": 658,
+  "total_lines": 135364,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 251,
-  "average_lines": 205.8,
+  "average_lines": 205.7,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2144,6 +2144,14 @@
       "stale": false
     },
     {
+      "path": "docs/domain/corporate-action-case.md",
+      "line_count": 145,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/domain/fund-event.md",
       "line_count": 36,
       "has_heading": true,
@@ -2161,7 +2169,7 @@
     },
     {
       "path": "docs/domain/README.md",
-      "line_count": 16,
+      "line_count": 17,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2625,7 +2633,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10679,
+      "line_count": 10716,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

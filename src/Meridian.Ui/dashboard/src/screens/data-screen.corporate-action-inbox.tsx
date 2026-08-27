@@ -172,11 +172,11 @@ function WorkspaceSection({ title, children }: { title: string; children: React.
 function SourceFacts({ row }: { row: CorporateActionInboxRowModel }) {
   const suppliedFacts = row.durableCase?.sourceFacts ?? [];
   const facts = suppliedFacts.length > 0 ? suppliedFacts : [
-    { field: "Action type", value: row.actionType, source: row.winningSource, agreesWithWinner: true },
-    { field: "Ex-date", value: row.exDateLabel, source: row.winningSource, agreesWithWinner: true },
-    { field: "Record date", value: row.recordDateLabel, source: row.winningSource, agreesWithWinner: true },
-    { field: "Payable date", value: row.payableDateLabel, source: row.winningSource, agreesWithWinner: true },
-    { field: "Terms", value: row.valueLabel, source: row.winningSource, agreesWithWinner: true }
+    { field: "Action type", value: row.actionType, source: row.winningSource, agreesWithWinner: true, evidenceId: row.sourceEvidenceReference },
+    { field: "Ex-date", value: row.exDateLabel, source: row.winningSource, agreesWithWinner: true, evidenceId: row.sourceEvidenceReference },
+    { field: "Record date", value: row.recordDateLabel, source: row.winningSource, agreesWithWinner: true, evidenceId: row.sourceEvidenceReference },
+    { field: "Payable date", value: row.payableDateLabel, source: row.winningSource, agreesWithWinner: true, evidenceId: row.sourceEvidenceReference },
+    { field: "Terms", value: row.valueLabel, source: row.winningSource, agreesWithWinner: true, evidenceId: row.sourceEvidenceReference }
   ];
   return (
     <div className="overflow-x-auto">
@@ -293,17 +293,7 @@ function Reconciliation({ rows }: { rows: CorporateActionReconciliationPreview[]
 
 function CaseWorkspace({ row, panel }: { row: CorporateActionInboxRowModel; panel: CorporateActionInboxViewModel }) {
   const durableCase = row.durableCase;
-  const actions = durableCase?.actionAvailability;
   const acceptDisabledReason = row.acceptCanonicalFactDisabledReason;
-  const electionDisabledReason = actions?.canSubmitElection
-    ? null
-    : actions?.submitElectionDisabledReason ?? "No server-authored election action is available for this case.";
-  const treatmentDisabledReason = actions?.canApproveTreatment
-    ? null
-    : actions?.approveTreatmentDisabledReason ?? "No server-authored treatment approval is available for this case.";
-  const postingDisabledReason = actions?.canPost
-    ? null
-    : actions?.postDisabledReason ?? "Posting is locked until the server supplies policy, preview, approval, period, and balancing readiness.";
 
   return (
     <DenseRowDetailPanel
@@ -329,6 +319,9 @@ function CaseWorkspace({ row, panel }: { row: CorporateActionInboxRowModel; pane
           ["Permission", row.permissionLabel],
           ["Tenant / company", row.acceptanceScope ? `${row.acceptanceScope.tenantId} / ${row.acceptanceScope.companyId}` : "Not supplied"],
           ["Book / basis", row.acceptanceScope ? `${row.acceptanceScope.ledgerBookId ?? "Not supplied"} / ${row.acceptanceScope.accountingBasis ?? "Not supplied"}` : "Not supplied"],
+          ["Source event", row.sourceEventLabel],
+          ["Source observed", row.sourceObservedAtLabel],
+          ["Source evidence", row.sourceEvidenceReference ?? "Not supplied"],
           ["Ex-date", `${row.exDateLabel} (${row.countdownLabel})`],
           ["Record date", row.recordDateLabel],
           ["Payable date", row.payableDateLabel]
@@ -347,19 +340,13 @@ function CaseWorkspace({ row, panel }: { row: CorporateActionInboxRowModel; pane
           disabled={!row.canAcceptCanonicalFact || panel.acceptingKey !== null}
           disabledReason={acceptDisabledReason}
         >
-          {panel.acceptingKey === row.key ? "Accepting canonical fact…" : "Accept canonical fact"}
+          {panel.acceptingKey === row.rowId ? "Accepting canonical fact…" : "Accept canonical fact"}
         </Button>
-        <Button type="button" size="sm" variant="outline" disabled={!actions?.canSubmitElection} disabledReason={electionDisabledReason}>
-          Submit election
-        </Button>
-        <Button type="button" size="sm" variant="outline" disabled={!actions?.canApproveTreatment} disabledReason={treatmentDisabledReason}>
-          Approve treatment
-        </Button>
-        <Button type="button" size="sm" variant="outline" disabled={!actions?.canPost} disabledReason={postingDisabledReason}>
-          Post accounting
-        </Button>
+        <p className="self-center text-xs text-muted-foreground">
+          Election submission, treatment approval, and accounting posting remain outside this foundation workflow.
+        </p>
       </div>
-      {panel.acceptErrors[row.key] ? <StatusBanner role="alert" tone="danger" title="Canonical fact not accepted" detail={panel.acceptErrors[row.key]} /> : null}
+      {panel.acceptErrors[row.rowId] ? <StatusBanner role="alert" tone="danger" title="Canonical fact not accepted" detail={panel.acceptErrors[row.rowId]} /> : null}
       <WorkspaceSection title="Source facts and provenance"><SourceFacts row={row} /></WorkspaceSection>
       <WorkspaceSection title="Entitlement and election">
         {durableCase?.entitlement ? (
@@ -481,13 +468,13 @@ function AcceptCanonicalFactDialog({ panel }: { panel: CorporateActionInboxViewM
             <div><dt className="text-muted-foreground">Scope</dt><dd className="font-mono">{row.acceptanceScope ? `${row.acceptanceScope.tenantId} / ${row.acceptanceScope.companyId}` : "Not supplied"}</dd></div>
             <div><dt className="text-muted-foreground">Idempotency key</dt><dd className="break-all font-mono">{panel.pendingAcceptanceRequest?.idempotencyKey ?? "Not supplied"}</dd></div>
           </dl>
-          {panel.acceptErrors[row.key] ? <StatusBanner role="alert" tone="danger" title="Canonical fact not accepted" detail={panel.acceptErrors[row.key]} /> : null}
+          {panel.acceptErrors[row.rowId] ? <StatusBanner role="alert" tone="danger" title="Canonical fact not accepted" detail={panel.acceptErrors[row.rowId]} /> : null}
           <div className="flex flex-wrap justify-end gap-2">
             <Button type="button" variant="outline" onClick={panel.cancelAcceptance} disabled={panel.acceptingKey !== null}>Cancel</Button>
             <Button
               type="button"
               onClick={() => void panel.confirmAcceptance()}
-              busy={panel.acceptingKey === row.key}
+              busy={panel.acceptingKey === row.rowId}
               busyLabel="Accepting canonical fact"
               aria-label={`Accept ${row.actionType} for ${row.ticker} as a canonical Security Master fact`}
             >
@@ -570,13 +557,13 @@ export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionIn
                 <DenseDataTable
                   columns={queueColumns}
                   rows={panel.rows}
-                  getRowId={(row) => row.key}
+                  getRowId={(row) => row.rowId}
                   getRowAriaLabel={(row) => `${row.actionType} for ${row.ticker}, ex-date ${row.exDateLabel}, status ${row.statusLabel}, assignment ${row.assignmentLabel}, conflict ${row.conflictLabel}, version ${row.versionLabel}`}
                   getRowSelectAriaLabel={(row) => `Inspect corporate action case for ${row.actionType} on ${row.ticker}`}
                   getRowAriaControls={() => CORPORATE_ACTION_CASE_WORKSPACE_ID}
-                  getRowAriaExpanded={(row) => panel.selectedRowKey === row.key}
+                  getRowAriaExpanded={(row) => panel.selectedRowKey === row.rowId}
                   getRowTypeaheadText={(row) => `${row.ticker} ${row.actionType} ${row.caseIdLabel}`}
-                  onRowSelect={(row) => panel.selectRow(row.key)}
+                  onRowSelect={(row) => panel.selectRow(row.rowId)}
                   selectedRowId={panel.selectedRowKey}
                   emptyText={allRows.length === 0 ? panel.model.summary : "No corporate action cases match the current filters."}
                   ariaLabel="Corporate action case queue"

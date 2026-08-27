@@ -305,7 +305,6 @@ export const SECURITY_MASTER_API_ENDPOINTS = {
   workstationSecurities: UI_API_ROUTES.WorkstationSecurityMasterSearch,
   workstationConflictsBulkResolve: UI_API_ROUTES.WorkstationSecurityMasterBulkResolveConflicts,
   corporateActionInbox: UI_API_ROUTES.SecurityMasterCorporateActionsInbox,
-  corporateActionInboxApply: UI_API_ROUTES.SecurityMasterCorporateActionsInboxApply,
   qualityReportLatest: UI_API_ROUTES.SecurityMasterQualityReportLatest
 } as const;
 
@@ -340,6 +339,13 @@ export function securityMasterCorporateActionCaseConflictEndpoint(
   return UI_API_ROUTES.SecurityMasterCorporateActionCaseConflict
     .replace("{caseId:guid}", encodeURIComponent(caseId))
     .replace("{conflictId:guid}", encodeURIComponent(conflictId));
+}
+
+export function securityMasterCorporateActionSourceProposalAcceptEndpoint(proposalId: string): string {
+  return UI_API_ROUTES.SecurityMasterCorporateActionSourceProposalAccept.replace(
+    "{proposalId:guid}",
+    encodeURIComponent(proposalId)
+  );
 }
 
 /**

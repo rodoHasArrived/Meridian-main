@@ -1503,6 +1503,33 @@ export interface CorporateActionProcessingCaseActionAvailabilityDto {
   blockers: string[];
 }
 
+export interface CorporateActionCaseSourceSnapshotDto {
+  proposedAction: CorporateAction;
+  providerIdentity: {
+    providerId: string;
+    sourceEventId: string;
+    sourceEventVersion: string;
+    observedAtUtc: string;
+    evidenceHash?: string | null;
+    evidenceReference?: string | null;
+    releaseStatus: "ReviewOnly" | "AcceptanceEligible" | string;
+  };
+  displayMetadata?: {
+    ticker: string;
+    winningSource: string;
+    agreeingSources: string[];
+    dissentingSources: string[];
+    dissentingFields?: Array<{
+      field: string;
+      candidates: Array<{
+        source: string;
+        value: unknown;
+        evidenceReference?: string | null;
+      }>;
+    }> | null;
+  } | null;
+}
+
 /** Wire contract for the top-level `cases` collection in CorporateActionDurableInboxDto. */
 export interface CorporateActionProcessingCaseDto {
   caseId: string;
@@ -1520,6 +1547,7 @@ export interface CorporateActionProcessingCaseDto {
   updatedBy: string;
   updatedAtUtc: string;
   actionAvailability?: CorporateActionProcessingCaseActionAvailabilityDto | null;
+  sourceSnapshot?: CorporateActionCaseSourceSnapshotDto | null;
 }
 
 export interface CorporateActionCaseActionAvailability {
@@ -1660,8 +1688,6 @@ export interface CorporateActionProposalEntry {
   acceptanceScope?: CorporateActionCaseScope | null;
   /** Server-owned source-proposal command posture. */
   actionAvailability?: CorporateActionSourceProposalActionAvailability | null;
-  /** Present when the server exposes the durable processing case projection. */
-  case?: CorporateActionCaseProjection | null;
 }
 
 export interface CorporateActionInboxResponse {

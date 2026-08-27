@@ -106,6 +106,7 @@ import {
   securityMasterConflictResolveEndpoint,
   securityMasterCorporateActionCaseConflictEndpoint,
   securityMasterCorporateActionCaseConflictsEndpoint,
+  securityMasterCorporateActionSourceProposalAcceptEndpoint,
   securityMasterCorporateActionsEndpoint,
   securityMasterEntryEndpoint,
   securityMasterTradingParametersEndpoint,
@@ -196,6 +197,12 @@ import {
 } from "@/lib/workstation-endpoints";
 
 describe("workstation API endpoint catalog", () => {
+  it("builds canonical durable source-proposal acceptance routes", () => {
+    expect(securityMasterCorporateActionSourceProposalAcceptEndpoint("proposal / 1")).toBe(
+      "/api/security-master/corporate-actions/source-proposals/proposal%20%2F%201/accept"
+    );
+  });
+
   it("builds durable corporate-action conflict recovery routes", () => {
     expect(securityMasterCorporateActionCaseConflictsEndpoint("case / 1")).toBe(
       "/api/security-master/corporate-actions/cases/case%20%2F%201/conflicts"

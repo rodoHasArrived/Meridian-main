@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
@@ -135,6 +136,94 @@ public sealed class CorporateActionSourceRevisionPolicyTests
             .Should().BeFalse();
     }
 
+    [Fact]
+    public void SourceReplayEquality_AcceptsReplayAfterStoreOwnedStateTransition()
+    {
+        var existing = Proposal("v1", ObservedAt) with
+        {
+            State = CorporateActionSourceProposalStates.Accepted,
+            AcceptedCorporateActionId = Guid.NewGuid(),
+            InitialCaseId = Guid.NewGuid(),
+        };
+        var replay = existing with
+        {
+            ProposalId = Guid.NewGuid(),
+            State = CorporateActionSourceProposalStates.Observed,
+            AcceptedCorporateActionId = null,
+            InitialCaseId = null,
+        };
+
+        CorporateActionSourceProposalReplayComparer.HasSameSourcePayload(existing, replay)
+            .Should().BeTrue();
+    }
+
+    [Fact]
+    public void SourceReplayEquality_RejectsChangedDissentEvidenceUnderSameVersion()
+    {
+        var existing = Proposal("v1", ObservedAt) with
+        {
+            State = CorporateActionSourceProposalStates.ReviewRequired,
+            DisplayMetadata = DissentMetadata(0.26m),
+        };
+        var changed = existing with
+        {
+            ProposalId = Guid.NewGuid(),
+            DisplayMetadata = DissentMetadata(0.27m),
+        };
+
+        CorporateActionSourceProposalReplayComparer.HasSameSourcePayload(existing, changed)
+            .Should().BeFalse();
+    }
+
+    [Fact]
+    public void SourceReplayEquality_AcceptsEquivalentReorderedConsensusMetadata()
+    {
+        var existing = Proposal("v1", ObservedAt) with
+        {
+            State = CorporateActionSourceProposalStates.ReviewRequired,
+            DisplayMetadata = DissentMetadata(0.26m),
+        };
+        var reordered = existing with
+        {
+            ProposalId = Guid.NewGuid(),
+            DisplayMetadata = existing.DisplayMetadata! with
+            {
+                AgreeingSources = ["provider-b", "provider-a"],
+                DissentingSources = ["provider-c", "provider-b"],
+                DissentingFields = existing.DisplayMetadata.DissentingFields!
+                    .Select(static field => field with
+                    {
+                        Candidates = field.Candidates.Reverse().ToArray(),
+                    })
+                    .Reverse()
+                    .ToArray(),
+            },
+        };
+
+        CorporateActionSourceProposalReplayComparer.HasSameSourcePayload(existing, reordered)
+            .Should().BeTrue();
+    }
+
+    [Fact]
+    public void SourceReplayEquality_AcceptsEquivalentCandidateJsonFormatting()
+    {
+        var existing = Proposal("v1", ObservedAt) with
+        {
+            State = CorporateActionSourceProposalStates.ReviewRequired,
+            DisplayMetadata = StructuredDissentMetadata(
+                """{"amount":0.2600,"currency":"USD"}"""),
+        };
+        var reformatted = existing with
+        {
+            ProposalId = Guid.NewGuid(),
+            DisplayMetadata = StructuredDissentMetadata(
+                """{"currency":"USD","amount":2.6e-1}"""),
+        };
+
+        CorporateActionSourceProposalReplayComparer.HasSameSourcePayload(existing, reformatted)
+            .Should().BeTrue();
+    }
+
     private static CorporateActionSourceProposalDto Proposal(
         string sourceVersion,
         DateTimeOffset observedAt,
@@ -181,5 +270,65 @@ public sealed class CorporateActionSourceRevisionPolicyTests
             "ingest",
             observedAt,
             observedAt);
+    }
+
+    private static CorporateActionSourceDisplayMetadataDto DissentMetadata(decimal cashAmount) =>
+        new(
+            "ACME",
+            "provider-a",
+            ["provider-a", "provider-b"],
+            ["provider-b", "provider-c"],
+            [
+                new CorporateActionDissentFieldDto(
+                    CorporateActionPayloads.CashAmount,
+                    [
+                        new CorporateActionConflictCandidateDto(
+                            "provider-a",
+                            JsonSerializer.SerializeToElement(0.24m),
+                            "provider-event://provider-a/event-100/v1"),
+                        new CorporateActionConflictCandidateDto(
+                            "provider-b",
+                            JsonSerializer.SerializeToElement(cashAmount),
+                            "provider-event://provider-b/event-200/v1"),
+                    ]),
+                new CorporateActionDissentFieldDto(
+                    "currency",
+                    [
+                        new CorporateActionConflictCandidateDto(
+                            "provider-a",
+                            JsonSerializer.SerializeToElement("USD"),
+                            "provider-event://provider-a/event-100/v1"),
+                        new CorporateActionConflictCandidateDto(
+                            "provider-c",
+                            JsonSerializer.SerializeToElement("CAD"),
+                            "provider-event://provider-c/event-300/v1"),
+                    ]),
+            ]);
+
+    private static CorporateActionSourceDisplayMetadataDto StructuredDissentMetadata(string candidateJson) =>
+        new(
+            "ACME",
+            "provider-a",
+            ["provider-a"],
+            ["provider-b"],
+            [
+                new CorporateActionDissentFieldDto(
+                    "structuredTerms",
+                    [
+                        new CorporateActionConflictCandidateDto(
+                            "provider-a",
+                            ParseJson("""{"amount":0.24,"currency":"USD"}"""),
+                            "provider-event://provider-a/event-100/v1"),
+                        new CorporateActionConflictCandidateDto(
+                            "provider-b",
+                            ParseJson(candidateJson),
+                            "provider-event://provider-b/event-200/v1"),
+                    ]),
+            ]);
+
+    private static JsonElement ParseJson(string json)
+    {
+        using var document = JsonDocument.Parse(json);
+        return document.RootElement.Clone();
     }
 }
