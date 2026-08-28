@@ -1089,6 +1089,16 @@ left to forward whatever their request carried.
 
 Five constraints the fix has to respect:
 
+- **The rules below are stated per field because the surface is six members, not two.** An earlier
+  draft wrote them for create and amend and left them there while widening the surface — so they
+  named `UpdatedBy` and `EffectiveFrom` only, and applying them literally would have left alias
+  attribution and deactivation dates spoofable. Read each rule as covering *every* field of its kind
+  on the surface, not the two the create path happens to use.
+- **Every actor-identifying field must be server-derived, whatever it is called.** That is `UpdatedBy`
+  on create, amend and deactivate, and **`CreatedBy` on alias upsert** — `UpsertAliasAsync` copies
+  `request.CreatedBy` straight into the stored `SecurityAliasDto` (`SecurityMasterService.cs:284-300`)
+  and the endpoint forwards the request unchanged (`SecurityMasterEndpoints.cs:449`), so an alias's
+  audit trail is exactly as spoofable as a create's.
 - **`UpdatedBy` is the actor field; `SourceSystem` is not.** `SecurityMasterConflictDetection` reads
   `SourceSystem` off both sides' provenance and short-circuits when they match
   (`:446-447, 454-458`), and provider ingests set it to values like `"edgar"`
@@ -1105,11 +1115,15 @@ Five constraints the fix has to respect:
   and the backfill service legitimately have no operator behind them. The execution context needs a
   service/workload identity path so those ingests keep their current, more informative attribution
   instead of being rejected or overwritten.
-- **`EffectiveFrom` needs a gate, not a clamp.** Clamping to ingest time would be wrong: a security
-  loaded today can legitimately have an economic start date months back, and clamping would falsify
-  it and corrupt exactly the effective-dated queries the field exists to serve. Gate backdating
-  behind an explicit permission or a trusted ingest workflow instead, so the assertion is authorized
-  rather than forbidden.
+- **Every caller-controlled valid-time field needs a gate, not a clamp.** Clamping to ingest time
+  would be wrong: a security loaded today can legitimately have an economic start date months back,
+  and clamping would falsify exactly the effective-dated queries these fields exist to serve. Gate
+  backdating behind an explicit permission or a trusted ingest workflow instead, so the assertion is
+  authorized rather than forbidden. The gate has to cover the whole surface, not just create:
+  `EffectiveFrom` on create and amend, `EffectiveTo` on `DeactivateSecurityRequest`
+  (`SecurityCommands.cs:46`), and `ValidFrom` / `ValidTo` on `UpsertSecurityAliasRequest` (`:67-68`).
+  Otherwise a caller who cannot backdate a definition can still backdate its deactivation or an
+  alias's validity window, which reaches the same historical-integrity problem by another route.
 - **The workbench chain must be preserved, not reworked.** Publish already resolves the actor
   server-side and carries it through the command service into the canonical amendment. That path is
   the target state, not a migration candidate: an actor-model change that re-plumbs it risks
@@ -1201,9 +1215,14 @@ The two defects therefore do not have one shared home:
 | `EdgarIngestOrchestrator:120-127` | yes | no — rethrows correctly |
 | `EdgarIngestOrchestrator:627-641` | — | yes, in the conflict count |
 
-A typed shared create outcome fixes the first column and two of the three cancellation cases. Edgar's
-conflict-count catch is a separate defect needing its own fix, and Edgar's create loop is worth
-reading as the reference for what the other two should do.
+**The two columns need separate fixes — an earlier draft of this item said otherwise and was wrong.**
+A typed create outcome fixes the first column only. It changes how a duplicate is *signalled*, but
+`CreateAsync(…, ct)` still throws `OperationCanceledException`, and a broad `catch (Exception)` will
+keep swallowing it whatever the duplicate signal looks like. Every cancellation cell in the table
+needs its own fix at its own catch — rethrow cancellation, or narrow the catch — and Edgar's create
+loop (`:120-127`) is the reference for exactly that. Edgar's conflict-count catch needs the same
+treatment separately. Reading the typed outcome as covering cancellation would leave both operator
+paths returning normally after a cancelled import, which is the defect this item is reporting.
 
 The duplicate fix itself is a typed create outcome, **not** a pre-check against the identifier index. A shared
 identifier is not a duplicate here by design: `SecurityMasterImportServiceTests.ImportAsync_WhenRecordsAreCreated_TriggersAutomaticConflictRecordingPerSecurity`
@@ -1252,9 +1271,11 @@ Read as a delta on the standing lists above.
    that already holds itself to the opposite standard elsewhere. Take it where the mutations
    converge, not at `ImportAsync`: all six public members of `SecurityMasterService` carry
    caller-asserted attribution, and amendments are not covered by the governed path in the default
-   configuration. Keep `SourceSystem` out of it — that field carries source identity for conflict
-   detection, and only `UpdatedBy` is the actor. Preserve workload identities for unattended ingests
-   rather than replacing them with a principal.
+   configuration. Derive every actor field — `UpdatedBy`, and `CreatedBy` on alias upsert — and gate
+   every caller-controlled valid-time field, not just `EffectiveFrom`. Keep `SourceSystem` out of it:
+   that field carries source identity for conflict detection, not actor identity. Preserve workload
+   identities for unattended ingests rather than replacing them with a principal, and preserve the
+   workbench chain that already does this correctly.
 3. **Make the pack-overlap rule symmetric across incumbents, candidates, and planned classes
    (N4, P3).** Still among the cheapest durable items in this document, and the planned-coverage axis
    means deferring it now schedules a three-way ownership dispute for the day `CreditFacility` lands.
