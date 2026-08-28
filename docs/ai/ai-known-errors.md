@@ -414,3 +414,21 @@ label alone will update this file.
 - **Source issue**: PR "Fix CS0433 type ambiguity errors breaking WPF desktop build"
 - **Status**: fixed
 - **Fixed in**: `src/Meridian.Ui.Services/Meridian.Ui.Services.csproj` — replaced the entire `<Compile Include>` block sourcing Contracts files with a single `<ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />`
+
+### AI-20260828-doc-health-dashboard-local-regeneration-drift
+- **ID**: AI-20260828-doc-health-dashboard-local-regeneration-drift
+- **Area**: docs/ci
+- **Symptoms**: A docs-only PR reds `verify-docs` and `regenerate-docs` on "Verify whole-repo generated documentation is committed". Regenerating the doc-health dashboard locally the obvious way — `run-docs-automation.py --scripts generate-structure-docs,generate-health-dashboard,generate-workflow-manifest`, exactly as `ci.yml` invokes it — produces `total_lines`/`todo_count` one lower than CI expects, so committing that output reds the same check again on the next push.
+- **Root cause**: The profile also runs `generate-structure-docs`, which walks the filesystem rather than the git index. `docs/status/todo-scan-results.json` is gitignored and absent from a clean checkout, but present on a runner because an earlier step in the same job generates it. So a local run drops that filename's line from `docs/generated/repository-structure.md`. The health dashboard then counts one fewer markdown line, and — because the filename contains the substring "todo" — one fewer TODO marker. The two generators are coupled through a generated file that is not in git, which makes the drift check environment-dependent.
+- **Prevention checklist**:
+  - [ ] When only markdown line counts changed, regenerate the dashboard alone (`generate-health-dashboard.py`) and leave `docs/generated/repository-structure.md` at its committed state
+  - [ ] Never commit a `repository-structure.md` diff whose only change is adding or removing a gitignored artifact path — confirm with `git check-ignore -v <path>` before including it
+  - [ ] Cross-check the regenerated numbers against the values the failing CI log printed; they must match exactly, not approximately
+  - [ ] If a local regeneration disagrees with CI, regenerate on the untouched base commit in a scratch worktree first — no diff there means the divergence is environmental, not caused by your change
+- **Verification commands**:
+  - `python3 build/scripts/docs/generate-health-dashboard.py --output docs/status/doc-health-dashboard.md --json-output docs/status/doc-health-dashboard.json --summary`
+  - `git status --short` (should list only the two `doc-health-dashboard.*` files)
+  - `git diff --exit-code -- docs/generated/repository-structure.md` (must be clean)
+- **Source issue**: PR #2857
+- **Status**: mitigated
+- **Fixed in**: Documented here; the coupling itself is unchanged. A durable fix would have `generate-structure-docs` honor `.gitignore` when walking the tree, so the generated structure is a function of the committed repository rather than of whichever artifacts a given job happened to leave behind.
