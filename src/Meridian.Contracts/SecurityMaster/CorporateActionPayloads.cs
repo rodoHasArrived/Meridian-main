@@ -14,6 +14,9 @@ namespace Meridian.Contracts.SecurityMaster;
 /// </summary>
 public static class CorporateActionPayloads
 {
+    /// <summary>Schema-version marker for the current corporate-action payload contracts.</summary>
+    public const int CurrentSchemaVersion = 1;
+
     /// <summary>TenderOffer: offered price per share/unit in the event's currency.</summary>
     public const string OfferPricePerShare = "offerPricePerShare";
 
@@ -52,6 +55,63 @@ public static class CorporateActionPayloads
 
     /// <summary>Delisting: reason category (e.g. "Acquired", "Bankruptcy", "Exchange").</summary>
     public const string DelistingReason = "delistingReason";
+
+    /// <summary>Common: cash consideration paid by the issuer, offeror, or custodian.</summary>
+    public const string CashAmount = "cashAmount";
+
+    /// <summary>Common: units of a fractional position disposed for cash in lieu.</summary>
+    public const string FractionalUnits = "fractionalUnits";
+
+    /// <summary>Common: successor Security Master identifier named in source terms.</summary>
+    public const string SuccessorSecurityId = "successorSecurityId";
+
+    /// <summary>AdvanceRefunding: Security Master identifier for the pre-refunded child.</summary>
+    public const string RefundedSecurityId = "refundedSecurityId";
+
+    /// <summary>AdvanceRefunding: Security Master identifier for the unrefunded child.</summary>
+    public const string UnrefundedSecurityId = "unrefundedSecurityId";
+
+    /// <summary>AdvanceRefunding: parent basis allocated to the pre-refunded child.</summary>
+    public const string RefundedAllocationRatio = "refundedAllocationRatio";
+
+    /// <summary>BankruptcyDistribution: reviewed operational disposition method.</summary>
+    public const string BankruptcyProcessingMethod = "bankruptcyProcessingMethod";
+
+    /// <summary>BankruptcyDistribution: escrow security used for future distributions.</summary>
+    public const string EscrowSecurityId = "escrowSecurityId";
+
+    /// <summary>ConsentSolicitation: payment per consenting unit.</summary>
+    public const string ConsentPaymentPerUnit = "consentPaymentPerUnit";
+
+    /// <summary>PaymentInKind: rate applied to produce the in-kind distribution.</summary>
+    public const string PikRate = "pikRate";
+
+    /// <summary>PaymentInKind: issue price per new unit, commonly par for debt.</summary>
+    public const string PikIssuePrice = "pikIssuePrice";
+
+    /// <summary>RightsDistribution/RightsExercise: Security Master identifier of the right or warrant.</summary>
+    public const string RightsSecurityId = "rightsSecurityId";
+
+    /// <summary>RightsDistribution: rights received per parent unit.</summary>
+    public const string RightsPerHeldUnit = "rightsPerHeldUnit";
+
+    /// <summary>RightsExercise: underlying units received per right exercised.</summary>
+    public const string UnitsPerRight = "unitsPerRight";
+
+    /// <summary>RightsExercise: exercise price paid per underlying unit.</summary>
+    public const string ExercisePricePerUnit = "exercisePricePerUnit";
+
+    /// <summary>Call redemption: true when less than the entire issue is redeemed.</summary>
+    public const string IsPartialRedemption = "isPartialRedemption";
+
+    /// <summary>Call redemption: true when consideration contains a make-whole premium.</summary>
+    public const string IsMakeWhole = "isMakeWhole";
+
+    /// <summary>Exchange/merger events: cash consideration paid alongside successor units.</summary>
+    public const string CashConsiderationPerUnit = "cashConsiderationPerUnit";
+
+    /// <summary>Exchange events: source assertion describing whether the offer is voluntary.</summary>
+    public const string IsVoluntary = "isVoluntary";
 
     /// <summary>Reads a decimal payload value; null when the payload or key is absent or mistyped.</summary>
     public static decimal? ReadDecimal(JsonElement? payload, string key)

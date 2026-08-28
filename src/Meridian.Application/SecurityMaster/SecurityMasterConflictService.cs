@@ -66,9 +66,13 @@ public interface ISecurityMasterConflictService
 /// </summary>
 public sealed class SecurityMasterConflictService : ISecurityMasterConflictService
 {
+    internal const string IdentifierNoLongerOverlapsReason =
+        "Identifier claims no longer have overlapping validity windows.";
+
     private readonly ISecurityMasterStore _store;
     private readonly ILogger<SecurityMasterConflictService> _logger;
     private readonly ConcurrentDictionary<Guid, SecurityMasterConflict> _conflicts = new();
+    private readonly SemaphoreSlim _identifierConflictGate = new(1, 1);
 
     public SecurityMasterConflictService(
         ISecurityMasterStore store,
@@ -84,42 +88,52 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
 
     public async Task<IReadOnlyList<SecurityMasterConflict>> GetOpenConflictsAsync(CancellationToken ct)
     {
-        var all = await _store.LoadAllAsync(ct).ConfigureAwait(false);
-        var detected = SecurityMasterConflictDetection.DetectAll(all, DateTimeOffset.UtcNow);
-
-        foreach (var conflict in detected)
+        await _identifierConflictGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            // Preserve existing resolution state; only add newly detected conflicts.
-            _conflicts.TryAdd(conflict.ConflictId, conflict);
-        }
+            var all = await _store.LoadAllAsync(ct).ConfigureAwait(false);
+            var detected = SecurityMasterConflictDetection.DetectAll(all, DateTimeOffset.UtcNow);
 
-        var detectedIds = detected.Select(static conflict => conflict.ConflictId).ToHashSet();
-        foreach (var existing in _conflicts.Values.Where(static conflict =>
-                     conflict.Status == "Open"
-                     && conflict.ConflictKind == SecurityMasterConflictKinds.IdentifierAmbiguity))
-        {
-            if (detectedIds.Contains(existing.ConflictId))
+            foreach (var conflict in detected)
             {
-                continue;
+                _conflicts.AddOrUpdate(
+                    conflict.ConflictId,
+                    conflict,
+                    (_, existing) => IsDetectorSuperseded(existing) ? conflict : existing);
             }
 
-            _conflicts.TryUpdate(existing.ConflictId, existing with
+            var detectedIds = detected.Select(static conflict => conflict.ConflictId).ToHashSet();
+            foreach (var existing in _conflicts.Values.Where(static conflict =>
+                         conflict.Status == "Open"
+                         && conflict.ConflictKind == SecurityMasterConflictKinds.IdentifierAmbiguity))
             {
-                Status = "Superseded",
-                ResolvedReason = "Identifier claims no longer have overlapping validity windows.",
-                ResolvedAt = DateTimeOffset.UtcNow,
-            }, existing);
-        }
+                if (detectedIds.Contains(existing.ConflictId))
+                {
+                    continue;
+                }
 
-        if (detected.Count > 0)
+                _conflicts.TryUpdate(existing.ConflictId, existing with
+                {
+                    Status = "Superseded",
+                    ResolvedReason = IdentifierNoLongerOverlapsReason,
+                    ResolvedAt = DateTimeOffset.UtcNow,
+                }, existing);
+            }
+
+            if (detected.Count > 0)
+            {
+                _logger.LogInformation("Detected {Count} identifier conflicts in Security Master", detected.Count);
+            }
+
+            return _conflicts.Values
+                .Where(c => c.Status == "Open")
+                .OrderBy(c => c.DetectedAt)
+                .ToList();
+        }
+        finally
         {
-            _logger.LogInformation("Detected {Count} identifier conflicts in Security Master", detected.Count);
+            _identifierConflictGate.Release();
         }
-
-        return _conflicts.Values
-            .Where(c => c.Status == "Open")
-            .OrderBy(c => c.DetectedAt)
-            .ToList();
     }
 
     public Task<SecurityMasterConflict?> GetConflictAsync(Guid conflictId, CancellationToken ct)
@@ -180,36 +194,64 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
             return;
         }
 
-        var identifiers = projections.SelectMany(static projection => projection.Identifiers).ToArray();
-        var excludedSecurityIds = projections.Select(static projection => projection.SecurityId).ToArray();
-        var existingCandidates = await _store
-            .FindIdentifierCandidatesAsync(identifiers, excludedSecurityIds, ct)
-            .ConfigureAwait(false);
-        var candidates = SecurityMasterConflictDetection.DetectForProjections(
-            projections,
-            existingCandidates,
-            DateTimeOffset.UtcNow);
-
-        int newConflicts = 0;
-        foreach (var conflict in candidates)
+        await _identifierConflictGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            // Only record if not already tracked with a non-Open status.
-            if (_conflicts.TryGetValue(conflict.ConflictId, out var existing) && existing.Status != "Open")
-                continue;
+            var identifiers = projections.SelectMany(static projection => projection.Identifiers).ToArray();
+            var excludedSecurityIds = projections.Select(static projection => projection.SecurityId).ToArray();
+            var existingCandidates = await _store
+                .FindIdentifierCandidatesAsync(identifiers, excludedSecurityIds, ct)
+                .ConfigureAwait(false);
+            var candidates = SecurityMasterConflictDetection.DetectForProjections(
+                projections,
+                existingCandidates,
+                DateTimeOffset.UtcNow);
 
-            _conflicts[conflict.ConflictId] = conflict;
-            newConflicts++;
+            int newConflicts = 0;
+            foreach (var conflict in candidates)
+            {
+                if (_conflicts.TryGetValue(conflict.ConflictId, out var existing))
+                {
+                    if (!IsDetectorSuperseded(existing))
+                    {
+                        continue;
+                    }
 
-            _logger.LogWarning(
-                "Ingest-time conflict detected: {FieldPath} already assigned to security {ExistingId} (new: {NewId})",
-                conflict.FieldPath, conflict.ValueB, conflict.SecurityId);
+                    if (!_conflicts.TryUpdate(conflict.ConflictId, conflict, existing))
+                    {
+                        continue;
+                    }
+                }
+                else if (!_conflicts.TryAdd(conflict.ConflictId, conflict))
+                {
+                    continue;
+                }
+
+                newConflicts++;
+                _logger.LogWarning(
+                    "Ingest-time conflict detected: {FieldPath} already assigned to security {ExistingId} (new: {NewId})",
+                    conflict.FieldPath, conflict.ValueB, conflict.SecurityId);
+            }
+
+            if (newConflicts > 0)
+            {
+                _logger.LogInformation(
+                    "Recorded {Count} new identifier conflict(s) for {SecurityCount} security projection(s)",
+                    newConflicts, projections.Count);
+            }
         }
-
-        if (newConflicts > 0)
-            _logger.LogInformation(
-                "Recorded {Count} new identifier conflict(s) for {SecurityCount} security projection(s)",
-                newConflicts, projections.Count);
+        finally
+        {
+            _identifierConflictGate.Release();
+        }
     }
+
+    private static bool IsDetectorSuperseded(SecurityMasterConflict conflict)
+        => string.Equals(conflict.Status, "Superseded", StringComparison.Ordinal)
+           && string.Equals(conflict.ConflictKind, SecurityMasterConflictKinds.IdentifierAmbiguity, StringComparison.Ordinal)
+           && string.Equals(conflict.ResolvedReason, IdentifierNoLongerOverlapsReason, StringComparison.Ordinal)
+           && conflict.ResolvedBy is null
+           && conflict.ResolvedWinnerSource is null;
 
     public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
     {

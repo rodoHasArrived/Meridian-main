@@ -14,7 +14,10 @@ internal static class SecurityMasterConflictDetection
     private const string IdentifierAmbiguityKind = SecurityMasterConflictKinds.IdentifierAmbiguity;
     private const string UnknownProvider = SecurityMasterProvenanceReader.UnknownSource;
 
-    private readonly record struct IdentifierKey(SecurityIdentifierKind Kind, string NormalizedValue);
+    private readonly record struct IdentifierKey(
+        SecurityIdentifierKind Kind,
+        string NormalizedValue,
+        string IdentityScope);
 
     private sealed record IdentifierClaim(
         Guid SecurityId,
@@ -43,7 +46,10 @@ internal static class SecurityMasterConflictDetection
                     continue;
                 }
 
-                var key = new IdentifierKey(id.Kind, normalizedValue);
+                var key = new IdentifierKey(
+                    id.Kind,
+                    normalizedValue,
+                    SecurityIdentifierNormalizer.GetIdentityScope(id));
                 if (!byIdentifier.TryGetValue(key, out var entries))
                 {
                     entries = new List<IdentifierClaim>();
@@ -79,7 +85,7 @@ internal static class SecurityMasterConflictDetection
                     conflicts.Add(new SecurityMasterConflict(
                         ConflictId: DeterministicConflictId(
                             key.Kind.ToString(),
-                            key.NormalizedValue,
+                            CanonicalConflictIdentity(key),
                             left.SecurityId,
                             right.SecurityId),
                         SecurityId: left.SecurityId,
@@ -178,6 +184,11 @@ internal static class SecurityMasterConflictDetection
         DateTimeOffset? rightTo)
         => (!leftTo.HasValue || rightFrom < leftTo.Value)
            && (!rightTo.HasValue || leftFrom < rightTo.Value);
+
+    private static string CanonicalConflictIdentity(IdentifierKey key)
+        => key.IdentityScope.Length == 0
+            ? key.NormalizedValue
+            : $"{key.IdentityScope}|{key.NormalizedValue}";
 
     /// <summary>
     /// Canonical text form of a contractual principal schedule for conflict comparison and the

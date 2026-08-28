@@ -679,4 +679,155 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
         candidates.Select(candidate => candidate.SecurityId).Should().Contain(existing.SecurityId);
         candidates.Select(candidate => candidate.SecurityId).Should().NotContain(unrelated.SecurityId);
     }
+
+    [SecurityMasterDatabaseFact]
+    public async Task ProviderScopedIdentifier_DoesNotConflictAcrossProviders()
+    {
+        var value = $"SCOPED-{Guid.NewGuid():N}";
+        var first = MakeProjection(Guid.NewGuid(), "ProviderSymbol", value, "provider-a");
+        var second = MakeProjection(Guid.NewGuid(), "ProviderSymbol", value, "provider-b");
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        await store.UpsertProjectionAsync(first, CancellationToken.None);
+        await store.UpsertProjectionAsync(second, CancellationToken.None);
+
+        var providerACandidates = await store.FindIdentifierCandidatesAsync(
+            [second.Identifiers[0] with { Provider = "provider-a", NormalizedProvider = null }],
+            [second.SecurityId],
+            CancellationToken.None);
+        providerACandidates.Select(candidate => candidate.SecurityId).Should().Contain(first.SecurityId);
+
+        var providerBCandidates = await store.FindIdentifierCandidatesAsync(
+            [second.Identifiers[0]],
+            [second.SecurityId],
+            CancellationToken.None);
+        providerBCandidates.Select(candidate => candidate.SecurityId).Should().NotContain(first.SecurityId);
+
+        var open = await NewService(store).GetOpenConflictsAsync(CancellationToken.None);
+        open.Should().NotContain(conflict =>
+            conflict.ValueA == first.SecurityId.ToString() || conflict.ValueB == first.SecurityId.ToString());
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task GetOpenConflictsAsync_ReopensDetectorSupersededConflictWithSameId()
+    {
+        var boundary = DateTimeOffset.UtcNow;
+        var value = $"REOPEN-{Guid.NewGuid():N}";
+        var first = MakeProjection(Guid.NewGuid(), "Ticker", value, "XNAS");
+        var second = MakeProjection(Guid.NewGuid(), "Ticker", value, "XNAS");
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        await store.UpsertProjectionAsync(first, CancellationToken.None);
+        await store.UpsertProjectionAsync(second, CancellationToken.None);
+        var service = NewService(store);
+
+        var original = (await service.GetOpenConflictsAsync(CancellationToken.None)).Single(conflict =>
+            (conflict.ValueA == first.SecurityId.ToString() && conflict.ValueB == second.SecurityId.ToString())
+            || (conflict.ValueA == second.SecurityId.ToString() && conflict.ValueB == first.SecurityId.ToString()));
+
+        await store.UpsertProjectionAsync(first with
+        {
+            Version = 2,
+            Identifiers = [first.Identifiers[0] with { ValidTo = boundary }]
+        }, CancellationToken.None);
+        await store.UpsertProjectionAsync(second with
+        {
+            Version = 2,
+            Identifiers = [second.Identifiers[0] with { ValidFrom = boundary }]
+        }, CancellationToken.None);
+        (await service.GetOpenConflictsAsync(CancellationToken.None))
+            .Should().NotContain(conflict => conflict.ConflictId == original.ConflictId);
+
+        await store.UpsertProjectionAsync(first with
+        {
+            Version = 3,
+            Identifiers = [first.Identifiers[0] with { ValidTo = null }]
+        }, CancellationToken.None);
+        var reopened = (await service.GetOpenConflictsAsync(CancellationToken.None))
+            .Single(conflict => conflict.ConflictId == original.ConflictId);
+
+        reopened.Status.Should().Be("Open");
+        reopened.ResolvedBy.Should().BeNull();
+        reopened.ResolvedReason.Should().BeNull();
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task ConcurrentRefreshAndIngest_LeaveOneOpenConflict()
+    {
+        var value = $"RACE-{Guid.NewGuid():N}";
+        var first = MakeProjection(Guid.NewGuid(), "Ticker", value, "XNYS");
+        var second = MakeProjection(Guid.NewGuid(), "Ticker", value, "XNYS");
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        await store.UpsertProjectionAsync(first, CancellationToken.None);
+        await store.UpsertProjectionAsync(second, CancellationToken.None);
+        var services = Enumerable.Range(0, 6).Select(_ => NewService(store)).ToArray();
+
+        await Task.WhenAll(services.SelectMany(service => new Task[]
+        {
+            service.GetOpenConflictsAsync(CancellationToken.None),
+            service.RecordConflictsForProjectionAsync(second, CancellationToken.None)
+        }));
+
+        var open = await services[0].GetOpenConflictsAsync(CancellationToken.None);
+        open.Should().ContainSingle(conflict =>
+            (conflict.ValueA == first.SecurityId.ToString() && conflict.ValueB == second.SecurityId.ToString())
+            || (conflict.ValueA == second.SecurityId.ToString() && conflict.ValueB == first.SecurityId.ToString()));
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task GetOpenConflictsAsync_MigratesLegacyRawConflictIdAndPreservesResolution()
+    {
+        var value = $"Legacy{Guid.NewGuid():N}";
+        var first = MakeProjection(Guid.NewGuid(), "InternalCode", value, "provider-a");
+        var second = MakeProjection(Guid.NewGuid(), "InternalCode", value.ToLowerInvariant(), "provider-b");
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        await store.UpsertProjectionAsync(first, CancellationToken.None);
+        await store.UpsertProjectionAsync(second, CancellationToken.None);
+
+        var legacyId = SecurityMasterConflictDetection.DeterministicConflictId(
+            SecurityIdentifierKind.InternalCode.ToString(),
+            value,
+            first.SecurityId,
+            second.SecurityId);
+        var canonicalId = SecurityMasterConflictDetection.DeterministicConflictId(
+            SecurityIdentifierKind.InternalCode.ToString(),
+            SecurityIdentifierNormalizer.NormalizeValue(SecurityIdentifierKind.InternalCode, value),
+            first.SecurityId,
+            second.SecurityId);
+        legacyId.Should().NotBe(canonicalId);
+
+        await using (var connection = new Npgsql.NpgsqlConnection(_fixture.Options.ConnectionString))
+        {
+            await connection.OpenAsync();
+            await using var insert = connection.CreateCommand();
+            insert.CommandText =
+                $"""
+                insert into {_fixture.Options.Schema}.security_master_conflicts (
+                    conflict_id, security_id, conflict_kind, field_path,
+                    provider_a, value_a, provider_b, value_b, detected_at, status,
+                    resolved_winner_source, resolved_by, resolved_reason, resolved_at)
+                values (
+                    @conflict_id, @security_id, @conflict_kind, @field_path,
+                    @provider_a, @value_a, @provider_b, @value_b, now(), 'Resolved',
+                    @provider_a, 'operator@meridian.test', 'Legacy adjudication.', now());
+                """;
+            insert.Parameters.AddWithValue("conflict_id", legacyId);
+            insert.Parameters.AddWithValue("security_id", first.SecurityId);
+            insert.Parameters.AddWithValue("conflict_kind", SecurityMasterConflictKinds.IdentifierAmbiguity);
+            insert.Parameters.AddWithValue("field_path", "Identifiers.InternalCode");
+            insert.Parameters.AddWithValue("provider_a", "provider-a");
+            insert.Parameters.AddWithValue("value_a", first.SecurityId.ToString());
+            insert.Parameters.AddWithValue("provider_b", "provider-b");
+            insert.Parameters.AddWithValue("value_b", second.SecurityId.ToString());
+            await insert.ExecuteNonQueryAsync();
+        }
+
+        var service = NewService(store);
+        var open = await service.GetOpenConflictsAsync(CancellationToken.None);
+        open.Should().NotContain(conflict => conflict.ConflictId == canonicalId);
+        (await service.GetConflictAsync(legacyId, CancellationToken.None)).Should().BeNull();
+        var reconciled = await service.GetConflictAsync(canonicalId, CancellationToken.None);
+        reconciled.Should().NotBeNull();
+        reconciled!.Status.Should().Be("Resolved");
+        reconciled.ResolvedBy.Should().Be("operator@meridian.test");
+        reconciled.ResolvedReason.Should().Be("Legacy adjudication.");
+    }
 }

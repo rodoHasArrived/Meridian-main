@@ -41,7 +41,14 @@ public sealed record SecurityMasterCorporateActionAppendResultDto(
 /// </summary>
 public sealed record SecurityMasterCorporateActionRestatementDto(
     bool RestatementRequired,
-    IReadOnlyList<RestatementCandidateDto> Candidates);
+    IReadOnlyList<RestatementCandidateDto> Candidates,
+    string EvaluationStatus = CorporateActionRestatementEvaluationStates.Evaluated);
+
+public static class CorporateActionRestatementEvaluationStates
+{
+    public const string Evaluated = "Evaluated";
+    public const string PendingPeriodValidation = "PendingPeriodValidation";
+}
 
 public sealed record SecurityMasterCorporateActionAuditDto(
     string AuditId,

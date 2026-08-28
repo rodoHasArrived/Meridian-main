@@ -19,7 +19,9 @@ public sealed partial class PostgresSecurityMasterStore
         var keys = identifiers
             .Select(static identifier => (
                 Kind: identifier.Kind.ToString(),
-                Value: SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier)))
+                Value: SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier),
+                Scope: SecurityIdentifierNormalizer.GetIdentityScope(identifier),
+                IsScoped: SecurityIdentifierNormalizer.IsProviderScoped(identifier.Kind)))
             .Where(static key => key.Value.Length > 0)
             .Distinct()
             .ToArray();
@@ -39,9 +41,15 @@ public sealed partial class PostgresSecurityMasterStore
             for (var index = 0; index < count; index++)
             {
                 var key = keys[offset + index];
-                predicates[index] = $"(i.identifier_kind = @kind_{index} and i.normalized_identifier_value = @value_{index})";
+                predicates[index] = key.IsScoped
+                    ? $"(i.identifier_kind = @kind_{index} and i.normalized_identifier_value = @value_{index} and coalesce(i.normalized_provider, '') = @scope_{index})"
+                    : $"(i.identifier_kind = @kind_{index} and i.normalized_identifier_value = @value_{index})";
                 command.Parameters.AddWithValue($"kind_{index}", key.Kind);
                 command.Parameters.AddWithValue($"value_{index}", key.Value);
+                if (key.IsScoped)
+                {
+                    command.Parameters.AddWithValue($"scope_{index}", key.Scope);
+                }
             }
 
             command.CommandText =

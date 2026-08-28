@@ -4,6 +4,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging.Abstractions;
+using Npgsql;
 
 namespace Meridian.Tests.SecurityMaster;
 
@@ -260,5 +261,491 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
 
         projected.Should().NotBeNull();
         projected!.Classification.Should().Be("TrackingStock");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task AppendCorporateActionAsync_PersistsEconomicFingerprintAgainstPostgres()
+    {
+        var securityId = Guid.NewGuid();
+        await SeedSecurityAsync(securityId);
+        var action = Dividend(securityId, Guid.NewGuid());
+        var eventStore = new PostgresSecurityMasterEventStore(
+            _fixture.Options,
+            NullLogger<PostgresSecurityMasterEventStore>.Instance);
+
+        await eventStore.AppendCorporateActionAsync(action);
+
+        var fingerprint = await ReadFingerprintAsync(action.CorpActId);
+        fingerprint.Should().Be(CorporateActionEconomicFingerprint.Compute(action));
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task AppendCorporateActionAsync_MatchingLegacyNullFingerprint_ReusesAndBackfillsCanonicalAction()
+    {
+        var securityId = Guid.NewGuid();
+        await SeedSecurityAsync(securityId);
+        var legacyAction = Dividend(securityId, Guid.NewGuid());
+        var duplicateAction = legacyAction with { CorpActId = Guid.NewGuid() };
+        var eventStore = new PostgresSecurityMasterEventStore(
+            _fixture.Options,
+            NullLogger<PostgresSecurityMasterEventStore>.Instance);
+        await eventStore.AppendCorporateActionAsync(legacyAction);
+        await MakeFingerprintLegacyNullAsync(legacyAction.CorpActId);
+
+        await eventStore.AppendCorporateActionAsync(duplicateAction);
+
+        (await CountCorporateActionsAsync(securityId)).Should().Be(1);
+        (await ReadFingerprintAsync(legacyAction.CorpActId))
+            .Should().Be(CorporateActionEconomicFingerprint.Compute(duplicateAction));
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task AppendCorporateActionAsync_AmbiguousLegacyNullFingerprints_FailsClosed()
+    {
+        var securityId = Guid.NewGuid();
+        await SeedSecurityAsync(securityId);
+        var firstLegacyAction = Dividend(securityId, Guid.NewGuid());
+        var secondLegacyAction = firstLegacyAction with { CorpActId = Guid.NewGuid() };
+        var candidate = firstLegacyAction with { CorpActId = Guid.NewGuid() };
+        var eventStore = new PostgresSecurityMasterEventStore(
+            _fixture.Options,
+            NullLogger<PostgresSecurityMasterEventStore>.Instance);
+        await eventStore.AppendCorporateActionAsync(firstLegacyAction);
+        await CreateLegacyNullFingerprintPairAsync(
+            firstLegacyAction.CorpActId,
+            secondLegacyAction.CorpActId);
+
+        var act = () => eventStore.AppendCorporateActionAsync(candidate);
+
+        var exception = await act.Should().ThrowAsync<CorporateActionSourceConflictException>();
+        exception.Which.Code.Should().Be(CorporateActionProblemCodes.SourceConflict);
+        exception.Which.Message.Should().Contain("legacy duplicates");
+        (await CountCorporateActionsAsync(securityId)).Should().Be(2);
+        (await CountNullFingerprintsAsync(securityId)).Should().Be(2);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task AppendCorporateActionAsync_ConcurrentEconomicDuplicates_ConvergeOnOneCanonicalAction()
+    {
+        var securityId = Guid.NewGuid();
+        await SeedSecurityAsync(securityId);
+        var firstAction = Dividend(securityId, Guid.NewGuid());
+        var secondAction = firstAction with { CorpActId = Guid.NewGuid() };
+        var firstStore = new PostgresSecurityMasterEventStore(
+            _fixture.Options,
+            NullLogger<PostgresSecurityMasterEventStore>.Instance);
+        var secondStore = new PostgresSecurityMasterEventStore(
+            _fixture.Options,
+            NullLogger<PostgresSecurityMasterEventStore>.Instance);
+
+        await Task.WhenAll(
+            firstStore.AppendCorporateActionAsync(firstAction),
+            secondStore.AppendCorporateActionAsync(secondAction));
+
+        (await CountCorporateActionsAsync(securityId)).Should().Be(1);
+        var stored = await firstStore.LoadCorporateActionsAsync(securityId);
+        var canonical = stored.Should().ContainSingle().Subject;
+        new[] { firstAction.CorpActId, secondAction.CorpActId }
+            .Should().Contain(canonical.CorpActId);
+        (await ReadFingerprintAsync(canonical.CorpActId))
+            .Should().Be(CorporateActionEconomicFingerprint.Compute(firstAction));
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task AppendCorporateActionAsync_SuccessorOfCancelledParent_FailsClosed()
+    {
+        var securityId = Guid.NewGuid();
+        await SeedSecurityAsync(securityId);
+        var parent = Dividend(securityId, Guid.NewGuid()) with
+        {
+            LifecycleState = CorporateActionLifecycleStates.Cancelled,
+        };
+        var successor = parent with
+        {
+            CorpActId = Guid.NewGuid(),
+            SupersedesCorpActId = parent.CorpActId,
+        };
+        var eventStore = new PostgresSecurityMasterEventStore(
+            _fixture.Options,
+            NullLogger<PostgresSecurityMasterEventStore>.Instance);
+        await eventStore.AppendCorporateActionAsync(parent);
+
+        var act = () => eventStore.AppendCorporateActionAsync(successor);
+
+        var exception = await act.Should().ThrowAsync<CorporateActionStateConflictException>();
+        exception.Which.Code.Should().Be(CorporateActionProblemCodes.StateConflict);
+        exception.Which.Message.Should().Contain("terminal");
+        (await CountCorporateActionsAsync(securityId)).Should().Be(1);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task AcceptSourceProposalAsync_CorrectionOfCancelledCanonicalParent_FailsClosed()
+    {
+        var securityId = Guid.NewGuid();
+        await SeedSecurityAsync(securityId);
+        var parentAction = Dividend(securityId, Guid.NewGuid()) with
+        {
+            LifecycleState = CorporateActionLifecycleStates.Cancelled,
+        };
+        var eventStore = new PostgresSecurityMasterEventStore(
+            _fixture.Options,
+            NullLogger<PostgresSecurityMasterEventStore>.Instance);
+        await eventStore.AppendCorporateActionAsync(parentAction);
+
+        var operations = new PostgresCorporateActionOperationsStore(_fixture.Options);
+        var rootProposal = Proposal(parentAction) with
+        {
+            State = CorporateActionSourceProposalStates.Accepted,
+            AcceptedCorporateActionId = parentAction.CorpActId,
+            DecisionBy = "test-operator",
+            DecisionAtUtc = DateTimeOffset.UtcNow,
+        };
+        await operations.RecordSourceProposalAsync(rootProposal);
+        var correctionAction = parentAction with
+        {
+            CorpActId = Guid.NewGuid(),
+            SupersedesCorpActId = parentAction.CorpActId,
+        };
+        var correctionProposal = Proposal(correctionAction) with
+        {
+            ProviderIdentity = rootProposal.ProviderIdentity with
+            {
+                SourceEventVersion = "v2",
+                ObservedAtUtc = rootProposal.ProviderIdentity.ObservedAtUtc.AddMinutes(1),
+            },
+            SupersedesProposalId = rootProposal.ProposalId,
+        };
+        correctionProposal = await operations.RecordSourceProposalAsync(correctionProposal);
+
+        var act = () => operations.AcceptSourceProposalAsync(
+            AcceptRequest(correctionProposal),
+            corporateActionId: Guid.NewGuid(),
+            caseId: Guid.NewGuid(),
+            transitionId: Guid.NewGuid(),
+            restatement: null,
+            requestFingerprint: new string('d', 64));
+
+        var exception = await act.Should().ThrowAsync<CorporateActionStateConflictException>();
+        exception.Which.Code.Should().Be(CorporateActionProblemCodes.StateConflict);
+        exception.Which.Message.Should().Contain("terminal");
+        (await CountCorporateActionsAsync(securityId)).Should().Be(1);
+        var unchangedProposal = await operations.GetSourceProposalAsync(correctionProposal.ProposalId);
+        unchangedProposal.Should().NotBeNull();
+        unchangedProposal!.State.Should().Be(CorporateActionSourceProposalStates.Observed);
+        unchangedProposal.AcceptedCorporateActionId.Should().BeNull();
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task AcceptSourceProposalAsync_OneMatchingLegacyNullFingerprint_ReusesAndBackfillsCanonicalAction()
+    {
+        var securityId = Guid.NewGuid();
+        await SeedSecurityAsync(securityId);
+        var legacyAction = Dividend(securityId, Guid.NewGuid());
+        var eventStore = new PostgresSecurityMasterEventStore(
+            _fixture.Options,
+            NullLogger<PostgresSecurityMasterEventStore>.Instance);
+        await eventStore.AppendCorporateActionAsync(legacyAction);
+        await MakeFingerprintLegacyNullAsync(legacyAction.CorpActId);
+
+        var proposedAction = legacyAction with { CorpActId = Guid.NewGuid() };
+        var proposal = Proposal(proposedAction);
+        var operations = new PostgresCorporateActionOperationsStore(_fixture.Options);
+        await operations.RecordSourceProposalAsync(proposal);
+
+        var result = await operations.AcceptSourceProposalAsync(
+            AcceptRequest(proposal),
+            corporateActionId: Guid.NewGuid(),
+            caseId: Guid.NewGuid(),
+            transitionId: Guid.NewGuid(),
+            restatement: null,
+            requestFingerprint: new string('b', 64));
+
+        result.CorporateAction.CorpActId.Should().Be(legacyAction.CorpActId);
+        result.Proposal.AcceptedCorporateActionId.Should().Be(legacyAction.CorpActId);
+        (await ReadFingerprintAsync(legacyAction.CorpActId))
+            .Should().Be(proposal.EconomicFingerprint);
+        (await CountCorporateActionsAsync(securityId)).Should().Be(1);
+        (await ReadCanonicalSourceActionIdAsync(proposal.ProposalId))
+            .Should().Be(legacyAction.CorpActId);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task AcceptSourceProposalAsync_AmbiguousLegacyNullFingerprints_FailsClosed()
+    {
+        var securityId = Guid.NewGuid();
+        await SeedSecurityAsync(securityId);
+        var eventStore = new PostgresSecurityMasterEventStore(
+            _fixture.Options,
+            NullLogger<PostgresSecurityMasterEventStore>.Instance);
+        var firstLegacyAction = Dividend(securityId, Guid.NewGuid());
+        await eventStore.AppendCorporateActionAsync(firstLegacyAction);
+        var secondLegacyAction = firstLegacyAction with { CorpActId = Guid.NewGuid() };
+        await CreateLegacyNullFingerprintPairAsync(
+            firstLegacyAction.CorpActId,
+            secondLegacyAction.CorpActId);
+
+        var proposal = Proposal(firstLegacyAction with { CorpActId = Guid.NewGuid() });
+        var operations = new PostgresCorporateActionOperationsStore(_fixture.Options);
+        await operations.RecordSourceProposalAsync(proposal);
+
+        var act = () => operations.AcceptSourceProposalAsync(
+            AcceptRequest(proposal),
+            corporateActionId: Guid.NewGuid(),
+            caseId: Guid.NewGuid(),
+            transitionId: Guid.NewGuid(),
+            restatement: null,
+            requestFingerprint: new string('c', 64));
+
+        var exception = await act.Should().ThrowAsync<CorporateActionSourceConflictException>();
+        exception.Which.Code.Should().Be(CorporateActionProblemCodes.SourceConflict);
+        exception.Which.Message.Should().Contain("legacy duplicates");
+        (await CountNullFingerprintsAsync(securityId)).Should().Be(2);
+        (await CountCanonicalSourceLinksAsync(proposal.ProposalId)).Should().Be(0);
+        (await CountCasesAsync(proposal.ProposalId)).Should().Be(0);
+        var unchangedProposal = await operations.GetSourceProposalAsync(proposal.ProposalId);
+        unchangedProposal.Should().NotBeNull();
+        unchangedProposal!.State.Should().Be(CorporateActionSourceProposalStates.Observed);
+        unchangedProposal.Version.Should().Be(1);
+        unchangedProposal.AcceptedCorporateActionId.Should().BeNull();
+    }
+
+    private async Task SeedSecurityAsync(Guid securityId)
+    {
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        await store.UpsertProjectionAsync(new SecurityProjectionRecord(
+            SecurityId: securityId,
+            AssetClass: "Equity",
+            Status: SecurityStatusDto.Active,
+            DisplayName: $"Corporate action test {securityId:N}",
+            Currency: "USD",
+            PrimaryIdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
+            PrimaryIdentifierValue: $"CA{securityId:N}",
+            CommonTerms: JsonSerializer.SerializeToElement(new { currency = "USD" }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new { schemaVersion = 1 }),
+            Provenance: JsonSerializer.SerializeToElement(new { sourceSystem = "test" }),
+            Version: 1,
+            EffectiveFrom: effectiveFrom,
+            EffectiveTo: null,
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Ticker,
+                    $"CA{securityId:N}",
+                    true,
+                    effectiveFrom),
+            ],
+            Aliases: []));
+    }
+
+    private static CorporateActionDto Dividend(Guid securityId, Guid corporateActionId) =>
+        new(
+            corporateActionId,
+            securityId,
+            CorporateActionEventTypes.Dividend,
+            new DateOnly(2026, 8, 14),
+            new DateOnly(2026, 8, 28),
+            DividendPerShare: 0.24m,
+            Currency: "USD",
+            SplitRatio: null,
+            NewSecurityId: null,
+            DistributionRatio: null,
+            AcquirerSecurityId: null,
+            ExchangeRatio: null,
+            SubscriptionPricePerShare: null,
+            RightsPerShare: null,
+            RecordDate: new DateOnly(2026, 8, 15),
+            LifecycleState: CorporateActionLifecycleStates.Confirmed);
+
+    private static CorporateActionSourceProposalDto Proposal(CorporateActionDto action)
+    {
+        var proposalId = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow;
+        return new CorporateActionSourceProposalDto(
+            proposalId,
+            action.SecurityId,
+            new CorporateActionProviderEventIdentityDto(
+                "test-provider",
+                $"event-{proposalId:N}",
+                "v1",
+                now,
+                EvidenceHash: new string('a', 64),
+                EvidenceReference: $"provider-event://corporate-actions/test/{proposalId:N}/v1",
+                ReleaseStatus: CorporateActionProviderReleaseStatusDto.AcceptanceEligible),
+            action,
+            action.PayloadSchemaVersion,
+            CorporateActionEconomicFingerprint.Compute(action),
+            CorporateActionSourceProposalStates.Observed,
+            Version: 1,
+            SupersedesProposalId: null,
+            AcceptedCorporateActionId: null,
+            InitialCaseId: null,
+            RecordedBy: "test-ingest",
+            RecordedAtUtc: now,
+            UpdatedAtUtc: now);
+    }
+
+    private static AcceptCorporateActionSourceProposalRequestDto AcceptRequest(
+        CorporateActionSourceProposalDto proposal) =>
+        new(
+            proposal.ProposalId,
+            ExpectedVersion: 1,
+            IdempotencyKey: $"accept-{proposal.ProposalId:N}",
+            Scope: new CorporateActionCaseScopeDto("tenant-test", "company-test"),
+            Actor: "test-operator",
+            MethodologyProfileId: "test-methodology-v1",
+            Reason: "Accept matching corporate-action evidence.");
+
+    private async Task MakeFingerprintLegacyNullAsync(Guid corporateActionId)
+    {
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var clearFingerprint = connection.CreateCommand();
+        clearFingerprint.CommandText =
+            $"""
+            update {_fixture.Options.Schema}.corporate_actions
+            set economic_fingerprint = null
+            where corp_act_id = @corp_act_id;
+            """;
+        clearFingerprint.Parameters.AddWithValue("corp_act_id", corporateActionId);
+        (await clearFingerprint.ExecuteNonQueryAsync()).Should().Be(1);
+    }
+
+    private async Task CreateLegacyNullFingerprintPairAsync(
+        Guid firstCorporateActionId,
+        Guid secondCorporateActionId)
+    {
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using (var clearFingerprint = connection.CreateCommand())
+        {
+            clearFingerprint.Transaction = transaction;
+            clearFingerprint.CommandText =
+                $"""
+                update {_fixture.Options.Schema}.corporate_actions
+                set economic_fingerprint = null
+                where corp_act_id = @corp_act_id;
+                """;
+            clearFingerprint.Parameters.AddWithValue("corp_act_id", firstCorporateActionId);
+            (await clearFingerprint.ExecuteNonQueryAsync()).Should().Be(1);
+        }
+
+        await using (var insertDuplicate = connection.CreateCommand())
+        {
+            insertDuplicate.Transaction = transaction;
+            insertDuplicate.CommandText =
+                $"""
+                insert into {_fixture.Options.Schema}.corporate_actions (
+                    corp_act_id, security_id, event_type, ex_date, pay_date, dividend_per_share,
+                    currency, split_ratio, new_security_id, distribution_ratio, acquirer_security_id,
+                    exchange_ratio, subscription_price_per_share, rights_per_share, record_date,
+                    lifecycle_state, supersedes_corp_act_id, redemption_price_percent_of_par, payload,
+                    payload_schema_version, economic_fingerprint)
+                select @second_corp_act_id, security_id, event_type, ex_date, pay_date, dividend_per_share,
+                       currency, split_ratio, new_security_id, distribution_ratio, acquirer_security_id,
+                       exchange_ratio, subscription_price_per_share, rights_per_share, record_date,
+                       lifecycle_state, supersedes_corp_act_id, redemption_price_percent_of_par, payload,
+                       payload_schema_version, null
+                from {_fixture.Options.Schema}.corporate_actions
+                where corp_act_id = @first_corp_act_id;
+                """;
+            insertDuplicate.Parameters.AddWithValue("second_corp_act_id", secondCorporateActionId);
+            insertDuplicate.Parameters.AddWithValue("first_corp_act_id", firstCorporateActionId);
+            (await insertDuplicate.ExecuteNonQueryAsync()).Should().Be(1);
+        }
+
+        await transaction.CommitAsync();
+    }
+
+    private async Task<string?> ReadFingerprintAsync(Guid corporateActionId)
+    {
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select economic_fingerprint
+            from {_fixture.Options.Schema}.corporate_actions
+            where corp_act_id = @corp_act_id;
+            """;
+        command.Parameters.AddWithValue("corp_act_id", corporateActionId);
+        return await command.ExecuteScalarAsync() as string;
+    }
+
+    private async Task<Guid?> ReadCanonicalSourceActionIdAsync(Guid proposalId)
+    {
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select corp_act_id
+            from {_fixture.Options.Schema}.corporate_action_canonical_sources
+            where proposal_id = @proposal_id;
+            """;
+        command.Parameters.AddWithValue("proposal_id", proposalId);
+        return await command.ExecuteScalarAsync() as Guid?;
+    }
+
+    private async Task<long> CountCorporateActionsAsync(Guid securityId)
+    {
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select count(*)
+            from {_fixture.Options.Schema}.corporate_actions
+            where security_id = @security_id;
+            """;
+        command.Parameters.AddWithValue("security_id", securityId);
+        return (long)(await command.ExecuteScalarAsync() ?? 0L);
+    }
+
+    private async Task<long> CountNullFingerprintsAsync(Guid securityId)
+    {
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select count(*)
+            from {_fixture.Options.Schema}.corporate_actions
+            where security_id = @security_id
+              and economic_fingerprint is null;
+            """;
+        command.Parameters.AddWithValue("security_id", securityId);
+        return (long)(await command.ExecuteScalarAsync() ?? 0L);
+    }
+
+    private async Task<long> CountCanonicalSourceLinksAsync(Guid proposalId)
+    {
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select count(*)
+            from {_fixture.Options.Schema}.corporate_action_canonical_sources
+            where proposal_id = @proposal_id;
+            """;
+        command.Parameters.AddWithValue("proposal_id", proposalId);
+        return (long)(await command.ExecuteScalarAsync() ?? 0L);
+    }
+
+    private async Task<long> CountCasesAsync(Guid proposalId)
+    {
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select count(*)
+            from {_fixture.Options.Schema}.corporate_action_processing_cases
+            where proposal_id = @proposal_id;
+            """;
+        command.Parameters.AddWithValue("proposal_id", proposalId);
+        return (long)(await command.ExecuteScalarAsync() ?? 0L);
     }
 }
