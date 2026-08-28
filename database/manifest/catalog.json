@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "1dc3f11bef46887460106d59d32a0073fe8a14c84573c7f60de6ef3e948e6e5c",
+  "database_fingerprint": "c8a5df5863ace0144ce1b4d13a2b7f1c5eab19f718bfc7f2792e40e5a29df5ef",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -18885,10 +18885,6 @@
       "object": "index:security_master.ix_reconciliation_result_run"
     },
     {
-      "fingerprint": "e90fe57a717b5c3d734ccb83240b7d61eb6c9c4b280c33551b3e65a4c3175f60",
-      "object": "index:security_master.ix_securities_normalized_primary_identifier"
-    },
-    {
       "fingerprint": "073ae38c8a7acb15a56a00f16b840b0e9d5970d7a2abf5f696869569c838526b",
       "object": "index:security_master.ix_securities_schema_version"
     },
@@ -19245,8 +19241,8 @@
       "object": "index:security_master.ux_projection_run_lineage"
     },
     {
-      "fingerprint": "a4a53d12696db367c5378a7f01ab8be7fd4a7f03f887fc206d9d89872a6ecd36",
-      "object": "index:security_master.ux_securities_primary_identifier"
+      "fingerprint": "35c323f4fe493fa17ed85a9e5f7a4756a3146e4229e43d735b78e39fb05ad204",
+      "object": "index:security_master.ux_securities_normalized_primary_identifier"
     },
     {
       "fingerprint": "e0c7da69ebaee08c4f72e7afd46544964860fa63a7d15cd7cb3416e6a6108f82",
@@ -19933,7 +19929,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "74e065d603766df4ffb71e3244ac989fdc84ba2d74ba717277c05d2943261899",
+      "fingerprint": "dbab25a29e3a36f02bfeeedeef8a155ea4dcdc30d59294fd96cb3554875b0699",
       "object": "schema:security_master"
     },
     {
@@ -20505,7 +20501,7 @@
       "object": "table:security_master.schema_migrations"
     },
     {
-      "fingerprint": "1765e3dd44e9e8568b82488185674901868a6df47ed1450bb0b9c93ff3956556",
+      "fingerprint": "c8c685d796e1412b6640541be83dc1c9300519b0919de804fe0cc38b8cf81857",
       "object": "table:security_master.securities"
     },
     {
@@ -105030,7 +105026,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "74e065d603766df4ffb71e3244ac989fdc84ba2d74ba717277c05d2943261899",
+      "fingerprint": "dbab25a29e3a36f02bfeeedeef8a155ea4dcdc30d59294fd96cb3554875b0699",
       "foreign_tables": [],
       "functions": [
         {
@@ -120225,33 +120221,10 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "1765e3dd44e9e8568b82488185674901868a6df47ed1450bb0b9c93ff3956556",
+          "fingerprint": "c8c685d796e1412b6640541be83dc1c9300519b0919de804fe0cc38b8cf81857",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
-            {
-              "comment": null,
-              "definition": "CREATE INDEX ix_securities_normalized_primary_identifier ON security_master.securities USING btree (primary_identifier_kind, normalized_primary_identifier_value)",
-              "expression": null,
-              "fingerprint": "e90fe57a717b5c3d734ccb83240b7d61eb6c9c4b280c33551b3e65a4c3175f60",
-              "included_columns": [],
-              "is_replica_identity": false,
-              "key_columns": [
-                "primary_identifier_kind",
-                "normalized_primary_identifier_value"
-              ],
-              "live": true,
-              "method": "btree",
-              "name": "ix_securities_normalized_primary_identifier",
-              "options": [],
-              "owner": "meridian",
-              "predicate": null,
-              "primary": false,
-              "ready": true,
-              "security_labels": [],
-              "unique": false,
-              "valid": true
-            },
             {
               "comment": null,
               "definition": "CREATE INDEX ix_securities_schema_version ON security_master.securities USING btree (schema_version)",
@@ -120320,18 +120293,18 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_securities_primary_identifier ON security_master.securities USING btree (primary_identifier_kind, primary_identifier_value)",
+              "definition": "CREATE UNIQUE INDEX ux_securities_normalized_primary_identifier ON security_master.securities USING btree (primary_identifier_kind, normalized_primary_identifier_value)",
               "expression": null,
-              "fingerprint": "a4a53d12696db367c5378a7f01ab8be7fd4a7f03f887fc206d9d89872a6ecd36",
+              "fingerprint": "35c323f4fe493fa17ed85a9e5f7a4756a3146e4229e43d735b78e39fb05ad204",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
                 "primary_identifier_kind",
-                "primary_identifier_value"
+                "normalized_primary_identifier_value"
               ],
               "live": true,
               "method": "btree",
-              "name": "ux_securities_primary_identifier",
+              "name": "ux_securities_normalized_primary_identifier",
               "options": [],
               "owner": "meridian",
               "predicate": null,
@@ -143896,33 +143869,10 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "1765e3dd44e9e8568b82488185674901868a6df47ed1450bb0b9c93ff3956556",
+          "fingerprint": "c8c685d796e1412b6640541be83dc1c9300519b0919de804fe0cc38b8cf81857",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
-            {
-              "comment": null,
-              "definition": "CREATE INDEX ix_securities_normalized_primary_identifier ON security_master.securities USING btree (primary_identifier_kind, normalized_primary_identifier_value)",
-              "expression": null,
-              "fingerprint": "e90fe57a717b5c3d734ccb83240b7d61eb6c9c4b280c33551b3e65a4c3175f60",
-              "included_columns": [],
-              "is_replica_identity": false,
-              "key_columns": [
-                "primary_identifier_kind",
-                "normalized_primary_identifier_value"
-              ],
-              "live": true,
-              "method": "btree",
-              "name": "ix_securities_normalized_primary_identifier",
-              "options": [],
-              "owner": "meridian",
-              "predicate": null,
-              "primary": false,
-              "ready": true,
-              "security_labels": [],
-              "unique": false,
-              "valid": true
-            },
             {
               "comment": null,
               "definition": "CREATE INDEX ix_securities_schema_version ON security_master.securities USING btree (schema_version)",
@@ -143991,18 +143941,18 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_securities_primary_identifier ON security_master.securities USING btree (primary_identifier_kind, primary_identifier_value)",
+              "definition": "CREATE UNIQUE INDEX ux_securities_normalized_primary_identifier ON security_master.securities USING btree (primary_identifier_kind, normalized_primary_identifier_value)",
               "expression": null,
-              "fingerprint": "a4a53d12696db367c5378a7f01ab8be7fd4a7f03f887fc206d9d89872a6ecd36",
+              "fingerprint": "35c323f4fe493fa17ed85a9e5f7a4756a3146e4229e43d735b78e39fb05ad204",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
                 "primary_identifier_kind",
-                "primary_identifier_value"
+                "normalized_primary_identifier_value"
               ],
               "live": true,
               "method": "btree",
-              "name": "ux_securities_primary_identifier",
+              "name": "ux_securities_normalized_primary_identifier",
               "options": [],
               "owner": "meridian",
               "predicate": null,

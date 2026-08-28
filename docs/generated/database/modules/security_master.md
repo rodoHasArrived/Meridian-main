@@ -996,7 +996,7 @@ erDiagram
 | `reconciliation_result` | table | 15 | `reconciliation_result_id` | 4 | 2 | - |
 | `reconciliation_run` | table | 6 | `reconciliation_run_id` | 2 | 1 | - |
 | `schema_migrations` | table | 4 | `filename` | 0 | 1 | - |
-| `securities` | table | 21 | `security_id` | 0 | 5 | - |
+| `securities` | table | 21 | `security_id` | 0 | 4 | - |
 | `security_aliases` | table | 14 | `alias_id` | 1 | 3 | - |
 | `security_cashflow_source_assignments` | table | 6 | `security_id` | 1 | 2 | - |
 | `security_events` | table | 10 | `global_sequence` | 0 | 3 | - |

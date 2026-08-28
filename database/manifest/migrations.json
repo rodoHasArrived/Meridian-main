@@ -262,6 +262,15 @@
       "sha256": "ea6d018f72ada53278482e5176394c82cdaa3ff5d565a33eabbb447decdddf76"
     },
     {
+      "filename": "030_security_master_normalized_primary_identifier_uniqueness.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 30,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/030_security_master_normalized_primary_identifier_uniqueness.sql",
+      "schema": "security_master",
+      "sha256": "b15293c20f7f6f045a58fe901ab8f4e0aa24ae6d8badd349b111f77120568de5"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -911,7 +920,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "a948737517dff274e59e537139e40cfa39b57d1e42bc5b97d028409ca3445f50",
+  "fingerprint": "2a05184e025021720886e4adb2ca5718cdc88461b52185ff27d228f5042cc04d",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1149,9 +1158,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 101,
+    "files": 102,
     "migration_sets": 10,
-    "waivers": 6,
+    "waivers": 7,
     "warnings": 0
   },
   "waivers": [
@@ -1189,6 +1198,13 @@
       "reason": "The lexical TRUNCATE match is the migration's own BEFORE TRUNCATE guard trigger, which rejects truncation of the journal integrity tables. The migration truncates nothing.",
       "review_after": "2027-02-01",
       "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/030_security_master_normalized_primary_identifier_uniqueness.sql",
+      "reason": "The migration drops only the superseded raw-value unique index and normalized non-unique index after its deterministic collision preflight succeeds, then immediately creates the normalized unique index. No table data or identifier history is removed.",
+      "review_after": "2027-02-28",
+      "rule_id": "migration-drop-object"
     },
     {
       "category": "removed_migrations",
