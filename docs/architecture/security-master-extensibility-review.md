@@ -63,16 +63,24 @@ risks that compound as new asset classes land.
 > [Resolution pass — 2026-08-26](#resolution-pass--2026-08-26), which also records the intended
 > behaviour deltas.
 >
-> **Scheduled institutional-requirements pass, 2026-08-28.** Re-read against `d3793290`. The verdict
-> stands. Every closure claimed by the 2026-08-26 resolution was independently re-verified against
-> source rather than taken on the resolution's word, and all of them hold. N4, N5, N6 and the three
-> deferred items are unchanged. Five new items are filed, all on the bulk-import path, which no prior
-> pass had read past its parser. See
+> **Scheduled institutional-requirements pass, 2026-08-28.** Re-read against `d3793290`, then
+> extended under review. The verdict stands. Every closure claimed by the 2026-08-26 resolution was
+> independently re-verified against source rather than taken on the resolution's word, and all of
+> them hold. N4, N5, N6 and the three deferred items are unchanged. Four new items are filed
+> (P1–P4). See
 > [Scheduled institutional-requirements pass — 2026-08-28](#scheduled-institutional-requirements-pass--2026-08-28).
-> Its highest-severity finding is that bulk import takes `UpdatedBy`, `SourceSystem` and
-> `EffectiveFrom` from the uploaded file, so a governed create carries self-asserted provenance and an
-> arbitrary as-of date while the authenticated principal — read two lines earlier for authorization —
-> never reaches the record.
+>
+> **Its highest-severity finding is a live bypass of a shipped control**: the legacy
+> `PATCH …/preferred-terms` route reaches `AmendPreferredEquityTermsAsync` without calling
+> `RequireGovernedTermAmendmentRoute`, so a deployment that enables `RequireGovernedTermAmendments`
+> to force maker-checker still has an ungated amendment path. That is one call to close, and it also
+> makes the 2026-08-24 resolution's "gates all three routes uniformly" incomplete.
+>
+> The pass began on the bulk-import path and its scope widened materially under review: P1 is now a
+> property of the whole `ISecurityMasterService` mutation surface rather than of import, P3 concerns
+> the asset-pack registry, and P4 spans three ingest paths plus a cancellation defect class. Where
+> this pass's own claims were corrected — several were — the corrections are recorded in place rather
+> than silently applied.
 
 ---
 
@@ -1004,15 +1012,19 @@ Two distinct institutional consequences:
   the same governed surface reaching the opposite conclusion, and it is the higher-volume one. A
   golden record cannot defend a value in an audit if the only record of who asserted it is a string
   the asserting file chose.
-- **Valid-time integrity.** `EffectiveFrom` is caller-supplied and unbounded, so a create can date a
-  definition to any point. Note precisely what this does and does not reach: *recorded* time is
-  safe, because `SecurityMasterMapping.ToEventEnvelope` stamps `EventTimestamp` server-side with
-  `UtcNow` (`:111`) and `RebuildRecordedAsOfAsync` filters on that timestamp
-  (`SecurityMasterAggregateRebuilder.cs:99`), independent of `EffectiveFrom`. So the bitemporal
-  rebuilder defends itself here; "what did we believe on date X" stays honest. What an unbounded
-  `EffectiveFrom` misstates is the *economic* start date — the valid-time axis every effective-dated
-  query reads. That is narrower than the recorded-time story, and still worth governing, because a
-  caller can assert an economic history the record never had.
+- **Falsified stored provenance — narrower than it first looks, and corrected twice.** `EffectiveFrom`
+  is caller-supplied and unbounded, so a create can date a definition to any point. Two drafts of
+  this bullet overstated what that reaches, so state the boundary precisely. *Recorded* time is safe:
+  `SecurityMasterMapping.ToEventEnvelope` stamps `EventTimestamp` server-side with `UtcNow` (`:111`),
+  and both `RebuildRecordedAsOfAsync` (`SecurityMasterAggregateRebuilder.cs:99`) and
+  `RebuildAsOfAsync` (`:67-81`) filter on *that* timestamp, never on `EffectiveFrom`. Nor is there an
+  effective-dated term query to corrupt: `GetByIdAsOfAsync`, identifier-as-of lookup and
+  reporting-as-of all delegate to `RebuildAsOfAsync`, and current term reads return the latest
+  projection. So an arbitrary `EffectiveFrom` does not alter historical query selection at all.
+  What it does is write a false economic start date into persisted provenance, where downstream
+  consumers and auditors read it as fact. That is the real exposure, and it is worth governing on its
+  own terms — but it is a stored-metadata integrity problem, not a query-correctness one, and it is
+  distinct from the separately deferred valid-time term history in the standing list.
 
 **The defect is the write surface, not bulk import.** State it as a property rather than a list,
 because five review rounds each turned up another caller and a list is the wrong shape for this:
@@ -1235,6 +1247,12 @@ such catches: the create loop at `:120-127` gets it right (it rethrows), while `
 `:286-290` and the conflict count at `:627-641` do not, and successive sweeps kept finding more.
 The table below is illustrative of the shape, not an inventory to work through; the fix is the rule
 applied to every such catch, with Edgar's create loop as the reference for what right looks like.
+
+**A typed *create* outcome is not enough for Edgar.** `CreateOrAmendSecurityAsync` calls `CreateAsync`
+only when no security exists and otherwise calls `AmendTermsAsync` (`:303-344`), with both under the
+same outer substring filter. So a create-only outcome would leave Edgar still classifying amendment
+failures by exception message. The typed outcome has to cover both mutations, or create and amendment
+handling has to be separated there first.
 
 The duplicate fix itself is a typed create outcome, **not** a pre-check against the identifier index. A shared
 identifier is not a duplicate here by design: `SecurityMasterImportServiceTests.ImportAsync_WhenRecordsAreCreated_TriggersAutomaticConflictRecordingPerSecurity`
