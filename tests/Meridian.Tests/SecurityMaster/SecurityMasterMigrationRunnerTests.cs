@@ -53,8 +53,8 @@ public sealed class SecurityMasterMigrationRunnerTests : IClassFixture<SecurityM
                     provenance, version, effective_from)
                 values (
                     @security_id, 'Equity', 'Active', 'Normalized index test A', 'USD',
-                    'Isin', 'US-0378331005', 'US0378331005', '{{}}'::jsonb, '{{}}'::jsonb,
-                    '{{}}'::jsonb, 1, now());
+                    'Isin', 'US-0378331005', 'US0378331005', jsonb_build_object(), jsonb_build_object(),
+                    jsonb_build_object(), 1, now());
                 """;
             first.Parameters.AddWithValue("security_id", firstId);
             await first.ExecuteNonQueryAsync();
@@ -73,8 +73,8 @@ public sealed class SecurityMasterMigrationRunnerTests : IClassFixture<SecurityM
                     provenance, version, effective_from)
                 values (
                     @security_id, 'Equity', 'Active', 'Normalized index test B', 'USD',
-                    'Isin', 'us 0378331005', 'US0378331005', '{{}}'::jsonb, '{{}}'::jsonb,
-                    '{{}}'::jsonb, 1, now());
+                    'Isin', 'us 0378331005', 'US0378331005', jsonb_build_object(), jsonb_build_object(),
+                    jsonb_build_object(), 1, now());
                 """;
             duplicate.Parameters.AddWithValue("security_id", Guid.NewGuid());
             await duplicate.ExecuteNonQueryAsync();
