@@ -434,3 +434,20 @@ label alone will update this file.
 - **Fixed in**: Documented here; the coupling itself is unchanged. A durable fix has to reach **both** generators, because each discovers files independently:
   - `generate-structure-docs` should render only tracked paths. `_git_visible_files` (`:153`) already runs `git ls-files`, so the remedy is to stop merging the filesystem walk into that result rather than to filter it. Merely honoring `.gitignore` would close this instance without making the output a function of the committed repository, since any untracked-but-unignored file would still enter the tree.
   - `generate-health-dashboard` needs the same treatment on its own scan. It walks the filesystem directly (`os.walk` at `:360-373`) with only directory and pattern exclusions, and consults git only for last-commit dates (`:146-179`) — never for discovery. So an untracked, unignored `.md` file shifts `total_files`, line and TODO counts, and orphan counts locally while being absent on a clean CI checkout, no matter what the structure generator does.
+
+### AI-20260828-pr-body-rewrite-drops-phase-marker
+- **ID**: AI-20260828-pr-body-rewrite-drops-phase-marker
+- **Area**: ci/governance
+- **Symptoms**: `scope-gate` reds on a PR that has been passing it for many pushes, with `##[error]No phase declaration found. Provide --phase/--dispatch-phase, a 'phase:PRx' label, or a PR body marker like '<!-- phase:PR2 -->'.` Nothing in the diff touches roadmap tooling or workflows, and the immediately preceding pushes on the same branch passed the same check.
+- **Root cause**: The phase is declared by an HTML comment marker (`<!-- phase:PR1 -->`) in the pull-request body. HTML comments are invisible in every rendered view of the PR, so rewriting the body — to refresh a stale summary, say — silently drops the marker unless it is deliberately carried across. The check does not fail on the push that removed it if that was a body-only edit; it fails on the *next* code push, which makes the two events easy to disconnect.
+- **Prevention checklist**:
+  - [ ] Before replacing a PR body, fetch the raw body and search it for `<!-- phase:` — a rendered view will not show it
+  - [ ] After any body rewrite, re-read the raw body and confirm the marker survived
+  - [ ] Prefer a `phase:PRx` **label** where one is available: it is visible in the PR UI and survives body rewrites, whereas the marker is invisible and does not
+  - [ ] Do not expect a job re-run to clear this — see below
+- **Verification commands**:
+  - Fetch the PR body raw (GitHub MCP `pull_request_read` method `get`) and confirm it contains `<!-- phase:PR1 -->`
+  - `grep -n "PHASE_BODY\|PHASE_LABEL" tools/roadmap/enforce_phase_scope.py` to confirm the accepted forms
+- **Source issue**: PR #2857
+- **Status**: mitigated
+- **Fixed in**: Documented here. The recovery is the part worth recording, because the obvious one does not work: `.github/workflows/roadmap-source-docs.yml:74-75` passes `PR_LABELS` and `PR_BODY` from `github.event.pull_request.*`, which is the **event payload captured when the run was triggered**. Re-running the failed job replays that same stale payload, so neither restoring the body marker nor adding a label takes effect on a re-run. Clearing the failure requires a fresh `pull_request` event — in practice a real `synchronize` push after the body is fixed. Never push an empty commit for this; fold the marker restoration in with whatever genuine change is next, or with an entry like this one recording the trap.
