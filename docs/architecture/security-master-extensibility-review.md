@@ -1202,12 +1202,13 @@ Five constraints the fix has to respect:
   `ValidFrom <= asOf && (ValidTo is null || ValidTo > asOf)` predicate in two arms: to the projection's
   *canonical* identifiers first (`:382-387`), then to its aliases (`:392-398`). Canonical identifier
   windows are caller-supplied too, and by a route that is easy to miss because it is nested rather than
-  top-level: `CreateSecurityRequest.Identifiers` is a collection of `SecurityIdentifierDto`, each
-  carrying its own `ValidFrom`/`ValidTo` (`SecurityIdentifiers.cs:53-61`). A gate written against the
-  request's own scalar date fields would leave a caller able to post a security whose primary ticker is
-  dated out of the current-lookup window at creation — the same result as the alias case, one nesting
-  level down. Whatever enforces this must walk into the identifier collection, not just the request's
-  surface fields.
+  top-level: `SecurityIdentifierDto` carries its own `ValidFrom`/`ValidTo` (`SecurityIdentifiers.cs:53-61`),
+  and requests carry collections of it on **both** mutations — `CreateSecurityRequest.Identifiers`
+  (`SecurityCommands.cs:10`) and `AmendSecurityTermsRequest.IdentifiersToAdd` / `IdentifiersToExpire`
+  (`:22-23`). A gate written against the requests' own scalar date fields would leave a caller able to
+  post a security whose primary ticker is dated out of the current-lookup window at creation, or to add
+  one so dated by amendment — the same result as the alias case, one nesting level down. Whatever
+  enforces this must walk into the identifier collections, not just the requests' surface fields.
 
   **The exposure differs by field, and the identifier case needs stating precisely.** For economic
   *term* dates it is stored-provenance truthfulness only — nothing selects terms by `EffectiveFrom`,
@@ -1226,7 +1227,7 @@ Five constraints the fix has to respect:
   The gate has to cover the whole surface, not just create: `EffectiveFrom` on create and amend,
   `EffectiveTo` on `DeactivateSecurityRequest` (`SecurityCommands.cs:46`), `ValidFrom` / `ValidTo` on
   `UpsertSecurityAliasRequest` (`:67-68`), and the nested `ValidFrom` / `ValidTo` on every
-  `SecurityIdentifierDto` in a create request's `Identifiers`. Otherwise a caller who cannot backdate a
+  `SecurityIdentifierDto` a create or amend request carries. Otherwise a caller who cannot backdate a
   definition can still backdate its deactivation, an alias's validity window, or a canonical
   identifier's — each reaching the same historical-integrity problem by another route.
 - **The workbench chain must be preserved, not reworked.** Publish already resolves the actor
@@ -1456,8 +1457,8 @@ Read as a delta on the standing lists above.
    caller-asserted attribution, and amendments are not covered by the governed path in the default
    configuration. Derive every actor field — `UpdatedBy`, and `CreatedBy` on alias upsert — and gate
    every caller-controlled valid-time field, not just `EffectiveFrom`; that includes the `ValidFrom` /
-   `ValidTo` nested inside each `SecurityIdentifierDto` of a create request, which a gate written
-   against the request's own scalar fields will not reach. Keep the record's *content* out of it:
+   `ValidTo` nested inside each `SecurityIdentifierDto` a create or amend request carries, which a gate
+   written against the requests' own scalar fields will not reach. Keep the record's *content* out of it:
    `SourceSystem` carries source identity for conflict detection rather than actor identity, `Provider`
    namespaces an identifier value, and `Reason` is the operator's own rationale — deriving any of the
    three would corrupt what the record asserts. Preserve workload
