@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.SecurityMaster;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ui.Shared.Endpoints;
@@ -13,6 +12,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NSubstitute;
+
+// Imported as a single type rather than the whole namespace: Meridian.Application.SecurityMaster
+// also declares ISecurityMasterQueryService, which would make the Contracts one this file already
+// uses ambiguous.
+using SecurityMasterWorkbenchOptions = Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions;
 
 namespace Meridian.Tests.Ui;
 
