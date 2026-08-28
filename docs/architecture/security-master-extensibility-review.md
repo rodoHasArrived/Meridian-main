@@ -969,7 +969,12 @@ projection writers against 15 declared gaps (`ProjectionWriters`, `:43-56`;
 `IntentionallyUnprojectedAssetClasses`, `SecurityAssetTermsSchemaTests.cs:21-38`), terms still have no
 valid-time history, and both codec arms remain hand-written behind the round-trip guard.
 
-### P1 — The create boundary writes self-asserted provenance and an arbitrary as-of date onto the golden record
+### P1 — The Security Master write surface accepts self-asserted provenance and an arbitrary as-of date
+
+> **Scope corrected twice under review.** This item was first filed against bulk import, then widened
+> to the shared create boundary, then widened again to amendments and unattended ingests. The scope
+> below comes from a full sweep of `ISecurityMasterService` create/amend callers rather than from the
+> path that happened to be read first, and the enumeration is the finding's real content.
 
 The highest-severity item this pass, and the one the subsystem's own standards already contradict.
 
@@ -1009,15 +1014,32 @@ Two distinct institutional consequences:
   query reads. That is narrower than the recorded-time story, and still worth governing, because a
   caller can assert an economic history the record never had.
 
-**The defect is the shared create boundary, not bulk import.** `POST /api/security-master`
-(`SecurityMasterEndpoints.cs:351-362`) binds a complete `CreateSecurityRequest` from the body, calls
-`RequireSecurityMasterMutationPermission(context)`, and then passes that request to `CreateAsync`
-unchanged — the same caller-asserted `UpdatedBy`, `SourceSystem` and `EffectiveFrom`, by the same
-authorize-then-discard shape. Import is where it is most visible and highest-volume, but a fix
-scoped to `ImportAsync` would leave the ordinary create route self-asserting attribution and
-backdating records. The remediation belongs where every create converges.
+**The defect is the write surface, not bulk import.** Every caller of `ISecurityMasterService`
+create/amend supplies its own `UpdatedBy`, `SourceSystem` and `EffectiveFrom`, and no path derives
+any of them from an authenticated identity:
 
-Three constraints the fix has to respect, none of which need a new concept:
+| Caller | Attribution today |
+| --- | --- |
+| `SecurityMasterImportService:164` (both UI lanes) | whatever the uploaded file asserts, or the CSV parser's constant |
+| `POST /api/security-master` (`SecurityMasterEndpoints.cs:351-362`) | request body, after `RequireSecurityMasterMutationPermission` |
+| `POST` amend (`:379-396`) | request body; the `RequireGovernedTermAmendments` gate **defaults to false** (`SecurityMasterWorkbenchOptions.cs:38`), so the direct route is live in the default configuration |
+| `SecurityMasterEditViewModel:216, 234` (WPF, in-process) | hardcoded `UpdatedBy: "User"` (`:212, 230`) |
+| `EdgarIngestOrchestrator:315, 330` | `UpdatedBy: nameof(EdgarIngestOrchestrator)` — deliberate workload identity |
+| `SecurityMasterCommands:276` (Polygon CLI) | workload identity |
+| `TradingParametersBackfillService:213` | workload identity |
+
+Two corrections this table forces on the earlier framing. First, amendments are **not** covered by
+the governed path in the default configuration, so this is not a create-only gap. Second, the
+unattended ingests are not defects — `nameof(EdgarIngestOrchestrator)` is *better* attribution than
+a username would be, and a remediation that simply required a principal would either reject those
+ingests or destroy useful information.
+
+So the fix is an actor model, not a parameter. It has to distinguish an operator principal (browser
+via `HttpContext`, desktop via some desktop-side source) from a trusted workload identity (Edgar,
+the Polygon CLI, backfill) from internal system paths like
+`ApprovedFieldEditCanonicalMergeHandler:185`, and apply to creates and amendments alike.
+
+Four constraints the fix has to respect:
 
 - **`UpdatedBy` is the actor field; `SourceSystem` is not.** `SecurityMasterConflictDetection` reads
   `SourceSystem` off both sides' provenance and short-circuits when they match
@@ -1028,17 +1050,26 @@ Three constraints the fix has to respect, none of which need a new concept:
   look like a single source — manufacturing conflicts in the first case and suppressing them in the
   second. Derive `UpdatedBy` from the principal; derive `SourceSystem` from trusted ingest metadata
   or a fixed workflow identifier, never from the actor.
-- **The desktop lane needs its own actor source.** Per above, WPF holds no `HttpContext`. Securing
-  both lanes means either a desktop actor source or a shared execution-context abstraction the
-  service reads, rather than an endpoint-only parameter.
+- **The desktop lane needs its own actor source.** Per above, WPF holds no `HttpContext` — it reaches
+  both import and amend in-process. Securing both lanes means a desktop actor source or a shared
+  execution-context abstraction the service reads, rather than an endpoint-only parameter.
+- **Unattended callers need a trusted workload identity, not a principal.** Edgar, the Polygon CLI
+  and the backfill service legitimately have no operator behind them. The execution context needs a
+  service/workload identity path so those ingests keep their current, more informative attribution
+  instead of being rejected or overwritten.
 - **`EffectiveFrom` needs a gate, not a clamp.** Clamping to ingest time would be wrong: a security
   loaded today can legitimately have an economic start date months back, and clamping would falsify
   it and corrupt exactly the effective-dated queries the field exists to serve. Gate backdating
   behind an explicit permission or a trusted ingest workflow instead, so the assertion is authorized
   rather than forbidden.
 
-Note this is a create-path gap specifically — `RequireGovernedTermAmendments` gates amendments, and
-nothing equivalent gates creation on either route.
+One earlier claim in this pass was wrong and is worth retracting explicitly: that
+`RequireGovernedTermAmendments` gates amendments, making this a create-only gap. That option defaults
+to **false** — its own docstring says the default "preserves the direct write surface for deployments
+whose provider-ingest pipelines call these routes" — so on a default deployment the direct amend
+route is live and carries caller-asserted attribution exactly like create. Deployments that enable
+the option do close the direct HTTP amend route, but not the in-process WPF amend path, which never
+touches the endpoint.
 
 ### P2 — CSV import hardcodes its actor as `WpfImport`
 
@@ -1069,13 +1100,19 @@ readiness report) and `:873` (descriptor validation). So today's `DirectLoan` am
 reader rather than mis-routing a record — which is why N4 stays a governance item rather than
 escalating.
 
-### P4 — Import classifies duplicates by exception-message substring, and the same catch swallows cancellation
+### P4 — Three ingest paths classify duplicates by exception-message substring, and the same catch swallows cancellation
 
 `SecurityMasterImportService:171-172` decides whether a failed create was a duplicate — and therefore
 whether the row is reported as `Skipped` or `Failed` — by testing `ex.Message` for the substrings
 `"already exists"` and `"duplicate"`. This is the classify-from-prose antipattern the 2026-08-26 pass
-retired from `ResolveAccountingAssetClass` and `MultiAssetCoverageReadService`, surviving in a third
-place. Rewording an exception message silently converts every duplicate in an import run into a
+retired from `ResolveAccountingAssetClass` and `MultiAssetCoverageReadService`.
+
+**It survives at three ingest sites, not one.** A sweep for that substring pair returns
+`SecurityMasterImportService:171-172`, `EdgarIngestOrchestrator:645-646`, and the Polygon CLI path in
+`SecurityMasterCommands:281-282` — each classifying create failures the same way, and each feeding an
+operator-visible skipped/failed count. Fixing only the import service would leave the same defect in
+both provider ingests, so the remediation belongs on the create outcome the three share rather than
+in any one caller. Rewording an exception message silently converts every duplicate in an import run into a
 reported failure, and the operator-facing summary is built from those counts
 (`SecurityMasterViewModel.cs:4366-4374`).
 
@@ -1088,6 +1125,12 @@ configured, nothing after the loop observes the token, so a cancelled import ret
 result. This breaks the repository's standing guardrail that cancellation flow stays intact, and a
 typed duplicate outcome would not fix it: the remediation has to rethrow cancellation before
 classifying a create failure at all.
+
+The Polygon CLI path shares the shape exactly — `catch (Exception ex)` around
+`CreateAsync(request, ct)` at `SecurityMasterCommands:279-282` — so it swallows cancellation the same
+way. Both defects, the prose classification and the swallowed cancellation, travel together across
+all three sites, which is another reason to fix them on the shared create outcome rather than per
+caller.
 
 The duplicate fix itself is a typed create outcome, **not** a pre-check against the identifier index. A shared
 identifier is not a duplicate here by design: `SecurityMasterImportServiceTests.ImportAsync_WhenRecordsAreCreated_TriggersAutomaticConflictRecordingPerSecurity`

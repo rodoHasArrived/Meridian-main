@@ -1,11 +1,11 @@
 {
   "total_files": 661,
-  "total_lines": 136450,
+  "total_lines": 136493,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 254,
-  "average_lines": 206.4,
+  "average_lines": 206.5,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1609,7 +1609,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 1173,
+      "line_count": 1216,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
