@@ -1255,9 +1255,22 @@ distinguishing "what did we believe then" from "what is true now".
 
 This also constrains P1's actor rule, which is how it came to light: deriving `CreatedBy` from the
 authenticated actor is right for a genuine create and wrong for an update, where it would relabel the
-original creator. The fix is to stop treating create and update as one operation — preserve the
-original `created_by`/`created_at` on conflict and record a separate updater identity and timestamp,
-or split the routes. Either way `CreatedAt` must stop moving, independently of the attribution work.
+original creator.
+
+**Preserving the creation fields is necessary but not sufficient, and an earlier draft of this item
+proposed it as though it were the fix.** The on-conflict clause overwrites the whole row —
+`alias_value`, `provider`, `scope`, `valid_from`, `valid_to` and the rest, not just the creation
+columns (`PostgresSecurityMasterStore.cs:112-124`) — and `RebuildRecordedAsOfAsync` receives that
+single current row and only filters it. So freezing `created_at` would stop the alias vanishing from
+a January view and instead show January **June's corrected value**, retroactively. Both outcomes are
+historically wrong; they differ only in which direction they lie.
+
+The real remedy is therefore larger than an on-conflict tweak: alias state has to be versioned or
+event-backed, so a recorded-as-of rebuild can return the row as it stood at that time rather than the
+current row filtered by date. If that is out of scope for now, the honest alternative is to narrow
+explicitly what recorded-as-of promises for aliases, rather than leave a guarantee the storage shape
+cannot deliver. What must not happen is shipping the creation-field fix and considering the history
+problem closed.
 
 ### P4 — Three ingest paths classify duplicates by exception-message substring, and the same catch swallows cancellation
 
@@ -1271,9 +1284,21 @@ retired from `ResolveAccountingAssetClass` and `MultiAssetCoverageReadService`.
 `SecurityMasterCommands:281-282` — each classifying create failures the same way, and each feeding an
 operator-visible skipped/failed count. Fixing only the import service would leave the same defect in
 both provider ingests, so the remediation belongs on the create outcome the three share rather than
-in any one caller. Rewording an exception message silently converts every duplicate in an import run into a
-reported failure, and the operator-facing summary is built from those counts
-(`SecurityMasterViewModel.cs:4366-4374`).
+in any one caller.
+
+**The substring test does not match the error the system actually raises, so the counts are already
+wrong.** An earlier draft of this item called the classification fragile — something a reworded
+message *would* break. It is worse than that: for the real duplicate case, a repeated `SecurityId`,
+`PostgresSecurityMasterEventStore.AppendAsync` throws `"Security stream version conflict for {id}.
+Expected {x}, actual {y}."` (`:40`), which contains neither `"already exists"` nor `"duplicate"`. So
+the skip branch never fires for a true duplicate today; those rows are already counted `Failed`, and
+the operator-facing summary built from those counts (`SecurityMasterViewModel.cs:4366-4374`) already
+misreports them. Nothing has to change for the defect to bite — it is biting.
+
+That also fixes where the remedy has to aim. A typed mutation outcome and its regression test must be
+grounded in the real stream-exists/concurrency path, not in a hypothetical `"already exists"` message
+that no component emits; a fix written against the latter would leave duplicate imports still
+reported as failures.
 
 **The same `catch` swallows cancellation.** `catch (Exception ex)` (`:168`) also catches the
 `OperationCanceledException` that `CreateAsync(request, ct)` throws when the token trips mid-row.
@@ -1382,9 +1407,11 @@ Read as a delta on the standing lists above.
 2. **Stop alias edits rewriting recorded history (P3b).** The other shipped-behaviour defect, and the
    one that touches a property this subsystem is otherwise careful about: an alias upsert re-stamps
    `created_at`, and recorded-as-of rebuilding filters on it, so correcting an identifier erases it
-   from every earlier historical view. Preserve the original creation fields and record a separate
-   updater identity and timestamp, or split create from update. Worth fixing ahead of the broader
-   attribution work, since it is narrower and loses data today.
+   from every earlier historical view. Note the scope honestly — the upsert overwrites the whole row,
+   so preserving the creation fields alone converts a disappearing alias into a retroactively-changed
+   one, which is no more truthful. Closing this properly means versioned or event-backed alias state;
+   the interim alternative is to narrow explicitly what recorded-as-of promises for aliases. Ranked
+   here rather than lower because it loses data today, but it is not the small fix item 1 is.
 3. **Derive actor attribution across the whole mutation surface, and gate caller-set dates in both
    directions (P1, P2).**
    An auditability defect on governed write paths that both operator lanes expose, on a subsystem
