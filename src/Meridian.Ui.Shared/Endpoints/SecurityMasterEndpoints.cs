@@ -19,7 +19,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Endpoints for Security Master command/query workflows.
 /// </summary>
-public static class SecurityMasterEndpoints
+public static partial class SecurityMasterEndpoints
 {
     public static void MapSecurityMasterEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
@@ -29,6 +29,9 @@ public static class SecurityMasterEndpoints
         // as [FromBody], causing an InvalidOperationException on the first request to any endpoint.
         if (app.Services.GetService<ISecurityMasterQueryService>() is null)
             return;
+
+        var corporateActionGroup = app.MapGroup(string.Empty).WithTags("CorporateActions");
+        MapCorporateActionOperationsEndpoints(corporateActionGroup, jsonOptions);
 
         var group = app.MapGroup(string.Empty).WithTags("SecurityMaster");
         group.AddEndpointFilter(RequireViewSecurityMasterPermission);
@@ -654,99 +657,17 @@ public static class SecurityMasterEndpoints
             {
                 return Results.BadRequest(ex.Message);
             }
+            catch (CorporateActionOperationException ex)
+            {
+                return CorporateActionProblem(context, ex);
+            }
         })
         .WithName("AppendSecurityMasterCorporateAction").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<CorporateActionDto>("application/json")
         .Produces<SecurityMasterCorporateActionAppendResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status429TooManyRequests)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .AddEndpointFilter(RequireModifySecurityMasterPermission);
-
-        /// <summary>
-        /// Runs provider-backed corporate-action ingest across mastered ticker symbols.
-        /// </summary>
-        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsIngest, async (
-            AppSecurityMaster.CorporateActions.CorporateActionIngestRequest? request,
-            HttpContext context,
-            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionIngestOrchestrator orchestrator,
-            CancellationToken ct) =>
-        {
-            var actor = ResolveActor(context);
-            var effectiveRequest = (request ?? new AppSecurityMaster.CorporateActions.CorporateActionIngestRequest()) with
-            {
-                Actor = actor,
-                CorrelationId = context.TraceIdentifier
-            };
-
-            var result = await orchestrator.IngestAsync(effectiveRequest, ct).ConfigureAwait(false);
-            context.RequestServices.GetService<AppSecurityMaster.CorporateActions.CorporateActionInboxState>()?.Record(result);
-            return Results.Json(result, jsonOptions);
-        })
-        .WithName("IngestSecurityMasterCorporateActions").RequirePermission(UserPermission.ModifySecurityMaster)
-        .Accepts<AppSecurityMaster.CorporateActions.CorporateActionIngestRequest>("application/json")
-        .Produces<AppSecurityMaster.CorporateActions.CorporateActionIngestResult>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status429TooManyRequests)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .AddEndpointFilter(RequireModifySecurityMasterPermission);
-
-        /// <summary>
-        /// Returns staged corporate-action proposals from the most recent ingest sweep for
-        /// the workbench inbox badge and review list.
-        /// </summary>
-        group.MapGet(UiApiRoutes.SecurityMasterCorporateActionsInbox, (
-            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionInboxState inboxState) =>
-            Results.Json(inboxState.GetInbox(), jsonOptions))
-        .WithName("GetSecurityMasterCorporateActionInbox").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
-        .Produces<AppSecurityMaster.CorporateActions.CorporateActionInboxDto>(StatusCodes.Status200OK);
-
-        /// <summary>
-        /// Applies one staged inbox proposal: consumes it from the snapshot and appends the
-        /// corporate action through the governed command service under the operator's identity.
-        /// </summary>
-        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsInboxApply, async (
-            AppSecurityMaster.CorporateActions.CorporateActionInboxApplyRequest? request,
-            HttpContext context,
-            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionInboxState inboxState,
-            [FromServices] ISecurityMasterCorporateActionCommandService commandService,
-            CancellationToken ct) =>
-        {
-            if (request is null)
-                return Results.BadRequest("An apply request is required.");
-
-            var actor = ResolveActor(context);
-            if (!inboxState.TryTakeStaged(request.SecurityId, request.ActionType, request.ExDate, out var proposal))
-                return Results.NotFound("No staged proposal matches the requested security, action type, and ex-date.");
-
-            try
-            {
-                var result = await commandService.AppendAsync(
-                    new SecurityMasterCorporateActionAppendRequestDto(
-                        SecurityId: proposal.SecurityId,
-                        CorporateAction: AppSecurityMaster.CorporateActions.CorporateActionProposalMapper.ToCorporateAction(proposal),
-                        SourceSystem: proposal.WinningSource,
-                        Actor: actor,
-                        SourceRecordId: $"{proposal.Ticker}:{proposal.ActionType}:{proposal.ExDate:yyyyMMdd}:{proposal.WinningSource}",
-                        Reason: proposal.DissentingSources.Count == 0
-                            ? "Operator applied staged corporate-action proposal from the inbox."
-                            : $"Operator applied staged proposal over dissent from {string.Join(", ", proposal.DissentingSources)}.",
-                        CorrelationId: context.TraceIdentifier),
-                    ct).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(ex.Message);
-            }
-        })
-        .WithName("ApplySecurityMasterCorporateActionInboxProposal").RequirePermission(UserPermission.ModifySecurityMaster)
-        .Accepts<AppSecurityMaster.CorporateActions.CorporateActionInboxApplyRequest>("application/json")
-        .Produces<SecurityMasterCorporateActionAppendResultDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound)
-        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
