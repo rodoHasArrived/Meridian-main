@@ -76,6 +76,13 @@ risks that compound as new asset classes land.
 > to force maker-checker still has an ungated amendment path. That is one call to close, and it also
 > makes the 2026-08-24 resolution's "gates all three routes uniformly" incomplete.
 >
+> **The second shipped-behaviour defect (P3b, priority 2) loses history today**: an alias upsert
+> overwrites the existing row's `created_at`, and `RebuildRecordedAsOfAsync` filters aliases by it, so
+> correcting an alias removes it from every recorded-as-of view earlier than the correction — an
+> identifier recorded in January and corrected in June vanishes from the January view. Unlike the gate
+> bypass it is not a one-call fix: it needs versioned or event-backed alias state, or an explicit
+> narrowing of what recorded-as-of promises for aliases.
+>
 > The pass began on the bulk-import path and its scope widened materially under review: P1 is now a
 > property of the whole `ISecurityMasterService` mutation surface rather than of import, P3 concerns
 > the asset-pack registry, and P4 spans three ingest paths plus a cancellation defect class. Where
@@ -1116,10 +1123,23 @@ Five constraints the fix has to respect:
 
   **Read those as semantic roles, not field names — the request types do not share a shape.**
   `UpsertSecurityAliasRequest` has neither `UpdatedBy` nor `SourceSystem`: its actor role is
-  `CreatedBy`, its source role is `Provider`, and its temporal role is `ValidFrom`/`ValidTo`
-  (`SecurityCommands.cs:59-69`). An actor model built from the create request's field names would
-  silently omit or mis-map alias attribution, which is the one surface where the temporal fields also
-  have live query effect (below).
+  `CreatedBy` and its temporal role is `ValidFrom`/`ValidTo` (`SecurityCommands.cs:59-69`). An actor
+  model built from the create request's field names would silently omit or mis-map alias attribution.
+
+  **`Provider` on an alias is not a source role, and must stay caller-authored.** An earlier draft of
+  this bullet mapped it to `SourceSystem`'s role by name similarity. It does not hold: `Provider`
+  namespaces the identifier *value*, and lookup compares it against the provider the *query* asks for
+  (`ProviderMatches`, `SecurityMasterQueryService.cs:443-456`) — a ticker in Bloomberg's namespace is
+  a different identifier from the same string in Reuters'. Deriving it from the executing identity
+  would rewrite what the record asserts about the world, and would break resolution for every alias
+  whose provider is not the mutating system. `Provider` is content; `SourceSystem` is provenance about
+  the mutation, which is why only the latter is in scope.
+
+  That is the same boundary `Reason` sits on, so state it once as the test rather than accumulating
+  exceptions: **the rule governs provenance about the mutation — who performed it, on whose authority,
+  from what upstream evidence, effective when — and never data that is the record's own content.**
+  `Reason` and `Provider` are both on the content side. A field's name resembling a provenance field's
+  is not evidence; what the consuming code reads it *for* is.
 
   **`Reason` is the exception and must stay caller-authored.** It is persisted through the same
   `ToProvenance` call, so the rule as stated would sweep it in — wrongly. An operator's rationale is
@@ -1173,26 +1193,42 @@ Five constraints the fix has to respect:
   trusted ingest workflow instead, so the assertion is authorized rather than forbidden.
 
   **Gate both directions, not just backdating.** A *future* bound is the same arbitrary assertion and
-  has a concrete effect: current identifier lookup requires `alias.ValidFrom <= asOf`
-  (`SecurityMasterQueryService.cs:392-398`), so a caller can hide an alias from lookup by dating its
-  validity forward. Forward-dated economic terms likewise persist as asserted metadata. The gate
-  belongs on every caller-selected valid-time override in either direction.
+  has a concrete effect: current identifier lookup requires `ValidFrom <= asOf`
+  (`SecurityMasterQueryService.cs:382-387, 392-398`), so a caller can hide an identifier from lookup by
+  dating its validity forward. Forward-dated economic terms likewise persist as asserted metadata. The
+  gate belongs on every caller-selected valid-time override in either direction.
 
-  **The query exposure differs by field, and the alias case needs stating precisely.** For economic
-  *term* dates the exposure is stored-provenance truthfulness only — nothing selects terms by
-  `EffectiveFrom`, per the bullet above. Alias windows do have live query effect, but not uniformly:
+  **The live query effect is not alias-only.** `MatchesIdentifier` applies the same
+  `ValidFrom <= asOf && (ValidTo is null || ValidTo > asOf)` predicate in two arms: to the projection's
+  *canonical* identifiers first (`:382-387`), then to its aliases (`:392-398`). Canonical identifier
+  windows are caller-supplied too, and by a route that is easy to miss because it is nested rather than
+  top-level: `CreateSecurityRequest.Identifiers` is a collection of `SecurityIdentifierDto`, each
+  carrying its own `ValidFrom`/`ValidTo` (`SecurityIdentifiers.cs:53-61`). A gate written against the
+  request's own scalar date fields would leave a caller able to post a security whose primary ticker is
+  dated out of the current-lookup window at creation — the same result as the alias case, one nesting
+  level down. Whatever enforces this must walk into the identifier collection, not just the request's
+  surface fields.
+
+  **The exposure differs by field, and the identifier case needs stating precisely.** For economic
+  *term* dates it is stored-provenance truthfulness only — nothing selects terms by `EffectiveFrom`,
+  per the bullet above. Identifier and alias windows do have live query effect, but not uniformly:
   `RebuildRecordedAsOfAsync` filters the returned alias collection by `CreatedAt`, `ValidFrom` and
   `ValidTo` (`SecurityMasterAggregateRebuilder.cs:104-107`), and current lookup applies the window as
-  above. Historical *resolution* is more forgiving than an earlier draft of this bullet claimed:
-  `TryGetProjectionByIdentifierAsync` deliberately falls back to identity matching that ignores the
-  window when nothing is active at the as-of (`SecurityMasterQueryService.cs:332-341`, with a comment
-  explaining why), so a unique alias outside its window still resolves. Name the two real exposures —
-  current lookup, and the alias collection returned by `GetRecordedByIdAsOfAsync` — rather than
-  attributing the effect to as-of identifier lookup generally. The gate has to cover the whole surface, not just create:
-  `EffectiveFrom` on create and amend, `EffectiveTo` on `DeactivateSecurityRequest`
-  (`SecurityCommands.cs:46`), and `ValidFrom` / `ValidTo` on `UpsertSecurityAliasRequest` (`:67-68`).
-  Otherwise a caller who cannot backdate a definition can still backdate its deactivation or an
-  alias's validity window, which reaches the same historical-integrity problem by another route.
+  above. Historical *resolution* is more forgiving than an earlier draft of this bullet claimed, and
+  forgiving symmetrically across both arms: `TryGetProjectionByIdentifierAsync` falls back to
+  `MatchesIdentifierIgnoringWindow` when nothing is active at the as-of
+  (`SecurityMasterQueryService.cs:332-341`, with a comment explaining why), so a unique identifier or
+  alias outside its window still resolves. Note *which* lookups get that mercy: the fallback is enabled
+  by `allowIdentityFallback: asOfUtc is not null` (`:55`), so historical lookup is forgiving and
+  **current** lookup — the caller passing no as-of — is strictly window-filtered with no fallback at
+  all. Name the two real exposures — current lookup, and the alias collection returned by
+  `GetRecordedByIdAsOfAsync` — rather than attributing the effect to as-of identifier lookup generally.
+  The gate has to cover the whole surface, not just create: `EffectiveFrom` on create and amend,
+  `EffectiveTo` on `DeactivateSecurityRequest` (`SecurityCommands.cs:46`), `ValidFrom` / `ValidTo` on
+  `UpsertSecurityAliasRequest` (`:67-68`), and the nested `ValidFrom` / `ValidTo` on every
+  `SecurityIdentifierDto` in a create request's `Identifiers`. Otherwise a caller who cannot backdate a
+  definition can still backdate its deactivation, an alias's validity window, or a canonical
+  identifier's — each reaching the same historical-integrity problem by another route.
 - **The workbench chain must be preserved, not reworked.** Publish already resolves the actor
   server-side and carries it through the command service into the canonical amendment. That path is
   the target state, not a migration candidate: an actor-model change that re-plumbs it risks
@@ -1419,8 +1455,12 @@ Read as a delta on the standing lists above.
    converge, not at `ImportAsync`: all six public members of `SecurityMasterService` carry
    caller-asserted attribution, and amendments are not covered by the governed path in the default
    configuration. Derive every actor field — `UpdatedBy`, and `CreatedBy` on alias upsert — and gate
-   every caller-controlled valid-time field, not just `EffectiveFrom`. Keep `SourceSystem` out of it:
-   that field carries source identity for conflict detection, not actor identity. Preserve workload
+   every caller-controlled valid-time field, not just `EffectiveFrom`; that includes the `ValidFrom` /
+   `ValidTo` nested inside each `SecurityIdentifierDto` of a create request, which a gate written
+   against the request's own scalar fields will not reach. Keep the record's *content* out of it:
+   `SourceSystem` carries source identity for conflict detection rather than actor identity, `Provider`
+   namespaces an identifier value, and `Reason` is the operator's own rationale — deriving any of the
+   three would corrupt what the record asserts. Preserve workload
    identities for unattended ingests rather than replacing them with a principal, and preserve the
    workbench chain that already does this correctly.
 4. **Make the pack-overlap rule symmetric across incumbents, candidates, and planned classes
