@@ -1089,11 +1089,17 @@ left to forward whatever their request carried.
 
 Five constraints the fix has to respect:
 
-- **The rules below are stated per field because the surface is six members, not two.** An earlier
-  draft wrote them for create and amend and left them there while widening the surface — so they
-  named `UpdatedBy` and `EffectiveFrom` only, and applying them literally would have left alias
-  attribution and deactivation dates spoofable. Read each rule as covering *every* field of its kind
-  on the surface, not the two the create path happens to use.
+- **The general rule, which the per-field notes below only illustrate.** Successive review rounds
+  each found another field the enumerated version missed — `CreatedBy`, `EffectiveTo`,
+  `ValidFrom`/`ValidTo`, `SourceRecordId` — which is what an enumeration invites. So state it once,
+  generally: **every provenance-bearing field on a mutation request is caller-asserted today, and
+  each must end up either server-derived or validated against trusted workflow metadata.** That
+  covers actor identity, source identity, upstream record identity and every valid-time bound,
+  whatever a given request type calls them. `SourceRecordId` is the easiest to overlook and makes the
+  point: `SecurityMasterMapping` persists it into the provenance document on create, amend and
+  deactivate (`:21, 34, 41`), so a caller can attach an arbitrary upstream evidence identifier to a
+  governed record. Treat the notes that follow as worked examples of this rule, not as its extent —
+  an implementer who satisfies only the named fields has not satisfied the finding.
 - **Every actor-identifying field must be server-derived, whatever it is called.** That is `UpdatedBy`
   on create, amend and deactivate, and **`CreatedBy` on alias upsert** — `UpsertAliasAsync` copies
   `request.CreatedBy` straight into the stored `SecurityAliasDto` (`SecurityMasterService.cs:284-300`)
@@ -1218,11 +1224,17 @@ The two defects therefore do not have one shared home:
 **The two columns need separate fixes — an earlier draft of this item said otherwise and was wrong.**
 A typed create outcome fixes the first column only. It changes how a duplicate is *signalled*, but
 `CreateAsync(…, ct)` still throws `OperationCanceledException`, and a broad `catch (Exception)` will
-keep swallowing it whatever the duplicate signal looks like. Every cancellation cell in the table
-needs its own fix at its own catch — rethrow cancellation, or narrow the catch — and Edgar's create
-loop (`:120-127`) is the reference for exactly that. Edgar's conflict-count catch needs the same
-treatment separately. Reading the typed outcome as covering cancellation would leave both operator
-paths returning normally after a cancelled import, which is the defect this item is reporting.
+keep swallowing it whatever the duplicate signal looks like. Reading the typed outcome as covering
+cancellation would leave both operator paths returning normally after a cancelled import, which is
+the defect this item is reporting.
+
+**The cancellation rule, stated so it does not depend on the table.** Every broad `catch (Exception)`
+wrapping a cancellable await on these ingest paths swallows cancellation and needs the same remedy —
+rethrow, or narrow the catch to what it means to handle. `EdgarIngestOrchestrator` alone has five
+such catches: the create loop at `:120-127` gets it right (it rethrows), while `:250-254`,
+`:286-290` and the conflict count at `:627-641` do not, and successive sweeps kept finding more.
+The table below is illustrative of the shape, not an inventory to work through; the fix is the rule
+applied to every such catch, with Edgar's create loop as the reference for what right looks like.
 
 The duplicate fix itself is a typed create outcome, **not** a pre-check against the identifier index. A shared
 identifier is not a duplicate here by design: `SecurityMasterImportServiceTests.ImportAsync_WhenRecordsAreCreated_TriggersAutomaticConflictRecordingPerSecurity`
