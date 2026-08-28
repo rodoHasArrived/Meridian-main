@@ -180,21 +180,22 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService, 
                     imported++;
                     _logger.LogDebug("Imported security {Ticker}", request.Identifiers.FirstOrDefault()?.Value ?? "?");
                 }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    // Cancellation is not an import outcome. Counting it as a failed row would report
+                    // a partial import as a completed one with failures the operator never caused.
+                    throw;
+                }
+                catch (Exception ex) when (SecurityMasterIngestFailureClassifier.IsAlreadyMastered(ex))
+                {
+                    skipped++;
+                    _logger.LogDebug("Skipped security already mastered: {Message}", ex.Message);
+                }
                 catch (Exception ex)
                 {
-                    // Check if it's a duplicate (409 or similar)
-                    if (ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
-                        ex.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase))
-                    {
-                        skipped++;
-                        _logger.LogDebug("Skipped duplicate security: {Message}", ex.Message);
-                    }
-                    else
-                    {
-                        failed++;
-                        errors.Add($"Security {request.Identifiers.FirstOrDefault()?.Value ?? "?"}: {ex.Message}");
-                        _logger.LogError(ex, "Failed to import security");
-                    }
+                    failed++;
+                    errors.Add($"Security {request.Identifiers.FirstOrDefault()?.Value ?? "?"}: {ex.Message}");
+                    _logger.LogError(ex, "Failed to import security");
                 }
 
                 UpdateActiveImport(

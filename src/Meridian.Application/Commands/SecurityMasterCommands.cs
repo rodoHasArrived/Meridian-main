@@ -276,19 +276,20 @@ internal sealed class SecurityMasterCommands : ICliCommand
                 await _securityMasterService.CreateAsync(request, ct).ConfigureAwait(false);
                 imported++;
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // Cancellation ends the ingest; it is not a per-ticker outcome.
+                throw;
+            }
+            catch (Exception ex) when (SecurityMasterIngestFailureClassifier.IsAlreadyMastered(ex))
+            {
+                skipped++;
+            }
             catch (Exception ex)
             {
-                if (ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
-                    ex.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase))
-                {
-                    skipped++;
-                }
-                else
-                {
-                    failed++;
-                    var ticker = request.Identifiers.FirstOrDefault()?.Value ?? "?";
-                    errors.Add($"{ticker}: {ex.Message}");
-                }
+                failed++;
+                var ticker = request.Identifiers.FirstOrDefault()?.Value ?? "?";
+                errors.Add($"{ticker}: {ex.Message}");
             }
 
             if ((i + 1) % ProgressReportInterval == 0 || i == requests.Count - 1)
