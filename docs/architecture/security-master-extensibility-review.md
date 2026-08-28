@@ -1014,12 +1014,34 @@ Two distinct institutional consequences:
   query reads. That is narrower than the recorded-time story, and still worth governing, because a
   caller can assert an economic history the record never had.
 
-**The defect is the write surface, not bulk import.** Every caller of `ISecurityMasterService`
-create/amend supplies its own `UpdatedBy`, `SourceSystem` and `EffectiveFrom`, and no path derives
-any of them from an authenticated identity:
+**The defect is the write surface, not bulk import.** State it as a property rather than a list,
+because five review rounds each turned up another caller and a list is the wrong shape for this:
+**on `ISecurityMasterService`, caller-supplied attribution is the default and server-derived
+attribution is the exception.** Every mutation request type carries `UpdatedBy` / `SourceSystem` /
+an effective date as ordinary payload fields, so any new caller inherits the gap unless its author
+knows to do otherwise.
+
+**One path already does it correctly, and it is the model for the fix.** The governed workbench
+publish endpoint calls `EndpointAuthorization.TryResolveActor(context, out var actor)` and rebinds
+the request with `request with { … Actor = actor }`
+(`WorkstationEndpoints.SecurityMasterWorkbench.cs:292-299`), so the body's value cannot decide the
+actor. `SecurityMasterWorkbenchCommandService` carries that actor into the published event
+(`:761-770`), and `ApprovedFieldEditCanonicalMergeHandler` copies it into `UpdatedBy` on the
+canonical amendment (`:170-185`). An earlier draft of this item claimed no path derives attribution
+from an authenticated identity; that was wrong, and the correction improves the remediation — the fix
+extends an existing server-derived provenance chain rather than inventing one, and that chain must be
+preserved rather than reworked by any actor-model migration.
+
+The table below is **illustrative, not exhaustive** — it is what successive sweeps have turned up.
+Enumerating it definitively means walking all six public mutations of `SecurityMasterService`
+(`CreateAsync :68`, `AmendTermsAsync :71`, `AmendPreferredEquityTermsAsync :208`,
+`AmendConvertibleEquityTermsAsync :229`, `DeactivateAsync :250`, `UpsertAliasAsync :284`) and their
+callers, including registered workflow services, not grepping method names.
 
 | Caller | Attribution today |
 | --- | --- |
+| Governed workbench publish (`WorkstationEndpoints.SecurityMasterWorkbench.cs:292-299`) | **server-derived from the authenticated actor** — the reference implementation |
+| `SecurityMasterTickerChangeService:72-85` | forwards `UpdatedBy` / `SourceSystem` / `EffectiveAtUtc` from `RecordTickerChangeRequest` |
 | `SecurityMasterImportService:164` (both UI lanes) | whatever the uploaded file asserts, or the CSV parser's constant |
 | `POST /api/security-master` (`SecurityMasterEndpoints.cs:351-362`) | request body, after `RequireSecurityMasterMutationPermission` |
 | `POST` amend (`:379-396`) | request body; the `RequireGovernedTermAmendments` gate **defaults to false** (`SecurityMasterWorkbenchOptions.cs:38`), so the direct route is live in the default configuration |
@@ -1059,9 +1081,13 @@ ingests or destroy useful information.
 So the fix is an actor model, not a parameter. It has to distinguish an operator principal (browser
 via `HttpContext`, desktop via some desktop-side source) from a trusted workload identity (Edgar,
 the Polygon CLI, backfill) from internal system paths like
-`ApprovedFieldEditCanonicalMergeHandler:185`, and apply to creates and amendments alike.
+`ApprovedFieldEditCanonicalMergeHandler:185`, and apply across the mutation surface rather than to
+creates alone. Generalising `TryResolveActor` — already proven on the workbench path — is the
+obvious starting point, and registered workflow services such as
+`SecurityMasterTickerChangeService` need a defined identity source in that model rather than being
+left to forward whatever their request carried.
 
-Four constraints the fix has to respect:
+Five constraints the fix has to respect:
 
 - **`UpdatedBy` is the actor field; `SourceSystem` is not.** `SecurityMasterConflictDetection` reads
   `SourceSystem` off both sides' provenance and short-circuits when they match
@@ -1084,6 +1110,10 @@ Four constraints the fix has to respect:
   it and corrupt exactly the effective-dated queries the field exists to serve. Gate backdating
   behind an explicit permission or a trusted ingest workflow instead, so the assertion is authorized
   rather than forbidden.
+- **The workbench chain must be preserved, not reworked.** Publish already resolves the actor
+  server-side and carries it through the command service into the canonical amendment. That path is
+  the target state, not a migration candidate: an actor-model change that re-plumbs it risks
+  breaking the one provenance chain in this subsystem that is already correct.
 
 One earlier claim in this pass was wrong and is worth retracting explicitly: that
 `RequireGovernedTermAmendments` gates amendments, making this a create-only gap. That option defaults
