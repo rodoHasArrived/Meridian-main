@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-26 (resolution pass; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-08-28 (scheduled institutional-requirements pass; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -62,6 +62,17 @@ risks that compound as new asset classes land.
 > N2. N4, N5 and N6 stay open. See
 > [Resolution pass — 2026-08-26](#resolution-pass--2026-08-26), which also records the intended
 > behaviour deltas.
+>
+> **Scheduled institutional-requirements pass, 2026-08-28.** Re-read against `d3793290`. The verdict
+> stands. Every closure claimed by the 2026-08-26 resolution was independently re-verified against
+> source rather than taken on the resolution's word, and all of them hold. N4, N5, N6 and the three
+> deferred items are unchanged. Five new items are filed, all on the bulk-import path, which no prior
+> pass had read past its parser. See
+> [Scheduled institutional-requirements pass — 2026-08-28](#scheduled-institutional-requirements-pass--2026-08-28).
+> Its highest-severity finding is that bulk import takes `UpdatedBy`, `SourceSystem` and
+> `EffectiveFrom` from the uploaded file, so a governed create carries self-asserted provenance and an
+> arbitrary as-of date while the authenticated principal — read two lines earlier for authorization —
+> never reaches the record.
 
 ---
 
@@ -917,6 +928,166 @@ These are intended and stated rather than incidental:
 
 ---
 
+## Scheduled institutional-requirements pass — 2026-08-28
+
+Re-read against `d3793290` (58 commits after `2917848a`, of which two touch Security Master — both
+the 2026-08-26 resolution). No code was changed by this pass and no tests were run; every claim below
+is a source read.
+
+Because the 2026-08-26 pass filed and closed its own findings in the same round, this pass re-verified
+each claimed closure against source independently rather than accepting the resolution's account.
+**All of them hold** — see below. The pass then read the bulk-import path end to end, which no prior
+pass had followed past `SecurityMasterCsvParser`; that is where the new findings are.
+
+### Claimed closures, independently re-verified
+
+| # | Item | Evidence at `d3793290` |
+| --- | --- | --- |
+| N1 | `CashSweep` accounted as an asset-backed security | `AssetFamily.SecuritizedCredit` exists (`SecurityClassification.fs:30`, serialized at `:112`); `StructuredCredit` carries it (`SecurityMaster.fs:675`) and `CashSweep` keeps `StructuredCash` (`:667`). The adapter no longer reads the family: `ResolveAccountingAssetClass` is a single delegation to `SecurityAssetClassCatalog.ResolveAccountingInstrumentClass` (`SecurityMasterAccountingEventSourceAdapter.cs:663-664`). |
+| V1 | No catalog-to-validator parity guard | `SecurityAssetClassParityGuardTests.ValidatorRegistry_CoversExactlyTheCatalogAssetClasses` (`:22`). |
+| N3 | Packs declare classes the domain cannot represent | Guarded in both directions (`:32`, `:43`) plus `ValidateDescriptor` rejection tests (`:63`, `:83`). `PlannedAssetClasses` is reported separately from present coverage. |
+| V2 | CSV import broken for every asset class | `BuildCommonTerms` emits `displayName`/`currency`/`exchange` (`SecurityMasterCsvParser.cs:165-179`); the accepted set derives from `SecurityAssetClassCatalog.IdentifierOnlyImportableAssetClasses` (`:110`), which is exactly `Equity` and `InvestmentFund` and is parity-tested against the terms schema (`SecurityAssetClassParityGuardTests.cs:104`). |
+| N2 | Coverage read model contradicted ADR-022 | Confirmed; the read model resolves the class a referenced security declares. |
+
+### Re-verified as still open, unchanged
+
+| # | Item | Evidence at `d3793290` |
+| --- | --- | --- |
+| N4 | `ValidateAll()` cannot fire its own overlap rule | `SecurityAssetPackRegistry.cs:289` still filters overlap groups to those containing a *candidate* pack, and `ValidateAll()` still passes an empty candidate list (`:258-261`). `DirectLoan` is still claimed by both `private-loan-credit` (`:198`) and `mortgage-facility-intercompany` (`:222`). |
+| N5 | Per-pack contract schema is one shared prose object | `ContractSchema` (`:37`), `StandardValidationRules` (`:117`) and `StandardReportingTaxonomy` (`:153`) remain single static instances of English phrases shared by all ten packs. |
+| N6 | Projection fan-out writes every class on every upsert | `PostgresSecurityMasterStore.cs:386-389` still runs all 11 writers per record; non-matching writers still delete (`:398-402`). |
+
+The three long-standing deferred items are unchanged and still governed rather than drifting: 11
+projection writers against 15 declared gaps (`ProjectionWriters`, `:43-56`;
+`IntentionallyUnprojectedAssetClasses`, `SecurityAssetTermsSchemaTests.cs:21-38`), terms still have no
+valid-time history, and both codec arms remain hand-written behind the round-trip guard.
+
+### P1 — Bulk import writes self-asserted provenance and an arbitrary as-of date onto the golden record
+
+The highest-severity item this pass, and the one the subsystem's own standards already contradict.
+
+`SecurityMasterImportService.ImportAsync` takes `fileContent`, `fileExtension`, a progress reporter
+and a cancellation token (`:42-46`) — **no actor parameter**. The JSON branch deserializes the
+uploaded file straight into `List<CreateSecurityRequest>` (`:108-115`) and hands each element to
+`CreateAsync` unmodified (`:164`). `CreateSecurityRequest` carries `SecurityId`, `SourceSystem`,
+`UpdatedBy`, `SourceRecordId` and `EffectiveFrom` (`SecurityCommands.cs:5-15`), so on this path all
+five are asserted by the file.
+
+The HTTP surface makes the gap explicit rather than incidental. `SecurityMasterEndpoints.cs:898-919`
+binds `HttpContext context`, reads the caller's permissions out of it to authorize the request, and
+then calls `ImportAsync` **without passing that identity on**. The principal is in scope, is trusted
+enough to gate the write, and is discarded before the write happens. Both operator lanes reach this
+route — the WPF workstation through `SecurityMasterViewModel.OnImportFromFile`, which offers a
+`CSV/JSON` file dialog (`:4324-4328`), and the browser workstation through the endpoint.
+
+Two distinct institutional consequences:
+
+- **Attribution.** This review already records, under What's Solid, that override approvals carry
+  "reviewer identity derived from the authenticated principal, not the request body". Bulk create is
+  the same governed surface reaching the opposite conclusion, and it is the higher-volume one. A
+  golden record cannot defend a value in an audit if the only record of who asserted it is a string
+  the asserting file chose.
+- **Bitemporality.** `EffectiveFrom` is caller-supplied and unbounded, so an import can backdate a
+  definition to any point. The bitemporal rebuilder is one of this subsystem's strongest pieces —
+  `RebuildRecordedAsOfAsync` exists precisely so "a projection-only current definition cannot
+  masquerade as history" — and an unconstrained caller-supplied effective date is the one input that
+  design cannot defend itself against.
+
+The fix is small and does not need a new concept: thread the authenticated principal into
+`ImportAsync`, stamp `UpdatedBy` and `SourceSystem` from it (retaining any file-supplied value as a
+vendor reference, not as attribution), and either clamp `EffectiveFrom` to the ingest time or require
+an explicit backdating permission. Note this is a create-path gap only —
+`RequireGovernedTermAmendments` gates amendments, and nothing equivalent gates bulk creation.
+
+### P2 — CSV import hardcodes its actor as `WpfImport`
+
+The same root cause, visible without the JSON path. `SecurityMasterCsvParser.ParseRow` constructs
+every request with `SourceSystem: "SecurityMasterImport"` and `UpdatedBy: "WpfImport"`
+(`:153-154`). Every security a CSV import ever creates carries that same attribution, so the field
+identifies neither the operator nor — since the HTTP endpoint shares the parser — the surface. It is
+a constant occupying an audit field. Closing P1 closes this with it.
+
+### P3 — The pack registry's new planned-coverage dimension is unguarded, widening N4
+
+`PlannedAssetClasses` (added 2026-08-26 to close N3) is checked for catalog membership in both
+directions, but the overlap rule reads `pack.AssetClasses` only
+(`SecurityAssetPackRegistry.cs:285-286`) and never inspects the planned set. Three packs plan
+`CreditFacility` today — `private-loan-credit` (`:202`), `mortgage-facility-intercompany` (`:226`)
+and `commitment-guarantee` (`:234`) — so the class arrives with three claimants and no owner, and
+nothing will say so until it becomes a catalog class, at which point all three packs fail
+`asset-pack.planned-asset-class-already-modeled` at once and the ownership question has to be settled
+under a red build instead of before one.
+
+This is N4's defect reproduced on the new axis, and it argues for fixing N4 by making the overlap rule
+symmetric — evaluate both claimed and planned sets, for incumbents and candidates alike — rather than
+by patching the candidate filter alone.
+
+Mitigating context for N4 as a whole: `FindByAssetClass` (`:253`) has no production consumer, only
+tests. The registry reaches production through `SecurityMasterOperationalReadinessService:295` (the
+readiness report) and `:873` (descriptor validation). So today's `DirectLoan` ambiguity misleads a
+reader rather than mis-routing a record — which is why N4 stays a governance item rather than
+escalating.
+
+### P4 — Import classifies duplicates by exception-message substring
+
+`SecurityMasterImportService:171-172` decides whether a failed create was a duplicate — and therefore
+whether the row is reported as `Skipped` or `Failed` — by testing `ex.Message` for the substrings
+`"already exists"` and `"duplicate"`. This is the classify-from-prose antipattern the 2026-08-26 pass
+retired from `ResolveAccountingAssetClass` and `MultiAssetCoverageReadService`, surviving in a third
+place. Rewording an exception message silently converts every duplicate in an import run into a
+reported failure, and the operator-facing summary is built from those counts
+(`SecurityMasterViewModel.cs:4366-4374`). A typed exception or a pre-check against the identifier
+index would settle it.
+
+### Smaller notes, not filed as findings
+
+- **CSV import defaults a missing currency to `USD`** (`SecurityMasterCsvParser.cs:122-124`). This is
+  deliberate and test-locked (`SecurityMasterCsvParserTests.ParsedRow_DefaultsCurrencyAndOmitsAbsentExchange`),
+  so it is a decision rather than an oversight — but it sits twenty lines above a docstring stating
+  the opposite principle for the sibling payload: "no term is invented for a column the file never
+  had" (`:182-184`). Currency drives FX translation, reporting rollups and valuation, so a fabricated
+  one is worth more than a defaulted one is worth saving. Worth revisiting deliberately, in either
+  direction, so the two payloads state the same contract.
+- **N6's fix is cheaper than the finding implies.** `AssetProjectionWriter` already carries its own
+  asset-class name as its first field (`PostgresSecurityMasterStore.cs:43-56`), so the amplification
+  closes with a dictionary lookup on `record.AssetClass` plus a targeted cleanup on observed class
+  *change* — no restructuring of the registry the design deliberately made additive.
+- **`LedgerExtensionPolicy` is validated by substring** (`SecurityAssetPackRegistry.cs:338-339`,
+  `Contains("core ledger")`). Harmless in isolation and consistent with N5's characterization of the
+  registry as prose checked for non-emptiness; noted so N5's eventual resolution covers it.
+- **The compensating override layer has hardened well.** `IsProfileBackedCustomAsset` and
+  `AssetClassMetadataKeywords` (`SecurityMasterService.cs:961-1029`) are still the hard-coded tables
+  finding 4 counts, but `TryResolveProfileBackedAlternativeAssetClass` now documents and enforces the
+  right rule — the registered profile id alone decides the class, and contradicting envelope metadata
+  is refused rather than silently overridden. The remaining cost is shape, not correctness, exactly
+  as the 2026-08-24 independent pass concluded.
+
+### Priorities from this pass
+
+Read as a delta on the standing lists above.
+
+1. **Stamp import provenance from the authenticated principal, and bound `EffectiveFrom` (P1, P2).**
+   An auditability defect on a governed create path that both operator lanes expose, on a subsystem
+   that already holds itself to the opposite standard elsewhere. Small, local, and the only new item
+   here that weakens a guarantee the architecture otherwise makes well.
+2. **Make the pack-overlap rule symmetric across incumbents, candidates, and planned classes
+   (N4, P3).** Still among the cheapest durable items in this document, and the planned-coverage axis
+   means deferring it now schedules a three-way ownership dispute for the day `CreditFacility` lands.
+3. **Key the projection fan-out by asset class (N6).** Unchanged in importance, and cheaper than
+   previously filed: the writers already carry the key.
+4. **Retire the third classify-from-prose site (P4).** The pattern is two-thirds gone; finishing it
+   keeps it from re-establishing itself as an idiom.
+5. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
+   Unchanged from every prior pass, and unchanged in importance: `DirectLoan`, `StructuredCredit`,
+   `PrivateFundInterest`, `RealEstateHolding` and `CommitmentGuarantee` remain the classes fund
+   operations queries most and the ones with no indexed path.
+
+N5 stays open and stays low-urgency: the honest resolutions are still either promoting the contract
+fields to structured per-pack values or restating the type as descriptive metadata, and either is
+worth more than leaving it to read as a gate that cannot fail.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -932,3 +1103,10 @@ Security Master contracts, the 58 `Meridian.Application` Security Master service
 round-trip and asset-class-support test suites.
 
 No code was changed. No tests were run — this review makes no behavioral claims requiring execution.
+
+The 2026-08-28 pass re-read the F# domain classification tables, `SecurityAssetClassCatalog`,
+`SecurityAssetPackRegistry`, the accounting event source adapter, `PostgresSecurityMasterStore`
+projection fan-out, the parity-guard and terms-schema test suites, and — new to this pass — the bulk
+import path end to end: `SecurityMasterCsvParser`, `SecurityMasterImportService`, the
+`SecurityMasterImport` endpoint in `Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs`, and the
+WPF `SecurityMasterViewModel` import command.
