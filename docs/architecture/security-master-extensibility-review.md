@@ -1111,6 +1111,13 @@ Five constraints the fix has to respect:
   persists it into provenance on create, amend and deactivate (`:21, 34, 41`), so a caller can attach
   an arbitrary upstream evidence identifier to a governed record.
 
+  **Read those as semantic roles, not field names — the request types do not share a shape.**
+  `UpsertSecurityAliasRequest` has neither `UpdatedBy` nor `SourceSystem`: its actor role is
+  `CreatedBy`, its source role is `Provider`, and its temporal role is `ValidFrom`/`ValidTo`
+  (`SecurityCommands.cs:59-69`). An actor model built from the create request's field names would
+  silently omit or mis-map alias attribution, which is the one surface where the temporal fields also
+  have live query effect (below).
+
   **`Reason` is the exception and must stay caller-authored.** It is persisted through the same
   `ToProvenance` call, so the rule as stated would sweep it in — wrongly. An operator's rationale is
   the one provenance field whose *content* should come from the caller; what must be trustworthy is
@@ -1135,9 +1142,14 @@ Five constraints the fix has to respect:
   look like a single source — manufacturing conflicts in the first case and suppressing them in the
   second. Derive `UpdatedBy` from the principal; derive `SourceSystem` from trusted ingest metadata
   or a fixed workflow identifier, never from the actor.
-- **The desktop lane needs its own actor source.** Per above, WPF holds no `HttpContext` — it reaches
-  both import and amend in-process. Securing both lanes means a desktop actor source or a shared
-  execution-context abstraction the service reads, rather than an endpoint-only parameter.
+- **The desktop lane already has an actor source — use it rather than inventing one.** WPF holds no
+  `HttpContext`, but it is not identity-less: `DesktopAuthenticationSession.CurrentActor` resolves the
+  operator from the validated login-session profile (`:24-37`), and that same session is already
+  injected into `SecurityMasterViewModel` and read there (`:1537, 1550-1552`). So the desktop input to
+  a shared execution context exists and is authenticated; what is missing is the wiring from it to the
+  mutation requests, which today carry a hardcoded `"User"`. Naming it matters: an implementer told
+  only that "the desktop needs an actor source" may build a second identity abstraction beside the one
+  Meridian already maintains.
 - **Unattended callers need a trusted workload identity, not a principal.** Edgar, the Polygon CLI
   and the backfill service legitimately have no operator behind them. The execution context needs a
   service/workload identity path so those ingests keep their current, more informative attribution
@@ -1146,17 +1158,26 @@ Five constraints the fix has to respect:
   would be wrong for the same reason the exposure is narrow: a security loaded today can legitimately
   have an economic start date months back, and clamping would overwrite that true fact with a false
   one — replacing a caller-asserted date with a caller-*independent* wrong date, which is worse
-  stored provenance, not better. Gate backdating behind an explicit permission or a trusted ingest
-  workflow instead, so the assertion is authorized rather than forbidden.
+  stored provenance, not better. Gate caller-selected dates behind an explicit permission or a
+  trusted ingest workflow instead, so the assertion is authorized rather than forbidden.
 
-  **The query exposure differs by field, and the two must not be conflated.** For economic *term*
-  dates the exposure is stored-provenance truthfulness only — nothing selects terms by
-  `EffectiveFrom`, per the bullet above. For **alias** windows it is live query behaviour today:
-  `RebuildRecordedAsOfAsync` filters returned aliases by `CreatedAt`, `ValidFrom` and `ValidTo`
-  (`SecurityMasterAggregateRebuilder.cs:104-107`), so a caller-controlled alias window changes what
-  an as-of identifier lookup returns. That makes the alias case the more urgent of the two and the
-  one with a concrete blast radius, which an earlier draft of this bullet obscured by generalising a
-  terms-only caveat across the whole surface. The gate has to cover the whole surface, not just create:
+  **Gate both directions, not just backdating.** A *future* bound is the same arbitrary assertion and
+  has a concrete effect: current identifier lookup requires `alias.ValidFrom <= asOf`
+  (`SecurityMasterQueryService.cs:392-398`), so a caller can hide an alias from lookup by dating its
+  validity forward. Forward-dated economic terms likewise persist as asserted metadata. The gate
+  belongs on every caller-selected valid-time override in either direction.
+
+  **The query exposure differs by field, and the alias case needs stating precisely.** For economic
+  *term* dates the exposure is stored-provenance truthfulness only — nothing selects terms by
+  `EffectiveFrom`, per the bullet above. Alias windows do have live query effect, but not uniformly:
+  `RebuildRecordedAsOfAsync` filters the returned alias collection by `CreatedAt`, `ValidFrom` and
+  `ValidTo` (`SecurityMasterAggregateRebuilder.cs:104-107`), and current lookup applies the window as
+  above. Historical *resolution* is more forgiving than an earlier draft of this bullet claimed:
+  `TryGetProjectionByIdentifierAsync` deliberately falls back to identity matching that ignores the
+  window when nothing is active at the as-of (`SecurityMasterQueryService.cs:332-341`, with a comment
+  explaining why), so a unique alias outside its window still resolves. Name the two real exposures —
+  current lookup, and the alias collection returned by `GetRecordedByIdAsOfAsync` — rather than
+  attributing the effect to as-of identifier lookup generally. The gate has to cover the whole surface, not just create:
   `EffectiveFrom` on create and amend, `EffectiveTo` on `DeactivateSecurityRequest`
   (`SecurityCommands.cs:46`), and `ValidFrom` / `ValidTo` on `UpsertSecurityAliasRequest` (`:67-68`).
   Otherwise a caller who cannot backdate a definition can still backdate its deactivation or an
@@ -1323,7 +1344,8 @@ Read as a delta on the standing lists above.
    `AmendPreferredEquityTermsAsync` ungated. One `RequireGovernedTermAmendmentRoute` call closes it,
    and a route-level test asserting every amendment path refuses under the option keeps it closed.
    Smallest fix in this document with the largest governance consequence.
-2. **Derive actor attribution across the whole mutation surface, and gate backdating (P1, P2).**
+2. **Derive actor attribution across the whole mutation surface, and gate caller-set dates in both
+   directions (P1, P2).**
    An auditability defect on governed write paths that both operator lanes expose, on a subsystem
    that already holds itself to the opposite standard elsewhere. Take it where the mutations
    converge, not at `ImportAsync`: all six public members of `SecurityMasterService` carry
