@@ -39,6 +39,7 @@ import {
   type AccountingReconciliationServices
 } from "./reconciliation-casework-outcome";
 import { formatBytes, formatCount, formatCurrency, formatCurrencyForCode, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
+import { formatCorporateActionPayload } from "./accounting-screen.corporate-action-formatting";
 import {
   accountingBasisDisplayName,
   buildBasisBridgeViewState
@@ -6284,16 +6285,22 @@ function buildCorporateActionDetailViewState(
     subtitle: `${row.securityId} · ${row.corpActId}`,
     description: `${row.eventTypeLabel} event with ex-date ${row.exDateLabel} and recorded amount ${row.amountLabel}.`,
     ariaLabel: `Corporate action detail for ${row.eventTypeLabel} on ${row.securityId}`,
-    statusLabel: row.payDate ? "Pay date scheduled" : "Pay date unavailable",
+    statusLabel: row.lifecycleState ?? (row.payDate ? "Pay date scheduled" : "Pay date unavailable"),
     fields: [
       { label: "Corporate action ID", value: row.corpActId },
       { label: "Event type", value: row.eventTypeLabel },
       { label: "Ex-date", value: row.exDateLabel },
+      { label: "Record date", value: row.recordDate ? formatSecurityDate(row.recordDate) : "—", tone: row.recordDate ? "default" : "warning" },
       { label: "Pay date", value: row.payDateLabel, tone: row.payDate ? "default" : "warning" },
+      { label: "Lifecycle", value: row.lifecycleState ?? "—", tone: row.lifecycleState ? "default" : "warning" },
+      { label: "Supersedes", value: row.supersedesCorpActId ?? "—" },
       { label: "Amount or ratio", value: row.amountLabel, tone: row.amountLabel === "—" ? "warning" : "default" },
       { label: "Currency", value: row.currency ?? "—", tone: row.currency ? "default" : "warning" },
+      { label: "Redemption price (% par)", value: row.redemptionPricePercentOfPar?.toString() ?? "—" },
       { label: "New security", value: row.newSecurityId ?? "—" },
-      { label: "Acquirer security", value: row.acquirerSecurityId ?? "—" }
+      { label: "Acquirer security", value: row.acquirerSecurityId ?? "—" },
+      { label: "Payload schema", value: row.payloadSchemaVersion?.toString() ?? "—", tone: row.payloadSchemaVersion === undefined || row.payloadSchemaVersion === null ? "warning" : "default" },
+      { label: "Typed payload", value: formatCorporateActionPayload(row.payload), tone: row.payload ? "default" : "warning" }
     ]
   };
 }

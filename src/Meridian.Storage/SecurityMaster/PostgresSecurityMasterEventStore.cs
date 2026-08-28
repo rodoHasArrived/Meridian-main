@@ -219,8 +219,93 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
     public async Task AppendCorporateActionAsync(CorporateActionDto action, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(action);
+        var economicFingerprint = CorporateActionEconomicFingerprint.Compute(action);
+
+        const int maximumAttempts = 3;
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                await AppendCorporateActionOnceAsync(action, economicFingerprint, ct).ConfigureAwait(false);
+                return;
+            }
+            catch (PostgresException exception) when (
+                (exception.SqlState is PostgresErrorCodes.SerializationFailure or PostgresErrorCodes.DeadlockDetected
+                 || exception.SqlState == PostgresErrorCodes.UniqueViolation)
+                && attempt < maximumAttempts)
+            {
+                ct.ThrowIfCancellationRequested();
+            }
+            catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.UniqueViolation)
+            {
+                throw new CorporateActionSourceConflictException(
+                    "The canonical corporate action collided with an existing identity or successor; reload the security's canonical chain before retrying.");
+            }
+            catch (PostgresException exception) when (
+                exception.SqlState is PostgresErrorCodes.SerializationFailure or PostgresErrorCodes.DeadlockDetected)
+            {
+                throw new CorporateActionPersistenceUnavailableException(
+                    $"Corporate-action append remained contended after {maximumAttempts} serializable attempts.");
+            }
+            catch (NpgsqlException)
+            {
+                throw new CorporateActionPersistenceUnavailableException(
+                    "Corporate-action persistence is temporarily unavailable; no canonical event was appended.");
+            }
+            catch (TimeoutException)
+            {
+                throw new CorporateActionPersistenceUnavailableException(
+                    "Corporate-action persistence timed out; reload the canonical chain before retrying.");
+            }
+        }
+    }
+
+    private async Task AppendCorporateActionOnceAsync(
+        CorporateActionDto action,
+        string economicFingerprint,
+        CancellationToken ct)
+    {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection
+            .BeginTransactionAsync(IsolationLevel.Serializable, ct)
+            .ConfigureAwait(false);
+        await PostgresCorporateActionCanonicalStore.AcquireSecurityChainLockAsync(
+            connection, transaction, action.SecurityId, ct).ConfigureAwait(false);
+
+        var existing = await PostgresCorporateActionCanonicalStore.LoadOrReconcileByEconomicIdentityAsync(
+                connection,
+                transaction,
+                Qualified("corporate_actions"),
+                action.SecurityId,
+                economicFingerprint,
+                action.LifecycleState,
+                action.SupersedesCorpActId,
+                ct)
+            .ConfigureAwait(false);
+        var canonicalAction = existing ?? action;
+        await PostgresCorporateActionCanonicalStore.ValidateSuccessorAsync(
+                connection, transaction, Qualified("corporate_actions"), canonicalAction, ct)
+            .ConfigureAwait(false);
+
+        if (existing is null)
+        {
+            await InsertCorporateActionAsync(
+                    connection, transaction, action, economicFingerprint, ct)
+                .ConfigureAwait(false);
+        }
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task InsertCorporateActionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        CorporateActionDto action,
+        string economicFingerprint,
+        CancellationToken ct)
+    {
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             insert into {Qualified("corporate_actions")} (
@@ -242,7 +327,9 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 lifecycle_state,
                 supersedes_corp_act_id,
                 redemption_price_percent_of_par,
-                payload)
+                payload,
+                payload_schema_version,
+                economic_fingerprint)
             values (
                 @corp_act_id,
                 @security_id,
@@ -262,8 +349,9 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 @lifecycle_state,
                 @supersedes_corp_act_id,
                 @redemption_price_percent_of_par,
-                @payload)
-            on conflict (corp_act_id) do nothing;
+                @payload,
+                @payload_schema_version,
+                @economic_fingerprint);
             """;
 
         command.Parameters.AddWithValue("corp_act_id", action.CorpActId);
@@ -290,6 +378,8 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 ? payload.GetRawText()
                 : DBNull.Value,
         });
+        command.Parameters.AddWithValue("payload_schema_version", action.PayloadSchemaVersion);
+        command.Parameters.AddWithValue("economic_fingerprint", economicFingerprint);
 
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
@@ -309,6 +399,33 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
         {
             return null;
         }
+    }
+
+    private static CorporateActionDto ReadCorporateAction(NpgsqlDataReader reader)
+    {
+        var payDate = reader.IsDBNull(4) ? (DateTime?)null : reader.GetDateTime(4);
+        var recordDate = reader.IsDBNull(14) ? (DateTime?)null : reader.GetDateTime(14);
+        return new CorporateActionDto(
+            CorpActId: reader.GetGuid(0),
+            SecurityId: reader.GetGuid(1),
+            EventType: reader.GetString(2),
+            ExDate: DateOnly.FromDateTime(reader.GetDateTime(3)),
+            PayDate: payDate.HasValue ? DateOnly.FromDateTime(payDate.Value) : null,
+            DividendPerShare: reader.IsDBNull(5) ? null : reader.GetDecimal(5),
+            Currency: reader.IsDBNull(6) ? null : reader.GetString(6),
+            SplitRatio: reader.IsDBNull(7) ? null : reader.GetDecimal(7),
+            NewSecurityId: reader.IsDBNull(8) ? null : reader.GetGuid(8),
+            DistributionRatio: reader.IsDBNull(9) ? null : reader.GetDecimal(9),
+            AcquirerSecurityId: reader.IsDBNull(10) ? null : reader.GetGuid(10),
+            ExchangeRatio: reader.IsDBNull(11) ? null : reader.GetDecimal(11),
+            SubscriptionPricePerShare: reader.IsDBNull(12) ? null : reader.GetDecimal(12),
+            RightsPerShare: reader.IsDBNull(13) ? null : reader.GetDecimal(13),
+            RecordDate: recordDate.HasValue ? DateOnly.FromDateTime(recordDate.Value) : null,
+            LifecycleState: reader.IsDBNull(15) ? null : reader.GetString(15),
+            SupersedesCorpActId: reader.IsDBNull(16) ? null : reader.GetGuid(16),
+            RedemptionPricePercentOfPar: reader.IsDBNull(17) ? null : reader.GetDecimal(17),
+            Payload: reader.IsDBNull(18) ? null : ParsePayload(reader.GetString(18)),
+            PayloadSchemaVersion: reader.GetInt32(19));
     }
 
     public async Task<IReadOnlyList<CorporateActionDto>> LoadCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
@@ -335,7 +452,8 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                    lifecycle_state,
                    supersedes_corp_act_id,
                    redemption_price_percent_of_par,
-                   payload
+                   payload,
+                   payload_schema_version
             from {Qualified("corporate_actions")}
             where security_id = @security_id
             order by ex_date;
@@ -346,29 +464,7 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            var exDateRaw = reader.GetDateTime(3);
-            var payDateRaw = reader.IsDBNull(4) ? (DateTime?)null : reader.GetDateTime(4);
-            var recordDateRaw = reader.IsDBNull(14) ? (DateTime?)null : reader.GetDateTime(14);
-            results.Add(new CorporateActionDto(
-                CorpActId: reader.GetGuid(0),
-                SecurityId: reader.GetGuid(1),
-                EventType: reader.GetString(2),
-                ExDate: DateOnly.FromDateTime(exDateRaw),
-                PayDate: payDateRaw.HasValue ? DateOnly.FromDateTime(payDateRaw.Value) : null,
-                DividendPerShare: reader.IsDBNull(5) ? null : reader.GetDecimal(5),
-                Currency: reader.IsDBNull(6) ? null : reader.GetString(6),
-                SplitRatio: reader.IsDBNull(7) ? null : reader.GetDecimal(7),
-                NewSecurityId: reader.IsDBNull(8) ? null : reader.GetGuid(8),
-                DistributionRatio: reader.IsDBNull(9) ? null : reader.GetDecimal(9),
-                AcquirerSecurityId: reader.IsDBNull(10) ? null : reader.GetGuid(10),
-                ExchangeRatio: reader.IsDBNull(11) ? null : reader.GetDecimal(11),
-                SubscriptionPricePerShare: reader.IsDBNull(12) ? null : reader.GetDecimal(12),
-                RightsPerShare: reader.IsDBNull(13) ? null : reader.GetDecimal(13),
-                RecordDate: recordDateRaw.HasValue ? DateOnly.FromDateTime(recordDateRaw.Value) : null,
-                LifecycleState: reader.IsDBNull(15) ? null : reader.GetString(15),
-                SupersedesCorpActId: reader.IsDBNull(16) ? null : reader.GetGuid(16),
-                RedemptionPricePercentOfPar: reader.IsDBNull(17) ? null : reader.GetDecimal(17),
-                Payload: reader.IsDBNull(18) ? null : ParsePayload(reader.GetString(18))));
+            results.Add(ReadCorporateAction(reader));
         }
 
         return results;
@@ -419,20 +515,63 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
         foreach (var rename in renames)
         {
-            await using var updateCommand = connection.CreateCommand();
-            updateCommand.Transaction = transaction;
-            updateCommand.CommandText =
-                $"""
-                update {Qualified("corporate_actions")}
-                set event_type = @canonical
-                where event_type = @stored;
-                """;
-            updateCommand.Parameters.AddWithValue("canonical", rename.CanonicalName);
-            updateCommand.Parameters.AddWithValue("stored", rename.StoredValue);
-            await updateCommand.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            var actions = await LoadCorporateActionsForNormalizationAsync(
+                    connection, transaction, rename.StoredValue, ct)
+                .ConfigureAwait(false);
+            foreach (var action in actions)
+            {
+                var normalized = action with { EventType = rename.CanonicalName };
+                await using var updateCommand = connection.CreateCommand();
+                updateCommand.Transaction = transaction;
+                updateCommand.CommandText =
+                    $"""
+                    update {Qualified("corporate_actions")}
+                    set event_type = @canonical,
+                        economic_fingerprint = @economic_fingerprint
+                    where corp_act_id = @corp_act_id;
+                    """;
+                updateCommand.Parameters.AddWithValue("canonical", rename.CanonicalName);
+                updateCommand.Parameters.AddWithValue(
+                    "economic_fingerprint",
+                    CorporateActionEconomicFingerprint.Compute(normalized));
+                updateCommand.Parameters.AddWithValue("corp_act_id", action.CorpActId);
+                await updateCommand.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            }
         }
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return new CorporateActionEventTypeNormalizationResult(Applied: true, renames, unmapped);
+    }
+
+    private async Task<IReadOnlyList<CorporateActionDto>> LoadCorporateActionsForNormalizationAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        string eventType,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select corp_act_id, security_id, event_type, ex_date, pay_date, dividend_per_share,
+                   currency, split_ratio, new_security_id, distribution_ratio,
+                   acquirer_security_id, exchange_ratio, subscription_price_per_share,
+                   rights_per_share, record_date, lifecycle_state, supersedes_corp_act_id,
+                   redemption_price_percent_of_par, payload, payload_schema_version
+            from {Qualified("corporate_actions")}
+            where event_type = @event_type
+            order by corp_act_id
+            for update;
+            """;
+        command.Parameters.AddWithValue("event_type", eventType);
+
+        var actions = new List<CorporateActionDto>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            actions.Add(ReadCorporateAction(reader));
+        }
+
+        return actions;
     }
 }

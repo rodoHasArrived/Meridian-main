@@ -934,6 +934,13 @@ Re-read against `d3793290` (58 commits after `2917848a`, of which two touch Secu
 the 2026-08-26 resolution). No code was changed by this pass and no tests were run; every claim below
 is a source read.
 
+> **Base refreshed.** This pass's branch was later merged with `0a5ef91a`, which landed durable
+> corporate-action processing and relocated the endpoints file. The findings below were re-checked
+> against that merge and all still hold as written; the only edit was P1's endpoint line range, which
+> moved when the corporate-action operations split into their own partial. Line citations therefore
+> resolve against the merged head, not against `d3793290`. Nothing in that work touches the bulk
+> import path, the pack registry, or any other surface this pass reports on.
+
 Because the 2026-08-26 pass filed and closed its own findings in the same round, this pass re-verified
 each claimed closure against source independently rather than accepting the resolution's account.
 **All of them hold** — see below. The pass then read the bulk-import path end to end, which no prior
@@ -973,7 +980,7 @@ uploaded file straight into `List<CreateSecurityRequest>` (`:108-115`) and hands
 `UpdatedBy`, `SourceRecordId` and `EffectiveFrom` (`SecurityCommands.cs:5-15`), so on this path all
 five are asserted by the file.
 
-The HTTP surface makes the gap explicit rather than incidental. `SecurityMasterEndpoints.cs:898-919`
+The HTTP surface makes the gap explicit rather than incidental. `SecurityMasterEndpoints.cs:818-840`
 binds `HttpContext context`, reads the caller's permissions out of it to authorize the request, and
 then calls `ImportAsync` **without passing that identity on**. The principal is in scope, is trusted
 enough to gate the write, and is discarded before the write happens. Both operator lanes reach this

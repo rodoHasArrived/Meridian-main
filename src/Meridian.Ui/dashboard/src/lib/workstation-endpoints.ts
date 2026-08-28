@@ -305,13 +305,47 @@ export const SECURITY_MASTER_API_ENDPOINTS = {
   workstationSecurities: UI_API_ROUTES.WorkstationSecurityMasterSearch,
   workstationConflictsBulkResolve: UI_API_ROUTES.WorkstationSecurityMasterBulkResolveConflicts,
   corporateActionInbox: UI_API_ROUTES.SecurityMasterCorporateActionsInbox,
-  corporateActionInboxApply: UI_API_ROUTES.SecurityMasterCorporateActionsInboxApply,
   qualityReportLatest: UI_API_ROUTES.SecurityMasterQualityReportLatest
 } as const;
 
 /** Coverage draft route carries a `{symbol}` path segment substituted client-side. */
 export function securityMasterCoverageDraftEndpoint(symbol: string): string {
   return UI_API_ROUTES.SecurityMasterCoverageDraft.replace("{symbol}", encodeURIComponent(symbol));
+}
+
+export function securityMasterCorporateActionCaseConflictsEndpoint(
+  caseId: string,
+  query: { state?: string | null; take?: number | null } = {}
+): string {
+  const route = UI_API_ROUTES.SecurityMasterCorporateActionCaseConflicts.replace(
+    "{caseId:guid}",
+    encodeURIComponent(caseId)
+  );
+  const params = new URLSearchParams();
+  if (query.state) {
+    params.set("state", query.state);
+  }
+  if (query.take != null) {
+    params.set("take", String(query.take));
+  }
+  const suffix = params.toString();
+  return suffix ? `${route}?${suffix}` : route;
+}
+
+export function securityMasterCorporateActionCaseConflictEndpoint(
+  caseId: string,
+  conflictId: string
+): string {
+  return UI_API_ROUTES.SecurityMasterCorporateActionCaseConflict
+    .replace("{caseId:guid}", encodeURIComponent(caseId))
+    .replace("{conflictId:guid}", encodeURIComponent(conflictId));
+}
+
+export function securityMasterCorporateActionSourceProposalAcceptEndpoint(proposalId: string): string {
+  return UI_API_ROUTES.SecurityMasterCorporateActionSourceProposalAccept.replace(
+    "{proposalId:guid}",
+    encodeURIComponent(proposalId)
+  );
 }
 
 /**
