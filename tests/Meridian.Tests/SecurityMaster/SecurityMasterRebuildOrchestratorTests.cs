@@ -217,8 +217,8 @@ public sealed class SecurityMasterRebuildOrchestratorTests
                 6L,
                 Arg.Is<IReadOnlyList<SecurityProjectionRecord>>(records => records.Count == 1 && records[0].SecurityId == securityId),
                 Arg.Any<CancellationToken>());
-            conflictService.RecordConflictsForProjectionAsync(
-                Arg.Is<SecurityProjectionRecord>(record => record.SecurityId == securityId),
+            conflictService.RecordConflictsForProjectionsAsync(
+                Arg.Is<IReadOnlyList<SecurityProjectionRecord>>(records => records.Count == 1 && records[0].SecurityId == securityId),
                 Arg.Any<CancellationToken>());
         });
     }

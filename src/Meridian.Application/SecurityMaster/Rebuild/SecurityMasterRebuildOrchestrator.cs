@@ -154,16 +154,13 @@ public sealed class SecurityMasterRebuildOrchestrator
             return;
         }
 
-        foreach (var rebuilt in rebuiltRecords)
+        try
         {
-            try
-            {
-                await _conflictService.RecordConflictsForProjectionAsync(rebuilt, ct).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Conflict detection failed during projection rebuild for security {SecurityId}", rebuilt.SecurityId);
-            }
+            await _conflictService.RecordConflictsForProjectionsAsync(rebuiltRecords, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Conflict detection failed during projection rebuild for {SecurityCount} securities", rebuiltRecords.Count);
         }
     }
 }

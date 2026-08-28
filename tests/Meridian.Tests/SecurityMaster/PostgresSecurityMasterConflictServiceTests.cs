@@ -30,6 +30,13 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     {
         var store = Substitute.For<ISecurityMasterStore>();
         store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(projections);
+        store.FindIdentifierCandidatesAsync(
+                Arg.Any<IReadOnlyList<SecurityIdentifierDto>>(),
+                Arg.Any<IReadOnlyCollection<Guid>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => projections
+                .Where(projection => !call.ArgAt<IReadOnlyCollection<Guid>>(1).Contains(projection.SecurityId))
+                .ToArray());
         return store;
     }
 
@@ -648,5 +655,28 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
 
         var open = await service.GetOpenConflictsAsync(CancellationToken.None);
         open.Should().Contain(c => c.SecurityId == newId && c.FieldPath.Contains("Figi"));
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task FindIdentifierCandidatesAsync_UsesNormalizedIdentifierIndexAndExcludesSubjects()
+    {
+        var existing = MakeProjection(Guid.NewGuid(), "Isin", "US-0378331005", "provider-a");
+        var unrelated = MakeProjection(Guid.NewGuid(), "Isin", "US5949181045", "provider-b");
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        await store.UpsertProjectionAsync(existing, CancellationToken.None);
+        await store.UpsertProjectionAsync(unrelated, CancellationToken.None);
+
+        var lookup = new SecurityIdentifierDto(
+            SecurityIdentifierKind.Isin,
+            "us 0378331005",
+            IsPrimary: true,
+            ValidFrom: DateTimeOffset.UtcNow.AddDays(-1));
+        var candidates = await store.FindIdentifierCandidatesAsync(
+            [lookup],
+            [unrelated.SecurityId],
+            CancellationToken.None);
+
+        candidates.Select(candidate => candidate.SecurityId).Should().Contain(existing.SecurityId);
+        candidates.Select(candidate => candidate.SecurityId).Should().NotContain(unrelated.SecurityId);
     }
 }

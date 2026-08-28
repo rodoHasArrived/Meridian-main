@@ -62,6 +62,33 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             _logger.LogInformation("Detected {Count} identifier conflicts in Security Master", detected.Count);
         }
 
+        // A full refresh is authoritative for identifier ambiguity. Close only still-open
+        // detector-owned rows that disappeared because the claim windows no longer overlap;
+        // operator resolutions and field conflicts are never rewritten here.
+        await using (var supersede = connection.CreateCommand())
+        {
+            supersede.CommandText =
+                $"""
+                update {Qualified(ConflictsTable)}
+                set status = 'Superseded',
+                    resolved_reason = @resolved_reason,
+                    resolved_at = @resolved_at
+                where status = 'Open'
+                  and conflict_kind = @conflict_kind
+                  and not (conflict_id = any(@detected_ids));
+                """;
+            supersede.Parameters.AddWithValue(
+                "resolved_reason",
+                "Identifier claims no longer have overlapping validity windows.");
+            supersede.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
+            supersede.Parameters.AddWithValue("conflict_kind", SecurityMasterConflictKinds.IdentifierAmbiguity);
+            supersede.Parameters.AddWithValue(
+                "detected_ids",
+                NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Uuid,
+                detected.Select(static conflict => conflict.ConflictId).ToArray());
+            await supersede.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
@@ -487,9 +514,26 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         => SecurityMasterConflictDetection.FieldValuesMatch(fieldPath, persisted, selected, declaredProfileFieldType);
 
     public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
+        => await RecordConflictsForProjectionsAsync([projection], ct).ConfigureAwait(false);
+
+    public async Task RecordConflictsForProjectionsAsync(
+        IReadOnlyList<SecurityProjectionRecord> projections,
+        CancellationToken ct)
     {
-        var all = await _store.LoadAllAsync(ct).ConfigureAwait(false);
-        var candidates = SecurityMasterConflictDetection.DetectForProjection(projection, all, DateTimeOffset.UtcNow);
+        if (projections.Count == 0)
+        {
+            return;
+        }
+
+        var identifiers = projections.SelectMany(static projection => projection.Identifiers).ToArray();
+        var excludedSecurityIds = projections.Select(static projection => projection.SecurityId).ToArray();
+        var existingCandidates = await _store
+            .FindIdentifierCandidatesAsync(identifiers, excludedSecurityIds, ct)
+            .ConfigureAwait(false);
+        var candidates = SecurityMasterConflictDetection.DetectForProjections(
+            projections,
+            existingCandidates,
+            DateTimeOffset.UtcNow);
         if (candidates.Count == 0)
         {
             return;
@@ -507,7 +551,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                 newConflicts++;
                 _logger.LogWarning(
                     "Ingest-time conflict detected: {FieldPath} already assigned to security {ExistingId} (new: {NewId})",
-                    conflict.FieldPath, conflict.ValueB, projection.SecurityId);
+                    conflict.FieldPath, conflict.ValueB, conflict.SecurityId);
             }
         }
 
@@ -516,8 +560,8 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         if (newConflicts > 0)
         {
             _logger.LogInformation(
-                "Recorded {Count} new identifier conflict(s) for security {SecurityId}",
-                newConflicts, projection.SecurityId);
+                "Recorded {Count} new identifier conflict(s) for {SecurityCount} security projection(s)",
+                newConflicts, projections.Count);
         }
     }
 

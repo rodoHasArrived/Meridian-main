@@ -27,6 +27,20 @@ public interface ISecurityMasterConflictService
     Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct);
 
     /// <summary>
+    /// Checks a persisted projection batch with one indexed candidate lookup. Rebuild callers use
+    /// this member so conflict detection does not reload the projection universe per record.
+    /// </summary>
+    async Task RecordConflictsForProjectionsAsync(
+        IReadOnlyList<SecurityProjectionRecord> projections,
+        CancellationToken ct)
+    {
+        foreach (var projection in projections)
+        {
+            await RecordConflictsForProjectionAsync(projection, ct).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Compares the pre-write golden copy against an incoming revision of the same security and
     /// records field-level cross-source conflicts (economic and common terms whose values disagree
     /// between two source systems). Called on amend paths where the previous record is in hand;
@@ -77,6 +91,24 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
         {
             // Preserve existing resolution state; only add newly detected conflicts.
             _conflicts.TryAdd(conflict.ConflictId, conflict);
+        }
+
+        var detectedIds = detected.Select(static conflict => conflict.ConflictId).ToHashSet();
+        foreach (var existing in _conflicts.Values.Where(static conflict =>
+                     conflict.Status == "Open"
+                     && conflict.ConflictKind == SecurityMasterConflictKinds.IdentifierAmbiguity))
+        {
+            if (detectedIds.Contains(existing.ConflictId))
+            {
+                continue;
+            }
+
+            _conflicts.TryUpdate(existing.ConflictId, existing with
+            {
+                Status = "Superseded",
+                ResolvedReason = "Identifier claims no longer have overlapping validity windows.",
+                ResolvedAt = DateTimeOffset.UtcNow,
+            }, existing);
         }
 
         if (detected.Count > 0)
@@ -137,10 +169,26 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
     }
 
     public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
+        => await RecordConflictsForProjectionsAsync([projection], ct).ConfigureAwait(false);
+
+    public async Task RecordConflictsForProjectionsAsync(
+        IReadOnlyList<SecurityProjectionRecord> projections,
+        CancellationToken ct)
     {
-        // Load all projections and check the new record's identifiers against existing ones.
-        var all = await _store.LoadAllAsync(ct).ConfigureAwait(false);
-        var candidates = SecurityMasterConflictDetection.DetectForProjection(projection, all, DateTimeOffset.UtcNow);
+        if (projections.Count == 0)
+        {
+            return;
+        }
+
+        var identifiers = projections.SelectMany(static projection => projection.Identifiers).ToArray();
+        var excludedSecurityIds = projections.Select(static projection => projection.SecurityId).ToArray();
+        var existingCandidates = await _store
+            .FindIdentifierCandidatesAsync(identifiers, excludedSecurityIds, ct)
+            .ConfigureAwait(false);
+        var candidates = SecurityMasterConflictDetection.DetectForProjections(
+            projections,
+            existingCandidates,
+            DateTimeOffset.UtcNow);
 
         int newConflicts = 0;
         foreach (var conflict in candidates)
@@ -154,13 +202,13 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
 
             _logger.LogWarning(
                 "Ingest-time conflict detected: {FieldPath} already assigned to security {ExistingId} (new: {NewId})",
-                conflict.FieldPath, conflict.ValueB, projection.SecurityId);
+                conflict.FieldPath, conflict.ValueB, conflict.SecurityId);
         }
 
         if (newConflicts > 0)
             _logger.LogInformation(
-                "Recorded {Count} new identifier conflict(s) for security {SecurityId}",
-                newConflicts, projection.SecurityId);
+                "Recorded {Count} new identifier conflict(s) for {SecurityCount} security projection(s)",
+                newConflicts, projections.Count);
     }
 
     public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
