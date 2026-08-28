@@ -1317,20 +1317,36 @@ whether the row is reported as `Skipped` or `Failed` — by testing `ex.Message`
 retired from `ResolveAccountingAssetClass` and `MultiAssetCoverageReadService`.
 
 **It survives at three ingest sites, not one.** A sweep for that substring pair returns
-`SecurityMasterImportService:171-172`, `EdgarIngestOrchestrator:645-646`, and the Polygon CLI path in
-`SecurityMasterCommands:281-282` — each classifying create failures the same way, and each feeding an
-operator-visible skipped/failed count. Fixing only the import service would leave the same defect in
-both provider ingests, so the remediation belongs on the create outcome the three share rather than
-in any one caller.
+`SecurityMasterImportService:171-172`, `EdgarIngestOrchestrator:645-646` (the `IsDuplicateException`
+helper) and the Polygon CLI path in `SecurityMasterCommands:281-282` — each classifying create
+failures the same way. Fixing only the import service would leave the same defect in both provider
+ingests, so the remediation belongs on the create outcome the three share rather than in any one
+caller.
 
-**The substring test does not match the error the system actually raises, so the counts are already
-wrong.** An earlier draft of this item called the classification fragile — something a reworded
+**But what the misclassification costs differs by site, and EDGAR must not be described as a count
+defect.** Only import and Polygon reclassify a row between counters: the Polygon CLI increments
+`skipped` on a substring hit and `failed` otherwise (`SecurityMasterCommands.cs:281-288`), and that
+`failed` total decides the command's exit code (`:302`). EDGAR has no failed-security counter at all —
+both the duplicate-filtered catch and the generic catch increment `securitiesSkipped`
+(`EdgarIngestOrchestrator.cs:120-137`), so its skipped count is the same either way. State EDGAR's
+exposure as what it is rather than borrowing the others': the classification decides whether the row
+appends to `errors` and whether it logs at Debug or Warning, and `errors` is what the EDGAR CLI turns
+into a non-zero exit (`SecurityMasterCommands.cs:227`). Because a genuine duplicate raises the stream
+conflict message below and so misses the substring test, it lands in the generic catch — recording an
+error and failing the whole ingest for a condition the code means to treat as benign. Real, and worth
+fixing, but a different defect from the miscount; a regression test asserting an EDGAR count change
+would assert something that cannot happen.
+
+**The substring test does not match the error the system actually raises, so the classification is
+already wrong at every site.** An earlier draft of this item called it fragile — something a reworded
 message *would* break. It is worse than that: for the real duplicate case, a repeated `SecurityId`,
 `PostgresSecurityMasterEventStore.AppendAsync` throws `"Security stream version conflict for {id}.
 Expected {x}, actual {y}."` (`:40`), which contains neither `"already exists"` nor `"duplicate"`. So
-the skip branch never fires for a true duplicate today; those rows are already counted `Failed`, and
-the operator-facing summary built from those counts (`SecurityMasterViewModel.cs:4366-4374`) already
-misreports them. Nothing has to change for the defect to bite — it is biting.
+the skip branch never fires for a true duplicate today. On the two counting sites that means the rows
+are counted `Failed` — in import, the operator-facing summary built from those counts
+(`SecurityMasterViewModel.cs:4366-4374`) already misreports them; in the Polygon CLI, `failed` is also
+the exit code. On EDGAR it means the error list and the exit code, per the bullet above. Nothing
+has to change for the defect to bite — it is biting.
 
 That also fixes where the remedy has to aim. A typed mutation outcome and its regression test must be
 grounded in the real stream-exists/concurrency path, not in a hypothetical `"already exists"` message
@@ -1473,7 +1489,10 @@ Read as a delta on the standing lists above.
    ingests still classify mutation failures by exception message — Edgar on both create and amend.
    Two of them swallow cancellation in that same catch; Edgar instead swallows it in three separate
    broad catches (`:250-254`, `:286-290`, `:627-641`). Edgar's create loop is the reference
-   implementation for the rethrow, and the typed outcome must cover both mutations.
+   implementation for the rethrow, and the typed outcome must cover both mutations. Write the
+   regression criteria per site, not once: import and the Polygon CLI move a row between `skipped` and
+   `failed`, while Edgar has no failed counter and instead gains an error entry and a non-zero exit —
+   a test asserting an Edgar count change would assert something that cannot happen.
 7. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
    Unchanged from every prior pass, and unchanged in importance: `DirectLoan`, `StructuredCredit`,
    `PrivateFundInterest`, `RealEstateHolding` and `CommitmentGuarantee` remain the classes fund
