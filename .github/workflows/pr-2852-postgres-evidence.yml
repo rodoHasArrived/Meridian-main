@@ -1,0 +1,258 @@
+name: PR 2852 PostgreSQL evidence
+
+on:
+  push:
+    branches:
+      - "codex/pr-2852-postgres-validation-cbca3445"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-2852-postgres-evidence-${{ github.ref }}-${{ github.run_id }}
+  cancel-in-progress: false
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+jobs:
+  postgres-evidence:
+    name: 11-case PostgreSQL migration and concurrency evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: meridian-evidence
+          POSTGRES_DB: meridian
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d meridian"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      MERIDIAN_DISABLE_DOCKER_TESTS: "false"
+      MERIDIAN_SECURITY_MASTER_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-evidence
+
+    steps:
+      - name: Check out validation commit
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.4.0
+        with:
+          global-json-file: global.json
+
+      - name: Prove source SHA and Docker-backed PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="artifacts/pr-2852-postgres-evidence"
+          mkdir -p "$evidence"
+
+          printf '%s\n' "$GITHUB_SHA" > "$evidence/workflow-sha.txt"
+          git rev-parse HEAD^ > "$evidence/source-parent-sha.txt"
+          test "$(git rev-parse HEAD^)" = "a2ba041e539722f18f01aaf2462c9ebcd56d2d46"
+
+          mapfile -t changed_files < <(git diff --name-only HEAD^ HEAD)
+          printf '%s\n' "${changed_files[@]}" > "$evidence/validation-commit-files.txt"
+          test "${#changed_files[@]}" -eq 1
+          test "${changed_files[0]}" = ".github/workflows/pr-2852-postgres-evidence.yml"
+
+          docker version > "$evidence/docker-version.txt" 2>&1
+          docker ps --no-trunc --format '{{.ID}}\t{{.Image}}\t{{.Names}}\t{{.Status}}' \
+            > "$evidence/docker-ps-before.txt"
+
+          postgres_id="$(docker ps --filter 'ancestor=postgres:17' --format '{{.ID}}' | head -n 1)"
+          test -n "$postgres_id"
+          printf '%s\n' "$postgres_id" > "$evidence/postgres-container-id.txt"
+          docker exec "$postgres_id" psql -U postgres -d meridian -Atc 'select version()' \
+            > "$evidence/postgres-version.txt"
+
+      - name: Restore focused test project
+        run: dotnet restore tests/Meridian.Tests/Meridian.Tests.csproj /p:EnableWindowsTargeting=true
+
+      - name: Run exactly 11 Security Master PostgreSQL tests
+        shell: bash
+        run: |
+          set -uo pipefail
+          evidence="artifacts/pr-2852-postgres-evidence"
+          set +e
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
+            --no-restore \
+            -c Release \
+            --filter "FullyQualifiedName~Meridian.Tests.SecurityMaster.SecurityMasterPostgresRoundTripTests" \
+            --logger "trx;LogFileName=pr-2852-postgres.trx" \
+            --logger "console;verbosity=detailed" \
+            --results-directory "$evidence" \
+            --diag "$evidence/vstest-diagnostic.log" \
+            --blame-hang \
+            --blame-hang-timeout 10m \
+            /p:EnableWindowsTargeting=true \
+            2>&1 | tee "$evidence/dotnet-test-console.log"
+          test_exit=${PIPESTATUS[0]}
+          set -e
+          printf '%s\n' "$test_exit" > "$evidence/dotnet-test-exit-code.txt"
+
+      - name: Capture PostgreSQL service evidence
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          evidence="artifacts/pr-2852-postgres-evidence"
+          mkdir -p "$evidence"
+          postgres_id="$(cat "$evidence/postgres-container-id.txt" 2>/dev/null)"
+          docker ps -a --no-trunc --format '{{.ID}}\t{{.Image}}\t{{.Names}}\t{{.Status}}' \
+            > "$evidence/docker-ps-after.txt" 2>&1
+          if test -n "$postgres_id"; then
+            docker logs --timestamps "$postgres_id" \
+              > "$evidence/postgres-service.log" 2>&1
+            docker exec "$postgres_id" psql -U postgres -d meridian -Atc \
+              "select schema_name from information_schema.schemata where schema_name like 'sm_%' order by 1" \
+              > "$evidence/remaining-security-master-schemas.txt" 2>&1
+          fi
+          exit 0
+
+      - name: Validate retained test evidence
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from collections import Counter
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+
+          evidence = Path("artifacts/pr-2852-postgres-evidence")
+          evidence.mkdir(parents=True, exist_ok=True)
+          expected_source_sha = "a2ba041e539722f18f01aaf2462c9ebcd56d2d46"
+          expected_tests = [
+              "CreateAmendDeactivate_RoundTripsAgainstPostgres",
+              "GetByIdentifierAsync_ResolvesNormalizedIdentifierAndProviderValues",
+              "EquityProjection_CustomClassification_ShouldPreserveRawOtherLabel",
+              "AppendCorporateActionAsync_PersistsEconomicFingerprintAgainstPostgres",
+              "AppendCorporateActionAsync_MatchingLegacyNullFingerprint_ReusesAndBackfillsCanonicalAction",
+              "AppendCorporateActionAsync_AmbiguousLegacyNullFingerprints_FailsClosed",
+              "AppendCorporateActionAsync_ConcurrentEconomicDuplicates_ConvergeOnOneCanonicalAction",
+              "AppendCorporateActionAsync_SuccessorOfCancelledParent_FailsClosed",
+              "AcceptSourceProposalAsync_CorrectionOfCancelledCanonicalParent_FailsClosed",
+              "AcceptSourceProposalAsync_OneMatchingLegacyNullFingerprint_ReusesAndBackfillsCanonicalAction",
+              "AcceptSourceProposalAsync_AmbiguousLegacyNullFingerprints_FailsClosed",
+          ]
+
+          errors = []
+          summary = {
+              "expected_source_sha": expected_source_sha,
+              "expected_test_count": len(expected_tests),
+              "expected_tests": expected_tests,
+              "docker_tests_disabled": os.environ.get("MERIDIAN_DISABLE_DOCKER_TESTS"),
+              "connection_mode": "GitHub Actions PostgreSQL 17 Docker service",
+          }
+
+          source_sha_path = evidence / "source-parent-sha.txt"
+          source_sha = source_sha_path.read_text().strip() if source_sha_path.exists() else None
+          summary["source_sha"] = source_sha
+          if source_sha != expected_source_sha:
+              errors.append(f"source SHA mismatch: {source_sha!r}")
+
+          exit_path = evidence / "dotnet-test-exit-code.txt"
+          try:
+              test_exit = int(exit_path.read_text().strip())
+          except Exception:
+              test_exit = None
+          summary["dotnet_test_exit_code"] = test_exit
+          if test_exit != 0:
+              errors.append(f"dotnet test exit code was {test_exit!r}")
+
+          trx_files = sorted(evidence.glob("*.trx"))
+          summary["trx_files"] = [path.name for path in trx_files]
+          if len(trx_files) != 1:
+              errors.append(f"expected exactly one TRX file, found {len(trx_files)}")
+          else:
+              root = ET.parse(trx_files[0]).getroot()
+              counters_node = root.find(".//{*}Counters")
+              if counters_node is None:
+                  errors.append("TRX counters were missing")
+              else:
+                  counters = {
+                      key: int(value)
+                      for key, value in counters_node.attrib.items()
+                      if value.lstrip("-").isdigit()
+                  }
+                  summary["counters"] = counters
+                  expected_counters = {
+                      "total": 11,
+                      "executed": 11,
+                      "passed": 11,
+                      "failed": 0,
+                      "notExecuted": 0,
+                  }
+                  for key, value in expected_counters.items():
+                      if counters.get(key) != value:
+                          errors.append(
+                              f"TRX counter {key} was {counters.get(key)!r}, expected {value}"
+                          )
+
+              results = root.findall(".//{*}UnitTestResult")
+              names = [item.attrib.get("testName", "") for item in results]
+              outcomes = Counter(item.attrib.get("outcome", "") for item in results)
+              summary["result_count"] = len(results)
+              summary["outcomes"] = dict(sorted(outcomes.items()))
+              summary["observed_tests"] = sorted(names)
+              if len(results) != 11:
+                  errors.append(f"TRX contained {len(results)} result rows, expected 11")
+              if outcomes != Counter({"Passed": 11}):
+                  errors.append(f"unexpected TRX outcomes: {dict(outcomes)}")
+
+              missing = [
+                  expected
+                  for expected in expected_tests
+                  if not any(
+                      name == expected or name.endswith("." + expected)
+                      for name in names
+                  )
+              ]
+              if missing:
+                  errors.append(f"missing expected tests: {missing}")
+
+          summary["errors"] = errors
+          summary["validated"] = not errors
+          (evidence / "evidence-validator.json").write_text(
+              json.dumps(summary, indent=2, sort_keys=True) + "\n"
+          )
+
+          step_summary = Path(os.environ["GITHUB_STEP_SUMMARY"])
+          with step_summary.open("a") as stream:
+              stream.write("### PR #2852 PostgreSQL evidence\n\n")
+              stream.write(f"- Source SHA: {source_sha or 'missing'}\n")
+              stream.write(f"- Expected tests: {len(expected_tests)}\n")
+              stream.write(f"- Validation: {'passed' if not errors else 'failed'}\n")
+              if summary.get("counters"):
+                  stream.write(f"- TRX counters: {summary['counters']}\n")
+              if errors:
+                  stream.write(f"- Errors: {errors}\n")
+
+          if errors:
+              raise SystemExit("\n".join(errors))
+          PY
+
+      - name: Upload retained PostgreSQL evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: pr-2852-postgres-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/pr-2852-postgres-evidence/
+          if-no-files-found: error
+          retention-days: 90
