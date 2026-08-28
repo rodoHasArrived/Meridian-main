@@ -97,10 +97,16 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
-    public async Task UpsertAliasAsync(SecurityAliasDto alias, CancellationToken ct = default)
+    public async Task<SecurityAliasDto?> UpsertAliasAsync(SecurityAliasDto alias, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
+        // created_by/created_at are deliberately absent from the conflict update: they record WHEN and
+        // by WHOM the alias was first recorded, and correcting an alias must not restate that. As-of
+        // rebuilds retain aliases with created_at <= the cutoff, so advancing it on every edit would
+        // retroactively remove a corrected identifier from every view older than the correction.
+        // valid_from/valid_to remain mutable — those carry the alias's effective (business) time,
+        // which a correction legitimately restates.
         command.CommandText =
             $"""
             insert into {Qualified("security_aliases")} (
@@ -118,11 +124,10 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
                 normalized_provider = excluded.normalized_provider,
                 scope = excluded.scope,
                 reason = excluded.reason,
-                created_by = excluded.created_by,
-                created_at = excluded.created_at,
                 valid_from = excluded.valid_from,
                 valid_to = excluded.valid_to,
-                is_enabled = excluded.is_enabled;
+                is_enabled = excluded.is_enabled
+            returning created_by, created_at;
             """;
 
         command.Parameters.AddWithValue("alias_id", alias.AliasId);
@@ -140,7 +145,19 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Parameters.AddWithValue("valid_to", (object?)alias.ValidTo?.UtcDateTime ?? DBNull.Value);
         command.Parameters.AddWithValue("is_enabled", alias.IsEnabled);
 
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            return null;
+        }
+
+        // Echo the stored creation facts, which on an update are the ORIGINAL ones rather than the
+        // values just supplied.
+        return alias with
+        {
+            CreatedBy = reader.GetString(0),
+            CreatedAt = new DateTimeOffset(reader.GetDateTime(1), TimeSpan.Zero)
+        };
     }
 
     public async Task DeactivateProjectionAsync(Guid securityId, DateTimeOffset effectiveTo, long version, CancellationToken ct = default)

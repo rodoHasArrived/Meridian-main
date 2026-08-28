@@ -1046,8 +1046,15 @@ public static partial class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
+            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
             CancellationToken ct) =>
         {
+            // Legacy alias for the canonical preferred-equity-terms PATCH route: it reaches the same
+            // AmendPreferredEquityTermsAsync amendment, so it carries the same maker-checker gate.
+            // Refuse before the existence probe, matching the canonical route.
+            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+                return governedRefusal;
+
             var existing = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
             if (existing is null)
                 return Results.NotFound();
@@ -1185,11 +1192,17 @@ public static partial class SecurityMasterEndpoints
     /// <summary>
     /// ADR-guarded maker-checker enforcement for DIRECT term amendments: when
     /// <see cref="AppSecurityMaster.SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/>
-    /// is enabled, the generic amend route and the bespoke preferred/convertible equity PATCH
-    /// routes are refused with guidance to stage the correction through the governed workbench
-    /// (Draft → Submitted → Approved → Published), whose canonical-merge publish handler applies
-    /// the approved value to the golden record. Null when direct amendments remain permitted.
+    /// is enabled, the generic amend route, the bespoke preferred/convertible equity PATCH routes,
+    /// and the legacy <c>/equities/{securityId}/preferred-terms</c> alias are refused with guidance
+    /// to stage the correction through the governed workbench (Draft → Submitted → Approved →
+    /// Published), whose canonical-merge publish handler applies the approved value to the golden
+    /// record. Null when direct amendments remain permitted.
     /// </summary>
+    /// <remarks>
+    /// Every route that reaches an <c>Amend*TermsAsync</c> mutation must call this; the legacy alias
+    /// was previously an ungated path to the same amendment, so a deployment that enabled the flag
+    /// specifically to force maker-checker still had a direct write surface.
+    /// </remarks>
     private static IResult? RequireGovernedTermAmendmentRoute(
         Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions)
         => workbenchOptions.CurrentValue.RequireGovernedTermAmendments
