@@ -66,8 +66,8 @@ risks that compound as new asset classes land.
 > **Scheduled institutional-requirements pass, 2026-08-28.** Re-read against `d3793290`, then
 > extended under review. The verdict stands. Every closure claimed by the 2026-08-26 resolution was
 > independently re-verified against source rather than taken on the resolution's word, and all of
-> them hold. N4, N5, N6 and the three deferred items are unchanged. Four new items are filed
-> (P1–P4). See
+> them hold. N4, N5, N6 and the three deferred items are unchanged. Five new items are filed
+> (P1–P4 plus P3b, which review surfaced). See
 > [Scheduled institutional-requirements pass — 2026-08-28](#scheduled-institutional-requirements-pass--2026-08-28).
 >
 > **Its highest-severity finding is a live bypass of a shipped control**: the legacy
@@ -943,11 +943,14 @@ the 2026-08-26 resolution). No code was changed by this pass and no tests were r
 is a source read.
 
 > **Base refreshed.** This pass's branch was later merged with `0a5ef91a`, which landed durable
-> corporate-action processing and relocated the endpoints file. The findings below were re-checked
-> against that merge and all still hold as written; the only edit was P1's endpoint line range, which
-> moved when the corporate-action operations split into their own partial. Line citations therefore
-> resolve against the merged head, not against `d3793290`. Nothing in that work touches the bulk
-> import path, the pack registry, or any other surface this pass reports on.
+> corporate-action processing and relocated the endpoints file. Line citations therefore resolve
+> against the merged head, not against `d3793290`.
+>
+> An earlier version of this note claimed that merge touched no surface this pass reports on. That
+> was wrong, and is retracted: the merge added `SecurityMasterTickerChangeService`, whose
+> `RecordAsync` forwards caller-controlled attribution into `AmendTermsAsync` — so it is one of the
+> callers P1 reports, and it appears in P1's table for that reason. The merge also moved P1's
+> endpoint line range when the corporate-action operations split into their own partial.
 
 Because the 2026-08-26 pass filed and closed its own findings in the same round, this pass re-verified
 each claimed closure against source independently rather than accepting the resolution's account.
@@ -1150,6 +1153,14 @@ Five constraints the fix has to respect:
   mutation requests, which today carry a hardcoded `"User"`. Naming it matters: an implementer told
   only that "the desktop needs an actor source" may build a second identity abstraction beside the one
   Meridian already maintains.
+
+  **But `CurrentActor` is not unconditionally an authenticated operator, and the wiring must not treat
+  it as one.** It falls back to `"local-development"` when `IsAnonymousDevelopmentSession` holds — the
+  unconfigured-environment posture allowed by `CanContinueWithoutCredentials` — and returns empty once
+  a session has expired (`:14-37`). Gate the operator path on `IsAuthenticated`, and either model the
+  intentional anonymous-development posture as its own non-principal identity or refuse governed
+  mutations under it. Piping the property straight through would admit non-principal attribution into
+  the very execution context this finding exists to make trustworthy.
 - **Unattended callers need a trusted workload identity, not a principal.** Edgar, the Polygon CLI
   and the backfill service legitimately have no operator behind them. The execution context needs a
   service/workload identity path so those ingests keep their current, more informative attribution
@@ -1223,6 +1234,30 @@ tests. The registry reaches production through `SecurityMasterOperationalReadine
 readiness report) and `:873` (descriptor validation). So today's `DirectLoan` ambiguity misleads a
 reader rather than mis-routing a record — which is why N4 stays a governance item rather than
 escalating.
+
+### P3b — Editing an alias rewrites its recorded history
+
+Surfaced by review while checking P1's alias attribution rule, and it is a defect in the subsystem
+rather than in this pass's prose — which is why it is filed separately rather than folded into P1.
+
+`SecurityMasterService.UpsertAliasAsync` builds its `SecurityAliasDto` with `DateTimeOffset.UtcNow`
+as `CreatedAt` (`:284-300`), and the store's upsert overwrites **both** creation columns on conflict —
+`on conflict (alias_id) do update set … created_by = excluded.created_by, created_at =
+excluded.created_at` (`PostgresSecurityMasterStore.cs:112-124`). So an edit to an existing alias
+re-stamps who created it and when.
+
+The consequence reaches history, not just attribution. `RebuildRecordedAsOfAsync` filters aliases by
+`CreatedAt <= asOfUtc` (`SecurityMasterAggregateRebuilder.cs:104-107`), so re-stamping `CreatedAt` to
+now **removes the alias from every as-of view earlier than the edit**. An identifier that was recorded
+in January and corrected in June disappears from the January view — in a subsystem whose recorded-time
+reconstruction is one of its strongest properties, and which this review elsewhere credits for
+distinguishing "what did we believe then" from "what is true now".
+
+This also constrains P1's actor rule, which is how it came to light: deriving `CreatedBy` from the
+authenticated actor is right for a genuine create and wrong for an update, where it would relabel the
+original creator. The fix is to stop treating create and update as one operation — preserve the
+original `created_by`/`created_at` on conflict and record a separate updater identity and timestamp,
+or split the routes. Either way `CreatedAt` must stop moving, independently of the attribution work.
 
 ### P4 — Three ingest paths classify duplicates by exception-message substring, and the same catch swallows cancellation
 
@@ -1337,14 +1372,20 @@ report — while identifier ambiguity keeps flowing to conflict processing untou
 
 Read as a delta on the standing lists above.
 
-1. **Gate the legacy preferred-terms PATCH route (P1).** Promoted to the top because it is the only
-   item in this pass that is a defect in a *shipped control* rather than in plumbing: a deployment
-   that enables `RequireGovernedTermAmendments` to force maker-checker still has
+1. **Gate the legacy preferred-terms PATCH route (P1).** One of two items in this pass that are
+   defects in shipped behaviour rather than in plumbing: a deployment that enables
+   `RequireGovernedTermAmendments` to force maker-checker still has
    `PATCH …/preferred-terms` (`SecurityMasterEndpoints.cs:1043-1058`) reaching
    `AmendPreferredEquityTermsAsync` ungated. One `RequireGovernedTermAmendmentRoute` call closes it,
    and a route-level test asserting every amendment path refuses under the option keeps it closed.
    Smallest fix in this document with the largest governance consequence.
-2. **Derive actor attribution across the whole mutation surface, and gate caller-set dates in both
+2. **Stop alias edits rewriting recorded history (P3b).** The other shipped-behaviour defect, and the
+   one that touches a property this subsystem is otherwise careful about: an alias upsert re-stamps
+   `created_at`, and recorded-as-of rebuilding filters on it, so correcting an identifier erases it
+   from every earlier historical view. Preserve the original creation fields and record a separate
+   updater identity and timestamp, or split create from update. Worth fixing ahead of the broader
+   attribution work, since it is narrower and loses data today.
+3. **Derive actor attribution across the whole mutation surface, and gate caller-set dates in both
    directions (P1, P2).**
    An auditability defect on governed write paths that both operator lanes expose, on a subsystem
    that already holds itself to the opposite standard elsewhere. Take it where the mutations
@@ -1355,17 +1396,17 @@ Read as a delta on the standing lists above.
    that field carries source identity for conflict detection, not actor identity. Preserve workload
    identities for unattended ingests rather than replacing them with a principal, and preserve the
    workbench chain that already does this correctly.
-3. **Make the pack-overlap rule symmetric across incumbents, candidates, and planned classes
+4. **Make the pack-overlap rule symmetric across incumbents, candidates, and planned classes
    (N4, P3).** Still among the cheapest durable items in this document, and the planned-coverage axis
    means deferring it now schedules a three-way ownership dispute for the day `CreditFacility` lands.
-4. **Key the projection fan-out by asset class (N6).** Unchanged in importance, and cheaper than
+5. **Key the projection fan-out by asset class (N6).** Unchanged in importance, and cheaper than
    previously filed: the writers already carry the key.
-5. **Retire the remaining classify-from-prose sites and the swallowed cancellations (P4).** Three
+6. **Retire the remaining classify-from-prose sites and the swallowed cancellations (P4).** Three
    ingests still classify mutation failures by exception message — Edgar on both create and amend.
    Two of them swallow cancellation in that same catch; Edgar instead swallows it in three separate
    broad catches (`:250-254`, `:286-290`, `:627-641`). Edgar's create loop is the reference
    implementation for the rethrow, and the typed outcome must cover both mutations.
-6. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
+7. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
    Unchanged from every prior pass, and unchanged in importance: `DirectLoan`, `StructuredCredit`,
    `PrivateFundInterest`, `RealEstateHolding` and `CommitmentGuarantee` remain the classes fund
    operations queries most and the ones with no indexed path.
