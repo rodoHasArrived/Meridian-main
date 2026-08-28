@@ -969,7 +969,7 @@ projection writers against 15 declared gaps (`ProjectionWriters`, `:43-56`;
 `IntentionallyUnprojectedAssetClasses`, `SecurityAssetTermsSchemaTests.cs:21-38`), terms still have no
 valid-time history, and both codec arms remain hand-written behind the round-trip guard.
 
-### P1 — Bulk import writes self-asserted provenance and an arbitrary as-of date onto the golden record
+### P1 — The create boundary writes self-asserted provenance and an arbitrary as-of date onto the golden record
 
 The highest-severity item this pass, and the one the subsystem's own standards already contradict.
 
@@ -983,9 +983,14 @@ five are asserted by the file.
 The HTTP surface makes the gap explicit rather than incidental. `SecurityMasterEndpoints.cs:818-840`
 binds `HttpContext context`, reads the caller's permissions out of it to authorize the request, and
 then calls `ImportAsync` **without passing that identity on**. The principal is in scope, is trusted
-enough to gate the write, and is discarded before the write happens. Both operator lanes reach this
-route — the WPF workstation through `SecurityMasterViewModel.OnImportFromFile`, which offers a
-`CSV/JSON` file dialog (`:4324-4328`), and the browser workstation through the endpoint.
+enough to gate the write, and is discarded before the write happens.
+
+The two operator lanes reach the import *service* by different routes, which matters for the fix.
+The browser workstation goes through the HTTP endpoint above. The WPF workstation does not:
+`SecurityMasterViewModel` takes an injected `ISecurityMasterImportService` (`:37, 1529, 1542`) and
+calls `ImportAsync` on it in-process (`:4358`), behind a `CSV/JSON` file dialog (`:4324-4328`).
+There is no `HttpContext` on that path, so threading the endpoint's principal into `ImportAsync`
+secures the browser lane only.
 
 Two distinct institutional consequences:
 
@@ -1000,11 +1005,33 @@ Two distinct institutional consequences:
   masquerade as history" — and an unconstrained caller-supplied effective date is the one input that
   design cannot defend itself against.
 
-The fix is small and does not need a new concept: thread the authenticated principal into
-`ImportAsync`, stamp `UpdatedBy` and `SourceSystem` from it (retaining any file-supplied value as a
-vendor reference, not as attribution), and either clamp `EffectiveFrom` to the ingest time or require
-an explicit backdating permission. Note this is a create-path gap only —
-`RequireGovernedTermAmendments` gates amendments, and nothing equivalent gates bulk creation.
+**The defect is the shared create boundary, not bulk import.** `POST /api/security-master`
+(`SecurityMasterEndpoints.cs:351-362`) binds a complete `CreateSecurityRequest` from the body, calls
+`RequireSecurityMasterMutationPermission(context)`, and then passes that request to `CreateAsync`
+unchanged — the same caller-asserted `UpdatedBy`, `SourceSystem` and `EffectiveFrom`, by the same
+authorize-then-discard shape. Import is where it is most visible and highest-volume, but a fix
+scoped to `ImportAsync` would leave the ordinary create route self-asserting attribution and
+backdating records. The remediation belongs where every create converges.
+
+Three constraints the fix has to respect, none of which need a new concept:
+
+- **`UpdatedBy` is the actor field; `SourceSystem` is not.** `SecurityMasterConflictDetection` reads
+  `SourceSystem` off both sides' provenance and short-circuits when they match
+  (`:446-447, 454-458`), and provider ingests set it to values like `"edgar"`
+  (`EdgarSecurityMasterIngestProvider.cs:270`) and `"polygon"`
+  (`PolygonSecurityMasterIngestProvider.cs:191`). Stamping it from the principal would make two
+  operators loading the same vendor look like distinct sources, and one operator loading two vendors
+  look like a single source — manufacturing conflicts in the first case and suppressing them in the
+  second. Derive `UpdatedBy` from the principal; derive `SourceSystem` from trusted ingest metadata
+  or a fixed workflow identifier, never from the actor.
+- **The desktop lane needs its own actor source.** Per above, WPF holds no `HttpContext`. Securing
+  both lanes means either a desktop actor source or a shared execution-context abstraction the
+  service reads, rather than an endpoint-only parameter.
+- **`EffectiveFrom` needs a bound**, either clamped to ingest time or gated behind an explicit
+  backdating permission.
+
+Note this is a create-path gap specifically — `RequireGovernedTermAmendments` gates amendments, and
+nothing equivalent gates creation on either route.
 
 ### P2 — CSV import hardcodes its actor as `WpfImport`
 
@@ -1043,8 +1070,15 @@ whether the row is reported as `Skipped` or `Failed` — by testing `ex.Message`
 retired from `ResolveAccountingAssetClass` and `MultiAssetCoverageReadService`, surviving in a third
 place. Rewording an exception message silently converts every duplicate in an import run into a
 reported failure, and the operator-facing summary is built from those counts
-(`SecurityMasterViewModel.cs:4366-4374`). A typed exception or a pre-check against the identifier
-index would settle it.
+(`SecurityMasterViewModel.cs:4366-4374`).
+
+The fix is a typed create outcome, **not** a pre-check against the identifier index. A shared
+identifier is not a duplicate here by design: `SecurityMasterImportServiceTests.ImportAsync_WhenRecordsAreCreated_TriggersAutomaticConflictRecordingPerSecurity`
+imports two records with distinct security ids and the same ISIN from different providers, and
+asserts `Imported == 2` with one conflict detected. Pre-skipping the second row would throw away the
+competing source assertion the conflict exists to adjudicate, and would stay race-prone besides. The
+distinction worth drawing is a genuinely duplicate stream or security id — which a typed result can
+report — while identifier ambiguity keeps flowing to conflict processing untouched.
 
 ### Smaller notes, not filed as findings
 
@@ -1073,10 +1107,13 @@ index would settle it.
 
 Read as a delta on the standing lists above.
 
-1. **Stamp import provenance from the authenticated principal, and bound `EffectiveFrom` (P1, P2).**
+1. **Derive actor attribution at the shared create boundary, and bound `EffectiveFrom` (P1, P2).**
    An auditability defect on a governed create path that both operator lanes expose, on a subsystem
-   that already holds itself to the opposite standard elsewhere. Small, local, and the only new item
-   here that weakens a guarantee the architecture otherwise makes well.
+   that already holds itself to the opposite standard elsewhere. The only new item here that weakens
+   a guarantee the architecture otherwise makes well. Take it at the boundary every create converges
+   on, not at `ImportAsync`: the ordinary `POST /api/security-master` route has the same shape. Keep
+   `SourceSystem` out of it — that field carries source identity for conflict detection, and only
+   `UpdatedBy` is the actor.
 2. **Make the pack-overlap rule symmetric across incumbents, candidates, and planned classes
    (N4, P3).** Still among the cheapest durable items in this document, and the planned-coverage axis
    means deferring it now schedules a three-way ownership dispute for the day `CreditFacility` lands.
