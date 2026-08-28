@@ -1039,9 +1039,14 @@ Two distinct institutional consequences:
 **The defect is the write surface, not bulk import.** State it as a property rather than a list,
 because five review rounds each turned up another caller and a list is the wrong shape for this:
 **on `ISecurityMasterService`, caller-supplied attribution is the default and server-derived
-attribution is the exception.** Every mutation request type carries `UpdatedBy` / `SourceSystem` /
-an effective date as ordinary payload fields, so any new caller inherits the gap unless its author
-knows to do otherwise.
+attribution is the exception.** Every mutation request type carries an **actor role**, a **source
+role** and one or more **valid-time roles** as ordinary payload fields, so any new caller inherits
+the gap unless its author knows to do otherwise. State those as roles, not field names, here as well
+as in the constraints below: the request types do not share a shape, and
+`UpsertSecurityAliasRequest` has neither `UpdatedBy` nor `SourceSystem` — its actor role is
+`CreatedBy` and its temporal roles are `ValidFrom`/`ValidTo` (`SecurityCommands.cs:59-69`). An
+implementer who built the shared boundary from the create request's field names would omit alias
+attribution and its validity controls entirely.
 
 **One path already does it correctly, and it is the model for the fix.** The governed workbench
 publish endpoint calls `EndpointAuthorization.TryResolveActor(context, out var actor)` and rebinds
@@ -1203,12 +1208,26 @@ Five constraints the fix has to respect:
   *canonical* identifiers first (`:382-387`), then to its aliases (`:392-398`). Canonical identifier
   windows are caller-supplied too, and by a route that is easy to miss because it is nested rather than
   top-level: `SecurityIdentifierDto` carries its own `ValidFrom`/`ValidTo` (`SecurityIdentifiers.cs:53-61`),
-  and requests carry collections of it on **both** mutations — `CreateSecurityRequest.Identifiers`
+  and requests carry collections of it on both mutations — `CreateSecurityRequest.Identifiers`
   (`SecurityCommands.cs:10`) and `AmendSecurityTermsRequest.IdentifiersToAdd` / `IdentifiersToExpire`
   (`:22-23`). A gate written against the requests' own scalar date fields would leave a caller able to
   post a security whose primary ticker is dated out of the current-lookup window at creation, or to add
   one so dated by amendment — the same result as the alias case, one nesting level down. Whatever
   enforces this must walk into the identifier collections, not just the requests' surface fields.
+
+  **Gate the two collections a caller's window actually reaches — not `IdentifiersToExpire`.** An
+  earlier draft of this bullet said "every `SecurityIdentifierDto` a create or amend request carries",
+  which over-corrects in the opposite direction and would reject legitimate expiries on dates the
+  domain never reads. On the expiry path the incoming DTO is matched by identity alone —
+  `SecurityIdentifier.sameIdentity` compares kind, normalized value and normalized provider, never the
+  window (`SecurityIdentifiers.fs:91-97`) — and `collectExpiredIdentifiers` then sets the *stored*
+  identifier's `ValidTo` to the amendment's `EffectiveFrom`
+  (`SecurityMasterCommands.fs:457-463`). `validateAmend` likewise runs `validateIdentifier` over
+  `IdentifiersToAdd` only (`:442`). So an expiry DTO's `ValidFrom`/`ValidTo` control nothing persisted
+  or query-visible; they are placeholders, and the trusted temporal input for an expiry is the
+  amendment's `EffectiveFrom`, which the scalar gate already covers. Gate create's `Identifiers` and
+  amend's `IdentifiersToAdd`; gating the expiry collection would obscure the field that does matter
+  while rejecting valid requests.
 
   **The exposure differs by field, and the identifier case needs stating precisely.** For economic
   *term* dates it is stored-provenance truthfulness only — nothing selects terms by `EffectiveFrom`,
@@ -1226,8 +1245,9 @@ Five constraints the fix has to respect:
   `GetRecordedByIdAsOfAsync` — rather than attributing the effect to as-of identifier lookup generally.
   The gate has to cover the whole surface, not just create: `EffectiveFrom` on create and amend,
   `EffectiveTo` on `DeactivateSecurityRequest` (`SecurityCommands.cs:46`), `ValidFrom` / `ValidTo` on
-  `UpsertSecurityAliasRequest` (`:67-68`), and the nested `ValidFrom` / `ValidTo` on every
-  `SecurityIdentifierDto` a create or amend request carries. Otherwise a caller who cannot backdate a
+  `UpsertSecurityAliasRequest` (`:67-68`), and the nested `ValidFrom` / `ValidTo` on each
+  `SecurityIdentifierDto` in a create request's `Identifiers` or an amendment's `IdentifiersToAdd`
+  (but not `IdentifiersToExpire`, per the bullet above). Otherwise a caller who cannot backdate a
   definition can still backdate its deactivation, an alias's validity window, or a canonical
   identifier's — each reaching the same historical-integrity problem by another route.
 - **The workbench chain must be preserved, not reworked.** Publish already resolves the actor
@@ -1353,6 +1373,18 @@ grounded in the real stream-exists/concurrency path, not in a hypothetical `"alr
 that no component emits; a fix written against the latter would leave duplicate imports still
 reported as failures.
 
+**But do not let the typed outcome equate "stream exists" with "idempotent duplicate".** The
+conflict carries no evidence about the payload: `ExecuteCreateAsync` appends with
+`expectedVersion: 0` (`SecurityMasterService.cs:320`), and `AppendAsync` throws purely on
+`currentVersion != expectedVersion` (`PostgresSecurityMasterEventStore.cs:36-41`) without comparing
+the incoming record to the stored one. So a second create reusing a `SecurityId` with *different*
+terms or provenance raises exactly the same exception as a byte-identical replay. An outcome that
+maps the conflict straight to `Skipped` would silently discard a competing source assertion — the
+same failure mode as the identifier pre-check this document already retracted, arrived at from the
+other direction. The outcome therefore needs a content-equivalence or idempotency-key check to earn
+the `Skipped` classification, and must preserve `Failed` for a non-equivalent row; without that check
+the honest classification of a stream conflict is a conflict, not a duplicate.
+
 **The same `catch` swallows cancellation.** `catch (Exception ex)` (`:168`) also catches the
 `OperationCanceledException` that `CreateAsync(request, ct)` throws when the token trips mid-row.
 The substring test does not match it, so a cancelled row is counted as `Failed` and logged as an
@@ -1420,8 +1452,12 @@ identifier is not a duplicate here by design: `SecurityMasterImportServiceTests.
 imports two records with distinct security ids and the same ISIN from different providers, and
 asserts `Imported == 2` with one conflict detected. Pre-skipping the second row would throw away the
 competing source assertion the conflict exists to adjudicate, and would stay race-prone besides. The
-distinction worth drawing is a genuinely duplicate stream or security id — which a typed result can
-report — while identifier ambiguity keeps flowing to conflict processing untouched.
+distinction worth drawing is a genuinely duplicate stream or security id — while identifier ambiguity
+keeps flowing to conflict processing untouched. Note what "genuinely duplicate" costs to establish,
+though: the stream-conflict exception alone does not prove it, per the paragraph above, so a typed
+result can report it only once the outcome carries a content-equivalence or idempotency check.
+Without that, reporting the conflict as a duplicate discards a competing assertion by a second
+route — the same mistake the pre-check would have made.
 
 ### Smaller notes, not filed as findings
 
@@ -1473,8 +1509,10 @@ Read as a delta on the standing lists above.
    caller-asserted attribution, and amendments are not covered by the governed path in the default
    configuration. Derive every actor field — `UpdatedBy`, and `CreatedBy` on alias upsert — and gate
    every caller-controlled valid-time field, not just `EffectiveFrom`; that includes the `ValidFrom` /
-   `ValidTo` nested inside each `SecurityIdentifierDto` a create or amend request carries, which a gate
-   written against the requests' own scalar fields will not reach. Keep the record's *content* out of it:
+   `ValidTo` nested inside each `SecurityIdentifierDto` in a create request's `Identifiers` or an
+   amendment's `IdentifiersToAdd`, which a gate written against the requests' own scalar fields will not
+   reach — but not `IdentifiersToExpire`, whose windows the domain never reads. Keep the record's
+   *content* out of it:
    `SourceSystem` carries source identity for conflict detection rather than actor identity, `Provider`
    namespaces an identifier value, and `Reason` is the operator's own rationale — deriving any of the
    three would corrupt what the record asserts. Preserve workload
@@ -1489,7 +1527,9 @@ Read as a delta on the standing lists above.
    ingests still classify mutation failures by exception message — Edgar on both create and amend.
    Two of them swallow cancellation in that same catch; Edgar instead swallows it in three separate
    broad catches (`:250-254`, `:286-290`, `:627-641`). Edgar's create loop is the reference
-   implementation for the rethrow, and the typed outcome must cover both mutations. Write the
+   implementation for the rethrow, and the typed outcome must cover both mutations — and must not
+   report a stream-version conflict as a duplicate without a content-equivalence check, since the
+   conflict proves only that the stream exists. Write the
    regression criteria per site, not once: import and the Polygon CLI move a row between `skipped` and
    `failed`, while Edgar has no failed counter and instead gains an error entry and a non-zero exit —
    a test asserting an Edgar count change would assert something that cannot happen.
