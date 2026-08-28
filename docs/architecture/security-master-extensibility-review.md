@@ -1027,6 +1027,28 @@ any of them from an authenticated identity:
 | `EdgarIngestOrchestrator:315, 330` | `UpdatedBy: nameof(EdgarIngestOrchestrator)` — deliberate workload identity |
 | `SecurityMasterCommands:276` (Polygon CLI) | workload identity |
 | `TradingParametersBackfillService:213` | workload identity |
+| `PATCH …/preferred-terms` (`SecurityMasterEndpoints.cs:1043-1058`) | request body, and **ungated** — see below |
+
+**The mutation surface is six members, not two.** An earlier draft of this table came from grepping
+`.CreateAsync(` and `.AmendTermsAsync(`, which is not the same thing as enumerating the service.
+`SecurityMasterService` exposes six public mutations — `CreateAsync` (`:68`), `AmendTermsAsync`
+(`:71`), `AmendPreferredEquityTermsAsync` (`:208`), `AmendConvertibleEquityTermsAsync` (`:229`),
+`DeactivateAsync` (`:250`) and `UpsertAliasAsync` (`:284`) — and the two the grep missed carry the
+same self-asserted fields: `DeactivateSecurityRequest` has `SourceSystem` / `UpdatedBy` /
+`SourceRecordId` / `EffectiveTo` (`SecurityCommands.cs:43-50`), and `UpsertSecurityAliasRequest` has
+`CreatedBy` (`:59-69`). The gap is the whole mutation surface.
+
+**A governed control has a live bypass.** There are *two* preferred-terms amendment routes. The one
+at `SecurityMasterEndpoints.cs:512-530` calls `RequireGovernedTermAmendmentRoute` before
+`AmendPreferredEquityTermsAsync`; the legacy `PATCH /api/security-master/equities/{id}/preferred-terms`
+at `:1043-1058` calls the same service method with **no gate at all**. The gate appears at exactly
+three sites (`:390`, `:520`, `:581`), and the legacy PATCH is not among them. So the
+[2026-08-24 resolution's](#resolution-pass--2026-08-24) claim that `RequireGovernedTermAmendments`
+"gates all three direct term-amendment routes uniformly" is incomplete: a fourth route reaches the
+same method, and it stays live even when a deployment enables the option specifically to force
+maker-checker. There is no equivalent legacy duplicate for convertible terms. This is the one item in
+this pass that is a defect in a shipped control rather than in attribution plumbing, and it should be
+closed on its own regardless of what happens to the rest of P1.
 
 Two corrections this table forces on the earlier framing. First, amendments are **not** covered by
 the governed path in the default configuration, so this is not a create-only gap. Second, the
@@ -1128,9 +1150,30 @@ classifying a create failure at all.
 
 The Polygon CLI path shares the shape exactly — `catch (Exception ex)` around
 `CreateAsync(request, ct)` at `SecurityMasterCommands:279-282` — so it swallows cancellation the same
-way. Both defects, the prose classification and the swallowed cancellation, travel together across
-all three sites, which is another reason to fix them on the shared create outcome rather than per
-caller.
+way.
+
+**Edgar is the exception, and an earlier draft of this item got it wrong.** Its create loop already
+handles this correctly: the duplicate filter is a narrow `catch (Exception ex) when
+(IsDuplicateException(ex))`, followed by `catch (OperationCanceledException) when
+(ct.IsCancellationRequested) { throw; }` (`EdgarIngestOrchestrator:120-127`). So Edgar carries the
+prose-classification defect but **not** the create-loop cancellation defect. Its swallowed
+cancellation is somewhere else entirely: `CountOpenConflictsAsync` (`:627-641`) wraps
+`GetOpenConflictsAsync(ct)` in a bare `catch (Exception)` that returns `0`, so a cancellation during
+the post-loop conflict count is converted into a plausible-looking count and the ingest returns
+normally.
+
+The two defects therefore do not have one shared home:
+
+| Site | Prose duplicate classification | Cancellation swallowed |
+| --- | --- | --- |
+| `SecurityMasterImportService:171-172` | yes | yes, same catch |
+| `SecurityMasterCommands:279-282` | yes | yes, same catch |
+| `EdgarIngestOrchestrator:120-127` | yes | no — rethrows correctly |
+| `EdgarIngestOrchestrator:627-641` | — | yes, in the conflict count |
+
+A typed shared create outcome fixes the first column and two of the three cancellation cases. Edgar's
+conflict-count catch is a separate defect needing its own fix, and Edgar's create loop is worth
+reading as the reference for what the other two should do.
 
 The duplicate fix itself is a typed create outcome, **not** a pre-check against the identifier index. A shared
 identifier is not a duplicate here by design: `SecurityMasterImportServiceTests.ImportAsync_WhenRecordsAreCreated_TriggersAutomaticConflictRecordingPerSecurity`
@@ -1167,21 +1210,31 @@ report — while identifier ambiguity keeps flowing to conflict processing untou
 
 Read as a delta on the standing lists above.
 
-1. **Derive actor attribution at the shared create boundary, and gate backdating (P1, P2).**
-   An auditability defect on a governed create path that both operator lanes expose, on a subsystem
-   that already holds itself to the opposite standard elsewhere. The only new item here that weakens
-   a guarantee the architecture otherwise makes well. Take it at the boundary every create converges
-   on, not at `ImportAsync`: the ordinary `POST /api/security-master` route has the same shape. Keep
-   `SourceSystem` out of it — that field carries source identity for conflict detection, and only
-   `UpdatedBy` is the actor.
-2. **Make the pack-overlap rule symmetric across incumbents, candidates, and planned classes
+1. **Gate the legacy preferred-terms PATCH route (P1).** Promoted to the top because it is the only
+   item in this pass that is a defect in a *shipped control* rather than in plumbing: a deployment
+   that enables `RequireGovernedTermAmendments` to force maker-checker still has
+   `PATCH …/preferred-terms` (`SecurityMasterEndpoints.cs:1043-1058`) reaching
+   `AmendPreferredEquityTermsAsync` ungated. One `RequireGovernedTermAmendmentRoute` call closes it,
+   and a route-level test asserting every amendment path refuses under the option keeps it closed.
+   Smallest fix in this document with the largest governance consequence.
+2. **Derive actor attribution across the whole mutation surface, and gate backdating (P1, P2).**
+   An auditability defect on governed write paths that both operator lanes expose, on a subsystem
+   that already holds itself to the opposite standard elsewhere. Take it where the mutations
+   converge, not at `ImportAsync`: all six public members of `SecurityMasterService` carry
+   caller-asserted attribution, and amendments are not covered by the governed path in the default
+   configuration. Keep `SourceSystem` out of it — that field carries source identity for conflict
+   detection, and only `UpdatedBy` is the actor. Preserve workload identities for unattended ingests
+   rather than replacing them with a principal.
+3. **Make the pack-overlap rule symmetric across incumbents, candidates, and planned classes
    (N4, P3).** Still among the cheapest durable items in this document, and the planned-coverage axis
    means deferring it now schedules a three-way ownership dispute for the day `CreditFacility` lands.
-3. **Key the projection fan-out by asset class (N6).** Unchanged in importance, and cheaper than
+4. **Key the projection fan-out by asset class (N6).** Unchanged in importance, and cheaper than
    previously filed: the writers already carry the key.
-4. **Retire the third classify-from-prose site (P4).** The pattern is two-thirds gone; finishing it
-   keeps it from re-establishing itself as an idiom.
-5. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
+5. **Retire the remaining classify-from-prose sites and the swallowed cancellations (P4).** Three
+   ingests still classify create failures by exception message; two of them swallow cancellation in
+   the same catch, and Edgar swallows it separately in its conflict count. Edgar's create loop is the
+   reference implementation for the first two.
+6. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
    Unchanged from every prior pass, and unchanged in importance: `DirectLoan`, `StructuredCredit`,
    `PrivateFundInterest`, `RealEstateHolding` and `CommitmentGuarantee` remain the classes fund
    operations queries most and the ones with no indexed path.
