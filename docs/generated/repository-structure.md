@@ -1753,6 +1753,8 @@ Meridian-main
 │   ├── generated
 │   │   ├── database
 │   │   │   ├── contracts
+│   │   │   │   ├── asset-operations-contracts-page-01.md
+│   │   │   │   ├── asset-operations-contracts-page-02.md
 │   │   │   │   ├── asset-operations-contracts.md
 │   │   │   │   ├── banking-contracts.md
 │   │   │   │   ├── direct-lending-contracts-page-01.md
@@ -1772,11 +1774,13 @@ Meridian-main
 │   │   │   │   ├── security-master-contracts-page-01.md
 │   │   │   │   ├── security-master-contracts-page-02.md
 │   │   │   │   ├── security-master-contracts-page-03.md
+│   │   │   │   ├── security-master-contracts-page-04.md
 │   │   │   │   └── security-master-contracts.md
 │   │   │   ├── diagrams
 │   │   │   │   ├── asset_operations.mmd
 │   │   │   │   ├── banking.mmd
-│   │   │   │   ├── contracts-asset-operations-contracts.mmd
+│   │   │   │   ├── contracts-asset-operations-contracts-page-01.mmd
+│   │   │   │   ├── contracts-asset-operations-contracts-page-02.mmd
 │   │   │   │   ├── contracts-banking-contracts.mmd
 │   │   │   │   ├── contracts-direct-lending-contracts-page-01.mmd
 │   │   │   │   ├── contracts-direct-lending-contracts-page-02.mmd
@@ -1792,6 +1796,7 @@ Meridian-main
 │   │   │   │   ├── contracts-security-master-contracts-page-01.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-02.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-03.mmd
+│   │   │   │   ├── contracts-security-master-contracts-page-04.mmd
 │   │   │   │   ├── fund_accounts.mmd
 │   │   │   │   ├── fund_structure.mmd
 │   │   │   │   ├── identity_access.mmd
