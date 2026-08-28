@@ -1101,17 +1101,26 @@ left to forward whatever their request carried.
 
 Five constraints the fix has to respect:
 
-- **The general rule, which the per-field notes below only illustrate.** Successive review rounds
-  each found another field the enumerated version missed — `CreatedBy`, `EffectiveTo`,
-  `ValidFrom`/`ValidTo`, `SourceRecordId` — which is what an enumeration invites. So state it once,
-  generally: **every provenance-bearing field on a mutation request is caller-asserted today, and
-  each must end up either server-derived or validated against trusted workflow metadata.** That
-  covers actor identity, source identity, upstream record identity and every valid-time bound,
-  whatever a given request type calls them. `SourceRecordId` is the easiest to overlook and makes the
-  point: `SecurityMasterMapping` persists it into the provenance document on create, amend and
-  deactivate (`:21, 34, 41`), so a caller can attach an arbitrary upstream evidence identifier to a
-  governed record. Treat the notes that follow as worked examples of this rule, not as its extent —
-  an implementer who satisfies only the named fields has not satisfied the finding.
+- **The general rule, and the one field it must not swallow.** Successive review rounds each found
+  another field an enumerated version missed — `CreatedBy`, `EffectiveTo`, `ValidFrom`/`ValidTo`,
+  `SourceRecordId` — which is what an enumeration invites. So state it once, generally: **every
+  provenance-bearing field on a mutation request is caller-asserted today, and each must end up
+  either server-derived or validated against trusted workflow metadata.** That covers actor identity,
+  source identity, upstream record identity and every valid-time bound, whatever a given request type
+  calls them. `SourceRecordId` is the easiest to overlook and makes the point: `SecurityMasterMapping`
+  persists it into provenance on create, amend and deactivate (`:21, 34, 41`), so a caller can attach
+  an arbitrary upstream evidence identifier to a governed record.
+
+  **`Reason` is the exception and must stay caller-authored.** It is persisted through the same
+  `ToProvenance` call, so the rule as stated would sweep it in — wrongly. An operator's rationale is
+  the one provenance field whose *content* should come from the caller; what must be trustworthy is
+  the identity it hangs off, not the prose. The reference implementation does exactly this:
+  `ApprovedFieldEditCanonicalMergeHandler` carries `revision.FieldJustification` through as the
+  amendment `Reason` while deriving `UpdatedBy` from the authenticated actor (`:178-183`). Deriving
+  or validating `Reason` against workflow metadata would discard legitimate explanations.
+
+  Treat the notes that follow as worked examples of the rule, not as its extent — an implementer who
+  satisfies only the named fields has not satisfied the finding.
 - **Every actor-identifying field must be server-derived, whatever it is called.** That is `UpdatedBy`
   on create, amend and deactivate, and **`CreatedBy` on alias upsert** — `UpsertAliasAsync` copies
   `request.CreatedBy` straight into the stored `SecurityAliasDto` (`SecurityMasterService.cs:284-300`)
@@ -1137,10 +1146,17 @@ Five constraints the fix has to respect:
   would be wrong for the same reason the exposure is narrow: a security loaded today can legitimately
   have an economic start date months back, and clamping would overwrite that true fact with a false
   one — replacing a caller-asserted date with a caller-*independent* wrong date, which is worse
-  stored provenance, not better. (No query behaviour rides on this today; per the section above,
-  nothing selects terms by these fields. The point is the persisted value's truthfulness, and any
-  future valid-time semantics built on it.) Gate backdating behind an explicit permission or a
-  trusted ingest workflow instead, so the assertion is authorized rather than forbidden. The gate has to cover the whole surface, not just create:
+  stored provenance, not better. Gate backdating behind an explicit permission or a trusted ingest
+  workflow instead, so the assertion is authorized rather than forbidden.
+
+  **The query exposure differs by field, and the two must not be conflated.** For economic *term*
+  dates the exposure is stored-provenance truthfulness only — nothing selects terms by
+  `EffectiveFrom`, per the bullet above. For **alias** windows it is live query behaviour today:
+  `RebuildRecordedAsOfAsync` filters returned aliases by `CreatedAt`, `ValidFrom` and `ValidTo`
+  (`SecurityMasterAggregateRebuilder.cs:104-107`), so a caller-controlled alias window changes what
+  an as-of identifier lookup returns. That makes the alias case the more urgent of the two and the
+  one with a concrete blast radius, which an earlier draft of this bullet obscured by generalising a
+  terms-only caveat across the whole surface. The gate has to cover the whole surface, not just create:
   `EffectiveFrom` on create and amend, `EffectiveTo` on `DeactivateSecurityRequest`
   (`SecurityCommands.cs:46`), and `ValidFrom` / `ValidTo` on `UpsertSecurityAliasRequest` (`:67-68`).
   Otherwise a caller who cannot backdate a definition can still backdate its deactivation or an
@@ -1222,10 +1238,15 @@ handles this correctly: the duplicate filter is a narrow `catch (Exception ex) w
 (IsDuplicateException(ex))`, followed by `catch (OperationCanceledException) when
 (ct.IsCancellationRequested) { throw; }` (`EdgarIngestOrchestrator:120-127`). So Edgar carries the
 prose-classification defect but **not** the create-loop cancellation defect. Its swallowed
-cancellation is somewhere else entirely: `CountOpenConflictsAsync` (`:627-641`) wraps
-`GetOpenConflictsAsync(ct)` in a bare `catch (Exception)` that returns `0`, so a cancellation during
-the post-loop conflict count is converted into a plausible-looking count and the ingest returns
-normally.
+cancellation lives in three *other* broad catches — around `SaveFactsAsync` (`:250-254`), around the
+provider fetch/store (`:286-290`), and in `CountOpenConflictsAsync` (`:627-641`), which wraps
+`GetOpenConflictsAsync(ct)` in a bare `catch (Exception)` returning `0`. Any of the three converts a
+cancellation into an ordinary error or a plausible-looking count, and the ingest returns normally.
+`EdgarIngestOrchestrator` has five broad catches in total; only the create loop rethrows.
+
+Edgar also carries the prose defect on **both** mutations, not just create: `CreateOrAmendSecurityAsync`
+calls `CreateAsync` when no security exists and `AmendTermsAsync` when one does (`:303-344`), with
+both under the same outer substring filter.
 
 The two defects therefore do not have one shared home:
 
@@ -1233,11 +1254,14 @@ The two defects therefore do not have one shared home:
 | --- | --- | --- |
 | `SecurityMasterImportService:171-172` | yes | yes, same catch |
 | `SecurityMasterCommands:279-282` | yes | yes, same catch |
-| `EdgarIngestOrchestrator:120-127` | yes | no — rethrows correctly |
+| `EdgarIngestOrchestrator:120-127` | yes — create **and** amend | no — rethrows correctly |
+| `EdgarIngestOrchestrator:250-254` | — | yes, around `SaveFactsAsync` |
+| `EdgarIngestOrchestrator:286-290` | — | yes, around provider fetch/store |
 | `EdgarIngestOrchestrator:627-641` | — | yes, in the conflict count |
 
 **The two columns need separate fixes — an earlier draft of this item said otherwise and was wrong.**
-A typed create outcome fixes the first column only. It changes how a duplicate is *signalled*, but
+A typed outcome — covering create **and** amend, per Edgar above — fixes the first column only. It
+changes how a duplicate is *signalled*, but
 `CreateAsync(…, ct)` still throws `OperationCanceledException`, and a broad `catch (Exception)` will
 keep swallowing it whatever the duplicate signal looks like. Reading the typed outcome as covering
 cancellation would leave both operator paths returning normally after a cancelled import, which is
@@ -1257,7 +1281,7 @@ same outer substring filter. So a create-only outcome would leave Edgar still cl
 failures by exception message. The typed outcome has to cover both mutations, or create and amendment
 handling has to be separated there first.
 
-The duplicate fix itself is a typed create outcome, **not** a pre-check against the identifier index. A shared
+The duplicate fix itself is a typed mutation outcome, **not** a pre-check against the identifier index. A shared
 identifier is not a duplicate here by design: `SecurityMasterImportServiceTests.ImportAsync_WhenRecordsAreCreated_TriggersAutomaticConflictRecordingPerSecurity`
 imports two records with distinct security ids and the same ISIN from different providers, and
 asserts `Imported == 2` with one conflict detected. Pre-skipping the second row would throw away the
@@ -1315,9 +1339,10 @@ Read as a delta on the standing lists above.
 4. **Key the projection fan-out by asset class (N6).** Unchanged in importance, and cheaper than
    previously filed: the writers already carry the key.
 5. **Retire the remaining classify-from-prose sites and the swallowed cancellations (P4).** Three
-   ingests still classify create failures by exception message; two of them swallow cancellation in
-   the same catch, and Edgar swallows it separately in its conflict count. Edgar's create loop is the
-   reference implementation for the first two.
+   ingests still classify mutation failures by exception message — Edgar on both create and amend.
+   Two of them swallow cancellation in that same catch; Edgar instead swallows it in three separate
+   broad catches (`:250-254`, `:286-290`, `:627-641`). Edgar's create loop is the reference
+   implementation for the rethrow, and the typed outcome must cover both mutations.
 6. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
    Unchanged from every prior pass, and unchanged in importance: `DirectLoan`, `StructuredCredit`,
    `PrivateFundInterest`, `RealEstateHolding` and `CommitmentGuarantee` remain the classes fund
