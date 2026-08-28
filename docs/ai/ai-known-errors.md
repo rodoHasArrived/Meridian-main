@@ -431,4 +431,4 @@ label alone will update this file.
   - `git diff --exit-code -- docs/generated/repository-structure.md` (must be clean)
 - **Source issue**: PR #2857
 - **Status**: mitigated
-- **Fixed in**: Documented here; the coupling itself is unchanged. A durable fix would have `generate-structure-docs` honor `.gitignore` when walking the tree, so the generated structure is a function of the committed repository rather than of whichever artifacts a given job happened to leave behind.
+- **Fixed in**: Documented here; the coupling itself is unchanged. The durable fix is for `generate-structure-docs` to render only tracked paths — `_git_visible_files` already runs `git ls-files`, so the remedy is to stop merging the filesystem walk into that result rather than to filter it. Merely honoring `.gitignore` would close this instance without making the output a function of the committed repository: any untracked-but-unignored file would still enter the tree and could red the downstream dashboard check the same way.

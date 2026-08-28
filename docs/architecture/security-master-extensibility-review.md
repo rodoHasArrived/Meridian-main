@@ -999,11 +999,15 @@ Two distinct institutional consequences:
   the same governed surface reaching the opposite conclusion, and it is the higher-volume one. A
   golden record cannot defend a value in an audit if the only record of who asserted it is a string
   the asserting file chose.
-- **Bitemporality.** `EffectiveFrom` is caller-supplied and unbounded, so an import can backdate a
-  definition to any point. The bitemporal rebuilder is one of this subsystem's strongest pieces —
-  `RebuildRecordedAsOfAsync` exists precisely so "a projection-only current definition cannot
-  masquerade as history" — and an unconstrained caller-supplied effective date is the one input that
-  design cannot defend itself against.
+- **Valid-time integrity.** `EffectiveFrom` is caller-supplied and unbounded, so a create can date a
+  definition to any point. Note precisely what this does and does not reach: *recorded* time is
+  safe, because `SecurityMasterMapping.ToEventEnvelope` stamps `EventTimestamp` server-side with
+  `UtcNow` (`:111`) and `RebuildRecordedAsOfAsync` filters on that timestamp
+  (`SecurityMasterAggregateRebuilder.cs:99`), independent of `EffectiveFrom`. So the bitemporal
+  rebuilder defends itself here; "what did we believe on date X" stays honest. What an unbounded
+  `EffectiveFrom` misstates is the *economic* start date — the valid-time axis every effective-dated
+  query reads. That is narrower than the recorded-time story, and still worth governing, because a
+  caller can assert an economic history the record never had.
 
 **The defect is the shared create boundary, not bulk import.** `POST /api/security-master`
 (`SecurityMasterEndpoints.cs:351-362`) binds a complete `CreateSecurityRequest` from the body, calls
@@ -1027,8 +1031,11 @@ Three constraints the fix has to respect, none of which need a new concept:
 - **The desktop lane needs its own actor source.** Per above, WPF holds no `HttpContext`. Securing
   both lanes means either a desktop actor source or a shared execution-context abstraction the
   service reads, rather than an endpoint-only parameter.
-- **`EffectiveFrom` needs a bound**, either clamped to ingest time or gated behind an explicit
-  backdating permission.
+- **`EffectiveFrom` needs a gate, not a clamp.** Clamping to ingest time would be wrong: a security
+  loaded today can legitimately have an economic start date months back, and clamping would falsify
+  it and corrupt exactly the effective-dated queries the field exists to serve. Gate backdating
+  behind an explicit permission or a trusted ingest workflow instead, so the assertion is authorized
+  rather than forbidden.
 
 Note this is a create-path gap specifically — `RequireGovernedTermAmendments` gates amendments, and
 nothing equivalent gates creation on either route.
@@ -1062,7 +1069,7 @@ readiness report) and `:873` (descriptor validation). So today's `DirectLoan` am
 reader rather than mis-routing a record — which is why N4 stays a governance item rather than
 escalating.
 
-### P4 — Import classifies duplicates by exception-message substring
+### P4 — Import classifies duplicates by exception-message substring, and the same catch swallows cancellation
 
 `SecurityMasterImportService:171-172` decides whether a failed create was a duplicate — and therefore
 whether the row is reported as `Skipped` or `Failed` — by testing `ex.Message` for the substrings
@@ -1072,7 +1079,17 @@ place. Rewording an exception message silently converts every duplicate in an im
 reported failure, and the operator-facing summary is built from those counts
 (`SecurityMasterViewModel.cs:4366-4374`).
 
-The fix is a typed create outcome, **not** a pre-check against the identifier index. A shared
+**The same `catch` swallows cancellation.** `catch (Exception ex)` (`:168`) also catches the
+`OperationCanceledException` that `CreateAsync(request, ct)` throws when the token trips mid-row.
+The substring test does not match it, so a cancelled row is counted as `Failed` and logged as an
+import error rather than propagating. The `ct.ThrowIfCancellationRequested()` at the top of the loop
+(`:160`) only covers cancellation *between* rows. Worse, on the final row with no conflict service
+configured, nothing after the loop observes the token, so a cancelled import returns a normal
+result. This breaks the repository's standing guardrail that cancellation flow stays intact, and a
+typed duplicate outcome would not fix it: the remediation has to rethrow cancellation before
+classifying a create failure at all.
+
+The duplicate fix itself is a typed create outcome, **not** a pre-check against the identifier index. A shared
 identifier is not a duplicate here by design: `SecurityMasterImportServiceTests.ImportAsync_WhenRecordsAreCreated_TriggersAutomaticConflictRecordingPerSecurity`
 imports two records with distinct security ids and the same ISIN from different providers, and
 asserts `Imported == 2` with one conflict detected. Pre-skipping the second row would throw away the
@@ -1107,7 +1124,7 @@ report — while identifier ambiguity keeps flowing to conflict processing untou
 
 Read as a delta on the standing lists above.
 
-1. **Derive actor attribution at the shared create boundary, and bound `EffectiveFrom` (P1, P2).**
+1. **Derive actor attribution at the shared create boundary, and gate backdating (P1, P2).**
    An auditability defect on a governed create path that both operator lanes expose, on a subsystem
    that already holds itself to the opposite standard elsewhere. The only new item here that weakens
    a guarantee the architecture otherwise makes well. Take it at the boundary every create converges
