@@ -29,6 +29,12 @@
       "rule_id": "migration-truncate",
       "reason": "The lexical TRUNCATE match is the migration's own BEFORE TRUNCATE guard trigger, which rejects truncation of the journal integrity tables. The migration truncates nothing.",
       "review_after": "2027-02-01"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/030_security_master_normalized_primary_identifier_uniqueness.sql",
+      "rule_id": "migration-drop-object",
+      "reason": "The migration drops only the superseded raw-value unique index and normalized non-unique index after its deterministic collision preflight succeeds, then immediately creates the normalized unique index. No table data or identifier history is removed.",
+      "review_after": "2027-02-28"
     }
   ],
   "removed_migrations": [
