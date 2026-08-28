@@ -1134,10 +1134,13 @@ Five constraints the fix has to respect:
   service/workload identity path so those ingests keep their current, more informative attribution
   instead of being rejected or overwritten.
 - **Every caller-controlled valid-time field needs a gate, not a clamp.** Clamping to ingest time
-  would be wrong: a security loaded today can legitimately have an economic start date months back,
-  and clamping would falsify exactly the effective-dated queries these fields exist to serve. Gate
-  backdating behind an explicit permission or a trusted ingest workflow instead, so the assertion is
-  authorized rather than forbidden. The gate has to cover the whole surface, not just create:
+  would be wrong for the same reason the exposure is narrow: a security loaded today can legitimately
+  have an economic start date months back, and clamping would overwrite that true fact with a false
+  one — replacing a caller-asserted date with a caller-*independent* wrong date, which is worse
+  stored provenance, not better. (No query behaviour rides on this today; per the section above,
+  nothing selects terms by these fields. The point is the persisted value's truthfulness, and any
+  future valid-time semantics built on it.) Gate backdating behind an explicit permission or a
+  trusted ingest workflow instead, so the assertion is authorized rather than forbidden. The gate has to cover the whole surface, not just create:
   `EffectiveFrom` on create and amend, `EffectiveTo` on `DeactivateSecurityRequest`
   (`SecurityCommands.cs:46`), and `ValidFrom` / `ValidTo` on `UpsertSecurityAliasRequest` (`:67-68`).
   Otherwise a caller who cannot backdate a definition can still backdate its deactivation or an
