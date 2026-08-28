@@ -358,7 +358,9 @@ public static partial class SecurityMasterEndpoints
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            var detail = await service.CreateAsync(request, ct).ConfigureAwait(false);
+            var detail = await service
+                .CreateAsync(request with { UpdatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
         .WithName("CreateSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
@@ -390,7 +392,9 @@ public static partial class SecurityMasterEndpoints
             if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
                 return governedRefusal;
 
-            var detail = await service.AmendTermsAsync(request, ct).ConfigureAwait(false);
+            var detail = await service
+                .AmendTermsAsync(request with { UpdatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.Json(detail, jsonOptions);
         })
         .WithName("AmendSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
@@ -418,7 +422,9 @@ public static partial class SecurityMasterEndpoints
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            await service.DeactivateAsync(request, ct).ConfigureAwait(false);
+            await service
+                .DeactivateAsync(request with { UpdatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.NoContent();
         })
         .WithName("DeactivateSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
@@ -446,7 +452,9 @@ public static partial class SecurityMasterEndpoints
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            var alias = await service.UpsertAliasAsync(request, ct).ConfigureAwait(false);
+            var alias = await service
+                .UpsertAliasAsync(request with { CreatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.Json(alias, jsonOptions);
         })
         .WithName("UpsertSecurityMasterAlias").RequirePermission(UserPermission.ModifySecurityMaster)
@@ -527,7 +535,7 @@ public static partial class SecurityMasterEndpoints
             }
 
             var detail = await service
-                .AmendPreferredEquityTermsAsync(securityId, request, ct)
+                .AmendPreferredEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
                 .ConfigureAwait(false);
 
             return Results.Json(detail, jsonOptions);
@@ -588,7 +596,7 @@ public static partial class SecurityMasterEndpoints
             }
 
             var detail = await service
-                .AmendConvertibleEquityTermsAsync(securityId, request, ct)
+                .AmendConvertibleEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
                 .ConfigureAwait(false);
 
             return Results.Json(detail, jsonOptions);
@@ -835,6 +843,7 @@ public static partial class SecurityMasterEndpoints
             var result = await importService.ImportAsync(
                 request.FileContent,
                 request.FileExtension,
+                actor: ResolveActor(context),
                 progress: null,
                 ct: ct).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
@@ -1059,7 +1068,9 @@ public static partial class SecurityMasterEndpoints
             if (existing is null)
                 return Results.NotFound();
 
-            var detail = await service.AmendPreferredEquityTermsAsync(securityId, request, ct).ConfigureAwait(false);
+            var detail = await service
+                .AmendPreferredEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.Json(detail, jsonOptions);
         })
         .WithName("PatchSecurityPreferredTerms").RequirePermission(UserPermission.ModifySecurityMaster)
@@ -1169,6 +1180,20 @@ public static partial class SecurityMasterEndpoints
         return (chosenWinnerSource, reason);
     }
 
+    /// <summary>
+    /// The single source of actor identity for Security Master writes. Every mutation route stamps
+    /// its request's <c>UpdatedBy</c>/<c>CreatedBy</c> from this rather than trusting the body, so a
+    /// caller cannot attribute its own write to somebody else. Unattended callers are not refused:
+    /// <see cref="ApiKeyMiddleware"/> stamps a workload identity as the current user, so an ingest
+    /// authenticating with a key is recorded as that workload rather than as a human operator.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately narrow. <c>SourceSystem</c> stays caller-supplied because it identifies the
+    /// upstream SOURCE for conflict detection and precedence, not the actor — deriving it from the
+    /// principal would collapse distinct vendors into one and corrupt the precedence ladder. Likewise
+    /// <c>Reason</c>, <c>SourceRecordId</c> and the valid-time fields stay caller-authored: they
+    /// describe the change and its upstream record, which only the caller knows.
+    /// </remarks>
     private static string ResolveActor(HttpContext context)
     {
         if (EndpointAuthorization.TryResolveActor(context, out var username))

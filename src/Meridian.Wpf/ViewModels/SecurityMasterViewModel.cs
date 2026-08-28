@@ -42,6 +42,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly WpfServices.NavigationService _navigationService;
     private readonly ISmQueryService _queryService;
     private readonly ISmService _service;
+    private readonly WpfServices.DesktopAuthenticationSession? _authenticationSession;
     private readonly bool _hasPolygonApiKey;
     private readonly object _selectedSecurityLoadGate = new();
     private bool _isRefreshingSearchWorkspaceFilters;
@@ -1547,8 +1548,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _queryService = queryService;
         _service = service;
+        _authenticationSession = authenticationSession;
         if (authenticationSession?.CurrentActor is { Length: > 0 } sessionActor)
         {
+            // Pre-fills the operator text box only. Governed writes resolve their actor through
+            // DesktopAuthenticationSession.TryGetAuthenticatedActor, which validates the session.
             _conflictOperatorText = sessionActor;
         }
         _hasPolygonApiKey = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POLYGON_API_KEY"));
@@ -1628,7 +1632,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void OnCreateNew()
     {
-        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service);
+        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service, _authenticationSession);
         WireEditVmEvents();
         IsEditPanelVisible = true;
     }
@@ -1656,7 +1660,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             {
                 await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service);
+                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service, _authenticationSession);
                     EditVm.LoadForEdit(detail);
                     WireEditVmEvents();
                     IsEditPanelVisible = true;
@@ -4331,6 +4335,18 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         if (openDialog.ShowDialog() != true)
             return;
 
+        // Imported securities are recorded against the signed-in operator, so refuse an import this
+        // session cannot attribute rather than stamping a placeholder across every created row.
+        if (_authenticationSession is null || !_authenticationSession.TryGetAuthenticatedActor(out var importedBy))
+        {
+            _loggingService.LogWarning("Security Master import refused: no authenticated desktop operator to attribute the import to.");
+            _notificationService.ShowNotification(
+                "Security Master",
+                "Sign in before importing: imported securities are recorded against the signed-in operator.",
+                NotificationType.Error);
+            return;
+        }
+
         try
         {
             IsImporting = true;
@@ -4355,7 +4371,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 });
             });
 
-            var result = await _importService.ImportAsync(fileContent, fileExtension, progress, ct).ConfigureAwait(false);
+            var result = await _importService.ImportAsync(fileContent, fileExtension, importedBy, progress, ct).ConfigureAwait(false);
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {

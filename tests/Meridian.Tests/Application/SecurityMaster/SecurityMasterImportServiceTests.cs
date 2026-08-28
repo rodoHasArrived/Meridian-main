@@ -25,7 +25,7 @@ public sealed class SecurityMasterImportServiceTests
             conflictService);
         var statusService = (ISecurityMasterIngestStatusService)importService;
 
-        var importTask = importService.ImportAsync(BuildJson(), ".json", ct: CancellationToken.None);
+        var importTask = importService.ImportAsync(BuildJson(), ".json", "test.operator", ct: CancellationToken.None);
 
         await securityMasterService.Started.WaitAsync(TimeSpan.FromSeconds(5));
 
