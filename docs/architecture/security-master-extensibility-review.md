@@ -1179,6 +1179,17 @@ Five constraints the fix has to respect:
   only that "the desktop needs an actor source" may build a second identity abstraction beside the one
   Meridian already maintains.
 
+  **The wiring is not uniformly a one-line change, because not every desktop mutation site can see
+  that session.** `SecurityMasterDeactivateViewModel.ConfirmAsync` builds its
+  `DeactivateSecurityRequest` with a hardcoded `UpdatedBy: "User"` (`:59-68`), and its constructor
+  takes only logging, notification and `ISecurityMasterService` (`:38-48`) — `SecurityMasterViewModel`
+  constructs it without passing the authentication session it holds (`:1683`). So on this path the
+  actor source has to be threaded through a constructor that does not currently accept it, not merely
+  read from an already-injected dependency. Worth separating the two fields here: `SourceSystem:
+  "WPF-UI"` on that same request is a fixed workflow identifier, which is exactly what the
+  `SourceSystem` rule prescribes — only `UpdatedBy` is defective. Treat child view models that
+  construct mutation requests as their own wiring sites when scoping this work.
+
   **But `CurrentActor` is not unconditionally an authenticated operator, and the wiring must not treat
   it as one.** It falls back to `"local-development"` when `IsAnonymousDevelopmentSession` holds — the
   unconfigured-environment posture allowed by `CanContinueWithoutCredentials` — and returns empty once
@@ -1512,12 +1523,14 @@ Read as a delta on the standing lists above.
    `ValidTo` nested inside each `SecurityIdentifierDto` in a create request's `Identifiers` or an
    amendment's `IdentifiersToAdd`, which a gate written against the requests' own scalar fields will not
    reach — but not `IdentifiersToExpire`, whose windows the domain never reads. Keep the record's
-   *content* out of it:
-   `SourceSystem` carries source identity for conflict detection rather than actor identity, `Provider`
-   namespaces an identifier value, and `Reason` is the operator's own rationale — deriving any of the
-   three would corrupt what the record asserts. Preserve workload
-   identities for unattended ingests rather than replacing them with a principal, and preserve the
-   workbench chain that already does this correctly.
+   *content* out of it — `Provider` namespaces an identifier value and `Reason` is the operator's own
+   rationale, so deriving either would corrupt what the record asserts. **`SourceSystem` is not in that
+   exempt set**: it is provenance, and it stays in scope. What is forbidden is deriving it from the
+   *actor* — it carries source identity for conflict detection, not actor identity — while leaving it
+   caller-selected still permits a forged source that manufactures or suppresses conflicts. Derive it
+   from trusted ingest metadata or a fixed workflow identifier, per the constraints above. Preserve
+   workload identities for unattended ingests rather than replacing them with a principal, and preserve
+   the workbench chain that already does this correctly.
 4. **Make the pack-overlap rule symmetric across incumbents, candidates, and planned classes
    (N4, P3).** Still among the cheapest durable items in this document, and the planned-coverage axis
    means deferring it now schedules a three-way ownership dispute for the day `CreditFacility` lands.
