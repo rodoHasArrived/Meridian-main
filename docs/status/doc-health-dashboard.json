@@ -1,11 +1,11 @@
 {
-  "total_files": 657,
-  "total_lines": 135181,
+  "total_files": 658,
+  "total_lines": 135210,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 251,
-  "average_lines": 205.8,
+  "average_lines": 205.5,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1593,7 +1593,7 @@
     },
     {
       "path": "docs/architecture/README.md",
-      "line_count": 88,
+      "line_count": 89,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1610,6 +1610,14 @@
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
       "line_count": 934,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/security-master-identifier-conflict-detection.md",
+      "line_count": 27,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2625,7 +2633,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10679,
+      "line_count": 10680,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
