@@ -171,7 +171,19 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         return ReadAccountSummary(reader);
     }
 
-    public async Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsAsync(AccountStructureQuery query, CancellationToken ct = default)
+    public Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsAsync(AccountStructureQuery query, CancellationToken ct = default)
+        => QueryAccountsCoreAsync(query, applyCallerTenantPredicate: true, ct);
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsAcrossTenantsAsync(
+        AccountStructureQuery query,
+        CancellationToken ct = default)
+        => QueryAccountsCoreAsync(query, applyCallerTenantPredicate: false, ct);
+
+    private async Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsCoreAsync(
+        AccountStructureQuery query,
+        bool applyCallerTenantPredicate,
+        CancellationToken ct)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
@@ -238,7 +250,9 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
 
         // SEC-005 slice 4c: scope by the account's stamped tenant_id (closes the fund_account_id
         // alternate-identifier residual). Fail-open for a tenantless caller or unstamped legacy rows.
-        var callerTenant = ResolveCallerTenant();
+        // The predicate is skipped only for the deliberate cross-tenant enumeration used by the
+        // scope fan-out authority, which must see holdings in every tenant to answer at all.
+        var callerTenant = applyCallerTenantPredicate ? ResolveCallerTenant() : null;
         if (TenantReadPredicate.ShouldFilter(callerTenant))
         {
             sb.AppendLine(TenantReadPredicate.FilterClause("tenant_id"));

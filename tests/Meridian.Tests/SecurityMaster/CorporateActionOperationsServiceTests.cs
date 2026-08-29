@@ -502,9 +502,27 @@ public sealed class CorporateActionOperationsServiceTests
                 call.ArgAt<SecurityMasterCorporateActionRestatementDto?>(4),
                 replayed: false,
                 proposedAction: correction));
+        // The fund the restatement handoff must carry is the one the scope authority resolves, not
+        // the one the caller asserts. The caller's value below is deliberately different and must
+        // lose: narrow scope is server-resolved now, so a caller cannot steer which fund's periods
+        // a restatement is evaluated against.
+        fixture.ScopeFanOut.ResolveDecisionScopeAsync(
+                Arg.Any<Guid>(),
+                Arg.Any<DateOnly>(),
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => new CorporateActionScopeFanOutDecision(
+                true,
+                new CorporateActionCaseScopeDto(
+                    call.ArgAt<string>(2),
+                    call.ArgAt<string>(3),
+                    FundProfileId: "fund-closed-period"),
+                CorporateActionScopeFanOutRefusal.None,
+                []));
         var request = AcceptRequest() with
         {
-            Scope = AcceptRequest().Scope with { FundProfileId = "fund-closed-period" },
+            Scope = AcceptRequest().Scope with { FundProfileId = "fund-the-caller-asserted" },
         };
 
         var result = await fixture.Service.AcceptSourceProposalAsync(request);
@@ -1031,6 +1049,153 @@ public sealed class CorporateActionOperationsServiceTests
             Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task AcceptSourceProposal_WithoutAComposedScopeAuthority_FailsClosedBeforeTheStore()
+    {
+        // The decision boundary is closed by the absence of the authority, not by a setting. A
+        // deployment that cannot enumerate affected scopes must not open a case in one of them.
+        var store = Substitute.For<ICorporateActionOperationsStore>();
+        store.GetSourceProposalAsync(ProposalId, Arg.Any<CancellationToken>())
+            .Returns(SourceProposal(Dividend()));
+        var service = new CorporateActionOperationsService(
+            store,
+            Substitute.For<ISecurityMasterEventStore>(),
+            Substitute.For<ISecurityMasterStore>(),
+            Substitute.For<ICorporateActionRestatementTrigger>(),
+            scopeFanOut: null);
+
+        var act = () => service.AcceptSourceProposalAsync(AcceptRequest());
+
+        var exception = await act.Should().ThrowAsync<CorporateActionOperationException>();
+        exception.Which.Code.Should().Be(CorporateActionProblemCodes.PersistenceUnavailable);
+        await store.DidNotReceive().AcceptSourceProposalAsync(
+            Arg.Any<AcceptCorporateActionSourceProposalRequestDto>(),
+            Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<Guid>(),
+            Arg.Any<SecurityMasterCorporateActionRestatementDto?>(),
+            Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AcceptSourceProposal_WhenTheFactReachesSeveralScopes_RefusesRatherThanCasingOne()
+    {
+        var fixture = CreateFixture(SourceProposal(Dividend()));
+        fixture.ScopeFanOut.ResolveDecisionScopeAsync(
+                Arg.Any<Guid>(), Arg.Any<DateOnly>(), Arg.Any<string>(), Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(CorporateActionScopeFanOutDecision.Refused(
+                CorporateActionScopeFanOutRefusal.MultiScope,
+                CorporateActionScopeFanOutGate.MultiScopeBlocker));
+
+        var act = () => fixture.Service.AcceptSourceProposalAsync(AcceptRequest());
+
+        var exception = await act.Should().ThrowAsync<CorporateActionOperationException>();
+        exception.Which.Code.Should().Be(CorporateActionProblemCodes.DownstreamAuthorityRequired);
+        await fixture.Store.DidNotReceive().AcceptSourceProposalAsync(
+            Arg.Any<AcceptCorporateActionSourceProposalRequestDto>(),
+            Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<Guid>(),
+            Arg.Any<SecurityMasterCorporateActionRestatementDto?>(),
+            Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AcceptSourceProposal_WhenTheFactReachesAnotherTenant_FailsClosedAsScopeMismatch()
+    {
+        var fixture = CreateFixture(SourceProposal(Dividend()));
+        fixture.ScopeFanOut.ResolveDecisionScopeAsync(
+                Arg.Any<Guid>(), Arg.Any<DateOnly>(), Arg.Any<string>(), Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(CorporateActionScopeFanOutDecision.Refused(
+                CorporateActionScopeFanOutRefusal.ForeignScope,
+                CorporateActionScopeFanOutGate.ForeignScopeBlocker));
+
+        var act = () => fixture.Service.AcceptSourceProposalAsync(AcceptRequest());
+
+        var exception = await act.Should().ThrowAsync<CorporateActionOperationException>();
+        exception.Which.Code.Should().Be(CorporateActionProblemCodes.ScopeMismatch);
+    }
+
+    [Fact]
+    public async Task AcceptSourceProposal_StampsTheServerResolvedNarrowScopeOnTheStoreCommand()
+    {
+        var fixture = CreateFixture(SourceProposal(Dividend()));
+        fixture.ScopeFanOut.ResolveDecisionScopeAsync(
+                Arg.Any<Guid>(), Arg.Any<DateOnly>(), Arg.Any<string>(), Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new CorporateActionScopeFanOutDecision(
+                true,
+                new CorporateActionCaseScopeDto(
+                    "tenant-a",
+                    "company-a",
+                    StructureNodeId: null,
+                    FundProfileId: "fund-1",
+                    FinancialAccountId: "account-1",
+                    PortfolioId: "portfolio-1",
+                    CustodyAccountId: null,
+                    LedgerBookId: "book-1",
+                    PeriodId: null,
+                    AccountingBasis: null,
+                    FunctionalCurrency: "USD"),
+                CorporateActionScopeFanOutRefusal.None,
+                []));
+        fixture.Store.AcceptSourceProposalAsync(
+                Arg.Any<AcceptCorporateActionSourceProposalRequestDto>(),
+                Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<Guid>(),
+                Arg.Any<SecurityMasterCorporateActionRestatementDto?>(),
+                Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(call => AcceptanceResult(
+                call.ArgAt<AcceptCorporateActionSourceProposalRequestDto>(0),
+                call.ArgAt<Guid>(1),
+                call.ArgAt<Guid>(2),
+                call.ArgAt<Guid>(3),
+                call.ArgAt<SecurityMasterCorporateActionRestatementDto?>(4),
+                replayed: false));
+
+        // The caller supplied tenant/company only; every narrower field is the authority's.
+        await fixture.Service.AcceptSourceProposalAsync(AcceptRequest());
+
+        await fixture.Store.Received(1).AcceptSourceProposalAsync(
+            Arg.Is<AcceptCorporateActionSourceProposalRequestDto>(accepted =>
+                accepted.Scope.FundProfileId == "fund-1" &&
+                accepted.Scope.FinancialAccountId == "account-1" &&
+                accepted.Scope.PortfolioId == "portfolio-1" &&
+                accepted.Scope.LedgerBookId == "book-1" &&
+                accepted.Scope.FunctionalCurrency == "USD"),
+            Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<Guid>(),
+            Arg.Any<SecurityMasterCorporateActionRestatementDto?>(),
+            Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AcceptSourceProposal_CommittedRetryReplaysWithoutReAskingTheScopeAuthority()
+    {
+        // Holdings move. A committed acceptance must still return its original receipt, so the
+        // replay path is deliberately ahead of the authority rather than behind it.
+        var fixture = CreateFixture(SourceProposal(Dividend()));
+        var committed = AcceptanceResult(
+            AcceptRequest(),
+            Guid.Parse("6f2c1c58-9c0e-4a41-8f2f-2b4b2a4a0f11"),
+            Guid.Parse("6f2c1c58-9c0e-4a41-8f2f-2b4b2a4a0f22"),
+            Guid.Parse("6f2c1c58-9c0e-4a41-8f2f-2b4b2a4a0f33"),
+            restatement: null,
+            replayed: true);
+        fixture.Store.GetAcceptanceReceiptAsync(
+                ProposalId, Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(committed);
+        fixture.ScopeFanOut.ResolveDecisionScopeAsync(
+                Arg.Any<Guid>(), Arg.Any<DateOnly>(), Arg.Any<string>(), Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(CorporateActionScopeFanOutDecision.Refused(
+                CorporateActionScopeFanOutRefusal.NoAffectedScope,
+                CorporateActionScopeFanOutGate.NoAffectedScopeBlocker));
+
+        var replay = await fixture.Service.AcceptSourceProposalAsync(AcceptRequest());
+
+        replay.Replayed.Should().BeTrue();
+        await fixture.ScopeFanOut.DidNotReceive().ResolveDecisionScopeAsync(
+            Arg.Any<Guid>(), Arg.Any<DateOnly>(), Arg.Any<string>(), Arg.Any<string>(),
+            Arg.Any<CancellationToken>());
+    }
+
     private static Fixture CreateFixture(
         CorporateActionSourceProposalDto proposal,
         IReadOnlyList<CorporateActionDto>? existingActions = null)
@@ -1044,9 +1209,24 @@ public sealed class CorporateActionOperationsServiceTests
             .Returns(existingActions ?? Array.Empty<CorporateActionDto>());
         securityMasterStore.GetProjectionAsync(SecurityId, Arg.Any<CancellationToken>())
             .Returns(SecurityProjection());
+        // Acceptance now resolves its scope from the fan-out authority. These cases are about the
+        // acceptance command itself, so the authority is composed and permissive; the refusal
+        // paths have their own cases below and in CorporateActionScopeFanOutGateTests.
+        var scopeFanOut = Substitute.For<ICorporateActionScopeFanOutGate>();
+        scopeFanOut.ResolveDecisionScopeAsync(
+                Arg.Any<Guid>(),
+                Arg.Any<DateOnly>(),
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => new CorporateActionScopeFanOutDecision(
+                true,
+                new CorporateActionCaseScopeDto(call.ArgAt<string>(2), call.ArgAt<string>(3)),
+                CorporateActionScopeFanOutRefusal.None,
+                []));
         var service = new CorporateActionOperationsService(
-            store, eventStore, securityMasterStore, restatementTrigger);
-        return new Fixture(service, store, eventStore, securityMasterStore, restatementTrigger);
+            store, eventStore, securityMasterStore, restatementTrigger, scopeFanOut);
+        return new Fixture(service, store, eventStore, securityMasterStore, restatementTrigger, scopeFanOut);
     }
 
     private static AcceptCorporateActionSourceProposalRequestDto AcceptRequest() =>
@@ -1216,5 +1396,6 @@ public sealed class CorporateActionOperationsServiceTests
         ICorporateActionOperationsStore Store,
         ISecurityMasterEventStore EventStore,
         ISecurityMasterStore SecurityMasterStore,
-        ICorporateActionRestatementTrigger RestatementTrigger);
+        ICorporateActionRestatementTrigger RestatementTrigger,
+        ICorporateActionScopeFanOutGate ScopeFanOut);
 }
