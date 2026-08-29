@@ -104,7 +104,15 @@ public sealed class Camt053StatementConnector : IStatementConnector
             return Task.FromResult(EmptyResult(issues));
         }
 
-        var records = new List<StatementCanonicalRecord>();
+        // Balances and entries accumulate separately and are concatenated balance-first below. The
+        // element-axis parser this replaced ran Elements(statement, "Bal") to completion before iterating
+        // any Ntry, so canonical record order was balance-first regardless of document order. Streaming in
+        // source order silently changed that for a document whose Ntry precedes its Bal - and record order
+        // feeds RenderCanonicalArtifact, whose hash is half of the retained-evidence uploadId, so the same
+        // source bytes would have produced a different identity after this upgrade and opened a duplicate
+        // reconciliation run on re-import.
+        var balanceRecords = new List<StatementCanonicalRecord>();
+        var entryRecords = new List<StatementCanonicalRecord>();
         var rowNumber = 0;
 
         // Seeded from pass one rather than discovered in document order. A well-formed-but-malformed
@@ -219,17 +227,6 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
                     case "Bal":
                         {
-                            // Counted before the subtree is materialized, for the same reason as Ntry below:
-                            // a closing balance with no parseable date is skipped with a warning and never
-                            // reaches the record cap, so a document of them accumulates issue objects
-                            // unbounded while one valid balance still lets the import succeed.
-                            rowCandidates++;
-                            if (rowCandidates > _limits.MaxRecords)
-                            {
-                                issues.Add(_limits.TooManyRecords());
-                                return Task.FromResult(EmptyResult(issues));
-                            }
-
                             if (!TryReadBoundedSubtree(reader, statementDepth, out var balance, out var balanceRefusal))
                             {
                                 issues.Add(balanceRefusal!);
@@ -241,6 +238,20 @@ public sealed class Camt053StatementConnector : IStatementConnector
                             if (!string.Equals(BalanceCode(balance), "CLBD", StringComparison.OrdinalIgnoreCase))
                             {
                                 continue;
+                            }
+
+                            // Charged only once the balance is one that can contribute a record or a
+                            // diagnostic. Charging every Bal - including the OPBD and ITBD balances filtered
+                            // out just above, which emit neither - made a statement carrying a couple of
+                            // informational balances plus one valid closing balance refuse as
+                            // STATEMENT_TOO_MANY_RECORDS under a small cap. Their subtrees are materialized
+                            // one at a time and released, so the transient cost is bounded without charging
+                            // a record budget they never draw on.
+                            rowCandidates++;
+                            if (rowCandidates > _limits.MaxRecords)
+                            {
+                                issues.Add(_limits.TooManyRecords());
+                                return Task.FromResult(EmptyResult(issues));
                             }
 
                             var date = BalanceDate(balance);
@@ -263,13 +274,13 @@ public sealed class Camt053StatementConnector : IStatementConnector
                                 continue;
                             }
 
-                            if (records.Count >= _limits.MaxRecords)
+                            if (balanceRecords.Count + entryRecords.Count >= _limits.MaxRecords)
                             {
                                 issues.Add(_limits.TooManyRecords());
                                 return Task.FromResult(EmptyResult(issues));
                             }
 
-                            records.Add(new StatementCanonicalRecord(
+                            balanceRecords.Add(new StatementCanonicalRecord(
                                 StatementRecordKind.CashBalance,
                                 account ?? string.Empty,
                                 Symbol: string.Empty,
@@ -343,13 +354,13 @@ public sealed class Camt053StatementConnector : IStatementConnector
                                 continue;
                             }
 
-                            if (records.Count >= _limits.MaxRecords)
+                            if (balanceRecords.Count + entryRecords.Count >= _limits.MaxRecords)
                             {
                                 issues.Add(_limits.TooManyRecords());
                                 return Task.FromResult(EmptyResult(issues));
                             }
 
-                            records.Add(new StatementCanonicalRecord(
+                            entryRecords.Add(new StatementCanonicalRecord(
                                 StatementRecordKind.Transaction,
                                 account ?? string.Empty,
                                 Symbol: string.Empty,
@@ -383,6 +394,10 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 "The camt.053 statement has no IBAN or other account identifier; a statement run must reconcile a single, identified account. Repair the file so the statement carries its account id before importing."));
             return Task.FromResult(EmptyResult(issues));
         }
+
+        var records = new List<StatementCanonicalRecord>(balanceRecords.Count + entryRecords.Count);
+        records.AddRange(balanceRecords);
+        records.AddRange(entryRecords);
 
         if (records.Count == 0)
         {

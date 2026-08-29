@@ -1160,6 +1160,66 @@ public sealed class StatementIngressLimitsTests : IDisposable
         result.Issues.Count.Should().BeLessThan(40, "diagnostics are bounded, not one per skipped entry");
     }
 
+    [Fact]
+    public async Task Camt_EntryBeforeBalance_StillEmitsBalanceFirstSoTheCanonicalIdentityIsStable()
+    {
+        // The element-axis parser ran Elements(statement, "Bal") to completion before iterating any Ntry,
+        // so canonical order was balance-first regardless of document order. Streaming in source order
+        // changed that silently - and record order feeds RenderCanonicalArtifact, whose hash is half of the
+        // retained-evidence uploadId, so the same source bytes would produce a different identity after the
+        // upgrade and open a duplicate reconciliation run on re-import.
+        var outOfOrder = new StringBuilder()
+            .Append("<Stmt><Id>STMT-1</Id>")
+            .Append("<Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>")
+            .Append("<Ntry><Amt Ccy=\"EUR\">2500.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Sts>BOOK</Sts>")
+            .Append("<BookgDt><Dt>2026-05-10</Dt></BookgDt><ValDt><Dt>2026-05-11</Dt></ValDt>")
+            .Append("<AcctSvcrRef>ENTRY-0001</AcctSvcrRef></Ntry>")
+            .Append("<Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp>")
+            .Append("<Amt Ccy=\"EUR\">12345.67</Amt><CdtDbtInd>CRDT</CdtDbtInd>")
+            .Append("<Dt><Dt>2026-05-31</Dt></Dt></Bal>")
+            .Append("</Stmt>")
+            .ToString();
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 100, MaxNestingDepth = 64 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("order.xml", BuildCamtDocument(outOfOrder)));
+
+        result.HasErrors.Should().BeFalse();
+        result.Records.Should().HaveCount(2);
+        result.Records[0].Kind.Should().Be(
+            StatementRecordKind.CashBalance,
+            "balances precede entries in canonical order no matter where they sit in the source");
+        result.Records[1].Kind.Should().Be(StatementRecordKind.Transaction);
+    }
+
+    [Fact]
+    public async Task Camt_InformationalBalances_AreNotChargedToTheRecordBudget()
+    {
+        // OPBD and ITBD balances are filtered out before they can emit a record or a diagnostic, so
+        // charging them to the record budget refused an ordinary statement: two informational balances
+        // plus one valid closing balance is one canonical row, not three.
+        var withInformational = new StringBuilder()
+            .Append("<Stmt><Id>STMT-1</Id>")
+            .Append("<Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>")
+            .Append("<Bal><Tp><CdOrPrtry><Cd>OPBD</Cd></CdOrPrtry></Tp>")
+            .Append("<Amt Ccy=\"EUR\">100.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-05-01</Dt></Dt></Bal>")
+            .Append("<Bal><Tp><CdOrPrtry><Cd>ITBD</Cd></CdOrPrtry></Tp>")
+            .Append("<Amt Ccy=\"EUR\">200.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-05-15</Dt></Dt></Bal>")
+            .Append("<Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp>")
+            .Append("<Amt Ccy=\"EUR\">12345.67</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-05-31</Dt></Dt></Bal>")
+            .Append("</Stmt>")
+            .ToString();
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 2, MaxNestingDepth = 64 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("informational.xml", BuildCamtDocument(withInformational)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Records.Should().ContainSingle().Which.Kind.Should().Be(StatementRecordKind.CashBalance);
+    }
+
     private static StatementImportCommitRequest CommitRequest(StatementSourceDocument document)
         => new(
             document,

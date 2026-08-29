@@ -267,6 +267,12 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var cashReport in cashReportElements)
             {
                 rowNumber++;
+                if (rowNumber > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "CashReport");
                 CollectAttributeNames(cashReport, detectedColumns);
                 if (BuildCashReportRecord(statement, cashReport, statementAccountId, profile) is { } record)
@@ -276,6 +282,12 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var interest in Descendants(statement, "InterestDetail", "InterestAccrual"))
             {
                 rowNumber++;
+                if (rowNumber > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, interest.Name.LocalName.EndsWith("Detail", StringComparison.OrdinalIgnoreCase)
                     ? "InterestDetails"
                     : "InterestAccruals");
@@ -288,6 +300,12 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var borrowFee in Descendants(statement, "BorrowFeeDetail"))
             {
                 rowNumber++;
+                if (rowNumber > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "BorrowFeeDetails");
                 CollectAttributeNames(borrowFee, detectedColumns);
                 var activity = BuildBorrowFeeActivity(borrowFee, statementAccountId, profile);
@@ -305,6 +323,12 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var corporateAction in Descendants(statement, "CorporateAction"))
             {
                 rowNumber++;
+                if (rowNumber > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "CorporateActions");
                 CollectAttributeNames(corporateAction, detectedColumns);
                 var activity = BuildCorporateActionActivity(corporateAction, statementAccountId, profile);
@@ -315,6 +339,12 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var transfer in Descendants(statement, "Transfer"))
             {
                 rowNumber++;
+                if (rowNumber > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "Transfers");
                 CollectAttributeNames(transfer, detectedColumns);
                 var activity = BuildTransferActivity(transfer, statementAccountId, profile);
@@ -327,6 +357,12 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                 if (!optionEae.HasAttributes)
                     continue;
                 rowNumber++;
+                if (rowNumber > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "OptionEAE");
                 CollectAttributeNames(optionEae, detectedColumns);
                 var activity = BuildOptionLifecycleActivity(optionEae, statementAccountId, profile);
