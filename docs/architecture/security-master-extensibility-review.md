@@ -66,17 +66,27 @@ risks that compound as new asset classes land.
 > **Scheduled institutional-requirements pass, 2026-08-28.** Re-read against `d3793290`, then
 > extended under review. The verdict stands. Every closure claimed by the 2026-08-26 resolution was
 > independently re-verified against source rather than taken on the resolution's word, and all of
-> them hold. N4, N5, N6 and the three deferred items are unchanged. Five new items are filed
-> (P1–P4 plus P3b, which review surfaced). See
+> them hold. N4, N5, N6 and the three deferred items are unchanged. Six new items are filed
+> (P1–P4 plus P3b and P5, which review surfaced). See
 > [Scheduled institutional-requirements pass — 2026-08-28](#scheduled-institutional-requirements-pass--2026-08-28).
 >
-> **Its highest-severity finding is a live bypass of a shipped control**: the legacy
+> **Its highest-severity finding (P5) is that the desktop lane mutates the golden record with no
+> authorization check at all.** Every HTTP mutation route requires `ModifySecurityMaster`; the WPF
+> edit, deactivate and import commands reach the same `ISecurityMasterService` in process and check
+> nothing, on a shell whose `HasPermission` fails closed for a configured host and is simply never
+> called here. So an operator holding only `ViewSecurityMaster` is refused every mutation over HTTP
+> and permitted every one of them through the workstation. It is filed apart from P1 because it is an
+> authorization defect rather than an attribution one, and it must be fixed first: deriving the actor
+> before gating the write would attach a real operator's name to changes that should have been
+> refused.
+>
+> **The second is a live bypass of a shipped control**: the legacy
 > `PATCH …/preferred-terms` route reaches `AmendPreferredEquityTermsAsync` without calling
 > `RequireGovernedTermAmendmentRoute`, so a deployment that enables `RequireGovernedTermAmendments`
 > to force maker-checker still has an ungated amendment path. That is one call to close, and it also
 > makes the 2026-08-24 resolution's "gates all three routes uniformly" incomplete.
 >
-> **The second shipped-behaviour defect (P3b, priority 2) loses history today**: an alias upsert
+> **The third shipped-behaviour defect (P3b, priority 3) loses history today**: an alias upsert
 > overwrites the existing row's `created_at`, and `RebuildRecordedAsOfAsync` filters aliases by it, so
 > correcting an alias removes it from every recorded-as-of view earlier than the correction — an
 > identifier recorded in January and corrected in June vanishes from the January view. Unlike the gate
@@ -1039,14 +1049,24 @@ Two distinct institutional consequences:
 **The defect is the write surface, not bulk import.** State it as a property rather than a list,
 because five review rounds each turned up another caller and a list is the wrong shape for this:
 **on `ISecurityMasterService`, caller-supplied attribution is the default and server-derived
-attribution is the exception.** Every mutation request type carries an **actor role**, a **source
-role** and one or more **valid-time roles** as ordinary payload fields, so any new caller inherits
-the gap unless its author knows to do otherwise. State those as roles, not field names, here as well
-as in the constraints below: the request types do not share a shape, and
+attribution is the exception.** Every mutation request type carries an **actor role** and one or more
+**valid-time roles** as ordinary payload fields, and most carry a **source role** too, so any new
+caller inherits the gap unless its author knows to do otherwise. State those as roles, not field
+names, here as well as in the constraints below: the request types do not share a shape, and
 `UpsertSecurityAliasRequest` has neither `UpdatedBy` nor `SourceSystem` — its actor role is
 `CreatedBy` and its temporal roles are `ValidFrom`/`ValidTo` (`SecurityCommands.cs:59-69`). An
 implementer who built the shared boundary from the create request's field names would omit alias
 attribution and its validity controls entirely.
+
+**The alias request has no source role at all, and the execution context cannot invent one.** Say
+this explicitly rather than leaving "most carry a source role" to be discovered: `Provider` is
+identifier content, not mutation provenance (below), so an implementer applying a uniform
+actor/source/valid-time context to alias upserts has only two honest options — press `Provider` into
+service as a source field, which corrupts identifier resolution, or record no mutation source for
+aliases at all. Neither should be chosen silently. The decision this pass leaves open, and which the
+implementation must make deliberately, is whether `SecurityAliasDto` and the `security_aliases` row
+gain a trusted mutation-source column alongside `CreatedBy`, or whether alias mutations are accepted
+as carrying actor provenance only. The rest of the surface is unaffected either way.
 
 **One path already does it correctly, and it is the model for the fix.** The governed workbench
 publish endpoint calls `EndpointAuthorization.TryResolveActor(context, out var actor)` and rebinds
@@ -1179,6 +1199,10 @@ Five constraints the fix has to respect:
   only that "the desktop needs an actor source" may build a second identity abstraction beside the one
   Meridian already maintains.
 
+  **Deriving the actor does not secure this lane — see P5. Attribution and authorization are separate
+  defects, and fixing the first without the second yields an accurate audit trail of writes that
+  should never have been permitted.**
+
   **The wiring is not uniformly a one-line change, because not every desktop mutation site can see
   that session.** `SecurityMasterDeactivateViewModel.ConfirmAsync` builds its
   `DeactivateSecurityRequest` with a hardcoded `UpdatedBy: "User"` (`:59-68`), and its constructor
@@ -1303,6 +1327,38 @@ readiness report) and `:873` (descriptor validation). So today's `DirectLoan` am
 reader rather than mis-routing a record — which is why N4 stays a governance item rather than
 escalating.
 
+### P5 — The desktop lane mutates the golden record with no authorization check at all
+
+Every HTTP mutation route on the Security Master requires the `ModifySecurityMaster` permission:
+create (`SecurityMasterEndpoints.cs:364`), amend (`:396`), deactivate (`:424`), alias upsert (`:452`),
+both equity-terms routes (`:535, 596`), corporate-action append (`:665`) and conflict resolution
+(`:807`) each carry `RequirePermission(UserPermission.ModifySecurityMaster)`.
+
+The WPF lane reaches the same `ISecurityMasterService` in process and checks nothing.
+`SecurityMasterEditViewModel` calls `CreateAsync` (`:216`) and `AmendTermsAsync` (`:234`) directly,
+`SecurityMasterDeactivateViewModel` calls `DeactivateAsync` (`:59-68`), and `SecurityMasterViewModel`
+calls `ImportAsync` (`:4358`). None of them — nor their parent — calls
+`DesktopAuthenticationSession.HasPermission`; the only desktop callers of that method are
+`MainWindowViewModel` for `ManageProviders` (`:255`) and `AccountingCloseViewModel` (`:1069-1070`).
+
+**The check exists and works; it is simply never invoked here.** `HasPermission` fails closed on a
+configured host — it returns true only when the resolved operator profile actually grants the
+permission — and fails open only under the unconfigured local-development posture
+(`DesktopAuthenticationSession.cs:49-60`). So on a configured desktop, an authenticated operator
+holding only `ViewSecurityMaster` is refused every mutation over HTTP and permitted every one of them
+through the workstation. Its own documentation says "server-side authorization remains authoritative
+in all cases" — true for the browser lane, but this path never reaches a server, so there is no
+authoritative check behind it.
+
+**This is why it is filed separately from P1 rather than folded into it.** P1 is an attribution
+defect: the record does not truthfully say who wrote it. This is an authorization defect: the write
+should not have been accepted. They have opposite fix orders, too — wiring the actor through first,
+as P1 describes, would produce a faithful audit trail of mutations that were never permitted, which
+is worse than the status quo in one respect, because the record would then carry a named operator's
+identity on a change the operator had no right to make. The desktop mutation commands need the same
+permission gate the endpoints apply, enforced before the service call, and their enablement should
+reflect it so the UI does not offer actions that will be refused.
+
 ### P3b — Editing an alias rewrites its recorded history
 
 Surfaced by review while checking P1's alias attribution rule, and it is a defect in the subsystem
@@ -1384,7 +1440,20 @@ grounded in the real stream-exists/concurrency path, not in a hypothetical `"alr
 that no component emits; a fix written against the latter would leave duplicate imports still
 reported as failures.
 
-**But do not let the typed outcome equate "stream exists" with "idempotent duplicate".** The
+**It is wrong in the other direction too: valid failures land in the skip bucket.** The substring test
+matches domain *validation* errors that merely contain the word. `SecurityMasterCommandFacade` surfaces
+codes and messages such as `duplicate_identifier_active` — "Active security identifiers must not
+contain duplicate kind/value/provider combinations." (`SecurityMasterCommands.fs:403`) — and
+`bond_step_dates_duplicate` (`:121`), and `CreateProjectionFromResult` puts that text into the thrown
+exception. So a JSON import row carrying duplicate active identifiers or duplicate schedule dates is
+reported `Skipped` rather than `Failed` and is omitted from the error list entirely: the operator is
+told the row was a harmless replay when in fact it was rejected as invalid and never persisted. That
+is a false positive, the mirror of the stream-conflict false negative below, and it is the more
+damaging of the two — a silently dropped invalid row leaves the operator believing the security is in
+the master. The typed outcome must keep domain validation failures as failures; its regression tests
+need a case in each direction.
+
+**And do not let the typed outcome equate "stream exists" with "idempotent duplicate".** The
 conflict carries no evidence about the payload: `ExecuteCreateAsync` appends with
 `expectedVersion: 0` (`SecurityMasterService.cs:320`), and `AppendAsync` throws purely on
 `currentVersion != expectedVersion` (`PostgresSecurityMasterEventStore.cs:36-41`) without comparing
@@ -1497,23 +1566,32 @@ route — the same mistake the pre-check would have made.
 
 Read as a delta on the standing lists above.
 
-1. **Gate the legacy preferred-terms PATCH route (P1).** One of two items in this pass that are
+1. **Enforce mutation permissions on the desktop lane (P5).** The one item here that is an
+   authorization failure rather than a governance or attribution one, and the only one that lets a
+   user perform a write the system is configured to refuse. Every HTTP mutation route requires
+   `ModifySecurityMaster`; the WPF edit, deactivate and import commands reach the same service
+   in-process and check nothing, on a shell whose `HasPermission` would fail closed if asked. Gate
+   those commands before the service call, and reflect the result in command enablement. Sequence it
+   **before** P1's actor wiring: deriving the operator's identity first would attach a real name to
+   writes that should not have been accepted.
+2. **Gate the legacy preferred-terms PATCH route (P1).** One of three items in this pass that are
    defects in shipped behaviour rather than in plumbing: a deployment that enables
    `RequireGovernedTermAmendments` to force maker-checker still has
    `PATCH …/preferred-terms` (`SecurityMasterEndpoints.cs:1043-1058`) reaching
    `AmendPreferredEquityTermsAsync` ungated. One `RequireGovernedTermAmendmentRoute` call closes it,
    and a route-level test asserting every amendment path refuses under the option keeps it closed.
    Smallest fix in this document with the largest governance consequence.
-2. **Stop alias edits rewriting recorded history (P3b).** The other shipped-behaviour defect, and the
+3. **Stop alias edits rewriting recorded history (P3b).** The third shipped-behaviour defect, and the
    one that touches a property this subsystem is otherwise careful about: an alias upsert re-stamps
    `created_at`, and recorded-as-of rebuilding filters on it, so correcting an identifier erases it
    from every earlier historical view. Note the scope honestly — the upsert overwrites the whole row,
    so preserving the creation fields alone converts a disappearing alias into a retroactively-changed
    one, which is no more truthful. Closing this properly means versioned or event-backed alias state;
    the interim alternative is to narrow explicitly what recorded-as-of promises for aliases. Ranked
-   here rather than lower because it loses data today, but it is not the small fix item 1 is.
-3. **Derive actor attribution across the whole mutation surface, and gate caller-set dates in both
-   directions (P1, P2).**
+   here rather than lower because it loses data today, but it is not the small fix item 2 is.
+4. **Derive actor attribution across the whole mutation surface, and gate caller-set dates in both
+   directions (P1, P2).** Sequence this after item 1 — attribution without authorization records who
+   made a write that should have been refused.
    An auditability defect on governed write paths that both operator lanes expose, on a subsystem
    that already holds itself to the opposite standard elsewhere. Take it where the mutations
    converge, not at `ImportAsync`: all six public members of `SecurityMasterService` carry
@@ -1531,12 +1609,12 @@ Read as a delta on the standing lists above.
    from trusted ingest metadata or a fixed workflow identifier, per the constraints above. Preserve
    workload identities for unattended ingests rather than replacing them with a principal, and preserve
    the workbench chain that already does this correctly.
-4. **Make the pack-overlap rule symmetric across incumbents, candidates, and planned classes
+5. **Make the pack-overlap rule symmetric across incumbents, candidates, and planned classes
    (N4, P3).** Still among the cheapest durable items in this document, and the planned-coverage axis
    means deferring it now schedules a three-way ownership dispute for the day `CreditFacility` lands.
-5. **Key the projection fan-out by asset class (N6).** Unchanged in importance, and cheaper than
+6. **Key the projection fan-out by asset class (N6).** Unchanged in importance, and cheaper than
    previously filed: the writers already carry the key.
-6. **Retire the remaining classify-from-prose sites and the swallowed cancellations (P4).** Three
+7. **Retire the remaining classify-from-prose sites and the swallowed cancellations (P4).** Three
    ingests still classify mutation failures by exception message — Edgar on both create and amend.
    Two of them swallow cancellation in that same catch; Edgar instead swallows it in three separate
    broad catches (`:250-254`, `:286-290`, `:627-641`). Edgar's create loop is the reference
@@ -1546,7 +1624,7 @@ Read as a delta on the standing lists above.
    regression criteria per site, not once: import and the Polygon CLI move a row between `skipped` and
    `failed`, while Edgar has no failed counter and instead gains an error entry and a non-zero exit —
    a test asserting an Edgar count change would assert something that cannot happen.
-7. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
+8. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
    Unchanged from every prior pass, and unchanged in importance: `DirectLoan`, `StructuredCredit`,
    `PrivateFundInterest`, `RealEstateHolding` and `CommitmentGuarantee` remain the classes fund
    operations queries most and the ones with no indexed path.
