@@ -69,8 +69,14 @@ sibling partial class and still failed the ratchet, because adding one `using` d
 `LedgerEndpoints.cs` from 2,824 to 2,825 against a 2,824 cap.
 
 **A burn-down target is not achievable while every file is pinned at its cap.** Fixing the headroom
-problem is a prerequisite, not a nicety — and no mechanism for it exists yet, which is what the
-missing-mechanism section below records.
+problem is a prerequisite, not a nicety.
+
+**Resolved: `--relax-baseline` is that mechanism** (see "Granting working headroom" below). Running
+it raised 43 of the 50 caps and granted 1,896 lines of working headroom, and the `TIGHT` list — 39
+files, 23 of them at exactly zero spare — is now empty. The pressure this section describes is what
+it removes: an ordinary edit to a god file no longer forces a choice between an unrelated refactor
+and a `--update-baseline` commit, so the ratchet stops manufacturing the baseline bumps it exists
+to prevent.
 
 The slack that does exist is the trend working. It appears when a change lands on `main` that
 removes lines from a file whose cap this baseline still carries — 1 line when this plan was first
@@ -122,6 +128,35 @@ Its contract, shaped by the six defects review found in a withdrawn first attemp
 
 The reclaimable figure in the trend report is therefore exactly the reduction not yet locked in;
 run the tightener whenever it is non-zero and the tree is green.
+
+## Granting working headroom
+
+`--tighten-baseline` cannot solve the pinning problem, because it only ever lowers a cap: a file
+already at `cap == lines` computes `min(old cap, lines + buffer) == old cap` and stays pinned. The
+upward counterpart grants the buffer instead:
+
+```bash
+python3 build/scripts/ci/check-file-size.py --relax-baseline            # default 50-line buffer
+python3 build/scripts/ci/check-file-size.py --relax-baseline --buffer 25
+```
+
+Its contract mirrors the tightener's, inverted where the direction demands it:
+
+- **A cap only moves up** — each becomes `max(old cap, current lines + buffer)`. Lowering stays the
+  tightener's job; reclaiming here would silently destroy a deliberate reduction.
+- **Only the buffer counts as deliberate headroom.** A file whose cap sits far above its current
+  size keeps reporting the rest of that gap as reclaimable, so granting room to edit never
+  disguises itself as progress. Headroom a previous tightening recorded is never reduced.
+- **Nothing retires.** Dropping a protection is a reduction-locking act and belongs to the
+  tightener; a command that grants headroom must not also remove caps.
+- **It refuses while the ratchet is failing**, and **fails closed on any unreadable governed
+  source** — the same two guards, and the first matters more here: relaxing a failing tree is
+  precisely how a file that already grew past its cap would be waved through. Absorbing real growth
+  still requires `--update-baseline` plus justification in review.
+
+Use it when the `TIGHT` list is long enough that ordinary edits are being taxed. It is not a
+substitute for decomposition: it moves no file out of the baseline and reduces no capped line. It
+buys the room in which the extractions this plan depends on can actually be made.
 
 ## Targets
 
@@ -230,5 +265,15 @@ python3 build/scripts/ci/check-file-size.py --tighten-baseline
 ```
 
 This only ever lowers caps and retains a working buffer above each file's current size (see
-"Locking in a reduction" above). `--update-baseline` remains the escape hatch for deliberately
-*raising* a cap, and its diff should be justified in review — caps should only ever fall.
+"Locking in a reduction" above).
+
+If the `TIGHT` list grows back — caps drift to `cap == lines` as edits land — restore working
+headroom with the upward counterpart (see "Granting working headroom"):
+
+```bash
+python3 build/scripts/ci/check-file-size.py --relax-baseline
+```
+
+`--update-baseline` remains the escape hatch for absorbing growth a file has *already* made, and
+its diff should be justified in review. The distinction is the point: relaxing grants room to edit
+a file nobody grew, updating records growth that already happened.
