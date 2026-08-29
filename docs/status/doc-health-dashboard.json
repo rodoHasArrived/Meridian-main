@@ -1,11 +1,11 @@
 {
   "total_files": 662,
-  "total_lines": 136493,
+  "total_lines": 136550,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 253,
-  "average_lines": 206.2,
+  "average_lines": 206.3,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2880,7 +2880,7 @@
     },
     {
       "path": "docs/operators/reconciliation-operations.md",
-      "line_count": 116,
+      "line_count": 129,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3064,7 +3064,7 @@
     },
     {
       "path": "docs/product/meridian-design-document.md",
-      "line_count": 1511,
+      "line_count": 1512,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5272,7 +5272,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 662,
+      "line_count": 705,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
