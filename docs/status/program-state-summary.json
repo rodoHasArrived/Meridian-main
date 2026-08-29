@@ -2,7 +2,7 @@
   "schemaVersion": "program-state-summary/v3",
   "programSource": "docs/roadmap/data/program-state.yml",
   "roadmapSource": "docs/roadmap/data/roadmap-items.yml",
-  "snapshotDate": "2026-08-10",
+  "snapshotDate": "2026-08-29",
   "program": {
     "id": "meridian-program",
     "title": "Meridian Evidence-Backed Investment Operations",

@@ -58,7 +58,23 @@ public sealed class CsvStatementConnector(
         }
 
         var content = Encoding.UTF8.GetString(document.Content.Span);
-        var lines = CsvLineSplitter.SplitLines(content);
+        // Bound line discovery itself, not just the rows mapped from it. Every canonical row comes from a
+        // line, so a document carrying more lines than the record cap cannot yield a result inside that
+        // cap; stopping here avoids materializing the whole file as lines first. Blank lines count toward
+        // the bound because it bounds ingress size, not mapped rows.
+        var lines = CsvLineSplitter.SplitLines(content, _ingressLimits.MaxRecords + 1);
+        if (lines.Count > _ingressLimits.MaxRecords + 1)
+        {
+            return new StatementParseResult(
+                ConnectorId,
+                ProfileId: null,
+                [],
+                ColumnMappings: [],
+                [],
+                [_ingressLimits.TooManyRecords()],
+                new StatementFormatFingerprint(string.Empty, [], "csv-mapped"));
+        }
+
         var firstContentLine = lines.FirstOrDefault(static line => !string.IsNullOrWhiteSpace(line));
         if (firstContentLine is null)
         {

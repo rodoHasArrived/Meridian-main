@@ -392,6 +392,52 @@ public sealed class StatementIngressLimitsTests : IDisposable
         result.Issues.Should().Contain(issue => issue.Code == "CAMT_DUPLICATE_ACCOUNT");
     }
 
+    [Theory]
+    [InlineData("header\r\nrow1\rrow2\nrow3")]
+    [InlineData("a\nb\n")]
+    [InlineData("a\rb")]
+    [InlineData("")]
+    [InlineData("\n\n")]
+    public void BoundedSplitLines_MatchesTheUnboundedSplitterInsideTheBound(string content)
+    {
+        // The bounded overload replaced two whole-content Replace passes plus a full Split. It has to
+        // reproduce them exactly for anything inside the bound - CRLF as one break, a lone CR as a
+        // break, blank lines preserved, and the trailing empty segment a terminating newline leaves.
+        CsvLineSplitter.SplitLines(content, maxLines: int.MaxValue)
+            .Should().Equal(CsvLineSplitter.SplitLines(content));
+    }
+
+    [Fact]
+    public void BoundedSplitLines_StopsAtTheBoundRatherThanMaterializingEveryLine()
+    {
+        var content = string.Join("\n", Enumerable.Range(0, 5_000).Select(row => $"row{row}"));
+
+        var lines = CsvLineSplitter.SplitLines(content, maxLines: 10);
+
+        lines.Should().HaveCount(11, "the splitter yields one line past the bound so the caller can detect the overflow");
+    }
+
+    [Fact]
+    public async Task Csv_LineCountOverCap_IsRefusedDuringLineDiscovery()
+    {
+        // The record cap alone ran after the whole file had been decoded, newline-normalized twice, and
+        // split into a full line array, so an over-cap document still paid that allocation first.
+        var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
+        var connector = new CsvStatementConnector(catalog, StatementIngressLimits.Default with { MaxRecords = 3 });
+        var rows = string.Join("\n", Enumerable.Range(0, 40).Select(row =>
+            $"FUND-A,AAPL,1,1.00,-1.00,BUY,2026-06-02,2026-06-04,USD,0,T-{row}"));
+        var payload = Encoding.UTF8.GetBytes(
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n"
+            + rows);
+
+        var result = await connector.ParseAsync(new StatementSourceDocument("many-rows.csv", payload));
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("the document is refused before any row is mapped");
+        result.Issues.Should().ContainSingle()
+            .Which.Code.Should().Be(StatementIngressLimits.TooManyRecordsCode);
+    }
+
     [Fact]
     public async Task Camt_MalformedXml_StillReportsMalformedRatherThanThrowing()
     {
