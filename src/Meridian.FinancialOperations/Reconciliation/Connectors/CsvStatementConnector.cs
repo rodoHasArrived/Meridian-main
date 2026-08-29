@@ -230,6 +230,19 @@ public sealed class CsvStatementConnector(
 
                     records.Add(record);
                 }
+
+                // The record cap above bounds what a row produces; it does not bound what a row that
+                // produces nothing still retains. MapRecord returns null for a rejected row and keeps its
+                // error, so a file of unparseable rows accumulates diagnostics while records.Count stays
+                // put and this cap never fires. The line pre-check bounds the iteration count, so the
+                // growth is bounded rather than unbounded - but at roughly two issues per row it is
+                // bounded well above the record allowance, and diagnostics are retained and projected
+                // into the preview exactly like records.
+                if (issues.Count > _ingressLimits.MaxDiagnostics)
+                {
+                    issues.Add(_ingressLimits.TooManyDiagnostics());
+                    break;
+                }
             }
 
             if (records.Count == 0)

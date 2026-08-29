@@ -135,6 +135,16 @@ public sealed class OfxStatementConnector(
             {
                 records.Add(record);
             }
+
+            // Entry count is bounded by MaxRecords inside OfxDocumentParser.Parse, so this loop runs a
+            // bounded number of times - but each pass can retain up to two diagnostics for a row that
+            // produces no record, so the issue list is bounded at a multiple of the record allowance
+            // rather than by it. Diagnostics are retained evidence and get their own ceiling.
+            if (issues.Count > _limits.MaxDiagnostics)
+            {
+                issues.Add(_limits.TooManyDiagnostics());
+                break;
+            }
         }
 
         return new StatementParseResult(

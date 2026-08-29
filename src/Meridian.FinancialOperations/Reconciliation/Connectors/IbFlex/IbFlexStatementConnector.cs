@@ -244,7 +244,10 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                     [StatementCanonicalField.FeesCommission] = Attribute(trade, "ibCommission") ?? string.Empty,
                     [StatementCanonicalField.ExternalTransactionId] = Attribute(trade, "tradeID") ?? Attribute(trade, "transactionID") ?? string.Empty
                 };
-                AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes);
+                if (!AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes, _limits))
+                {
+                    return EmptyResult(profileId, issues);
+                }
                 activities.Add(BuildTradeActivity(trade, statementAccountId, profile));
             }
 
@@ -269,7 +272,10 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                     [StatementCanonicalField.Currency] = Attribute(cash, "currency") ?? string.Empty,
                     [StatementCanonicalField.ExternalTransactionId] = Attribute(cash, "transactionID") ?? string.Empty
                 };
-                AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes);
+                if (!AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes, _limits))
+                {
+                    return EmptyResult(profileId, issues);
+                }
                 activities.Add(BuildCashActivity(cash, statementAccountId, profile, activityCodeMap));
             }
 
@@ -295,7 +301,10 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                     [StatementCanonicalField.TradeDate] = Attribute(position, "reportDate") ?? string.Empty,
                     [StatementCanonicalField.Currency] = Attribute(position, "currency") ?? string.Empty
                 };
-                AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes);
+                if (!AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes, _limits))
+                {
+                    return EmptyResult(profileId, issues);
+                }
             }
 
             var accountInformationElements = Descendants(statement, "AccountInformation").ToArray();
@@ -1094,20 +1103,44 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         return statement.Descendants().Where(element => names.Contains(element.Name.LocalName));
     }
 
-    private static void AddRecord(
+    /// <summary>
+    /// Maps one row and reports whether the diagnostic budget survives it.
+    /// </summary>
+    /// <remarks>
+    /// MapRecord is the only per-row issue emitter in this connector - every other issues.Add here is a
+    /// one-shot structural refusal that returns immediately - so this is the single place a diagnostic
+    /// population can grow with the document. The loops charge <c>retained += 2</c> for the record and
+    /// activity they expect a row to produce, which undercounts what a row actually keeps: MapRecord
+    /// returns null for an unparseable date, so that row retains its ROW_INVALID_DATE error and no
+    /// record at all, and a row carrying an unmapped activity code retains an UNKNOWN_ACTIVITY_CODE
+    /// warning alongside its record. Issues are retained evidence, held in the parse result and
+    /// projected into the preview exactly like records, so they are charged against a bound of their
+    /// own rather than against the row allowance - refusing here rather than truncating, because
+    /// dropping a later error would flip HasErrors from true to false and let a malformed file import.
+    /// </remarks>
+    private static bool AddRecord(
         List<StatementCanonicalRecord> records,
         Dictionary<StatementCanonicalField, string> values,
         StatementMappingProfileDocument profile,
         IReadOnlyDictionary<string, string> activityCodeMap,
         int rowNumber,
         List<StatementParseIssue> issues,
-        HashSet<string> reportedUnknownCodes)
+        HashSet<string> reportedUnknownCodes,
+        StatementIngressLimits limits)
     {
         var record = StatementRecordMapper.MapRecord(values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes);
         if (record is not null)
         {
             records.Add(record);
         }
+
+        if (issues.Count <= limits.MaxDiagnostics)
+        {
+            return true;
+        }
+
+        issues.Add(limits.TooManyDiagnostics());
+        return false;
     }
 
     private static IEnumerable<XElement> Section(XElement statement, string sectionName, string elementName)

@@ -129,17 +129,19 @@ activity cursors, tax lots, borrow positions) are retained just as durably as ca
 (20 MiB — the statement-specific cap the workstation endpoint and CLI already enforce, deliberately
 not the general 5 MiB data-upload cap, because IB Flex XML exports routinely exceed 5 MiB), 250,000
 retained rows, 64 KiB per line, 64 levels of XML nesting, 50,000 nodes in any one materialized XML
-subtree, and 500,000 parsed nodes per document. Every bound refuses with a named code:
+subtree, 500,000 parsed nodes per document, and 25,000 retained parse issues. Every bound refuses
+with a named code:
 
 | Code | Bound |
 | --- | --- |
 | `STATEMENT_DOCUMENT_TOO_LARGE` | `MaxDocumentBytes`, checked before the source bytes are copied |
 | `STATEMENT_TOO_MANY_RECORDS` | `MaxRecords`, against total retained rows |
 | `STATEMENT_LINE_TOO_LONG` | `MaxLineBytes`, measured in UTF-8 bytes |
-| `STATEMENT_TOO_MANY_LINES` | the CSV raw-line cap derived from `MaxRecords`, refused before mapping |
+| `STATEMENT_TOO_MANY_LINES` | CSV's raw-line cap derived from `MaxRecords`, and BAI2's independent `MaxDocumentLines`; refused before mapping |
 | `STATEMENT_NESTING_TOO_DEEP` | `MaxNestingDepth` |
 | `STATEMENT_SUBTREE_TOO_LARGE` | `MaxSubtreeNodes`, one materialized XML subtree |
 | `STATEMENT_TOO_MANY_NODES` | `MaxParseNodes`, the whole-document node budget, charged by the camt.053, OFX and IB Flex parsers |
+| `STATEMENT_TOO_MANY_DIAGNOSTICS` | `MaxDiagnostics`, retained parse issues, charged by the CSV, OFX and IB Flex row mappers |
 | `ROW_LIMIT_EXCEEDED` | `MaxRecords`, reported by the IB Flex connector against its retained rows |
 
 These messages advise raising the configured limit deliberately. A deployment does that by registering

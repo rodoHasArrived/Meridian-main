@@ -57,8 +57,11 @@ statement is ever committed. A refusal surfaces as a blocking issue on preview a
 failed commit, carrying one of `STATEMENT_DOCUMENT_TOO_LARGE` (over 20 MiB),
 `STATEMENT_TOO_MANY_RECORDS` (over 250,000 retained rows, counting the retained margin, activity,
 tax-lot, and borrow evidence alongside canonical rows), `STATEMENT_LINE_TOO_LONG`,
-`STATEMENT_TOO_MANY_LINES`, `STATEMENT_NESTING_TOO_DEEP`, `STATEMENT_SUBTREE_TOO_LARGE`, or
-`STATEMENT_TOO_MANY_NODES`. An IB Flex import reports the same retained-row ceiling as
+`STATEMENT_TOO_MANY_LINES`, `STATEMENT_NESTING_TOO_DEEP`, `STATEMENT_SUBTREE_TOO_LARGE`,
+`STATEMENT_TOO_MANY_NODES`, or `STATEMENT_TOO_MANY_DIAGNOSTICS` (over 25,000 retained parse issues —
+a file failing that many rows is malformed at a scale no operator can reconcile row by row, so correct
+the export or the mapping profile rather than reviewing the diagnostics). An IB Flex import reports
+the same retained-row ceiling as
 `ROW_LIMIT_EXCEEDED`. The defaults sit well above any real bank or broker statement, so treat a
 breach first as a malformed or hostile file — check the source with the institution before assuming it
 is merely large. If the statement is genuinely legitimate, split it into shorter periods and import

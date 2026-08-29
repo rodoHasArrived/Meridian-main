@@ -26,6 +26,16 @@ namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 /// from unrecognized record types, not to enforce the record cap - the record cap already does that - so
 /// it is set far above any real statement and only bites on abuse.
 /// </param>
+/// <param name="MaxDiagnostics">
+/// Parse issues a document may retain. Its own bound rather than part of MaxRecords for the same reason
+/// MaxDocumentLines is: a diagnostic is not a row. A rejected row produces an issue and no record, so a
+/// file can retain far more diagnostics than records, and charging them to the record allowance would
+/// refuse a diagnostic-heavy file with a message about a row limit it never approached. Issues are
+/// retained evidence - they are held in the parse result and projected into the preview exactly like
+/// records are - so they need a ceiling; this one sits far above any statement worth importing, since
+/// every diagnostic past the first few thousand describes a row an operator is not going to reconcile
+/// by hand.
+/// </param>
 public sealed record StatementIngressLimits(
     long MaxDocumentBytes,
     int MaxRecords,
@@ -33,7 +43,8 @@ public sealed record StatementIngressLimits(
     int MaxNestingDepth,
     int MaxSubtreeNodes = 50_000,
     int MaxParseNodes = 500_000,
-    int MaxDocumentLines = 2_000_000)
+    int MaxDocumentLines = 2_000_000,
+    int MaxDiagnostics = 25_000)
 {
     /// <summary>
     /// Default bounds. <see cref="MaxDocumentBytes"/> is <see cref="StatementConnectorLimits.MaxFileBytes"/>,
@@ -70,6 +81,15 @@ public sealed record StatementIngressLimits(
     /// </summary>
     public const string TooManyLinesCode = "STATEMENT_TOO_MANY_LINES";
 
+    /// <summary>
+    /// Issue code for a document that retained more parse issues than the allocation bound allows.
+    /// Distinct from <see cref="TooManyRecordsCode"/> for the same reason <see cref="TooManyLinesCode"/>
+    /// is: a row rejected for an unparseable date retains an issue and no record, so a file can carry
+    /// tens of thousands of diagnostics while producing almost no canonical rows. Reporting that as
+    /// record overflow would tell the operator something untrue about their file.
+    /// </summary>
+    public const string TooManyDiagnosticsCode = "STATEMENT_TOO_MANY_DIAGNOSTICS";
+
     /// <summary>Issue code for a payload nested deeper than the cap allows.</summary>
     public const string NestingTooDeepCode = "STATEMENT_NESTING_TOO_DEEP";
 
@@ -99,6 +119,12 @@ public sealed record StatementIngressLimits(
         SubtreeTooLargeCode,
         $"A single statement element expands to more than {MaxSubtreeNodes} nodes, above the ingress limit; " +
         "the file is malformed or not the declared format.");
+
+    public StatementParseIssue TooManyDiagnostics() => StatementParseIssue.Error(
+        TooManyDiagnosticsCode,
+        $"The statement produced more than {MaxDiagnostics} parse issues. A file that fails this many rows " +
+        "is malformed at a scale no operator can reconcile row by row; correct the export or the mapping " +
+        "profile and re-import rather than reviewing the diagnostics individually.");
 
     public StatementParseIssue TooManyNodes() => StatementParseIssue.Error(
         TooManyNodesCode,

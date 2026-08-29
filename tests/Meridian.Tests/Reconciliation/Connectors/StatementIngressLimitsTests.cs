@@ -1062,6 +1062,103 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task IbFlex_ManyUnmappableRows_AreRefusedByTheDiagnosticBudget()
+    {
+        // The loops charge two objects per row - the record and the activity they expect it to produce -
+        // but a row rejected for its date produces no record while retaining its ROW_INVALID_DATE error,
+        // and a row carrying an activity code no profile maps retains an UNKNOWN_ACTIVITY_CODE warning
+        // too. The dedupe on that warning is per distinct code, so distinct codes defeat it. Issues are
+        // retained in the parse result and projected into the preview exactly like records, so the row
+        // charge undercounted what the document keeps by up to a factor of two.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 1000,
+                MaxDiagnostics = 20
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument(
+                "ib-flex-unmappable.xml", BuildIbFlexCashTransactions(count: 40, unmappable: true)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyDiagnosticsCode);
+    }
+
+    [Fact]
+    public async Task IbFlex_AFewUnmappableRows_AreNotRefusedByTheDiagnosticBudget()
+    {
+        // Same document shape and same budget as the refusal above, with five rows instead of forty: the
+        // bound has to be proportional to what is retained, not triggered by the shape. A statement with
+        // a handful of unmapped codes is an ordinary mapping-profile gap the operator fixes from these
+        // very warnings - refusing it would destroy the diagnostics that explain it.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 1000,
+                MaxDiagnostics = 20
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument(
+                "ib-flex-few-unmappable.xml", BuildIbFlexCashTransactions(count: 5, unmappable: true)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyDiagnosticsCode);
+    }
+
+    [Fact]
+    public async Task IbFlex_ManyCleanRows_AreNotRefusedByTheDiagnosticBudget()
+    {
+        // The sharpest control: the same forty rows and the same budget as the refusal, differing only in
+        // data quality. The dates parse under the profile's yyyyMMdd format and the rows share one
+        // activity code, so the dedupe leaves at most one warning for the whole file. If this were
+        // refused, the bound would be reacting to document size - which MaxRecords already governs -
+        // rather than to retained diagnostics.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 1000,
+                MaxDiagnostics = 20
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument(
+                "ib-flex-clean.xml", BuildIbFlexCashTransactions(count: 40, unmappable: false)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyDiagnosticsCode);
+        result.Records.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task IbFlex_RealReport_IsNotRefusedByTheDiagnosticBudget()
+    {
+        // The bound must never fire on a clean report. Same tight budget, against the golden fixture.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 1000,
+                MaxParseNodes = 100_000,
+                MaxDiagnostics = 20
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument(
+                "ib-flex-sample.xml",
+                StatementConnectorTestData.ReadFixture("ib-flex-sample.xml")));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyDiagnosticsCode);
+        result.Records.Should().NotBeEmpty();
+    }
+
+    [Fact]
     public async Task Bai2_MinimalValidFileWithTrailingNewline_IsNotRefusedByTheRawLineCap()
     {
         // The regression: the cursor walk visits one final zero-length segment when the payload ends with
@@ -1421,6 +1518,30 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
         return Encoding.UTF8.GetBytes(
             builder.Append(" /></Trades></FlexStatement></FlexStatements></FlexQueryResponse>").ToString());
+    }
+
+    private static byte[] BuildIbFlexCashTransactions(int count, bool unmappable)
+    {
+        // When unmappable, every row is rejected for its date AND carries an activity code no profile
+        // maps, and those codes are distinct so reportedUnknownActivityCodes cannot collapse them into
+        // one warning: two retained diagnostics per row and no canonical record for any of them. When
+        // not, the rows share a single code, so the dedupe leaves at most one warning for the file.
+        var builder = new StringBuilder()
+            .Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+            .Append("<FlexQueryResponse queryName=\"Meridian Daily Statement\" type=\"AF\"><FlexStatements count=\"1\">")
+            .Append("<FlexStatement accountId=\"U1234567\" fromDate=\"2026-06-01\" toDate=\"2026-06-30\"><CashTransactions>");
+
+        for (var index = 0; index < count; index++)
+        {
+            var type = unmappable ? $"UNMAPPED-{index:D6}" : "DEPOSIT";
+            var when = unmappable ? "not-a-date" : "20260602";
+            builder.Append(
+                $"<CashTransaction accountId=\"U1234567\" type=\"{type}\" amount=\"10.00\" " +
+                $"dateTime=\"{when}\" currency=\"USD\" transactionID=\"C{index:D6}\" />");
+        }
+
+        return Encoding.UTF8.GetBytes(
+            builder.Append("</CashTransactions></FlexStatement></FlexStatements></FlexQueryResponse>").ToString());
     }
 
     private static byte[] BuildIbFlexWithTrades(int tradeCount)
