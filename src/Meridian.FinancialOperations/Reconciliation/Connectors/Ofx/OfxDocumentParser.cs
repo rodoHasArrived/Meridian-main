@@ -73,7 +73,7 @@ public static class OfxDocumentParser
     {
         bound = OfxParseBound.None;
         var nodes = 0;
-        var entries = 0;
+        var entryCount = 0;
         var root = new OfxNode("OFX-ROOT", null);
         var stack = new Stack<OfxNode>();
         stack.Push(root);
@@ -161,7 +161,7 @@ public static class OfxDocumentParser
                 // both the byte cap and the node budget and still built every node object, and then every
                 // flattened dictionary, before the record bound could fire. IsEntryNode only needs the
                 // name and the parent, both of which are known here.
-                if (IsEntryNode(aggregate) && ++entries > maxEntries)
+                if (IsEntryNode(aggregate) && ++entryCount > maxEntries)
                 {
                     bound = OfxParseBound.TooManyEntries;
                     break;
