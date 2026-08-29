@@ -326,11 +326,16 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
-    public async Task Csv_RecordsOverCap_StopAccumulatingAtTheBound()
+    public async Task Csv_RecordsOverCap_AreRefusedWithoutMappingAnyRow()
     {
         // The connector-side half: CSV received no limits at all before, so it decoded, split, and
         // accumulated every row. A compact CSV inside the byte cap can still carry millions of rows, and
         // the peak allocation is what the bound exists to avoid - rejecting afterwards is too late.
+        //
+        // This asserted two surviving rows when the guard sat on the record-append loop. The bound now
+        // runs during line discovery, ahead of any mapping, so an over-cap file yields no rows at all -
+        // a stricter outcome than the one this test originally pinned, and the one the connector should
+        // have had from the start.
         var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
         var connector = new CsvStatementConnector(catalog, StatementIngressLimits.Default with { MaxRecords = 2 });
         var document = new StatementSourceDocument(
@@ -339,7 +344,7 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
         var result = await connector.ParseAsync(document);
 
-        result.Records.Should().HaveCount(2, "accumulation stops at the bound rather than running to completion");
+        result.Records.Should().BeEmpty("the bound refuses during line discovery, before a single row is mapped");
         result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
     }
 
@@ -866,7 +871,10 @@ public sealed class StatementIngressLimitsTests : IDisposable
         => new(
             document,
             ConnectorId: null,
-            SourceKind: "bank",
+            // "broker" and "custodian" are the only kinds NormalizeSourceKind accepts. This said "bank",
+            // which throws before the record cap is ever reached - the byte cap happens to be checked
+            // ahead of that guard, so the oversize-document tests passed and hid it.
+            SourceKind: "broker",
             SourceInstitution: "Citibank",
             FundAccountId: "FUND-A",
             ExternalAccountId: "0975312468",
