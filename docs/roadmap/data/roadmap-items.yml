@@ -1191,6 +1191,7 @@ items:
       - SRC-DESIGN-AUDIT
       - SRC-STORAGE
       - SRC-LEDGER
+      - SRC-APP
     last_reviewed: 2026-08-29
 
   - id: W9-INGEST-009

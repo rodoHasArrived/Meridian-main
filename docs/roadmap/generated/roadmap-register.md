@@ -789,6 +789,7 @@ Rank 8 of the 2026-07 first-order improvement slate. Source-verification snapsho
 - `SRC-DESIGN-AUDIT`
 - `SRC-STORAGE`
 - `SRC-LEDGER`
+- `SRC-APP`
 
 ## W9-INGEST-009 - Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher
 | Field | Value |

@@ -24,13 +24,19 @@ public sealed partial class PostgresLedgerJournalStore :
     // background/worker caller, or the single-company runtime) reads are not tenant-scoped.
     private readonly IFundScopeTenantAccessor? _tenantAccessor;
 
+    // W9-GOV-008 criterion 2: how strictly to enforce that scope. Defaults to the deployment-boundary
+    // posture so existing construction sites keep their behaviour; the host injects the configured one.
+    private readonly TenantScopeEnforcementOptions _tenantScope;
+
     public PostgresLedgerJournalStore(
         LedgerJournalStoreOptions options,
-        IFundScopeTenantAccessor? tenantAccessor = null)
+        IFundScopeTenantAccessor? tenantAccessor = null,
+        TenantScopeEnforcementOptions? tenantScope = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         _options = options;
         _tenantAccessor = tenantAccessor;
+        _tenantScope = tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary;
     }
 
     // SEC-005 slice 4c-ii: the caller's tenant for the current ambient scope, or null (fail-open).
@@ -1894,36 +1900,53 @@ public sealed partial class PostgresLedgerJournalStore :
 
     private static string ForUpdateClause(bool enabled) => enabled ? "for update" : string.Empty;
 
-    // SEC-005 slice 4c-ii: append the fail-open tenant predicate (and bind its parameter) to a read
-    // command, but only when the caller has a resolved tenant. A tenantless caller adds nothing, so
-    // every row passes — identical behavior under one-company-per-deployment. The column expression is
-    // table-qualified by the caller (e.g. "tenant_id" or "p.tenant_id").
-    private static void ApplyTenantReadFilter(NpgsqlCommand command, string tenantColumnExpression, string? callerTenantId)
+    // SEC-005 slice 4c-ii, tightened for W9-GOV-008 criterion 2: append the tenant predicate (and bind
+    // its parameter) to a read command. Under the deployment-boundary posture a tenantless caller adds
+    // nothing, so every row passes — identical behavior under one-company-per-deployment. Under the
+    // fail-closed posture that caller is refused instead, and the clause itself no longer serves
+    // unattributed rows. The column expression is table-qualified by the caller.
+    private void ApplyTenantReadFilter(NpgsqlCommand command, string tenantColumnExpression, string? callerTenantId)
     {
+        RejectUnscopedRead(callerTenantId, "ledger records");
+
         if (!TenantReadPredicate.ShouldFilter(callerTenantId))
         {
             return;
         }
 
-        command.CommandText += TenantReadPredicate.FilterClause(tenantColumnExpression);
+        command.CommandText += TenantReadPredicate.FilterClause(tenantColumnExpression, _tenantScope.Mode);
         command.Parameters.AddWithValue(
             TenantReadPredicate.ParameterName,
             TenantReadPredicate.NormalizeParameter(callerTenantId!));
     }
 
     // SEC-005 slice 4c-ii: scope a journal-entry read (which has no period join in its main query) by
-    // the tenant stamped on the entry's accounting period, via an EXISTS subquery. Fail-open otherwise.
+    // the tenant stamped on the entry's accounting period, via an EXISTS subquery.
     private void ApplyTenantPeriodReadFilter(NpgsqlCommand command, string periodIdColumnExpression, string? callerTenantId)
     {
+        RejectUnscopedRead(callerTenantId, "ledger journal entries");
+
         if (!TenantReadPredicate.ShouldFilter(callerTenantId))
         {
             return;
         }
 
-        command.CommandText += TenantReadPredicate.PeriodExistsClause(Qualified("accounting_periods"), periodIdColumnExpression);
+        command.CommandText += TenantReadPredicate.PeriodExistsClause(
+            Qualified("accounting_periods"), periodIdColumnExpression, _tenantScope.Mode);
         command.Parameters.AddWithValue(
             TenantReadPredicate.ParameterName,
             TenantReadPredicate.NormalizeParameter(callerTenantId!));
+    }
+
+    // Rejected, not emptied: an empty result set is indistinguishable from a genuinely empty ledger,
+    // both to the caller and to whoever reads the support ticket it produces. A background job that
+    // holds retained authority declares it through FundScopeTenantAuthority rather than being exempt.
+    private void RejectUnscopedRead(string? callerTenantId, string readDescription)
+    {
+        if (TenantReadPredicate.ShouldRejectRead(callerTenantId, _tenantScope.Mode))
+        {
+            throw new TenantScopeRejectedException(readDescription);
+        }
     }
 
     private static InvalidOperationException PeriodVersionConflict(Guid periodId, long expectedVersion, long actualVersion)

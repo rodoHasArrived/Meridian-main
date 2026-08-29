@@ -2,7 +2,7 @@
 
 # `ledger` schema
 
-- Relations: 26
+- Relations: 27
 - Functions/procedures: 11
 - Triggers: 15
 - Row-level security policies: 0
@@ -11,6 +11,15 @@ The SQL migrations and the PostgreSQL catalog are authoritative. Object identifi
 
 ```mermaid
 erDiagram
+    ledger_accounting_action_audit_chain_head {
+        smallint chain_id PK
+        integer schema_version
+        bigint next_sequence
+        text last_hash
+        bigint genesis_sequence
+        bigint pre_chain_event_count
+        timestamp_with_time_zone genesis_recorded_at_utc
+    }
     ledger_accounting_action_audit_events {
         uuid audit_event_id PK
         timestamp_with_time_zone recorded_at_utc
@@ -26,6 +35,10 @@ erDiagram
         text company_id
         jsonb report_group_principal_ids
         text tenant_id
+        bigint chain_sequence
+        text payload_hash
+        text previous_hash
+        text entry_hash
     }
     ledger_accounting_configuration_chart_nodes {
         text fund_profile_id PK,FK
@@ -412,7 +425,8 @@ erDiagram
 
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `accounting_action_audit_events` | table | 14 | `audit_event_id` | 0 | 5 | - |
+| `accounting_action_audit_chain_head` | table | 7 | `chain_id` | 0 | 1 | Single-row head of the accounting-action audit hash chain: the next sequence, the last entry hash, and the declared genesis boundary separating chained events from the pre-chain history that was appended before V_ledger_032 and which nothing ever protected. Locked FOR UPDATE and advanced inside the append transaction so concurrent writers cannot fork the chain. |
+| `accounting_action_audit_events` | table | 18 | `audit_event_id` | 0 | 6 | - |
 | `accounting_configuration_chart_nodes` | table | 12 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id`, `node_id` | 1 | 2 | - |
 | `accounting_configuration_journal_templates` | table | 10 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id`, `template_id` | 1 | 1 | - |
 | `accounting_configuration_posting_rules` | table | 12 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id`, `rule_id` | 1 | 3 | - |
