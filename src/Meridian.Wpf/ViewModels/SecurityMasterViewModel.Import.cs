@@ -17,6 +17,9 @@ public sealed partial class SecurityMasterViewModel
     // ── Bulk Import ──────────────────────────────────────────────────────────
     private async Task OnImportFromFile(CancellationToken ct = default)
     {
+        if (!TryAuthorizeSecurityMasterMutation("import securities", out _))
+            return;
+
         var openDialog = new Microsoft.Win32.OpenFileDialog
         {
             Filter = "CSV/JSON Files|*.csv;*.json",
@@ -27,18 +30,6 @@ public sealed partial class SecurityMasterViewModel
         if (openDialog.ShowDialog() != true)
             return;
 
-        // Imported securities are recorded against the signed-in operator, so refuse an import this
-        // session cannot attribute rather than stamping a placeholder across every created row.
-        if (_authenticationSession is null || !_authenticationSession.TryGetAuthenticatedActor(out var importedBy))
-        {
-            _loggingService.LogWarning("Security Master import refused: no authenticated desktop operator to attribute the import to.");
-            _notificationService.ShowNotification(
-                "Security Master",
-                "Sign in before importing: imported securities are recorded against the signed-in operator.",
-                NotificationType.Error);
-            return;
-        }
-
         try
         {
             IsImporting = true;
@@ -48,8 +39,13 @@ public sealed partial class SecurityMasterViewModel
             ImportFailed = 0;
             IsImportResultVisible = false;
 
-            var fileContent = await System.IO.File.ReadAllTextAsync(openDialog.FileName, ct).ConfigureAwait(false);
+            var fileContent = await System.IO.File.ReadAllTextAsync(openDialog.FileName, ct);
             var fileExtension = System.IO.Path.GetExtension(openDialog.FileName);
+
+            // The operator may sign out or lose a valid session while choosing or reading the file.
+            // Resolve both permission and actor again at the application-service boundary.
+            if (!TryAuthorizeSecurityMasterMutation("import securities", out var importedBy))
+                return;
 
             var progress = new Progress<SecurityMasterImportProgress>(p =>
             {

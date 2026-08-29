@@ -141,6 +141,10 @@ public sealed class PolygonSecurityMasterIngestProvider : IDisposable
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             return JsonSerializer.Deserialize<PolygonTickersPage>(json);
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Polygon ingest page fetch failed");

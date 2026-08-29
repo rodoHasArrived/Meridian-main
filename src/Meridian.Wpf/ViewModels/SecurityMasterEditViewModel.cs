@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Services;
 using WpfServices = Meridian.Wpf.Services;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -21,7 +22,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
     private readonly ISecurityMasterService _service;
-    private readonly WpfServices.IDesktopActorSource? _actorSource;
+    private readonly WpfServices.IDesktopAuthorizationSource? _operatorContext;
     private JsonElement _assetSpecificTerms;
 
     private static readonly IReadOnlyList<string> AssetClassesList = SecurityAssetClassCatalog.AssetClasses;
@@ -92,12 +93,12 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
         ISecurityMasterService service,
-        WpfServices.IDesktopActorSource? actorSource = null)
+        WpfServices.IDesktopAuthorizationSource? operatorContext = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
         _service = service;
-        _actorSource = actorSource;
+        _operatorContext = operatorContext;
         _assetSpecificTerms = CreateAssetSpecificTermsTemplate("Equity");
 
         CancelCommand = new RelayCommand(() => CancelRequested?.Invoke());
@@ -108,9 +109,10 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     /// stamping a placeholder into an audit field, a save with no authenticated desktop session is
     /// refused, so the golden record never carries a write it cannot attribute.
     /// </summary>
-    private bool TryResolveActor(out string actor)
+    private bool TryAuthorizeMutation(out string actor)
     {
-        if (_actorSource is not null && _actorSource.TryGetAuthenticatedActor(out actor))
+        if (_operatorContext is not null &&
+            _operatorContext.TryAuthorize(UserPermission.ModifySecurityMaster, out actor))
         {
             return true;
         }
@@ -124,9 +126,9 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
         ISecurityMasterService service,
-        WpfServices.IDesktopActorSource? actorSource = null)
+        WpfServices.IDesktopAuthorizationSource? operatorContext = null)
     {
-        return new SecurityMasterEditViewModel(loggingService, notificationService, service, actorSource)
+        return new SecurityMasterEditViewModel(loggingService, notificationService, service, operatorContext)
         {
             IsEditMode = false,
             Currency = "USD",
@@ -161,9 +163,18 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     }
 
     // ── Save logic ──────────────────────────────────────────────────────────
-    [RelayCommand]
+    private bool CanSave()
+        => !IsBusy && TryAuthorizeMutation(out _);
+
+    [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveAsync(CancellationToken ct)
     {
+        if (!TryAuthorizeMutation(out _))
+        {
+            ReportUnauthorizedWrite();
+            return;
+        }
+
         ClearValidationErrors();
         IsBusy = true;
         StatusText = "Saving…";
@@ -212,9 +223,9 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
 
     private async Task<SecurityDetailDto?> CreateSecurityAsync(CancellationToken ct)
     {
-        if (!TryResolveActor(out var actor))
+        if (!TryAuthorizeMutation(out var actor))
         {
-            ReportUnattributableWrite();
+            ReportUnauthorizedWrite();
             return null;
         }
 
@@ -244,19 +255,19 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         return await _service.CreateAsync(request, ct).ConfigureAwait(false);
     }
 
-    private void ReportUnattributableWrite()
+    private void ReportUnauthorizedWrite()
     {
-        const string message = "Sign in before saving: Security Master writes are recorded against the signed-in operator.";
+        const string message = "Sign in with Security Master edit permission before saving.";
         StatusText = message;
         _notificationService.ShowNotification("Security Master", message, NotificationType.Error);
-        _loggingService.LogWarning("Security Master save refused: no authenticated desktop operator to attribute the write to.");
+        _loggingService.LogWarning("Security Master save refused: the active desktop session does not grant ModifySecurityMaster or cannot name a valid actor.");
     }
 
     private async Task<SecurityDetailDto?> AmendSecurityAsync(CancellationToken ct)
     {
-        if (!TryResolveActor(out var actor))
+        if (!TryAuthorizeMutation(out var actor))
         {
-            ReportUnattributableWrite();
+            ReportUnauthorizedWrite();
             return null;
         }
 
@@ -297,6 +308,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     {
         RaisePropertyChanged(nameof(CanChangeAssetClass));
         RaisePropertyChanged(nameof(CanEditPrimaryIdentifier));
+        SaveCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnIsEditModeChanged(bool value)

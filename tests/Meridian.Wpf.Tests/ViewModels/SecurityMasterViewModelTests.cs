@@ -8,8 +8,10 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Tests.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
 using Moq;
@@ -18,8 +20,96 @@ using ISmService = Meridian.Contracts.SecurityMaster.ISecurityMasterService;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
+[Collection("DesktopAuthenticationEnvironment")]
 public sealed class SecurityMasterViewModelTests
 {
+    [Fact]
+    public void MutationCommands_WhenOperatorIsViewOnly_AreDisabledAndDoNotReachServices()
+    {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopReadOnlyUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null)
+            .Set("MDC_ANONYMOUS_ROLE", null);
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("desktop-viewer", "pw").Succeeded.Should().BeTrue();
+
+        WpfTestThread.Run(async () =>
+        {
+            var backfillService = new Mock<ITradingParametersBackfillService>(MockBehavior.Strict);
+            var importService = new Mock<ISecurityMasterImportService>(MockBehavior.Strict);
+            var securityService = new Mock<ISmService>(MockBehavior.Strict);
+            using var viewModel = CreateViewModel(
+                CreateNavigationService(),
+                new StubWorkstationSecurityMasterApiClient(),
+                backfillService: backfillService.Object,
+                importService: importService.Object,
+                securityService: securityService.Object,
+                authenticationSession: session);
+            viewModel.SelectedSecurity = CreateTrustSnapshot(
+                Guid.Parse("0a4b8d7d-1a15-4ea5-a08a-cfb0eec243f8")).Security;
+
+            viewModel.CreateNewCommand.CanExecute(null).Should().BeFalse();
+            viewModel.EditSelectedCommand.CanExecute(null).Should().BeFalse();
+            viewModel.DeactivateSelectedCommand.CanExecute(null).Should().BeFalse();
+            viewModel.ImportFromFileCommand.CanExecute(null).Should().BeFalse();
+            viewModel.BackfillTradingParamsCommand.CanExecute(null).Should().BeFalse();
+
+            await viewModel.BackfillTradingParamsCommand.ExecuteAsync(null);
+
+            backfillService.Verify(
+                service => service.BackfillAllAsync(),
+                Times.Never);
+            securityService.VerifyNoOtherCalls();
+            importService.VerifyNoOtherCalls();
+        });
+    }
+
+    [Fact]
+    public void MutationCommands_WhenSessionIsRevoked_AreDisabledAndDoNotReachServices()
+    {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null)
+            .Set("MDC_ANONYMOUS_ROLE", null);
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("desktop-admin", "pw").Succeeded.Should().BeTrue();
+
+        WpfTestThread.Run(async () =>
+        {
+            var backfillService = new Mock<ITradingParametersBackfillService>(MockBehavior.Strict);
+            using var viewModel = CreateViewModel(
+                CreateNavigationService(),
+                new StubWorkstationSecurityMasterApiClient(),
+                backfillService: backfillService.Object,
+                authenticationSession: session);
+            viewModel.SelectedSecurity = CreateTrustSnapshot(
+                Guid.Parse("8cd49d68-cf0e-47d4-85ef-d8ac9a14fbe2")).Security;
+
+            viewModel.CreateNewCommand.CanExecute(null).Should().BeTrue();
+            viewModel.EditSelectedCommand.CanExecute(null).Should().BeTrue();
+            viewModel.DeactivateSelectedCommand.CanExecute(null).Should().BeTrue();
+            viewModel.ImportFromFileCommand.CanExecute(null).Should().BeTrue();
+            viewModel.BackfillTradingParamsCommand.CanExecute(null).Should().BeTrue();
+            session.SignOut();
+
+            viewModel.CreateNewCommand.CanExecute(null).Should().BeFalse();
+            viewModel.EditSelectedCommand.CanExecute(null).Should().BeFalse();
+            viewModel.DeactivateSelectedCommand.CanExecute(null).Should().BeFalse();
+            viewModel.ImportFromFileCommand.CanExecute(null).Should().BeFalse();
+            viewModel.BackfillTradingParamsCommand.CanExecute(null).Should().BeFalse();
+
+            await viewModel.BackfillTradingParamsCommand.ExecuteAsync(null);
+
+            backfillService.Verify(
+                service => service.BackfillAllAsync(),
+                Times.Never);
+        });
+    }
+
     [Fact]
     public void RefreshWorkflowCommand_LoadsIngestStatus_AndResolvesConflictQueue()
     {
@@ -1369,7 +1459,11 @@ public sealed class SecurityMasterViewModelTests
         NavigationService navigation,
         StubWorkstationSecurityMasterApiClient snapshotClient,
         StubSecurityMasterOperatorWorkflowClient? workflowClient = null,
-        Mock<ISmQueryService>? queryService = null)
+        Mock<ISmQueryService>? queryService = null,
+        ITradingParametersBackfillService? backfillService = null,
+        ISecurityMasterImportService? importService = null,
+        ISmService? securityService = null,
+        DesktopAuthenticationSession? authenticationSession = null)
     {
         queryService ??= new Mock<ISmQueryService>();
         queryService
@@ -1382,8 +1476,8 @@ public sealed class SecurityMasterViewModelTests
         return new SecurityMasterViewModel(
             LoggingService.Instance,
             NotificationService.Instance,
-            Mock.Of<ITradingParametersBackfillService>(),
-            Mock.Of<ISecurityMasterImportService>(),
+            backfillService ?? Mock.Of<ITradingParametersBackfillService>(),
+            importService ?? Mock.Of<ISecurityMasterImportService>(),
             new StubSecurityMasterRuntimeStatus(),
             workflowClient ?? new StubSecurityMasterOperatorWorkflowClient(new SecurityMasterIngestStatusResponse
             {
@@ -1393,7 +1487,8 @@ public sealed class SecurityMasterViewModelTests
             CreateFundContextService(),
             navigation,
             queryService.Object,
-            Mock.Of<ISmService>());
+            securityService ?? Mock.Of<ISmService>(),
+            authenticationSession);
     }
 
     private static FundContextService CreateFundContextService()

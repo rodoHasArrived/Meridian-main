@@ -12,6 +12,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
@@ -297,6 +298,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isBackfillingTradingParams, value))
             {
                 RaisePropertyChanged(nameof(RuntimeStatusDetail));
+                BackfillTradingParamsCommand?.NotifyCanExecuteChanged();
             }
         }
     }
@@ -1559,15 +1561,19 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
         _passportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient);
 
-        CreateNewCommand = new RelayCommand(OnCreateNew);
-        EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity);
-        DeactivateSelectedCommand = new RelayCommand(OnDeactivateSelected, () => HasSelectedSecurity && IsSelectedSecurityActive());
+        CreateNewCommand = new RelayCommand(OnCreateNew, CanModifySecurityMaster);
+        EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity && CanModifySecurityMaster());
+        DeactivateSelectedCommand = new RelayCommand(OnDeactivateSelected, () => HasSelectedSecurity && IsSelectedSecurityActive() && CanModifySecurityMaster());
         LoadCorporateActionsCommand = new AsyncRelayCommand(OnLoadCorporateActions, () => HasSelectedSecurity);
         ShowRecordCorpActionCommand = new RelayCommand(OnShowRecordCorpAction, () => HasSelectedSecurity);
         CancelRecordCorpActionCommand = new RelayCommand(OnCancelRecordCorpAction);
         RecordCorpActionCommand = new AsyncRelayCommand(OnRecordCorpAction);
-        BackfillTradingParamsCommand = new AsyncRelayCommand(OnBackfillTradingParams);
-        ImportFromFileCommand = new AsyncRelayCommand(OnImportFromFile, () => !IsImporting);
+        BackfillTradingParamsCommand = new AsyncRelayCommand(
+            OnBackfillTradingParams,
+            () => !IsBackfillingTradingParams && CanTriggerSecurityMasterBackfill());
+        ImportFromFileCommand = new AsyncRelayCommand(
+            OnImportFromFile,
+            () => !IsImporting && CanModifySecurityMaster());
         CloseImportResultCommand = new RelayCommand(OnCloseImportResult);
         SearchCommand = new AsyncRelayCommand(ct => SearchAsync(ct), CanSearch);
         ClearSearchCommand = new RelayCommand(OnClearSearch, CanClearSearch);
@@ -1627,11 +1633,19 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         OpenLotRows.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
         OpenLotProvenanceHistory.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
 
+        if (_authenticationSession is not null)
+        {
+            _authenticationSession.SignedOut += OnAuthenticationSessionSignedOut;
+        }
+
         StartWorkflowPolling();
     }
 
     private void OnCreateNew()
     {
+        if (!TryAuthorizeSecurityMasterMutation("create a security", out _))
+            return;
+
         EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service, _authenticationSession);
         WireEditVmEvents();
         IsEditPanelVisible = true;
@@ -1639,7 +1653,8 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void OnEditSelected()
     {
-        if (SelectedSecurity is null)
+        if (SelectedSecurity is null ||
+            !TryAuthorizeSecurityMasterMutation("edit a security", out _))
             return;
 
         // Fetch the full detail so we have all the required information
@@ -1681,10 +1696,15 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void OnDeactivateSelected()
     {
-        if (SelectedSecurity is null)
+        if (SelectedSecurity is null ||
+            !TryAuthorizeSecurityMasterMutation("deactivate a security", out _))
             return;
 
-        DeactivateVm = new SecurityMasterDeactivateViewModel(_loggingService, _notificationService, _service)
+        DeactivateVm = new SecurityMasterDeactivateViewModel(
+            _loggingService,
+            _notificationService,
+            _service,
+            _authenticationSession)
         {
             SecurityName = SelectedSecurity.DisplayName,
             SecurityId = SelectedSecurity.SecurityId,
@@ -1697,6 +1717,41 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
     private bool IsSelectedSecurityActive()
     {
         return SelectedSecurity?.Status == SecurityStatusDto.Active;
+    }
+
+    private bool CanModifySecurityMaster()
+        => _authenticationSession is not null &&
+           _authenticationSession.TryAuthorize(UserPermission.ModifySecurityMaster, out _);
+
+    private bool CanTriggerSecurityMasterBackfill()
+        => _authenticationSession is not null &&
+           _authenticationSession.TryAuthorize(UserPermission.TriggerBackfill, out _);
+
+    private bool TryAuthorizeSecurityMasterMutation(string operation, out string actor)
+    {
+        if (_authenticationSession is not null &&
+            _authenticationSession.TryAuthorize(UserPermission.ModifySecurityMaster, out actor))
+        {
+            return true;
+        }
+
+        actor = string.Empty;
+        var message = $"Sign in with Security Master edit permission to {operation}.";
+        StatusText = message;
+        _notificationService.ShowNotification("Security Master", message, NotificationType.Error);
+        _loggingService.LogWarning(
+            "Security Master mutation refused: the active desktop session does not grant ModifySecurityMaster or cannot name a valid actor.",
+            ("operation", operation));
+        return false;
+    }
+
+    private void OnAuthenticationSessionSignedOut(object? sender, EventArgs e)
+    {
+        CreateNewCommand.NotifyCanExecuteChanged();
+        EditSelectedCommand.NotifyCanExecuteChanged();
+        DeactivateSelectedCommand.NotifyCanExecuteChanged();
+        BackfillTradingParamsCommand.NotifyCanExecuteChanged();
+        ImportFromFileCommand.NotifyCanExecuteChanged();
     }
 
     private void RaiseSearchDerivedStateChanged()
@@ -2189,6 +2244,17 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     private async Task OnBackfillTradingParams()
     {
+        if (_authenticationSession is null ||
+            !_authenticationSession.TryAuthorize(UserPermission.TriggerBackfill, out _))
+        {
+            const string message = "Sign in with backfill permission to backfill trading parameters.";
+            StatusText = message;
+            _notificationService.ShowNotification("Security Master", message, NotificationType.Error);
+            _loggingService.LogWarning(
+                "Security Master trading-parameter backfill refused: the active desktop session does not grant TriggerBackfill or cannot name a valid actor.");
+            return;
+        }
+
         try
         {
             IsBackfillingTradingParams = true;
@@ -3465,6 +3531,11 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             }
 
             _disposed = true;
+        }
+
+        if (_authenticationSession is not null)
+        {
+            _authenticationSession.SignedOut -= OnAuthenticationSessionSignedOut;
         }
 
         Stop();

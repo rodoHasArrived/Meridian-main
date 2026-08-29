@@ -118,17 +118,153 @@ public sealed class SecurityMasterImportServiceTests
         await import.Should().ThrowAsync<OperationCanceledException>();
     }
 
+    [Fact]
+    public async Task ImportAsync_JsonImport_ReplacesFileAuthorityWithOneServerIngestStamp()
+    {
+        var forgedAt = new DateTimeOffset(2001, 2, 3, 4, 5, 6, TimeSpan.Zero);
+        var forgedValidTo = forgedAt.AddYears(20);
+        var requests = new List<CreateSecurityRequest>
+        {
+            CreateForgedRequest("FORGE-A", forgedAt, forgedValidTo),
+            CreateForgedRequest("FORGE-B", forgedAt.AddDays(1), forgedValidTo.AddDays(1))
+        };
+        var fileContent = JsonSerializer.Serialize(
+            requests,
+            SecurityMasterJsonContext.Default.ListCreateSecurityRequest);
+        var recordingService = new RecordingSecurityMasterService();
+        var beforeImport = DateTimeOffset.UtcNow;
+
+        var result = await CreateImportService(recordingService)
+            .ImportAsync(fileContent, ".json", "authenticated.operator", ct: CancellationToken.None);
+
+        var afterImport = DateTimeOffset.UtcNow;
+        result.Imported.Should().Be(2);
+        recordingService.Requests.Should().HaveCount(2);
+
+        var authorityTimestamp = recordingService.Requests[0].EffectiveFrom;
+        authorityTimestamp.Should().BeOnOrAfter(beforeImport);
+        authorityTimestamp.Should().BeOnOrBefore(afterImport);
+        recordingService.Requests.Should().OnlyContain(request =>
+            request.EffectiveFrom == authorityTimestamp
+            && request.SourceSystem == "SecurityMasterImport"
+            && request.UpdatedBy == "authenticated.operator"
+            && request.SourceRecordId is null
+            && request.Reason == "Bulk import through Security Master import workflow");
+
+        recordingService.Requests
+            .SelectMany(static request => request.Identifiers)
+            .Should().OnlyContain(identifier =>
+                identifier.ValidFrom == authorityTimestamp
+                && identifier.ValidTo is null
+                && identifier.Provider is null
+                && identifier.NormalizedValue is null
+                && identifier.NormalizedProvider is null);
+    }
+
+    [Fact]
+    public async Task ImportAsync_CsvImport_UsesOneServerIngestStampForEveryRowAndIdentifier()
+    {
+        const string fileContent =
+            "Ticker,Name,AssetClass,Currency,Exchange,ISIN,CUSIP,FIGI\n"
+            + "ONE,Security One,Equity,USD,XNAS,US0000000001,000000001,BBG000000001\n"
+            + "TWO,Security Two,Equity,USD,XNYS,US0000000002,000000002,BBG000000002";
+        var recordingService = new RecordingSecurityMasterService();
+        var beforeImport = DateTimeOffset.UtcNow;
+
+        var result = await CreateImportService(recordingService)
+            .ImportAsync(fileContent, ".csv", "authenticated.operator", ct: CancellationToken.None);
+
+        var afterImport = DateTimeOffset.UtcNow;
+        result.Imported.Should().Be(2);
+        recordingService.Requests.Should().HaveCount(2);
+
+        var authorityTimestamp = recordingService.Requests[0].EffectiveFrom;
+        authorityTimestamp.Should().BeOnOrAfter(beforeImport);
+        authorityTimestamp.Should().BeOnOrBefore(afterImport);
+        recordingService.Requests.Should().OnlyContain(request =>
+            request.EffectiveFrom == authorityTimestamp
+            && request.SourceSystem == "SecurityMasterImport"
+            && request.UpdatedBy == "authenticated.operator"
+            && request.SourceRecordId is null
+            && request.Reason == "Bulk import through Security Master import workflow");
+        recordingService.Requests
+            .SelectMany(static request => request.Identifiers)
+            .Should().OnlyContain(identifier =>
+                identifier.ValidFrom == authorityTimestamp
+                && identifier.ValidTo is null
+                && identifier.Provider is null
+                && identifier.NormalizedValue is null
+                && identifier.NormalizedProvider is null);
+    }
+
     private static SecurityMasterImportService CreateImportService(ISecurityMasterService service)
         => new(
             service,
             new SecurityMasterCsvParser(),
             NullLogger<SecurityMasterImportService>.Instance);
 
+    private static CreateSecurityRequest CreateForgedRequest(
+        string ticker,
+        DateTimeOffset effectiveFrom,
+        DateTimeOffset validTo)
+        => new(
+            SecurityId: Guid.NewGuid(),
+            AssetClass: "Equity",
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                displayName = $"Forged {ticker}",
+                currency = "USD"
+            }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new { }),
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Ticker,
+                    ticker,
+                    true,
+                    effectiveFrom,
+                    validTo,
+                    Provider: "forged-provider",
+                    NormalizedValue: "forged-normalized-value",
+                    NormalizedProvider: "forged-normalized-provider")
+            ],
+            EffectiveFrom: effectiveFrom,
+            SourceSystem: "forged-authoritative-source",
+            UpdatedBy: "forged.operator",
+            SourceRecordId: "forged-source-record",
+            Reason: "file-supplied reason");
+
     private sealed class ThrowingSecurityMasterService(Func<CreateSecurityRequest, Exception> failure)
         : ISecurityMasterService
     {
         public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
             => throw failure(request);
+
+        public Task<SecurityDetailDto> AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<SecurityDetailDto> AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<SecurityDetailDto> AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<SecurityAliasDto> UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+    }
+
+    private sealed class RecordingSecurityMasterService : ISecurityMasterService
+    {
+        public List<CreateSecurityRequest> Requests { get; } = new();
+
+        public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
+        {
+            Requests.Add(request);
+            return Task.FromResult(CreateSecurityDetail(request.SecurityId));
+        }
 
         public Task<SecurityDetailDto> AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
             => throw new NotSupportedException();

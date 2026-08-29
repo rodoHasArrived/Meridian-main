@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Services;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -16,6 +17,7 @@ public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
     private readonly ISecurityMasterService _service;
+    private readonly WpfServices.IDesktopAuthorizationSource? _operatorContext;
 
     // ── Bindable properties ─────────────────────────────────────────────────
     [ObservableProperty] private string _securityName = string.Empty;
@@ -38,19 +40,30 @@ public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
     public SecurityMasterDeactivateViewModel(
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
-        ISecurityMasterService service)
+        ISecurityMasterService service,
+        WpfServices.IDesktopAuthorizationSource? operatorContext = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
         _service = service;
+        _operatorContext = operatorContext;
 
         CancelCommand = new RelayCommand(() => CancelRequested?.Invoke());
     }
 
     // ── Deactivation logic ──────────────────────────────────────────────────
-    [RelayCommand]
+    private bool CanConfirm()
+        => !IsBusy && TryAuthorizeMutation(out _);
+
+    [RelayCommand(CanExecute = nameof(CanConfirm))]
     private async Task ConfirmAsync(CancellationToken ct)
     {
+        if (!TryAuthorizeMutation(out var actor))
+        {
+            ReportUnauthorizedWrite();
+            return;
+        }
+
         IsBusy = true;
         StatusText = "Deactivating…";
 
@@ -61,7 +74,7 @@ public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
                 ExpectedVersion: Version,
                 EffectiveTo: DateTimeOffset.UtcNow,
                 SourceSystem: "WPF-UI",
-                UpdatedBy: "User",
+                UpdatedBy: actor,
                 SourceRecordId: null,
                 Reason: string.IsNullOrWhiteSpace(Reason) ? "Deactivated via WPF UI" : Reason);
 
@@ -88,4 +101,27 @@ public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
             IsBusy = false;
         }
     }
+
+    private bool TryAuthorizeMutation(out string actor)
+    {
+        if (_operatorContext is not null &&
+            _operatorContext.TryAuthorize(UserPermission.ModifySecurityMaster, out actor))
+        {
+            return true;
+        }
+
+        actor = string.Empty;
+        return false;
+    }
+
+    private void ReportUnauthorizedWrite()
+    {
+        const string message = "Sign in with Security Master edit permission before deactivating a security.";
+        StatusText = message;
+        _notificationService.ShowNotification("Security Master", message, NotificationType.Error);
+        _loggingService.LogWarning("Security Master deactivation refused: the active desktop session does not grant ModifySecurityMaster or cannot name a valid actor.");
+    }
+
+    partial void OnIsBusyChanged(bool value)
+        => ConfirmCommand.NotifyCanExecuteChanged();
 }

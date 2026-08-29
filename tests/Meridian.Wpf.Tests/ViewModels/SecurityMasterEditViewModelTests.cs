@@ -2,6 +2,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Identity.Auth;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
@@ -170,7 +171,7 @@ public sealed class SecurityMasterEditViewModelTests
                 .Callback<AmendSecurityTermsRequest, CancellationToken>((request, _) => capturedRequest = request)
                 .ReturnsAsync(detail);
 
-            var viewModel = CreateViewModel(service, new StubActorSource("jordan.rivera"));
+            var viewModel = CreateViewModel(service, new StubAuthorizationSource("jordan.rivera"));
             viewModel.LoadForEdit(detail);
             viewModel.DisplayName = "Apple Inc. Class A";
 
@@ -198,13 +199,34 @@ public sealed class SecurityMasterEditViewModelTests
             // Strict with no setup: any call to the service fails the test.
             var service = new Mock<ISecurityMasterService>(MockBehavior.Strict);
 
-            var viewModel = CreateViewModel(service, new StubActorSource(actor: null));
+            var viewModel = CreateViewModel(service, new StubAuthorizationSource(actor: null));
             viewModel.LoadForEdit(detail);
             viewModel.DisplayName = "Apple Inc. Class A";
 
+            viewModel.SaveCommand.CanExecute(null).Should().BeFalse();
             await viewModel.SaveCommand.ExecuteAsync(null);
 
-            viewModel.StatusText.Should().Contain("Sign in");
+            service.Verify(
+                mock => mock.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+        });
+    }
+
+    [Fact]
+    public void SaveAsync_WhenOperatorIsViewOnly_RefusesTheWrite()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var detail = CreateEquityDetail();
+            var service = new Mock<ISecurityMasterService>(MockBehavior.Strict);
+            var viewModel = CreateViewModel(
+                service,
+                new StubAuthorizationSource("desktop.viewer", hasModifyPermission: false));
+            viewModel.LoadForEdit(detail);
+
+            viewModel.SaveCommand.CanExecute(null).Should().BeFalse();
+            await viewModel.SaveCommand.ExecuteAsync(null);
+
             service.Verify(
                 mock => mock.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
                 Times.Never);
@@ -231,24 +253,31 @@ public sealed class SecurityMasterEditViewModelTests
 
     private static SecurityMasterEditViewModel CreateViewModel(
         Mock<ISecurityMasterService>? service = null,
-        WpfServices.IDesktopActorSource? actorSource = null)
+        WpfServices.IDesktopAuthorizationSource? operatorContext = null)
         => SecurityMasterEditViewModel.CreateNew(
             WpfServices.LoggingService.Instance,
             NotificationService.Instance,
             (service ?? new Mock<ISecurityMasterService>(MockBehavior.Strict)).Object,
-            actorSource ?? new StubActorSource("desktop.operator"));
+            operatorContext ?? new StubAuthorizationSource("desktop.operator"));
 
     /// <summary>
     /// Stands in for the desktop session. <c>actor</c> of <c>null</c> models a process with nobody
     /// signed in, which governed writes must refuse rather than attribute to a placeholder.
     /// </summary>
-    private sealed class StubActorSource(string? actor) : WpfServices.IDesktopActorSource
+    private sealed class StubAuthorizationSource(
+        string? actor,
+        bool hasModifyPermission = true) : WpfServices.IDesktopAuthorizationSource
     {
-        public bool TryGetAuthenticatedActor(out string resolved)
+        public bool TryAuthorize(UserPermission permission, out string resolved)
         {
             resolved = actor ?? string.Empty;
-            return actor is { Length: > 0 };
+            return permission == UserPermission.ModifySecurityMaster
+                   && hasModifyPermission
+                   && actor is { Length: > 0 };
         }
+
+        public bool TryGetAuthenticatedActor(out string resolved)
+            => TryAuthorize(UserPermission.ModifySecurityMaster, out resolved);
     }
 
     private static SecurityDetailDto CreateSecurityDetail(

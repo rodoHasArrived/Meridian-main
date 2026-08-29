@@ -19,11 +19,27 @@ public interface IDesktopActorSource
 }
 
 /// <summary>
+/// Supplies the active desktop operator and the permissions granted to that operator. Governed
+/// in-process writes use this seam because no HTTP authorization filter runs between a WPF view
+/// model and the shared application service.
+/// </summary>
+public interface IDesktopAuthorizationSource : IDesktopActorSource
+{
+    /// <summary>
+    /// Resolves the actor only when the active, non-expired desktop session grants
+    /// <paramref name="permission"/>. Callers use this single boundary check for audit attribution
+    /// and authorization rather than composing independent actor and permission probes.
+    /// </summary>
+    bool TryAuthorize(UserPermission permission, out string actor);
+}
+
+/// <summary>
 /// Holds the authenticated desktop operator for the current WPF process.
 /// Credentials stay hash-backed through <see cref="UserProfileRegistry"/>.
 /// </summary>
-public sealed class DesktopAuthenticationSession(LoginSessionService loginSessionService) : IDesktopActorSource
+public sealed class DesktopAuthenticationSession(LoginSessionService loginSessionService) : IDesktopAuthorizationSource
 {
+    private const string AnonymousRoleEnvironmentVariable = "MDC_ANONYMOUS_ROLE";
     private string? _sessionToken;
 
     public event EventHandler? SignedOut;
@@ -102,13 +118,46 @@ public sealed class DesktopAuthenticationSession(LoginSessionService loginSessio
     {
         if (CanContinueWithoutCredentials)
         {
-            // Unconfigured local development: gating defers to the authentication gates so the
-            // local shell is not blocked.
-            return true;
+            var configuredAnonymousRole = Environment.GetEnvironmentVariable(AnonymousRoleEnvironmentVariable);
+            if (string.IsNullOrWhiteSpace(configuredAnonymousRole))
+            {
+                // Unconfigured local development with no declared anonymous role keeps the existing
+                // fail-open posture. Governed writes separately require the explicit anonymous
+                // development session so merely launching the process does not authorize a write.
+                return true;
+            }
+
+            // The browser uses the shared name-only role parser for MDC_ANONYMOUS_ROLE. Mirror it
+            // here so a typo (or a numeric enum value such as "0") cannot grant desktop authority.
+            if (!RolePermissions.TryParseRoleName(configuredAnonymousRole, out var anonymousRole))
+            {
+                return false;
+            }
+
+            var anonymousPermissions = RolePermissions.For(anonymousRole);
+            return (anonymousPermissions & permission) == permission;
+        }
+
+        // CurrentUser is a projection, not proof that the token still validates. Check the live
+        // session before using its permission set so expiry or revocation fails closed.
+        if (!IsAuthenticated)
+        {
+            return false;
         }
 
         var current = CurrentPermissions;
         return current is not null && (current.Value & permission) == permission;
+    }
+
+    public bool TryAuthorize(UserPermission permission, out string actor)
+    {
+        if (HasPermission(permission) && TryGetAuthenticatedActor(out actor))
+        {
+            return true;
+        }
+
+        actor = string.Empty;
+        return false;
     }
 
     public DesktopSignInResult SignIn(string username, string password)
