@@ -1385,6 +1385,24 @@ through the workstation. Its own documentation says "server-side authorization r
 in all cases" — true for the browser lane, but this path never reaches a server, so there is no
 authoritative check behind it.
 
+**The obvious remedy — wire the commands to `HasPermission` — does not close this, and an earlier
+draft of this item prescribed exactly that.** `HasPermission` returns `true` immediately whenever
+`CanContinueWithoutCredentials` holds (`DesktopAuthenticationSession.cs:50-56`). On a credential-free
+host that names an anonymous role — `MDC_ANONYMOUS_ROLE=ReadOnly` or `Analysis`, a supported posture —
+the browser lane honours that role and refuses mutations, while a desktop gate built on
+`HasPermission` authorizes every one of them. P5 would survive its own fix in the configuration where
+an operator has been explicitly declared read-only.
+
+Meridian already solves this, one lane over, and the desktop gate should reuse the pattern rather than
+re-derive it: `DesktopWorkflowReadScopeResolver.TryResolveConfiguredAnonymousScope` resolves the named
+role's grants from `RolePermissions` instead of from the session, and its own comment gives the reason
+— *"the session answers true to every permission on such a host and would therefore ignore the
+choice"* (`:66-104`). It also fails **closed** on an unparseable role name rather than falling through
+to the session, on the stated grounds that a typo in a security setting must never grant everything.
+The mutation gate needs the same three properties: resolve the anonymous role's permissions from
+`RolePermissions`, refuse when that role lacks `ModifySecurityMaster`, and fail closed on a named-but-
+unrecognised role.
+
 **This is why it is filed separately from P1 rather than folded into it.** P1 is an attribution
 defect: the record does not truthfully say who wrote it. This is an authorization defect: the write
 should not have been accepted. They have opposite fix orders, too — wiring the actor through first,
@@ -1460,11 +1478,25 @@ fixing, but a different defect from the miscount; a regression test asserting an
 would assert something that cannot happen.
 
 **The substring test does not match the error the system actually raises, so the classification is
-already wrong at every site.** An earlier draft of this item called it fragile — something a reworded
+already wrong wherever a caller can re-use a security id.** An earlier draft said "at every site",
+which over-reached — see the fresh-id paths below. An earlier draft still called it fragile — something a reworded
 message *would* break. It is worse than that: when a create reuses an existing `SecurityId`,
 `PostgresSecurityMasterEventStore.AppendAsync` throws `"Security stream version conflict for {id}.
 Expected {x}, actual {y}."` (`:40`), which contains neither `"already exists"` nor `"duplicate"`. So
-the skip branch never fires for a re-used stream today. **Note what that case is and is not**: the
+the skip branch never fires for a re-used stream today.
+
+**But that diagnosis only reaches inputs that can re-use an id, which is narrower than "every site".**
+The CSV parser mints `Guid.NewGuid()` per row (`SecurityMasterCsvParser.cs:146-148`) and Polygon's
+`MapToCreateRequest` does the same (`PolygonSecurityMasterIngestProvider.cs:156-157`), so re-importing
+either source opens a *new* stream and never raises the version conflict at all. Those paths have no
+duplicate detection to misclassify — they have no idempotency in the first place, and a re-import
+silently mints a second golden record for the same instrument, which the identifier-conflict machinery
+then has to adjudicate. So the typed outcome grounded in the stream conflict serves the JSON import
+branch (and deterministic-id Edgar races), while CSV and provider ingests need an idempotency key
+before any outcome type can help them. A regression suite built only on the version conflict would
+never exercise their repeated-record behaviour.
+
+**Note what the stream-conflict case is and is not**: the
 conflict establishes that a stream already exists, nothing more — it does not establish that the
 incoming row is a replay of the stored one, since the append compares versions and never payloads
 (detailed below). Calling it a "duplicate" here would prejudge exactly the question the remedy has to
@@ -1550,11 +1582,16 @@ both are reachable from surfaces the pass discusses elsewhere and neither is in 
 
 - **The trading-parameter backfill.** `BackfillTickerAsync` rethrows correctly, but `BackfillAllAsync`
   wraps the call in `catch (Exception ex)` and counts a failure
-  (`TradingParametersBackfillService.cs:101-108`). The loop tests `ct.IsCancellationRequested` at the
-  top of the next iteration and breaks, so — exactly as with Edgar — the silent case is cancellation on
-  the **final** security, which returns a normal success/failure summary. The WPF command compounds it
-  by calling `BackfillAllAsync()` with no token at all (`SecurityMasterViewModel.cs:2186-2193`), so
-  desktop-initiated backfills have nothing to cancel with in the first place.
+  (`TradingParametersBackfillService.cs:101-108`). **Unlike Edgar, this one is silent for cancellation
+  on *any* item, not just the last** — an earlier draft of this bullet asserted the Edgar narrowing
+  here by analogy and was wrong. Edgar's loops call `ct.ThrowIfCancellationRequested()`, which
+  propagates; this loop tests `ct.IsCancellationRequested` and `break`s (`:84-88`), which does not. So
+  a cancellation swallowed at any iteration is followed by a quiet exit from the loop, a completion
+  log, and a normal success/failure summary. `break` and `throw` are not interchangeable at the top of
+  a cancellation-checking loop, and a regression test has to target the `break` rather than the
+  final-item case. The WPF command compounds it by calling `BackfillAllAsync()` with no token at all
+  (`SecurityMasterViewModel.cs:2186-2193`), so desktop-initiated backfills have nothing to cancel with
+  in the first place.
 - **The Polygon page fetch, before the create loop is ever reached.**
   `PolygonSecurityMasterIngestProvider.FetchPageAsync` wraps `GetAsync(url, ct)` and
   `ReadAsStringAsync(ct)` in `catch (Exception)` and returns `null` (`:129-148`); `FetchAllAsync` reads
@@ -1643,10 +1680,14 @@ Read as a delta on the standing lists above.
    authorization failure rather than a governance or attribution one, and the only one that lets a
    user perform a write the system is configured to refuse. Every HTTP mutation route requires
    `ModifySecurityMaster`; the WPF edit, deactivate, import **and trading-parameter backfill**
-   commands reach the same service in-process and check nothing, on a shell whose `HasPermission`
-   would fail closed if asked. The backfill is the one to size the work by: it amends *every* active
-   security in a single command, so a gate covering only the per-record dialogs leaves the largest
-   mutation open. Enumerate the desktop mutation commands rather than the dialogs. Gate each before
+   commands reach the same service in-process and check nothing. The backfill is the one to size the
+   work by: it amends *every* active security in a single command, so a gate covering only the
+   per-record dialogs leaves the largest mutation open. Enumerate the desktop mutation commands rather
+   than the dialogs. **Do not build the gate on `HasPermission` alone** — it returns true for
+   everything on a credential-free host, so an `MDC_ANONYMOUS_ROLE=ReadOnly` deployment would stay
+   fully mutable; resolve the named anonymous role's grants from `RolePermissions` and fail closed on
+   an unrecognised name, exactly as `DesktopWorkflowReadScopeResolver` already does for read scope.
+   Gate each before
    the service call, and reflect the result in command enablement. Sequence it
    **before** P1's actor wiring: deriving the operator's identity first would attach a real name to
    writes that should not have been accepted.
@@ -1701,7 +1742,8 @@ Read as a delta on the standing lists above.
    `failed`, while Edgar has no failed counter and instead gains an error entry and a non-zero exit —
    a test asserting an Edgar count change would assert something that cannot happen. The cancellation
    half reaches beyond those three ingests: the trading-parameter backfill swallows it in
-   `BackfillAllAsync` (`TradingParametersBackfillService.cs:101-108`, silent on the final security, and
+   `BackfillAllAsync` (`TradingParametersBackfillService.cs:101-108`, silent for cancellation on *any*
+   item because the loop `break`s rather than throwing, and
    invoked with no token at all from WPF), and Polygon's `FetchPageAsync` (`:129-148`) swallows it
    *before* the create loop, so the ingest imports a truncated page set and reports success. Fixing
    only the create call sites leaves both commands completing normally after cancellation.
