@@ -426,10 +426,23 @@ label alone will update this file.
   - [ ] Never commit a `repository-structure.md` diff whose only change is adding or removing a gitignored artifact path — confirm with `git check-ignore -v <path>` before including it
   - [ ] Cross-check the regenerated numbers against the values the failing CI log printed; they must match exactly, not approximately
   - [ ] If a local regeneration disagrees with CI, regenerate on the untouched base commit in a scratch worktree first — no diff there means the divergence is environmental, not caused by your change
-- **Verification commands**:
-  - `python3 build/scripts/docs/generate-health-dashboard.py --output docs/status/doc-health-dashboard.md --json-output docs/status/doc-health-dashboard.json --summary`
-  - `git status --short` (should list only the two `doc-health-dashboard.*` files)
-  - `git diff --exit-code -- docs/generated/repository-structure.md` (must be clean)
+- **Verification commands**: run CI's own sequence, in this order. Regenerating the dashboard alone
+  cannot reproduce the failure or verify the mitigation, because the mismatch is *manufactured by the
+  missing predecessor* — it exercises the fallback in the checklist above, not the fix.
+  - `python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json` — the
+    predecessor CI supplies at `ci.yml:131`; without it the next command drops that filename's line
+  - `python3 build/scripts/docs/run-docs-automation.py --scripts generate-structure-docs,generate-health-dashboard,generate-workflow-manifest` — the profile as `ci.yml:156` invokes it
+  - `python3 build/scripts/docs/generate-structure-docs.py --workflows-only` — the profile runs
+    structure mode only, so the workflows overview needs its own invocation (`ci.yml:160`); omitting it
+    is how a new workflow file merges green here and reds the documentation lane
+  - `git diff --exit-code -- docs/generated/repository-structure.md docs/generated/workflows-overview.md docs/status/doc-health-dashboard.json docs/status/doc-health-dashboard.md docs/status/workflow-drift-report.md`
+    — the exact set `ci.yml:161` checks. A diff here whose only change is a gitignored artifact path
+    means the predecessor was skipped, not that your change caused it; confirm with
+    `git check-ignore -v <path>`
+  - *Fallback only*, when nothing structural changed and only markdown line counts moved:
+    `python3 build/scripts/docs/generate-health-dashboard.py --output docs/status/doc-health-dashboard.md --json-output docs/status/doc-health-dashboard.json --summary`.
+    Correct output, but it sidesteps the coupling rather than exercising it, so it verifies nothing
+    about this entry.
 - **Source issue**: PR #2857
 - **Status**: mitigated
 - **Fixed in**: Documented here; the coupling itself is unchanged. A durable fix has to reach **both** generators, because each discovers files independently:
@@ -443,6 +456,8 @@ label alone will update this file.
 - **Root cause**: The phase is declared by an HTML comment marker (`<!-- phase:PR1 -->`) in the pull-request body. HTML comments are invisible in every rendered view of the PR, so rewriting the body — to refresh a stale summary, say — silently drops the marker unless it is deliberately carried across. The check does not fail on the push that removed it if that was a body-only edit; it fails on the *next* code push, which makes the two events easy to disconnect.
 - **Prevention checklist**:
   - [ ] Before replacing a PR body, fetch the raw body and search it for `<!-- phase:` — a rendered view will not show it
+  - [ ] **Do not trust the GitHub MCP `pull_request_read` (method `get`) body for this check.** It returns the body with HTML comments *stripped*, so a marker that is really there comes back invisible and the check above passes while reporting the opposite. This recurred on PR #2857 after the entry was written: the returned body began `\n\n## Summary`, the two leading newlines being exactly where `<!-- phase:PR1 -->` sat. Confirm from a source that cannot strip it — the `scope-gate` job log prints `Phase scope gate passed for PR1 (source: pr_body)`, and `source:` names which declaration was actually used (`pr_body`, `labels`, or `dispatch`)
+  - [ ] Read `source:` in that log line before concluding a PR has no marker. `source: labels` means a body rewrite is safe; `source: pr_body` means it is not
   - [ ] After any body rewrite, re-read the raw body and confirm the marker survived
   - [ ] Prefer a `phase:PRx` **label** where one is available: it is visible in the PR UI and survives body rewrites, whereas the marker is invisible and does not
   - [ ] Do not expect a job re-run to clear this — see below

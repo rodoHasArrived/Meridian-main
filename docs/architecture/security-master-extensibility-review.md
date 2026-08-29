@@ -122,6 +122,14 @@ risks that compound as new asset classes land.
 > bypass it is not a one-call fix: it needs versioned or event-backed alias state, or an explicit
 > narrowing of what recorded-as-of promises for aliases.
 >
+> **The fourth misreports completed work to the operator (P4)**: an invalid import row is counted a
+> harmless `Skipped` and dropped from the error list, so the operator believes a security is in the
+> master when it was rejected, and a cancelled Polygon ingest imports a truncated page set and reports
+> success. It is listed last here and ranked below the three above because it misstates outcomes rather
+> than losing data or admitting an unauthorized write — but it is a shipped-behaviour defect, not a
+> plumbing one. It was filed as a fragile *pattern* and became a correctness item as its consequences
+> were traced, which is exactly why counts elsewhere in this document went stale on it.
+>
 > The pass began on the bulk-import path and its scope widened materially under review: P1 is now a
 > property of the whole `ISecurityMasterService` mutation surface rather than of import, P3 concerns
 > the asset-pack registry, and P4 spans three ingest paths plus a cancellation defect class. Where
@@ -1012,6 +1020,10 @@ These are intended and stated rather than incidental:
   **`CreatedBy`**, which is the alias request's actor role, and the helper's comment states that
   `SourceSystem` carries upstream source for conflict detection and precedence rather than the actor.
 
+  **Scope this to the golden-record routes, which is why they are named here.** The alias route is
+  rebound at the endpoint like the others, but what the store does with the rebound value differs on
+  an update; that path is listed under partially closed below.
+
   **An earlier draft of this bullet cited "`TryResolveActor` now at 9 sites, against the 1 the pass
   found". That evidence was false.** `TryResolveActor` occurs 9 times in that file at the `d3793290`
   baseline and 9 times now — unchanged — mostly in unrelated asset-profile, pricing and entitlement
@@ -1027,6 +1039,25 @@ These are intended and stated rather than incidental:
   message text. That is the right shape and it closes the fragility half.
 
 **Verified partially closed — each in the specific way the item warned against.**
+
+- **P1 on the alias route, for corrections rather than creations.** The endpoint rebinds
+  `CreatedBy = ResolveActor(context)` (`SecurityMasterEndpoints.cs:456`), which does close body-spoofed
+  attribution when an alias is first recorded. On an **update** it establishes nothing: the store's
+  `on conflict (alias_id) do update` deliberately omits `created_by` and `created_at`
+  (`PostgresSecurityMasterStore.Aliases.cs:31-43`) and `returning created_by, created_at` echoes the
+  **original** creator back (`:67-70`). The rebound actor is bound as an insert parameter, discarded by
+  the conflict path, and recorded nowhere — there is no second actor column, and, as P3b establishes,
+  no alias versioning or event backing to carry one. So the operator who corrects an identifier is
+  unattributable, which is the mutation attribution P1 exists to require.
+
+  Two things are worth being clear about. The store's omission is **correct** and was made for this
+  document's own P3b reasoning — restating the creation facts on a correction is what made the alias
+  vanish from earlier as-of views. The gap is not that omission; it is that no path records the
+  *correcting* actor instead. And this bullet corrects an earlier claim of mine: the status section
+  above cited the alias rebinding among the closures. **Both halves of the evidence were already in
+  this document** — the rebinding in the closed bullet, the `created_by` omission in the P3b bullet
+  two entries down — and I did not connect them. That is the third false closure in this section, and
+  the first where the refuting evidence was already written on the same page.
 
 - **P1 on the CLI import path.** `SecurityMasterCommands` fills the new `actor` parameter from
   `--imported-by` when supplied, falling back to `Environment.UserName` and then to `"meridian-cli"`
@@ -1074,10 +1105,13 @@ These are intended and stated rather than incidental:
   review (round 18), after the implementation work on the other items had likely been scoped, which
   may explain why it was not picked up.
 
-**The pattern across those three is worth more than the three entries.** P3b froze the creation fields
+**The pattern across those four is worth more than the four entries.** P3b froze the creation fields
 while still overwriting `alias_value`; P4 replaced the message-sniffing classifier while still equating
 a stream conflict with a duplicate; P1's import path gained an `actor` parameter that the CLI fills
-with an unvalidated string. In each case the *named artefact* of the finding was removed and the
+with an unvalidated string; and the alias route gained a server-derived `CreatedBy` that the store's
+conflict path discards on every correction. That last one is the purest instance of the pattern in the
+set — the endpoint reads exactly as the closed routes do, and the property fails one layer down. In
+each case the *named artefact* of the finding was removed and the
 property the finding was about was not established. That is the same failure mode this document
 records itself committing while it was written — checking that a defect's visible marker is gone
 rather than that the replacement makes the distinction required — and it is worth a reviewer's
@@ -1085,8 +1119,10 @@ attention as a systematic risk in how these items are being closed, not as three
 useful test when closing any of the remaining items: name the property the finding requires, then find
 the code that establishes it. If the answer is "the old code is gone", the item is not closed.
 
-**Not re-verified, and therefore unknown against the merged tree**: P4's cancellation half (the three
-backfill swallow points, Polygon's `FetchPageAsync`, Edgar's three broad catches); P1's remaining
+**Not re-verified, and therefore unknown against the merged tree**: P4's cancellation half (the
+backfill's **two** swallow points and, separately, the WPF call passing no token at all — see the item
+for why those are two defects and not three; Polygon's `FetchPageAsync`; Edgar's three broad catches);
+P1's remaining
 constraints (`SourceSystem` derived from trusted metadata rather than the actor, the valid-time gates,
 the nested identifier windows, the alias source-role decision); P3; and N4, N5, N6. Absence from this
 list means it was not checked, not that it is open.
@@ -1844,14 +1880,14 @@ Read as a delta on the standing lists above.
    the service call, and reflect the result in command enablement. Sequence it
    **before** P1's actor wiring: deriving the operator's identity first would attach a real name to
    writes that should not have been accepted.
-2. **Gate the legacy preferred-terms PATCH route (P1).** One of three items in this pass that are
-   defects in shipped behaviour rather than in plumbing: a deployment that enables
+2. **Gate the legacy preferred-terms PATCH route (P1).** One of **four** items in this pass that are
+   defects in shipped behaviour rather than in plumbing — P5, this, P3b and P4: a deployment that enables
    `RequireGovernedTermAmendments` to force maker-checker still has
    `PATCH …/preferred-terms` (`SecurityMasterEndpoints.cs:1043-1058`) reaching
    `AmendPreferredEquityTermsAsync` ungated. One `RequireGovernedTermAmendmentRoute` call closes it,
    and a route-level test asserting every amendment path refuses under the option keeps it closed.
    Smallest fix in this document with the largest governance consequence.
-3. **Stop alias edits rewriting recorded history (P3b).** The third shipped-behaviour defect, and the
+3. **Stop alias edits rewriting recorded history (P3b).** The third of the four by rank, and the
    one that touches a property this subsystem is otherwise careful about: an alias upsert re-stamps
    `created_at`, and recorded-as-of rebuilding filters on it, so correcting an identifier erases it
    from every earlier historical view. Note the scope honestly — the upsert overwrites the whole row,
