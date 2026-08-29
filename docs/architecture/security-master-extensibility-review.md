@@ -100,7 +100,9 @@ risks that compound as new asset classes land.
 > the parity asked for is with that boundary, not a collapse of them; the WPF
 > edit, deactivate, import and trading-parameter backfill commands — the last of which amends up to
 > 1,000 securities in one action — reach the same `ISecurityMasterService` in process and check
-> nothing, on a shell whose `HasPermission` fails closed for a configured host and is simply never
+> nothing, on a shell whose `HasPermission` fails closed only for a **credential-backed** host — it
+> returns true for everything on a credential-free host, including one naming an anonymous role, so it
+> cannot be the gate on its own — and is in any case never
 > called here. So an operator holding only `ViewSecurityMaster` is refused every mutation over HTTP
 > and permitted every one of them through the workstation. It is filed apart from P1 because it is an
 > authorization defect rather than an attribution one, and it must be fixed first: deriving the actor
@@ -991,15 +993,33 @@ These are intended and stated rather than incidental:
 **Verified closed.**
 
 - **P1's legacy PATCH gate bypass** — this pass's second priority. `RequireGovernedTermAmendmentRoute`
-  now appears at **5** call sites in `SecurityMasterEndpoints.cs`, against the 3 the pass counted, and
-  the legacy `PATCH …/preferred-terms` route is among them.
+  now appears at **4** call sites in `SecurityMasterEndpoints.cs` (`:392, 528, 589, 1064`) against the
+  3 the pass counted, and the new one — `:1064` — is the legacy `PATCH …/preferred-terms` route. One
+  route gated, which is exactly the fix this item asked for. An earlier draft said "5 call sites",
+  counting the helper's own declaration at `:1231` as a call; that would have implied two routes were
+  gated.
 - **P1's import actor gap, for callers that pass a resolved identity** — `ImportAsync` now takes
   `string actor` (`:47-52`), where the pass recorded no actor parameter at all. That closes the
   structural half: the parameter exists and the HTTP path fills it from the resolved principal.
-- **P1's endpoint attribution, substantially** — `EndpointAuthorization.TryResolveActor` now appears at
-  **9** sites in `SecurityMasterEndpoints.cs`. The pass found exactly one path deriving the actor
-  server-side (governed workbench publish) and called it the reference implementation to extend; it has
-  been extended.
+- **P1's endpoint attribution on the golden-record routes.** The pass found exactly one path deriving
+  the actor server-side (governed workbench publish) and called it the reference implementation to
+  extend; it has been extended, and thoroughly. Every mutation route now rebinds the request rather
+  than trusting the body — `CreateAsync`, `AmendTermsAsync`, `DeactivateAsync`, both equity-terms
+  routes and the legacy PATCH all pass `request with { UpdatedBy = ResolveActor(context) }`, the alias
+  route passes `request with { CreatedBy = ResolveActor(context) }`, and the import route passes
+  `actor: ResolveActor(context)`. `ResolveActor(context)` goes from 5 occurrences at `d3793290` to 11.
+  Two details worth noting because they match this item's constraints exactly: the alias route rebinds
+  **`CreatedBy`**, which is the alias request's actor role, and the helper's comment states that
+  `SourceSystem` carries upstream source for conflict detection and precedence rather than the actor.
+
+  **An earlier draft of this bullet cited "`TryResolveActor` now at 9 sites, against the 1 the pass
+  found". That evidence was false.** `TryResolveActor` occurs 9 times in that file at the `d3793290`
+  baseline and 9 times now — unchanged — mostly in unrelated asset-profile, pricing and entitlement
+  routes. I counted occurrences at HEAD and compared them to a number that came from a different
+  claim ("one path derives the actor for Security Master mutations"), which is not the same population.
+  A count at one revision is not evidence of a delta; only a diff is. The conclusion happened to be
+  right and the implementation is better than the bogus number suggested, which is precisely why this
+  kind of error is dangerous — it survives review by agreeing with the truth.
 - **P2** — the `UpdatedBy: "WpfImport"` constant is gone from `SecurityMasterCsvParser`.
 - **P4's classify-from-prose defect, mechanically** — the `"already exists"` / `"duplicate"` substring
   tests are gone from the import service and Edgar, replaced by
@@ -1045,10 +1065,12 @@ These are intended and stated rather than incidental:
 **Verified still open.**
 
 - **P5, this pass's top priority.** No Security Master view model calls
-  `DesktopAuthenticationSession.HasPermission`; the only desktop callers remain `MainWindowViewModel`
-  and `AccountingCloseViewModel`. The desktop lane still reaches `ISecurityMasterService` in process
-  with no authorization check, and the trading-parameter backfill command — which amends every active
-  security in one action — is still constructed with no `canExecute` predicate. P5 was filed late in
+  `DesktopAuthenticationSession.HasPermission`; the only view-model callers remain `MainWindowViewModel`
+  and `AccountingCloseViewModel` — plus `DesktopWorkflowReadScopeResolver.HasAny` (`:143`), which is
+  the seam this item recommends reusing. The desktop lane still reaches `ISecurityMasterService` in
+  process with no authorization check, and the trading-parameter backfill command — which attempts up
+  to 1,000 securities in one action (`Take: 1000`), not every active one — is still constructed with no
+  `canExecute` predicate. P5 was filed late in
   review (round 18), after the implementation work on the other items had likely been scoped, which
   may explain why it was not picked up.
 
@@ -1468,8 +1490,11 @@ The WPF lane reaches the same `ISecurityMasterService` in process and checks not
 `SecurityMasterEditViewModel` calls `CreateAsync` (`:216`) and `AmendTermsAsync` (`:234`) directly,
 `SecurityMasterDeactivateViewModel` calls `DeactivateAsync` (`:59-68`), and `SecurityMasterViewModel`
 calls `ImportAsync` (`:4358`). None of them — nor their parent — calls
-`DesktopAuthenticationSession.HasPermission`; the only desktop callers of that method are
-`MainWindowViewModel` for `ManageProviders` (`:255`) and `AccountingCloseViewModel` (`:1069-1070`).
+`DesktopAuthenticationSession.HasPermission`. The only **view-model** callers of that method are
+`MainWindowViewModel` for `ManageProviders` (`:255`) and `AccountingCloseViewModel` (`:1069-1070`) —
+say view-model rather than "desktop", because `DesktopWorkflowReadScopeResolver.HasAny` calls it too
+(`:143`), and that is the very resolver this item points at as the pattern to reuse. The desktop lane
+does have an authorization seam; no Security Master mutation command goes through it.
 
 **A fifth path makes this worse, and it is a bulk one.** When Polygon is configured,
 `BackfillTradingParamsCommand` is constructed as a plain `AsyncRelayCommand` with no `canExecute`
