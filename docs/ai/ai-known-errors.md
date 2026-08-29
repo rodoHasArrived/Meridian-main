@@ -454,24 +454,41 @@ label alone will update this file.
 - **Area**: ci/governance
 - **Symptoms**: `scope-gate` reds on a PR that has been passing it for many pushes, with `##[error]No phase declaration found. Provide --phase/--dispatch-phase, a 'phase:PRx' label, or a PR body marker like '<!-- phase:PR2 -->'.` Nothing in the diff touches roadmap tooling or workflows, and the immediately preceding pushes on the same branch passed the same check.
 - **Root cause**: The phase is declared by an HTML comment marker (`<!-- phase:PR1 -->`) in the pull-request body. HTML comments are invisible in every rendered view of the PR, so rewriting the body — to refresh a stale summary, say — silently drops the marker unless it is deliberately carried across. The check does not fail on the push that removed it if that was a body-only edit; it fails on the *next* code push, which makes the two events easy to disconnect.
-- **Prevention checklist**:
-  - [ ] Before replacing a PR body, fetch the raw body and search it for `<!-- phase:` — a rendered view will not show it
-  - [ ] **Do not trust the GitHub MCP `pull_request_read` (method `get`) body for this check.** It returns the body with HTML comments *stripped*, so a marker that is really there comes back invisible and the check above passes while reporting the opposite. This recurred on PR #2857 after the entry was written: the returned body began `\n\n## Summary`, the two leading newlines being exactly where `<!-- phase:PR1 -->` sat. Confirm from a source that cannot strip it — the `scope-gate` job log prints `Phase scope gate passed for PR1 (source: pr_body)`, and `source:` names which declaration was actually used (`pr_body`, `labels`, or `dispatch`)
-  - [ ] Read `source:` in that log line before concluding a PR has no marker. `source: labels` means a body rewrite is safe; `source: pr_body` means it is not
-  - [ ] After any body rewrite, re-read the raw body and confirm the marker survived
-  - [ ] Prefer a `phase:PRx` **label** where one is available: it is visible in the PR UI and survives body rewrites, whereas the marker is invisible and does not
-  - [ ] Do not expect a job re-run to clear this — see below
-- **Verification commands**: the marker is invisible to any view that renders or sanitizes HTML, so
-  verify it from the gate's own output rather than by reading the body back.
-  - Read the `scope-gate` job log on the PR's latest run and find `Phase scope gate passed for PR1 (source: …)`.
-    This is authoritative: it is the gate reporting which declaration it actually resolved. `source: pr_body`
-    means a body marker is present and load-bearing — a body rewrite will drop it. `source: labels` means the
-    phase comes from a `phase:PRx` label and the body marker is not what is holding the gate up.
-  - **Do not** verify by fetching the body through GitHub MCP `pull_request_read` (method `get`): it strips
-    HTML comments, so it reports a present marker as absent and invites exactly the destructive rewrite this
-    entry exists to prevent. If you must read the body, use a raw API response that preserves comments and
-    confirm the bytes are there.
-  - `grep -n "PHASE_BODY\|PHASE_LABEL" tools/roadmap/enforce_phase_scope.py` to confirm the accepted forms
+- **Prevention checklist**: the ordering matters — the first two items remove the need to detect the
+  marker at all, which is what makes them reliable. Everything that tries to *read it back* has failed
+  at least once; see the note under Verification commands.
+  - [ ] **Write the marker unconditionally.** When rewriting a PR body, always emit `<!-- phase:PR1 -->` as the first line, without first checking whether it is there. It is idempotent, it costs nothing when the marker already existed, and it removes the read-back entirely. This is the primary rule: construct, do not verify
+  - [ ] **Prefer a `phase:PRx` label.** It is visible in the PR UI, survives body rewrites, and is accepted by the gate (`PHASE_LABEL`), so it makes the body marker non-load-bearing. Where a label is available this whole failure mode goes away
+  - [ ] Do not expect a job re-run to clear a failure once it happens — see the recovery note below
+  - [ ] Do not try to confirm the marker by reading the body through GitHub MCP `pull_request_read` (method `get`): it returns the body with HTML comments **stripped**, so a marker that is really there comes back invisible. This recurred on PR #2857 *after* this entry was written — the returned body began `\n\n## Summary`, the two leading newlines being exactly where `<!-- phase:PR1 -->` sat
+  - [ ] Do not treat the latest `scope-gate` log as evidence about the *current* body either — see below for why it is a post-push confirmation only
+- **Verification commands**: there is no pre-push check here, and that is the point. Two successive
+  attempts to write one were both unsound, so the entry now relies on constructing the marker rather
+  than confirming it.
+  - **Post-push confirmation** — the only sound read. After a push, read the `scope-gate` job log for
+    `Phase scope gate passed for PR1 (source: …)`. `source:` names the declaration the gate actually
+    resolved (`pr_body`, `labels`, or `dispatch`). This is valid evidence **about the commit that
+    triggered that run, not about the body as it stands now**: `roadmap-source-docs.yml` declares
+    `pull_request:` with a `paths:` filter and no `types:` (`:10-20`), so it takes the default activity
+    set — `opened`, `synchronize`, `reopened`. A body-only edit emits `edited`, which triggers nothing,
+    so after such an edit the latest log still describes the *pre-edit* body.
+  - Consequently: after a body-only rewrite the marker's presence is **unverified until the next
+    `synchronize` push**. Treat that push's `scope-gate` as the confirmation. If it errors with
+    `No phase declaration found`, restore the marker and fold it into the next real change — never an
+    empty commit, and never close/reopen (see the recovery note below).
+  - `grep -n "PHASE_BODY\|PHASE_LABEL" tools/roadmap/enforce_phase_scope.py` to confirm the accepted forms.
+  - **Why no pre-push check is listed.** A raw, comment-preserving read of the current body would be
+    the right check, but no tool available in this environment performs one: MCP `pull_request_read`
+    strips HTML comments, and there is no `gh` CLI or direct API access. A human, or an agent with raw
+    API access, should read the body bytes and confirm `<!-- phase:` directly. Everyone else should
+    rely on writing the marker unconditionally.
+  - **The pattern this entry kept repeating, recorded because it outlives the specific bug.** Two
+    consecutive review rounds on PR #2857 found the verification step unsound, each time for a
+    different reason and each time in the *replacement* for the previous one: first it read a
+    sanitized copy of the body (comments stripped), then it read a stale snapshot of it (a log from
+    before the edit). Both answered a question about the past and were treated as answering the
+    present. When a check is hard to get right twice, stop trying to observe the state and make the
+    state unconditional instead.
 - **Source issue**: PR #2857
 - **Status**: mitigated
 - **Fixed in**: Documented here. The recovery is the part worth recording, because the obvious one does not work: `.github/workflows/roadmap-source-docs.yml:74-75` passes `PR_LABELS` and `PR_BODY` from `github.event.pull_request.*`, which is the **event payload captured when the run was triggered**. Re-running the failed job replays that same stale payload, so neither restoring the body marker nor adding a label takes effect on a re-run. Clearing it requires a fresh `pull_request` event, and there are two ways to get one:
