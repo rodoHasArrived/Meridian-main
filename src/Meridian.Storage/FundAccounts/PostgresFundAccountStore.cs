@@ -191,7 +191,19 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         return ReadAccountSummary(reader);
     }
 
-    public async Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsAsync(AccountStructureQuery query, CancellationToken ct = default)
+    public Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsAsync(AccountStructureQuery query, CancellationToken ct = default)
+        => QueryAccountsCoreAsync(query, applyCallerTenantPredicate: true, ct);
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsAcrossTenantsAsync(
+        AccountStructureQuery query,
+        CancellationToken ct = default)
+        => QueryAccountsCoreAsync(query, applyCallerTenantPredicate: false, ct);
+
+    private async Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsCoreAsync(
+        AccountStructureQuery query,
+        bool applyCallerTenantPredicate,
+        CancellationToken ct)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
@@ -257,9 +269,19 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         }
 
         // SEC-005 slice 4c: scope by the account's stamped tenant_id (closes the fund_account_id
-        // alternate-identifier residual).
-        var callerTenant = ResolveCallerTenant();
-        RejectUnscopedRead(callerTenant);
+        // alternate-identifier residual). The predicate is skipped only for the deliberate
+        // cross-tenant enumeration used by the scope fan-out authority, which must see holdings in
+        // every tenant to answer at all.
+        var callerTenant = applyCallerTenantPredicate ? ResolveCallerTenant() : null;
+        if (applyCallerTenantPredicate)
+        {
+            // W9-GOV-008 criterion 2: an ordinary caller whose tenant cannot be resolved is refused
+            // rather than served unfiltered. Deliberately NOT applied to the fan-out path above --
+            // that one arrives through its own named entry point having declared it wants every
+            // tenant, which is a resolved scope, not an unresolvable one. Guarding it here would
+            // refuse the authority outright and it could no longer answer at all.
+            RejectUnscopedRead(callerTenant);
+        }
         if (TenantReadPredicate.ShouldFilter(callerTenant))
         {
             sb.AppendLine(TenantReadPredicate.FilterClause("tenant_id", _tenantScope.Mode));
