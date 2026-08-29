@@ -1038,6 +1038,24 @@ public sealed class StatementIngressLimitsTests : IDisposable
         result.Records.Should().ContainSingle();
     }
 
+    [Fact]
+    public async Task IbFlex_ManyAttributesOnOneElement_AreChargedToTheNodeBudget()
+    {
+        // ReadAsync visits the element node, not its attributes, so counting reader nodes alone left an
+        // attribute-heavy document far below the budget while the tree still allocated an XAttribute plus
+        // a name and value string for each one. This document is six elements and two hundred attributes:
+        // node-only counting sees single digits.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxParseNodes = 30 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("ib-flex-attrs.xml", BuildIbFlexWithManyAttributes(attributeCount: 200)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyNodesCode);
+    }
+
     // ---------------------------------------------------------------------------------------------
     // Harness
     // ---------------------------------------------------------------------------------------------
@@ -1148,6 +1166,26 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     // A Flex report of nothing but trades, so the retained count is exactly two per trade plus the cursor.
+    // One Trade element carrying attributeCount extra attributes. Few elements, many attributes - the
+    // shape that a node-only budget cannot see.
+    private static byte[] BuildIbFlexWithManyAttributes(int attributeCount)
+    {
+        var builder = new StringBuilder()
+            .Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+            .Append("<FlexQueryResponse queryName=\"Meridian Daily Statement\" type=\"AF\"><FlexStatements count=\"1\">")
+            .Append("<FlexStatement accountId=\"U1234567\" fromDate=\"2026-06-01\" toDate=\"2026-06-30\"><Trades>")
+            .Append("<Trade accountId=\"U1234567\" symbol=\"AAPL\" quantity=\"100\" tradePrice=\"187.25\" ")
+            .Append("netCash=\"-18725\" tradeDate=\"20260602\" tradeID=\"7001001\" currency=\"USD\" buySell=\"BUY\"");
+
+        for (var index = 0; index < attributeCount; index++)
+        {
+            builder.Append($" pad{index:D6}=\"x\"");
+        }
+
+        return Encoding.UTF8.GetBytes(
+            builder.Append(" /></Trades></FlexStatement></FlexStatements></FlexQueryResponse>").ToString());
+    }
+
     private static byte[] BuildIbFlexWithTrades(int tradeCount)
     {
         var builder = new StringBuilder()

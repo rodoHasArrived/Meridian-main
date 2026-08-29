@@ -32,6 +32,9 @@ program:
   active_productization_targets:
     - W8-WPF-PARITY-001
     - W8-UX-CONSOL-001
+    - W9-SAFETY-007
+    - W9-GOV-008
+    - W9-INGEST-009
   current_focus:
     - Data confidence and retained source evidence
     - Portfolio and accounting reconciliation

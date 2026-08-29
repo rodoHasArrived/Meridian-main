@@ -145,7 +145,14 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                 while (await scanReader.ReadAsync().ConfigureAwait(false))
                 {
                     ct.ThrowIfCancellationRequested();
-                    nodes++;
+
+                    // The element AND its attributes. ReadAsync visits the element node only, so a
+                    // document putting hundreds of thousands of attributes on one valid element stayed far
+                    // below this budget while XDocument.LoadAsync still materialized an XAttribute plus a
+                    // name and value string for every one. Camt053StatementConnector.TryReadBoundedSubtree
+                    // has charged AttributeCount since it was written; this pre-scan is newer and did not
+                    // reuse that accounting.
+                    nodes += 1 + scanReader.AttributeCount;
                     if (nodes > _limits.MaxParseNodes)
                     {
                         issues.Add(_limits.TooManyNodes());
