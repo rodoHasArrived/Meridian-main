@@ -408,6 +408,19 @@
       "Last Reviewed": "2026-08-29"
     },
     {
+      "ID": "W10-DEBT-001",
+      "Wave": "W10",
+      "Title": "God-file burn-down against the file-size ratchet",
+      "Workspaces": "",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "medium",
+      "Owner Lane": "Workstation Shell and UX",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "docs/development/god-file-burn-down-plan.md",
+      "Last Reviewed": "2026-08-29"
+    },
+    {
       "ID": "W10-MARK-001",
       "Wave": "W10",
       "Title": "Fail-closed stale-mark policy and mark-age surfacing",

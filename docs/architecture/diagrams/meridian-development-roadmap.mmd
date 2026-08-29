@@ -56,8 +56,10 @@ flowchart LR
   W9_INGEST_009 --> W9_ASSET_010
   W9_CORPACT_011["W9-CORPACT-011\nW9 - accepted / green"]
   W9_ASSET_010 --> W9_CORPACT_011
+  W10_DEBT_001["W10-DEBT-001\nW10 - planned / green"]
+  W9_CORPACT_011 --> W10_DEBT_001
   W10_MARK_001["W10-MARK-001\nW10 - planned / green"]
-  W9_CORPACT_011 --> W10_MARK_001
+  W10_DEBT_001 --> W10_MARK_001
   W10_RECON_001["W10-RECON-001\nW10 - planned / green"]
   W10_MARK_001 --> W10_RECON_001
   W10_PROV_001["W10-PROV-001\nW10 - planned / green"]

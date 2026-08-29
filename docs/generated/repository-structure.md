@@ -3534,6 +3534,7 @@ Meridian-main
 │   │   │   │   ├── CorporateActionIngestOrchestrator.cs
 │   │   │   │   ├── CorporateActionOperationsService.cs
 │   │   │   │   ├── CorporateActionRestatementTrigger.cs
+│   │   │   │   ├── CorporateActionScopeFanOutGate.cs
 │   │   │   │   ├── CorporateActionValidation.cs
 │   │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
 │   │   │   │   ├── SecurityMasterCorporateActionCommandService.cs
@@ -3638,6 +3639,9 @@ Meridian-main
 │   │   │   │   ├── TemplateService.cs
 │   │   │   │   └── WatchlistService.cs
 │   │   │   └── SubscriptionOrchestrator.cs
+│   │   ├── Tenancy
+│   │   │   ├── AuthoritativeScopeFanOutService.cs
+│   │   │   └── FundAccountHoldingScopeAssignmentProvider.cs
 │   │   ├── Wizard
 │   │   │   ├── Core
 │   │   │   │   ├── IWizardStep.cs
@@ -4067,6 +4071,7 @@ Meridian-main
 │   │   ├── StrategyEngine
 │   │   │   └── StrategyEngineContracts.cs
 │   │   ├── Tenancy
+│   │   │   ├── AuthoritativeScopeFanOut.cs
 │   │   │   ├── FundProfileTenancy.cs
 │   │   │   ├── FundScopedWriteTenantGate.cs
 │   │   │   └── TenantReadPredicate.cs
@@ -9957,6 +9962,10 @@ Meridian-main
 │   │   │   ├── OpenFigiClientAmbiguityTests.cs
 │   │   │   ├── OpenFigiClientTests.cs
 │   │   │   └── SymbolSearchServiceTests.cs
+│   │   ├── Tenancy
+│   │   │   ├── AuthoritativeScopeFanOutServiceTests.cs
+│   │   │   ├── CorporateActionScopeFanOutGateTests.cs
+│   │   │   └── FundAccountHoldingScopeAssignmentProviderTests.cs
 │   │   ├── TestData
 │   │   │   └── Golden
 │   │   │       ├── statement-connectors

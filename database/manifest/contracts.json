@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "4996c7d6dadce5c8cf2f5bd3a40be617c252b11fd26f859d557bcf3b30da6465",
+      "fingerprint": "1a27a2acc5b879ebdaa290af78afca92c6370324cda5f7a132fdc0ac1ef5395a",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1679,11 +1679,18 @@
         "Meridian.Contracts.StrategyEngine.StrategyEngineValidationFinding",
         "Meridian.Contracts.StrategyEngine.StrategyEngineValidationResult",
         "Meridian.Contracts.StrategyEngine.StrategyEngineValidationSeverity",
+        "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment",
         "Meridian.Contracts.Tenancy.FundProfileOwnership",
         "Meridian.Contracts.Tenancy.FundScopedWriteTenantDecision",
         "Meridian.Contracts.Tenancy.FundScopedWriteTenantGate",
+        "Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService",
         "Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry",
         "Meridian.Contracts.Tenancy.IFundScopeTenantAccessor",
+        "Meridian.Contracts.Tenancy.IScopeAssignmentProvider",
+        "Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult",
+        "Meridian.Contracts.Tenancy.ScopeFanOutIdentifier",
+        "Meridian.Contracts.Tenancy.ScopeFanOutRequest",
+        "Meridian.Contracts.Tenancy.ScopeFanOutResult",
         "Meridian.Contracts.Tenancy.TenantReadPredicate",
         "Meridian.Contracts.Text.TextPrimitives",
         "Meridian.Contracts.Treasury.MmfDetailDto",
@@ -3729,7 +3736,7 @@
       ]
     }
   ],
-  "fingerprint": "72acb26bc44e80c3db69df8dbb4192061dbfe3f3927a637c20cf4a8493999729",
+  "fingerprint": "aa78bfbd32800c93f5cc9e771ccfd1a0f8b3024d2a54eacbf4db5a900b0ac63c",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5936,15 +5943,22 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "5739aeca19679861576be6c1466e7cd35a9e7b51dead397be98f01ac50aac210",
+      "fingerprint": "9e6f79b109a1825cfa93159682514aa02581284989b86501c3b8fc23c91f86d1",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Tenancy",
       "object_ids": [
+        "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment",
         "Meridian.Contracts.Tenancy.FundProfileOwnership",
         "Meridian.Contracts.Tenancy.FundScopedWriteTenantDecision",
         "Meridian.Contracts.Tenancy.FundScopedWriteTenantGate",
+        "Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService",
         "Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry",
         "Meridian.Contracts.Tenancy.IFundScopeTenantAccessor",
+        "Meridian.Contracts.Tenancy.IScopeAssignmentProvider",
+        "Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult",
+        "Meridian.Contracts.Tenancy.ScopeFanOutIdentifier",
+        "Meridian.Contracts.Tenancy.ScopeFanOutRequest",
+        "Meridian.Contracts.Tenancy.ScopeFanOutResult",
         "Meridian.Contracts.Tenancy.TenantReadPredicate"
       ]
     },
@@ -232761,6 +232775,246 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
+      "fingerprint": "8b018337a61efc4e1f68c9dd116c4605ad95e5c6e93c7387f216b62a45ebf8d9",
+      "full_name": "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment",
+      "id": "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountingBasis",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 28,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AuthorityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 19,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CompanyId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 18,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CustodyAccountId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 25,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FinancialAccountId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 23,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FunctionalCurrency",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 29,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundProfileId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 22,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Jurisdiction",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 30,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LedgerBookId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 26,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PeriodId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 27,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PortfolioId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 24,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ResolvedAsOfUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 20,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StructureNodeId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 21,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TenantId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 17,
+          "type": "string"
+        }
+      ],
+      "name": "AuthoritativeScopeAssignment",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment",
+      "references": [],
+      "source": {
+        "line": 16,
+        "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+      },
+      "sources": [
+        {
+          "line": 16,
+          "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
       "fingerprint": "3fe561dff910baaa0a12b3320f7e09ef0b5615fd4a2b21c279282ddebe72e0e2",
       "full_name": "Meridian.Contracts.Tenancy.FundProfileOwnership",
       "id": "Meridian.Contracts.Tenancy.FundProfileOwnership",
@@ -232922,6 +233176,39 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
+      "fingerprint": "f1bad5a458ccf6dd13d6dc9abf4250c63cac489f1b7b24ec1c2749c1882877d7",
+      "full_name": "Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService",
+      "id": "Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IAuthoritativeScopeFanOutService",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService",
+      "references": [],
+      "source": {
+        "line": 121,
+        "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+      },
+      "sources": [
+        {
+          "line": 121,
+          "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
       "fingerprint": "bfdf2b4e3c4268ad454af6eb61ce9b12a4c5c7d8ba7c90cd7f151eb6ec745b6c",
       "full_name": "Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry",
       "id": "Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry",
@@ -232974,6 +233261,335 @@
         {
           "line": 52,
           "path": "src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "14e9df192299cf633f203a5e168bc47ac3023a1ee19d2aeb10d5933a2d4c6032",
+      "full_name": "Meridian.Contracts.Tenancy.IScopeAssignmentProvider",
+      "id": "Meridian.Contracts.Tenancy.IScopeAssignmentProvider",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IScopeAssignmentProvider",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.IScopeAssignmentProvider",
+      "references": [],
+      "source": {
+        "line": 149,
+        "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+      },
+      "sources": [
+        {
+          "line": 149,
+          "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "result",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "85e78c443118b0ea8bce7e3c6ac8287241c395a84c04b623c630d92abeb54749",
+      "full_name": "Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult",
+      "id": "Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Blockers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 171,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsAuthoritative",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 169,
+          "type": "bool"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "AuthoritativeScopeAssignment",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Scopes",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<AuthoritativeScopeAssignment>",
+          "source_line": 170,
+          "type": "IReadOnlyList<AuthoritativeScopeAssignment>"
+        }
+      ],
+      "name": "ScopeAssignmentProviderResult",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult",
+      "references": [
+        "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment"
+      ],
+      "source": {
+        "line": 168,
+        "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+      },
+      "sources": [
+        {
+          "line": 168,
+          "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "c37715402e223dafb90d061bf96311fb0730a1ae1538edf56636afb99ab820ad",
+      "full_name": "Meridian.Contracts.Tenancy.ScopeFanOutIdentifier",
+      "id": "Meridian.Contracts.Tenancy.ScopeFanOutIdentifier",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IdentifierType",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 66,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Value",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 66,
+          "type": "string"
+        }
+      ],
+      "name": "ScopeFanOutIdentifier",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.ScopeFanOutIdentifier",
+      "references": [],
+      "source": {
+        "line": 66,
+        "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+      },
+      "sources": [
+        {
+          "line": 66,
+          "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "request",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "1b7d3355c51a5b9640008af9cb7cb914a9e51861f4e1389b7eba7e0843633610",
+      "full_name": "Meridian.Contracts.Tenancy.ScopeFanOutRequest",
+      "id": "Meridian.Contracts.Tenancy.ScopeFanOutRequest",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EffectiveDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 81,
+          "type": "DateOnly"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "ScopeFanOutIdentifier",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Identifiers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<ScopeFanOutIdentifier>",
+          "source_line": 80,
+          "type": "IReadOnlyList<ScopeFanOutIdentifier>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 79,
+          "type": "Guid"
+        }
+      ],
+      "name": "ScopeFanOutRequest",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.ScopeFanOutRequest",
+      "references": [
+        "Meridian.Contracts.Tenancy.ScopeFanOutIdentifier"
+      ],
+      "source": {
+        "line": 78,
+        "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+      },
+      "sources": [
+        {
+          "line": 78,
+          "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "result",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "1cdc75b5e8da411f35738b516691b2e1e3749430aa84e63f00fa2eba36edb4ed",
+      "full_name": "Meridian.Contracts.Tenancy.ScopeFanOutResult",
+      "id": "Meridian.Contracts.Tenancy.ScopeFanOutResult",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Blockers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 100,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsAuthoritative",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 98,
+          "type": "bool"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "AuthoritativeScopeAssignment",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Scopes",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<AuthoritativeScopeAssignment>",
+          "source_line": 99,
+          "type": "IReadOnlyList<AuthoritativeScopeAssignment>"
+        }
+      ],
+      "name": "ScopeFanOutResult",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.ScopeFanOutResult",
+      "references": [
+        "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment"
+      ],
+      "source": {
+        "line": 97,
+        "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+      },
+      "sources": [
+        {
+          "line": 97,
+          "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
         }
       ],
       "type_parameters": []
