@@ -851,6 +851,39 @@ Completed 2026-07-28. One evidence-backed Asset Accounting Event Spine covers ac
 - `SRC-STORAGE`
 - `SRC-UI-SHARED`
 
+## W10-DEBT-001 - God-file burn-down against the file-size ratchet
+| Field | Value |
+| --- | --- |
+| Wave | W10 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Workstation Shell and UX |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-08-29 |
+
+### Current Summary
+
+Adopts the burn-down targets proposed in docs/development/god-file-burn-down-plan.md as tracked scope. Registered alongside the W10 depth slate rather than as a rank within it, because this is engineering hygiene against ADR-017 and ADR-018 rather than product capability; it carries no sequence, does not compete with W10-MARK-001 through W10-CONSOL-001 for delivery order, and sits outside the program scope gate, which governs new product work. Measured at registration on 2026-08-29 the ratchet tracks 50 files totalling 168,123 current lines against 171,262 capped lines. The debt concentrates in the workstation surfaces, which is why this lane owns it, with 21 files in the browser dashboard and 15 in the shared UI layer making up 72 percent of the count; the item is nonetheless repo-wide and also covers Financial Operations with 7, the WPF desktop with 4, and one file each in Application, Execution, and Storage. Containment is already complete, since the ratchet blocks new god files and caps existing ones and --relax-baseline in PR
+
+### Exit Criteria
+
+- At least two files are retired from the baseline entirely per release, with files retired as the headline metric rather than lines removed. A file counts as retired only when it leaves by genuine decomposition, so relocating bulk into a new file that is itself near the threshold moves the debt rather than reducing it and does not count.
+- Total current lines across baselined files fall by 15 percent per quarter, measured against the 168,123 recorded at registration. Reduction is measured on current lines rather than capped lines because caps now include deliberate working headroom, so measuring on caps would read a relaxation as regression and a tightening as progress when neither changed any code.
+- Every reduction is locked in with --tighten-baseline in the same change that achieves it, so caps follow the code down instead of leaving room to grow back.
+- Relaxing the baseline is never the mechanism by which a target is met. Granted headroom is recorded in the baseline and excluded from the reclaimable figure precisely so it cannot read as progress, and a relax run must not coincide with a claimed reduction.
+- Roadmap status remains planned until this row links concrete evidence for retired baseline entries and for the measured reduction, rather than the plan document alone.
+
+### Source Modules
+
+- `SRC-UI-DASHBOARD`
+- `SRC-UI-SHARED`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-WPF`
+- `SRC-APP`
+- `SRC-EXECUTION`
+- `SRC-STORAGE`
+
 ## W10-MARK-001 - Fail-closed stale-mark policy and mark-age surfacing
 | Field | Value |
 | --- | --- |
