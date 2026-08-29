@@ -71,14 +71,6 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Meridian",
                 "fund-structure.json")));
-        // The desktop lane registers the unpartitioned in-memory fund structure itself and never
-        // calls AddWorkstationSharedServices, so the multi-company refusal that lane's own guard
-        // exists for was registered only for the browser workstation -- the desktop started and
-        // served one shared graph across companies regardless. Registered here, beside the store it
-        // guards, because that is what makes the two go together rather than depend on a composition
-        // root the desktop does not use.
-        services.AddHostedService<InMemoryFundStructureTenancyGuard>();
-
         services.AddSingleton<FundStructureSetupWorkflowService>();
         services.AddSingleton<FundAccountReadService>();
         services.AddSingleton<FundLedgerReadService>();
