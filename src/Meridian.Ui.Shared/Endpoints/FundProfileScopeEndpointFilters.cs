@@ -3,6 +3,7 @@ using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -165,10 +166,29 @@ public static class FundProfileScopeEndpointFilters
             return false;
         }
 
-        var ownership = await registry
-            .ResolveAsync(fundProfileId, httpContext.RequestAborted)
-            .ConfigureAwait(false);
-        return ownership?.IsHeldBy(tenant.TenantId) == true;
+        try
+        {
+            var ownership = await registry
+                .ResolveAsync(fundProfileId, httpContext.RequestAborted)
+                .ConfigureAwait(false);
+            return ownership?.IsHeldBy(tenant.TenantId) == true;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // A registry that is registered but unreachable is the unavailable-authority case, not a
+            // server fault: letting it escape here returns 500 and contradicts this filter's own
+            // contract, which is that an authority it cannot consult produces a refusal. Reported as
+            // "not owned" so the caller gets the fail-closed 403 the mode promises.
+            httpContext.RequestServices
+                .GetService<ILoggerFactory>()
+                ?.CreateLogger(typeof(FundProfileScopeEndpointFilters))
+                .LogWarning(
+                    ex,
+                    "Fund profile tenancy registry could not be consulted for {FundProfileId}; "
+                    + "treating ownership as unproven.",
+                    fundProfileId);
+            return false;
+        }
     }
 
     private static IResult Refuse(HttpContext httpContext, string detail)

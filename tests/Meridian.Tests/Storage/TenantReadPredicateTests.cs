@@ -123,3 +123,51 @@ public sealed class TenantReadPredicateTests
     public void ParameterName_IsStable()
         => TenantReadPredicate.ParameterName.Should().Be("caller_tenant");
 }
+
+/// <summary>
+/// The deployment switch that selects the tenant-scope posture (W9-GOV-008 criterion 2).
+/// </summary>
+/// <remarks>
+/// Absent and misspelled are deliberately different answers. Saying nothing is a deployment that has
+/// not chosen, so it inherits the default. Saying something unrecognised is a deployment that HAS
+/// chosen and been misheard — and since the default is the open posture, quietly falling back would
+/// start a shared deployment with its data exposed, by an operator who believed they had closed it.
+/// </remarks>
+public sealed class TenantScopeEnforcementOptionsTests
+{
+    [Theory]
+    [InlineData("fail-closed")]
+    [InlineData("failclosed")]
+    [InlineData("closed")]
+    [InlineData("strict")]
+    [InlineData("  Fail-Closed  ")]
+    public void ARecognisedFailClosedValue_SelectsFailClosed(string value)
+        => TenantScopeEnforcementOptions
+            .FromEnvironmentValue(value, TenantScopeEnforcementOptions.DeploymentBoundary)
+            .IsFailClosed.Should().BeTrue();
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void AnAbsentValue_KeepsTheFallback(string? value)
+        => TenantScopeEnforcementOptions
+            .FromEnvironmentValue(value, TenantScopeEnforcementOptions.FailClosed)
+            .IsFailClosed.Should().BeTrue("an unset switch inherits the deployment's default");
+
+    [Theory]
+    [InlineData("fail_closed")]
+    [InlineData("failclosd")]
+    [InlineData("true")]
+    [InlineData("enabled")]
+    public void APresentButUnrecognisedValue_IsRefusedRatherThanDowngraded(string value)
+    {
+        // The dangerous direction: silently falling back here hands the operator the OPEN posture
+        // while they believe they closed it.
+        var parse = () => TenantScopeEnforcementOptions
+            .FromEnvironmentValue(value, TenantScopeEnforcementOptions.DeploymentBoundary);
+
+        parse.Should().Throw<ArgumentException>().WithMessage($"*{value}*");
+    }
+}
+

@@ -135,8 +135,16 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         var head = await LockAndReadChainHeadAsync(connection, transaction, ct).ConfigureAwait(false);
         await VerifyChainHeadAsync(connection, transaction, head, ct).ConfigureAwait(false);
 
-        var payloadHash = AccountingAuditChain.ComputePayloadHash(auditEvent);
+        // Digest the event as it will actually be stored, not as it arrived. AddTextOrNull trims and
+        // nulls blank text, so hashing the raw DTO records a digest of a value the row does not hold:
+        // the append commits, and the next append -- which recomputes the payload digest from the
+        // retained row -- reports EventMutated and refuses, permanently stopping the chain over an
+        // event nobody touched. Normalizing once, here, is what keeps "what was hashed" and "what was
+        // written" the same string.
+        var normalized = NormalizeForPersistence(auditEvent);
+        var payloadHash = AccountingAuditChain.ComputePayloadHash(normalized);
         var entryHash = AccountingAuditChain.ComputeEntryHash(head.NextSequence, head.LastHash, payloadHash);
+        auditEvent = normalized;
 
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
@@ -861,6 +869,32 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
     private static void AddTextOrNull(NpgsqlCommand command, string name, string? value)
         => command.Parameters.AddWithValue(name, string.IsNullOrWhiteSpace(value) ? DBNull.Value : value.Trim());
+
+    /// <summary>
+    /// Applies <see cref="AddTextOrNull"/>'s rule to the event itself, so the payload digest covers
+    /// the values the row will hold.
+    /// </summary>
+    /// <remarks>
+    /// The chain digest and the parameter binding must agree on every field, or an event stored with
+    /// a trimmed actor is read back as mutated. The collections need no equivalent: the digest
+    /// already folds null and empty together, which is how <c>ReadAuditEvent</c> materializes them.
+    /// </remarks>
+    private static AccountingActionAuditEventDto NormalizeForPersistence(
+        AccountingActionAuditEventDto auditEvent)
+        => auditEvent with
+        {
+            Actor = NormalizeStored(auditEvent.Actor) ?? auditEvent.Actor,
+            Action = NormalizeStored(auditEvent.Action) ?? auditEvent.Action,
+            FundProfileId = NormalizeStored(auditEvent.FundProfileId),
+            CorrelationId = NormalizeStored(auditEvent.CorrelationId),
+            BeforeHash = NormalizeStored(auditEvent.BeforeHash) ?? auditEvent.BeforeHash,
+            AfterHash = NormalizeStored(auditEvent.AfterHash) ?? auditEvent.AfterHash,
+            TenantId = NormalizeStored(auditEvent.TenantId),
+            CompanyId = NormalizeStored(auditEvent.CompanyId),
+        };
+
+    private static string? NormalizeStored(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void AddUuidOrNull(NpgsqlCommand command, string name, Guid? value)
         => command.Parameters.AddWithValue(name, value.HasValue ? value.Value : DBNull.Value);

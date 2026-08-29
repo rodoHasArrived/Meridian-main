@@ -49,21 +49,38 @@ public sealed record TenantScopeEnforcementOptions(TenantScopeEnforcementMode Mo
     public bool IsFailClosed => Mode == TenantScopeEnforcementMode.FailClosed;
 
     /// <summary>
-    /// Parses the deployment switch. An unrecognised or absent value keeps the current default
-    /// rather than guessing, because both directions of guess are harmful: guessing fail-closed on
-    /// an unattributed database hides its data, and guessing open on a shared one keeps the leak.
+    /// Parses the deployment switch. An <b>absent</b> value keeps the current default; a value that
+    /// is present but unrecognised is refused.
     /// </summary>
+    /// <remarks>
+    /// The two cases are deliberately not the same, though it is tempting to fold them together.
+    /// Saying nothing is a deployment that has not chosen, and inheriting the default is right.
+    /// Saying <c>fail_closed</c> or <c>failclosd</c> is a deployment that <i>has</i> chosen and been
+    /// misheard — and because the default is the open posture, silently falling back would start a
+    /// shared deployment with unattributed rows and tenantless reads exposed, by an operator who
+    /// believed they had closed it. A refusal at startup is loud, immediate, and trivially fixed; a
+    /// silent downgrade of a security posture is none of those.
+    /// </remarks>
+    /// <exception cref="ArgumentException">The value is present but not a recognised posture.</exception>
     public static TenantScopeEnforcementOptions FromEnvironmentValue(
         string? value,
         TenantScopeEnforcementOptions fallback)
     {
         ArgumentNullException.ThrowIfNull(fallback);
 
-        return value?.Trim().ToLowerInvariant() switch
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        return value.Trim().ToLowerInvariant() switch
         {
             "fail-closed" or "failclosed" or "closed" or "strict" => FailClosed,
             "deployment-boundary" or "deploymentboundary" or "boundary" or "open" => DeploymentBoundary,
-            _ => fallback,
+            _ => throw new ArgumentException(
+                $"{EnvironmentVariable} is set to '{value.Trim()}', which is not a recognised tenant "
+                + "scope posture. Use 'fail-closed' or 'deployment-boundary'.",
+                nameof(value)),
         };
     }
 }

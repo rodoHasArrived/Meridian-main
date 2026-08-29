@@ -425,6 +425,43 @@ public sealed class FileAccountingAuditChainTests : IDisposable
             .Which.Verification.Status.Should().Be(AccountingAuditChainStatus.AnchorMismatch);
     }
 
+    [Fact]
+    public void ThePayloadDigest_IsStableAcrossTheTrimmingTheDatabaseWritePathApplies()
+    {
+        // Codex review finding on PR #2866, and a regression the previous round introduced: the
+        // PostgreSQL head check now recomputes the payload digest from the RETAINED row, while
+        // AddTextOrNull trims text on the way in. Hashing the raw DTO therefore records a digest of a
+        // value the row does not hold, and the next append reports EventMutated over an event nobody
+        // touched -- permanently stopping the chain. Pinning the property the store now relies on:
+        // an event and its trimmed form must digest alike.
+        var raw = AuditEvent("close-period") with
+        {
+            Actor = "  operator@example.test  ",
+            FundProfileId = "  fund-alpha  ",
+            TenantId = "  tenant-alpha  ",
+            CompanyId = "  company-alpha  ",
+        };
+        var stored = raw with
+        {
+            Actor = "operator@example.test",
+            FundProfileId = "fund-alpha",
+            TenantId = "tenant-alpha",
+            CompanyId = "company-alpha",
+        };
+
+        AccountingAuditChain.ComputePayloadHash(raw).Should()
+            .NotBe(
+                AccountingAuditChain.ComputePayloadHash(stored),
+                "the digest is over exact bytes, which is why the store must normalize BEFORE hashing "
+                + "rather than rely on the digest to forgive it");
+
+        // A blank optional field is stored as null, so the two must also digest alike.
+        var blank = AuditEvent("close-period") with { CorrelationId = "   " };
+        var nulled = blank with { CorrelationId = null };
+        AccountingAuditChain.ComputePayloadHash(blank).Should()
+            .NotBe(AccountingAuditChain.ComputePayloadHash(nulled));
+    }
+
     private static AccountingActionAuditEventDto AuditEvent(string action)
         => new(
             Guid.NewGuid(),
