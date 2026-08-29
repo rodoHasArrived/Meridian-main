@@ -254,6 +254,18 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                         : [];
             foreach (var accountInformation in accountSnapshotAnchors)
             {
+                // Snapshots are retained evidence too, and BuildAccountSnapshot rescans the statement's
+                // descendants for cash and margin evidence on every call - so an unbounded snapshot count
+                // is quadratic in CPU as well as linear in retained DTOs. Charging them to the shared
+                // budget bounds both. My previous sweep covered commission, open-lot and borrow rows and
+                // missed this one because it accumulates into yet another collection.
+                evidenceRows++;
+                if (rowNumber + evidenceRows > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "AccountInformation");
                 CollectAttributeNames(accountInformation, detectedColumns);
                 accountSnapshots.Add(BuildAccountSnapshot(statement, accountInformation, statementAccountId, profile));

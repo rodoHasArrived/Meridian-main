@@ -163,13 +163,14 @@ means the capability exists in source with tests but is not the wired operator p
 | --- | --- | --- |
 | Sided statement-vs-ledger reconciliation matching (`StatementMatchingEngine`, `src/Meridian.FinancialOperations/`) | Supported foundation; live path still uses a weaker per-row check | `W9-INGEST-009` |
 | Institutional bank formats (`Bai2StatementConnector`, `Camt053StatementConnector`, `src/Meridian.FinancialOperations/Reconciliation/Connectors/`) | Supported foundation in source; registry acceptance planned | `W9-INGEST-009` |
-| Client-grade PDF/XLSX rendering (`ClientGradeReportRenderer`, `FinancialReportDocumentRenderer`, `src/Meridian.Documents/`) | Supported foundation; production path still emits text-grade artifacts | `W9-REPORT-005` |
-| Unitized NAV, fee accruals with hurdles, European waterfall, preferred return, clawback, equalization (`NavPerUnitCalculator`, `EuropeanDistributionWaterfall`, `PreferredReturnCalculator`, `CarriedInterestClawbackCalculator`, `EqualizationCalculator`, `src/Meridian.Ledger/`) | Supported foundation; not yet the wired economics path | `W9-NAV-006` |
-| Broker fill streaming into order and ledger state (`AlpacaBrokerageGateway`, `src/Meridian.Execution/`) | Supported foundation; live fill loop incomplete | `W9-ALPACA-004` |
-| Realistic fill and cost models (`MarketImpactFillModel`, `OrderBookFillModel`, commission models, `src/Meridian.Backtesting/`) | Implemented for backtests; paper trading must adopt them | `W9-PAPER-003` |
+| Client-grade PDF/XLSX rendering (`ClientGradeReportRenderer`, `FinancialReportDocumentRenderer`, `src/Meridian.Documents/`) | Activated; deterministic PDF/XLSX is the certified reporting path, with the bespoke partners-capital layout delivered. Accepted 2026-08-29 (`DEC-W9-ACCEPTANCE-001`) | `W9-REPORT-005` |
+| Unitized NAV, fee accruals with hurdles, European waterfall, preferred return, clawback, equalization (`NavPerUnitCalculator`, `EuropeanDistributionWaterfall`, `PreferredReturnCalculator`, `CarriedInterestClawbackCalculator`, `EqualizationCalculator`, `src/Meridian.Ledger/`) | Activated; ledger-backed economics with golden-file worked examples. Accepted 2026-08-29 (`DEC-W9-ACCEPTANCE-001`) | `W9-NAV-006` |
+| Broker fill streaming into order and ledger state (`AlpacaBrokerageGateway`, `src/Meridian.Execution/`) | Implementation verified complete; held at the 2026-08-29 acceptance review over three recorded caveats on the fill-to-ledger path | `W9-ALPACA-004` |
+| Realistic fill and cost models (`MarketImpactFillModel`, `OrderBookFillModel`, commission models, `src/Meridian.Backtesting/`) | Activated; both paper gateways match and cost through the shared documented policy. Accepted 2026-08-29 (`DEC-W9-ACCEPTANCE-001`) | `W9-PAPER-003` |
 | Kill-switch, cancel-all, and pre-trade notional/collar controls | Partial foundation; WPF safety surfaces must be wired or visibly demoted | `W9-SAFETY-007` |
 | Hash-chained audit for the accounting ledger; route-level authorization; fail-closed tenancy (`AuditChainService` exists for storage; the journal ledger chain and blanket route coverage do not) | Partial foundation | `W9-GOV-008` |
 | Asset accounting event spine with atomic lot posting (`AssetAccountingEventSpineService`, `src/Meridian.FinancialOperations/Ledger/`) | Complete | `W9-ASSET-010` |
+| Corporate action approval and posting lane (`CorporateActionOperationsService`, `PostgresCorporateActionOperationsStore`, `src/Meridian.FinancialOperations/`) | Ingest, case operations, and accounting projection are delivered and accepted; the approval lane is modelled in the contract but unreachable in the shipped implementation, so no case can reach `ReadyForApproval` or any later state | `W9-CORPACT-011` |
 | Operational Evidence Graph as a shared product surface | Planned; explorer, proof-drawer, and manifest primitives exist | `W5X-OEG-001` |
 
 Rules of the doctrine:
@@ -1467,7 +1468,7 @@ evidence defined in `docs/product/deferred-expansion-boundaries.md`): native liv
 execution; full alternative-asset operations beyond the accepted multi-asset baseline; enterprise
 risk; forecasting and scenario engines; complex capital-structure modeling; broad administration
 dashboards; broader self-service reporting and analytics beyond the governed platform baseline
-(including planned `W9-REPORT-005` client-grade output work); broad client portal; no-code workflow
+(`W9-REPORT-005` client-grade output is delivered and accepted; what remains deferred is self-service reporting and analytics beyond it); broad client portal; no-code workflow
 designer; document-portal collaboration beyond the Evidence Vault boundary; broad collaboration
 tooling; mobile (closed).
 

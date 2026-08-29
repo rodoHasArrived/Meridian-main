@@ -128,7 +128,13 @@ public sealed class StatementImportService(
 
         var parse = await connector.ParseAsync(document, ct).ConfigureAwait(false);
         var issues = new List<StatementParseIssue>();
-        if (parse.Records.Count > _ingressLimits.MaxRecords)
+        // TotalRetainedRows, not Records.Count. Five evidence-only collections on the parse result -
+        // account snapshots, activity events, activity cursors, tax lots, borrow positions - never
+        // contribute to Records, so a connector could return one canonical row alongside hundreds of
+        // thousands of evidence rows, pass this cap, and have every one of them serialized into the
+        // retained artifact. Bounding the total makes the cap a property of this seam rather than of
+        // whichever loops each connector happens to guard, and it covers connectors added later.
+        if (parse.TotalRetainedRows > _ingressLimits.MaxRecords)
         {
             issues.Add(_ingressLimits.TooManyRecords());
         }
@@ -182,7 +188,7 @@ public sealed class StatementImportService(
         // BAI2 refuse mid-parse, but every other connector resolves through this service too, so without
         // this check a format that accumulates rows without counting them could commit a document past
         // the configured bound.
-        if (parse.Records.Count > _ingressLimits.MaxRecords)
+        if (parse.TotalRetainedRows > _ingressLimits.MaxRecords)
         {
             throw new InvalidDataException(
                 $"Statement cannot be imported: {_ingressLimits.TooManyRecords().Message}");
@@ -437,7 +443,7 @@ public sealed class StatementImportService(
         }
 
         var parse = await connector.ParseAsync(document, ct).ConfigureAwait(false);
-        if (parse.Records.Count > _ingressLimits.MaxRecords)
+        if (parse.TotalRetainedRows > _ingressLimits.MaxRecords)
         {
             return new StatementImportValidationResult(
                 false,

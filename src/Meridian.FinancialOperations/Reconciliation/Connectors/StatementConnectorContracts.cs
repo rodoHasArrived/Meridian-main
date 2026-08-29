@@ -130,6 +130,26 @@ public sealed record StatementParseResult(
 {
     public bool HasErrors => Issues.Any(static issue =>
         string.Equals(issue.Severity, StatementParseIssue.ErrorSeverity, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Every row this parse retains, canonical and evidence-only alike. The record cap was applied to
+    /// <see cref="Records"/> alone, which five sibling collections bypass entirely - a connector can
+    /// return one canonical row and hundreds of thousands of tax lots, borrow positions, account
+    /// snapshots, activity events or cursors, stay under the cap, and still have every one of them
+    /// serialized into the retained canonical-evidence artifact.
+    ///
+    /// Bounding this total at the service is what makes the cap a property of the seam rather than of
+    /// whichever loops a connector author remembered to guard. Per-connector guards still matter, because
+    /// they refuse before the allocation happens rather than after; this is the backstop none of them can
+    /// leave open, including connectors written later.
+    /// </summary>
+    public int TotalRetainedRows =>
+        Records.Count
+        + (AccountSnapshots?.Count ?? 0)
+        + (ActivityEvents?.Count ?? 0)
+        + (ActivityCursors?.Count ?? 0)
+        + (TaxLots?.Count ?? 0)
+        + (BorrowPositions?.Count ?? 0);
 }
 
 /// <summary>

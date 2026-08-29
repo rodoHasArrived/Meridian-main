@@ -65,6 +65,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that imports canonical statements, matches rows against Meridian's internal book through the shared sided `StatementMatchingEngine`, and persists linked breaks and case materialization for shared UI consumers. Rows with no internal counterpart — and internal records missing from the statement — surface as genuine breaks instead of self-matches.
 - `Reconciliation/StatementRunMatchingService.cs` - normalizes imported statement rows and projects the sided `StatementMatchingEngine` results into break records and per-row match outcomes for the live workflow; `ToleranceBreached` is computed from the actual variance.
 - `Reconciliation/InternalReconciliationBook.cs` - the internal-book seam (`IInternalReconciliationBookSource`) supplying the positions, cash balances, and ledger transactions a statement run is reconciled against; the default `EmptyInternalReconciliationBookSource` yields honest unmatched breaks until a real source is registered.
+- `Reconciliation/Connectors/StatementIngressLimits.cs` - the single PRD-010 ingress bound shared by
+  every statement connector and by `StatementImportService`, with the named diagnostic codes each
+  refusal carries. Registered once in `Reconciliation/ReconciliationServiceRegistration.cs`.
 - `Reconciliation/Connectors/StatementImportService.cs` - preview and authoritative import-commit
   boundary used by the persisted statement reconciliation report coordinator; a committed import is
   checkpointed before Evidence Vault linkage or JSON/CSV reconciliation artifact retention so
@@ -109,6 +112,46 @@ Use this README to understand the module before editing source files. Update the
 Statement reconciliation also lives here. Broker/custodian statement intake, mapping profiles, validation, duplicate detection, matching, break classification, reconciliation decision journals, statement-run persistence, and durable case materialization are Financial Operations behavior. Application commands and shared UI services invoke the module workflow, but they do not own reconciliation state, matching rules, or statement-run persistence.
 
 The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, uploaded or Web-Service-fetched IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Institutional bank cash statements are also ingested directly by the profile-less ISO 20022 camt.053 and BAI2 connectors (content-sniffed, closing-balance and signed entries mapped straight to canonical records) so most bank statements reconcile without hand-conversion. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. A sibling `canonical-evidence.json` retains provider account margin, activity subtype and cursor completeness, option lifecycle, tax-lot, and securities-borrow evidence without widening the legacy reconciliation CSV seam. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store. Alpaca activity retrieval pages to a bounded complete cursor and fails closed if the provider cannot prove continuity. IB Flex uses the documented v3 request/retrieve flow with bounded polling and trusted-host enforcement. Persisted schedules retain an explicit broker/custodian source classification, support operator run-now and background cadence, and default legacy snapshots to broker; a failed fetch records only the exception type and advances a separate attempt/cadence watermark so provider or configuration failures do not retry every scheduler tick while the last-successful-fetch cursor remains available for recovery.
+
+Statement ingress is bounded (PRD-010). Before this bound a caller-supplied `StatementSourceDocument`
+sized the parse rather than the operator: `Camt053StatementConnector` built a whole-document
+`XDocument` and `Bai2StatementConnector` split the entire payload on newlines, neither enforced a
+record limit, and `StatementImportService` copied the source bytes before a connector was even
+resolved — so the transport-level upload and CLI caps never covered that seam. `StatementIngressLimits`
+is now one record shared by every connector and by the import service, so both refuse the same payload
+and a deployment raises a cap in one place instead of per seam. Connectors refuse mid-parse, before
+the allocation; the import service re-checks on preview, validate, and commit as the backstop no
+connector can leave open — that check counts `StatementParseResult.TotalRetainedRows`, not
+`Records.Count`, because the five evidence-only collections (account snapshots, activity events,
+activity cursors, tax lots, borrow positions) are retained just as durably as canonical records.
+
+`StatementIngressLimits.Default` bounds a document at `StatementConnectorLimits.MaxFileBytes`
+(20 MiB — the statement-specific cap the workstation endpoint and CLI already enforce, deliberately
+not the general 5 MiB data-upload cap, because IB Flex XML exports routinely exceed 5 MiB), 250,000
+retained rows, 64 KiB per line, 64 levels of XML nesting, 50,000 nodes in any one materialized XML
+subtree, and 500,000 parsed nodes per document. Every bound refuses with a named code:
+
+| Code | Bound |
+| --- | --- |
+| `STATEMENT_DOCUMENT_TOO_LARGE` | `MaxDocumentBytes`, checked before the source bytes are copied |
+| `STATEMENT_TOO_MANY_RECORDS` | `MaxRecords`, against total retained rows |
+| `STATEMENT_LINE_TOO_LONG` | `MaxLineBytes`, measured in UTF-8 bytes |
+| `STATEMENT_TOO_MANY_LINES` | the CSV raw-line cap derived from `MaxRecords`, refused before mapping |
+| `STATEMENT_NESTING_TOO_DEEP` | `MaxNestingDepth` |
+| `STATEMENT_SUBTREE_TOO_LARGE` | `MaxSubtreeNodes`, one materialized XML subtree |
+| `STATEMENT_TOO_MANY_NODES` | `MaxParseNodes`, the whole-document node budget |
+
+These messages advise raising the configured limit deliberately. A deployment does that by registering
+its own `StatementIngressLimits` before `AddReconciliationServices`, since registration uses
+`TryAddSingleton(StatementIngressLimits.Default)` and takes the first registration that wins:
+
+```csharp
+services.AddSingleton(StatementIngressLimits.Default with { MaxRecords = 1_000_000 });
+services.AddStatementReconciliationServices();
+```
+
+Raise only the bound that actually refused, and record why: the defaults sit well above any real bank
+statement, so a breach is far more often a malformed or hostile payload than a large one.
 
 The shared Margin Control Center reads retained canonical evidence across providers, accounts, and
 prime brokers. Provider-reported buying power, maintenance margin, excess liquidity, and restriction

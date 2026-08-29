@@ -1,10 +1,12 @@
 using System.Text;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
+using Meridian.Execution.Sdk;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Bai2;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Camt;
+using Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Ofx;
 using Meridian.Infrastructure.Reconciliation;
 using Xunit;
@@ -700,8 +702,232 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     // ---------------------------------------------------------------------------------------------
+    // StatementImportService — the record cap must count evidence rows, not just canonical records
+    // ---------------------------------------------------------------------------------------------
+
+    [Fact]
+    public void TotalRetainedRows_CountsEveryRetainedCollection_NotJustRecords()
+    {
+        // Records was the only collection the cap ever looked at. Five sibling collections are
+        // retained just as durably, so the total is what the bound has to be expressed in.
+        var parse = EvidenceHeavyParse(recordCount: 1, taxLotCount: 4, snapshotCount: 3);
+
+        parse.Records.Should().HaveCount(1);
+        parse.TotalRetainedRows.Should().Be(8);
+    }
+
+    [Fact]
+    public void TotalRetainedRows_TreatsAbsentCollectionsAsEmpty()
+    {
+        // The five evidence collections are optional and default to null; a connector that fills none
+        // of them must total exactly its record count rather than throwing.
+        var parse = EvidenceHeavyParse(recordCount: 3, taxLotCount: 0, snapshotCount: 0);
+
+        parse.AccountSnapshots.Should().BeNull();
+        parse.TaxLots.Should().BeNull();
+        parse.TotalRetainedRows.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task Commit_ParseUnderTheRecordCapButOverItInEvidenceRows_IsRefused()
+    {
+        // The regression this closes: one canonical record and a flood of evidence rows passed a cap
+        // written as Records.Count, and every evidence row was still serialized into the retained
+        // artifact. Six retained rows against a cap of two must refuse.
+        var service = BuildServiceWith(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 2 },
+            new EvidenceHeavyConnector(recordCount: 1, taxLotCount: 5));
+        var document = new StatementSourceDocument("evidence.heavy", "irrelevant"u8.ToArray());
+
+        var act = async () => await service.CommitAsync(CommitRequest(document));
+
+        (await act.Should().ThrowAsync<InvalidDataException>())
+            .Which.Message.Should().Contain("above the ingress limit");
+    }
+
+    [Fact]
+    public async Task Preview_ParseOverTheCapInEvidenceRowsAlone_ReportsTheRecordBound()
+    {
+        var service = BuildServiceWith(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 2 },
+            new EvidenceHeavyConnector(recordCount: 1, taxLotCount: 5));
+        var document = new StatementSourceDocument("evidence.heavy", "irrelevant"u8.ToArray());
+
+        var preview = await service.PreviewAsync(document, connectorId: null);
+
+        preview.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+    }
+
+    [Fact]
+    public async Task Preview_ParseWithEvidenceRowsInsideTheCap_ReportsNoRecordBound()
+    {
+        // The cap counts more than it used to, so it must not now refuse what it used to allow: six
+        // retained rows against a cap of ten stays inside the bound. Asserted through Preview rather
+        // than Commit because a commit that clears the cap goes on to the account-authority guard,
+        // which rejects this synthetic identity - the test would then pass for the wrong reason.
+        var service = BuildServiceWith(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 10 },
+            new EvidenceHeavyConnector(recordCount: 1, taxLotCount: 5));
+        var document = new StatementSourceDocument("evidence.heavy", "irrelevant"u8.ToArray());
+
+        var preview = await service.PreviewAsync(document, connectorId: null);
+
+        preview.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+    }
+
+    [Fact]
+    public async Task Commit_IbFlexSnapshotsBeyondTheCap_AreRefusedByTheSharedTotal()
+    {
+        // A real connector on the same seam. This Flex report holds one trade and five
+        // AccountInformation anchors, so Records.Count is 1 while the retained total is at least 6. The
+        // connector's own 100,000-row guard is far above a document this small; the service bound is
+        // what has to catch it, which is the point of expressing the cap on the parse result.
+        var service = BuildServiceWith(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 2 },
+            new IbFlexStatementConnector(Catalog()));
+        var document = new StatementSourceDocument("ib-flex-many-accounts.xml", BuildIbFlexWithAccountInformation(5));
+
+        var act = async () => await service.CommitAsync(CommitRequest(document));
+
+        (await act.Should().ThrowAsync<InvalidDataException>())
+            .Which.Message.Should().Contain("above the ingress limit");
+    }
+
+    [Fact]
+    public async Task Parse_IbFlexAccountInformationAnchors_AreRetainedAsSnapshots()
+    {
+        // Establishes the count the cap is acting on: the anchors really do become retained snapshot
+        // DTOs that Records never sees, so the previous cap could not have observed them.
+        var connector = new IbFlexStatementConnector(Catalog());
+        var document = new StatementSourceDocument("ib-flex-many-accounts.xml", BuildIbFlexWithAccountInformation(5));
+
+        var result = await connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeFalse();
+        result.Records.Should().HaveCount(1);
+        result.AccountSnapshots.Should().HaveCount(5);
+
+        // Not an exact total: the connector fills all five evidence collections, so the single trade
+        // also yields an activity event and a cursor. Pinning a literal here would pin the connector's
+        // evidence shape rather than the claim under test, which is that the anchors are retained rows
+        // the old Records.Count cap could not see.
+        result.TotalRetainedRows.Should().BeGreaterThan(result.Records.Count);
+        result.TotalRetainedRows.Should().BeGreaterOrEqualTo(result.Records.Count + result.AccountSnapshots!.Count);
+    }
+
+    // ---------------------------------------------------------------------------------------------
     // Harness
     // ---------------------------------------------------------------------------------------------
+
+    // Builds a service around one explicit connector rather than the built-in three, so a test can
+    // hand the service a parse result of a shape no real file format produces on demand.
+    private StatementImportService BuildServiceWith(
+        StatementIngressLimits limits,
+        params IStatementConnector[] connectors)
+    {
+        var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
+        var registry = new StatementConnectorRegistry(connectors);
+        var statementStore = new JsonCanonicalStatementStore(_root);
+        var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
+            statementStore,
+            new JsonReconciliationCaseStore(_root),
+            new JsonReconciliationBreakStore(_root),
+            new CsvBrokerStatementService(statementStore),
+            new StatementReconciliationContextAdapter(new StatementReconciliationService()));
+
+        return new StatementImportService(registry, catalog, workflow, _root, limits);
+    }
+
+    private static StatementParseResult EvidenceHeavyParse(int recordCount, int taxLotCount, int snapshotCount)
+        => new(
+            ConnectorId: EvidenceHeavyConnector.Id,
+            ProfileId: null,
+            DetectedColumns: [],
+            ColumnMappings: [],
+            Records: Enumerable.Range(0, recordCount)
+                .Select(index => new StatementCanonicalRecord(
+                    StatementRecordKind.Transaction,
+                    Account: "FUND-A",
+                    Symbol: "AAPL",
+                    Quantity: 1m,
+                    Price: 100m,
+                    CashAmount: -100m,
+                    ActivityType: "BUY",
+                    TradeDate: new DateOnly(2026, 5, 10),
+                    Currency: "USD",
+                    ExternalTransactionId: $"TXN-{index:D4}"))
+                .ToArray(),
+            Issues: [],
+            Fingerprint: new StatementFormatFingerprint(Sha256: new string('0', 64), NormalizedColumns: [], Delimiter: ","),
+            AccountSnapshots: snapshotCount == 0
+                ? null
+                : Enumerable.Range(0, snapshotCount)
+                    .Select(index => new BrokerageAccountSnapshotDto(
+                        ProviderId: EvidenceHeavyConnector.Id,
+                        AccountId: $"ACCT-{index:D4}",
+                        AsOf: new DateTimeOffset(2026, 5, 31, 0, 0, 0, TimeSpan.Zero),
+                        Currency: "USD",
+                        Status: "active",
+                        MarginRegime: BrokerageMarginRegime.Cash,
+                        Cash: 0m,
+                        Equity: 0m,
+                        BuyingPower: 0m))
+                    .ToArray(),
+            TaxLots: taxLotCount == 0
+                ? null
+                : Enumerable.Range(0, taxLotCount)
+                    .Select(index => new BrokerageTaxLotSnapshotDto(
+                        LotId: $"LOT-{index:D4}",
+                        Symbol: "AAPL",
+                        AcquiredDate: new DateOnly(2026, 5, 1),
+                        Quantity: 1m,
+                        CostBasis: 100m,
+                        Currency: "USD"))
+                    .ToArray());
+
+    // A Flex report whose bulk is AccountInformation anchors rather than trades: one canonical record
+    // and accountCount retained snapshots, which is the shape the record cap used to miss entirely.
+    private static byte[] BuildIbFlexWithAccountInformation(int accountCount)
+    {
+        var builder = new StringBuilder()
+            .Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+            .Append("<FlexQueryResponse queryName=\"Meridian Daily Statement\" type=\"AF\"><FlexStatements count=\"1\">")
+            .Append("<FlexStatement accountId=\"U1234567\" fromDate=\"2026-06-01\" toDate=\"2026-06-30\">")
+            .Append("<Trades><Trade accountId=\"U1234567\" symbol=\"AAPL\" quantity=\"100\" tradePrice=\"187.25\" ")
+            .Append("netCash=\"-18725\" tradeDate=\"20260602\" settleDateTarget=\"20260604\" ibCommission=\"-1.05\" ")
+            .Append("tradeID=\"7001001\" currency=\"USD\" buySell=\"BUY\" /></Trades>");
+
+        for (var index = 0; index < accountCount; index++)
+        {
+            builder.Append(
+                $"<AccountInformation accountId=\"U123456{index}\" currency=\"USD\" accountType=\"Cash\" />");
+        }
+
+        return Encoding.UTF8.GetBytes(
+            builder.Append("</FlexStatement></FlexStatements></FlexQueryResponse>").ToString());
+    }
+
+    // Returns a parse result directly so the service-level cap can be exercised on a shape that has
+    // more evidence rows than canonical records - no real fixture is needed to state that bound.
+    private sealed class EvidenceHeavyConnector(int recordCount, int taxLotCount) : IStatementConnector
+    {
+        internal const string Id = "evidence-heavy";
+
+        public StatementConnectorDescriptor Descriptor { get; } = new(
+            ConnectorId: Id,
+            DisplayName: "Evidence-heavy test connector",
+            FileExtensions: [".heavy"],
+            SupportsFileImport: true,
+            SupportsRemoteFetch: false,
+            RequiresMappingProfile: false,
+            DefaultProfileId: null);
+
+        public bool CanHandle(StatementSourceDocument document)
+            => document.FileName.EndsWith(".heavy", StringComparison.OrdinalIgnoreCase);
+
+        public Task<StatementParseResult> ParseAsync(StatementSourceDocument document, CancellationToken ct = default)
+            => Task.FromResult(EvidenceHeavyParse(recordCount, taxLotCount, snapshotCount: 0));
+    }
 
     private StatementImportService BuildService(
         StatementIngressLimits limits,
