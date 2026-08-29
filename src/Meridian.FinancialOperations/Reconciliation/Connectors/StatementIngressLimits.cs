@@ -5,8 +5,13 @@ namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 /// <see cref="MaxDocumentBytes"/> and <see cref="MaxRecords"/> for every connector it resolves, so no
 /// format can exceed them; every connector additionally enforces <see cref="MaxDocumentBytes"/> at the
 /// top of its own ParseAsync, because that method is public API reached directly by in-process callers
-/// that never pass through the service, and camt.053 and BAI2 enforce the record bounds while streaming,
-/// which refuses a hostile payload partway through instead of after it is already built.
+/// that never pass through the service, and every connector charges <see cref="MaxRecords"/> as it appends,
+/// which refuses a hostile payload partway through instead of after it is already built. That charge is
+/// taken on rows actually retained, never on rows an input is predicted to yield: a rejected candidate
+/// costs a diagnostic and no record, so charging it to the record allowance refuses documents whose
+/// canonical rows sit well inside the bound. Work that produces no record is bounded by the budget that
+/// owns it - <see cref="MaxDocumentLines"/>, <see cref="MaxDocumentEntries"/>, <see cref="MaxParseNodes"/>,
+/// <see cref="MaxSubtreeNodes"/>, or <see cref="MaxDiagnostics"/> - each reporting its own code.
 /// A connector that decodes a whole document and builds a full parse tree lets a caller-supplied
 /// <see cref="StatementSourceDocument"/> size the parse rather than the operator, so the limits are
 /// checked while parsing rather than after: an oversize document is refused before its bytes are
@@ -28,6 +33,17 @@ namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 /// from unrecognized record types, not to enforce the record cap - the record cap already does that - so
 /// it is set far above any real statement and only bites on abuse.
 /// </param>
+/// <param name="MaxDocumentEntries">
+/// Raw aggregates an OFX document may flatten into entry dictionaries. Its own bound rather than
+/// MaxRecords for the third time the same reason applies: an aggregate is not a record. OfxDocumentParser
+/// materializes an entry dictionary per aggregate before any of them is mapped, and StatementRecordMapper
+/// rejects some of what it is given - so a file can flatten far more aggregates than it retains records,
+/// and charging them to the record allowance refused a document whose canonical rows sat well inside it.
+/// The parser still needs a ceiling, because those dictionaries are allocated before the connector sees
+/// them; this is that ceiling, set above MaxRecords precisely so an aggregate that maps to nothing does
+/// not consume a record's worth of the operator's configured allowance. MaxParseNodes bounds the same
+/// allocation more tightly for tag-dense files and will usually bite first.
+/// </param>
 /// <param name="MaxDiagnostics">
 /// Parse issues a document may retain. Its own bound rather than part of MaxRecords for the same reason
 /// MaxDocumentLines is: a diagnostic is not a row. A rejected row produces an issue and no record, so a
@@ -46,7 +62,8 @@ public sealed record StatementIngressLimits(
     int MaxSubtreeNodes = 50_000,
     int MaxParseNodes = 500_000,
     int MaxDocumentLines = 2_000_000,
-    int MaxDiagnostics = 25_000)
+    int MaxDiagnostics = 25_000,
+    int MaxDocumentEntries = 500_000)
 {
     /// <summary>
     /// Default bounds. <see cref="MaxDocumentBytes"/> is <see cref="StatementConnectorLimits.MaxFileBytes"/>,
@@ -91,6 +108,16 @@ public sealed record StatementIngressLimits(
     /// record overflow would tell the operator something untrue about their file.
     /// </summary>
     public const string TooManyDiagnosticsCode = "STATEMENT_TOO_MANY_DIAGNOSTICS";
+
+    /// <summary>
+    /// Issue code for a document flattening more raw aggregates than the allocation bound allows.
+    /// Distinct from <see cref="TooManyRecordsCode"/> for the same reason <see cref="TooManyLinesCode"/>
+    /// and <see cref="TooManyDiagnosticsCode"/> are: an OFX aggregate that the record mapper rejects costs
+    /// an entry dictionary and produces no canonical row, so a file can breach the aggregate bound while
+    /// its records sit far inside theirs. Reporting that as record overflow told the operator something
+    /// untrue about their file.
+    /// </summary>
+    public const string TooManyEntriesCode = "STATEMENT_TOO_MANY_ENTRIES";
 
     /// <summary>Issue code for a payload nested deeper than the cap allows.</summary>
     public const string NestingTooDeepCode = "STATEMENT_NESTING_TOO_DEEP";
@@ -143,6 +170,13 @@ public sealed record StatementIngressLimits(
         TooManyRecordsCode,
         $"The statement produced more than {MaxRecords} records, above the ingress limit. " +
         "Split the statement into smaller files, or raise the configured limit deliberately before importing.");
+
+    public StatementParseIssue TooManyEntries() => StatementParseIssue.Error(
+        TooManyEntriesCode,
+        $"The statement document flattens more than {MaxDocumentEntries} aggregates, above the ingress " +
+        "allocation limit. Aggregates count toward this bound even when the mapping profile rejects them, " +
+        "because each one still costs a dictionary to discover. Split the statement into smaller files, or " +
+        "raise the configured limit deliberately before importing.");
 
     public StatementParseIssue TooManyLines(int lineBound) => StatementParseIssue.Error(
         TooManyLinesCode,

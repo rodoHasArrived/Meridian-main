@@ -78,10 +78,16 @@ public sealed class OfxStatementConnector(
 
         // Bounded here rather than after the parse returns: the node tree and the flattened entry
         // dictionaries are both built by Parse, so a check on the result would run after the allocation
-        // it exists to prevent. A 250,001-entry OFX file fits well inside the 20 MiB document cap.
+        // it exists to prevent. An entry-heavy OFX file fits well inside the 20 MiB document cap.
+        //
+        // The aggregate budget is MaxDocumentEntries, not MaxRecords. Parse flattens one dictionary per
+        // aggregate and StatementRecordMapper then rejects some of them, so aggregates and retained
+        // records are different counts - passing MaxRecords here refused a document whose canonical rows
+        // sat inside the operator's allowance because its rejected aggregates did not. The record cap is
+        // charged where a record is appended, below.
         var ofx = OfxDocumentParser.Parse(
             content,
-            _limits.MaxRecords,
+            _limits.MaxDocumentEntries,
             _limits.MaxNestingDepth,
             _limits.MaxParseNodes,
             out var bound);
@@ -91,7 +97,7 @@ public sealed class OfxStatementConnector(
             {
                 OfxParseBound.NestingTooDeep => _limits.NestingTooDeep(),
                 OfxParseBound.TooManyNodes => _limits.TooManyNodes(),
-                _ => _limits.TooManyRecords(),
+                _ => _limits.TooManyEntries(),
             });
             return EmptyResult(profileId, issues);
         }
@@ -144,12 +150,20 @@ public sealed class OfxStatementConnector(
                 mappedValues, profile, activityCodeMap, index + 1, issues, reportedUnknownCodes);
             if (record is not null)
             {
+                // Charged on the append, on what the entry actually produced. MapRecord returns null for
+                // an entry it rejects, so an aggregate count could only ever over-charge.
+                if (records.Count >= _limits.MaxRecords)
+                {
+                    issues.Add(_limits.TooManyRecords());
+                    return EmptyResult(profileId, issues);
+                }
+
                 records.Add(record);
             }
 
-            // Entry count is bounded by MaxRecords inside OfxDocumentParser.Parse, so this loop runs a
-            // bounded number of times - but each pass can retain up to two diagnostics for a row that
-            // produces no record, so the issue list is bounded at a multiple of the record allowance
+            // Entry count is bounded by MaxDocumentEntries inside OfxDocumentParser.Parse, so this loop
+            // runs a bounded number of times - but each pass can retain up to two diagnostics for a row
+            // that produces no record, so the issue list is bounded at a multiple of that allowance
             // rather than by it. Diagnostics are retained evidence and get their own ceiling.
             if (issues.Count > _limits.MaxDiagnostics)
             {

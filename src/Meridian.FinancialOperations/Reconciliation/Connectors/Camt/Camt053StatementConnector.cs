@@ -128,7 +128,6 @@ public sealed class Camt053StatementConnector : IStatementConnector
         // case. Both kinds have skip branches that warn and continue without reaching the record cap, so
         // bounding only the one that was reported would leave the other open - which is exactly how this
         // shape survived from BAI2 to Ntry to Bal across three rounds.
-        var rowCandidates = 0;
         // Seeded alongside the identity, and for the same reason: a Bal or Ntry ahead of Acct whose Amt
         // omits Ccy would otherwise fall back to USD even when the account declares another currency.
         // Seeding only the identity last round left this half-done.
@@ -259,25 +258,10 @@ public sealed class Camt053StatementConnector : IStatementConnector
                                 continue;
                             }
 
-                            // Charged only once the balance is one that can contribute a record or a
-                            // diagnostic. Charging every Bal - including the OPBD and ITBD balances filtered
-                            // out just above, which emit neither - made a statement carrying a couple of
-                            // informational balances plus one valid closing balance refuse as
-                            // STATEMENT_TOO_MANY_RECORDS under a small cap. Their subtrees are materialized
-                            // one at a time and released, so the transient cost is bounded without charging
-                            // a record budget they never draw on.
-                            rowCandidates++;
-                            if (rowCandidates > _limits.MaxRecords)
-                            {
-                                issues.Add(_limits.TooManyRecords());
-                                return Task.FromResult(EmptyResult(issues));
-                            }
-
-                            // Every per-row diagnostic below is emitted in an iteration that has already charged a
-                            // candidate here, so bounding diagnostics at the candidate charge bounds all of them -
-                            // without depending on an enumeration of the warning branches staying complete as
-                            // branches are added. The record cap alone does not do it: a rejected row keeps its
-                            // diagnostic and no record, so diagnostics need the ceiling that is their own.
+                            // Checked once per closing balance, before the branches below that can each
+                            // retain a warning and no record. Bounding diagnostics here bounds all of them
+                            // without depending on an enumeration of the warning branches staying complete
+                            // as branches are added.
                             if (issues.Count > _limits.MaxDiagnostics)
                             {
                                 issues.Add(_limits.TooManyDiagnostics());
@@ -328,25 +312,11 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
                     case "Ntry":
                         {
-                            // Counted before the subtree is materialized and before the validation branches
-                            // below, for the reason the BAI2 path was fixed one round ago: a pending or
-                            // undated entry takes a warning branch and never reaches the record cap, so a
-                            // document of them accumulates one issue object per entry unbounded - and
-                            // because they are warnings, the import still succeeds, committing the closing
-                            // balance while silently dropping every movement that should reconcile against
-                            // it. Bounding candidates rather than successes refuses such a file instead.
-                            rowCandidates++;
-                            if (rowCandidates > _limits.MaxRecords)
-                            {
-                                issues.Add(_limits.TooManyRecords());
-                                return Task.FromResult(EmptyResult(issues));
-                            }
-
-                            // Every per-row diagnostic below is emitted in an iteration that has already charged a
-                            // candidate here, so bounding diagnostics at the candidate charge bounds all of them -
-                            // without depending on an enumeration of the warning branches staying complete as
-                            // branches are added. The record cap alone does not do it: a rejected row keeps its
-                            // diagnostic and no record, so diagnostics need the ceiling that is their own.
+                            // Checked once per entry, before the branches below that can each retain a
+                            // warning and no record - a pending or undated entry is exactly that. This is
+                            // what bounds a document of them: they cost diagnostics, so the diagnostic
+                            // ceiling is the bound that owns them. The record cap is charged where the
+                            // record is appended, and MaxParseNodes bounds the walk itself.
                             if (issues.Count > _limits.MaxDiagnostics)
                             {
                                 issues.Add(_limits.TooManyDiagnostics());

@@ -129,13 +129,14 @@ activity cursors, tax lots, borrow positions) are retained just as durably as ca
 (20 MiB — the statement-specific cap the workstation endpoint and CLI already enforce, deliberately
 not the general 5 MiB data-upload cap, because IB Flex XML exports routinely exceed 5 MiB), 250,000
 retained rows, 64 KiB per line, 64 levels of XML nesting, 50,000 nodes in any one materialized XML
-subtree, 500,000 parsed nodes per document, and 25,000 retained parse issues. Every bound refuses
-with a named code:
+subtree, 500,000 parsed nodes per document, 25,000 retained parse issues, and 500,000 flattened OFX
+aggregates. Every bound refuses with a named code:
 
 | Code | Bound |
 | --- | --- |
-| `STATEMENT_DOCUMENT_TOO_LARGE` | `MaxDocumentBytes`, checked by the import service and by every connector before it decodes |
-| `STATEMENT_TOO_MANY_RECORDS` | `MaxRecords`, against total retained rows — charged on the append by the camt.053, BAI2, CSV, OFX and Alpaca connectors, and by the import service as the backstop. Alpaca charges its five evidence collections up front, since `Deserialize` has already materialized them, then one row per canonical append; nothing is charged against a prediction of what a payload will yield, because a rich activity is retained twice (record and activity event) while a corporate action with no amount is not retained at all |
+| `STATEMENT_DOCUMENT_TOO_LARGE` | `MaxDocumentBytes`, checked by the import service and by every connector before it decodes — IB Flex included, which reported a private `STATEMENT_TOO_LARGE` until it took the shared limits, so a caller routing on this code missed Flex refusals alone |
+| `STATEMENT_TOO_MANY_RECORDS` | `MaxRecords`, against total retained rows — charged on the append by every connector, and by the import service as the backstop. Nothing is charged against a prediction of what a payload will yield. camt.053, BAI2 and OFX previously charged *candidates* — an entry, detail line, or aggregate about to be attempted — so a pending camt entry, a malformed BAI2 amount, or an aggregate the mapper rejects consumed a record allowance it never drew on, and refused documents whose canonical rows sat well inside the bound. Work that retains no record is bounded by the budget that owns it instead. Alpaca charges its five evidence collections up front, since `Deserialize` has already materialized them, then one row per canonical append; a rich activity is retained twice (record and activity event) while a corporate action with no amount is not retained at all |
+| `STATEMENT_TOO_MANY_ENTRIES` | `MaxDocumentEntries`, the raw OFX aggregates `OfxDocumentParser` may flatten into entry dictionaries before any of them is mapped. Distinct from the record cap because the mapper rejects some aggregates, so aggregates and retained records are different counts; set above `MaxRecords` so an aggregate that maps to nothing does not consume a record's worth of the allowance. `MaxParseNodes` bounds the same allocation more tightly for tag-dense files and usually bites first |
 | `STATEMENT_LINE_TOO_LONG` | `MaxLineBytes`, measured in UTF-8 bytes |
 | `STATEMENT_TOO_MANY_LINES` | CSV's raw-line cap derived from `MaxRecords`, and BAI2's independent `MaxDocumentLines`; refused before mapping |
 | `STATEMENT_NESTING_TOO_DEEP` | `MaxNestingDepth`, inclusive — a document nested at exactly the limit is accepted and one level deeper is refused, identically in every connector that reads it |
@@ -143,6 +144,11 @@ with a named code:
 | `STATEMENT_TOO_MANY_NODES` | `MaxParseNodes`, the whole-document node budget, charged by the camt.053, OFX and IB Flex parsers, and by the Alpaca JSON pre-scan — one activity's `Metadata` dictionary is open-ended, so members have to be counted before `Deserialize` materializes them |
 | `STATEMENT_TOO_MANY_DIAGNOSTICS` | `MaxDiagnostics`, retained parse issues; charged by every connector — the CSV, OFX, IB Flex and Alpaca row mappers, and the camt.053 and BAI2 per-row candidate charges, which also re-check after their parse loop so the final row's diagnostic cannot slip past |
 | `ROW_LIMIT_EXCEEDED` | `MaxRecords`, reported by the IB Flex connector against its retained rows |
+
+Preview and validate return these as issue objects, so a caller can branch on `issue.Code`. Commit
+reports by throwing `InvalidDataException`, and its message carries the code in brackets ahead of the
+prose for the same reason — otherwise the same document yields an actionable code from one path and an
+unclassifiable sentence from the other.
 
 These messages advise raising the configured limit deliberately. A deployment does that by registering
 its own `StatementIngressLimits` before `AddReconciliationServices`, since registration uses

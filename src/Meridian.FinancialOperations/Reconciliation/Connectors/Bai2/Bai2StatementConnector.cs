@@ -74,14 +74,6 @@ public sealed class Bai2StatementConnector : IStatementConnector
         string? account = null;
         var accountCurrency = groupCurrency;
         var rowNumber = 0;
-        // One budget for closing balances and transaction details together. They were two independent
-        // counters, each bounded by MaxRecords, so a file could emit MaxRecords compact 03 balances and
-        // then MaxRecords malformed 16 records: neither counter breached its own limit, and the parse
-        // retained MaxRecords canonical records plus MaxRecords warning objects - double the configured
-        // allocation ceiling. The service could not catch it either, because TotalRetainedRows counts
-        // Records and the evidence collections, not Issues. Camt053StatementConnector already shares one
-        // rowCandidates budget across Ntry and Bal; this is the sibling that never got the same fix.
-        var rowCandidates = 0;
         // Its own bound, not a MaxRecords derivation. This was MaxRecords * 2 + 4, copied from
         // CsvStatementConnector where it is correct - a CSV's envelope is one header row, so 2R+4 always
         // clears R+1. BAI2's envelope is six lines before any record exists (01/02/03/49/98/99) and grows
@@ -145,11 +137,10 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 continue;
             }
 
-            // Charged before the decode and the split, and independently of rowCandidates. An unknown
-            // record type falls through the switch below without ever charging a candidate, so a file
-            // of compact unknown lines allocated one string and one string[] per line with no bound
-            // firing at all. CsvStatementConnector derives the same cap from MaxRecords; this is the
-            // sibling that never got it.
+            // Charged before the decode and the split, and independently of the record cap. An unknown
+            // record type falls through the switch below and appends nothing, so a file of compact
+            // unknown lines allocated one string and one string[] per line with no bound firing at all.
+            // This is the budget that owns work producing no record; the record cap owns retained rows.
             rawLines++;
             if (rawLines > rawLineCap)
             {
@@ -192,21 +183,20 @@ public sealed class Bai2StatementConnector : IStatementConnector
                         TryResolveClosingBalance(fields, out var balanceMinorUnits) &&
                         asOfDate is { } balanceDate)
                     {
-                        rowCandidates++;
-                        if (rowCandidates > _limits.MaxRecords)
-                        {
-                            issues.Add(_limits.TooManyRecords());
-                            return Task.FromResult(EmptyResult(issues));
-                        }
-
-                        // Every per-row diagnostic below is emitted in an iteration that has already charged a
-                        // candidate here, so bounding diagnostics at the candidate charge bounds all of them -
-                        // without depending on an enumeration of the warning branches staying complete as
-                        // branches are added. The record cap alone does not do it: a rejected row keeps its
-                        // diagnostic and no record, so diagnostics need the ceiling that is their own.
+                        // Checked once per closing balance that can contribute a record or a diagnostic.
+                        // Bounding diagnostics here bounds all of them without depending on an enumeration
+                        // of the warning branches staying complete as branches are added.
                         if (issues.Count > _limits.MaxDiagnostics)
                         {
                             issues.Add(_limits.TooManyDiagnostics());
+                            return Task.FromResult(EmptyResult(issues));
+                        }
+
+                        // Charged on the append, against rows actually retained, and shared with the 16
+                        // detail branch below because both append to this one list.
+                        if (records.Count >= _limits.MaxRecords)
+                        {
+                            issues.Add(_limits.TooManyRecords());
                             return Task.FromResult(EmptyResult(issues));
                         }
 
@@ -241,24 +231,10 @@ public sealed class Bai2StatementConnector : IStatementConnector
                     // Do not construct canonical rows under a shared placeholder account. The parse
                     // result is rejected below, but keeping malformed sections out of records also
                     // prevents a future validation-path change from accidentally exposing them.
-                    // Counted before the validation branches, not after them. A malformed 16 record takes
-                    // a warning branch and never reaches the record cap, so a file of them accumulated one
-                    // issue object per line without bound - and because the issues are warnings rather
-                    // than errors, the service could commit a valid closing balance while silently
-                    // dropping every transaction in the file. Bounding candidates rather than successes
-                    // refuses that document instead of half-importing it.
-                    rowCandidates++;
-                    if (rowCandidates > _limits.MaxRecords)
-                    {
-                        issues.Add(_limits.TooManyRecords());
-                        return Task.FromResult(EmptyResult(issues));
-                    }
-
-                    // Every per-row diagnostic below is emitted in an iteration that has already charged a
-                    // candidate here, so bounding diagnostics at the candidate charge bounds all of them -
-                    // without depending on an enumeration of the warning branches staying complete as
-                    // branches are added. The record cap alone does not do it: a rejected row keeps its
-                    // diagnostic and no record, so diagnostics need the ceiling that is their own.
+                    // Checked once per detail line, before the validation branches below that can each
+                    // retain a warning and no record. A file of malformed 16 records is bounded here, by
+                    // the ceiling that owns diagnostics - not by the record cap, which such a file never
+                    // approaches. MaxDocumentLines already bounded the raw lines before the decode.
                     if (issues.Count > _limits.MaxDiagnostics)
                     {
                         issues.Add(_limits.TooManyDiagnostics());
@@ -282,6 +258,15 @@ public sealed class Bai2StatementConnector : IStatementConnector
                     {
                         issues.Add(StatementParseIssue.Warning("BAI2_BAD_AMOUNT", "Transaction detail has no parseable amount; skipped.", rowNumber + 1));
                         break;
+                    }
+
+                    // The 16 branch had no record check of its own - the candidate charge above was
+                    // standing in for one, and it charged rows this branch rejects. Charged here instead,
+                    // on the append, sharing the one list with the 03 balance branch.
+                    if (records.Count >= _limits.MaxRecords)
+                    {
+                        issues.Add(_limits.TooManyRecords());
+                        return Task.FromResult(EmptyResult(issues));
                     }
 
                     rowNumber++;

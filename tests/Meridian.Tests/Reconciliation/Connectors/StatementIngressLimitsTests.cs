@@ -694,6 +694,23 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Commit_OversizeDocument_CarriesTheStableCodeInItsMessage()
+    {
+        // Preview and validate return the issue objects, so a caller can route on issue.Code. Commit
+        // reports by throwing, and the message carried only prose - so the same document produced an
+        // actionable STATEMENT_DOCUMENT_TOO_LARGE from one path and an unclassifiable sentence from the
+        // other. The code is the part a client can branch on, so it belongs in the text when the text is
+        // all that survives the seam.
+        var service = BuildService(TightLimits);
+        var document = new StatementSourceDocument("big.bai", BuildBai2Statement(transactionCount: 200));
+
+        var act = async () => await service.CommitAsync(CommitRequest(document));
+
+        (await act.Should().ThrowAsync<InvalidDataException>())
+            .Which.Message.Should().Contain(StatementIngressLimits.DocumentTooLargeCode);
+    }
+
+    [Fact]
     public async Task Validate_OversizeDocument_ReportsTheBoundRatherThanParsing()
     {
         var service = BuildService(TightLimits);
@@ -849,21 +866,23 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
-    public async Task Bai2_BalancesAndDetails_ShareOneCandidateBudget()
+    public async Task Bai2_MalformedDetails_AreNotChargedToTheRecordBudget()
     {
-        // The two were independent counters, each bounded by MaxRecords, so a file could hold
-        // MaxRecords balances AND MaxRecords malformed details without either breaching its own limit -
-        // twice the configured allocation. Here one closing balance plus two malformed details is three
-        // candidates against a cap of two: neither counter alone exceeds it, so only a shared budget
-        // refuses this document.
+        // Both row kinds must share one budget - a file could otherwise hold MaxRecords balances AND
+        // MaxRecords details against two independent counters - but the budget has to count rows the
+        // parse retains, not rows it attempts. This document retains exactly one: the closing balance.
+        // Its two malformed 16 details take a warning branch and append nothing, so at a cap of one it
+        // must import. Charging them as candidates refused it, reporting a record overflow against a
+        // file that produced a single record.
         var connector = new Bai2StatementConnector(
-            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 2, MaxLineBytes = 4096 });
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1, MaxLineBytes = 4096 });
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("shared-budget.bai", BuildBai2WithUnparseableAmounts(detailCount: 2)));
 
-        result.HasErrors.Should().BeTrue();
-        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Records.Should().ContainSingle().Which.Kind.Should().Be(StatementRecordKind.CashBalance);
+        result.Issues.Should().Contain(issue => issue.Code == "BAI2_BAD_AMOUNT", "the malformed details are still reported");
     }
 
     [Fact]
@@ -1082,7 +1101,7 @@ public sealed class StatementIngressLimitsTests : IDisposable
             new StatementSourceDocument("ib-flex-big.xml", BuildIbFlexWithTrades(tradeCount: 2)));
 
         result.HasErrors.Should().BeTrue();
-        result.Issues.Should().Contain(issue => issue.Code == "STATEMENT_TOO_LARGE");
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.DocumentTooLargeCode);
     }
 
     [Fact]
@@ -2151,11 +2170,12 @@ public sealed class StatementIngressLimitsTests : IDisposable
     // ---------------------------------------------------------------------------------------------
 
     [Fact]
-    public async Task Ofx_EntriesOverCap_AreRefusedDuringEntryDiscovery()
+    public async Task Ofx_RecordsOverCap_AreRefusedOnTheAppend()
     {
-        // OfxDocumentParser builds the node tree and then the flattened entry dictionaries, so the
-        // service-level record check ran only after both existed. A 250,001-entry OFX file sits well
-        // inside the 20 MiB document cap, which is why the bound has to be inside the parse.
+        // The service-level record check ran only after the node tree and the flattened entry
+        // dictionaries both existed, and an entry-heavy OFX file sits well inside the 20 MiB document
+        // cap - so the connector needs its own bound. It is charged where a record is appended; the
+        // aggregates themselves are bounded separately by MaxDocumentEntries.
         var connector = new OfxStatementConnector(
             Catalog(),
             TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 3 });
@@ -2320,18 +2340,29 @@ public sealed class StatementIngressLimitsTests : IDisposable
     [Fact]
     public async Task Bai2_MalformedDetailRows_AreBoundedRatherThanAccumulatingWarnings()
     {
-        // Every malformed 16 record took a warning branch and returned before the record cap, so a file
-        // of them retained one issue object per line without bound. Worse, the issues are warnings: the
-        // service could commit a valid closing balance while silently dropping every transaction.
+        // Every malformed 16 record takes a warning branch and appends nothing, so a file of them retained
+        // one issue object per line without bound. The bound is MaxDiagnostics, not MaxRecords: these rows
+        // produce diagnostics, so the diagnostic ceiling is the one that owns them, and it reports a code
+        // that describes the file truthfully. Charging them to the record cap refused documents whose
+        // canonical rows sat well inside it, which is the defect this suite found ten times over.
         var connector = new Bai2StatementConnector(
-            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 5, MaxLineBytes = 4096 });
+            TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 5,
+                MaxLineBytes = 4096,
+                MaxDiagnostics = 5
+            });
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("malformed.bai", BuildBai2WithUnparseableAmounts(detailCount: 40)));
 
         result.HasErrors.Should().BeTrue("an over-cap file is refused, not half-imported");
         result.Records.Should().BeEmpty();
-        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyDiagnosticsCode);
+        result.Issues.Should().NotContain(
+            issue => issue.Code == StatementIngressLimits.TooManyRecordsCode,
+            "a file that retained no record did not overflow the record cap");
         result.Issues.Count.Should().BeLessThan(40, "diagnostics are bounded, not one per malformed line");
     }
 
@@ -2402,10 +2433,9 @@ public sealed class StatementIngressLimitsTests : IDisposable
     [Fact]
     public async Task Camt_UndatedClosingBalances_AreBoundedRatherThanAccumulatingWarnings()
     {
-        // The third instance of one shape: BAI2 detail rows, then Ntry, now Bal. A CLBD balance with no
-        // parseable date is skipped with a warning and never reaches the record cap, so a document of them
-        // accumulates issue objects unbounded while one valid balance still lets the import succeed. Both
-        // camt row kinds now share a single candidate budget so neither can drift open again.
+        // A CLBD balance with no parseable date is skipped with a warning and appends nothing, so a
+        // document of them accumulates issue objects unbounded. MaxDiagnostics is the ceiling that owns
+        // them; the record cap is charged where a record is appended and never sees these rows at all.
         var undated = new StringBuilder()
             .Append("<Stmt><Id>STMT-1</Id>")
             .Append("<Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>");
@@ -2418,15 +2448,85 @@ public sealed class StatementIngressLimitsTests : IDisposable
         }
 
         var connector = new Camt053StatementConnector(
-            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 5, MaxNestingDepth = 64 });
+            TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 5,
+                MaxNestingDepth = 64,
+                MaxDiagnostics = 5
+            });
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("undated.xml", BuildCamtDocument(undated.Append("</Stmt>").ToString())));
 
         result.HasErrors.Should().BeTrue();
         result.Records.Should().BeEmpty();
-        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyDiagnosticsCode);
+        result.Issues.Should().NotContain(
+            issue => issue.Code == StatementIngressLimits.TooManyRecordsCode,
+            "a document that retained no record did not overflow the record cap");
         result.Issues.Count.Should().BeLessThan(40, "diagnostics are bounded, not one per skipped balance");
+    }
+
+    [Fact]
+    public async Task Camt_SkippedEntries_AreNotChargedToTheRecordBudget()
+    {
+        // The control for the correction above, and the false refusal it fixes. One valid closing balance
+        // and three pending entries retain exactly one canonical record, so a cap of one must import it.
+        // Charging the entries as candidates made this document refuse as STATEMENT_TOO_MANY_RECORDS -
+        // a bound reporting an overflow of rows the parse never produced.
+        var skipped = new StringBuilder()
+            .Append("<Stmt><Id>STMT-1</Id>")
+            .Append("<Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>")
+            .Append("<Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp>")
+            .Append("<Amt Ccy=\"EUR\">12345.67</Amt><CdtDbtInd>CRDT</CdtDbtInd>")
+            .Append("<Dt><Dt>2026-05-31</Dt></Dt></Bal>");
+
+        for (var index = 0; index < 3; index++)
+        {
+            skipped
+                .Append("<Ntry><Amt Ccy=\"EUR\">10.00</Amt><CdtDbtInd>CRDT</CdtDbtInd>")
+                .Append("<Sts>PDNG</Sts><BookgDt><Dt>2026-05-10</Dt></BookgDt>")
+                .Append($"<AcctSvcrRef>PENDING-{index:D4}</AcctSvcrRef></Ntry>");
+        }
+
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1, MaxNestingDepth = 64 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("skipped.xml", BuildCamtDocument(skipped.Append("</Stmt>").ToString())));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Records.Should().ContainSingle().Which.Kind.Should().Be(StatementRecordKind.CashBalance);
+        result.Issues.Should().Contain(
+            issue => issue.Code == "CAMT_ENTRY_NOT_BOOKED",
+            "the pending entries are still reported, they are just not charged as records");
+    }
+
+    [Fact]
+    public async Task Ofx_AggregatesOverTheEntryBudget_ReportEntryOverflowNotRecordOverflow()
+    {
+        // The parser flattens one dictionary per aggregate before any of them is mapped, so that
+        // allocation genuinely needs a ceiling ahead of the record cap - but it is a different count, and
+        // reporting it as record overflow told the operator something untrue about their file. It is now
+        // MaxDocumentEntries with its own code, the same separation MaxDocumentLines and MaxDiagnostics
+        // already have. The record allowance is left wide open here so only the entry budget can fire.
+        var connector = new OfxStatementConnector(
+            Catalog(),
+            TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 1000,
+                MaxDocumentEntries = 3
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("aggregates.ofx", BuildOfxStatement(transactionCount: 25)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a refused document yields no partial canonical rows");
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyEntriesCode);
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
     }
 
     [Fact]
@@ -2648,14 +2748,23 @@ public sealed class StatementIngressLimitsTests : IDisposable
         }
 
         var connector = new Camt053StatementConnector(
-            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 5, MaxNestingDepth = 64 });
+            TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 5,
+                MaxNestingDepth = 64,
+                MaxDiagnostics = 5
+            });
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("pending.xml", BuildCamtDocument(pending.Append("</Stmt>").ToString())));
 
         result.HasErrors.Should().BeTrue("an over-cap file is refused, not committed with the balance alone");
         result.Records.Should().BeEmpty();
-        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyDiagnosticsCode);
+        result.Issues.Should().NotContain(
+            issue => issue.Code == StatementIngressLimits.TooManyRecordsCode,
+            "a document that retained no record did not overflow the record cap");
         result.Issues.Count.Should().BeLessThan(40, "diagnostics are bounded, not one per skipped entry");
     }
 

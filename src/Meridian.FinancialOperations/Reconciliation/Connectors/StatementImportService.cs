@@ -180,7 +180,7 @@ public sealed class StatementImportService(
         if (request.Document.Content.Length > _ingressLimits.MaxDocumentBytes)
         {
             throw new InvalidDataException(
-                $"Statement cannot be imported: {_ingressLimits.DocumentTooLarge(request.Document.Content.Length).Message}");
+                $"Statement cannot be imported: {Describe(_ingressLimits.DocumentTooLarge(request.Document.Content.Length))}");
         }
 
         var capturedSourceBytes = request.Document.Content.ToArray();
@@ -190,7 +190,7 @@ public sealed class StatementImportService(
         var (connector, resolutionIssue) = ResolveConnector(capturedDocument, request.ConnectorId);
         if (connector is null)
         {
-            throw new InvalidDataException(resolutionIssue!.Message);
+            throw new InvalidDataException(Describe(resolutionIssue!));
         }
 
         var parse = await connector.ParseAsync(capturedDocument, ct).ConfigureAwait(false);
@@ -202,14 +202,14 @@ public sealed class StatementImportService(
         if (parse.TotalRetainedRows > _ingressLimits.MaxRecords)
         {
             throw new InvalidDataException(
-                $"Statement cannot be imported: {_ingressLimits.TooManyRecords().Message}");
+                $"Statement cannot be imported: {Describe(_ingressLimits.TooManyRecords())}");
         }
 
         if (parse.HasErrors)
         {
             var errors = parse.Issues
                 .Where(static issue => issue.Severity == StatementParseIssue.ErrorSeverity)
-                .Select(static issue => issue.RowNumber is { } row ? $"Row {row}: {issue.Message}" : issue.Message);
+                .Select(Describe);
             throw new InvalidDataException($"Statement cannot be imported: {string.Join(" ", errors)}");
         }
 
@@ -749,6 +749,18 @@ public sealed class StatementImportService(
 
         return $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
     }
+
+    /// <summary>
+    /// Renders an issue for an exception message with its stable code intact. Commit reports failures by
+    /// throwing, while preview and validate return the issue objects, so a caller that routed on
+    /// StatementIngressLimits codes could see STATEMENT_DOCUMENT_TOO_LARGE from one path and only prose
+    /// from the other for the very same document. The code is the part an operator or a client can act
+    /// on programmatically, so it belongs in the text when the text is all that survives.
+    /// </summary>
+    private static string Describe(StatementParseIssue issue)
+        => issue.RowNumber is { } row
+            ? $"[{issue.Code}] Row {row}: {issue.Message}"
+            : $"[{issue.Code}] {issue.Message}";
 
     private static string NormalizeSourceKind(string sourceKind)
     {

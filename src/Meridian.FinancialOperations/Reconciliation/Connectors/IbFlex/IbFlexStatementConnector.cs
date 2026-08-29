@@ -108,9 +108,10 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
 
         if (document.Content.Length > _limits.MaxDocumentBytes)
         {
-            issues.Add(StatementParseIssue.Error(
-                "STATEMENT_TOO_LARGE",
-                $"The Flex report exceeds the {_limits.MaxDocumentBytes}-byte limit."));
+            // The shared code, not the private STATEMENT_TOO_LARGE this connector carried before it read
+            // the shared limits. The module README documents STATEMENT_DOCUMENT_TOO_LARGE as the byte-cap
+            // refusal for every connector, and a caller routing on that code missed Flex refusals alone.
+            issues.Add(_limits.DocumentTooLarge(document.Content.Length));
             return EmptyResult(profileId, issues);
         }
 
