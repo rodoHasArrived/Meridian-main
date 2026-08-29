@@ -90,7 +90,8 @@ risks that compound as new asset classes land.
 >
 > **Its highest-severity finding (P5) is that the desktop lane mutates the golden record with no
 > authorization check at all.** Every HTTP mutation route requires `ModifySecurityMaster`; the WPF
-> edit, deactivate and import commands reach the same `ISecurityMasterService` in process and check
+> edit, deactivate, import and trading-parameter backfill commands — the last of which amends every
+> active security at once — reach the same `ISecurityMasterService` in process and check
 > nothing, on a shell whose `HasPermission` fails closed for a configured host and is simply never
 > called here. So an operator holding only `ViewSecurityMaster` is refused every mutation over HTTP
 > and permitted every one of them through the workstation. It is filed apart from P1 because it is an
@@ -1015,14 +1016,19 @@ projection writers against 15 declared gaps (`ProjectionWriters`, `:43-56`;
 `IntentionallyUnprojectedAssetClasses`, `SecurityAssetTermsSchemaTests.cs:21-38`), terms still have no
 valid-time history, and both codec arms remain hand-written behind the round-trip guard.
 
-### P1 — The Security Master write surface accepts self-asserted provenance and an arbitrary as-of date
+### P1 — The Security Master write surface accepts self-asserted provenance and an arbitrary caller-selected valid-time date
 
 > **Scope corrected twice under review.** This item was first filed against bulk import, then widened
 > to the shared create boundary, then widened again to amendments and unattended ingests. The scope
 > below comes from a full sweep of `ISecurityMasterService` create/amend callers rather than from the
 > path that happened to be read first, and the enumeration is the finding's real content.
 
-The highest-severity item this pass, and the one the subsystem's own standards already contradict.
+The highest-severity item **from the original sweep**, and the one the subsystem's own standards
+already contradict. It no longer leads the pass: P5, which review surfaced later, outranks it and must
+be fixed first — attribution derived onto writes that authorization should have refused is worse than
+no attribution, because it puts a named operator on a change they had no right to make. The heading
+above also once said "as-of date"; the analysis below retracts that, since `EffectiveFrom` selects
+nothing — it asserts economic valid-time metadata.
 
 `SecurityMasterImportService.ImportAsync` takes `fileContent`, `fileExtension`, a progress reporter
 and a cancellation token (`:42-46`) — **no actor parameter**. The JSON branch deserializes the
@@ -1359,6 +1365,17 @@ calls `ImportAsync` (`:4358`). None of them — nor their parent — calls
 `DesktopAuthenticationSession.HasPermission`; the only desktop callers of that method are
 `MainWindowViewModel` for `ManageProviders` (`:255`) and `AccountingCloseViewModel` (`:1069-1070`).
 
+**A fifth path makes this worse, and it is a bulk one.** When Polygon is configured,
+`BackfillTradingParamsCommand` is constructed as a plain `AsyncRelayCommand` with no `canExecute`
+predicate (`SecurityMasterViewModel.cs:1565`); `OnBackfillTradingParams` calls
+`_backfillService.BackfillAllAsync()` (`:2186-2193`), and `TradingParametersBackfillService`
+walks every active security calling `AmendTermsAsync` for each
+(`TradingParametersBackfillService.cs:213`). So the same unauthorized desktop operator can amend the
+entire master in one command, not merely one record at a time. Any gate that covers only the edit,
+deactivate and import commands leaves the largest-blast-radius mutation on the lane open — enumerate
+the desktop mutation *commands*, not the dialogs. (Note it also invokes `BackfillAllAsync()` with no
+cancellation token from the view model, which is why it recurs in P4 below.)
+
 **The check exists and works; it is simply never invoked here.** `HasPermission` fails closed on a
 configured host — it returns true only when the resolved operator profile actually grants the
 permission — and fails open only under the unconfigured local-development posture
@@ -1524,6 +1541,26 @@ normal result would assert something the loop structure prevents. The defect is 
 cancelled ingest is reported as an ordinary error, and a cancelled conflict count silently becomes
 zero, which feeds `conflictsDetected` — but its blast radius is the tail of a run, not the whole of it.
 
+**Two more swallow sites sit outside the three ingests this item enumerates, which is the enumeration
+failing again rather than two new facts.** The rule stated earlier — *every broad catch wrapping a
+cancellable await on these paths swallows cancellation* — already covers them; they are named because
+both are reachable from surfaces the pass discusses elsewhere and neither is in the tables:
+
+- **The trading-parameter backfill.** `BackfillTickerAsync` rethrows correctly, but `BackfillAllAsync`
+  wraps the call in `catch (Exception ex)` and counts a failure
+  (`TradingParametersBackfillService.cs:101-108`). The loop tests `ct.IsCancellationRequested` at the
+  top of the next iteration and breaks, so — exactly as with Edgar — the silent case is cancellation on
+  the **final** security, which returns a normal success/failure summary. The WPF command compounds it
+  by calling `BackfillAllAsync()` with no token at all (`SecurityMasterViewModel.cs:2186-2193`), so
+  desktop-initiated backfills have nothing to cancel with in the first place.
+- **The Polygon page fetch, before the create loop is ever reached.**
+  `PolygonSecurityMasterIngestProvider.FetchPageAsync` wraps `GetAsync(url, ct)` and
+  `ReadAsStringAsync(ct)` in `catch (Exception)` and returns `null` (`:129-148`); `FetchAllAsync` reads
+  that as end-of-pagination and returns the pages gathered so far, after which the ingest imports that
+  partial set and reports success. Rethrowing cancellation around `CreateAsync` alone therefore leaves
+  the command completing normally after cancellation — the truncation happens upstream of the loop the
+  remediation was aimed at.
+
 Edgar also carries the prose defect on **both** mutations, not just create: `CreateOrAmendSecurityAsync`
 calls `CreateAsync` when no security exists and `AmendTermsAsync` when one does (`:303-344`), with
 both under the same outer substring filter.
@@ -1603,9 +1640,12 @@ Read as a delta on the standing lists above.
 1. **Enforce mutation permissions on the desktop lane (P5).** The one item here that is an
    authorization failure rather than a governance or attribution one, and the only one that lets a
    user perform a write the system is configured to refuse. Every HTTP mutation route requires
-   `ModifySecurityMaster`; the WPF edit, deactivate and import commands reach the same service
-   in-process and check nothing, on a shell whose `HasPermission` would fail closed if asked. Gate
-   those commands before the service call, and reflect the result in command enablement. Sequence it
+   `ModifySecurityMaster`; the WPF edit, deactivate, import **and trading-parameter backfill**
+   commands reach the same service in-process and check nothing, on a shell whose `HasPermission`
+   would fail closed if asked. The backfill is the one to size the work by: it amends *every* active
+   security in a single command, so a gate covering only the per-record dialogs leaves the largest
+   mutation open. Enumerate the desktop mutation commands rather than the dialogs. Gate each before
+   the service call, and reflect the result in command enablement. Sequence it
    **before** P1's actor wiring: deriving the operator's identity first would attach a real name to
    writes that should not have been accepted.
 2. **Gate the legacy preferred-terms PATCH route (P1).** One of three items in this pass that are
@@ -1657,7 +1697,12 @@ Read as a delta on the standing lists above.
    conflict proves only that the stream exists. Write the
    regression criteria per site, not once: import and the Polygon CLI move a row between `skipped` and
    `failed`, while Edgar has no failed counter and instead gains an error entry and a non-zero exit —
-   a test asserting an Edgar count change would assert something that cannot happen.
+   a test asserting an Edgar count change would assert something that cannot happen. The cancellation
+   half reaches beyond those three ingests: the trading-parameter backfill swallows it in
+   `BackfillAllAsync` (`TradingParametersBackfillService.cs:101-108`, silent on the final security, and
+   invoked with no token at all from WPF), and Polygon's `FetchPageAsync` (`:129-148`) swallows it
+   *before* the create loop, so the ingest imports a truncated page set and reports success. Fixing
+   only the create call sites leaves both commands completing normally after cancellation.
 8. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
    Unchanged from every prior pass, and unchanged in importance: `DirectLoan`, `StructuredCredit`,
    `PrivateFundInterest`, `RealEstateHolding` and `CommitmentGuarantee` remain the classes fund
