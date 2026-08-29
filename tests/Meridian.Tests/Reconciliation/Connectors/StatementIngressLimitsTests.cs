@@ -240,6 +240,109 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Camt_WideButShallowEntry_IsRefusedByTheSubtreeNodeBound()
+    {
+        // Depth alone did not bound the copy: one shallow Ntry with a very large number of siblings stays
+        // inside the nesting bound while expanding, as an XElement graph, far past its own byte size. That
+        // is the resource-exhaustion case PRD-010 exists to close, so the subtree carries a node budget.
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 4 * 1024 * 1024, MaxNestingDepth = 64, MaxSubtreeNodes = 500 });
+
+        var wide = new StringBuilder();
+        for (var node = 0; node < 2_000; node++)
+        {
+            wide.Append("<Filler/>");
+        }
+
+        var payload = BuildCamtStatement(entryCount: 1, extraEntryXml: wide.ToString());
+
+        var result = await connector.ParseAsync(new StatementSourceDocument("wide.xml", payload));
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.SubtreeTooLargeCode);
+    }
+
+    [Fact]
+    public async Task Camt_DeepNesting_StillReportsNestingRatherThanSubtreeSize()
+    {
+        // The two subtree bounds must stay distinguishable: a deep document reports nesting, not width.
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxSubtreeNodes = 50_000 });
+
+        var nested = new StringBuilder();
+        for (var depth = 0; depth < 40; depth++)
+        {
+            nested.Append("<Wrap>");
+        }
+
+        nested.Append("<AcctSvcrRef>DEEP</AcctSvcrRef>");
+        for (var depth = 0; depth < 40; depth++)
+        {
+            nested.Append("</Wrap>");
+        }
+
+        var result = await connector.ParseAsync(new StatementSourceDocument(
+            "deep.xml", BuildCamtStatement(entryCount: 1, extraEntryXml: nested.ToString())));
+
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.NestingTooDeepCode);
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.SubtreeTooLargeCode);
+    }
+
+    [Fact]
+    public async Task Validate_RecordsOverCap_AreRefusedForAConnectorThatDoesNotStreamTheBound()
+    {
+        // camt.053 and BAI2 refuse mid-parse, but every other connector resolves through the same service.
+        // The record cap therefore has to hold at the service too, or a format that accumulates rows
+        // without counting them could pass a document straight past the configured bound.
+        var service = BuildService(
+            StatementIngressLimits.Default with { MaxRecords = 2 },
+            connectorLimits: StatementIngressLimits.Default);
+        var document = new StatementSourceDocument(
+            "csv-mixed-kinds.csv",
+            StatementConnectorTestData.ReadFixture("csv-mixed-kinds.csv"));
+
+        var validation = await service.ValidateAsync(document, connectorId: null);
+
+        validation.IsValid.Should().BeFalse();
+        validation.Errors.Should().ContainSingle().Which.Should().Contain("ingress limit");
+    }
+
+    [Fact]
+    public async Task Commit_RecordsOverCap_AreRefusedAtTheService()
+    {
+        var service = BuildService(
+            StatementIngressLimits.Default with { MaxRecords = 2 },
+            connectorLimits: StatementIngressLimits.Default);
+        var document = new StatementSourceDocument(
+            "csv-mixed-kinds.csv",
+            StatementConnectorTestData.ReadFixture("csv-mixed-kinds.csv"));
+
+        var act = async () => await service.CommitAsync(CommitRequest(document));
+
+        (await act.Should().ThrowAsync<InvalidDataException>())
+            .Which.Message.Should().Contain("ingress limit");
+    }
+
+    [Fact]
+    public async Task Csv_RecordsOverCap_StopAccumulatingAtTheBound()
+    {
+        // The connector-side half: CSV received no limits at all before, so it decoded, split, and
+        // accumulated every row. A compact CSV inside the byte cap can still carry millions of rows, and
+        // the peak allocation is what the bound exists to avoid - rejecting afterwards is too late.
+        var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
+        var connector = new CsvStatementConnector(catalog, StatementIngressLimits.Default with { MaxRecords = 2 });
+        var document = new StatementSourceDocument(
+            "csv-mixed-kinds.csv",
+            StatementConnectorTestData.ReadFixture("csv-mixed-kinds.csv"));
+
+        var result = await connector.ParseAsync(document);
+
+        result.Records.Should().HaveCount(2, "accumulation stops at the bound rather than running to completion");
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+    }
+
+    [Fact]
     public async Task Camt_MalformedXml_StillReportsMalformedRatherThanThrowing()
     {
         var connector = new Camt053StatementConnector();
@@ -425,14 +528,20 @@ public sealed class StatementIngressLimitsTests : IDisposable
     // Harness
     // ---------------------------------------------------------------------------------------------
 
-    private StatementImportService BuildService(StatementIngressLimits limits)
+    private StatementImportService BuildService(
+        StatementIngressLimits limits,
+        StatementIngressLimits? connectorLimits = null)
     {
+        // connectorLimits lets a test give the connectors a looser bound than the service, which is the
+        // only way to exercise the service-level cap: a connector that streams the same bound refuses
+        // mid-parse and the service check never sees an over-cap result.
+        var effectiveConnectorLimits = connectorLimits ?? limits;
         var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
         var registry = new StatementConnectorRegistry(
         [
-            new Camt053StatementConnector(limits),
-            new Bai2StatementConnector(limits),
-            new CsvStatementConnector(catalog)
+            new Camt053StatementConnector(effectiveConnectorLimits),
+            new Bai2StatementConnector(effectiveConnectorLimits),
+            new CsvStatementConnector(catalog, effectiveConnectorLimits)
         ]);
 
         var statementStore = new JsonCanonicalStatementStore(_root);

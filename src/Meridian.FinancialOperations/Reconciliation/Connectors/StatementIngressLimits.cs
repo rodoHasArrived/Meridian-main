@@ -1,7 +1,10 @@
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 
 /// <summary>
-/// Ingress bounds every statement connector enforces before it materializes a payload (PRD-010).
+/// Ingress bounds for statement parsing (PRD-010). <see cref="StatementImportService"/> enforces
+/// <see cref="MaxDocumentBytes"/> and <see cref="MaxRecords"/> for every connector it resolves, so no
+/// format can exceed them; the camt.053 and BAI2 connectors additionally enforce them while streaming,
+/// which refuses a hostile payload partway through instead of after it is already built.
 /// A connector that decodes a whole document and builds a full parse tree lets a caller-supplied
 /// <see cref="StatementSourceDocument"/> size the parse rather than the operator, so the limits are
 /// checked while parsing rather than after: an oversize document is refused before its bytes are
@@ -19,7 +22,8 @@ public sealed record StatementIngressLimits(
     long MaxDocumentBytes,
     int MaxRecords,
     int MaxLineBytes,
-    int MaxNestingDepth)
+    int MaxNestingDepth,
+    int MaxSubtreeNodes = 50_000)
 {
     /// <summary>
     /// Default bounds. <see cref="MaxDocumentBytes"/> is <see cref="StatementConnectorLimits.MaxFileBytes"/>,
@@ -29,7 +33,9 @@ public sealed record StatementIngressLimits(
     /// this default to the smaller cap would refuse every 5–20 MiB statement those paths accept. The
     /// remaining bounds are sized well above any real bank statement — a camt.053 or BAI2 file carrying
     /// more than 250,000 canonical rows, a BAI2 line over 64 KiB, or XML nested deeper than 64 levels is
-    /// malformed or hostile, not large.
+    /// malformed or hostile, not large. <see cref="MaxSubtreeNodes"/> bounds one materialized XML subtree:
+    /// depth alone does not, because a shallow element with millions of siblings stays inside the nesting
+    /// bound while still expanding far beyond its own byte size once it becomes an object graph.
     /// </summary>
     public static StatementIngressLimits Default { get; } = new(
         MaxDocumentBytes: StatementConnectorLimits.MaxFileBytes,
@@ -48,6 +54,14 @@ public sealed record StatementIngressLimits(
 
     /// <summary>Issue code for a payload nested deeper than the cap allows.</summary>
     public const string NestingTooDeepCode = "STATEMENT_NESTING_TOO_DEEP";
+
+    /// <summary>Issue code for a single XML element that expands past the per-subtree node cap.</summary>
+    public const string SubtreeTooLargeCode = "STATEMENT_SUBTREE_TOO_LARGE";
+
+    public StatementParseIssue SubtreeTooLarge() => StatementParseIssue.Error(
+        SubtreeTooLargeCode,
+        $"A single statement element expands to more than {MaxSubtreeNodes} nodes, above the ingress limit; " +
+        "the file is malformed or not the declared format.");
 
     public StatementParseIssue DocumentTooLarge(long actualBytes) => StatementParseIssue.Error(
         DocumentTooLargeCode,

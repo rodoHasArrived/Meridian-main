@@ -10,8 +10,12 @@ namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 /// and mixed-kind files (positions, transactions, cash balances, fees, dividends in one
 /// statement).
 /// </summary>
-public sealed class CsvStatementConnector(StatementMappingProfileCatalog catalog) : IStatementConnector
+public sealed class CsvStatementConnector(
+    StatementMappingProfileCatalog catalog,
+    StatementIngressLimits? ingressLimits = null) : IStatementConnector
 {
+    private readonly StatementIngressLimits _ingressLimits = ingressLimits ?? StatementIngressLimits.Default;
+
     public const string ConnectorId = "csv-mapped";
 
     private static readonly char[] CandidateDelimiters = [',', ';', '\t', '|'];
@@ -163,6 +167,15 @@ public sealed class CsvStatementConnector(StatementMappingProfileCatalog catalog
                     mappedValues, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes);
                 if (record is not null)
                 {
+                    // Stop accumulating at the bound rather than building the whole set and having the
+                    // import service reject it afterwards: a compact CSV inside the byte cap can still
+                    // carry millions of rows, and the peak allocation is what the cap exists to avoid.
+                    if (records.Count >= _ingressLimits.MaxRecords)
+                    {
+                        issues.Add(_ingressLimits.TooManyRecords());
+                        break;
+                    }
+
                     records.Add(record);
                 }
             }

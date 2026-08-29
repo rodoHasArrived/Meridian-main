@@ -128,6 +128,11 @@ public sealed class StatementImportService(
 
         var parse = await connector.ParseAsync(document, ct).ConfigureAwait(false);
         var issues = new List<StatementParseIssue>();
+        if (parse.Records.Count > _ingressLimits.MaxRecords)
+        {
+            issues.Add(_ingressLimits.TooManyRecords());
+        }
+
         var profile = await catalog.FindAsync(parse.ProfileId, ct).ConfigureAwait(false);
         if (profile is not null && StatementMappingProfileCatalog.CheckDrift(profile, parse.Fingerprint) is { } drift)
         {
@@ -172,6 +177,17 @@ public sealed class StatementImportService(
         }
 
         var parse = await connector.ParseAsync(capturedDocument, ct).ConfigureAwait(false);
+
+        // The record cap is enforced here, not only inside the connectors that stream it. camt.053 and
+        // BAI2 refuse mid-parse, but every other connector resolves through this service too, so without
+        // this check a format that accumulates rows without counting them could commit a document past
+        // the configured bound.
+        if (parse.Records.Count > _ingressLimits.MaxRecords)
+        {
+            throw new InvalidDataException(
+                $"Statement cannot be imported: {_ingressLimits.TooManyRecords().Message}");
+        }
+
         if (parse.HasErrors)
         {
             var errors = parse.Issues
@@ -421,6 +437,14 @@ public sealed class StatementImportService(
         }
 
         var parse = await connector.ParseAsync(document, ct).ConfigureAwait(false);
+        if (parse.Records.Count > _ingressLimits.MaxRecords)
+        {
+            return new StatementImportValidationResult(
+                false,
+                parse.Records.Count,
+                [_ingressLimits.TooManyRecords().Message]);
+        }
+
         var errors = parse.Issues
             .Where(static issue => string.Equals(issue.Severity, StatementParseIssue.ErrorSeverity, StringComparison.OrdinalIgnoreCase))
             .Select(static issue => issue.RowNumber is { } row ? $"Row {row}: {issue.Message}" : issue.Message)

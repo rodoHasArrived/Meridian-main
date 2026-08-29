@@ -166,9 +166,9 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 {
                     case "Acct":
                         {
-                            if (!TryReadBoundedSubtree(reader, statementDepth, out var accountElement))
+                            if (!TryReadBoundedSubtree(reader, statementDepth, out var accountElement, out var accountRefusal))
                             {
-                                issues.Add(_limits.NestingTooDeep());
+                                issues.Add(accountRefusal!);
                                 return Task.FromResult(EmptyResult(issues));
                             }
 
@@ -191,9 +191,9 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
                     case "Bal":
                         {
-                            if (!TryReadBoundedSubtree(reader, statementDepth, out var balance))
+                            if (!TryReadBoundedSubtree(reader, statementDepth, out var balance, out var balanceRefusal))
                             {
-                                issues.Add(_limits.NestingTooDeep());
+                                issues.Add(balanceRefusal!);
                                 return Task.FromResult(EmptyResult(issues));
                             }
 
@@ -248,9 +248,9 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
                     case "Ntry":
                         {
-                            if (!TryReadBoundedSubtree(reader, statementDepth, out var entry))
+                            if (!TryReadBoundedSubtree(reader, statementDepth, out var entry, out var entryRefusal))
                             {
-                                issues.Add(_limits.NestingTooDeep());
+                                issues.Add(entryRefusal!);
                                 return Task.FromResult(EmptyResult(issues));
                             }
 
@@ -415,9 +415,9 @@ public sealed class Camt053StatementConnector : IStatementConnector
                     continue;
                 }
 
-                if (!TryReadBoundedSubtree(reader, statementDepth, out var accountElement))
+                if (!TryReadBoundedSubtree(reader, statementDepth, out var accountElement, out var scanRefusal))
                 {
-                    issue = _limits.NestingTooDeep();
+                    issue = scanRefusal;
                     return false;
                 }
 
@@ -441,11 +441,14 @@ public sealed class Camt053StatementConnector : IStatementConnector
     private bool TryReadBoundedSubtree(
         XmlReader reader,
         int baseDepth,
-        [NotNullWhen(true)] out XElement? element)
+        [NotNullWhen(true)] out XElement? element,
+        out StatementParseIssue? refusal)
     {
         element = null;
+        refusal = null;
         var open = new Stack<XElement>();
         XElement? root = null;
+        var nodes = 0;
 
         using var subtree = reader.ReadSubtree();
         while (subtree.Read())
@@ -454,6 +457,16 @@ public sealed class Camt053StatementConnector : IStatementConnector
             // absolute document depth: the subtree root sits one level below the element it hangs off.
             if (baseDepth + 1 + subtree.Depth > _limits.MaxNestingDepth)
             {
+                refusal = _limits.NestingTooDeep();
+                return false;
+            }
+
+            // Depth alone does not bound the copy. One shallow element with millions of siblings stays
+            // inside the nesting bound while expanding, as an object graph, far past its own byte size -
+            // the resource-exhaustion case this connector exists to close. Count the nodes as well.
+            if (++nodes > _limits.MaxSubtreeNodes)
+            {
+                refusal = _limits.SubtreeTooLarge();
                 return false;
             }
 
