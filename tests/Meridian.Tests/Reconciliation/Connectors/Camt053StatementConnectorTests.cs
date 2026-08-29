@@ -302,4 +302,24 @@ public sealed class Camt053StatementConnectorTests
         result.Records.Should().BeEmpty("a camt.053 statement with no account identifier must not commit");
         result.Issues.Should().Contain(issue => issue.Code == "CAMT_MISSING_ACCOUNT_ID");
     }
+
+    [Fact]
+    public async Task Parse_Camt053_OverRecordLimit_FailsClosedWithoutCanonicalRows()
+    {
+        var xml = new StringBuilder()
+            .Append("<Document><BkToCstmrStmt><Stmt><Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>");
+        for (var index = 0; index <= StatementConnectorLimits.MaxRecords; index++)
+        {
+            xml.Append("<Bal/>");
+        }
+
+        xml.Append("</Stmt></BkToCstmrStmt></Document>");
+        var document = new StatementSourceDocument("oversized-record-population.xml", Encoding.UTF8.GetBytes(xml.ToString()));
+
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a record population beyond the deterministic ingress bound must fail closed");
+        result.Issues.Should().Contain(issue => issue.Code == "STATEMENT_RECORD_LIMIT_EXCEEDED");
+    }
 }

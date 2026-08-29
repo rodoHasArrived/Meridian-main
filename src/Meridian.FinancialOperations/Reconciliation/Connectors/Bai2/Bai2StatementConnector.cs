@@ -37,7 +37,14 @@ public sealed class Bai2StatementConnector : IStatementConnector
     public Task<StatementParseResult> ParseAsync(StatementSourceDocument document, CancellationToken ct = default)
     {
         var issues = new List<StatementParseIssue>();
-        var content = Encoding.UTF8.GetString(document.Content.Span);
+        if (document.Content.Length > StatementConnectorLimits.MaxFileBytes)
+        {
+            issues.Add(StatementParseIssue.Error(
+                "STATEMENT_FILE_TOO_LARGE",
+                $"Statement exceeds the {StatementConnectorLimits.MaxFileBytes}-byte import limit."));
+            return Task.FromResult(EmptyResult(document, issues));
+        }
+
         var records = new List<StatementCanonicalRecord>();
 
         var groupCurrency = "USD";
@@ -58,14 +65,32 @@ public sealed class Bai2StatementConnector : IStatementConnector
         var hasBlankAccountId = false;
         var inAccountSection = false;
         var transactionOutsideAccount = false;
+        var sourceRecordCount = 0;
 
-        foreach (var rawLine in content.Split('\n'))
+        // Decode one logical line at a time from the UTF-8 payload. This avoids constructing a second
+        // whole-file string and the array created by Split while preserving BAI2's record boundary.
+        var content = document.Content.Span;
+        for (var lineStart = 0; lineStart < content.Length;)
         {
             ct.ThrowIfCancellationRequested();
+            var remaining = content[lineStart..];
+            var newlineOffset = remaining.IndexOf((byte)'\n');
+            var lineLength = newlineOffset >= 0 ? newlineOffset : remaining.Length;
+            var rawLine = Encoding.UTF8.GetString(remaining[..lineLength]);
+            lineStart += lineLength + (newlineOffset >= 0 ? 1 : 0);
             var line = rawLine.Trim().TrimEnd('/').Trim();
             if (line.Length == 0)
             {
                 continue;
+            }
+
+            sourceRecordCount++;
+            if (sourceRecordCount > StatementConnectorLimits.MaxRecords)
+            {
+                issues.Add(StatementParseIssue.Error(
+                    "STATEMENT_RECORD_LIMIT_EXCEEDED",
+                    $"Statement exceeds the {StatementConnectorLimits.MaxRecords}-record import limit."));
+                return Task.FromResult(EmptyResult(document, issues));
             }
 
             var fields = line.Split(',');
@@ -456,5 +481,23 @@ public sealed class Bai2StatementConnector : IStatementConnector
     {
         var span = document.Content.Span;
         return Encoding.UTF8.GetString(span.Length > 256 ? span[..256] : span);
+    }
+
+    private static StatementParseResult EmptyResult(
+        StatementSourceDocument document,
+        IReadOnlyList<StatementParseIssue> issues)
+    {
+        var detectedColumns = new[] { "03/015", "16/TypeCode", "16/Amount", "16/CustomerRef" };
+        return new StatementParseResult(
+            ConnectorId,
+            ProfileId: null,
+            detectedColumns,
+            ColumnMappings: [],
+            Records: [],
+            issues,
+            new StatementFormatFingerprint(
+                Sha256Digest.Compute(document.Content.Span),
+                detectedColumns.Select(static column => column.ToLowerInvariant()).ToArray(),
+                "bai2"));
     }
 }

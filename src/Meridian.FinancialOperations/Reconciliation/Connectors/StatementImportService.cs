@@ -18,6 +18,13 @@ public static class StatementConnectorLimits
     /// caller-supplied file into memory.
     /// </summary>
     public const long MaxFileBytes = 20L * 1024 * 1024;
+
+    /// <summary>
+    /// Maximum logical records accepted from a statement document. This bounds schema-aware parsers
+    /// independently of the byte cap so highly compressed or very short records cannot create an
+    /// unbounded canonical population.
+    /// </summary>
+    public const int MaxRecords = 100_000;
 }
 
 public sealed record StatementImportCommitRequest(
@@ -98,6 +105,19 @@ public sealed class StatementImportService(
         string? connectorId,
         CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(document);
+        if (FileSizeIssue(document) is { } fileSizeIssue)
+        {
+            return BuildPreview(
+                connectorId ?? "unknown",
+                connectorId ?? "Unknown connector",
+                profileId: document.MappingProfileId,
+                document,
+                parse: null,
+                extraIssues: [fileSizeIssue],
+                suggestions: []);
+        }
+
         var (connector, resolutionIssue) = ResolveConnector(document, connectorId);
         if (connector is null)
         {
@@ -135,6 +155,11 @@ public sealed class StatementImportService(
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        if (FileSizeIssue(request.Document) is { } fileSizeIssue)
+        {
+            throw new InvalidDataException(fileSizeIssue.Message);
+        }
+
         var capturedSourceBytes = request.Document.Content.ToArray();
         var capturedDocument = request.Document with { Content = capturedSourceBytes };
         var sourceKind = NormalizeSourceKind(request.SourceKind);
@@ -380,6 +405,11 @@ public sealed class StatementImportService(
     {
         ArgumentNullException.ThrowIfNull(document);
 
+        if (FileSizeIssue(document) is { } fileSizeIssue)
+        {
+            return new StatementImportValidationResult(false, 0, [fileSizeIssue.Message]);
+        }
+
         var (connector, resolutionIssue) = ResolveConnector(document, connectorId);
         if (connector is null)
         {
@@ -420,8 +450,21 @@ public sealed class StatementImportService(
             throw new NotSupportedException($"Statement connector '{request.ConnectorId}' does not support remote fetch.");
         }
 
-        return await fetching.FetchAsync(request, ct).ConfigureAwait(false);
+        var document = await fetching.FetchAsync(request, ct).ConfigureAwait(false);
+        if (FileSizeIssue(document) is { } fileSizeIssue)
+        {
+            throw new InvalidDataException(fileSizeIssue.Message);
+        }
+
+        return document;
     }
+
+    private static StatementParseIssue? FileSizeIssue(StatementSourceDocument document)
+        => document.Content.Length > StatementConnectorLimits.MaxFileBytes
+            ? StatementParseIssue.Error(
+                "STATEMENT_FILE_TOO_LARGE",
+                $"Statement exceeds the {StatementConnectorLimits.MaxFileBytes}-byte import limit.")
+            : null;
 
     private static void EnsureParsedAccountAuthority(
         StatementSourceDocument document,

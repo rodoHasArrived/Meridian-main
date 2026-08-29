@@ -249,4 +249,22 @@ public sealed class Bai2StatementConnectorTests
 
         _connector.CanHandle(document).Should().BeFalse("only files that open with a 01, header are BAI2");
     }
+
+    [Fact]
+    public async Task Parse_Bai2_OverRecordLimit_FailsClosedWithoutCanonicalRows()
+    {
+        var bai2 = new StringBuilder();
+        for (var index = 0; index <= StatementConnectorLimits.MaxRecords; index++)
+        {
+            bai2.Append("88/\n");
+        }
+
+        var document = new StatementSourceDocument("oversized-record-population.bai", Encoding.UTF8.GetBytes(bai2.ToString()));
+
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a record population beyond the deterministic ingress bound must fail closed");
+        result.Issues.Should().Contain(issue => issue.Code == "STATEMENT_RECORD_LIMIT_EXCEEDED");
+    }
 }

@@ -111,6 +111,26 @@ public sealed class StatementImportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task OversizedCallerDocument_FailsEveryIngressPathBeforeConnectorResolutionOrCopy()
+    {
+        var document = new StatementSourceDocument(
+            "oversized.csv",
+            new byte[checked((int)StatementConnectorLimits.MaxFileBytes + 1)]);
+
+        var preview = await _service.PreviewAsync(document, connectorId: "nope");
+        var validation = await _service.ValidateAsync(document, connectorId: "nope");
+        var commit = () => _service.CommitAsync(CommitRequest(document, connectorId: "nope"));
+
+        preview.Issues.Should().Contain(issue => issue.Code == "STATEMENT_FILE_TOO_LARGE");
+        preview.Issues.Should().NotContain(issue => issue.Code == "CONNECTOR_NOT_FOUND");
+        validation.IsValid.Should().BeFalse();
+        validation.RecordCount.Should().Be(0);
+        validation.Errors.Should().ContainSingle(error => error.Contains("import limit", StringComparison.Ordinal));
+        await commit.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*import limit*");
+    }
+
+    [Fact]
     public async Task Preview_DriftedLayout_SurfacesFormatDriftWarning()
     {
         var canonical = StatementBuiltInProfiles.All.Single(profile =>
