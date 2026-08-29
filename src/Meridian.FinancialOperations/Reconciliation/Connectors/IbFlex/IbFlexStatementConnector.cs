@@ -152,6 +152,15 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                     // name and value string for every one. Camt053StatementConnector.TryReadBoundedSubtree
                     // has charged AttributeCount since it was written; this pre-scan is newer and did not
                     // reuse that accounting.
+                    // Depth as well as count. camt's scan loops have always checked reader.Depth; this
+                    // pre-scan was written without it, so a compact but extremely deep document passed the
+                    // node budget and was still materialized past the configured nesting ceiling.
+                    if (scanReader.Depth > _limits.MaxNestingDepth)
+                    {
+                        issues.Add(_limits.NestingTooDeep());
+                        return EmptyResult(profileId, issues);
+                    }
+
                     nodes += 1 + scanReader.AttributeCount;
                     if (nodes > _limits.MaxParseNodes)
                     {
@@ -335,17 +344,20 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var cashReport in cashReportElements)
             {
                 rowNumber++;
-                retained += 1;
-                if (retained > _limits.MaxRecords)
-                {
-                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
-                    return EmptyResult(profileId, issues);
-                }
-
                 CountSection(sectionCounts, "CashReport");
                 CollectAttributeNames(cashReport, detectedColumns);
+                // Charged on the append; a cash-report row that builds nothing retains nothing.
                 if (BuildCashReportRecord(statement, cashReport, statementAccountId, profile) is { } record)
+                {
+                    retained += 1;
+                    if (retained > _limits.MaxRecords)
+                    {
+                        issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                        return EmptyResult(profileId, issues);
+                    }
+
                     records.Add(record);
+                }
             }
 
             foreach (var interest in Descendants(statement, "InterestDetail", "InterestAccrual"))
@@ -456,17 +468,22 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
 
             foreach (var openLot in Descendants(statement, "OpenLot"))
             {
-                retained += 1;
-                if (retained > _limits.MaxRecords)
-                {
-                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
-                    return EmptyResult(profileId, issues);
-                }
-
                 CountSection(sectionCounts, "OpenLots");
                 CollectAttributeNames(openLot, detectedColumns);
+                // Charged on the append, not on the candidate. An OpenLot that BuildTaxLot rejects retains
+                // nothing, and billing it let a document of empty elements consume the whole allowance and
+                // then be refused for rows it never kept.
                 if (BuildTaxLot(openLot, statementAccountId, profile) is { } taxLot)
+                {
+                    retained += 1;
+                    if (retained > _limits.MaxRecords)
+                    {
+                        issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                        return EmptyResult(profileId, issues);
+                    }
+
                     taxLots.Add(taxLot);
+                }
             }
 
             foreach (var borrowed in Descendants(statement, "SecurityBorrowed", "SecuritiesBorrowed", "SecurityLent", "SecuritiesLent"))
@@ -474,17 +491,20 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                 if (!borrowed.HasAttributes)
                     continue;
 
-                retained += 1;
-                if (retained > _limits.MaxRecords)
-                {
-                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
-                    return EmptyResult(profileId, issues);
-                }
-
                 CountSection(sectionCounts, "SecuritiesBorrowedLent");
                 CollectAttributeNames(borrowed, detectedColumns);
+                // Charged on the append; a borrow element that builds no position retains nothing.
                 if (BuildBorrowPosition(borrowed, statementAccountId, profile) is { } borrowPosition)
+                {
+                    retained += 1;
+                    if (retained > _limits.MaxRecords)
+                    {
+                        issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                        return EmptyResult(profileId, issues);
+                    }
+
                     borrowPositions.Add(borrowPosition);
+                }
             }
         }
 

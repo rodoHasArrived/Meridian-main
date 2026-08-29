@@ -136,7 +136,18 @@ public sealed class StatementImportService(
         // whichever loops each connector happens to guard, and it covers connectors added later.
         if (parse.TotalRetainedRows > _ingressLimits.MaxRecords)
         {
-            issues.Add(_ingressLimits.TooManyRecords());
+            // Return here rather than falling through. BuildPreview groups every canonical record and
+            // activity event and projects every account snapshot into fresh collections, so continuing
+            // would allocate in proportion to a payload already known to be refused - the opposite of what
+            // this bound is for. Commit and Validate both return at this point; Preview did not.
+            return BuildPreview(
+                connector.Descriptor.ConnectorId,
+                connector.Descriptor.DisplayName,
+                parse.ProfileId,
+                document,
+                parse: null,
+                extraIssues: [_ingressLimits.TooManyRecords()],
+                suggestions: []);
         }
 
         var profile = await catalog.FindAsync(parse.ProfileId, ct).ConfigureAwait(false);

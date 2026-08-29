@@ -1056,6 +1056,110 @@ public sealed class StatementIngressLimitsTests : IDisposable
         result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyNodesCode);
     }
 
+    [Fact]
+    public async Task Bai2_MinimalTransactionOnlyStatement_IsNotRefusedByTheLineBudget()
+    {
+        // The round-20 regression. The raw-line cap was MaxRecords * 2 + 4, copied from CSV where it is
+        // correct. A BAI2 envelope is six lines before any record exists, so at MaxRecords 1 a legal
+        // 01/02/03/16/49/98/99 statement is seven lines against a cap of six - and the gap widened as
+        // MaxRecords grew, because envelope lines scale with accounts and groups rather than records.
+        var connector = new Bai2StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1, MaxLineBytes = 4096 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("minimal-txn.bai", BuildBai2TransactionOnlyStatement()));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyLinesCode);
+        result.Records.Should().ContainSingle().Which.Kind.Should().Be(StatementRecordKind.Transaction);
+    }
+
+    [Fact]
+    public async Task Bai2_LineBudget_IsItsOwnLimitRatherThanARecordMultiple()
+    {
+        // The bound still exists and still bites: it is MaxDocumentLines, not a MaxRecords derivation.
+        var connector = new Bai2StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxLineBytes = 4096, MaxDocumentLines = 8 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("many-unknown.bai", BuildBai2WithUnknownRecordTypes(unknownCount: 40)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyLinesCode);
+    }
+
+    [Fact]
+    public async Task IbFlex_NonRetainingCandidates_DoNotConsumeTheRetainedBudget()
+    {
+        // Charging OpenLot candidates rather than appends let a document of elements that build no tax lot
+        // exhaust the allowance and then be refused for rows it never kept. Twenty empty OpenLots against a
+        // cap of three: the trade's two rows plus the cursor fit, and the empty lots must cost nothing.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 3 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("ib-flex-empty-lots.xml", BuildIbFlexWithEmptyOpenLots(openLotCount: 20)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == "ROW_LIMIT_EXCEEDED");
+        result.Records.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task IbFlex_DeeplyNestedDocument_IsRefusedByThePreScan()
+    {
+        // The pre-scan counted nodes and attributes but never compared Depth with MaxNestingDepth, which
+        // both camt scan loops do, so a compact but very deep document was still materialized.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxNestingDepth = 8, MaxParseNodes = 500_000 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("ib-flex-deep.xml", BuildDeeplyNestedFlex(depth: 40)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.NestingTooDeepCode);
+    }
+
+    [Fact]
+    public async Task Camt_ManySubtreesEachInsideTheSubtreeBound_BreachTheDocumentBudget()
+    {
+        // TryReadBoundedSubtree consumes a subtree while the outer reader advances to its end element, so
+        // the document counter charged one node per subtree. N entries each comfortably inside
+        // MaxSubtreeNodes walked far more than MaxParseNodes while every per-subtree check passed.
+        var connector = new Camt053StatementConnector(
+            TightLimits with
+            {
+                MaxDocumentBytes = 4 * 1024 * 1024,
+                MaxRecords = 10_000,
+                MaxNestingDepth = 64,
+                MaxSubtreeNodes = 50_000,
+                MaxParseNodes = 200
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("camt-many-subtrees.xml", BuildCamtStatement(entryCount: 200)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyNodesCode);
+    }
+
+    [Fact]
+    public async Task Preview_OverTheRecordCap_ReturnsWithoutProjectingTheParse()
+    {
+        // Preview added the cap issue and then still grouped every record and projected every snapshot.
+        // It now returns immediately, like commit and validate.
+        var service = BuildServiceWith(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 2 },
+            new EvidenceHeavyConnector(recordCount: 1, taxLotCount: 5));
+        var document = new StatementSourceDocument("evidence.heavy", "irrelevant"u8.ToArray());
+
+        var preview = await service.PreviewAsync(document, connectorId: null);
+
+        preview.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        preview.RecordCount.Should().Be(0, "the refused parse is not projected");
+        preview.KindSummaries.Should().BeEmpty();
+    }
+
     // ---------------------------------------------------------------------------------------------
     // Harness
     // ---------------------------------------------------------------------------------------------
@@ -1168,6 +1272,62 @@ public sealed class StatementIngressLimitsTests : IDisposable
     // A Flex report of nothing but trades, so the retained count is exactly two per trade plus the cursor.
     // One Trade element carrying attributeCount extra attributes. Few elements, many attributes - the
     // shape that a node-only budget cannot see.
+    // 01/02/03/16/49/98/99 — a legal statement whose only record is a transaction, with no closing
+    // balance. Seven lines: the shape the MaxRecords-derived line cap refused.
+    private static byte[] BuildBai2TransactionOnlyStatement()
+        => Encoding.UTF8.GetBytes(
+            "01,CITIBANK,MERIDIAN,260531,0800,1,,,2/\n"
+            + "02,MERIDIAN,CITIBANK,1,260531,,USD,2/\n"
+            + "03,0975312468,USD,,,,/\n"
+            + "16,115,250000,,BANKREF0001,CUSTREF0001,Incoming wire/\n"
+            + "49,250000,2/\n98,250000,1,3/\n99,250000,1,5/\n");
+
+    // A Flex report whose OpenLot elements carry no attributes, so BuildTaxLot returns null for each and
+    // nothing is retained by them.
+    private static byte[] BuildIbFlexWithEmptyOpenLots(int openLotCount)
+    {
+        var builder = new StringBuilder()
+            .Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+            .Append("<FlexQueryResponse queryName=\"Meridian Daily Statement\" type=\"AF\"><FlexStatements count=\"1\">")
+            .Append("<FlexStatement accountId=\"U1234567\" fromDate=\"2026-06-01\" toDate=\"2026-06-30\"><Trades>")
+            .Append("<Trade accountId=\"U1234567\" symbol=\"AAPL\" quantity=\"100\" tradePrice=\"187.25\" ")
+            .Append("netCash=\"-18725\" tradeDate=\"20260602\" tradeID=\"7001001\" currency=\"USD\" buySell=\"BUY\" />")
+            .Append("</Trades><OpenPositions />");
+
+        for (var index = 0; index < openLotCount; index++)
+        {
+            builder.Append("<OpenLot />");
+        }
+
+        return Encoding.UTF8.GetBytes(
+            builder.Append("</FlexStatement></FlexStatements></FlexQueryResponse>").ToString());
+    }
+
+    // Well-formed Flex XML nested far past any sane statement, but compact enough to stay inside the byte
+    // and node budgets, so only the depth check can refuse it.
+    private static byte[] BuildDeeplyNestedFlex(int depth)
+    {
+        var builder = new StringBuilder()
+            .Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+            .Append("<FlexQueryResponse queryName=\"Meridian Daily Statement\" type=\"AF\"><FlexStatements count=\"1\">")
+            .Append("<FlexStatement accountId=\"U1234567\" fromDate=\"2026-06-01\" toDate=\"2026-06-30\">");
+
+        for (var level = 0; level < depth; level++)
+        {
+            builder.Append("<Wrap>");
+        }
+
+        builder.Append("<Leaf />");
+
+        for (var level = 0; level < depth; level++)
+        {
+            builder.Append("</Wrap>");
+        }
+
+        return Encoding.UTF8.GetBytes(
+            builder.Append("</FlexStatement></FlexStatements></FlexQueryResponse>").ToString());
+    }
+
     private static byte[] BuildIbFlexWithManyAttributes(int attributeCount)
     {
         var builder = new StringBuilder()

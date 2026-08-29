@@ -18,13 +18,22 @@ namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 /// those paths converges. It matches, rather than tightens, what those paths already accept: this is a
 /// floor under the uncovered callers, not a new ceiling on the covered ones.
 /// </remarks>
+/// <param name="MaxDocumentLines">
+/// Raw lines a line-oriented parser may walk. Deliberately its own bound rather than a multiple of
+/// MaxRecords: envelope lines are unbounded relative to records, because a legal BAI2 file may carry any
+/// number of 03/49 account sections and 02/98 groups that produce no record at all, so no multiplier of
+/// the record cap can avoid refusing some legal document. This budget exists to stop unbounded allocation
+/// from unrecognized record types, not to enforce the record cap - the record cap already does that - so
+/// it is set far above any real statement and only bites on abuse.
+/// </param>
 public sealed record StatementIngressLimits(
     long MaxDocumentBytes,
     int MaxRecords,
     int MaxLineBytes,
     int MaxNestingDepth,
     int MaxSubtreeNodes = 50_000,
-    int MaxParseNodes = 500_000)
+    int MaxParseNodes = 500_000,
+    int MaxDocumentLines = 2_000_000)
 {
     /// <summary>
     /// Default bounds. <see cref="MaxDocumentBytes"/> is <see cref="StatementConnectorLimits.MaxFileBytes"/>,

@@ -201,7 +201,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 {
                     case "Acct":
                         {
-                            if (!TryReadBoundedSubtree(reader, statementDepth, out var accountElement, out var accountRefusal))
+                            if (!TryReadBoundedSubtree(reader, statementDepth, ref parseNodes, out var accountElement, out var accountRefusal))
                             {
                                 issues.Add(accountRefusal!);
                                 return Task.FromResult(EmptyResult(issues));
@@ -241,7 +241,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
                     case "Bal":
                         {
-                            if (!TryReadBoundedSubtree(reader, statementDepth, out var balance, out var balanceRefusal))
+                            if (!TryReadBoundedSubtree(reader, statementDepth, ref parseNodes, out var balance, out var balanceRefusal))
                             {
                                 issues.Add(balanceRefusal!);
                                 return Task.FromResult(EmptyResult(issues));
@@ -326,7 +326,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
                                 return Task.FromResult(EmptyResult(issues));
                             }
 
-                            if (!TryReadBoundedSubtree(reader, statementDepth, out var entry, out var entryRefusal))
+                            if (!TryReadBoundedSubtree(reader, statementDepth, ref parseNodes, out var entry, out var entryRefusal))
                             {
                                 issues.Add(entryRefusal!);
                                 return Task.FromResult(EmptyResult(issues));
@@ -524,7 +524,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
                     continue;
                 }
 
-                if (!TryReadBoundedSubtree(reader, statementDepth, out var accountElement, out var scanRefusal))
+                if (!TryReadBoundedSubtree(reader, statementDepth, ref parseNodes, out var accountElement, out var scanRefusal))
                 {
                     issue = scanRefusal;
                     return false;
@@ -593,9 +593,17 @@ public sealed class Camt053StatementConnector : IStatementConnector
     // as it goes. XElement.Load over a subtree reader would copy the subtree without checking depth, so a
     // document nested deeply enough to exhaust the stack would fault inside the copy rather than be
     // refused; building the element node by node keeps the bound enforceable.
+    /// <param name="documentNodes">
+    /// The caller's whole-document node budget, charged here as well. ReadSubtree consumes the whole
+    /// subtree while the outer reader advances straight to its end element, so the outer loop only ever
+    /// charged one node per subtree: N subtrees each just inside MaxSubtreeNodes walked N times that many
+    /// nodes while every per-subtree check passed and the document bound never fired. Per-subtree and
+    /// whole-document bounds answer different questions and both have to be charged here.
+    /// </param>
     private bool TryReadBoundedSubtree(
         XmlReader reader,
         int baseDepth,
+        ref int documentNodes,
         [NotNullWhen(true)] out XElement? element,
         out StatementParseIssue? refusal)
     {
@@ -625,6 +633,12 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 return false;
             }
 
+            if (++documentNodes > _limits.MaxParseNodes)
+            {
+                refusal = _limits.TooManyNodes();
+                return false;
+            }
+
             switch (subtree.NodeType)
             {
                 case XmlNodeType.Element:
@@ -640,6 +654,13 @@ public sealed class Camt053StatementConnector : IStatementConnector
                             if (nodes > _limits.MaxSubtreeNodes)
                             {
                                 refusal = _limits.SubtreeTooLarge();
+                                return false;
+                            }
+
+                            documentNodes += subtree.AttributeCount;
+                            if (documentNodes > _limits.MaxParseNodes)
+                            {
+                                refusal = _limits.TooManyNodes();
                                 return false;
                             }
 

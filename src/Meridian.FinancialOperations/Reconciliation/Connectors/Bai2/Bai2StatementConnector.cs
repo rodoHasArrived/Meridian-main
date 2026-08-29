@@ -82,9 +82,13 @@ public sealed class Bai2StatementConnector : IStatementConnector
         // Records and the evidence collections, not Issues. Camt053StatementConnector already shares one
         // rowCandidates budget across Ntry and Bal; this is the sibling that never got the same fix.
         var rowCandidates = 0;
-        // Matches the CSV derivation: envelope records (01/02/03/49/98/99) sit above the balance and
-        // detail rows, so the raw-line ceiling has to be looser than MaxRecords itself.
-        var rawLineCap = _limits.MaxRecords * 2 + 4;
+        // Its own bound, not a MaxRecords derivation. This was MaxRecords * 2 + 4, copied from
+        // CsvStatementConnector where it is correct - a CSV's envelope is one header row, so 2R+4 always
+        // clears R+1. BAI2's envelope is six lines before any record exists (01/02/03/49/98/99) and grows
+        // by two per extra account and two per extra group, so that formula refused legal documents, and
+        // the gap widened with MaxRecords. No multiplier fixes it: a legal file may hold any number of
+        // record-free account sections, so lines-per-record has no upper bound.
+        var rawLineCap = _limits.MaxDocumentLines;
         var rawLines = 0;
 
         // Trailer bookkeeping. A truncated file drops its 49/98/99 trailers, so every opener must be
