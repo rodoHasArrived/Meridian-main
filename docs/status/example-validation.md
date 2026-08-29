@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1009 |
-| Valid | 584 |
+| Total code blocks | 1011 |
+| Valid | 586 |
 | Invalid | 0 |
 | Skipped | 425 |
 
@@ -18,7 +18,7 @@
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 105 | 0 | 0 | 105 |
-| `bash` | 163 | 163 | 0 | 0 |
+| `bash` | 165 | 165 | 0 | 0 |
 | `cmd` | 1 | 0 | 0 | 1 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 324 | 324 | 0 | 0 |
@@ -101,7 +101,7 @@ No invalid code examples found.
 | `docs/development/documentation-contribution-guide.md` | 7 |
 | `docs/development/expanding-scripts.md` | 8 |
 | `docs/development/git-hooks.md` | 4 |
-| `docs/development/god-file-burn-down-plan.md` | 4 |
+| `docs/development/god-file-burn-down-plan.md` | 6 |
 | `docs/development/otlp-trace-visualization.md` | 5 |
 | `docs/development/provider-implementation.md` | 23 |
 | `docs/development/repository-organization-guide.md` | 8 |
