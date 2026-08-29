@@ -114,18 +114,47 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             return EmptyResult(profileId, issues);
         }
 
+        // Bound the document before materializing it. MaxCharactersInDocument limits the characters read,
+        // not the object graph built from them, and an XElement/XAttribute per node costs far more than
+        // its textual form - so a permitted sub-20 MiB payload of many tiny elements expanded into a much
+        // larger tree with nothing to stop it: `retained` is not initialized until after the load, and
+        // MaxParseNodes was never charged on this path.
+        //
+        // This is the original PRD-010 complaint - "builds a whole XDocument" - which was fixed for
+        // camt.053 and left standing here. A streaming rewrite is the thorough answer, but every section
+        // below navigates via Descendants/Attribute/Section, so that is a large refactor out of
+        // proportion to the bound. A pre-scan buys the property that matters: refuse before allocating.
+        // Two passes over an in-memory buffer are cheap, and the first pass builds no objects.
+        var payload = document.Content.ToArray();
+        var settings = new XmlReaderSettings
+        {
+            DtdProcessing = DtdProcessing.Prohibit,
+            XmlResolver = null,
+            Async = true,
+            MaxCharactersInDocument = _limits.MaxDocumentBytes,
+            MaxCharactersFromEntities = 0
+        };
+
         XDocument xml;
         try
         {
-            var settings = new XmlReaderSettings
+            await using (var scanStream = new MemoryStream(payload, writable: false))
+            using (var scanReader = XmlReader.Create(scanStream, settings))
             {
-                DtdProcessing = DtdProcessing.Prohibit,
-                XmlResolver = null,
-                Async = true,
-                MaxCharactersInDocument = _limits.MaxDocumentBytes,
-                MaxCharactersFromEntities = 0
-            };
-            await using var stream = new MemoryStream(document.Content.ToArray(), writable: false);
+                var nodes = 0;
+                while (await scanReader.ReadAsync().ConfigureAwait(false))
+                {
+                    ct.ThrowIfCancellationRequested();
+                    nodes++;
+                    if (nodes > _limits.MaxParseNodes)
+                    {
+                        issues.Add(_limits.TooManyNodes());
+                        return EmptyResult(profileId, issues);
+                    }
+                }
+            }
+
+            await using var stream = new MemoryStream(payload, writable: false);
             using var reader = XmlReader.Create(stream, settings);
             xml = await XDocument.LoadAsync(reader, LoadOptions.None, ct).ConfigureAwait(false);
         }

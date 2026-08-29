@@ -902,8 +902,17 @@ public sealed class StatementIngressLimitsTests : IDisposable
     {
         // The node bound must not refuse an ordinary statement: the golden fixture parses under a budget
         // far below the 500,000 default but comfortably above what one real statement walks.
+        // MaxRecords is raised too: TightLimits caps records at 2 and this statement carries a closing
+        // balance plus three entries, so without it the record cap refuses the document and the test
+        // passes or fails for a reason that has nothing to do with the node budget.
         var connector = new Camt053StatementConnector(
-            TightLimits with { MaxDocumentBytes = 4 * 1024 * 1024, MaxNestingDepth = 64, MaxParseNodes = 10_000 });
+            TightLimits with
+            {
+                MaxDocumentBytes = 4 * 1024 * 1024,
+                MaxRecords = 100,
+                MaxNestingDepth = 64,
+                MaxParseNodes = 10_000
+            });
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("camt.xml", BuildCamtStatement(entryCount: 3)));
@@ -959,6 +968,74 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
         result.HasErrors.Should().BeTrue();
         result.Issues.Should().Contain(issue => issue.Code == "STATEMENT_TOO_LARGE");
+    }
+
+    [Fact]
+    public async Task IbFlex_ManyTinyElements_AreRefusedBeforeTheTreeIsMaterialized()
+    {
+        // MaxCharactersInDocument bounds the characters read, not the object graph built from them, so a
+        // permitted payload of many tiny elements expanded into a much larger XDocument with nothing to
+        // stop it. The pre-scan refuses before any XElement exists.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxParseNodes = 20 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("ib-flex-nodes.xml", BuildIbFlexWithAccountInformation(50)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyNodesCode);
+    }
+
+    [Fact]
+    public async Task IbFlex_GoldenFixture_ParsesInsideTheNodeBudget()
+    {
+        // The pre-scan must not refuse a real report. MaxRecords is raised alongside MaxParseNodes here
+        // deliberately: TightLimits caps records at 2, and a negative control that trips a different
+        // bound proves nothing about the one under test.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxParseNodes = 100_000 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument(
+                "ib-flex-sample.xml",
+                StatementConnectorTestData.ReadFixture("ib-flex-sample.xml")));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyNodesCode);
+        result.Records.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task Bai2_MinimalValidFileWithTrailingNewline_IsNotRefusedByTheRawLineCap()
+    {
+        // The regression: the cursor walk visits one final zero-length segment when the payload ends with
+        // a newline, and charging it made acceptance depend on the newline. At MaxRecords 1 the cap is 6
+        // and this file's six substantive records exactly fill it, so the trailing segment pushed it to 7.
+        var connector = new Bai2StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1, MaxLineBytes = 4096 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("minimal.bai", BuildBai2Statement(transactionCount: 0)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyLinesCode);
+        result.Records.Should().ContainSingle().Which.Kind.Should().Be(StatementRecordKind.CashBalance);
+    }
+
+    [Fact]
+    public async Task Bai2_MinimalValidFileWithoutTrailingNewline_ParsesIdentically()
+    {
+        // The other half of the same claim: acceptance must not depend on how the file ends.
+        var connector = new Bai2StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1, MaxLineBytes = 4096 });
+        var withNewline = BuildBai2Statement(transactionCount: 0);
+        var withoutNewline = withNewline[..^1];
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("minimal-no-eol.bai", withoutNewline));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyLinesCode);
+        result.Records.Should().ContainSingle();
     }
 
     // ---------------------------------------------------------------------------------------------

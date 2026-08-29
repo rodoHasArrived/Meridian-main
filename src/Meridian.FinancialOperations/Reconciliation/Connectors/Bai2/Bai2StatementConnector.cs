@@ -132,6 +132,15 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 return Task.FromResult(EmptyResult(issues));
             }
 
+            // An empty segment costs nothing to skip and must not be billed. The cursor walk visits one
+            // final zero-length segment when the payload ends with a newline, which every conventional
+            // BAI2 file does - charging it made acceptance depend on the trailing newline and refused a
+            // minimal valid file whose substantive records exactly filled the cap.
+            if (rawLine.Length == 0)
+            {
+                continue;
+            }
+
             // Charged before the decode and the split, and independently of rowCandidates. An unknown
             // record type falls through the switch below without ever charging a candidate, so a file
             // of compact unknown lines allocated one string and one string[] per line with no bound

@@ -139,7 +139,7 @@ subtree, and 500,000 parsed nodes per document. Every bound refuses with a named
 | `STATEMENT_TOO_MANY_LINES` | the CSV raw-line cap derived from `MaxRecords`, refused before mapping |
 | `STATEMENT_NESTING_TOO_DEEP` | `MaxNestingDepth` |
 | `STATEMENT_SUBTREE_TOO_LARGE` | `MaxSubtreeNodes`, one materialized XML subtree |
-| `STATEMENT_TOO_MANY_NODES` | `MaxParseNodes`, the whole-document node budget, charged by the camt.053 and OFX parsers |
+| `STATEMENT_TOO_MANY_NODES` | `MaxParseNodes`, the whole-document node budget, charged by the camt.053, OFX and IB Flex parsers |
 | `ROW_LIMIT_EXCEEDED` | `MaxRecords`, reported by the IB Flex connector against its retained rows |
 
 These messages advise raising the configured limit deliberately. A deployment does that by registering
@@ -158,7 +158,10 @@ statement, so a breach is far more often a malformed or hostile payload than a l
 is. It was defined for the XML connectors and, until this change, only OFX charged it: camt.053 could
 walk hundreds of thousands of uniquely named shallow elements outside the single valid statement, with
 the reader's name table retaining every distinct name string, and no bound fired. Both camt passes now
-charge it.
+charge it, and IB Flex charges it in a streaming pre-scan ahead of the `XDocument` it still builds:
+`MaxCharactersInDocument` bounds the characters read, not the object graph built from them, so a
+permitted payload of many tiny elements could expand well past its own byte size before any row counter
+existed. The pre-scan allocates nothing and refuses first.
 
 `IbFlexStatementConnector` reads `MaxRecords` and `MaxDocumentBytes` like every other connector. It previously held a private
 100,000-row ceiling, which made the paragraph above false for Flex imports: a deployment could raise
