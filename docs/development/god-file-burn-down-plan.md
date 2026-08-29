@@ -160,20 +160,31 @@ buys the room in which the extractions this plan depends on can actually be made
 
 ## Targets
 
-These are **proposed** targets, not yet a registered commitment. `docs/roadmap/data/` is the
-authoritative planning registry, and it currently holds no god-file or file-size-ratchet item;
-adopting these numbers means adding one so registry validation, generated roadmap views, and status
-reconciliation can track them. Until that entry exists, treat this table as a recommendation from
-the audit rather than tracked delivery scope.
+**Registered as `W10-DEBT-001`** in `docs/roadmap/data/roadmap-items.yml`, so registry validation,
+generated roadmap views, and status reconciliation now track these numbers. They are tracked
+delivery scope rather than an audit recommendation; the registry row is authoritative and this table
+restates it.
 
-| Horizon | Proposed target | Rationale |
+| Horizon | Target | Rationale |
 | --- | --- | --- |
 | Per release | Retire **at least 2 files** from the baseline entirely | File count is the honest unit — a file drops out only when it is genuinely decomposed |
-| Per quarter | Reduce total capped lines by **15%** (~25,400 lines) | Matches the reduction rate issue #2619 proposes |
+| Per quarter | Reduce total **current** lines by **15%** (~25,200 lines) | Matches the reduction rate issue #2619 proposes |
 
 Prefer *files retired* over *lines removed* as the headline metric. Lines can fall by moving code
 sideways into a new file that is itself close to the threshold; a file leaving the baseline means a
 real seam was found.
+
+**The quarterly target measures current lines, not capped lines.** The audit originally proposed
+capped lines, which was the right choice when every cap equalled its file's size. It stopped being
+so once `--relax-baseline` began recording deliberate working headroom in the caps: measured on
+caps, a relaxation would read as regression and a tightening as progress, though neither changes a
+line of code. Current lines move only when code does. The registration snapshot — taken 2026-08-29,
+after the first relaxation — is **50 files, 168,123 current lines, 171,262 capped**, and the
+quarterly percentage is measured against the 168,123.
+
+Registration also pins the anti-gaming rule the registry row carries: relaxing the baseline is never
+the mechanism by which a target is met. Granted headroom is excluded from the reclaimable figure
+precisely so it cannot read as progress.
 
 ## Sequencing
 
