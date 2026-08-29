@@ -151,152 +151,152 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 switch (reader.LocalName)
                 {
                     case "Acct":
-                    {
-                        if (!TryReadBoundedSubtree(reader, statementDepth, out var accountElement))
                         {
-                            issues.Add(_limits.NestingTooDeep());
-                            return Task.FromResult(EmptyResult(issues));
-                        }
+                            if (!TryReadBoundedSubtree(reader, statementDepth, out var accountElement))
+                            {
+                                issues.Add(_limits.NestingTooDeep());
+                                return Task.FromResult(EmptyResult(issues));
+                            }
 
-                        account = ResolveAccount(accountElement);
-                        if (string.IsNullOrWhiteSpace(account))
-                        {
-                            // A statement with no IBAN or other account identifier cannot be tied to the account being
-                            // reconciled. StatementRunMatcher normalizes every row to the operator-supplied run
-                            // account, so an unidentifiable statement could reconcile against the selected Meridian
-                            // account; reject it rather than continue with an "unknown-account" placeholder.
-                            issues.Add(StatementParseIssue.Error(
-                                "CAMT_MISSING_ACCOUNT_ID",
-                                "The camt.053 statement has no IBAN or other account identifier; a statement run must reconcile a single, identified account. Repair the file so the statement carries its account id before importing."));
-                            return Task.FromResult(EmptyResult(issues));
-                        }
+                            account = ResolveAccount(accountElement);
+                            if (string.IsNullOrWhiteSpace(account))
+                            {
+                                // A statement with no IBAN or other account identifier cannot be tied to the account being
+                                // reconciled. StatementRunMatcher normalizes every row to the operator-supplied run
+                                // account, so an unidentifiable statement could reconcile against the selected Meridian
+                                // account; reject it rather than continue with an "unknown-account" placeholder.
+                                issues.Add(StatementParseIssue.Error(
+                                    "CAMT_MISSING_ACCOUNT_ID",
+                                    "The camt.053 statement has no IBAN or other account identifier; a statement run must reconcile a single, identified account. Repair the file so the statement carries its account id before importing."));
+                                return Task.FromResult(EmptyResult(issues));
+                            }
 
-                        accountCurrency = Value(accountElement, "Ccy") ?? "USD";
-                        break;
-                    }
+                            accountCurrency = Value(accountElement, "Ccy") ?? "USD";
+                            break;
+                        }
 
                     case "Bal":
-                    {
-                        if (!TryReadBoundedSubtree(reader, statementDepth, out var balance))
                         {
-                            issues.Add(_limits.NestingTooDeep());
-                            return Task.FromResult(EmptyResult(issues));
-                        }
+                            if (!TryReadBoundedSubtree(reader, statementDepth, out var balance))
+                            {
+                                issues.Add(_limits.NestingTooDeep());
+                                return Task.FromResult(EmptyResult(issues));
+                            }
 
-                        // Only the closing booked balance (CLBD) is reconciled; opening and interim/available
-                        // balances are informational and would otherwise double-count against the ledger.
-                        if (!string.Equals(BalanceCode(balance), "CLBD", StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
+                            // Only the closing booked balance (CLBD) is reconciled; opening and interim/available
+                            // balances are informational and would otherwise double-count against the ledger.
+                            if (!string.Equals(BalanceCode(balance), "CLBD", StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
 
-                        var date = BalanceDate(balance);
-                        if (date is null)
-                        {
-                            issues.Add(StatementParseIssue.Warning("CAMT_BALANCE_NO_DATE", "Closing balance has no parseable date; skipped.", rowNumber + 1));
-                            continue;
-                        }
+                            var date = BalanceDate(balance);
+                            if (date is null)
+                            {
+                                issues.Add(StatementParseIssue.Warning("CAMT_BALANCE_NO_DATE", "Closing balance has no parseable date; skipped.", rowNumber + 1));
+                                continue;
+                            }
 
-                        rowNumber++;
-                        var balanceAmount = TrySignedAmount(balance, accountCurrency, out var balanceValue, out var balanceCurrency);
-                        if (balanceAmount != CamtAmountResult.Ok)
-                        {
-                            var (code, message) = balanceAmount == CamtAmountResult.BadDirection
-                                ? ("CAMT_BALANCE_BAD_DIRECTION",
-                                    "Closing balance has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
-                                : ("CAMT_BALANCE_BAD_AMOUNT",
-                                    "Closing balance has a missing or non-numeric Amt; the statement cannot be reconciled.");
-                            issues.Add(StatementParseIssue.Error(code, message, rowNumber));
-                            continue;
-                        }
+                            rowNumber++;
+                            var balanceAmount = TrySignedAmount(balance, accountCurrency, out var balanceValue, out var balanceCurrency);
+                            if (balanceAmount != CamtAmountResult.Ok)
+                            {
+                                var (code, message) = balanceAmount == CamtAmountResult.BadDirection
+                                    ? ("CAMT_BALANCE_BAD_DIRECTION",
+                                        "Closing balance has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
+                                    : ("CAMT_BALANCE_BAD_AMOUNT",
+                                        "Closing balance has a missing or non-numeric Amt; the statement cannot be reconciled.");
+                                issues.Add(StatementParseIssue.Error(code, message, rowNumber));
+                                continue;
+                            }
 
-                        if (records.Count >= _limits.MaxRecords)
-                        {
-                            issues.Add(_limits.TooManyRecords());
-                            return Task.FromResult(EmptyResult(issues));
-                        }
+                            if (records.Count >= _limits.MaxRecords)
+                            {
+                                issues.Add(_limits.TooManyRecords());
+                                return Task.FromResult(EmptyResult(issues));
+                            }
 
-                        records.Add(new StatementCanonicalRecord(
-                            StatementRecordKind.CashBalance,
-                            account ?? string.Empty,
-                            Symbol: string.Empty,
-                            Quantity: 0m,
-                            Price: 0m,
-                            CashAmount: balanceValue,
-                            ActivityType: "cashbalance",
-                            TradeDate: date.Value,
-                            SettlementDate: null,
-                            Currency: balanceCurrency,
-                            FeesCommission: null,
-                            ExternalTransactionId: null));
-                        break;
-                    }
+                            records.Add(new StatementCanonicalRecord(
+                                StatementRecordKind.CashBalance,
+                                account ?? string.Empty,
+                                Symbol: string.Empty,
+                                Quantity: 0m,
+                                Price: 0m,
+                                CashAmount: balanceValue,
+                                ActivityType: "cashbalance",
+                                TradeDate: date.Value,
+                                SettlementDate: null,
+                                Currency: balanceCurrency,
+                                FeesCommission: null,
+                                ExternalTransactionId: null));
+                            break;
+                        }
 
                     case "Ntry":
-                    {
-                        if (!TryReadBoundedSubtree(reader, statementDepth, out var entry))
                         {
-                            issues.Add(_limits.NestingTooDeep());
-                            return Task.FromResult(EmptyResult(issues));
-                        }
+                            if (!TryReadBoundedSubtree(reader, statementDepth, out var entry))
+                            {
+                                issues.Add(_limits.NestingTooDeep());
+                                return Task.FromResult(EmptyResult(issues));
+                            }
 
-                        // Only booked (BOOK) entries contribute to the closing booked balance the run
-                        // reconciles against. Pending (PDNG) and informational entries are not yet booked, so
-                        // importing them as ledger transactions would open false cases and double-count the
-                        // movement once it posts. Entries with no explicit status are treated as booked.
-                        var status = EntryStatus(entry);
-                        if (status is not null && !string.Equals(status, "BOOK", StringComparison.OrdinalIgnoreCase))
-                        {
-                            issues.Add(StatementParseIssue.Warning(
-                                "CAMT_ENTRY_NOT_BOOKED",
-                                $"Entry status '{status}' is not booked; skipped so only booked movements reconcile against the closing balance.",
-                                rowNumber + 1));
-                            continue;
-                        }
+                            // Only booked (BOOK) entries contribute to the closing booked balance the run
+                            // reconciles against. Pending (PDNG) and informational entries are not yet booked, so
+                            // importing them as ledger transactions would open false cases and double-count the
+                            // movement once it posts. Entries with no explicit status are treated as booked.
+                            var status = EntryStatus(entry);
+                            if (status is not null && !string.Equals(status, "BOOK", StringComparison.OrdinalIgnoreCase))
+                            {
+                                issues.Add(StatementParseIssue.Warning(
+                                    "CAMT_ENTRY_NOT_BOOKED",
+                                    $"Entry status '{status}' is not booked; skipped so only booked movements reconcile against the closing balance.",
+                                    rowNumber + 1));
+                                continue;
+                            }
 
-                        var bookingDate = EntryDate(entry, "BookgDt");
-                        var valueDate = EntryDate(entry, "ValDt");
-                        var tradeDate = bookingDate ?? valueDate;
-                        if (tradeDate is null)
-                        {
-                            issues.Add(StatementParseIssue.Warning("CAMT_ENTRY_NO_DATE", "Entry has no parseable booking or value date; skipped.", rowNumber + 1));
-                            continue;
-                        }
+                            var bookingDate = EntryDate(entry, "BookgDt");
+                            var valueDate = EntryDate(entry, "ValDt");
+                            var tradeDate = bookingDate ?? valueDate;
+                            if (tradeDate is null)
+                            {
+                                issues.Add(StatementParseIssue.Warning("CAMT_ENTRY_NO_DATE", "Entry has no parseable booking or value date; skipped.", rowNumber + 1));
+                                continue;
+                            }
 
-                        rowNumber++;
-                        var entryAmount = TrySignedAmount(entry, accountCurrency, out var entryValue, out var entryCurrency);
-                        if (entryAmount != CamtAmountResult.Ok)
-                        {
-                            var (code, message) = entryAmount == CamtAmountResult.BadDirection
-                                ? ("CAMT_ENTRY_BAD_DIRECTION",
-                                    "Entry has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
-                                : ("CAMT_ENTRY_BAD_AMOUNT",
-                                    "Entry has a missing or non-numeric Amt; the statement cannot be reconciled.");
-                            issues.Add(StatementParseIssue.Error(code, message, rowNumber));
-                            continue;
-                        }
+                            rowNumber++;
+                            var entryAmount = TrySignedAmount(entry, accountCurrency, out var entryValue, out var entryCurrency);
+                            if (entryAmount != CamtAmountResult.Ok)
+                            {
+                                var (code, message) = entryAmount == CamtAmountResult.BadDirection
+                                    ? ("CAMT_ENTRY_BAD_DIRECTION",
+                                        "Entry has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
+                                    : ("CAMT_ENTRY_BAD_AMOUNT",
+                                        "Entry has a missing or non-numeric Amt; the statement cannot be reconciled.");
+                                issues.Add(StatementParseIssue.Error(code, message, rowNumber));
+                                continue;
+                            }
 
-                        if (records.Count >= _limits.MaxRecords)
-                        {
-                            issues.Add(_limits.TooManyRecords());
-                            return Task.FromResult(EmptyResult(issues));
-                        }
+                            if (records.Count >= _limits.MaxRecords)
+                            {
+                                issues.Add(_limits.TooManyRecords());
+                                return Task.FromResult(EmptyResult(issues));
+                            }
 
-                        records.Add(new StatementCanonicalRecord(
-                            StatementRecordKind.Transaction,
-                            account ?? string.Empty,
-                            Symbol: string.Empty,
-                            Quantity: 0m,
-                            Price: 0m,
-                            CashAmount: entryValue,
-                            ActivityType: "transaction",
-                            TradeDate: tradeDate.Value,
-                            SettlementDate: valueDate,
-                            Currency: entryCurrency,
-                            FeesCommission: null,
-                            ExternalTransactionId: EntryReference(entry)));
-                        break;
-                    }
+                            records.Add(new StatementCanonicalRecord(
+                                StatementRecordKind.Transaction,
+                                account ?? string.Empty,
+                                Symbol: string.Empty,
+                                Quantity: 0m,
+                                Price: 0m,
+                                CashAmount: entryValue,
+                                ActivityType: "transaction",
+                                TradeDate: tradeDate.Value,
+                                SettlementDate: valueDate,
+                                Currency: entryCurrency,
+                                FeesCommission: null,
+                                ExternalTransactionId: EntryReference(entry)));
+                            break;
+                        }
                 }
             }
         }
@@ -434,66 +434,66 @@ public sealed class Camt053StatementConnector : IStatementConnector
             switch (subtree.NodeType)
             {
                 case XmlNodeType.Element:
-                {
-                    var current = new XElement(XName.Get(subtree.LocalName, subtree.NamespaceURI));
-                    if (subtree.HasAttributes)
                     {
-                        for (var index = 0; index < subtree.AttributeCount; index++)
+                        var current = new XElement(XName.Get(subtree.LocalName, subtree.NamespaceURI));
+                        if (subtree.HasAttributes)
                         {
-                            subtree.MoveToAttribute(index);
-                            // Namespace declarations are not data here; the connector navigates by local
-                            // name, and copying them as attributes would corrupt the element name table.
-                            if (string.Equals(subtree.Prefix, "xmlns", StringComparison.Ordinal)
-                                || string.Equals(subtree.LocalName, "xmlns", StringComparison.Ordinal))
+                            for (var index = 0; index < subtree.AttributeCount; index++)
                             {
-                                continue;
+                                subtree.MoveToAttribute(index);
+                                // Namespace declarations are not data here; the connector navigates by local
+                                // name, and copying them as attributes would corrupt the element name table.
+                                if (string.Equals(subtree.Prefix, "xmlns", StringComparison.Ordinal)
+                                    || string.Equals(subtree.LocalName, "xmlns", StringComparison.Ordinal))
+                                {
+                                    continue;
+                                }
+
+                                current.SetAttributeValue(XName.Get(subtree.LocalName, subtree.NamespaceURI), subtree.Value);
                             }
 
-                            current.SetAttributeValue(XName.Get(subtree.LocalName, subtree.NamespaceURI), subtree.Value);
+                            subtree.MoveToElement();
                         }
 
-                        subtree.MoveToElement();
-                    }
+                        var isEmpty = subtree.IsEmptyElement;
+                        if (open.Count == 0)
+                        {
+                            root ??= current;
+                        }
+                        else
+                        {
+                            open.Peek().Add(current);
+                        }
 
-                    var isEmpty = subtree.IsEmptyElement;
-                    if (open.Count == 0)
-                    {
-                        root ??= current;
-                    }
-                    else
-                    {
-                        open.Peek().Add(current);
-                    }
+                        if (!isEmpty)
+                        {
+                            open.Push(current);
+                        }
 
-                    if (!isEmpty)
-                    {
-                        open.Push(current);
+                        break;
                     }
-
-                    break;
-                }
 
                 case XmlNodeType.Text:
                 case XmlNodeType.CDATA:
                 case XmlNodeType.SignificantWhitespace:
-                {
-                    if (open.Count > 0)
                     {
-                        open.Peek().Add(subtree.Value);
-                    }
+                        if (open.Count > 0)
+                        {
+                            open.Peek().Add(subtree.Value);
+                        }
 
-                    break;
-                }
+                        break;
+                    }
 
                 case XmlNodeType.EndElement:
-                {
-                    if (open.Count > 0)
                     {
-                        open.Pop();
-                    }
+                        if (open.Count > 0)
+                        {
+                            open.Pop();
+                        }
 
-                    break;
-                }
+                        break;
+                    }
             }
         }
 
