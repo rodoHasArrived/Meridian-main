@@ -12,7 +12,8 @@ namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 /// The transport-level upload and CLI caps do not cover this seam. A <see cref="StatementSourceDocument"/>
 /// reaches <see cref="StatementImportService"/> from the workstation upload endpoint, the CLI, a
 /// scheduled fetch, and directly from in-process callers, so the bound has to live where every one of
-/// those paths converges.
+/// those paths converges. It matches, rather than tightens, what those paths already accept: this is a
+/// floor under the uncovered callers, not a new ceiling on the covered ones.
 /// </remarks>
 public sealed record StatementIngressLimits(
     long MaxDocumentBytes,
@@ -21,14 +22,17 @@ public sealed record StatementIngressLimits(
     int MaxNestingDepth)
 {
     /// <summary>
-    /// Default bounds. <see cref="MaxDocumentBytes"/> matches the 5 MiB workstation upload cap so a
-    /// file accepted by the endpoint is not then refused by the connector, and so the connector cap
-    /// is not the looser of the two. The remaining bounds are sized well above any real bank
-    /// statement — a camt.053 or BAI2 file carrying more than 250,000 canonical rows, a BAI2 line
-    /// over 64 KiB, or XML nested deeper than 64 levels is malformed or hostile, not large.
+    /// Default bounds. <see cref="MaxDocumentBytes"/> is <see cref="StatementConnectorLimits.MaxFileBytes"/>,
+    /// the statement-specific 20 MiB cap the workstation statement-connector endpoint and the CLI
+    /// import/validate commands already enforce — NOT the general 5 MiB data-upload cap. IB Flex XML
+    /// exports routinely exceed 5 MiB, which is why statements carry their own larger bound; anchoring
+    /// this default to the smaller cap would refuse every 5–20 MiB statement those paths accept. The
+    /// remaining bounds are sized well above any real bank statement — a camt.053 or BAI2 file carrying
+    /// more than 250,000 canonical rows, a BAI2 line over 64 KiB, or XML nested deeper than 64 levels is
+    /// malformed or hostile, not large.
     /// </summary>
     public static StatementIngressLimits Default { get; } = new(
-        MaxDocumentBytes: 5L * 1024 * 1024,
+        MaxDocumentBytes: StatementConnectorLimits.MaxFileBytes,
         MaxRecords: 250_000,
         MaxLineBytes: 64 * 1024,
         MaxNestingDepth: 64);

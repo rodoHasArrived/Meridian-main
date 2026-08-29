@@ -161,6 +161,85 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Camt_ElementsAfterTheStatementCloses_AreNotImportedAsStatementContent()
+    {
+        // Regression: the streaming rewrite latched the statement's depth and never released it, so a
+        // wrapper placed after </Stmt> whose children sat at the same depth as the statement's own
+        // children was still read as statement content. The element-axis traversal this replaced could
+        // not do that, because it only ever walked the Stmt subtree.
+        var connector = new Camt053StatementConnector();
+        var payload = Encoding.UTF8.GetBytes(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:camt.053.001.02\"><BkToCstmrStmt>" +
+            StatementXml("DE89370400440532013000", entryCount: 1) +
+            // Sibling of Stmt. Its Ntry sits at the same depth a real entry would.
+            "<Smry><Ntry><Amt Ccy=\"EUR\">999999.99</Amt><CdtDbtInd>CRDT</CdtDbtInd><Sts>BOOK</Sts>" +
+            "<BookgDt><Dt>2026-05-10</Dt></BookgDt><AcctSvcrRef>OUTSIDE-STMT</AcctSvcrRef></Ntry></Smry>" +
+            "</BkToCstmrStmt></Document>");
+
+        var result = await connector.ParseAsync(new StatementSourceDocument("sibling.xml", payload));
+
+        result.HasErrors.Should().BeFalse();
+        result.Records.Should().NotContain(
+            record => record.ExternalTransactionId == "OUTSIDE-STMT",
+            "an entry outside the Stmt subtree is not statement content");
+        result.Records.Should().HaveCount(2, "only the closing balance and the statement's own entry");
+    }
+
+    [Fact]
+    public async Task Camt_EmptyStatementElement_DoesNotAdoptLaterSiblings()
+    {
+        // An empty <Stmt/> raises no end element, so the depth latch had nothing to release and the
+        // following wrapper's children were read as though they were the statement's.
+        var connector = new Camt053StatementConnector();
+        var payload = Encoding.UTF8.GetBytes(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:camt.053.001.02\"><BkToCstmrStmt>" +
+            "<Stmt/>" +
+            "<Smry><Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>" +
+            "<Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy=\"EUR\">500.00</Amt>" +
+            "<CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-05-31</Dt></Dt></Bal></Smry>" +
+            "</BkToCstmrStmt></Document>");
+
+        var result = await connector.ParseAsync(new StatementSourceDocument("empty-stmt.xml", payload));
+
+        // The statement carries no account of its own, so it is refused rather than silently adopting
+        // the sibling's account and balance.
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty();
+        result.Issues.Should().Contain(issue => issue.Code == "CAMT_MISSING_ACCOUNT_ID");
+    }
+
+    [Fact]
+    public void DefaultByteCap_MatchesTheStatementImportAllowance_NotTheGeneralUploadCap()
+    {
+        // Regression: the default was anchored to the general 5 MiB data-upload cap. Statement imports
+        // carry their own larger bound because IB Flex XML exports routinely exceed 5 MiB, so anchoring
+        // here would have refused every 5-20 MiB statement the endpoint and CLI already accept.
+        StatementIngressLimits.Default.MaxDocumentBytes
+            .Should().Be(StatementConnectorLimits.MaxFileBytes)
+            .And.Be(20L * 1024 * 1024);
+    }
+
+    [Fact]
+    public async Task Statement_BetweenTheUploadCapAndTheStatementCap_IsStillAccepted()
+    {
+        // A statement larger than the general 5 MiB data-upload cap but inside the 20 MiB statement
+        // allowance must parse, not be refused by the ingress bound.
+        var connector = new Bai2StatementConnector();
+        // 110,000 detail records is ~5.87 MiB - clear of the 5 MiB general upload cap with margin,
+        // and well inside both the 20 MiB byte cap and the 250,000 record cap.
+        var payload = BuildBai2Statement(transactionCount: 110_000);
+        payload.Length.Should().BeGreaterThan(5 * 1024 * 1024, "the payload must clear the general upload cap");
+        payload.Length.Should().BeLessThan((int)StatementIngressLimits.Default.MaxDocumentBytes);
+
+        var result = await connector.ParseAsync(new StatementSourceDocument("large.bai", payload));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.DocumentTooLargeCode);
+        result.HasErrors.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task Camt_MalformedXml_StillReportsMalformedRatherThanThrowing()
     {
         var connector = new Camt053StatementConnector();

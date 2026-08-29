@@ -132,6 +132,19 @@ public sealed class Camt053StatementConnector : IStatementConnector
                     return Task.FromResult(EmptyResult(issues));
                 }
 
+                // Leaving the statement closes its subtree. Without this the depth test below would keep
+                // matching a later sibling's Acct, Bal, or Ntry children, and a wrapper placed after the
+                // statement could contribute canonical rows that were never inside it - which the element-axis
+                // traversal this replaced could not do.
+                if (reader.NodeType == XmlNodeType.EndElement
+                    && statementDepth >= 0
+                    && reader.Depth == statementDepth
+                    && string.Equals(reader.LocalName, "Stmt", StringComparison.Ordinal))
+                {
+                    statementDepth = -1;
+                    continue;
+                }
+
                 if (reader.NodeType != XmlNodeType.Element)
                 {
                     continue;
@@ -139,7 +152,8 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
                 if (string.Equals(reader.LocalName, "Stmt", StringComparison.Ordinal))
                 {
-                    statementDepth = reader.Depth;
+                    // An empty <Stmt/> raises no end element, so it never opens a subtree to read.
+                    statementDepth = reader.IsEmptyElement ? -1 : reader.Depth;
                     continue;
                 }
 
@@ -366,6 +380,17 @@ public sealed class Camt053StatementConnector : IStatementConnector
                     return false;
                 }
 
+                // Same subtree scoping as the second pass: once the statement closes, a later sibling's
+                // Acct must not be attributed to it.
+                if (reader.NodeType == XmlNodeType.EndElement
+                    && statementDepth >= 0
+                    && reader.Depth == statementDepth
+                    && string.Equals(reader.LocalName, "Stmt", StringComparison.Ordinal))
+                {
+                    statementDepth = -1;
+                    continue;
+                }
+
                 if (reader.NodeType != XmlNodeType.Element)
                 {
                     continue;
@@ -373,7 +398,8 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
                 if (string.Equals(reader.LocalName, "Stmt", StringComparison.Ordinal))
                 {
-                    statementDepth = reader.Depth;
+                    // An empty <Stmt/> raises no end element, so it never opens a subtree to read.
+                    statementDepth = reader.IsEmptyElement ? -1 : reader.Depth;
                     accountSeenForStatement = false;
                     statementAccounts.Add(null);
                     continue;
