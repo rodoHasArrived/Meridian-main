@@ -23,14 +23,32 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
     // separate database, so the owning tenant is the operator who creates the account.
     private readonly IFundScopeTenantAccessor? _tenantAccessor;
 
-    public PostgresFundAccountStore(FundAccountStoreOptions options, IFundScopeTenantAccessor? tenantAccessor = null)
+    // W9-GOV-008 criterion 2: how strictly to enforce that scope. Defaults to the deployment-boundary
+    // posture so existing construction sites keep their behaviour; the host injects the configured one.
+    private readonly TenantScopeEnforcementOptions _tenantScope;
+
+    public PostgresFundAccountStore(
+        FundAccountStoreOptions options,
+        IFundScopeTenantAccessor? tenantAccessor = null,
+        TenantScopeEnforcementOptions? tenantScope = null)
     {
         _options = options;
         _tenantAccessor = tenantAccessor;
+        _tenantScope = tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary;
     }
 
-    // SEC-005 slice 4c: the caller's tenant for the current ambient scope, or null (fail-open).
+    // SEC-005 slice 4c: the caller's tenant for the current ambient scope, or null.
     private string? ResolveCallerTenant() => _tenantAccessor?.ResolveCallerTenant();
+
+    // Rejected, not emptied: an empty result is indistinguishable from a genuinely empty account set.
+    // A background job holding retained authority declares it via FundScopeTenantAuthority.
+    private void RejectUnscopedRead(string? callerTenantId)
+    {
+        if (TenantReadPredicate.ShouldRejectRead(callerTenantId, _tenantScope.Mode))
+        {
+            throw new TenantScopeRejectedException("fund accounts");
+        }
+    }
 
     private string Qualified(string table) => $"{_options.Schema}.{table}";
 
@@ -155,12 +173,14 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             WHERE account_id = @account_id
             """;
         cmd.Parameters.AddWithValue("account_id", accountId);
-        // SEC-005 slice 4c: scope by the account's stamped tenant_id so a foreign account GUID resolves to
-        // not-found. Fail-open for a tenantless caller or an unstamped (legacy) account.
+        // SEC-005 slice 4c: scope by the account's stamped tenant_id so a foreign account GUID resolves
+        // to not-found. Under the deployment-boundary posture an unstamped (legacy) account still
+        // resolves; under fail-closed it does not, and a tenantless caller is refused above.
         var callerTenant = ResolveCallerTenant();
+        RejectUnscopedRead(callerTenant);
         if (TenantReadPredicate.ShouldFilter(callerTenant))
         {
-            cmd.CommandText += TenantReadPredicate.FilterClause("tenant_id");
+            cmd.CommandText += TenantReadPredicate.FilterClause("tenant_id", _tenantScope.Mode);
             cmd.Parameters.AddWithValue(
                 TenantReadPredicate.ParameterName,
                 TenantReadPredicate.NormalizeParameter(callerTenant!));
@@ -249,13 +269,22 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         }
 
         // SEC-005 slice 4c: scope by the account's stamped tenant_id (closes the fund_account_id
-        // alternate-identifier residual). Fail-open for a tenantless caller or unstamped legacy rows.
-        // The predicate is skipped only for the deliberate cross-tenant enumeration used by the
-        // scope fan-out authority, which must see holdings in every tenant to answer at all.
+        // alternate-identifier residual). The predicate is skipped only for the deliberate
+        // cross-tenant enumeration used by the scope fan-out authority, which must see holdings in
+        // every tenant to answer at all.
         var callerTenant = applyCallerTenantPredicate ? ResolveCallerTenant() : null;
+        if (applyCallerTenantPredicate)
+        {
+            // W9-GOV-008 criterion 2: an ordinary caller whose tenant cannot be resolved is refused
+            // rather than served unfiltered. Deliberately NOT applied to the fan-out path above --
+            // that one arrives through its own named entry point having declared it wants every
+            // tenant, which is a resolved scope, not an unresolvable one. Guarding it here would
+            // refuse the authority outright and it could no longer answer at all.
+            RejectUnscopedRead(callerTenant);
+        }
         if (TenantReadPredicate.ShouldFilter(callerTenant))
         {
-            sb.AppendLine(TenantReadPredicate.FilterClause("tenant_id"));
+            sb.AppendLine(TenantReadPredicate.FilterClause("tenant_id", _tenantScope.Mode));
             cmd.Parameters.AddWithValue(
                 TenantReadPredicate.ParameterName,
                 TenantReadPredicate.NormalizeParameter(callerTenant!));

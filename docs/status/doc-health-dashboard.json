@@ -1,11 +1,11 @@
 {
   "total_files": 662,
-  "total_lines": 136571,
+  "total_lines": 136706,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 253,
-  "average_lines": 206.3,
+  "average_lines": 206.5,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2416,22 +2416,6 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-01.md",
-      "line_count": 790,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/generated/database/contracts/ledger-contracts-page-02.md",
-      "line_count": 788,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/generated/database/contracts/ledger-contracts-page-03.md",
       "line_count": 730,
       "has_heading": true,
       "todo_count": 0,
@@ -2439,8 +2423,24 @@
       "stale": false
     },
     {
+      "path": "docs/generated/database/contracts/ledger-contracts-page-02.md",
+      "line_count": 782,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/generated/database/contracts/ledger-contracts-page-03.md",
+      "line_count": 728,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/generated/database/contracts/ledger-contracts-page-04.md",
-      "line_count": 529,
+      "line_count": 669,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2544,7 +2544,7 @@
     },
     {
       "path": "docs/generated/database/modules/fund_structure.md",
-      "line_count": 190,
+      "line_count": 212,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2560,7 +2560,7 @@
     },
     {
       "path": "docs/generated/database/modules/ledger.md",
-      "line_count": 440,
+      "line_count": 454,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2656,7 +2656,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10737,
+      "line_count": 10756,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3488,7 +3488,7 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "line_count": 1274,
+      "line_count": 1275,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3672,7 +3672,7 @@
     },
     {
       "path": "docs/security/security-remediation-backlog.md",
-      "line_count": 181,
+      "line_count": 186,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3696,7 +3696,7 @@
     },
     {
       "path": "docs/source/generated/source-roadmap-traceability.md",
-      "line_count": 202,
+      "line_count": 203,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5176,7 +5176,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 593,
+      "line_count": 594,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

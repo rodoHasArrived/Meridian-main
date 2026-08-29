@@ -965,6 +965,73 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
 
     // ── Emptiness check ───────────────────────────────────────────────────────
 
+    // ── Tenant partition (W9-GOV-008 criterion 2) ─────────────────────────────
+
+    /// <summary>The node tables that carry a tenant stamp, with the column holding each node's id.</summary>
+    /// <remarks>
+    /// Ownership links and assignments are edges, not nodes: their visibility follows the endpoints
+    /// they connect, so scoping them independently could show an edge whose nodes are both hidden.
+    /// Linked accounts are included because a disconnected account node is reachable by id.
+    /// </remarks>
+    private static readonly (string Table, string IdColumn)[] TenantStampedNodeTables =
+    [
+        ("organization", "organization_id"),
+        ("business", "business_id"),
+        ("client", "client_id"),
+        ("fund", "fund_id"),
+        ("sleeve", "sleeve_id"),
+        ("vehicle", "vehicle_id"),
+        ("legal_entity", "entity_id"),
+        ("investment_portfolio", "investment_portfolio_id"),
+        ("fund_structure_linked_account", "account_id"),
+    ];
+
+    public async Task<FundStructureTenantMap> GetNodeTenantsAsync(CancellationToken ct = default)
+    {
+        await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await using var cmd = conn.CreateCommand();
+
+        // One round trip for the whole map: the caller is about to load the entire snapshot anyway,
+        // and nine sequential queries would widen the window in which a concurrent stamp lands
+        // between two of them and produces a graph scoped inconsistently.
+        cmd.CommandText = string.Join(
+            "\nUNION ALL\n",
+            TenantStampedNodeTables.Select(node =>
+                $"SELECT {node.IdColumn} AS node_id, tenant_id FROM {Q(node.Table)} WHERE tenant_id IS NOT NULL"));
+
+        var tenants = new Dictionary<Guid, string>();
+        await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            var tenantId = reader.GetString(1).Trim();
+            if (tenantId.Length > 0)
+            {
+                tenants[reader.GetGuid(0)] = tenantId;
+            }
+        }
+
+        return new FundStructureTenantMap(IsPartitioned: true, tenants);
+    }
+
+    public async Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+
+        await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await using var cmd = conn.CreateCommand();
+
+        // First-owner-wins, matching fund_profile_tenancy: a node already attributed keeps its
+        // owner, so a later writer in another tenant cannot silently take ownership of it.
+        cmd.CommandText = string.Join(
+            ";\n",
+            TenantStampedNodeTables.Select(node =>
+                $"UPDATE {Q(node.Table)} SET tenant_id = @tenant_id"
+                + $" WHERE {node.IdColumn} = @node_id AND tenant_id IS NULL"));
+        cmd.Parameters.AddWithValue("node_id", nodeId);
+        cmd.Parameters.AddWithValue("tenant_id", tenantId.Trim());
+        await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
     public async Task<bool> IsEmptyAsync(CancellationToken ct = default)
     {
         await using var conn = await OpenAsync(ct).ConfigureAwait(false);

@@ -6172,6 +6172,78 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChain"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainAnchorPhase"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainAnchorRecord"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainIntegrityException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainLink"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainState"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainVerification"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditPendingMarker"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditRecoveryException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditRecoveryOutcome"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditRecoveryResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
     },
     {
@@ -6737,6 +6809,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IAccountingActionAuditStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IAccountingAuditPendingMarkerStore"
     },
     {
       "kind": "contract-set-member",
@@ -10024,6 +10102,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Tenancy.FundScopeTenantAuthority"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Tenancy.FundScopedWriteTenantDecision"
     },
     {
@@ -10085,6 +10169,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Tenancy.TenantReadPredicate"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Tenancy.TenantScopeEnforcementMode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Tenancy.TenantScopeRejectedException"
     },
     {
       "kind": "contract-set-member",
@@ -18544,6 +18646,78 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChain"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainAnchorPhase"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainAnchorRecord"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainIntegrityException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainLink"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainState"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainVerification"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditPendingMarker"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditRecoveryException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditRecoveryOutcome"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditRecoveryResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
     },
     {
@@ -19109,6 +19283,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IAccountingActionAuditStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IAccountingAuditPendingMarkerStore"
     },
     {
       "kind": "contract-set-member",
@@ -27579,6 +27759,42 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AccountingAuditChainAnchorRecord",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainAnchorPhase"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AccountingAuditChainIntegrityException",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainVerification"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AccountingAuditChainState",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainLink"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AccountingAuditChainVerification",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditChainStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AccountingAuditPendingMarker",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingActionAuditEventDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AccountingAuditRecoveryResult",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditRecoveryOutcome"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.AccountingBasisProjectionItemDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
     },
@@ -31787,6 +32003,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Tenancy.ScopeFanOutResult",
       "target": "contract:Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions",
+      "target": "contract:Meridian.Contracts.Tenancy.TenantScopeEnforcementMode"
     },
     {
       "kind": "contract-reference",
@@ -40433,6 +40655,54 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head",
+      "target": "database:ledger.accounting_action_audit_chain_head.genesis_sequence"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head",
+      "target": "database:ledger.accounting_action_audit_chain_head.next_sequence"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_accounting_audit_chain_last_hash on ledger.accounting_action_audit_chain_head",
+      "target": "database:ledger.accounting_action_audit_chain_head.last_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_accounting_audit_chain_next_sequence on ledger.accounting_action_audit_chain_head",
+      "target": "database:ledger.accounting_action_audit_chain_head.next_sequence"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_accounting_audit_chain_singleton on ledger.accounting_action_audit_chain_head",
+      "target": "database:ledger.accounting_action_audit_chain_head.chain_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_accounting_audit_entry_hash_digest on ledger.accounting_action_audit_events",
+      "target": "database:ledger.accounting_action_audit_events.entry_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_accounting_audit_payload_hash_digest on ledger.accounting_action_audit_events",
+      "target": "database:ledger.accounting_action_audit_events.payload_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_accounting_audit_previous_hash_digest on ledger.accounting_action_audit_events",
+      "target": "database:ledger.accounting_action_audit_events.previous_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_accounting_periods_date_range on ledger.accounting_periods",
       "target": "database:ledger.accounting_periods.end_date"
     },
@@ -44383,6 +44653,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:fund_structure",
+      "target": "database:fund_structure.fund_structure_tenant_quarantine"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_structure",
       "target": "database:fund_structure.investment_portfolio"
     },
     {
@@ -44452,6 +44728,12 @@
       "source": "schema:ledger",
       "structural_equivalence": false,
       "target": "contract-set:ledger-contracts"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.accounting_action_audit_chain_head"
     },
     {
       "kind": "contains",
@@ -45299,7 +45581,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "752e71bdfd3dcab123986d4be394a068b4eccca22973173e58a498c808079fcd",
+  "fingerprint": "c9a16376ea756a647bc8af7b48d41653d29db015ddb8df4e87a8928f10f38742",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -51521,6 +51803,78 @@
       "label": "Meridian.Contracts.Ledger.AccountingActionAuditEventDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.AccountingAuditChain",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AccountingAuditChain"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.AccountingAuditChainAnchorPhase",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AccountingAuditChainAnchorPhase"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Ledger.AccountingAuditChainAnchorRecord",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AccountingAuditChainAnchorRecord"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.AccountingAuditChainIntegrityException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AccountingAuditChainIntegrityException"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Ledger.AccountingAuditChainLink",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AccountingAuditChainLink"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Ledger.AccountingAuditChainState",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AccountingAuditChainState"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.AccountingAuditChainStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AccountingAuditChainStatus"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Ledger.AccountingAuditChainVerification",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AccountingAuditChainVerification"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Ledger.AccountingAuditPendingMarker",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AccountingAuditPendingMarker"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.AccountingAuditRecoveryException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AccountingAuditRecoveryException"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.AccountingAuditRecoveryOutcome",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AccountingAuditRecoveryOutcome"
+    },
+    {
+      "classification": "result",
+      "id": "contract:Meridian.Contracts.Ledger.AccountingAuditRecoveryResult",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AccountingAuditRecoveryResult"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto",
       "kind": "contract-type",
@@ -52089,6 +52443,12 @@
       "id": "contract:Meridian.Contracts.Ledger.IAccountingActionAuditStore",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IAccountingActionAuditStore"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Ledger.IAccountingAuditPendingMarkerStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IAccountingAuditPendingMarkerStore"
     },
     {
       "classification": "service_contract",
@@ -55373,6 +55733,12 @@
       "label": "Meridian.Contracts.Tenancy.FundProfileOwnership"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Tenancy.FundScopeTenantAuthority",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Tenancy.FundScopeTenantAuthority"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.Tenancy.FundScopedWriteTenantDecision",
       "kind": "contract-type",
@@ -55437,6 +55803,24 @@
       "id": "contract:Meridian.Contracts.Tenancy.TenantReadPredicate",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Tenancy.TenantReadPredicate"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Tenancy.TenantScopeEnforcementMode",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Tenancy.TenantScopeEnforcementMode"
+    },
+    {
+      "classification": "configuration",
+      "id": "contract:Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Tenancy.TenantScopeRejectedException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Tenancy.TenantScopeRejectedException"
     },
     {
       "classification": "class",
@@ -61973,6 +62357,12 @@
       "schema": "fund_structure"
     },
     {
+      "id": "database:fund_structure.fund_structure_tenant_quarantine",
+      "kind": "database-table",
+      "label": "fund_structure.fund_structure_tenant_quarantine",
+      "schema": "fund_structure"
+    },
+    {
       "id": "database:fund_structure.investment_portfolio",
       "kind": "database-table",
       "label": "fund_structure.investment_portfolio",
@@ -62021,10 +62411,51 @@
       "schema": "identity_access"
     },
     {
+      "id": "database:ledger.accounting_action_audit_chain_head",
+      "kind": "database-table",
+      "label": "ledger.accounting_action_audit_chain_head",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.accounting_action_audit_chain_head.chain_id",
+      "kind": "database-object",
+      "label": "ledger.accounting_action_audit_chain_head.chain_id"
+    },
+    {
+      "id": "database:ledger.accounting_action_audit_chain_head.genesis_sequence",
+      "kind": "database-object",
+      "label": "ledger.accounting_action_audit_chain_head.genesis_sequence"
+    },
+    {
+      "id": "database:ledger.accounting_action_audit_chain_head.last_hash",
+      "kind": "database-object",
+      "label": "ledger.accounting_action_audit_chain_head.last_hash"
+    },
+    {
+      "id": "database:ledger.accounting_action_audit_chain_head.next_sequence",
+      "kind": "database-object",
+      "label": "ledger.accounting_action_audit_chain_head.next_sequence"
+    },
+    {
       "id": "database:ledger.accounting_action_audit_events",
       "kind": "database-table",
       "label": "ledger.accounting_action_audit_events",
       "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.accounting_action_audit_events.entry_hash",
+      "kind": "database-object",
+      "label": "ledger.accounting_action_audit_events.entry_hash"
+    },
+    {
+      "id": "database:ledger.accounting_action_audit_events.payload_hash",
+      "kind": "database-object",
+      "label": "ledger.accounting_action_audit_events.payload_hash"
+    },
+    {
+      "id": "database:ledger.accounting_action_audit_events.previous_hash",
+      "kind": "database-object",
+      "label": "ledger.accounting_action_audit_events.previous_hash"
     },
     {
       "id": "database:ledger.accounting_configuration_chart_nodes",
@@ -62213,6 +62644,41 @@
       "id": "database:ledger.atomic_tax_lot_posting_batches_pkey",
       "kind": "database-object",
       "label": "ledger.atomic_tax_lot_posting_batches_pkey"
+    },
+    {
+      "id": "database:ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head",
+      "kind": "database-object",
+      "label": "ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head"
+    },
+    {
+      "id": "database:ledger.ck_accounting_audit_chain_last_hash on ledger.accounting_action_audit_chain_head",
+      "kind": "database-object",
+      "label": "ledger.ck_accounting_audit_chain_last_hash on ledger.accounting_action_audit_chain_head"
+    },
+    {
+      "id": "database:ledger.ck_accounting_audit_chain_next_sequence on ledger.accounting_action_audit_chain_head",
+      "kind": "database-object",
+      "label": "ledger.ck_accounting_audit_chain_next_sequence on ledger.accounting_action_audit_chain_head"
+    },
+    {
+      "id": "database:ledger.ck_accounting_audit_chain_singleton on ledger.accounting_action_audit_chain_head",
+      "kind": "database-object",
+      "label": "ledger.ck_accounting_audit_chain_singleton on ledger.accounting_action_audit_chain_head"
+    },
+    {
+      "id": "database:ledger.ck_accounting_audit_entry_hash_digest on ledger.accounting_action_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ck_accounting_audit_entry_hash_digest on ledger.accounting_action_audit_events"
+    },
+    {
+      "id": "database:ledger.ck_accounting_audit_payload_hash_digest on ledger.accounting_action_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ck_accounting_audit_payload_hash_digest on ledger.accounting_action_audit_events"
+    },
+    {
+      "id": "database:ledger.ck_accounting_audit_previous_hash_digest on ledger.accounting_action_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ck_accounting_audit_previous_hash_digest on ledger.accounting_action_audit_events"
     },
     {
       "id": "database:ledger.ck_accounting_periods_date_range on ledger.accounting_periods",
@@ -66022,11 +66488,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3041,
-    "contract_set_memberships": 3574,
-    "edges": 7528,
+    "contract_references": 3048,
+    "contract_set_memberships": 3604,
+    "edges": 7575,
     "foreign_keys": 114,
     "logical_references": 6,
-    "nodes": 3575
+    "nodes": 3608
   }
 }
