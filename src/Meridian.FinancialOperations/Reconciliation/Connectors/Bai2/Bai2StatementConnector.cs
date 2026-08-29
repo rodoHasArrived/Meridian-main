@@ -199,6 +199,17 @@ public sealed class Bai2StatementConnector : IStatementConnector
                             return Task.FromResult(EmptyResult(issues));
                         }
 
+                        // Every per-row diagnostic below is emitted in an iteration that has already charged a
+                        // candidate here, so bounding diagnostics at the candidate charge bounds all of them -
+                        // without depending on an enumeration of the warning branches staying complete as
+                        // branches are added. The record cap alone does not do it: a rejected row keeps its
+                        // diagnostic and no record, so diagnostics need the ceiling that is their own.
+                        if (issues.Count > _limits.MaxDiagnostics)
+                        {
+                            issues.Add(_limits.TooManyDiagnostics());
+                            return Task.FromResult(EmptyResult(issues));
+                        }
+
                         rowNumber++;
                         records.Add(new StatementCanonicalRecord(
                             StatementRecordKind.CashBalance,
@@ -240,6 +251,17 @@ public sealed class Bai2StatementConnector : IStatementConnector
                     if (rowCandidates > _limits.MaxRecords)
                     {
                         issues.Add(_limits.TooManyRecords());
+                        return Task.FromResult(EmptyResult(issues));
+                    }
+
+                    // Every per-row diagnostic below is emitted in an iteration that has already charged a
+                    // candidate here, so bounding diagnostics at the candidate charge bounds all of them -
+                    // without depending on an enumeration of the warning branches staying complete as
+                    // branches are added. The record cap alone does not do it: a rejected row keeps its
+                    // diagnostic and no record, so diagnostics need the ceiling that is their own.
+                    if (issues.Count > _limits.MaxDiagnostics)
+                    {
+                        issues.Add(_limits.TooManyDiagnostics());
                         return Task.FromResult(EmptyResult(issues));
                     }
 

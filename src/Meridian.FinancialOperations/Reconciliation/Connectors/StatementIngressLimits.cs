@@ -3,7 +3,9 @@ namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 /// <summary>
 /// Ingress bounds for statement parsing (PRD-010). <see cref="StatementImportService"/> enforces
 /// <see cref="MaxDocumentBytes"/> and <see cref="MaxRecords"/> for every connector it resolves, so no
-/// format can exceed them; the camt.053 and BAI2 connectors additionally enforce them while streaming,
+/// format can exceed them; every connector additionally enforces <see cref="MaxDocumentBytes"/> at the
+/// top of its own ParseAsync, because that method is public API reached directly by in-process callers
+/// that never pass through the service, and camt.053 and BAI2 enforce the record bounds while streaming,
 /// which refuses a hostile payload partway through instead of after it is already built.
 /// A connector that decodes a whole document and builds a full parse tree lets a caller-supplied
 /// <see cref="StatementSourceDocument"/> size the parse rather than the operator, so the limits are

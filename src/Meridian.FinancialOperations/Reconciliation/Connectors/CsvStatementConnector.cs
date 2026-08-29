@@ -52,6 +52,17 @@ public sealed class CsvStatementConnector(
         var profileId = string.IsNullOrWhiteSpace(document.MappingProfileId)
             ? Descriptor.DefaultProfileId!
             : document.MappingProfileId.Trim();
+        // Refuse before decoding, as camt.053, BAI2 and IB Flex already do. StatementImportService
+        // checks this cap too, but ParseAsync is public connector API reached directly by in-process
+        // callers and by these tests, and the decode below materializes the whole payload as a UTF-16
+        // string: a document whose single leaf is enormous stays under the node, entry and depth bounds
+        // while allocating twice its byte size. The bound has to be checked where the allocation is.
+        if (document.Content.Length > _ingressLimits.MaxDocumentBytes)
+        {
+            issues.Add(_ingressLimits.DocumentTooLarge(document.Content.Length));
+            return EmptyResult(profileId, issues, []);
+        }
+
         var profile = await catalog.FindAsync(profileId, ct).ConfigureAwait(false);
         if (profile is null)
         {

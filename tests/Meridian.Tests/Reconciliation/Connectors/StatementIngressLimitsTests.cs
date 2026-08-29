@@ -1136,6 +1136,117 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Bai2_ManyMalformedTransactions_AreRefusedByTheDiagnosticBudget()
+    {
+        // A 16 detail with an unparseable amount takes a warning branch and produces no record, so the
+        // record cap never sees it. The diagnostic ceiling was documented as a whole-parse bound while
+        // this connector could still retain one warning per malformed row up to MaxRecords - ten times
+        // the ceiling. MaxRecords is deliberately large here so the refusal can only come from the
+        // diagnostic budget.
+        var connector = new Bai2StatementConnector(
+            TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 1000,
+                MaxLineBytes = 4096,
+                MaxDiagnostics = 10
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("bad-details.bai", BuildBai2WithMalformedTransactions(count: 40)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyDiagnosticsCode);
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+    }
+
+    [Fact]
+    public async Task Bai2_AFewMalformedTransactions_AreNotRefusedByTheDiagnosticBudget()
+    {
+        // The control at the same budget: three bad details are an ordinary data-quality problem the
+        // operator resolves from the warnings themselves, and the valid closing balance must still
+        // import. Refusing here would destroy the diagnostics that explain the file.
+        var connector = new Bai2StatementConnector(
+            TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 1000,
+                MaxLineBytes = 4096,
+                MaxDiagnostics = 10
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("few-bad-details.bai", BuildBai2WithMalformedTransactions(count: 3)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyDiagnosticsCode);
+        result.Records.Should().ContainSingle().Which.Kind.Should().Be(StatementRecordKind.CashBalance);
+    }
+
+    [Fact]
+    public async Task Ofx_OverTheByteCap_IsRefusedBeforeDecoding()
+    {
+        // camt.053, BAI2 and IB Flex all refuse an oversize document at the top of ParseAsync; OFX
+        // decoded the whole payload into a UTF-16 string first. StatementImportService checks the cap,
+        // so only direct ParseAsync callers were exposed - but that is public connector API.
+        var connector = new OfxStatementConnector(
+            Catalog(),
+            TightLimits with { MaxDocumentBytes = 256, MaxRecords = 1000 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("big.ofx", BuildOfxStatement(transactionCount: 5)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.DocumentTooLargeCode);
+    }
+
+    [Fact]
+    public async Task Ofx_UnderTheByteCap_StillParses()
+    {
+        // The control: the new pre-decode refusal must not refuse an ordinary statement.
+        var connector = new OfxStatementConnector(
+            Catalog(),
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("ok.ofx", BuildOfxStatement(transactionCount: 3)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.DocumentTooLargeCode);
+        result.Records.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task Csv_OverTheByteCap_IsRefusedBeforeDecoding()
+    {
+        // The same omission as OFX, in the sibling that shares its shape.
+        var connector = new CsvStatementConnector(
+            Catalog(),
+            TightLimits with { MaxDocumentBytes = 64, MaxRecords = 1000 });
+        var csv = "date,amount,description\n2026-05-01,10.00,one\n2026-05-02,20.00,two\n2026-05-03,30.00,three\n";
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("big.csv", Encoding.UTF8.GetBytes(csv)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.DocumentTooLargeCode);
+    }
+
+    [Fact]
+    public async Task Csv_UnderTheByteCap_StillParses()
+    {
+        // The control for the CSV half.
+        var connector = new CsvStatementConnector(
+            Catalog(),
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000 });
+        var csv = "date,amount,description\n2026-05-01,10.00,one\n2026-05-02,20.00,two\n";
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("ok.csv", Encoding.UTF8.GetBytes(csv)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.DocumentTooLargeCode);
+        result.Records.Should().NotBeEmpty();
+    }
+
+    [Fact]
     public async Task IbFlex_RealReport_IsNotRefusedByTheDiagnosticBudget()
     {
         // The bound must never fire on a clean report. Same tight budget, against the golden fixture.
@@ -1427,6 +1538,25 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
     // Valid BAI2 envelope carrying record types the switch does not recognize, which is what makes them
     // interesting: they never charge a balance or detail candidate.
+    private static byte[] BuildBai2WithMalformedTransactions(int count)
+    {
+        // Each 16 detail carries an unparseable amount, so it takes the BAI2_BAD_AMOUNT warning branch:
+        // one retained diagnostic and no canonical record. The 03 balance is valid, so the file still
+        // produces exactly one record however many bad details follow it.
+        var builder = new StringBuilder()
+            .Append("01,CITIBANK,MERIDIAN,260531,0800,1,,,2/\n")
+            .Append("02,MERIDIAN,CITIBANK,1,260531,,USD,2/\n")
+            .Append("03,0975312468,USD,015,1234567,,/\n");
+
+        for (var index = 0; index < count; index++)
+        {
+            builder.Append("16,409,not-an-amount,,,/\n");
+        }
+
+        builder.Append("49,1234567,3/\n98,1234567,1,3/\n99,1234567,1,5/\n");
+        return Encoding.UTF8.GetBytes(builder.ToString());
+    }
+
     private static byte[] BuildBai2WithUnknownRecordTypes(int unknownCount)
     {
         var builder = new StringBuilder()
@@ -1888,9 +2018,13 @@ public sealed class StatementIngressLimitsTests : IDisposable
         // MaxLineBytes is a byte bound enforced against a decoded string. A BMP character above U+07FF
         // is three UTF-8 bytes in one UTF-16 unit, so a CJK line measured by character count slips up to
         // 3x past the cap. This line is deliberately under the bound in characters and over it in bytes.
+        // MaxDocumentBytes is raised because the subject here is the LINE bound: TightLimits caps the
+        // document at 512 bytes and this row alone is ~780, so the byte cap the CSV connector now
+        // enforces before decoding would refuse the file first and the test would pass without ever
+        // reaching the bound it exists to prove.
         var connector = new CsvStatementConnector(
             Catalog(),
-            TightLimits with { MaxRecords = 100, MaxLineBytes = 600 });
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 100, MaxLineBytes = 600 });
         var wide = "date,amount,description\n2026-05-01,10.00," + new string('\u4e2d', 260) + "\n";
 
         var result = await connector.ParseAsync(

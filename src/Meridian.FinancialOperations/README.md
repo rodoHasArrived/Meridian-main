@@ -134,14 +134,14 @@ with a named code:
 
 | Code | Bound |
 | --- | --- |
-| `STATEMENT_DOCUMENT_TOO_LARGE` | `MaxDocumentBytes`, checked before the source bytes are copied |
+| `STATEMENT_DOCUMENT_TOO_LARGE` | `MaxDocumentBytes`, checked by the import service and by every connector before it decodes |
 | `STATEMENT_TOO_MANY_RECORDS` | `MaxRecords`, against total retained rows |
 | `STATEMENT_LINE_TOO_LONG` | `MaxLineBytes`, measured in UTF-8 bytes |
 | `STATEMENT_TOO_MANY_LINES` | CSV's raw-line cap derived from `MaxRecords`, and BAI2's independent `MaxDocumentLines`; refused before mapping |
 | `STATEMENT_NESTING_TOO_DEEP` | `MaxNestingDepth` |
 | `STATEMENT_SUBTREE_TOO_LARGE` | `MaxSubtreeNodes`, one materialized XML subtree |
 | `STATEMENT_TOO_MANY_NODES` | `MaxParseNodes`, the whole-document node budget, charged by the camt.053, OFX and IB Flex parsers |
-| `STATEMENT_TOO_MANY_DIAGNOSTICS` | `MaxDiagnostics`, retained parse issues, charged by the CSV, OFX and IB Flex row mappers |
+| `STATEMENT_TOO_MANY_DIAGNOSTICS` | `MaxDiagnostics`, retained parse issues; charged by the CSV, OFX and IB Flex row mappers, and at the camt.053 and BAI2 per-row candidate charges |
 | `ROW_LIMIT_EXCEEDED` | `MaxRecords`, reported by the IB Flex connector against its retained rows |
 
 These messages advise raising the configured limit deliberately. A deployment does that by registering
