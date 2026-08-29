@@ -510,5 +510,132 @@ class TightenBaselineTests(unittest.TestCase):
             self.assertNotIn("headroom", read_payload(root))
 
 
+class RelaxBaselineTests(unittest.TestCase):
+    """--relax-baseline: grants working headroom without becoming a way to absorb growth.
+
+    Fixtures use threshold 10 (written into the baseline by fake_repo); relax reads the threshold
+    from the baseline, so none of these pass --threshold.
+    """
+
+    def test_raises_a_cap_pinned_at_the_files_current_size(self):
+        # The state --update-baseline leaves behind, and the one this command exists for: cap
+        # equals size, so a single added line fails CI.
+        with fake_repo({"src/a.cs": 30}, {"src/a.cs": 30}) as root:
+            code, output = run(["--relax-baseline", "--buffer", "50"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root), {"src/a.cs": 80})
+            self.assertEqual(read_payload(root)["headroom"], {"src/a.cs": 50})
+            self.assertIn("1 cap(s) raised", output)
+
+    def test_never_lowers_a_cap(self):
+        # 20 lines + buffer 5 targets 25, but the cap is already 90. Lowering is the tightening
+        # direction; doing it here would destroy a deliberate reduction.
+        with fake_repo({"src/a.cs": 20}, {"src/a.cs": 90}) as root:
+            code, output = run(["--relax-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root), {"src/a.cs": 90})
+
+    def test_records_only_the_buffer_as_deliberate_headroom(self):
+        # The cap leaves 70 lines spare, but only the 5-line buffer is deliberate. Recording all
+        # 70 would erase a real reduction from the reclaimable figure.
+        with fake_repo({"src/a.cs": 20}, {"src/a.cs": 90}) as root:
+            code, output = run(["--relax-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_payload(root)["headroom"], {"src/a.cs": 5})
+            self.assertIn("65 line(s) reclaimable", output)
+
+    def test_does_not_reduce_headroom_a_tightening_recorded(self):
+        # Tighten to 20+15=35 with 15 recorded, then relax with a smaller buffer. The smaller
+        # buffer must not quietly retract slack an earlier run chose on purpose.
+        with fake_repo({"src/a.cs": 20}, {"src/a.cs": 90}) as root:
+            run(["--tighten-baseline", "--buffer", "15"])
+            self.assertEqual(read_payload(root)["headroom"], {"src/a.cs": 15})
+
+            code, output = run(["--relax-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root), {"src/a.cs": 35})
+            self.assertEqual(read_payload(root)["headroom"], {"src/a.cs": 15})
+
+    def test_clears_the_tight_warning(self):
+        with fake_repo({"src/a.cs": 30}, {"src/a.cs": 30}) as root:
+            _, before = run([])
+            self.assertIn("TIGHT", before)
+
+            run(["--relax-baseline", "--buffer", "50"])
+            code, after = run([])
+
+            self.assertEqual(code, 0, after)
+            self.assertNotIn("TIGHT", after)
+
+    def test_a_later_edit_within_the_buffer_passes(self):
+        with fake_repo({"src/a.cs": 30}, {"src/a.cs": 30}) as root:
+            run(["--relax-baseline", "--buffer", "50"])
+            (root / "src" / "a.cs").write_text("\n".join("x" for _ in range(45)) + "\n")
+
+            code, output = run([])
+
+            self.assertEqual(code, 0, output)
+
+    def test_refuses_while_the_ratchet_is_failing(self):
+        # The abuse this guard exists for: relaxing a grown file would wave it through.
+        with fake_repo({"src/a.cs": 40}, {"src/a.cs": 30}):
+            code, output = run(["--relax-baseline"])
+
+            self.assertEqual(code, 1, output)
+            self.assertIn("refusing to relax while the ratchet is failing", output)
+            self.assertIn("GREW past cap", output)
+
+    def test_refuses_when_an_untracked_source_is_unreadable(self):
+        # An unreadable governed source is invisible to the scan, so a new god file could ride
+        # through the very command that rewrites the protections.
+        with fake_repo({"src/a.cs": 30, "src/mystery.cs": 30}, {"src/a.cs": 30}):
+            with unreadable("mystery.cs"):
+                code, output = run(["--relax-baseline"])
+
+            self.assertEqual(code, 2, output)
+            self.assertIn("refusing to relax", output)
+
+    def test_refuses_when_a_tracked_file_is_unreadable(self):
+        with fake_repo({"src/a.cs": 30}, {"src/a.cs": 30, "src/gone.cs": 40}):
+            with unreadable("gone.cs"):
+                code, output = run(["--relax-baseline"])
+
+            self.assertEqual(code, 2, output)
+            self.assertIn("refusing to relax", output)
+
+    def test_does_not_retire_an_entry(self):
+        # 3 lines + buffer 5 is under the threshold, but dropping protections is the tightening
+        # direction; a command that grants headroom must not also retire caps.
+        with fake_repo({"src/small.cs": 3}, {"src/small.cs": 30}) as root:
+            code, output = run(["--relax-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 0, output)
+            self.assertIn("src/small.cs", read_baseline(root))
+
+    def test_buffer_is_accepted_with_relax(self):
+        with fake_repo({"src/a.cs": 30}, {"src/a.cs": 30}):
+            code, output = run(["--relax-baseline", "--buffer", "10"])
+
+            self.assertEqual(code, 0, output)
+
+    def test_relax_and_tighten_are_mutually_exclusive(self):
+        with fake_repo({"src/a.cs": 30}, {"src/a.cs": 30}):
+            code, output = run(["--relax-baseline", "--tighten-baseline"])
+
+            self.assertEqual(code, 2, output)
+            self.assertIn("mutually exclusive", output)
+
+    def test_relax_rejects_an_explicit_threshold(self):
+        with fake_repo({"src/a.cs": 30}, {"src/a.cs": 30}):
+            code, output = run(["--relax-baseline", "--threshold", "10"])
+
+            self.assertEqual(code, 2, output)
+            self.assertIn("uses the threshold recorded in the baseline", output)
+
+
 if __name__ == "__main__":
     unittest.main()

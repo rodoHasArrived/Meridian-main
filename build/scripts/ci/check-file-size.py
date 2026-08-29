@@ -33,6 +33,7 @@ Usage:
     python3 build/scripts/ci/check-file-size.py --update-baseline
     python3 build/scripts/ci/check-file-size.py --threshold 2000
     python3 build/scripts/ci/check-file-size.py --tighten-baseline [--buffer 50]
+    python3 build/scripts/ci/check-file-size.py --relax-baseline [--buffer 50]
 
 --tighten-baseline is the downward-only counterpart to --update-baseline (#2675). It lowers each
 cap to the file's current size plus a working buffer, never raises one, retires an entry only once
@@ -40,6 +41,14 @@ the threshold itself provides at least that buffer of headroom (a deleted file a
 there is nothing left to protect), and records the retained headroom in the baseline so the trend
 does not report deliberate slack as an unlocked reduction. It refuses to run at all while the
 ratchet is failing or while any governed source is unreadable.
+
+--relax-baseline is the working-headroom counterpart. A baseline written by --update-baseline pins
+every file at its exact current size, so the next ordinary edit to any of them fails CI on a file
+nobody grew — the cost falls on whoever touches it next rather than on whoever let it get large.
+Relaxing raises each cap to the file's current size plus a buffer, never lowers one, and never
+retires an entry. It records only the buffer as deliberate headroom, so the rest of an over-large
+cap keeps reporting as reclaimable. It refuses under the same two conditions as tightening: it
+grants room to edit, it does not absorb a file that already grew past its cap.
 """
 
 from __future__ import annotations
@@ -228,11 +237,13 @@ def _write_baseline(
             "freely; growing one past its cap or adding a new file over the "
             "threshold fails CI. Lock in reductions with "
             "`python3 build/scripts/ci/check-file-size.py --tighten-baseline`, "
-            "which only lowers caps; `--update-baseline` regenerates from the "
-            "tree (and can raise caps), so it needs justification in review. "
-            "The optional headroom map records lines deliberately left spare by "
-            "the last tightening, so deliberate slack is not reported as an "
-            "unlocked reduction."
+            "which only lowers caps; `--relax-baseline` only raises them, "
+            "granting each file a working buffer so an ordinary edit does not "
+            "fail CI; `--update-baseline` regenerates from the tree and can do "
+            "either, so it needs justification in review. The optional headroom "
+            "map records lines deliberately left spare by the last tightening or "
+            "relaxation, so deliberate slack is not reported as an unlocked "
+            "reduction."
         ),
         "threshold_lines": threshold,
         "files": oversized,
@@ -245,9 +256,10 @@ def _write_baseline(
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
-# Files this close to their cap are called out before a contributor trips over them. The ratchet
-# offers no headroom by construction — a freshly written baseline pins every file at its exact
+# Files this close to their cap are called out before a contributor trips over them. A baseline
+# written by --update-baseline offers no headroom by construction — it pins every file at its exact
 # current size — so without this warning the first signal is a failed CI run on a one-line change.
+# --relax-baseline exists to clear that state; this warning is what makes needing it visible.
 TIGHT_HEADROOM_LINES = 25
 
 
@@ -318,7 +330,7 @@ def _report_trend(
     if retained:
         print(
             f"({retained:,} further line(s) of cap are deliberate working headroom from the last "
-            f"--tighten-baseline and are not counted as reclaimable.)"
+            f"--tighten-baseline or --relax-baseline and are not counted as reclaimable.)"
         )
     if unreadable:
         print(
@@ -383,6 +395,64 @@ def _load_baseline_threshold(root: Path) -> int:
         return THRESHOLD_LINES
     data = json.loads(path.read_text(encoding="utf-8"))
     return int(data.get("threshold_lines", THRESHOLD_LINES))
+
+
+def _relax_baseline(
+    root: Path,
+    buffer: int,
+    baseline: dict[str, int],
+    current: dict[str, int],
+    headroom: dict[str, int],
+) -> tuple[int, dict[str, int], dict[str, int], list[str]]:
+    """Compute the relaxed baseline. Pure: reads sizes, writes nothing.
+
+    Returns (exit_code, new_files, new_headroom, unreadable_tracked). Only an exit code of 0
+    carries meaningful maps.
+
+    The upward counterpart to :func:`_tighten_baseline`. A baseline written by
+    ``--update-baseline`` pins every file at its exact current size, so an ordinary one-line edit
+    fails CI on a file nobody grew — the cost lands on whoever touches the file next, not on
+    whoever let it get large. This grants each tracked file a working buffer above its current
+    size.
+
+    The rules:
+
+    - A cap only moves UP: new cap = max(old cap, lines + buffer). Lowering is
+      ``--tighten-baseline``'s job; silently reclaiming here would destroy a deliberate reduction.
+    - Recorded headroom is capped at the buffer, so a file that has shrunk far below its cap still
+      reports the rest of that gap as reclaimable. Recording the whole gap as deliberate slack
+      would erase real progress from the trend.
+    - Headroom a previous tightening recorded is never reduced, so relaxing with a small buffer
+      cannot quietly retract slack an earlier run chose on purpose.
+    - Nothing retires. Retirement locks in a reduction, which is the tightening direction; a
+      command that grants headroom must not also drop protections.
+    """
+    new_files: dict[str, int] = {}
+    new_headroom: dict[str, int] = {}
+    unreadable_tracked: list[str] = []
+
+    for rel, cap in baseline.items():
+        if rel in current:
+            lines: int | None = current[rel]
+        else:
+            lines = _try_count_lines(root / rel)
+        if lines is None:
+            unreadable_tracked.append(rel)
+            continue
+
+        new_cap = max(cap, lines + buffer)
+        new_files[rel] = new_cap
+
+        # At most the buffer counts as deliberate: the remainder of an over-large cap is a
+        # reduction waiting to be locked in, and the trend must keep saying so. Never below what a
+        # previous tightening recorded, and never more than the cap actually leaves spare.
+        granted = min(new_cap - lines, max(headroom.get(rel, 0), buffer))
+        if granted > 0:
+            new_headroom[rel] = granted
+
+    if unreadable_tracked:
+        return 2, {}, {}, unreadable_tracked
+    return 0, new_files, new_headroom, []
 
 
 def _tighten_baseline(
@@ -471,18 +541,27 @@ def main(argv: list[str] | None = None) -> int:
              "a deleted file always retires.",
     )
     parser.add_argument(
+        "--relax-baseline",
+        action="store_true",
+        help="Raise caps to current size plus --buffer so an ordinary edit does not fail CI; "
+             "never lowers a cap and never retires an entry. Records the granted slack as "
+             "headroom so the trend still reports the rest of each cap as reclaimable.",
+    )
+    parser.add_argument(
         "--buffer",
         type=int,
         default=None,
-        help=f"Working headroom --tighten-baseline retains above each file's current size "
-             f"(default {DEFAULT_TIGHTEN_BUFFER}). Only valid with --tighten-baseline.",
+        help=f"Working headroom --tighten-baseline retains, or --relax-baseline grants, above "
+             f"each file's current size (default {DEFAULT_TIGHTEN_BUFFER}). Only valid with one "
+             f"of those two.",
     )
     args = parser.parse_args(argv)
 
     # Contract slips from the withdrawn first attempt (#2675): options that are accepted and
     # ignored exit 0 while doing something other than what was asked, so both are hard errors.
-    if args.buffer is not None and not args.tighten_baseline:
-        print("ERROR: --buffer is only meaningful with --tighten-baseline.", file=sys.stderr)
+    if args.buffer is not None and not (args.tighten_baseline or args.relax_baseline):
+        print("ERROR: --buffer is only meaningful with --tighten-baseline or --relax-baseline.",
+              file=sys.stderr)
         return 2
     if args.tighten_baseline and args.threshold is not None:
         print(
@@ -491,9 +570,19 @@ def main(argv: list[str] | None = None) -> int:
             file=sys.stderr,
         )
         return 2
-    if args.tighten_baseline and args.update_baseline:
-        print("ERROR: --tighten-baseline and --update-baseline are mutually exclusive.",
-              file=sys.stderr)
+    # Same reasoning as tightening: the recorded threshold is the one the caps were written
+    # against, and a relax that took a different one would grant headroom measured against a
+    # contract the baseline does not encode.
+    if args.relax_baseline and args.threshold is not None:
+        print(
+            "ERROR: --relax-baseline uses the threshold recorded in the baseline; an explicit "
+            "--threshold would grant headroom against a threshold the baseline does not record.",
+            file=sys.stderr,
+        )
+        return 2
+    if sum((args.tighten_baseline, args.update_baseline, args.relax_baseline)) > 1:
+        print("ERROR: --tighten-baseline, --relax-baseline and --update-baseline are mutually "
+              "exclusive.", file=sys.stderr)
         return 2
 
     root = _repo_root()
@@ -504,12 +593,79 @@ def main(argv: list[str] | None = None) -> int:
 
     # Tightening reads its threshold from the baseline it is tightening; everything else takes
     # the flag or the module default.
-    if args.tighten_baseline:
+    if args.tighten_baseline or args.relax_baseline:
         threshold = _load_baseline_threshold(root)
     else:
         threshold = args.threshold if args.threshold is not None else THRESHOLD_LINES
 
     current, unreadable_sources = _scan(root, threshold)
+
+    if args.relax_baseline:
+        baseline_path = _baseline_path(root)
+        if not baseline_path.exists():
+            print("ERROR: no baseline found. Run with --update-baseline first.", file=sys.stderr)
+            return 2
+        baseline = _load_baseline(root)
+        buffer = args.buffer if args.buffer is not None else DEFAULT_TIGHTEN_BUFFER
+        if buffer < 0:
+            print("ERROR: --buffer must be non-negative.", file=sys.stderr)
+            return 2
+
+        # Same two refusals as tightening, for the same reasons: an unreadable governed source is
+        # invisible to the scan, so a new god file could ride through the command that rewrites
+        # the protections; and a mutating command must not exit 0 on a tree that already fails.
+        # The second matters more here than it does when tightening — relaxing a failing tree is
+        # exactly how a file that grew past its cap would get quietly waved through.
+        if unreadable_sources:
+            print(
+                f"ERROR: refusing to relax. {len(unreadable_sources)} governed source path(s) "
+                f"could not be read:",
+                file=sys.stderr,
+            )
+            for rel in unreadable_sources:
+                print(f"- {rel}", file=sys.stderr)
+            return 2
+
+        failing_new = sorted(rel for rel in current if rel not in baseline)
+        failing_grown = sorted(
+            rel for rel in current if rel in baseline and current[rel] > baseline[rel]
+        )
+        if failing_new or failing_grown:
+            print("ERROR: refusing to relax while the ratchet is failing:", file=sys.stderr)
+            for rel in failing_new:
+                print(f"- NEW god file: {rel} has {current[rel]} lines (> {threshold}).",
+                      file=sys.stderr)
+            for rel in failing_grown:
+                print(f"- GREW past cap: {rel} now {current[rel]} lines "
+                      f"(baseline cap {baseline[rel]}).", file=sys.stderr)
+            print("Relaxing grants working headroom; it is not a way to absorb a file that "
+                  "already grew. Fix the violations (or --update-baseline with justification).",
+                  file=sys.stderr)
+            return 1
+
+        code, new_files, new_headroom, unreadable_tracked = _relax_baseline(
+            root, buffer, baseline, current, _load_headroom(root)
+        )
+        if code != 0:
+            print(
+                f"ERROR: refusing to relax. {len(unreadable_tracked)} baselined file(s) could "
+                f"not be read, and a file that cannot be read is not a file with zero lines:",
+                file=sys.stderr,
+            )
+            for rel in unreadable_tracked:
+                print(f"- {rel}", file=sys.stderr)
+            return 2
+
+        _write_baseline(root, threshold, new_files, new_headroom)
+
+        granted_total = sum(new_files[rel] - baseline[rel] for rel in new_files)
+        widened = sum(1 for rel in new_files if new_files[rel] > baseline[rel])
+        print(
+            f"Relaxed baseline: {len(new_files)} tracked file(s), {widened} cap(s) raised, "
+            f"{granted_total:,} line(s) of working headroom added (requested {buffer} per file)."
+        )
+        _report_trend(root, new_files, current, new_headroom)
+        return 0
 
     if args.tighten_baseline:
         baseline_path = _baseline_path(root)
