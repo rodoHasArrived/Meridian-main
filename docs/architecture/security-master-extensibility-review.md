@@ -1535,7 +1535,9 @@ re-observes the token at the top of the next iteration — `ct.ThrowIfCancellati
 for fact groups and `:269` for filers — so a cancellation swallowed partway through a run surfaces on
 the following pass, late and at the wrong site but not silently. The normal-completion case needs the
 swallow to happen with no token-observing operation after it: the **final** fact group or filer, or
-the initial `CountOpenConflictsAsync` when nothing downstream awaits on the token. Those are the
+the **final** `CountOpenConflictsAsync` (`:141`) — not the first (`:58`), which is immediately
+followed by `FetchTickerAssociationsAsync(ct)` at `:60` and so re-observes cancellation on the very
+next await; only the second is followed by nothing but `Math.Max` and result construction. Those are the
 scenarios a regression test has to construct; asserting that any swallowed cancellation yields a
 normal result would assert something the loop structure prevents. The defect is still real — a
 cancelled ingest is reported as an ordinary error, and a cancelled conflict count silently becomes
