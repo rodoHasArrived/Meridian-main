@@ -94,6 +94,14 @@ risks that compound as new asset classes land.
 > (P1–P4 plus P3b and P5, which review surfaced). See
 > [Scheduled institutional-requirements pass — 2026-08-28](#scheduled-institutional-requirements-pass--2026-08-28).
 >
+> **Read the four items below as of the pass date, not as current.** Implementation work merged on
+> 2026-08-29 after this pass was written. As of that merge: the gate bypass (the second item) is
+> **closed**; P3b and P4 are **partially closed**, each still holding the property the item was about;
+> and **P5 is open and unchanged**, which is why it stays first. The items are left as written because
+> they record what was found and why — *Status of this pass's findings after the 2026-08-29
+> implementation merges* has the verified current state, and it, not this block, is what to schedule
+> work from.
+>
 > **Its highest-severity finding (P5) is that the desktop lane mutates the golden record with no
 > authorization check at all.** Every HTTP route that mutates the **golden record** requires
 > `ModifySecurityMaster` — other Security Master mutations deliberately use narrower capabilities, and
@@ -114,6 +122,8 @@ risks that compound as new asset classes land.
 > `RequireGovernedTermAmendmentRoute`, so a deployment that enables `RequireGovernedTermAmendments`
 > to force maker-checker still has an ungated amendment path. That is one call to close, and it also
 > makes the 2026-08-24 resolution's "gates all three routes uniformly" incomplete.
+> **Closed on 2026-08-29** — `SecurityMasterEndpoints.cs:1064` now calls
+> `RequireGovernedTermAmendmentRoute`, taking it to 4 call sites. Do not schedule this; it is done.
 >
 > **The third shipped-behaviour defect (P3b, priority 3) loses history today**: an alias upsert
 > overwrites the existing row's `created_at`, and `RebuildRecordedAsOfAsync` filters aliases by it, so

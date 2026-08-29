@@ -461,8 +461,16 @@ label alone will update this file.
   - [ ] After any body rewrite, re-read the raw body and confirm the marker survived
   - [ ] Prefer a `phase:PRx` **label** where one is available: it is visible in the PR UI and survives body rewrites, whereas the marker is invisible and does not
   - [ ] Do not expect a job re-run to clear this — see below
-- **Verification commands**:
-  - Fetch the PR body raw (GitHub MCP `pull_request_read` method `get`) and confirm it contains `<!-- phase:PR1 -->`
+- **Verification commands**: the marker is invisible to any view that renders or sanitizes HTML, so
+  verify it from the gate's own output rather than by reading the body back.
+  - Read the `scope-gate` job log on the PR's latest run and find `Phase scope gate passed for PR1 (source: …)`.
+    This is authoritative: it is the gate reporting which declaration it actually resolved. `source: pr_body`
+    means a body marker is present and load-bearing — a body rewrite will drop it. `source: labels` means the
+    phase comes from a `phase:PRx` label and the body marker is not what is holding the gate up.
+  - **Do not** verify by fetching the body through GitHub MCP `pull_request_read` (method `get`): it strips
+    HTML comments, so it reports a present marker as absent and invites exactly the destructive rewrite this
+    entry exists to prevent. If you must read the body, use a raw API response that preserves comments and
+    confirm the bytes are there.
   - `grep -n "PHASE_BODY\|PHASE_LABEL" tools/roadmap/enforce_phase_scope.py` to confirm the accepted forms
 - **Source issue**: PR #2857
 - **Status**: mitigated
