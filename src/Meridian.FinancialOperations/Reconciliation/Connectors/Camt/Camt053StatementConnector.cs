@@ -657,6 +657,13 @@ public sealed class Camt053StatementConnector : IStatementConnector
         XElement? root = null;
         var nodes = 0;
 
+        // ReadSubtree's first Read() lands on the element the outer walk is already standing on, and that
+        // walk has already charged it - one node plus its attributes - to the document budget. Charging it
+        // again here bills every subtree root twice, so a document whose real node total sits inside
+        // MaxParseNodes could be refused. The per-subtree budget below still counts the root, because the
+        // subtree genuinely contains it; only the shared document budget must not be double-billed.
+        var isSubtreeRoot = true;
+
         using var subtree = reader.ReadSubtree();
         while (subtree.Read())
         {
@@ -677,7 +684,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 return false;
             }
 
-            if (++documentNodes > _limits.MaxParseNodes)
+            if (!isSubtreeRoot && ++documentNodes > _limits.MaxParseNodes)
             {
                 refusal = _limits.TooManyNodes();
                 return false;
@@ -701,11 +708,14 @@ public sealed class Camt053StatementConnector : IStatementConnector
                                 return false;
                             }
 
-                            documentNodes += subtree.AttributeCount;
-                            if (documentNodes > _limits.MaxParseNodes)
+                            if (!isSubtreeRoot)
                             {
-                                refusal = _limits.TooManyNodes();
-                                return false;
+                                documentNodes += subtree.AttributeCount;
+                                if (documentNodes > _limits.MaxParseNodes)
+                                {
+                                    refusal = _limits.TooManyNodes();
+                                    return false;
+                                }
                             }
 
                             for (var index = 0; index < subtree.AttributeCount; index++)
@@ -765,6 +775,8 @@ public sealed class Camt053StatementConnector : IStatementConnector
                         break;
                     }
             }
+
+            isSubtreeRoot = false;
         }
 
         element = root;

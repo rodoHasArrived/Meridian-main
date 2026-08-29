@@ -6,7 +6,7 @@
   "inputs": [
     {
       "path": "docs/roadmap/data/decision-log.yml",
-      "sha256": "33d00b81abb3dca4ecce69c4ff10647843269bf362271046b70fdb7df917cf24"
+      "sha256": "7cbd2207ea61aa0ce0666db22b7ba3aa4fef59fbf7eca02da550c050b6d23c52"
     },
     {
       "path": "docs/roadmap/data/document-index.yml",
@@ -14,7 +14,7 @@
     },
     {
       "path": "docs/roadmap/data/program-state.yml",
-      "sha256": "e1114a1a02cff4580d45589e7067b31bc2ca15c2e9d91c27f68455a61ad5517f"
+      "sha256": "3537380b48de868fbfabf90eea93e63f9e825b0e1d37c9420ac88abcb7b89672"
     },
     {
       "path": "docs/roadmap/data/risk-register.yml",

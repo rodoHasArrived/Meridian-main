@@ -456,6 +456,15 @@ public sealed class StatementIngressLimitsTests : IDisposable
     {
         // The record cap alone ran after the whole file had been decoded, newline-normalized twice, and
         // split into a full line array, so an over-cap document still paid that allocation first.
+        //
+        // This expected TOO_MANY_RECORDS while a nonblank-line precheck predicted one record per line and
+        // fired ahead of the raw-line cap. That precheck refused valid files - a rejected row becomes no
+        // record - so it is gone, and at these deliberately tight limits the raw-line cap is what catches
+        // this file: forty-one lines against a hardLineCap of ten. TOO_MANY_LINES is the claim that is
+        // true of the document; the parser has not mapped a row and cannot honestly say how many records
+        // it would produce. Record overflow still reports itself as record overflow whenever the line cap
+        // does not dominate, which is the ordinary case at real limits - Csv_RecordsOverCap_AreRefused
+        // covers exactly that, and at the default cap a 300,000-row file stays far inside hardLineCap.
         var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
         var connector = new CsvStatementConnector(catalog, StatementIngressLimits.Default with { MaxRecords = 3 });
         // 40 data rows against a cap of 3 - well past the bound on nonblank lines, header included.
@@ -470,7 +479,7 @@ public sealed class StatementIngressLimitsTests : IDisposable
         result.HasErrors.Should().BeTrue();
         result.Records.Should().BeEmpty("the document is refused before any row is mapped");
         result.Issues.Should().ContainSingle()
-            .Which.Code.Should().Be(StatementIngressLimits.TooManyRecordsCode);
+            .Which.Code.Should().Be(StatementIngressLimits.TooManyLinesCode);
     }
 
     [Fact]
@@ -940,6 +949,33 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("camt.xml", BuildCamtStatement(entryCount: 3)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyNodesCode);
+        result.Records.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task Camt_SubtreeRoots_AreChargedToTheDocumentBudgetOnlyOnce()
+    {
+        // The outer walk charges every element it reads, including the Acct, Bal and Ntry roots it then
+        // hands to TryReadBoundedSubtree - whose own first Read() lands on that same element and charged
+        // it again. Each subtree root was therefore billed twice against MaxParseNodes, so a document
+        // whose real node total sits inside the budget could still be refused.
+        //
+        // This statement charges 132 nodes when the roots are double-billed and 127 when they are not,
+        // so a budget of 129 separates the two: it fails before the fix and passes after. The per-subtree
+        // budget is untouched - a subtree really does contain its own root.
+        var connector = new Camt053StatementConnector(
+            TightLimits with
+            {
+                MaxDocumentBytes = 4 * 1024 * 1024,
+                MaxRecords = 100,
+                MaxNestingDepth = 64,
+                MaxParseNodes = 129
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("camt-roots.xml", BuildCamtStatement(entryCount: 3)));
 
         result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyNodesCode);
         result.Records.Should().NotBeEmpty();
