@@ -3,6 +3,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Tenancy;
 using Meridian.Storage.FundAccounts;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Application.Tenancy;
 
@@ -150,13 +151,13 @@ public sealed class FundAccountHoldingScopeAssignmentProvider : IScopeAssignment
                 ownership.CompanyId.Trim(),
                 Authority,
                 resolvedAsOfUtc,
-                StructureNodeId: FirstNonEmpty(account.VehicleId, account.SleeveId, account.EntityId),
+                StructureNodeId: NarrowestStructureNode(account.VehicleId, account.SleeveId, account.EntityId),
                 FundProfileId: fundProfileId,
                 FinancialAccountId: account.AccountId.ToString("D"),
-                PortfolioId: Trimmed(account.PortfolioId),
-                CustodyAccountId: Trimmed(account.CustodianDetails?.SubAccountNumber),
-                LedgerBookId: Trimmed(account.LedgerReference),
-                FunctionalCurrency: Trimmed(account.BaseCurrency)));
+                PortfolioId: NormalizeOptional(account.PortfolioId),
+                CustodyAccountId: NormalizeOptional(account.CustodianDetails?.SubAccountNumber),
+                LedgerBookId: NormalizeOptional(account.LedgerReference),
+                FunctionalCurrency: NormalizeOptional(account.BaseCurrency)));
         }
 
         if (blockers.Count > 0)
@@ -252,12 +253,9 @@ public sealed class FundAccountHoldingScopeAssignmentProvider : IScopeAssignment
     // Narrowest structure node first: a sleeve or vehicle is a more exact assignment than the
     // legal entity that contains it, and the fan-out set should name the most specific scope the
     // account actually sits in.
-    private static string? FirstNonEmpty(params Guid?[] candidates)
+    private static string? NarrowestStructureNode(params Guid?[] candidates)
         => candidates
             .Where(static candidate => candidate is { } value && value != Guid.Empty)
             .Select(static candidate => candidate!.Value.ToString("D"))
             .FirstOrDefault();
-
-    private static string? Trimmed(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
