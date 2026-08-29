@@ -3759,7 +3759,7 @@
       ]
     }
   ],
-  "fingerprint": "657bb43b1287f74748a3fdfd344eba1e09a721b6e1add2d8c3f7a3d9ccb13584",
+  "fingerprint": "722040e5b1a05c55445db0e491a9403040cae391e73f6aaaa979555c3efded34",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5144,7 +5144,7 @@
         "all-contracts",
         "ledger-contracts"
       ],
-      "fingerprint": "dc57f0662e756eca0a0f59c71645aae3f40e30485330711b52ca629e387418f5",
+      "fingerprint": "73fde20b03e3777888c226a425bf9ef46c7de40852f88cd7cd83aa27e3800d43",
       "mapped_schemas": [
         "ledger"
       ],
@@ -146163,7 +146163,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "32d1d13d11bc76579817d3aa0d48bffb3458aa2c91258e3800179b3797415637",
+      "fingerprint": "19c75859b3d04757855b3fe13c0ebd4fab41338b0c42b212ef86811beaf3eab4",
       "full_name": "Meridian.Contracts.Ledger.AccountingAuditChain",
       "id": "Meridian.Contracts.Ledger.AccountingAuditChain",
       "kind": "class",
@@ -146177,12 +146177,12 @@
       "qualified_name": "Meridian.Contracts.Ledger.AccountingAuditChain",
       "references": [],
       "source": {
-        "line": 151,
+        "line": 159,
         "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
       },
       "sources": [
         {
-          "line": 151,
+          "line": 159,
           "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
         }
       ],
@@ -146393,7 +146393,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "dbc4f296a870f13c65f4a0cc348624448643b16e4aa30ee98cbc7dcf29d7bc9c",
+      "fingerprint": "2b2044efc7ee687da4a2cd50ba425c82b4881385f60936a0c940d10e56e078b1",
       "full_name": "Meridian.Contracts.Ledger.AccountingAuditChainIntegrityException",
       "id": "Meridian.Contracts.Ledger.AccountingAuditChainIntegrityException",
       "kind": "class",
@@ -146412,7 +146412,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "AccountingAuditChainVerification",
-          "source_line": 133,
+          "source_line": 141,
           "type": "AccountingAuditChainVerification"
         }
       ],
@@ -146424,12 +146424,12 @@
         "Meridian.Contracts.Ledger.AccountingAuditChainVerification"
       ],
       "source": {
-        "line": 125,
+        "line": 133,
         "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
       },
       "sources": [
         {
-          "line": 125,
+          "line": 133,
           "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
         }
       ],
@@ -146707,9 +146707,15 @@
           "name": "InterruptedAppend",
           "source_line": 110,
           "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "UnlinkedEvent",
+          "source_line": 118,
+          "value": null
         }
       ],
-      "fingerprint": "5d29372143e18b93559aa6b3484b68b56095aebc0e1501edd9b1633a9cd1b48c",
+      "fingerprint": "27cea055035b7455b62be641e407d465f2f796923437026d89bca41af84d0a5f",
       "full_name": "Meridian.Contracts.Ledger.AccountingAuditChainStatus",
       "id": "Meridian.Contracts.Ledger.AccountingAuditChainStatus",
       "kind": "enum",
@@ -146747,7 +146753,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "fff65d6db1e1cea00ab9e640ffb45e1f65c3991aa1477c11c624295181575236",
+      "fingerprint": "89c5b55bbbd4bd8457ee1ad4184f8dff1a0d3b5f673282579bbe705f7dc0faa5",
       "full_name": "Meridian.Contracts.Ledger.AccountingAuditChainVerification",
       "id": "Meridian.Contracts.Ledger.AccountingAuditChainVerification",
       "kind": "record",
@@ -146767,7 +146773,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 118,
+          "source_line": 126,
           "type": "string?"
         },
         {
@@ -146782,7 +146788,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "long?",
-          "source_line": 119,
+          "source_line": 127,
           "type": "long?"
         },
         {
@@ -146796,7 +146802,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 116,
+          "source_line": 124,
           "type": "int"
         },
         {
@@ -146810,7 +146816,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 117,
+          "source_line": 125,
           "type": "int"
         },
         {
@@ -146824,7 +146830,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountingAuditChainStatus",
-          "source_line": 115,
+          "source_line": 123,
           "type": "AccountingAuditChainStatus"
         }
       ],
@@ -146836,12 +146842,12 @@
         "Meridian.Contracts.Ledger.AccountingAuditChainStatus"
       ],
       "source": {
-        "line": 114,
+        "line": 122,
         "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
       },
       "sources": [
         {
-          "line": 114,
+          "line": 122,
           "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
         }
       ],
