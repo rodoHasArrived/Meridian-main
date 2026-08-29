@@ -750,12 +750,11 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
     }
 
     /// <summary>
-    /// Correcting an alias must update its value but leave the recording facts alone. As-of rebuilds
-    /// retain aliases with created_at at or before the cutoff, so an edit that advanced created_at
-    /// would retroactively drop the identifier out of every view older than the correction.
+    /// The current table has no append-only alias revision. A material correction must therefore
+    /// fail closed instead of rewriting the row used by every recorded-as-of reconstruction.
     /// </summary>
     [SecurityMasterDatabaseFact]
-    public async Task UpsertAliasAsync_PreservesCreationFacts_WhenAliasIsCorrected()
+    public async Task UpsertAliasAsync_RejectsMaterialCorrection_AndPreservesRecordedFacts()
     {
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         var securityId = Guid.NewGuid();
@@ -783,6 +782,15 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
         inserted.Should().NotBeNull();
         inserted!.CreatedAt.Should().Be(recordedAt);
 
+        var replayed = await store.UpsertAliasAsync(original with
+        {
+            CreatedBy = "retry.operator",
+            CreatedAt = recordedAt.AddDays(1)
+        });
+        replayed.Should().NotBeNull();
+        replayed!.CreatedBy.Should().Be("january.operator");
+        replayed.CreatedAt.Should().Be(recordedAt);
+
         // The June correction supplies a new value AND a new creation stamp, as the service does.
         var corrected = original with
         {
@@ -792,19 +800,15 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
             CreatedAt = new DateTimeOffset(2026, 6, 20, 0, 0, 0, TimeSpan.Zero)
         };
 
-        var afterCorrection = await store.UpsertAliasAsync(corrected);
+        var act = () => store.UpsertAliasAsync(corrected);
 
-        afterCorrection.Should().NotBeNull();
-        afterCorrection!.CreatedAt.Should().Be(
-            recordedAt,
-            "the alias was recorded in January; correcting it in June must not restate that");
-        afterCorrection.CreatedBy.Should().Be("january.operator");
+        await act.Should().ThrowAsync<SecurityAliasHistoryConflictException>()
+            .WithMessage("*append-only alias revisions*");
 
-        // The correction itself must still have landed.
         var storedValue = await ReadAliasColumnAsync(aliasId, "alias_value");
-        storedValue.Should().Be("ACME.OQ");
+        storedValue.Should().Be("ACME.O");
         var storedReason = await ReadAliasColumnAsync(aliasId, "reason");
-        storedReason.Should().Be("corrected in June");
+        storedReason.Should().Be("recorded in January");
 
         var storedCreatedAt = await ReadAliasColumnAsync(aliasId, "created_at");
         Convert.ToDateTime(storedCreatedAt, System.Globalization.CultureInfo.InvariantCulture)
