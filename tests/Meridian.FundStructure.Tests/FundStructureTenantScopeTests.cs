@@ -1,0 +1,259 @@
+using Meridian.Application.FundStructure;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Tenancy;
+using Meridian.Entities.FundStructure;
+using Meridian.PortfolioRecords.FundAccounts;
+using Xunit;
+
+namespace Meridian.FundStructure.Tests;
+
+/// <summary>
+/// W9-GOV-008 criterion 2, fund-structure half. <c>PostgresFundStructureService</c> contained no
+/// tenant column and no predicate anywhere: <c>LoadSnapshotAsync</c> took no scope and loaded every
+/// organization, business, fund and relationship, <c>/api/fund-structure/graph</c> served that
+/// snapshot, and the mutations resolved their parent nodes from the same global view. So a tenant-A
+/// administrator could read tenant-B structure and link or mutate tenant-B nodes by id — while
+/// <c>RequireFundScopedWriteTenant</c> passed them, because it proves only that a caller has
+/// <i>some</i> tenant.
+/// </summary>
+/// <remarks>
+/// Backed by <see cref="FakeFundStructureStore"/> rather than PostgreSQL, for the reason
+/// <see cref="FundStructureScopeContractTests"/> gives: the scoping under test is service-layer, and
+/// a suite that skips wherever no database is available would leave the leak unguarded in CI.
+/// </remarks>
+public sealed class FundStructureTenantScopeTests
+{
+    private static readonly DateTimeOffset EffectiveFrom = new(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
+
+    private const string TenantAlpha = "tenant-alpha";
+    private const string TenantBeta = "tenant-beta";
+
+    [Fact]
+    public async Task Graph_DoesNotServeAnotherTenantsStructure()
+    {
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+
+        var alphaService = CreateService(store, TenantAlpha);
+        var nodeIds = await VisibleNodeIdsAsync(alphaService);
+
+        Assert.Contains(alpha.OrganizationId, nodeIds);
+        Assert.DoesNotContain(beta.OrganizationId, nodeIds);
+        Assert.DoesNotContain(beta.BusinessId, nodeIds);
+        Assert.DoesNotContain(beta.FundId, nodeIds);
+
+        // And on the route the plan names by path: /api/fund-structure/graph.
+        var fundGraphNodeIds = await FundGraphNodeIdsAsync(alphaService);
+        Assert.Contains(alpha.FundId, fundGraphNodeIds);
+        Assert.DoesNotContain(beta.FundId, fundGraphNodeIds);
+    }
+
+    [Fact]
+    public async Task Mutation_CannotResolveAnotherTenantsNodeById()
+    {
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var alphaService = CreateService(store, TenantAlpha);
+
+        // The leak in its sharpest form: the caller knows the foreign id and supplies it directly.
+        var createUnderForeignParent = () => alphaService.CreateBusinessAsync(new CreateBusinessRequest(
+            Guid.NewGuid(), beta.OrganizationId, BusinessKindDto.FundManager,
+            "BUS-X", "Business X", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(createUnderForeignParent);
+    }
+
+    [Fact]
+    public async Task Create_CannotOverwriteAnotherTenantsNodeByReusingItsId()
+    {
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var alphaService = CreateService(store, TenantAlpha);
+
+        // Uniqueness has to span tenants. If it were checked against the caller's scoped view, the
+        // foreign id would look free and this create would upsert straight over tenant-beta's node —
+        // the read gate turned into a write leak.
+        var reuseForeignId = () => alphaService.CreateOrganizationAsync(new CreateOrganizationRequest(
+            beta.OrganizationId, "ORG-CLASH", "Organization Clash", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(reuseForeignId);
+
+        var betaStructure = await CreateService(store, TenantBeta)
+            .GetOrganizationStructureAsync(new OrganizationStructureQuery());
+        var retained = Assert.Single(betaStructure.Organizations);
+        Assert.Equal("ORG-BETA", retained.Code);
+    }
+
+    [Fact]
+    public async Task Create_StampsTheCallersTenantOnEveryNewNode()
+    {
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+
+        // The organization is written outside PersistChangedAsync, so it is the node most likely to
+        // be left unattributed by a stamping path that only covers the bulk persist.
+        Assert.Equal(TenantAlpha, store.TenantOf(alpha.OrganizationId));
+        Assert.Equal(TenantAlpha, store.TenantOf(alpha.BusinessId));
+        Assert.Equal(TenantAlpha, store.TenantOf(alpha.FundId));
+    }
+
+    [Fact]
+    public async Task Create_DoesNotClaimAPreExistingUnattributedNode()
+    {
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+
+        // A node the attribution quarantined - a shared ancestor, say - left deliberately unstamped.
+        var sharedOrganization = Guid.NewGuid();
+        await store.UpsertOrganizationAsync(new OrganizationSummaryDto(
+            sharedOrganization, "ORG-SHARED", "Shared", "USD", true, EffectiveFrom, null, [], null));
+
+        var alphaService = CreateService(store, TenantAlpha);
+        await alphaService.CreateBusinessAsync(new CreateBusinessRequest(
+            Guid.NewGuid(), sharedOrganization, BusinessKindDto.FundManager,
+            "BUS-A", "Business A", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        // Writing beneath it must not hand the ancestor to whoever wrote next; that is precisely the
+        // judgement FundStructureTenantAttribution declines to make and quarantines instead.
+        Assert.Null(store.TenantOf(sharedOrganization));
+    }
+
+    [Fact]
+    public async Task DeploymentBoundary_KeepsUnattributedNodesVisible()
+    {
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var legacyOrganization = Guid.NewGuid();
+        await store.UpsertOrganizationAsync(new OrganizationSummaryDto(
+            legacyOrganization, "ORG-LEGACY", "Legacy", "USD", true, EffectiveFrom, null, [], null));
+
+        var nodeIds = await VisibleNodeIdsAsync(CreateService(store, TenantAlpha));
+
+        // The ordering constraint, stated as a test: rows the attribution has not reached stay
+        // visible under the staging posture, so the backfill can land before the tightening without
+        // a scoped reader losing data in between.
+        Assert.Contains(legacyOrganization, nodeIds);
+    }
+
+    [Fact]
+    public async Task FailClosed_HidesUnattributedNodesFromAScopedCaller()
+    {
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var legacyOrganization = Guid.NewGuid();
+        await store.UpsertOrganizationAsync(new OrganizationSummaryDto(
+            legacyOrganization, "ORG-LEGACY", "Legacy", "USD", true, EffectiveFrom, null, [], null));
+
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+
+        var nodeIds = await VisibleNodeIdsAsync(CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed));
+
+        Assert.Contains(alpha.OrganizationId, nodeIds);
+        Assert.DoesNotContain(legacyOrganization, nodeIds);
+    }
+
+    [Fact]
+    public async Task FailClosed_RejectsACallerWithNoResolvableTenantRatherThanDefaultingTheRead()
+    {
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+
+        var tenantless = CreateService(store, callerTenantId: null, TenantScopeEnforcementOptions.FailClosed);
+
+        // Not an empty graph: the caller could not tell that apart from a genuinely empty structure,
+        // and neither could an operator reading the support ticket it produced.
+        await Assert.ThrowsAsync<FundStructureTenantScopeException>(
+            () => tenantless.GetOrganizationStructureAsync(new OrganizationStructureQuery()));
+    }
+
+    [Fact]
+    public async Task DeploymentBoundary_StillServesATenantlessCaller()
+    {
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+
+        var nodeIds = await VisibleNodeIdsAsync(CreateService(store, callerTenantId: null));
+
+        // Single-company deployments and the legacy tenantless admin profile keep working until the
+        // deployment opts in to the tightened posture.
+        Assert.NotEmpty(nodeIds);
+    }
+
+    [Fact]
+    public async Task UnpartitionedStore_IsUnaffectedByTenantScoping()
+    {
+        var store = new FakeFundStructureStore(isTenantPartitioned: false);
+        await SeedOrganizationAsync(store, TenantBeta, "BETA");
+
+        var nodeIds = await VisibleNodeIdsAsync(CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed));
+
+        // A store that does not model ownership has none to enforce. The in-memory and JSON-backed
+        // stores are barred from production compositions by ADR-019, not by this check.
+        Assert.NotEmpty(nodeIds);
+    }
+
+    /// <summary>
+    /// Every node id the organization-structure read would serve this caller. That surface is the
+    /// one that exposes organizations and businesses; the fund-structure graph is fund-centric and
+    /// never carries the upper hierarchy, so asserting the ancestor leak needs this one.
+    /// </summary>
+    private static async Task<IReadOnlyList<Guid>> VisibleNodeIdsAsync(PostgresFundStructureService service)
+    {
+        var structure = await service.GetOrganizationStructureAsync(new OrganizationStructureQuery());
+        return
+        [
+            .. structure.Organizations.Select(item => item.OrganizationId),
+            .. structure.Businesses.Select(item => item.BusinessId),
+            .. structure.Clients.Select(item => item.ClientId),
+            .. structure.Funds.Select(item => item.FundId),
+        ];
+    }
+
+    /// <summary>The node ids <c>/api/fund-structure/graph</c> itself would serve this caller.</summary>
+    private static async Task<IReadOnlyList<Guid>> FundGraphNodeIdsAsync(PostgresFundStructureService service)
+    {
+        var graph = await service.GetFundStructureGraphAsync(new FundStructureQuery());
+        return [.. graph.Nodes.Select(node => node.NodeId)];
+    }
+
+    private sealed record SeededOrganization(Guid OrganizationId, Guid BusinessId, Guid FundId);
+
+    private static async Task<SeededOrganization> SeedOrganizationAsync(
+        FakeFundStructureStore store,
+        string tenantId,
+        string tag)
+    {
+        var service = CreateService(store, tenantId);
+        var seeded = new SeededOrganization(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+
+        await service.CreateOrganizationAsync(new CreateOrganizationRequest(
+            seeded.OrganizationId, $"ORG-{tag}", $"Organization {tag}", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        await service.CreateBusinessAsync(new CreateBusinessRequest(
+            seeded.BusinessId, seeded.OrganizationId, BusinessKindDto.FundManager,
+            $"BUS-{tag}", $"Business {tag}", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        await service.CreateFundAsync(new CreateFundRequest(
+            seeded.FundId, $"FND-{tag}", $"Fund {tag}", "USD", EffectiveFrom, "tenant-scope-test",
+            BusinessId: seeded.BusinessId));
+
+        return seeded;
+    }
+
+    private static PostgresFundStructureService CreateService(
+        FakeFundStructureStore store,
+        string? callerTenantId,
+        TenantScopeEnforcementOptions? tenantScope = null)
+        => new(
+            store,
+            new InMemoryFundAccountService(),
+            new FundStructurePolicyService(),
+            tenantAccessor: new StubTenantAccessor(callerTenantId),
+            tenantScope: tenantScope);
+
+    private sealed class StubTenantAccessor(string? tenantId) : IFundScopeTenantAccessor
+    {
+        public string? ResolveCallerTenant() => tenantId;
+    }
+}

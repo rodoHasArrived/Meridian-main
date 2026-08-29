@@ -18,6 +18,17 @@ namespace Meridian.FundStructure.Tests;
 /// </remarks>
 public sealed class FakeFundStructureStore : IFundStructureStore
 {
+    private readonly ConcurrentDictionary<Guid, string> _nodeTenants = new();
+    private readonly bool _isTenantPartitioned;
+
+    /// <param name="isTenantPartitioned">
+    /// Whether this store models tenant ownership, mirroring the distinction
+    /// <see cref="FundStructureTenantMap.IsPartitioned"/> draws. Defaults to false so the existing
+    /// contract suites keep exercising an unpartitioned store, which is what they are about.
+    /// </param>
+    public FakeFundStructureStore(bool isTenantPartitioned = false)
+        => _isTenantPartitioned = isTenantPartitioned;
+
     private readonly ConcurrentDictionary<Guid, OrganizationSummaryDto> _organizations = new();
     private readonly ConcurrentDictionary<Guid, BusinessSummaryDto> _businesses = new();
     private readonly ConcurrentDictionary<Guid, ClientSummaryDto> _clients = new();
@@ -184,4 +195,22 @@ public sealed class FakeFundStructureStore : IFundStructureStore
 
     public Task<bool> IsEmptyAsync(CancellationToken ct = default)
         => Task.FromResult(_organizations.IsEmpty && _businesses.IsEmpty && _clients.IsEmpty && _funds.IsEmpty);
+
+    public Task<FundStructureTenantMap> GetNodeTenantsAsync(CancellationToken ct = default)
+        => Task.FromResult(_isTenantPartitioned
+            ? new FundStructureTenantMap(IsPartitioned: true, new Dictionary<Guid, string>(_nodeTenants))
+            : FundStructureTenantMap.Unpartitioned);
+
+    /// <summary>First-owner-wins, matching the Postgres store's <c>tenant_id IS NULL</c> guard.</summary>
+    public Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default)
+    {
+        _nodeTenants.TryAdd(nodeId, tenantId.Trim());
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Attributes a node directly, standing in for a completed backfill.</summary>
+    public void SeedNodeTenant(Guid nodeId, string tenantId) => _nodeTenants[nodeId] = tenantId;
+
+    /// <summary>The tenant stamped on a node, or null when it is unattributed.</summary>
+    public string? TenantOf(Guid nodeId) => _nodeTenants.TryGetValue(nodeId, out var tenant) ? tenant : null;
 }
