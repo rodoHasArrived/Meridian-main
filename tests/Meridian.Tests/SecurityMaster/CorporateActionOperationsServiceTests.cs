@@ -502,9 +502,27 @@ public sealed class CorporateActionOperationsServiceTests
                 call.ArgAt<SecurityMasterCorporateActionRestatementDto?>(4),
                 replayed: false,
                 proposedAction: correction));
+        // The fund the restatement handoff must carry is the one the scope authority resolves, not
+        // the one the caller asserts. The caller's value below is deliberately different and must
+        // lose: narrow scope is server-resolved now, so a caller cannot steer which fund's periods
+        // a restatement is evaluated against.
+        fixture.ScopeFanOut.ResolveDecisionScopeAsync(
+                Arg.Any<Guid>(),
+                Arg.Any<DateOnly>(),
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => new CorporateActionScopeFanOutDecision(
+                true,
+                new CorporateActionCaseScopeDto(
+                    call.ArgAt<string>(2),
+                    call.ArgAt<string>(3),
+                    FundProfileId: "fund-closed-period"),
+                CorporateActionScopeFanOutRefusal.None,
+                []));
         var request = AcceptRequest() with
         {
-            Scope = AcceptRequest().Scope with { FundProfileId = "fund-closed-period" },
+            Scope = AcceptRequest().Scope with { FundProfileId = "fund-the-caller-asserted" },
         };
 
         var result = await fixture.Service.AcceptSourceProposalAsync(request);
