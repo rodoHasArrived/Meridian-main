@@ -246,6 +246,7 @@ public sealed class NullSecurityMasterImportService : ISecurityMasterImportServi
     public Task<SecurityMasterImportResult> ImportAsync(
         string fileContent,
         string fileExtension,
+        string actor,
         IProgress<SecurityMasterImportProgress>? progress = null,
         CancellationToken ct = default)
         => Task.FromResult(new SecurityMasterImportResult(

@@ -1,11 +1,11 @@
 {
   "total_files": 661,
-  "total_lines": 137110,
+  "total_lines": 137221,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 257,
-  "average_lines": 207.4,
+  "average_lines": 207.6,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1857,7 +1857,7 @@
     },
     {
       "path": "docs/development/god-file-burn-down-plan.md",
-      "line_count": 234,
+      "line_count": 290,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2657,7 +2657,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10721,
+      "line_count": 10725,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3481,7 +3481,7 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "line_count": 1209,
+      "line_count": 1242,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3489,7 +3489,7 @@
     },
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "line_count": 63,
+      "line_count": 64,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3497,7 +3497,7 @@
     },
     {
       "path": "docs/roadmap/README.md",
-      "line_count": 27,
+      "line_count": 44,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
