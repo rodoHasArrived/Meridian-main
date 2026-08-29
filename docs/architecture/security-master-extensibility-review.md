@@ -33,11 +33,13 @@ Nothing here is a correctness emergency. The risks are extensibility and institu
 risks that compound as new asset classes land.
 
 > **Superseded on 2026-08-28 — do not read the two sentences above as current.** They were accurate
-> for the findings that pass had. The 2026-08-28 scheduled pass filed three shipped-behaviour defects
+> for the findings that pass had. The 2026-08-28 scheduled pass filed four shipped-behaviour defects
 > that are correctness and access-control problems rather than extensibility ones: the desktop lane
 > mutates the golden record with no authorization check (P5), the legacy preferred-terms PATCH route
-> bypasses the governed-amendment gate (P1), and editing an alias erases it from earlier recorded-as-of
-> views (P3b). The architectural assessment below is unaffected.
+> bypasses the governed-amendment gate (P1), editing an alias erases it from earlier recorded-as-of
+> views (P3b), and invalid import rows are reported to the operator as harmless skips while a cancelled
+> Polygon ingest imports a partial set and reports success (P4). The architectural assessment below is
+> unaffected.
 
 > **Verification pass, 2026-08-14.** Re-read against current source at `4b39e9da8`. The findings
 > below stand as written except where a **Status (2026-08-14)** note says otherwise; four of the ten
@@ -78,11 +80,15 @@ risks that compound as new asset classes land.
 > sound, and every closure claimed by the 2026-08-26 resolution was independently re-verified against
 > source rather than taken on the resolution's word, and all of them hold. But the opening line
 > "nothing here is a correctness emergency… the risks are extensibility and institutional-completeness
-> risks" was written before this pass, and three of the six items filed below are neither: an
-> authorization bypass on a configured desktop host (P5), an ungated maker-checker route (P1's legacy
-> PATCH), and recorded-history loss on alias edits (P3b). Those are shipped-behaviour defects in
-> correctness and access control. The 2026-08-13 wording is left in place as the record of what that
-> pass concluded; read it as superseded from here, not as current.
+> risks" was written before this pass, and **four** of the six items filed below are neither: an
+> authorization bypass on a credential-backed desktop host (P5), an ungated maker-checker route (P1's
+> legacy PATCH), recorded-history loss on alias edits (P3b), and — as P4 grew under review — a set of
+> live misreporting defects, where an invalid import row is reported to the operator as a harmless
+> skip and a cancelled Polygon ingest imports a partial set and reports success. Those are all
+> shipped-behaviour defects in correctness and access control. P4 was originally filed as a fragile
+> *pattern* and became a correctness item as its consequences were traced; the count here is easy to
+> leave stale for exactly that reason. The 2026-08-13 wording is left in place as the record of what
+> that pass concluded; read it as superseded from here, not as current.
 >
 > N4, N5, N6 and the three deferred items are unchanged. Six new items are filed
 > (P1–P4 plus P3b and P5, which review surfaced). See
@@ -1353,10 +1359,19 @@ escalating.
 
 ### P5 — The desktop lane mutates the golden record with no authorization check at all
 
-Every HTTP mutation route on the Security Master requires the `ModifySecurityMaster` permission:
+Every HTTP route that mutates the **golden record** requires the `ModifySecurityMaster` permission:
 create (`SecurityMasterEndpoints.cs:364`), amend (`:396`), deactivate (`:424`), alias upsert (`:452`),
 both equity-terms routes (`:535, 596`), corporate-action append (`:665`) and conflict resolution
 (`:807`) each carry `RequirePermission(UserPermission.ModifySecurityMaster)`.
+
+Scope that claim to the golden-record boundary rather than to "every Security Master mutation", which
+would misdescribe the surface and mislead the remedy: the corporate-action *operations* partial
+deliberately uses narrower capabilities — `IngestCorporateActions` and `ResolveCorporateActionTerms`
+(`SecurityMasterEndpoints.CorporateActionOperations.cs:51, 101, 136, 168`) — and asset-profile
+mutations require `AdminMaintenance` (`SecurityMasterEndpoints.cs:128-242`). That specialization is
+deliberate and must survive: the parity P5 asks for is between the WPF create/amend/deactivate/import/
+backfill commands and the routes above, not a collapse of Meridian's finer-grained Security Master
+permissions into one.
 
 The WPF lane reaches the same `ISecurityMasterService` in process and checks nothing.
 `SecurityMasterEditViewModel` calls `CreateAsync` (`:216`) and `AmendTermsAsync` (`:234`) directly,
@@ -1376,10 +1391,13 @@ deactivate and import commands leaves the largest-blast-radius mutation on the l
 the desktop mutation *commands*, not the dialogs. (Note it also invokes `BackfillAllAsync()` with no
 cancellation token from the view model, which is why it recurs in P4 below.)
 
-**The check exists and works; it is simply never invoked here.** `HasPermission` fails closed on a
-configured host — it returns true only when the resolved operator profile actually grants the
-permission — and fails open only under the unconfigured local-development posture
-(`DesktopAuthenticationSession.cs:49-60`). So on a configured desktop, an authenticated operator
+**The check exists and works on a credential-backed host; it is simply never invoked here.**
+`HasPermission` fails closed **only when credentials are configured** — there it returns true just
+when the resolved operator profile grants the permission — and returns true for everything whenever
+`CanContinueWithoutCredentials` holds (`DesktopAuthenticationSession.cs:49-60`). Say "credential-backed"
+rather than "configured": a credential-free host that names an anonymous role *is* configured in the
+ordinary sense, and there this method is fail-**open**, which is why the remedy below cannot be built
+on it. So on a credential-backed desktop, an authenticated operator
 holding only `ViewSecurityMaster` is refused every mutation over HTTP and permitted every one of them
 through the workstation. Its own documentation says "server-side authorization remains authoritative
 in all cases" — true for the browser lane, but this path never reaches a server, so there is no
@@ -1449,7 +1467,7 @@ explicitly what recorded-as-of promises for aliases, rather than leave a guarant
 cannot deliver. What must not happen is shipping the creation-field fix and considering the history
 problem closed.
 
-### P4 — Three ingest paths classify duplicates by exception-message substring, and the same catch swallows cancellation
+### P4 — Three ingest paths classify duplicates by exception-message substring, and in two of them that same catch also swallows cancellation
 
 `SecurityMasterImportService:171-172` decides whether a failed create was a duplicate — and therefore
 whether the row is reported as `Skipped` or `Failed` — by testing `ex.Message` for the substrings
@@ -1589,7 +1607,17 @@ both are reachable from surfaces the pass discusses elsewhere and neither is in 
   a cancellation swallowed at any iteration is followed by a quiet exit from the loop, a completion
   log, and a normal success/failure summary. `break` and `throw` are not interchangeable at the top of
   a cancellation-checking loop, and a regression test has to target the `break` rather than the
-  final-item case. The WPF command compounds it by calling `BackfillAllAsync()` with no token at all
+  final-item case.
+
+  **And the per-item catch is not even the first swallow in that method.** `BackfillAllAsync` opens by
+  wrapping `_queryService.SearchAsync(searchRequest, ct)` in `catch (Exception)` and simply `return`s
+  (`:60-69`) — no failure count, no rethrow. A cancellation during that initial search therefore never
+  reaches the loop, the `break`, or the per-item catch at all, and the method returns as though the
+  backfill had completed. Fixing `:101-108` alone leaves that path exactly as it is. Three swallow
+  points on one command — the search, the per-item catch, and the missing token — which is why the
+  remediation has to be scoped by *method* here rather than by catch site.
+
+  The WPF command compounds all of it by calling `BackfillAllAsync()` with no token at all
   (`SecurityMasterViewModel.cs:2186-2193`), so desktop-initiated backfills have nothing to cancel with
   in the first place.
 - **The Polygon page fetch, before the create loop is ever reached.**
