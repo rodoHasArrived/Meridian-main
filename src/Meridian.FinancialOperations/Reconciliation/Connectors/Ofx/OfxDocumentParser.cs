@@ -47,7 +47,7 @@ public static class OfxDocumentParser
     }
 
     public static OfxDocument Parse(string content) =>
-        Parse(content, int.MaxValue, int.MaxValue, out _);
+        Parse(content, int.MaxValue, int.MaxValue, int.MaxValue, out _);
 
     /// <summary>
     /// Parses an OFX document, refusing one that exceeds the ingress bounds instead of building it first.
@@ -61,17 +61,14 @@ public static class OfxDocumentParser
     /// <paramref name="maxEntries"/>: entries are built from aggregates, so the node tree is materialized
     /// before any entry exists, and bounding only entries would let the tree grow unbounded first.
     /// </remarks>
-    public static OfxDocument Parse(string content, int maxEntries, int maxDepth, out OfxParseBound bound)
+    public static OfxDocument Parse(
+        string content,
+        int maxEntries,
+        int maxDepth,
+        int maxNodes,
+        out OfxParseBound bound)
     {
         bound = OfxParseBound.None;
-        // Deliberately loose, and an allocation bound rather than an acceptance one. It charges both
-        // aggregates and retained leaf values, because both are what the parse actually holds. A
-        // spec-compliant investment entry is a wrapper plus up to three nested detail aggregates
-        // (BUYSTOCK > INVBUY > SECID/INVTRAN) carrying on the order of a dozen leaves between them, so
-        // 32x the entry bound leaves roughly double the headroom a real statement needs. Acceptance is
-        // decided by maxEntries; this only stops the tree growing without limit before any entry exists
-        // to count.
-        var maxNodes = maxEntries > (int.MaxValue - 64) / 32 ? int.MaxValue : (maxEntries * 32) + 64;
         var nodes = 0;
         var root = new OfxNode("OFX-ROOT", null);
         var stack = new Stack<OfxNode>();
@@ -133,7 +130,7 @@ public static class OfxDocumentParser
                 // the parse retains has to be charged, not just whatever the loop calls a node.
                 if (++nodes > maxNodes)
                 {
-                    bound = OfxParseBound.TooManyEntries;
+                    bound = OfxParseBound.TooManyNodes;
                     break;
                 }
 
@@ -149,7 +146,7 @@ public static class OfxDocumentParser
 
                 if (++nodes > maxNodes)
                 {
-                    bound = OfxParseBound.TooManyEntries;
+                    bound = OfxParseBound.TooManyNodes;
                     break;
                 }
 
@@ -374,9 +371,12 @@ public enum OfxParseBound
     /// <summary>The document was parsed in full.</summary>
     None = 0,
 
-    /// <summary>Entry discovery or the aggregate allocation cap stopped the parse.</summary>
+    /// <summary>Entry discovery stopped the parse.</summary>
     TooManyEntries = 1,
 
     /// <summary>Aggregate nesting exceeded the depth bound.</summary>
     NestingTooDeep = 2,
+
+    /// <summary>The retained node budget - aggregates plus leaves - stopped the parse.</summary>
+    TooManyNodes = 3,
 }

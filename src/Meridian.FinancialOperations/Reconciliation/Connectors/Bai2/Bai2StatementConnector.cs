@@ -106,6 +106,14 @@ public sealed class Bai2StatementConnector : IStatementConnector
             lineStart = cursor + 1;
             lineIndex++;
 
+            // The CR of a CRLF break is part of the delimiter, not the line. Measuring it made the byte
+            // ceiling depend on newline convention: a record of exactly MaxLineBytes was accepted with LF
+            // endings and refused with CRLF. The decode below already trims it as whitespace.
+            if (rawLine.Length > 0 && rawLine[^1] == (byte)'\r')
+            {
+                rawLine = rawLine[..^1];
+            }
+
             if (rawLine.Length > _limits.MaxLineBytes)
             {
                 issues.Add(_limits.LineTooLong(lineIndex));

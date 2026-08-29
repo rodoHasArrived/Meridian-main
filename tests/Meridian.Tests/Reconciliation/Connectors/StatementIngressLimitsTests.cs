@@ -929,13 +929,82 @@ public sealed class StatementIngressLimitsTests : IDisposable
         // the camt subtree budget.
         var connector = new OfxStatementConnector(
             Catalog(),
-            TightLimits with { MaxDocumentBytes = 4 * 1024 * 1024, MaxRecords = 4, MaxNestingDepth = 64 });
+            TightLimits with
+            {
+                MaxDocumentBytes = 4 * 1024 * 1024,
+                MaxRecords = 4,
+                MaxNestingDepth = 64,
+                MaxParseNodes = 100,
+            });
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("leafy.ofx", BuildLeafHeavyOfx(leafCount: 4000)));
 
         result.HasErrors.Should().BeTrue();
-        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyNodesCode);
+    }
+
+    [Fact]
+    public void DefaultNodeBudget_DoesNotScaleWithTheRecordAllowance()
+    {
+        // It used to be MaxRecords * 32, which made an allocation bound vary with an unrelated knob and,
+        // at the default record allowance, put it above what the 20 MiB document cap can even produce -
+        // a bound that cannot be reached is not a bound.
+        var tightRecords = StatementIngressLimits.Default with { MaxRecords = 10 };
+        var looseRecords = StatementIngressLimits.Default with { MaxRecords = 1_000_000 };
+
+        tightRecords.MaxParseNodes.Should().Be(looseRecords.MaxParseNodes);
+        StatementIngressLimits.Default.MaxParseNodes.Should().BeLessThan(
+            (int)(StatementIngressLimits.Default.MaxDocumentBytes / 4),
+            "the budget has to sit below the node count the byte cap alone permits, or it never binds");
+    }
+
+    [Fact]
+    public async Task Bai2_CrlfLineAtExactlyTheByteBound_IsAcceptedLikeItsLfEquivalent()
+    {
+        // The CR of a CRLF break is delimiter, not content. Measuring it made the byte ceiling depend on
+        // newline convention: the same record was accepted with LF endings and refused with CRLF.
+        var lfText = Encoding.UTF8.GetString(BuildBai2Statement(transactionCount: 2));
+        var longestLineBytes = lfText.Split('\n').Max(line => Encoding.UTF8.GetByteCount(line));
+        var connector = new Bai2StatementConnector(
+            TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 100,
+                MaxLineBytes = longestLineBytes,
+            });
+
+        var crlf = await connector.ParseAsync(new StatementSourceDocument(
+            "crlf.bai", Encoding.UTF8.GetBytes(lfText.Replace("\n", "\r\n"))));
+        var lf = await connector.ParseAsync(new StatementSourceDocument(
+            "lf.bai", Encoding.UTF8.GetBytes(lfText)));
+
+        crlf.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.LineTooLongCode);
+        lf.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.LineTooLongCode);
+        crlf.Records.Should().HaveCount(lf.Records.Count, "newline convention is not a size difference");
+    }
+
+    [Fact]
+    public async Task Camt_BalanceBeforeAccount_UsesTheAccountCurrencyNotTheUsdFallback()
+    {
+        // The other half of the out-of-order fix. Seeding the identity but not the currency left a Bal
+        // ahead of Acct, with no Ccy of its own, falling back to USD even though the account says EUR.
+        var outOfOrder = new StringBuilder()
+            .Append("<Stmt><Id>STMT-1</Id>")
+            .Append("<Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp>")
+            .Append("<Amt>12345.67</Amt><CdtDbtInd>CRDT</CdtDbtInd>")
+            .Append("<Dt><Dt>2026-05-31</Dt></Dt></Bal>")
+            .Append("<Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>")
+            .Append("</Stmt>")
+            .ToString();
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 100, MaxNestingDepth = 64 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("currency.xml", BuildCamtDocument(outOfOrder)));
+
+        result.HasErrors.Should().BeFalse();
+        result.Records.Should().OnlyContain(record => record.Currency == "EUR");
     }
 
     [Fact]

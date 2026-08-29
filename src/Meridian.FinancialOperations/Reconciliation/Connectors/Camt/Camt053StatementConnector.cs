@@ -116,7 +116,10 @@ public sealed class Camt053StatementConnector : IStatementConnector
         // itself when pass two reaches it.
         var account = scan.FirstAccount;
         var accountSeen = false;
-        var accountCurrency = "USD";
+        // Seeded alongside the identity, and for the same reason: a Bal or Ntry ahead of Acct whose Amt
+        // omits Ccy would otherwise fall back to USD even when the account declares another currency.
+        // Seeding only the identity last round left this half-done.
+        var accountCurrency = scan.FirstAccountCurrency ?? "USD";
 
         try
         {
@@ -384,7 +387,8 @@ public sealed class Camt053StatementConnector : IStatementConnector
         var statementCount = 0;
         var distinctAccounts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         string? firstAccount = null;
-        scan = new StatementScan(0, distinctAccounts, null);
+        string? firstAccountCurrency = null;
+        scan = new StatementScan(0, distinctAccounts, null, null);
         issue = null;
 
         try
@@ -458,6 +462,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 if (statementCount == 1)
                 {
                     firstAccount = resolvedAccount;
+                    firstAccountCurrency = Value(accountElement, "Ccy");
                 }
 
                 distinctAccounts.Add(resolvedAccount ?? UnknownAccount);
@@ -474,7 +479,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
             return false;
         }
 
-        scan = new StatementScan(statementCount, distinctAccounts, firstAccount);
+        scan = new StatementScan(statementCount, distinctAccounts, firstAccount, firstAccountCurrency);
         return true;
     }
 
@@ -492,7 +497,8 @@ public sealed class Camt053StatementConnector : IStatementConnector
     private readonly record struct StatementScan(
         int StatementCount,
         HashSet<string> DistinctAccounts,
-        string? FirstAccount);
+        string? FirstAccount,
+        string? FirstAccountCurrency);
 
     // Materializes the element the reader is positioned on, and nothing else, enforcing the nesting bound
     // as it goes. XElement.Load over a subtree reader would copy the subtree without checking depth, so a

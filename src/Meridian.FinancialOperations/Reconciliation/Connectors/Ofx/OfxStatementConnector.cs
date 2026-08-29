@@ -68,12 +68,20 @@ public sealed class OfxStatementConnector(
         // Bounded here rather than after the parse returns: the node tree and the flattened entry
         // dictionaries are both built by Parse, so a check on the result would run after the allocation
         // it exists to prevent. A 250,001-entry OFX file fits well inside the 20 MiB document cap.
-        var ofx = OfxDocumentParser.Parse(content, _limits.MaxRecords, _limits.MaxNestingDepth, out var bound);
+        var ofx = OfxDocumentParser.Parse(
+            content,
+            _limits.MaxRecords,
+            _limits.MaxNestingDepth,
+            _limits.MaxParseNodes,
+            out var bound);
         if (bound != OfxParseBound.None)
         {
-            issues.Add(bound == OfxParseBound.NestingTooDeep
-                ? _limits.NestingTooDeep()
-                : _limits.TooManyRecords());
+            issues.Add(bound switch
+            {
+                OfxParseBound.NestingTooDeep => _limits.NestingTooDeep(),
+                OfxParseBound.TooManyNodes => _limits.TooManyNodes(),
+                _ => _limits.TooManyRecords(),
+            });
             return EmptyResult(profileId, issues);
         }
 

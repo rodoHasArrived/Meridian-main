@@ -23,7 +23,8 @@ public sealed record StatementIngressLimits(
     int MaxRecords,
     int MaxLineBytes,
     int MaxNestingDepth,
-    int MaxSubtreeNodes = 50_000)
+    int MaxSubtreeNodes = 50_000,
+    int MaxParseNodes = 2_000_000)
 {
     /// <summary>
     /// Default bounds. <see cref="MaxDocumentBytes"/> is <see cref="StatementConnectorLimits.MaxFileBytes"/>,
@@ -66,10 +67,26 @@ public sealed record StatementIngressLimits(
     /// <summary>Issue code for a single XML element that expands past the per-subtree node cap.</summary>
     public const string SubtreeTooLargeCode = "STATEMENT_SUBTREE_TOO_LARGE";
 
+    /// <summary>
+    /// Whole-document retained-node cap, deliberately <b>not</b> derived from <see cref="MaxRecords"/>.
+    /// Deriving it made the bound vary with an unrelated knob and, at the default record allowance, put
+    /// it above what <see cref="MaxDocumentBytes"/> can even produce - a bound that cannot be reached is
+    /// not a bound. The document byte cap is the primary limit here; this is the secondary guard against
+    /// a tag-dense payload whose retained object graph costs far more than its bytes, since each node
+    /// carries string and dictionary overhead the source text does not.
+    /// </summary>
+    public const string TooManyNodesCode = "STATEMENT_TOO_MANY_NODES";
+
     public StatementParseIssue SubtreeTooLarge() => StatementParseIssue.Error(
         SubtreeTooLargeCode,
         $"A single statement element expands to more than {MaxSubtreeNodes} nodes, above the ingress limit; " +
         "the file is malformed or not the declared format.");
+
+    public StatementParseIssue TooManyNodes() => StatementParseIssue.Error(
+        TooManyNodesCode,
+        $"The statement document retains more than {MaxParseNodes} parsed nodes, above the ingress allocation " +
+        "limit; a document this tag-dense expands far beyond its own byte size once parsed. Split the " +
+        "statement into smaller files, or raise the configured limit deliberately before importing.");
 
     public StatementParseIssue DocumentTooLarge(long actualBytes) => StatementParseIssue.Error(
         DocumentTooLargeCode,
