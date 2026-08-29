@@ -74,7 +74,14 @@ public sealed class Bai2StatementConnector : IStatementConnector
         string? account = null;
         var accountCurrency = groupCurrency;
         var rowNumber = 0;
-        var detailCandidates = 0;
+        // One budget for closing balances and transaction details together. They were two independent
+        // counters, each bounded by MaxRecords, so a file could emit MaxRecords compact 03 balances and
+        // then MaxRecords malformed 16 records: neither counter breached its own limit, and the parse
+        // retained MaxRecords canonical records plus MaxRecords warning objects - double the configured
+        // allocation ceiling. The service could not catch it either, because TotalRetainedRows counts
+        // Records and the evidence collections, not Issues. Camt053StatementConnector already shares one
+        // rowCandidates budget across Ntry and Bal; this is the sibling that never got the same fix.
+        var rowCandidates = 0;
 
         // Trailer bookkeeping. A truncated file drops its 49/98/99 trailers, so every opener must be
         // matched by its trailer and the file trailer's declared group count must agree; otherwise the
@@ -156,7 +163,8 @@ public sealed class Bai2StatementConnector : IStatementConnector
                         TryResolveClosingBalance(fields, out var balanceMinorUnits) &&
                         asOfDate is { } balanceDate)
                     {
-                        if (records.Count >= _limits.MaxRecords)
+                        rowCandidates++;
+                        if (rowCandidates > _limits.MaxRecords)
                         {
                             issues.Add(_limits.TooManyRecords());
                             return Task.FromResult(EmptyResult(issues));
@@ -199,8 +207,8 @@ public sealed class Bai2StatementConnector : IStatementConnector
                     // than errors, the service could commit a valid closing balance while silently
                     // dropping every transaction in the file. Bounding candidates rather than successes
                     // refuses that document instead of half-importing it.
-                    detailCandidates++;
-                    if (detailCandidates > _limits.MaxRecords)
+                    rowCandidates++;
+                    if (rowCandidates > _limits.MaxRecords)
                     {
                         issues.Add(_limits.TooManyRecords());
                         return Task.FromResult(EmptyResult(issues));
@@ -223,12 +231,6 @@ public sealed class Bai2StatementConnector : IStatementConnector
                     {
                         issues.Add(StatementParseIssue.Warning("BAI2_BAD_AMOUNT", "Transaction detail has no parseable amount; skipped.", rowNumber + 1));
                         break;
-                    }
-
-                    if (records.Count >= _limits.MaxRecords)
-                    {
-                        issues.Add(_limits.TooManyRecords());
-                        return Task.FromResult(EmptyResult(issues));
                     }
 
                     rowNumber++;

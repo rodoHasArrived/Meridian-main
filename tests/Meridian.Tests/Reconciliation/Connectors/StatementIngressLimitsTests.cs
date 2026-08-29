@@ -815,6 +815,71 @@ public sealed class StatementIngressLimitsTests : IDisposable
         result.TotalRetainedRows.Should().BeGreaterThanOrEqualTo(result.Records.Count + result.AccountSnapshots!.Count);
     }
 
+    [Fact]
+    public async Task Bai2_BalancesAndDetails_ShareOneCandidateBudget()
+    {
+        // The two were independent counters, each bounded by MaxRecords, so a file could hold
+        // MaxRecords balances AND MaxRecords malformed details without either breaching its own limit -
+        // twice the configured allocation. Here one closing balance plus two malformed details is three
+        // candidates against a cap of two: neither counter alone exceeds it, so only a shared budget
+        // refuses this document.
+        var connector = new Bai2StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 2, MaxLineBytes = 4096 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("shared-budget.bai", BuildBai2WithUnparseableAmounts(detailCount: 2)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+    }
+
+    [Fact]
+    public async Task Bai2_BalanceAndDetailsInsideTheSharedBudget_StillParse()
+    {
+        // The shared budget must not refuse what fits. The same document under a cap of ten parses its
+        // closing balance and reports the malformed details as warnings, exactly as before.
+        var connector = new Bai2StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 10, MaxLineBytes = 4096 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("within-budget.bai", BuildBai2WithUnparseableAmounts(detailCount: 2)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+    }
+
+    [Fact]
+    public async Task IbFlex_RowLimit_ComesFromTheConfiguredLimitsRatherThanAPrivateConstant()
+    {
+        // The connector carried its own 100,000-row ceiling while the module README documents the
+        // shared StatementIngressLimits as the one place a deployment raises a cap - so raising
+        // MaxRecords left a legitimate Flex report refused at row 100,001 by a number nothing could
+        // configure. Proven from the cheap side: a lowered cap must refuse a six-row report, which a
+        // hardcoded 100,000 never would.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 2 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("ib-flex-tight.xml", BuildIbFlexWithAccountInformation(5)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == "ROW_LIMIT_EXCEEDED");
+    }
+
+    [Fact]
+    public async Task IbFlex_WithoutExplicitLimits_UsesTheSharedDefault()
+    {
+        // The limits argument is optional so existing composition keeps working; omitting it must give
+        // the shared default rather than no bound at all. Six retained rows are far inside 250,000.
+        var connector = new IbFlexStatementConnector(Catalog());
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("ib-flex-default.xml", BuildIbFlexWithAccountInformation(5)));
+
+        result.HasErrors.Should().BeFalse();
+        result.Issues.Should().NotContain(issue => issue.Code == "ROW_LIMIT_EXCEEDED");
+    }
+
     // ---------------------------------------------------------------------------------------------
     // Harness
     // ---------------------------------------------------------------------------------------------
