@@ -116,6 +116,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
         // itself when pass two reaches it.
         var account = scan.FirstAccount;
         var accountSeen = false;
+        var entryCandidates = 0;
         // Seeded alongside the identity, and for the same reason: a Bal or Ntry ahead of Acct whose Amt
         // omits Ccy would otherwise fall back to USD even when the account declares another currency.
         // Seeding only the identity last round left this half-done.
@@ -271,6 +272,20 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
                     case "Ntry":
                         {
+                            // Counted before the subtree is materialized and before the validation branches
+                            // below, for the reason the BAI2 path was fixed one round ago: a pending or
+                            // undated entry takes a warning branch and never reaches the record cap, so a
+                            // document of them accumulates one issue object per entry unbounded - and
+                            // because they are warnings, the import still succeeds, committing the closing
+                            // balance while silently dropping every movement that should reconcile against
+                            // it. Bounding candidates rather than successes refuses such a file instead.
+                            entryCandidates++;
+                            if (entryCandidates > _limits.MaxRecords)
+                            {
+                                issues.Add(_limits.TooManyRecords());
+                                return Task.FromResult(EmptyResult(issues));
+                            }
+
                             if (!TryReadBoundedSubtree(reader, statementDepth, out var entry, out var entryRefusal))
                             {
                                 issues.Add(entryRefusal!);

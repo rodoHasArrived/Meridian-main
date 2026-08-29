@@ -1072,6 +1072,42 @@ public sealed class StatementIngressLimitsTests : IDisposable
         result.Records.Should().OnlyContain(record => record.Account == "DE89370400440532013000");
     }
 
+    [Fact]
+    public async Task Camt_PendingEntries_AreBoundedRatherThanAccumulatingWarnings()
+    {
+        // The camt twin of the BAI2 finding one round earlier. A pending (PDNG) entry is deliberately
+        // skipped with a warning and never reaches the record cap, so a document of them accumulated one
+        // issue object per entry unbounded - and because they are warnings the import still succeeded,
+        // committing the closing balance while silently dropping every movement. Fixing one connector and
+        // not its sibling is what let this survive a round.
+        var pending = new StringBuilder()
+            .Append("<Stmt><Id>STMT-1</Id>")
+            .Append("<Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>")
+            .Append("<Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp>")
+            .Append("<Amt Ccy=\"EUR\">12345.67</Amt><CdtDbtInd>CRDT</CdtDbtInd>")
+            .Append("<Dt><Dt>2026-05-31</Dt></Dt></Bal>");
+
+        for (var index = 0; index < 40; index++)
+        {
+            pending
+                .Append("<Ntry><Amt Ccy=\"EUR\">10.00</Amt><CdtDbtInd>CRDT</CdtDbtInd>")
+                .Append("<Sts>PDNG</Sts>")
+                .Append("<BookgDt><Dt>2026-05-10</Dt></BookgDt>")
+                .Append($"<AcctSvcrRef>PENDING-{index:D4}</AcctSvcrRef></Ntry>");
+        }
+
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 5, MaxNestingDepth = 64 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("pending.xml", BuildCamtDocument(pending.Append("</Stmt>").ToString())));
+
+        result.HasErrors.Should().BeTrue("an over-cap file is refused, not committed with the balance alone");
+        result.Records.Should().BeEmpty();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Issues.Count.Should().BeLessThan(40, "diagnostics are bounded, not one per skipped entry");
+    }
+
     private static StatementImportCommitRequest CommitRequest(StatementSourceDocument document)
         => new(
             document,
