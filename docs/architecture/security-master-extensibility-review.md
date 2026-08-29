@@ -1708,13 +1708,16 @@ both are reachable from surfaces the pass discusses elsewhere and neither is in 
   wrapping `_queryService.SearchAsync(searchRequest, ct)` in `catch (Exception)` and simply `return`s
   (`:60-69`) — no failure count, no rethrow. A cancellation during that initial search therefore never
   reaches the loop, the `break`, or the per-item catch at all, and the method returns as though the
-  backfill had completed. Fixing `:101-108` alone leaves that path exactly as it is. Three swallow
-  points on one command — the search, the per-item catch, and the missing token — which is why the
-  remediation has to be scoped by *method* here rather than by catch site.
+  backfill had completed. Fixing `:101-108` alone leaves that path exactly as it is. **Two** swallow
+  points on this one method — the search catch (`:62-69`) and the per-item catch (`:98-108`) — which is
+  why the remediation has to be scoped by *method* here rather than by catch site.
 
-  The WPF command compounds all of it by calling `BackfillAllAsync()` with no token at all
-  (`SecurityMasterViewModel.cs:2186-2193`), so desktop-initiated backfills have nothing to cancel with
-  in the first place.
+  **A third defect on the same command is a different kind, and must not be counted as a swallow.**
+  The WPF call passes no token at all (`SecurityMasterViewModel.cs:2186-2193`), so a desktop-initiated
+  backfill has nothing to cancel *with*: cancellation cannot be requested, rather than being requested
+  and then dropped. That is command wiring, not exception handling, and it needs a different fix and a
+  different test — an implementer working from a merged list would go looking for a third catch that
+  does not exist, and would write a propagation test where a plumbing test is required.
 - **The Polygon page fetch, before the create loop is ever reached.**
   `PolygonSecurityMasterIngestProvider.FetchPageAsync` wraps `GetAsync(url, ct)` and
   `ReadAsStringAsync(ct)` in `catch (Exception)` and returns `null` (`:129-148`); `FetchAllAsync` reads
@@ -1866,12 +1869,14 @@ Read as a delta on the standing lists above.
    regression criteria per site, not once: import and the Polygon CLI move a row between `skipped` and
    `failed`, while Edgar has no failed counter and instead gains an error entry and a non-zero exit —
    a test asserting an Edgar count change would assert something that cannot happen. The cancellation
-   half reaches beyond those three ingests: the trading-parameter backfill swallows it in
-   `BackfillAllAsync` (`TradingParametersBackfillService.cs:101-108`, silent for cancellation on *any*
-   item because the loop `break`s rather than throwing, and
-   invoked with no token at all from WPF), and Polygon's `FetchPageAsync` (`:129-148`) swallows it
-   *before* the create loop, so the ingest imports a truncated page set and reports success. Fixing
-   only the create call sites leaves both commands completing normally after cancellation.
+   half reaches beyond those three ingests: `BackfillAllAsync` swallows it at **two** catches — the
+   initial search (`TradingParametersBackfillService.cs:62-69`) and the per-item catch (`:98-108`,
+   silent for cancellation on *any* item because the loop `break`s rather than throwing) — and
+   Polygon's `FetchPageAsync` (`:129-148`) swallows it *before* the create loop, so the ingest imports
+   a truncated page set and reports success. Fixing only the create call sites leaves both commands
+   completing normally after cancellation. Keep separate from these the WPF backfill command passing
+   **no token at all** (`SecurityMasterViewModel.cs:2186-2193`): there cancellation cannot be requested
+   rather than being dropped, so it is a wiring fix with a wiring test, not a third catch to find.
 8. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
    Unchanged from every prior pass, and unchanged in importance: `DirectLoan`, `StructuredCredit`,
    `PrivateFundInterest`, `RealEstateHolding` and `CommitmentGuarantee` remain the classes fund
