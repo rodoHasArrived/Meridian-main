@@ -10012,6 +10012,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Tenancy.FundProfileOwnership"
     },
     {
@@ -10030,6 +10036,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry"
     },
     {
@@ -10037,6 +10049,36 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Tenancy.IFundScopeTenantAccessor"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Tenancy.IScopeAssignmentProvider"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Tenancy.ScopeFanOutIdentifier"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Tenancy.ScopeFanOutRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Tenancy.ScopeFanOutResult"
     },
     {
       "kind": "contract-set-member",
@@ -31731,6 +31773,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult",
+      "target": "contract:Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Tenancy.ScopeFanOutRequest",
+      "target": "contract:Meridian.Contracts.Tenancy.ScopeFanOutIdentifier"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Tenancy.ScopeFanOutResult",
+      "target": "contract:Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Treasury.MmfLiquidityDto",
       "target": "contract:Meridian.Contracts.Treasury.MmfLiquidityState"
     },
@@ -45239,7 +45299,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "f09ce68da6d100a8b6b4e6b33b831375e46ae84b203e7ca47fd8cae8120a38d9",
+  "fingerprint": "752e71bdfd3dcab123986d4be394a068b4eccca22973173e58a498c808079fcd",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -55302,6 +55362,12 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.Tenancy.FundProfileOwnership",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Tenancy.FundProfileOwnership"
@@ -55320,6 +55386,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry"
@@ -55329,6 +55401,36 @@
       "id": "contract:Meridian.Contracts.Tenancy.IFundScopeTenantAccessor",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Tenancy.IFundScopeTenantAccessor"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Tenancy.IScopeAssignmentProvider",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Tenancy.IScopeAssignmentProvider"
+    },
+    {
+      "classification": "result",
+      "id": "contract:Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Tenancy.ScopeFanOutIdentifier",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Tenancy.ScopeFanOutIdentifier"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Tenancy.ScopeFanOutRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Tenancy.ScopeFanOutRequest"
+    },
+    {
+      "classification": "result",
+      "id": "contract:Meridian.Contracts.Tenancy.ScopeFanOutResult",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Tenancy.ScopeFanOutResult"
     },
     {
       "classification": "class",
@@ -65920,11 +66022,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3038,
-    "contract_set_memberships": 3567,
-    "edges": 7518,
+    "contract_references": 3041,
+    "contract_set_memberships": 3574,
+    "edges": 7528,
     "foreign_keys": 114,
     "logical_references": 6,
-    "nodes": 3568
+    "nodes": 3575
   }
 }
