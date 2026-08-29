@@ -355,9 +355,10 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             : 0m;
         for (var i = 0; i < periods.Length; i++)
         {
-            var (accrualStart, date) = periods[i];
+            var (accrualStart, date, isRegular) = periods[i];
             var interest = annualRate > 0m && outstanding > 0m
-                ? RoundCash(outstanding * annualRate * DayCountConventions.Fraction(terms.DayCountConvention, accrualStart, date))
+                ? RoundCash(outstanding * annualRate * PeriodAccrualFraction(
+                    terms.DayCountConvention, accrualStart, date, isRegular, periodMonths))
                 : 0m;
             var principal = 0m;
             var isLast = i == periods.Length - 1;
@@ -384,7 +385,9 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
 
     private static IReadOnlyList<StructuredCashFlowScheduleEntry> BuildContractualPrincipalSchedule(
         IReadOnlyList<StructuredPrincipalScheduleEntry> contractualPrincipal,
-        IReadOnlyList<(DateOnly AccrualStart, DateOnly PaymentDate)> periods,
+        // Accrues between arbitrary event dates (interleaved principal and coupon dates), not whole
+        // scheduled periods, so it keeps the true day count and ignores the regularity flag.
+        IReadOnlyList<(DateOnly AccrualStart, DateOnly PaymentDate, bool IsRegular)> periods,
         DateOnly asOfDate,
         DateOnly maturity,
         decimal principalBasis,
@@ -536,9 +539,10 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         var entries = new List<StructuredCashFlowScheduleEntry>(periods.Length);
         for (var i = 0; i < periods.Length; i++)
         {
-            var (accrualStart, date) = periods[i];
+            var (accrualStart, date, isRegular) = periods[i];
             var interest = annualRate > 0m
-                ? RoundCash(notional * annualRate * DayCountConventions.Fraction(dayCount, accrualStart, date))
+                ? RoundCash(notional * annualRate * PeriodAccrualFraction(
+                    dayCount, accrualStart, date, isRegular, periodMonths))
                 : 0m;
             var isLast = i == periods.Length - 1;
             var principal = leg.ExchangesPrincipal && isLast ? RoundCash(notional) : 0m;
@@ -603,9 +607,51 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
     };
 
     /// <summary>
-    /// Yields each coupon period as an accrual start and its payment date, ending on maturity.
+    /// True for the 30/360 family, whose defining property is that every regular period is a whole
+    /// period — the convention exists so a regular semiannual coupon is always exactly half a year's
+    /// interest. Actual-days conventions deliberately vary period to period and are excluded.
+    /// </summary>
+    private static bool IsThirtyDayMonthBasis(string? dayCountConvention)
+        => DayCountConventions.Parse(dayCountConvention)
+            is DayCountConvention.Thirty360
+            or DayCountConvention.ThirtyE360
+            or DayCountConvention.ThirtyE360Isda;
+
+    /// <summary>
+    /// Accrual fraction for one SCHEDULED period, as opposed to an arbitrary date range.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// Under the 30/360 family a regular period accrues <c>periodMonths/12</c> rather than a day
+    /// count re-derived from its endpoints. This matters only when the schedule roll clamps: an
+    /// anchor on the 29th–31st rolls into a shorter month (29 Aug → 28 Feb), and 30/360 then counts
+    /// 179 days for that period and 181 for the next. The year still totals 360, so annual interest
+    /// was never wrong — but the individual coupons were unequal, which is precisely what 30/360
+    /// exists to prevent. Where the anchor day is 28 or lower the roll never clamps and the two
+    /// agree, so this changes nothing for the common case.
+    /// </para>
+    /// <para>
+    /// Stub periods and every actual-days convention keep the true day count: there the variation is
+    /// the intended answer, not an artefact.
+    /// </para>
+    /// </remarks>
+    private static decimal PeriodAccrualFraction(
+        string? dayCountConvention,
+        DateOnly accrualStart,
+        DateOnly paymentDate,
+        bool isRegular,
+        int periodMonths)
+        => isRegular && IsThirtyDayMonthBasis(dayCountConvention)
+            ? periodMonths / 12m
+            : DayCountConventions.Fraction(dayCountConvention, accrualStart, paymentDate);
+
+    /// <summary>
+    /// Yields each coupon period as an accrual start and its payment date, ending on maturity, and
+    /// reports whether the period is REGULAR — a whole period produced by the schedule roll — or a
+    /// short final stub ending early at <paramref name="maturity"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
     /// Every payment date is anchored on the issue date rather than compounded from the previous
     /// payment date. <see cref="DateOnly.AddMonths"/> clamps a month-end anchor into shorter months
     /// (31 Jan plus three months is 30 Apr), and compounding that clamp walks the schedule earlier
@@ -613,8 +659,15 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
     /// maturity and emits a spurious one-day stub, so a one-year quarterly bond yields five payments
     /// instead of four. Anchoring keeps each period on the issue day-of-month, clamping only where
     /// the target month is shorter.
+    /// </para>
+    /// <para>
+    /// Regularity is a property of that roll, not of how far apart the dates sit: the same clamping
+    /// can leave a regular period's endpoints fewer calendar days apart than its nominal term
+    /// (29 Aug + 6M is 28 Feb) while it remains a whole period. Accrual reads this flag rather than
+    /// re-deriving the answer from the endpoints — see <see cref="PeriodAccrualFraction"/>.
+    /// </para>
     /// </remarks>
-    private static IEnumerable<(DateOnly AccrualStart, DateOnly PaymentDate)> BuildPaymentPeriods(
+    private static IEnumerable<(DateOnly AccrualStart, DateOnly PaymentDate, bool IsRegular)> BuildPaymentPeriods(
         DateOnly issueDate,
         DateOnly maturity,
         int periodMonths)
@@ -634,11 +687,13 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             var paymentDate = issueDate.AddMonths(periodMonths * period);
             if (paymentDate >= maturity)
             {
-                yield return (accrualStart, maturity);
+                // Regular when the roll lands exactly on maturity; a maturity that falls short of
+                // the next roll date leaves a stub, which accrues on its true day count.
+                yield return (accrualStart, maturity, paymentDate == maturity);
                 yield break;
             }
 
-            yield return (accrualStart, paymentDate);
+            yield return (accrualStart, paymentDate, true);
             accrualStart = paymentDate;
         }
     }
