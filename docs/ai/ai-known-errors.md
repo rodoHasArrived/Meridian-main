@@ -474,8 +474,13 @@ label alone will update this file.
     so after such an edit the latest log still describes the *pre-edit* body.
   - Consequently: after a body-only rewrite the marker's presence is **unverified until the next
     `synchronize` push**. Treat that push's `scope-gate` as the confirmation. If it errors with
-    `No phase declaration found`, restore the marker and fold it into the next real change — never an
-    empty commit, and never close/reopen (see the recovery note below).
+    `No phase declaration found`, restore the marker and recover by the route your role allows — the
+    two differ, so read the recovery note below rather than assuming:
+    - *Automated contributors* fold the restoration into the next real change. Never an empty commit,
+      and never close/reopen — that restriction is the agent rule, not a property of the repository.
+    - *Human authors* may close and reopen the pull request, which needs no commit at all and is the
+      documented recovery when the marker is noticed after the last intended change. The recovery note
+      explains why `reopened` clears it where a job re-run cannot.
   - `grep -n "PHASE_BODY\|PHASE_LABEL" tools/roadmap/enforce_phase_scope.py` to confirm the accepted forms.
   - **Why no pre-push check is listed.** A raw, comment-preserving read of the current body would be
     the right check, but no tool available in this environment performs one: MCP `pull_request_read`
