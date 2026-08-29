@@ -972,19 +972,24 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
-    public async Task Bai2_UnknownRecordTypes_AreBoundedBeforeDecodingAndSplitting()
+    public async Task Bai2_TightRecordCap_DoesNotRefuseALineHeavyDocument()
     {
-        // Unknown record types fall through the switch without charging a candidate, so a file of compact
-        // unknown lines allocated one string and one string[] per line with nothing to stop it. The raw
-        // budget is MaxRecords * 2 + 4, so a cap of two allows eight lines; forty must refuse.
+        // The other half of the decoupling asserted by Bai2_LineBudget_IsItsOwnLimitRatherThanARecordMultiple,
+        // which proves MaxDocumentLines still bites under a loose record cap. This proves the converse: a
+        // tight record cap must not refuse a line-heavy file. The line budget was once MaxRecords * 2 + 4,
+        // a formula lifted from CsvStatementConnector where one line is one record. BAI2's 88 continuation
+        // lines produce no record at all, so deriving the line allowance from the record allowance refused
+        // legal statements - at MaxRecords = 2 this forty-six-line file was capped at eight lines while
+        // retaining a single closing balance. Until the budgets were separated this test asserted the
+        // refusal as correct, which is why it kept passing while the bound was wrong.
         var connector = new Bai2StatementConnector(
             TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 2, MaxLineBytes = 4096 });
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("unknown.bai", BuildBai2WithUnknownRecordTypes(unknownCount: 40)));
 
-        result.HasErrors.Should().BeTrue();
-        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyLinesCode);
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyLinesCode);
+        result.Records.Should().ContainSingle().Which.Kind.Should().Be(StatementRecordKind.CashBalance);
     }
 
     [Fact]
