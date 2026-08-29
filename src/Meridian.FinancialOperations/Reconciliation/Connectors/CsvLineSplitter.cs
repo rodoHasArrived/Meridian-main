@@ -68,8 +68,27 @@ public static class CsvLineSplitter
     /// refuse without ever holding the whole file as lines.
     /// </remarks>
     public static IReadOnlyList<string> SplitLines(string content, int maxLines)
+        => SplitLines(content, maxLines, maxLineLength: int.MaxValue, out _);
+
+    /// <summary>
+    /// As <see cref="SplitLines(string, int)"/>, and additionally reports through
+    /// <paramref name="lineTooLong"/> whether any discovered line exceeded <paramref name="maxLineLength"/>.
+    /// Discovery stops at the first such line, so a caller never pays to split its fields.
+    /// </summary>
+    /// <remarks>
+    /// A line count alone does not bound a CSV. One line can carry the entire document, and splitting its
+    /// fields then materializes a list entry and a string per delimiter - a single-line exhaustion path
+    /// that a row bound never sees.
+    /// </remarks>
+    public static IReadOnlyList<string> SplitLines(
+        string content,
+        int maxLines,
+        int maxLineLength,
+        out bool lineTooLong)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(maxLines);
+        ArgumentOutOfRangeException.ThrowIfNegative(maxLineLength);
+        lineTooLong = false;
 
         var start = content.Length > 0 && content[0] == ByteOrderMark ? 1 : 0;
         var lines = new List<string>();
@@ -85,6 +104,12 @@ public static class CsvLineSplitter
                 continue;
             }
 
+            if (index - lineStart > maxLineLength)
+            {
+                lineTooLong = true;
+                return lines;
+            }
+
             lines.Add(content[lineStart..index]);
             if (lines.Count > maxLines)
             {
@@ -94,6 +119,12 @@ public static class CsvLineSplitter
             // \r\n is one break, not two; a lone \r is a break in its own right.
             index += current == '\r' && index + 1 < content.Length && content[index + 1] == '\n' ? 2 : 1;
             lineStart = index;
+        }
+
+        if (content.Length - lineStart > maxLineLength)
+        {
+            lineTooLong = true;
+            return lines;
         }
 
         // Split always yields a final segment, including the empty one a terminating newline leaves.

@@ -424,6 +424,7 @@ public sealed class StatementIngressLimitsTests : IDisposable
         // split into a full line array, so an over-cap document still paid that allocation first.
         var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
         var connector = new CsvStatementConnector(catalog, StatementIngressLimits.Default with { MaxRecords = 3 });
+        // 40 data rows against a cap of 3 - well past the bound on nonblank lines, header included.
         var rows = string.Join("\n", Enumerable.Range(0, 40).Select(row =>
             $"FUND-A,AAPL,1,1.00,-1.00,BUY,2026-06-02,2026-06-04,USD,0,T-{row}"));
         var payload = Encoding.UTF8.GetBytes(
@@ -436,6 +437,76 @@ public sealed class StatementIngressLimitsTests : IDisposable
         result.Records.Should().BeEmpty("the document is refused before any row is mapped");
         result.Issues.Should().ContainSingle()
             .Which.Code.Should().Be(StatementIngressLimits.TooManyRecordsCode);
+    }
+
+    [Fact]
+    public async Task Csv_ExactlyTheRecordCapWithHeaderAndTrailingNewline_IsAccepted()
+    {
+        // Regression for a false positive I introduced: bounding total lines at MaxRecords + 1 refused the
+        // ordinary shape, because a header plus exactly MaxRecords rows plus the empty segment a trailing
+        // newline leaves is MaxRecords + 2 lines. Acceptance now counts nonblank lines instead.
+        var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
+        var connector = new CsvStatementConnector(catalog, StatementIngressLimits.Default with { MaxRecords = 4 });
+        var rows = string.Join("\n", Enumerable.Range(0, 4).Select(row =>
+            $"FUND-A,AAPL,1,1.00,-1.00,BUY,2026-06-02,2026-06-04,USD,0,T-{row}"));
+        var payload = Encoding.UTF8.GetBytes(
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n"
+            + rows + "\n");
+
+        var result = await connector.ParseAsync(new StatementSourceDocument("exact.csv", payload));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Records.Should().HaveCount(4);
+    }
+
+    [Fact]
+    public async Task Csv_BlankLinesDoNotCountTowardTheRecordBound()
+    {
+        // Blank lines map to no canonical row, so counting them would refuse ordinary files that merely
+        // carry separators or a ragged tail.
+        var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
+        var connector = new CsvStatementConnector(catalog, StatementIngressLimits.Default with { MaxRecords = 3 });
+        var payload = Encoding.UTF8.GetBytes(
+            "\n\naccount,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n"
+            + "\nFUND-A,AAPL,1,1.00,-1.00,BUY,2026-06-02,2026-06-04,USD,0,T-1\n\n"
+            + "FUND-A,MSFT,1,1.00,-1.00,BUY,2026-06-02,2026-06-04,USD,0,T-2\n\n");
+
+        var result = await connector.ParseAsync(new StatementSourceDocument("blanks.csv", payload));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Records.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task Csv_SingleOverlongLine_IsRefusedBeforeItsFieldsAreSplit()
+    {
+        // A line count alone does not bound a CSV: one line can carry the whole document, and splitting
+        // its fields then materializes a string and a list entry per delimiter. MaxLineBytes existed but
+        // was only ever consulted by BAI2.
+        var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
+        var connector = new CsvStatementConnector(catalog, StatementIngressLimits.Default with { MaxLineBytes = 256 });
+        var wide = string.Join(",", Enumerable.Range(0, 5_000).Select(field => $"f{field}"));
+        var payload = Encoding.UTF8.GetBytes("account,symbol,quantity\n" + wide);
+
+        var result = await connector.ParseAsync(new StatementSourceDocument("wide-line.csv", payload));
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty();
+        result.Issues.Should().ContainSingle()
+            .Which.Code.Should().Be(StatementIngressLimits.LineTooLongCode);
+    }
+
+    [Fact]
+    public void BoundedSplitLines_StopsAtAnOverlongLineWithoutAddingIt()
+    {
+        var lines = CsvLineSplitter.SplitLines(
+            "short\n" + new string('x', 500) + "\nalso-short",
+            maxLines: int.MaxValue,
+            maxLineLength: 100,
+            out var lineTooLong);
+
+        lineTooLong.Should().BeTrue();
+        lines.Should().ContainSingle().Which.Should().Be("short", "discovery stops before the overlong line");
     }
 
     [Fact]

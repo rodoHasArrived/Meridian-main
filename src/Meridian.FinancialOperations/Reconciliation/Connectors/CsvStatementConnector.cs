@@ -29,6 +29,16 @@ public sealed class CsvStatementConnector(
         RequiresMappingProfile: true,
         DefaultProfileId: StatementMappingProfileRegistry.CanonicalCsvV1ProfileId);
 
+    private static StatementParseResult CsvIngressRefusal(StatementParseIssue issue)
+        => new(
+            ConnectorId,
+            ProfileId: null,
+            [],
+            ColumnMappings: [],
+            [],
+            [issue],
+            new StatementFormatFingerprint(string.Empty, [], "csv-mapped"));
+
     public bool CanHandle(StatementSourceDocument document)
     {
         var extension = Path.GetExtension(document.FileName);
@@ -58,21 +68,36 @@ public sealed class CsvStatementConnector(
         }
 
         var content = Encoding.UTF8.GetString(document.Content.Span);
-        // Bound line discovery itself, not just the rows mapped from it. Every canonical row comes from a
-        // line, so a document carrying more lines than the record cap cannot yield a result inside that
-        // cap; stopping here avoids materializing the whole file as lines first. Blank lines count toward
-        // the bound because it bounds ingress size, not mapped rows.
-        var lines = CsvLineSplitter.SplitLines(content, _ingressLimits.MaxRecords + 1);
-        if (lines.Count > _ingressLimits.MaxRecords + 1)
+        // Bound line discovery itself, not just the rows mapped from it, on both axes. The hard line cap
+        // is deliberately loose - the record bound, a header, the terminal empty segment a trailing
+        // newline leaves, and an equal allowance for interspersed blank lines - because it exists to cap
+        // allocation, not to decide acceptance. Acceptance is decided below on nonblank lines, so an
+        // ordinary file carrying exactly the permitted rows plus a header and a trailing newline is not
+        // refused by an off-by-a-couple line count.
+        var hardLineCap = _ingressLimits.MaxRecords * 2 + 4;
+        var lines = CsvLineSplitter.SplitLines(
+            content, hardLineCap, _ingressLimits.MaxLineBytes, out var lineTooLong);
+
+        if (lineTooLong)
         {
-            return new StatementParseResult(
-                ConnectorId,
-                ProfileId: null,
-                [],
-                ColumnMappings: [],
-                [],
-                [_ingressLimits.TooManyRecords()],
-                new StatementFormatFingerprint(string.Empty, [], "csv-mapped"));
+            return CsvIngressRefusal(_ingressLimits.LineTooLong(lines.Count + 1));
+        }
+
+        // Every canonical row comes from a nonblank line, and one of those is the header, so more than
+        // MaxRecords + 1 nonblank lines cannot yield a result inside the record cap. Blank lines are
+        // excluded: they map to no row, and counting them would refuse ordinary files.
+        var nonBlankLines = 0;
+        foreach (var line in lines)
+        {
+            if (!string.IsNullOrWhiteSpace(line))
+            {
+                nonBlankLines++;
+            }
+        }
+
+        if (nonBlankLines > _ingressLimits.MaxRecords + 1 || lines.Count > hardLineCap)
+        {
+            return CsvIngressRefusal(_ingressLimits.TooManyRecords());
         }
 
         var firstContentLine = lines.FirstOrDefault(static line => !string.IsNullOrWhiteSpace(line));
