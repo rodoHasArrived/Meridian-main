@@ -222,12 +222,6 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var trade in Section(statement, "Trades", "Trade"))
             {
                 rowNumber++;
-                retained += 2;
-                if (retained > _limits.MaxRecords)
-                {
-                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
-                    return EmptyResult(profileId, issues);
-                }
                 CountSection(sectionCounts, "Trades");
                 CollectAttributeNames(trade, detectedColumns);
                 var values = new Dictionary<StatementCanonicalField, string>
@@ -244,22 +238,29 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                     [StatementCanonicalField.FeesCommission] = Attribute(trade, "ibCommission") ?? string.Empty,
                     [StatementCanonicalField.ExternalTransactionId] = Attribute(trade, "tradeID") ?? Attribute(trade, "transactionID") ?? string.Empty
                 };
+                var recordsBefore = records.Count;
                 if (!AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes, _limits))
                 {
                     return EmptyResult(profileId, issues);
                 }
                 activities.Add(BuildTradeActivity(trade, statementAccountId, profile));
-            }
 
-            foreach (var cash in Section(statement, "CashTransactions", "CashTransaction"))
-            {
-                rowNumber++;
-                retained += 2;
+                // Charged after the appends, on what the row actually produced. MapRecord returns null for
+                // a row it rejects, so predicting "one record plus one activity" over-charges every
+                // rejected row by one: a report of rows with unparseable dates retains only its activity
+                // DTOs but was billed for records that were never added, and documents inside the cap were
+                // refused as ROW_LIMIT_EXCEEDED.
+                retained += records.Count - recordsBefore + 1;
                 if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
                 }
+            }
+
+            foreach (var cash in Section(statement, "CashTransactions", "CashTransaction"))
+            {
+                rowNumber++;
                 CountSection(sectionCounts, "CashTransactions");
                 CollectAttributeNames(cash, detectedColumns);
                 var values = new Dictionary<StatementCanonicalField, string>
@@ -272,22 +273,29 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                     [StatementCanonicalField.Currency] = Attribute(cash, "currency") ?? string.Empty,
                     [StatementCanonicalField.ExternalTransactionId] = Attribute(cash, "transactionID") ?? string.Empty
                 };
+                var recordsBefore = records.Count;
                 if (!AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes, _limits))
                 {
                     return EmptyResult(profileId, issues);
                 }
                 activities.Add(BuildCashActivity(cash, statementAccountId, profile, activityCodeMap));
-            }
 
-            foreach (var position in Section(statement, "OpenPositions", "OpenPosition"))
-            {
-                rowNumber++;
-                retained += 1;
+                // Charged after the appends, on what the row actually produced. MapRecord returns null for
+                // a row it rejects, so predicting "one record plus one activity" over-charges every
+                // rejected row by one: a report of rows with unparseable dates retains only its activity
+                // DTOs but was billed for records that were never added, and documents inside the cap were
+                // refused as ROW_LIMIT_EXCEEDED.
+                retained += records.Count - recordsBefore + 1;
                 if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
                 }
+            }
+
+            foreach (var position in Section(statement, "OpenPositions", "OpenPosition"))
+            {
+                rowNumber++;
                 CountSection(sectionCounts, "OpenPositions");
                 CollectAttributeNames(position, detectedColumns);
                 var values = new Dictionary<StatementCanonicalField, string>
@@ -301,8 +309,20 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                     [StatementCanonicalField.TradeDate] = Attribute(position, "reportDate") ?? string.Empty,
                     [StatementCanonicalField.Currency] = Attribute(position, "currency") ?? string.Empty
                 };
+                var recordsBefore = records.Count;
                 if (!AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes, _limits))
                 {
+                    return EmptyResult(profileId, issues);
+                }
+
+                // Charged after the appends, on what the row actually produced. MapRecord returns null for
+                // a row it rejects, so predicting one record per position over-charges every
+                // rejected row by one: a report of rows with unparseable dates retains nothing but was billed for records that were never added, and documents inside the cap were
+                // refused as ROW_LIMIT_EXCEEDED.
+                retained += records.Count - recordsBefore;
+                if (retained > _limits.MaxRecords)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
                 }
             }
@@ -1109,14 +1129,17 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
     /// <remarks>
     /// MapRecord is the only per-row issue emitter in this connector - every other issues.Add here is a
     /// one-shot structural refusal that returns immediately - so this is the single place a diagnostic
-    /// population can grow with the document. The loops charge <c>retained += 2</c> for the record and
-    /// activity they expect a row to produce, which undercounts what a row actually keeps: MapRecord
-    /// returns null for an unparseable date, so that row retains its ROW_INVALID_DATE error and no
-    /// record at all, and a row carrying an unmapped activity code retains an UNKNOWN_ACTIVITY_CODE
-    /// warning alongside its record. Issues are retained evidence, held in the parse result and
-    /// projected into the preview exactly like records, so they are charged against a bound of their
-    /// own rather than against the row allowance - refusing here rather than truncating, because
-    /// dropping a later error would flip HasErrors from true to false and let a malformed file import.
+    /// population can grow with the document. A row rejected for an unparseable date retains its
+    /// ROW_INVALID_DATE error and no record at all, and a row carrying an unmapped activity code retains
+    /// an UNKNOWN_ACTIVITY_CODE warning alongside its record. Issues are retained evidence, held in the
+    /// parse result and projected into the preview exactly like records, so they are charged against a
+    /// bound of their own rather than against the row allowance - refusing here rather than truncating,
+    /// because dropping a later error would flip HasErrors from true to false and let a malformed file
+    /// import.
+    ///
+    /// The callers charge the row allowance <i>after</i> this returns, from the records it actually
+    /// appended, precisely because it can append nothing: predicting the record made the bound refuse
+    /// documents that were inside it.
     /// </remarks>
     private static bool AddRecord(
         List<StatementCanonicalRecord> records,

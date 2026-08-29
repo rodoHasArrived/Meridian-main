@@ -139,6 +139,14 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             return Task.FromResult(EmptyResult(document.MappingProfileId, issues));
         }
 
+        // The byte cap bounds the document, not the object graph built from it.
+        var scanRefusal = ScanForBoundBreach(document.Content.Span);
+        if (scanRefusal is not null)
+        {
+            issues.Add(scanRefusal);
+            return Task.FromResult(EmptyResult(document.MappingProfileId, issues));
+        }
+
         AlpacaStatementSnapshot? snapshot = null;
         try
         {
@@ -468,6 +476,51 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
         }
 
         return builder.Length == 0 ? "account" : builder.ToString();
+    }
+
+    /// <summary>
+    /// Walks the snapshot's JSON tokens without materializing anything, returning the refusal when the
+    /// payload's member count or nesting exceeds the ingress bounds, and null when it is inside them.
+    /// </summary>
+    /// <remarks>
+    /// A BrokerageActivityEventDto carries an open-ended Metadata dictionary, so one activity - a single
+    /// retained row as far as MaxRecords is concerned - can hold any number of key/value pairs, and
+    /// Deserialize materializes every one of them before any row or diagnostic bound is consulted. The
+    /// byte cap does not help: hundreds of thousands of compact members fit comfortably inside it. This
+    /// is the JSON analogue of the streaming pre-scan IbFlexStatementConnector runs ahead of
+    /// XDocument.LoadAsync, and exists for the same reason - a bound has to be checked before the
+    /// allocation it exists to prevent, not after. Utf8JsonReader over a ReadOnlySpan&lt;byte&gt;
+    /// allocates nothing, so the scan cannot itself become the exhaustion vector it guards against.
+    /// </remarks>
+    private StatementParseIssue? ScanForBoundBreach(ReadOnlySpan<byte> content)
+    {
+        var reader = new Utf8JsonReader(content);
+        var tokens = 0;
+
+        try
+        {
+            while (reader.Read())
+            {
+                if (++tokens > _limits.MaxParseNodes)
+                {
+                    return _limits.TooManyNodes();
+                }
+
+                if (reader.CurrentDepth > _limits.MaxNestingDepth)
+                {
+                    return _limits.NestingTooDeep();
+                }
+            }
+        }
+        catch (JsonException)
+        {
+            // Malformed JSON is not this bound's business. Let the Deserialize below raise the
+            // INVALID_SNAPSHOT diagnostic the operator already understands, rather than reporting a
+            // scan failure that says nothing about what is wrong with the file.
+            return null;
+        }
+
+        return null;
     }
 
     private static StatementParseResult EmptyResult(string? profileId, IReadOnlyList<StatementParseIssue> issues)

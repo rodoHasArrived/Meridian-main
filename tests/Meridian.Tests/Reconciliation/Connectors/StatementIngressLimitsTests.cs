@@ -1284,6 +1284,66 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task IbFlex_RejectedRows_AreNotChargedForRecordsTheyNeverProduced()
+    {
+        // The loops used to charge two rows per cash transaction before mapping it, but MapRecord returns
+        // null for an unparseable date, so a rejected row retains only its activity DTO. Two such rows
+        // plus the cursor is three retained rows - exactly the cap - yet the precharge reached four on
+        // the second row and refused a document that was inside the bound.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 3 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument(
+                "ib-flex-rejected.xml", BuildIbFlexCashTransactions(count: 2, unmappable: true)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == "ROW_LIMIT_EXCEEDED");
+    }
+
+    [Fact]
+    public async Task Alpaca_ManyJsonMembersOnOneActivity_AreRefusedBeforeDeserializing()
+    {
+        // The byte cap bounds the document, not the graph built from it, and MaxRecords sees one activity
+        // however many members it carries. Deserialize would materialize every metadata pair first, so
+        // the bound has to be checked while walking tokens - the JSON analogue of the IB Flex pre-scan.
+        var connector = new AlpacaActivityStatementConnector(
+            Catalog(),
+            [],
+            [],
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxParseNodes = 500 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument(
+                "metadata-flood.json",
+                BuildAlpacaSnapshot(cashTransactionCount: 1, metadataProperties: 2000)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyNodesCode);
+    }
+
+    [Fact]
+    public async Task Alpaca_OrdinaryMetadata_IsNotRefusedByTheTokenBudget()
+    {
+        // The control at the same budget and the same document shape: metadata is a normal part of an
+        // Alpaca snapshot, and a few entries must not be mistaken for a flood.
+        var connector = new AlpacaActivityStatementConnector(
+            Catalog(),
+            [],
+            [],
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxParseNodes = 500 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument(
+                "ordinary-metadata.json",
+                BuildAlpacaSnapshot(cashTransactionCount: 3, metadataProperties: 4)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == "INVALID_SNAPSHOT");
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyNodesCode);
+        result.Records.Should().NotBeEmpty();
+    }
+
+    [Fact]
     public async Task Ofx_OverTheByteCap_IsRefusedBeforeDecoding()
     {
         // camt.053, BAI2 and IB Flex all refuse an oversize document at the top of ParseAsync; OFX
@@ -1648,7 +1708,7 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
     // Valid BAI2 envelope carrying record types the switch does not recognize, which is what makes them
     // interesting: they never charge a balance or detail candidate.
-    private static byte[] BuildAlpacaSnapshot(int cashTransactionCount)
+    private static byte[] BuildAlpacaSnapshot(int cashTransactionCount, int metadataProperties = 0)
     {
         // AlpacaStatementSnapshotJsonContext uses JsonSerializerDefaults.Web, so the property names are
         // camelCase. Every transaction type is distinct, so ResolveActivity's per-code dedupe cannot
@@ -1673,7 +1733,33 @@ public sealed class StatementIngressLimitsTests : IDisposable
                 .Append("\"postedAt\":\"2026-06-01T00:00:00+00:00\"}");
         }
 
-        return Encoding.UTF8.GetBytes(builder.Append("]},\"portfolio\":null}").ToString());
+        builder.Append(']');
+
+        if (metadataProperties > 0)
+        {
+            // One activity event - a single retained row as far as MaxRecords is concerned - carrying an
+            // open-ended Metadata dictionary. This is the shape the byte cap cannot see: the members are
+            // compact, so hundreds of thousands of them fit well inside it.
+            builder
+                .Append(",\"activities\":[{\"eventId\":\"E1\",\"providerCode\":\"CSD\",")
+                .Append("\"category\":\"Cash\",\"subtype\":\"CashDeposit\",")
+                .Append("\"effectiveAt\":\"2026-06-01T00:00:00+00:00\",")
+                .Append("\"currency\":\"USD\",\"netAmount\":10.00,\"metadata\":{");
+
+            for (var index = 0; index < metadataProperties; index++)
+            {
+                if (index > 0)
+                {
+                    builder.Append(',');
+                }
+
+                builder.Append($"\"k{index:D6}\":\"v\"");
+            }
+
+            builder.Append("}}]");
+        }
+
+        return Encoding.UTF8.GetBytes(builder.Append("},\"portfolio\":null}").ToString());
     }
 
     private static byte[] BuildBai2WithMalformedTransactions(int count)
