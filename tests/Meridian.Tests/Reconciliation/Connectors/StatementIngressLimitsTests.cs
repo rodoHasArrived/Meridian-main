@@ -5,6 +5,7 @@ using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Bai2;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Camt;
+using Meridian.FinancialOperations.Reconciliation.Connectors.Ofx;
 using Meridian.Infrastructure.Reconciliation;
 using Xunit;
 
@@ -722,6 +723,145 @@ public sealed class StatementIngressLimitsTests : IDisposable
         return new StatementImportService(registry, catalog, workflow, _root, limits);
     }
 
+    // ---------------------------------------------------------------------------------------------
+    // OFX — the parse has two allocation phases, and a check on the result runs after both
+    // ---------------------------------------------------------------------------------------------
+
+    [Fact]
+    public async Task Ofx_EntriesOverCap_AreRefusedDuringEntryDiscovery()
+    {
+        // OfxDocumentParser builds the node tree and then the flattened entry dictionaries, so the
+        // service-level record check ran only after both existed. A 250,001-entry OFX file sits well
+        // inside the 20 MiB document cap, which is why the bound has to be inside the parse.
+        var connector = new OfxStatementConnector(
+            Catalog(),
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 3 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("many.ofx", BuildOfxStatement(transactionCount: 25)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a refused document yields no partial canonical rows");
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+    }
+
+    [Fact]
+    public async Task Ofx_AtExactlyTheRecordCap_IsAccepted()
+    {
+        // Guards the off-by-one the CSV path got wrong: the bound must refuse past the cap, not at it.
+        var connector = new OfxStatementConnector(
+            Catalog(),
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 5 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("exact.ofx", BuildOfxStatement(transactionCount: 4)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Records.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task Ofx_DeeplyNestedAggregates_AreRefusedRatherThanRecursingOverThem()
+    {
+        // CollectEntries recurses over the node tree, so tree depth is recursion depth. Without a
+        // nesting bound a deeply nested document overflows the stack, which no caller can catch —
+        // it terminates the process rather than returning a refusal.
+        var connector = new OfxStatementConnector(
+            Catalog(),
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("deep.ofx", BuildDeeplyNestedOfx(depth: 200)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.NestingTooDeepCode);
+    }
+
+    [Fact]
+    public async Task Ofx_GoldenFixture_ParsesIdenticallyUnderDefaultLimits()
+    {
+        // The bounds must not change what a real statement parses to.
+        var connector = new OfxStatementConnector(Catalog());
+        var document = new StatementSourceDocument(
+            "ofx-102-bank.ofx",
+            StatementConnectorTestData.ReadFixture("ofx-102-bank.ofx"));
+
+        var result = await connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeFalse();
+        result.Records.Should().HaveCount(4);
+    }
+
+    [Fact]
+    public void BoundedOfxParse_StopsOneEntryPastTheBound_SoOverflowIsDetectableByCount()
+    {
+        var content = Encoding.UTF8.GetString(BuildOfxStatement(transactionCount: 50));
+
+        var parsed = OfxDocumentParser.Parse(content, maxEntries: 4, maxDepth: 64, out var bound);
+
+        bound.Should().Be(OfxParseBound.TooManyEntries);
+        parsed.Entries.Should().HaveCount(5, "one past the bound, so the caller distinguishes at-cap from over-cap");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // camt.053 — the first pass must not retain per-statement state
+    // ---------------------------------------------------------------------------------------------
+
+    [Fact]
+    public async Task Camt_ManyStatements_ReportTheExactCountWithoutRetainingPerStatementState()
+    {
+        // The scan used to append one list entry per Stmt, so a document of compact <Stmt/> elements
+        // allocated in proportion to a count that is certain to be rejected after the second. The
+        // diagnostic still has to name the exact number, so the count is kept as an integer.
+        var statements = new string[64];
+        Array.Fill(statements, "<Stmt/>");
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxNestingDepth = 64 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("many.xml", BuildCamtDocument(statements)));
+
+        var issue = result.Issues.Should().ContainSingle().Subject;
+        issue.Code.Should().Be("CAMT_MULTIPLE_STATEMENTS");
+        issue.Message.Should().Contain("contains 64 statements", "the exact count survives the bounded scan");
+    }
+
+    [Fact]
+    public async Task Camt_StatementsForDifferentAccounts_StillReportTheDistinctAccountCount()
+    {
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxNestingDepth = 64 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument(
+                "accounts.xml",
+                BuildCamtDocument(
+                    StatementXml("DE89370400440532013000", entryCount: 1),
+                    StatementXml("FR7630006000011234567890189", entryCount: 1),
+                    StatementXml("GB29NWBK60161331926819", entryCount: 1))));
+
+        var issue = result.Issues.Should().ContainSingle().Subject;
+        issue.Code.Should().Be("CAMT_MULTIPLE_ACCOUNTS");
+        issue.Message.Should().Contain("for 3 different accounts");
+    }
+
+    [Fact]
+    public async Task Camt_StatementsWithoutAnAccount_CollapseToOneUnknownIdentity()
+    {
+        // Statements with no Acct of their own used to contribute a null each, which Distinct collapsed
+        // to a single "unknown-account". The set has to behave the same way, or a file of bare <Stmt/>
+        // elements would report the multi-account diagnostic instead of the multi-statement one.
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxNestingDepth = 64 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("bare.xml", BuildCamtDocument("<Stmt/>", "<Stmt/>", "<Stmt/>")));
+
+        result.Issues.Should().ContainSingle().Which.Code.Should().Be(
+            "CAMT_MULTIPLE_STATEMENTS",
+            "three unidentified statements are one unknown account, not three different ones");
+    }
+
     private static StatementImportCommitRequest CommitRequest(StatementSourceDocument document)
         => new(
             document,
@@ -794,5 +934,47 @@ public sealed class StatementIngressLimitsTests : IDisposable
         }
 
         return builder.Append("</Stmt>").ToString();
+    }
+
+    private StatementMappingProfileCatalog Catalog()
+        => new(new FileStatementMappingProfileStore(_root));
+
+    private static byte[] BuildOfxStatement(int transactionCount)
+    {
+        var builder = new StringBuilder()
+            .Append("OFXHEADER:100\nDATA:OFXSGML\nVERSION:102\nSECURITY:NONE\n")
+            .Append("ENCODING:USASCII\nCHARSET:1252\nCOMPRESSION:NONE\nOLDFILEUID:NONE\nNEWFILEUID:NONE\n\n")
+            .Append("<OFX>\n<BANKMSGSRSV1>\n<STMTTRNRS>\n<STMTRS>\n<CURDEF>USD\n")
+            .Append("<BANKACCTFROM>\n<ACCTID>FUND-A-CASH\n<ACCTTYPE>CHECKING\n</BANKACCTFROM>\n")
+            .Append("<BANKTRANLIST>\n");
+
+        for (var index = 0; index < transactionCount; index++)
+        {
+            builder
+                .Append("<STMTTRN>\n<TRNTYPE>CREDIT\n<DTPOSTED>20260603120000\n")
+                .Append("<TRNAMT>100.00\n")
+                .Append($"<FITID>OFX-{index:D6}\n<NAME>Wire credit\n</STMTTRN>\n");
+        }
+
+        builder.Append("</BANKTRANLIST>\n</STMTRS>\n</STMTTRNRS>\n</BANKMSGSRSV1>\n</OFX>\n");
+        return Encoding.UTF8.GetBytes(builder.ToString());
+    }
+
+    private static byte[] BuildDeeplyNestedOfx(int depth)
+    {
+        var builder = new StringBuilder()
+            .Append("OFXHEADER:100\nDATA:OFXSGML\nVERSION:102\n\n<OFX>\n");
+
+        for (var level = 0; level < depth; level++)
+        {
+            builder.Append("<WRAPPER>\n");
+        }
+
+        for (var level = 0; level < depth; level++)
+        {
+            builder.Append("</WRAPPER>\n");
+        }
+
+        return Encoding.UTF8.GetBytes(builder.Append("</OFX>\n").ToString());
     }
 }

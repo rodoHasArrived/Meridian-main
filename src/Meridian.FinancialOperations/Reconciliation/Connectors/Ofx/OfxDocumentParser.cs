@@ -46,8 +46,31 @@ public static class OfxDocumentParser
             || head.Contains("<OFX ", StringComparison.OrdinalIgnoreCase);
     }
 
-    public static OfxDocument Parse(string content)
+    public static OfxDocument Parse(string content) =>
+        Parse(content, int.MaxValue, int.MaxValue, out _);
+
+    /// <summary>
+    /// Parses an OFX document, refusing one that exceeds the ingress bounds instead of building it first.
+    /// </summary>
+    /// <remarks>
+    /// Two bounds, because the parse has two allocation phases and a check after the second cannot undo
+    /// the first. <paramref name="maxDepth"/> caps aggregate nesting, which also caps the recursion in
+    /// <see cref="CollectEntries"/>: without it a deeply nested document overflows the stack, which no
+    /// caller can catch. <paramref name="maxEntries"/> stops entry discovery at the bound. Aggregate
+    /// nodes carry a separate, deliberately loose allocation cap derived from
+    /// <paramref name="maxEntries"/>: entries are built from aggregates, so the node tree is materialized
+    /// before any entry exists, and bounding only entries would let the tree grow unbounded first.
+    /// </remarks>
+    public static OfxDocument Parse(string content, int maxEntries, int maxDepth, out OfxParseBound bound)
     {
+        bound = OfxParseBound.None;
+        // Deliberately loose, and an allocation bound rather than an acceptance one: a spec-compliant
+        // investment entry is a wrapper plus up to three nested detail aggregates (BUYSTOCK > INVBUY >
+        // SECID/INVTRAN), so 8x the entry bound leaves roughly double the headroom a real statement
+        // needs. Acceptance is decided by maxEntries; this only stops the node tree growing without
+        // limit before any entry exists to count.
+        var maxNodes = maxEntries > (int.MaxValue - 64) / 8 ? int.MaxValue : (maxEntries * 8) + 64;
+        var nodes = 0;
         var root = new OfxNode("OFX-ROOT", null);
         var stack = new Stack<OfxNode>();
         stack.Push(root);
@@ -105,6 +128,18 @@ public static class OfxDocumentParser
             }
             else
             {
+                if (stack.Count > maxDepth)
+                {
+                    bound = OfxParseBound.NestingTooDeep;
+                    break;
+                }
+
+                if (++nodes > maxNodes)
+                {
+                    bound = OfxParseBound.TooManyEntries;
+                    break;
+                }
+
                 var aggregate = new OfxNode(name, stack.Peek());
                 stack.Peek().Children.Add(aggregate);
                 stack.Push(aggregate);
@@ -113,7 +148,11 @@ public static class OfxDocumentParser
 
         var entries = new List<IReadOnlyDictionary<string, string>>();
         var accountId = FindFirstLeaf(root, "ACCTID");
-        CollectEntries(root, accountId, entries);
+        if (bound == OfxParseBound.None && !CollectEntries(root, accountId, entries, maxEntries))
+        {
+            bound = OfxParseBound.TooManyEntries;
+        }
+
         return new OfxDocument(accountId, entries);
     }
 
@@ -129,7 +168,13 @@ public static class OfxDocumentParser
             && (node.Parent is null || !WrapperAggregates.Contains(node.Parent.Name));
     }
 
-    private static void CollectEntries(OfxNode node, string? accountId, List<IReadOnlyDictionary<string, string>> entries)
+    // Returns false when the entry bound stopped the walk. One entry past the bound is collected so the
+    // caller can tell "exactly at the bound" from "over it" by count alone.
+    private static bool CollectEntries(
+        OfxNode node,
+        string? accountId,
+        List<IReadOnlyDictionary<string, string>> entries,
+        int maxEntries)
     {
         if (IsEntryNode(node))
         {
@@ -140,6 +185,10 @@ public static class OfxDocumentParser
             FlattenLeaves(node, entry);
             NormalizeEntry(entry, accountId);
             entries.Add(entry);
+            if (entries.Count > maxEntries)
+            {
+                return false;
+            }
         }
 
         // Keep walking children even below an entry aggregate so a malformed SGML file
@@ -147,8 +196,13 @@ public static class OfxDocumentParser
         // every entry instead of silently merging them.
         foreach (var child in node.Children)
         {
-            CollectEntries(child, accountId, entries);
+            if (!CollectEntries(child, accountId, entries, maxEntries))
+            {
+                return false;
+            }
         }
+
+        return true;
     }
 
     private static void FlattenLeaves(OfxNode node, IDictionary<string, string> entry)
@@ -300,3 +354,16 @@ public static class OfxDocumentParser
 public sealed record OfxDocument(
     string? AccountId,
     IReadOnlyList<IReadOnlyDictionary<string, string>> Entries);
+
+/// <summary>Which ingress bound, if any, stopped an OFX parse before the document was complete.</summary>
+public enum OfxParseBound
+{
+    /// <summary>The document was parsed in full.</summary>
+    None = 0,
+
+    /// <summary>Entry discovery or the aggregate allocation cap stopped the parse.</summary>
+    TooManyEntries = 1,
+
+    /// <summary>Aggregate nesting exceeded the depth bound.</summary>
+    NestingTooDeep = 2,
+}

@@ -30,7 +30,7 @@ documentation each row's lane owns.
 | `W9-PAPER-003` | critical | Shared documented `paper-match/1` matching policy and `paper-cost/1` cost model, the FsCheck-backed envelope regression suite, and promotion evidence recording both model versions. |
 | `W9-REPORT-005` | high | Deterministic client-presentable PDF/XLSX with retained hash and provenance manifests, plus the bespoke partners-capital layout tied to ledger-backed NAV. |
 | `W9-NAV-006` | high | Unitized NAV per share class with an auditable movement-level trail, the fee/waterfall/commitment kernels, and the golden-file worked-example pack computed independently of the implementation. |
-| `W9-CORPACT-011` | high | Durable corporate action case processing with a persisted provider release gate rechecked at acceptance, idempotent actor-attributed transitions, immutable journals with correction lineage, and golden ledger and price-adjustment coverage. |
+| `W9-CORPACT-011` | high | Durable corporate action case processing with a persisted provider release gate rechecked at acceptance, idempotent actor-attributed transitions, immutable journals with correction lineage, and golden ledger and price-adjustment coverage. **See the approval-lane limitation below, found after this decision was taken.** |
 
 Each accepted row links this file as acceptance evidence and moves to `status: accepted` with
 `evidence_posture: complete`.
@@ -41,6 +41,41 @@ Each accepted row links this file as acceptance evidence and moves to `status: a
 corporate-action branches remain deliberate blocked outcomes**. Meridian does not coerce them into a
 generic sale or exchange, and a blocked case is a valid terminal state rather than a defect. That
 posture is the intended operating envelope, not a gap to be closed by widening the taxonomy.
+
+### Correction — approval lane unreachable, found after this decision
+
+**This limitation was discovered by automated review on 2026-08-29, after the acceptance decision
+recorded here was taken, and it was not part of what the operator was shown.** It is recorded here
+rather than quietly fixed because it narrows what this acceptance actually covers.
+
+The row's summary, as written at the time of the decision, described the case as linking source
+events through "projected consequences, approvals, posting, and correction lineage". The approval and
+posting half of that is modelled in the contract but is not reachable in the shipped implementation:
+
+- `CorporateActionOperationsService.TransitionCaseAsync` refuses **every** transition to
+  `ReadyForApproval` with `ProjectionStale`, because the durable exact-version accounting projection
+  authority is not persisted.
+- `PostgresCorporateActionOperationsStore.Cases` refuses the same transition independently, so the
+  block holds at the store as well as the service.
+- `CanApproveAccounting` is returned `false` by both the service and the operator endpoint, and
+  `ReadyForApproval` is filtered out of the available transition targets.
+
+No case can therefore reach `ReadyForApproval`, `Approved`, `Scheduled`, `Posted`, `Reconciled`,
+`Reported`, or `Closed`. Exit criterion four — which describes posting refused without approved
+policy coverage, an open period, balanced journals, and required maker-checker approval — is not met
+by the shipped implementation, since posting cannot occur at all. The row's `evidence_posture` is
+therefore corrected from `complete` to `implementation_complete`.
+
+This is a **universal workflow gap**, categorically different from the unsupported-branch reservation
+above: that one reserves specific action types as blocked outcomes by design, whereas this blocks the
+approval lane for every case regardless of action type. The reservation above does not cover it.
+
+The block itself is deliberate and defensively implemented — it is honest engineering, not a bug. What
+was wrong was the roadmap summary presenting the lane as delivered. **The operator may wish to revisit
+this acceptance**, since the caveat is closer in kind to the ones that led `W9-ALPACA-004` to be held
+than to the branch reservation on which this row was accepted. The status is left at `accepted`
+because reversing a recorded operator decision is not the reviewer's call; the record is corrected so
+that the decision can be revisited on accurate information.
 
 ## Held back
 

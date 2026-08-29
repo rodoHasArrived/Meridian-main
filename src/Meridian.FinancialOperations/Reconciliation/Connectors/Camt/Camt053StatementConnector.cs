@@ -73,13 +73,13 @@ public sealed class Camt053StatementConnector : IStatementConnector
         // Pass one counts statements and collects each statement's account identifier. Only the small
         // Acct subtrees are materialized, so the multi-statement diagnostics below keep the exact wording
         // they had when the whole document was loaded, without a whole-document parse tree.
-        if (!TryScanStatements(document, ct, out var statementAccounts, out var scanIssue))
+        if (!TryScanStatements(document, ct, out var scan, out var scanIssue))
         {
             issues.Add(scanIssue!);
             return Task.FromResult(EmptyResult(issues));
         }
 
-        if (statementAccounts.Count == 0)
+        if (scan.StatementCount == 0)
         {
             issues.Add(StatementParseIssue.Error(
                 "CAMT_NO_STATEMENT",
@@ -93,17 +93,13 @@ public sealed class Camt053StatementConnector : IStatementConnector
         // several closing balances for one internal record and let it match one while opening a false
         // break for the others under the single operator-supplied period. Require exactly one statement;
         // the operator must split the file into one document per statement before importing.
-        if (statementAccounts.Count > 1)
+        if (scan.StatementCount > 1)
         {
-            var distinctAccounts = statementAccounts
-                .Select(static account => account ?? "unknown-account")
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-            var (code, message) = distinctAccounts.Length > 1
+            var (code, message) = scan.DistinctAccounts.Count > 1
                 ? ("CAMT_MULTIPLE_ACCOUNTS",
-                    $"The camt.053 document contains statements for {distinctAccounts.Length} different accounts, but a statement run reconciles a single account. Split the file into one document per account before importing.")
+                    $"The camt.053 document contains statements for {scan.DistinctAccounts.Count} different accounts, but a statement run reconciles a single account. Split the file into one document per account before importing.")
                 : ("CAMT_MULTIPLE_STATEMENTS",
-                    $"The camt.053 document contains {statementAccounts.Count} statements for one account, but a statement run reconciles a single statement period. Split the file into one document per statement before importing.");
+                    $"The camt.053 document contains {scan.StatementCount} statements for one account, but a statement run reconciles a single statement period. Split the file into one document per statement before importing.");
             issues.Add(StatementParseIssue.Error(code, message));
             return Task.FromResult(EmptyResult(issues));
         }
@@ -374,10 +370,12 @@ public sealed class Camt053StatementConnector : IStatementConnector
     private bool TryScanStatements(
         StatementSourceDocument document,
         CancellationToken ct,
-        out List<string?> statementAccounts,
+        out StatementScan scan,
         out StatementParseIssue? issue)
     {
-        statementAccounts = [];
+        var statementCount = 0;
+        var distinctAccounts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        scan = new StatementScan(0, distinctAccounts);
         issue = null;
 
         try
@@ -386,6 +384,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
             using var reader = XmlReader.Create(stream, SecureSettings());
             var statementDepth = -1;
             var accountSeenForStatement = false;
+            var statementOpen = false;
 
             while (reader.Read())
             {
@@ -414,10 +413,18 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
                 if (string.Equals(reader.LocalName, "Stmt", StringComparison.Ordinal))
                 {
+                    // A statement that closed without an Acct of its own contributes the unknown-account
+                    // placeholder, matching the null entry the previous per-statement list carried.
+                    if (statementOpen && !accountSeenForStatement)
+                    {
+                        distinctAccounts.Add(UnknownAccount);
+                    }
+
                     // An empty <Stmt/> raises no end element, so it never opens a subtree to read.
                     statementDepth = reader.IsEmptyElement ? -1 : reader.Depth;
                     accountSeenForStatement = false;
-                    statementAccounts.Add(null);
+                    statementOpen = true;
+                    statementCount++;
                     continue;
                 }
 
@@ -438,7 +445,12 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 }
 
                 accountSeenForStatement = true;
-                statementAccounts[^1] = ResolveAccount(accountElement);
+                distinctAccounts.Add(ResolveAccount(accountElement) ?? UnknownAccount);
+            }
+
+            if (statementOpen && !accountSeenForStatement)
+            {
+                distinctAccounts.Add(UnknownAccount);
             }
         }
         catch (XmlException ex)
@@ -447,8 +459,22 @@ public sealed class Camt053StatementConnector : IStatementConnector
             return false;
         }
 
+        scan = new StatementScan(statementCount, distinctAccounts);
         return true;
     }
+
+    /// <summary>Placeholder identity for a statement whose account could not be resolved.</summary>
+    private const string UnknownAccount = "unknown-account";
+
+    /// <summary>
+    /// What the first pass needs to choose between the multi-statement diagnostics, without retaining
+    /// per-statement state. The previous shape appended one list entry per <c>Stmt</c>, so a document of
+    /// compact <c>&lt;Stmt/&gt;</c> elements allocated in proportion to a count that is certain to be
+    /// rejected after the second. The count is now an integer, and the set grows only with genuinely
+    /// distinct account identifiers — each of which costs its own <c>Acct</c> subtree in a document that
+    /// is already byte-capped. Both diagnostics keep their exact wording.
+    /// </summary>
+    private readonly record struct StatementScan(int StatementCount, HashSet<string> DistinctAccounts);
 
     // Materializes the element the reader is positioned on, and nothing else, enforcing the nesting bound
     // as it goes. XElement.Load over a subtree reader would copy the subtree without checking depth, so a

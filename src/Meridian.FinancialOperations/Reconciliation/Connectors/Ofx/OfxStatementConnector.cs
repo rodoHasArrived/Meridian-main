@@ -9,8 +9,12 @@ namespace Meridian.FinancialOperations.Reconciliation.Connectors.Ofx;
 /// Entries are flattened to tag pseudo-columns and mapped through the same declarative
 /// profiles as CSV, so operators can remap or reclassify OFX activity without a release.
 /// </summary>
-public sealed class OfxStatementConnector(StatementMappingProfileCatalog catalog) : IStatementConnector
+public sealed class OfxStatementConnector(
+    StatementMappingProfileCatalog catalog,
+    StatementIngressLimits? ingressLimits = null) : IStatementConnector
 {
+    private readonly StatementIngressLimits _limits = ingressLimits ?? StatementIngressLimits.Default;
+
     public const string ConnectorId = "ofx";
 
     public StatementConnectorDescriptor Descriptor { get; } = new(
@@ -61,7 +65,18 @@ public sealed class OfxStatementConnector(StatementMappingProfileCatalog catalog
             return EmptyResult(profileId, issues);
         }
 
-        var ofx = OfxDocumentParser.Parse(content);
+        // Bounded here rather than after the parse returns: the node tree and the flattened entry
+        // dictionaries are both built by Parse, so a check on the result would run after the allocation
+        // it exists to prevent. A 250,001-entry OFX file fits well inside the 20 MiB document cap.
+        var ofx = OfxDocumentParser.Parse(content, _limits.MaxRecords, _limits.MaxNestingDepth, out var bound);
+        if (bound != OfxParseBound.None)
+        {
+            issues.Add(bound == OfxParseBound.NestingTooDeep
+                ? _limits.NestingTooDeep()
+                : _limits.TooManyRecords());
+            return EmptyResult(profileId, issues);
+        }
+
         if (ofx.Entries.Count == 0)
         {
             issues.Add(StatementParseIssue.Warning(
