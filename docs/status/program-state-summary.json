@@ -269,39 +269,39 @@
       "Wave": "W9",
       "Title": "Loud fail-closed handling of simulated data and in-memory persistence",
       "Workspaces": "Trading; Portfolio; Accounting; Reporting; Data",
-      "Status": "ready_for_acceptance",
+      "Status": "accepted",
       "Health": "green",
       "Priority": "critical",
       "Owner Lane": "Data Confidence and Validation",
-      "Evidence Posture": "implementation_complete",
-      "Evidence": "tests/Meridian.Tests/Application/Composition/ProductionProhibitedDurableBindingTests.cs; src/Meridian.Ui/dashboard/src/app.tsx; src/Meridian.Ui/dashboard/src/components/meridian/data-provenance-banner.tsx; src/Meridian.Ui.Services/Services/FixtureModeDetector.cs; src/Meridian.Ui.Services/Services/StatusServiceBase.cs; src/Meridian.Strategies/Services/PromotionService.cs; tests/Meridian.Tests/Strategies/PromotionServiceTests.cs; src/Meridian.Ui/dashboard/src/app.test.tsx; src/Meridian.Wpf/Services/WorkspaceShellContextService.cs; tests/Meridian.Wpf.Tests/ViewModels/WorkspaceShellProvenanceBadgeTests.cs; src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs; tests/Meridian.Tests/Strategies/ReconciliationBreakQueueRepositoryTests.cs; src/Meridian.Ui.Shared/Services/ReportPackValidationService.cs; src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs; tests/Meridian.Tests/Application/Services/FundOperationsWorkspaceReadServiceTests.cs; src/Meridian.Application/Composition/ProductionRegistrationGuardService.cs; tests/Meridian.Tests/Application/Composition/ProductionRegistrationGuardServiceTests.cs",
-      "Last Reviewed": "2026-08-09"
+      "Evidence Posture": "complete",
+      "Evidence": "docs/product/w9-operator-acceptance-2026-08-29.md; tests/Meridian.Tests/Application/Composition/ProductionProhibitedDurableBindingTests.cs; src/Meridian.Ui/dashboard/src/app.tsx; src/Meridian.Ui/dashboard/src/components/meridian/data-provenance-banner.tsx; src/Meridian.Ui.Services/Services/FixtureModeDetector.cs; src/Meridian.Ui.Services/Services/StatusServiceBase.cs; src/Meridian.Strategies/Services/PromotionService.cs; tests/Meridian.Tests/Strategies/PromotionServiceTests.cs; src/Meridian.Ui/dashboard/src/app.test.tsx; src/Meridian.Wpf/Services/WorkspaceShellContextService.cs; tests/Meridian.Wpf.Tests/ViewModels/WorkspaceShellProvenanceBadgeTests.cs; src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs; tests/Meridian.Tests/Strategies/ReconciliationBreakQueueRepositoryTests.cs; src/Meridian.Ui.Shared/Services/ReportPackValidationService.cs; src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs; tests/Meridian.Tests/Application/Services/FundOperationsWorkspaceReadServiceTests.cs; src/Meridian.Application/Composition/ProductionRegistrationGuardService.cs; tests/Meridian.Tests/Application/Composition/ProductionRegistrationGuardServiceTests.cs",
+      "Last Reviewed": "2026-08-29"
     },
     {
       "ID": "W9-DEMO-002",
       "Wave": "W9",
       "Title": "One-command seeded demo with durable storage",
       "Workspaces": "Data; Settings",
-      "Status": "ready_for_acceptance",
+      "Status": "accepted",
       "Health": "green",
       "Priority": "critical",
       "Owner Lane": "Workstation Shell and UX",
-      "Evidence Posture": "implementation_complete",
-      "Evidence": "src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs; src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs; src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs; src/Meridian/DemoWorkspaceCli.cs; tests/Meridian.Tests/Demo/DemoWorkspaceSeederTests.cs; tests/Meridian.Tests/Demo/DemoWorkspaceGuardTests.cs; .github/workflows/demo-smoke.yml",
-      "Last Reviewed": "2026-08-08"
+      "Evidence Posture": "complete",
+      "Evidence": "docs/product/w9-operator-acceptance-2026-08-29.md; src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs; src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs; src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs; src/Meridian/DemoWorkspaceCli.cs; tests/Meridian.Tests/Demo/DemoWorkspaceSeederTests.cs; tests/Meridian.Tests/Demo/DemoWorkspaceGuardTests.cs; .github/workflows/demo-smoke.yml",
+      "Last Reviewed": "2026-08-29"
     },
     {
       "ID": "W9-PAPER-003",
       "Wave": "W9",
       "Title": "Paper-trading realism with limit/stop matching and costs",
       "Workspaces": "Trading; Strategy",
-      "Status": "ready_for_acceptance",
+      "Status": "accepted",
       "Health": "green",
       "Priority": "critical",
       "Owner Lane": "Execution and Fund Accounts",
-      "Evidence Posture": "implementation_complete",
-      "Evidence": "src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs; src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs; src/Meridian.Execution/Adapters/PaperTradingGateway.cs; src/Meridian.Execution/PaperTradingGateway.cs; src/Meridian.Strategies/Promotions/PromotionApprovalChecklist.cs; tests/Meridian.Tests/Execution/PaperOrderMatchingPolicyTests.cs; tests/Meridian.Tests/Execution/PaperTradingCostModelTests.cs; tests/Meridian.Tests/Execution/PaperFillEnvelopeRegressionTests.cs; tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs",
-      "Last Reviewed": "2026-08-08"
+      "Evidence Posture": "complete",
+      "Evidence": "docs/product/w9-operator-acceptance-2026-08-29.md; src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs; src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs; src/Meridian.Execution/Adapters/PaperTradingGateway.cs; src/Meridian.Execution/PaperTradingGateway.cs; src/Meridian.Strategies/Promotions/PromotionApprovalChecklist.cs; tests/Meridian.Tests/Execution/PaperOrderMatchingPolicyTests.cs; tests/Meridian.Tests/Execution/PaperTradingCostModelTests.cs; tests/Meridian.Tests/Execution/PaperFillEnvelopeRegressionTests.cs; tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs",
+      "Last Reviewed": "2026-08-29"
     },
     {
       "ID": "W9-ALPACA-004",
@@ -314,33 +314,33 @@
       "Owner Lane": "Execution and Fund Accounts",
       "Evidence Posture": "implementation_complete",
       "Evidence": "src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaTradeUpdatesClient.cs; src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs; src/Meridian.Execution/OrderManagementSystem.cs; src/Meridian.Execution/Events/LedgerPostingConsumer.cs; src/Meridian/HostedBrokerageGatewayServiceCollectionExtensions.cs; tests/Meridian.Tests/Infrastructure/Providers/AlpacaTradeUpdatesClientTests.cs; tests/Meridian.Tests/Execution/OrderManagementSystemReportStreamTests.cs; tests/Meridian.Tests/Execution/AlpacaStreamedFillLoopTests.cs; tests/Meridian.Tests/Execution/OrderManagementSystemDurableHandoffOrderingTests.cs",
-      "Last Reviewed": "2026-08-10"
+      "Last Reviewed": "2026-08-29"
     },
     {
       "ID": "W9-REPORT-005",
       "Wave": "W9",
       "Title": "Client-grade PDF/XLSX exports and partners-capital statement",
       "Workspaces": "Reporting; Accounting",
-      "Status": "ready_for_acceptance",
+      "Status": "accepted",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
-      "Evidence Posture": "implementation_complete",
-      "Evidence": "src/Meridian.Ledger/PartnersCapitalStatementLayout.cs; src/Meridian.Documents/FinancialReportDocumentRenderer.cs; src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs; src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs; tests/Meridian.Tests/Ledger/PartnersCapitalStatementLayoutTests.cs; tests/Meridian.Tests/Ledger/PartnersCapitalBespokeRenderTests.cs; tests/Meridian.Tests/Ui/ReportingRunCertificationServiceTests.cs",
-      "Last Reviewed": "2026-08-10"
+      "Evidence Posture": "complete",
+      "Evidence": "docs/product/w9-operator-acceptance-2026-08-29.md; src/Meridian.Ledger/PartnersCapitalStatementLayout.cs; src/Meridian.Documents/FinancialReportDocumentRenderer.cs; src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs; src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs; tests/Meridian.Tests/Ledger/PartnersCapitalStatementLayoutTests.cs; tests/Meridian.Tests/Ledger/PartnersCapitalBespokeRenderTests.cs; tests/Meridian.Tests/Ui/ReportingRunCertificationServiceTests.cs",
+      "Last Reviewed": "2026-08-29"
     },
     {
       "ID": "W9-NAV-006",
       "Wave": "W9",
       "Title": "Unitized NAV and real fee, waterfall, and capital-call economics",
       "Workspaces": "Accounting; Portfolio",
-      "Status": "ready_for_acceptance",
+      "Status": "accepted",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
-      "Evidence Posture": "implementation_complete",
-      "Evidence": "src/Meridian.FSharp.Ledger/FundEconomics.fs; src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs; src/Meridian.Ledger/NavPerUnitCalculator.cs; src/Meridian.Ledger/EqualizationCalculator.cs; src/Meridian.Ledger/EuropeanDistributionWaterfall.cs; src/Meridian.Ledger/FundEconomicsJournalFactory.cs; src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs; tests/Meridian.Tests/Ledger/FundEconomicsGoldenWorkedExampleTests.cs; tests/fixtures/fund-economics/golden/fund-economics-worked-examples.json; tests/Meridian.FSharp.Tests/FundEconomicsTests.fs; tests/Meridian.Tests/Ledger/FundEconomicsJournalFactoryTests.cs; tests/Meridian.Tests/Ledger/LedgerPartnersCapitalReconciliationTests.cs; tests/Meridian.Tests/FinancialOperations/PrivateCapital/CommitmentRollForwardCalculatorTests.cs",
-      "Last Reviewed": "2026-08-10"
+      "Evidence Posture": "complete",
+      "Evidence": "docs/product/w9-operator-acceptance-2026-08-29.md; src/Meridian.FSharp.Ledger/FundEconomics.fs; src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs; src/Meridian.Ledger/NavPerUnitCalculator.cs; src/Meridian.Ledger/EqualizationCalculator.cs; src/Meridian.Ledger/EuropeanDistributionWaterfall.cs; src/Meridian.Ledger/FundEconomicsJournalFactory.cs; src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs; tests/Meridian.Tests/Ledger/FundEconomicsGoldenWorkedExampleTests.cs; tests/fixtures/fund-economics/golden/fund-economics-worked-examples.json; tests/Meridian.FSharp.Tests/FundEconomicsTests.fs; tests/Meridian.Tests/Ledger/FundEconomicsJournalFactoryTests.cs; tests/Meridian.Tests/Ledger/LedgerPartnersCapitalReconciliationTests.cs; tests/Meridian.Tests/FinancialOperations/PrivateCapital/CommitmentRollForwardCalculatorTests.cs",
+      "Last Reviewed": "2026-08-29"
     },
     {
       "ID": "W9-SAFETY-007",
@@ -399,12 +399,12 @@
       "Wave": "W9",
       "Title": "Durable corporate action case processing and accounting projection",
       "Workspaces": "Accounting; Portfolio; Data",
-      "Status": "ready_for_acceptance",
+      "Status": "accepted",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
-      "Evidence Posture": "implementation_complete",
-      "Evidence": "docs/domain/corporate-action-case.md; src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs; src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs; src/Meridian.Instruments/AssetOperations/CorporateActionAccountingProjectionService.cs; src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs; src/Meridian.Storage/SecurityMaster/Migrations/030_security_master_corporate_action_operations.sql; src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsServiceTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionIngestOrchestratorTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionGoldenLedgerTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsContractTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsMigrationTests.cs; tests/Meridian.Backtesting.Tests/CorporateActionGoldenAdjustmentTests.cs",
+      "Evidence Posture": "complete",
+      "Evidence": "docs/product/w9-operator-acceptance-2026-08-29.md; docs/domain/corporate-action-case.md; src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs; src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs; src/Meridian.Instruments/AssetOperations/CorporateActionAccountingProjectionService.cs; src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs; src/Meridian.Storage/SecurityMaster/Migrations/030_security_master_corporate_action_operations.sql; src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsServiceTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionIngestOrchestratorTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionGoldenLedgerTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsContractTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsMigrationTests.cs; tests/Meridian.Backtesting.Tests/CorporateActionGoldenAdjustmentTests.cs",
       "Last Reviewed": "2026-08-29"
     },
     {

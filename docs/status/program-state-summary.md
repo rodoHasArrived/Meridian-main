@@ -24,17 +24,17 @@ Snapshot date: 2026-08-10
 | W7-LIVE-001 | W7 | Live-readiness governance | Trading; Settings | done | green | medium | Accounting and Ledger | complete | 2026-07-05 |
 | W8-UX-CONSOL-001 | W8 | Browser workstation screen consolidation | Accounting; Reporting; Strategy; Data | in_progress | on_track | medium | Workstation Shell and UX | in_progress | 2026-07-19 |
 | W8-WPF-PARITY-001 | W8 | WPF desktop workstation reactivation and web-UI parity | Trading; Portfolio; Accounting; Reporting; Strategy; Data; Settings | in_progress | on_track | high | Desktop Workstation | in_progress | 2026-07-06 |
-| W9-TRUTH-001 | W9 | Loud fail-closed handling of simulated data and in-memory persistence | Trading; Portfolio; Accounting; Reporting; Data | ready_for_acceptance | green | critical | Data Confidence and Validation | implementation_complete | 2026-08-09 |
-| W9-DEMO-002 | W9 | One-command seeded demo with durable storage | Data; Settings | ready_for_acceptance | green | critical | Workstation Shell and UX | implementation_complete | 2026-08-08 |
-| W9-PAPER-003 | W9 | Paper-trading realism with limit/stop matching and costs | Trading; Strategy | ready_for_acceptance | green | critical | Execution and Fund Accounts | implementation_complete | 2026-08-08 |
-| W9-ALPACA-004 | W9 | Alpaca fill streaming into order and ledger state | Trading | ready_for_acceptance | green | high | Execution and Fund Accounts | implementation_complete | 2026-08-10 |
-| W9-REPORT-005 | W9 | Client-grade PDF/XLSX exports and partners-capital statement | Reporting; Accounting | ready_for_acceptance | green | high | Accounting and Ledger | implementation_complete | 2026-08-10 |
-| W9-NAV-006 | W9 | Unitized NAV and real fee, waterfall, and capital-call economics | Accounting; Portfolio | ready_for_acceptance | green | high | Accounting and Ledger | implementation_complete | 2026-08-10 |
+| W9-TRUTH-001 | W9 | Loud fail-closed handling of simulated data and in-memory persistence | Trading; Portfolio; Accounting; Reporting; Data | accepted | green | critical | Data Confidence and Validation | complete | 2026-08-29 |
+| W9-DEMO-002 | W9 | One-command seeded demo with durable storage | Data; Settings | accepted | green | critical | Workstation Shell and UX | complete | 2026-08-29 |
+| W9-PAPER-003 | W9 | Paper-trading realism with limit/stop matching and costs | Trading; Strategy | accepted | green | critical | Execution and Fund Accounts | complete | 2026-08-29 |
+| W9-ALPACA-004 | W9 | Alpaca fill streaming into order and ledger state | Trading | ready_for_acceptance | green | high | Execution and Fund Accounts | implementation_complete | 2026-08-29 |
+| W9-REPORT-005 | W9 | Client-grade PDF/XLSX exports and partners-capital statement | Reporting; Accounting | accepted | green | high | Accounting and Ledger | complete | 2026-08-29 |
+| W9-NAV-006 | W9 | Unitized NAV and real fee, waterfall, and capital-call economics | Accounting; Portfolio | accepted | green | high | Accounting and Ledger | complete | 2026-08-29 |
 | W9-SAFETY-007 | W9 | Kill-switch cancel-all and fat-finger, notional, and collar rules | Trading; Settings | in_progress | green | high | Execution and Fund Accounts | in_progress | 2026-08-25 |
 | W9-GOV-008 | W9 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | Settings; Accounting | in_progress | green | high | Platform Security and Governance | in_progress | 2026-08-29 |
 | W9-INGEST-009 | W9 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | Accounting; Data | in_progress | green | high | Accounting and Ledger | in_progress | 2026-08-29 |
 | W9-ASSET-010 | W9 | Asset Accounting Event Spine and atomic lot posting | Accounting; Portfolio; Reporting | done | green | critical | Accounting and Ledger | complete | 2026-07-28 |
-| W9-CORPACT-011 | W9 | Durable corporate action case processing and accounting projection | Accounting; Portfolio; Data | ready_for_acceptance | green | high | Accounting and Ledger | implementation_complete | 2026-08-29 |
+| W9-CORPACT-011 | W9 | Durable corporate action case processing and accounting projection | Accounting; Portfolio; Data | accepted | green | high | Accounting and Ledger | complete | 2026-08-29 |
 | W10-MARK-001 | W10 | Fail-closed stale-mark policy and mark-age surfacing | Accounting; Portfolio | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
 | W10-RECON-001 | W10 | Durable break lineage identity and run-over-run break diff | Accounting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
 | W10-PROV-001 | W10 | Ledger-amount evidence subject and shared proof drawer | Accounting; Reporting; Portfolio | planned | green | high | Workstation Shell and UX | planned_evidence | 2026-07-31 |

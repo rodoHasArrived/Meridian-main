@@ -84,3 +84,17 @@ decisions:
       - W9-SAFETY-007
       - W9-GOV-008
       - W9-INGEST-009
+  - id: DEC-W9-ACCEPTANCE-001
+    title: Accept six W9 rows on operator decision and hold the Alpaca fill-streaming row
+    status: accepted
+    decided_on: 2026-08-29
+    owner_lane: Core Team
+    summary: Operator acceptance recorded by the repository owner for six W9 rows that carried implementation evidence and were waiting only on a governance decision - W9-TRUTH-001, W9-DEMO-002, W9-PAPER-003, W9-REPORT-005, W9-NAV-006, and the newly registered W9-CORPACT-011. Each moves from ready_for_acceptance to accepted with docs/product/w9-operator-acceptance-2026-08-29.md linked as the acceptance evidence the status taxonomy requires; that file is the record of who decided, on what evidence, and with what reservations. W9-CORPACT-011 is accepted on the explicit understanding that unsupported and policy-dependent corporate-action branches stay deliberate blocked outcomes rather than being coerced into a generic sale or exchange, so the blocked-branch posture is the intended operating envelope and not a gap. W9-ALPACA-004 is deliberately NOT accepted and stays ready_for_acceptance - its three recorded caveats sit on the path from broker fill to ledger, so accepting it would put an operator signature on the very evidence chain they qualify. The caveats are the idle-account submission block (the hosted health gate reads trade-update recency as stream liveness, so an order-free live account blocks new submissions once the 30-second stale window lapses), the absent backfill overlap window (reconnect FILL backfill starts exactly at the acknowledged watermark, so a fill skipped beneath an already-acknowledged newer event is recovered only through the order-snapshot lane at snapshot average-price attribution rather than exact per-fill economics), and the restart handoff gap (a durably admitted fill replayed into a freshly restarted host is acknowledged without reaching the accounting handoff when the restarted OMS no longer tracks its order). They are follow-up candidates rather than exit-criterion regressions, so the row is not failed either; it is accepted once they are closed or explicitly waived on the record. This decision accepts bounded roadmap rows only. It does not certify a release, does not move any row to done, and does not close the P0 release-certification gate in docs/product/implementation-todo-list.md.
+    related_roadmap_items:
+      - W9-TRUTH-001
+      - W9-DEMO-002
+      - W9-PAPER-003
+      - W9-ALPACA-004
+      - W9-REPORT-005
+      - W9-NAV-006
+      - W9-CORPACT-011

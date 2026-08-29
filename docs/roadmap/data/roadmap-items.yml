@@ -817,11 +817,11 @@ items:
       - Reporting
       - Data
     owner_lane: Data Confidence and Validation
-    status: ready_for_acceptance
+    status: accepted
     health: green
     priority: critical
-    evidence_posture: implementation_complete
-    current_summary: Implementation completed 2026-08-09; the three items that remained after the 2026-08-08 core slice are closed. Per-screen WPF labeling - the shared workspace context strip's Environment badge now resolves the server-reported provenance token fail-closed (a connected seeded backend can never read "Live"; unknown tokens degrade to SIMULATED), and the Portfolio and Reporting shells, which previously rendered an empty strip, now compose the shared context service so all seven workspaces carry the badge. Hard entry-time blocks - reconciliation-break intake refuses an unmarked item whose source declares a simulated/seeded/sample origin at the single durable chokepoint (FileReconciliationBreakQueueRepository, mirroring the ledger append boundary; carried marks are normalized to the canonical vocabulary), and report packs that cite simulated/seeded runs inherit the strongest non-real mark, always fail validation with a Critical provenance issue (ResolveStatus can never return Validated), and the durable report-pack boundary refuses to persist a marked pack in any approvable/exported/retained state. Startup wiring - the ADR-019 startup guard now runs the supported-local durability assertion (an unlabeled local composition with in-memory durable-role bindings refuses startup naming the bindings; a pinned non-real provenance declaration is the sanctioned labeled alternative), UiServer pins the composed provenance into the graph (seeded for demo hosts, forced-simulated for in-memory local durables), and /api/demo/mode plus the status-poll parser surface the pinned label to both workstation shells even when demo heuristics say disabled.
+    evidence_posture: complete
+    current_summary: Implementation completed 2026-08-09; the three items that remained after the 2026-08-08 core slice are closed. Per-screen WPF labeling - the shared workspace context strip's Environment badge now resolves the server-reported provenance token fail-closed (a connected seeded backend can never read "Live"; unknown tokens degrade to SIMULATED), and the Portfolio and Reporting shells, which previously rendered an empty strip, now compose the shared context service so all seven workspaces carry the badge. Hard entry-time blocks - reconciliation-break intake refuses an unmarked item whose source declares a simulated/seeded/sample origin at the single durable chokepoint (FileReconciliationBreakQueueRepository, mirroring the ledger append boundary; carried marks are normalized to the canonical vocabulary), and report packs that cite simulated/seeded runs inherit the strongest non-real mark, always fail validation with a Critical provenance issue (ResolveStatus can never return Validated), and the durable report-pack boundary refuses to persist a marked pack in any approvable/exported/retained state. Startup wiring - the ADR-019 startup guard now runs the supported-local durability assertion (an unlabeled local composition with in-memory durable-role bindings refuses startup naming the bindings; a pinned non-real provenance declaration is the sanctioned labeled alternative), UiServer pins the composed provenance into the graph (seeded for demo hosts, forced-simulated for in-memory local durables), and /api/demo/mode plus the status-poll parser surface the pinned label to both workstation shells even when demo heuristics say disabled. Accepted 2026-08-29 by operator decision DEC-W9-ACCEPTANCE-001; the acceptance evidence the status taxonomy requires is recorded in docs/product/w9-operator-acceptance-2026-08-29.md and linked from this row. Acceptance closes the governance gate on this row only - it does not move the row to done, which still needs the release or status documentation this lane owns, and it does not certify a release or close the P0 release-certification gate.
     exit_criteria:
       - Every simulated, sample, or synthetic data surface renders a persistent operator-visible simulation label in both the browser and WPF workstations.
       - Supported production profiles refuse startup when an in-memory, null, no-op, or placeholder persistence implementation is selected for a durable role, with startup rejection tests per prohibited binding.
@@ -835,6 +835,8 @@ items:
       - SRC-UI-DASHBOARD
       - SRC-WPF
     evidence:
+      - type: doc
+        path: docs/product/w9-operator-acceptance-2026-08-29.md
       - type: test
         path: tests/Meridian.Tests/Application/Composition/ProductionProhibitedDurableBindingTests.cs
       - type: source
@@ -869,7 +871,7 @@ items:
         path: src/Meridian.Application/Composition/ProductionRegistrationGuardService.cs
       - type: test
         path: tests/Meridian.Tests/Application/Composition/ProductionRegistrationGuardServiceTests.cs
-    last_reviewed: 2026-08-09
+    last_reviewed: 2026-08-29
 
   - id: W9-DEMO-002
     title: One-command seeded demo with durable storage
@@ -878,11 +880,11 @@ items:
       - Data
       - Settings
     owner_lane: Workstation Shell and UX
-    status: ready_for_acceptance
+    status: accepted
     health: green
     priority: critical
-    evidence_posture: implementation_complete
-    current_summary: Implementation completed 2026-08-08 on the pre-existing --seed-demo/--demo/--reset-demo spine. One documented command now provisions all five required domains over durable file-backed stores rooted at the guarded demo workspace - deterministic provider market history (90 sessions x 3 symbols of trade-event JSONL the Data desk reads), a sample fund account plus a durable portfolio position snapshot, balanced draft journal entries in the accounting drafts queue (accounting records seed as drafts for human review; the demo never fabricates posted ledger entries, and posted money-path stores remain PostgreSQL-gated), the existing reconciliation casework, and a review-required governed sample report pack whose provenance carries the seeded mark. Every seeded record carries the W9-TRUTH-001 seeded provenance token, re-seeding is idempotent, restart-modelled durability is proven per domain, and the guarded one-command reset is unchanged. The demo-smoke CI lane runs the extended Meridian.Tests.Demo suite including the five-domain durability test.
+    evidence_posture: complete
+    current_summary: Implementation completed 2026-08-08 on the pre-existing --seed-demo/--demo/--reset-demo spine. One documented command now provisions all five required domains over durable file-backed stores rooted at the guarded demo workspace - deterministic provider market history (90 sessions x 3 symbols of trade-event JSONL the Data desk reads), a sample fund account plus a durable portfolio position snapshot, balanced draft journal entries in the accounting drafts queue (accounting records seed as drafts for human review; the demo never fabricates posted ledger entries, and posted money-path stores remain PostgreSQL-gated), the existing reconciliation casework, and a review-required governed sample report pack whose provenance carries the seeded mark. Every seeded record carries the W9-TRUTH-001 seeded provenance token, re-seeding is idempotent, restart-modelled durability is proven per domain, and the guarded one-command reset is unchanged. The demo-smoke CI lane runs the extended Meridian.Tests.Demo suite including the five-domain durability test. Accepted 2026-08-29 by operator decision DEC-W9-ACCEPTANCE-001; the acceptance evidence the status taxonomy requires is recorded in docs/product/w9-operator-acceptance-2026-08-29.md and linked from this row. Acceptance closes the governance gate on this row only - it does not move the row to done, which still needs the release or status documentation this lane owns, and it does not certify a release or close the P0 release-certification gate.
     exit_criteria:
       - A single documented command provisions a demo workspace with seeded provider data, portfolios, ledger records, reconciliation cases, and report packs over durable storage rather than in-memory persistence.
       - Seeded demo data survives restart and renders with the persistent simulation labeling required by W9-TRUTH-001 everywhere it appears.
@@ -894,6 +896,8 @@ items:
       - SRC-STORAGE
       - SRC-UI-DASHBOARD
     evidence:
+      - type: doc
+        path: docs/product/w9-operator-acceptance-2026-08-29.md
       - type: source
         path: src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs
       - type: source
@@ -908,7 +912,7 @@ items:
         path: tests/Meridian.Tests/Demo/DemoWorkspaceGuardTests.cs
       - type: reference
         path: .github/workflows/demo-smoke.yml
-    last_reviewed: 2026-08-08
+    last_reviewed: 2026-08-29
 
   - id: W9-PAPER-003
     title: Paper-trading realism with limit/stop matching and costs
@@ -920,11 +924,11 @@ items:
       - Trading
       - Strategy
     owner_lane: Execution and Fund Accounts
-    status: ready_for_acceptance
+    status: accepted
     health: green
     priority: critical
-    evidence_posture: implementation_complete
-    current_summary: Implementation completed 2026-08-08. Both paper gateways now match through the shared documented PaperOrderMatchingPolicy (paper-match/1) - market orders transact against the observed ask/bid (falling back to last trade, then bar close) and never at placeholder prices, limit orders fill only at or better than their limit and otherwise rest, stops trigger per the documented trade-preferred policy with a quote fallback, and resting orders re-evaluate event-driven as the market event tap records fresh trades, quotes, and bars (bars now feed the observed envelope). Every fill applies the PaperTradingCostModel (paper-cost/1) commission/fee/slippage schedule with per-fill spread reporting, costs flow into paper-session economics (portfolio cost booking, per-fill report fields, session TradingCosts totals), and an FsCheck-backed regression suite proves no fill can print outside the observed market-data envelope for the bar or tick in effect. Paper sessions durably record the matching and cost model versions, and paper-to-live promotions now require the PAPER_EXECUTION_MODEL_REVIEWED evidence reference recording those versions, validated at approval and at the durable promotion-record store. The explicitly opted-in scaffold pricing escape hatch (default off, loudly warned) is unchanged.
+    evidence_posture: complete
+    current_summary: Implementation completed 2026-08-08. Both paper gateways now match through the shared documented PaperOrderMatchingPolicy (paper-match/1) - market orders transact against the observed ask/bid (falling back to last trade, then bar close) and never at placeholder prices, limit orders fill only at or better than their limit and otherwise rest, stops trigger per the documented trade-preferred policy with a quote fallback, and resting orders re-evaluate event-driven as the market event tap records fresh trades, quotes, and bars (bars now feed the observed envelope). Every fill applies the PaperTradingCostModel (paper-cost/1) commission/fee/slippage schedule with per-fill spread reporting, costs flow into paper-session economics (portfolio cost booking, per-fill report fields, session TradingCosts totals), and an FsCheck-backed regression suite proves no fill can print outside the observed market-data envelope for the bar or tick in effect. Paper sessions durably record the matching and cost model versions, and paper-to-live promotions now require the PAPER_EXECUTION_MODEL_REVIEWED evidence reference recording those versions, validated at approval and at the durable promotion-record store. The explicitly opted-in scaffold pricing escape hatch (default off, loudly warned) is unchanged. Accepted 2026-08-29 by operator decision DEC-W9-ACCEPTANCE-001; the acceptance evidence the status taxonomy requires is recorded in docs/product/w9-operator-acceptance-2026-08-29.md and linked from this row. Acceptance closes the governance gate on this row only - it does not move the row to done, which still needs the release or status documentation this lane owns, and it does not certify a release or close the P0 release-certification gate.
     exit_criteria:
       - Paper matching honors order-type semantics - limit orders fill only at or better than the limit price, stops trigger per a documented trade/quote policy, and market orders fill from observed market data, never at placeholder prices such as one dollar.
       - Commission, fee, slippage, and spread cost models apply to every paper fill and are visible in paper-session economics.
@@ -936,6 +940,8 @@ items:
       - SRC-STRATEGIES
       - SRC-CONTRACTS
     evidence:
+      - type: doc
+        path: docs/product/w9-operator-acceptance-2026-08-29.md
       - type: source
         path: src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs
       - type: source
@@ -954,7 +960,7 @@ items:
         path: tests/Meridian.Tests/Execution/PaperFillEnvelopeRegressionTests.cs
       - type: test
         path: tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs
-    last_reviewed: 2026-08-08
+    last_reviewed: 2026-08-29
 
   - id: W9-ALPACA-004
     title: Alpaca fill streaming into order and ledger state
@@ -968,7 +974,7 @@ items:
     health: green
     priority: high
     evidence_posture: implementation_complete
-    current_summary: Implementation verified complete 2026-08-10; the 2026-07-21 premise that the order feedback loop was broken no longer matches source. The authenticated trade_updates stream (AlpacaTradeUpdatesClient) normalizes every broker event into an ExecutionReport and admits it to a durable content-hashed inbox that deduplicates broker event ids, survives restart, and replays unacknowledged envelopes; AlpacaBrokerageGateway exposes that stream as the execution-gateway report stream, blocks live submission while the stream is unhealthy, and after every authenticated reconnect reconciles the REST order snapshot plus exact FILL activities from the acknowledged watermark so fills missed during a disconnect backfill without polling. The OrderManagementSystem consumes the gateway stream from construction, applies partial fills, cancels, and rejects to tracked order state with monotonic cumulative-fill handling and terminal-state latching, converts cumulative broker quantities into deduplicated increments, and routes each genuine increment through the existing durable trade-fill posting and ledger handoff path with retained-failure replay; host composition wires the trade-updates client into the gateway and the trade-fill ledger posting scope. The 2026-08-10 acceptance candidate closes the exit-criterion evidence gap by adding out-of-order delivery tests at the stream client (admission without loss, backfill watermark never regresses, duplicate and out-of-order REST fill replay admits each exact fill once) and at the OMS (a stale lower cumulative publishes no increment and never regresses portfolio or accounting), plus an end-to-end loop suite driving raw Alpaca trade_updates JSON through the client into a real OMS asserting lifecycle transitions and exactly-once accounting handoff under duplicate, out-of-order, cancel, reject, and reconnect REST-replay delivery. Acceptance caveats recorded 2026-08-10 from automated review, all pre-existing rather than introduced by this candidate - the hosted submission health gate treats trade-update recency as stream liveness, so an idle or order-free live account blocks new submissions once the 30-second stale window lapses (submission-side only); reconnect FILL-activity backfill starts exactly at the acknowledged watermark with no overlap window, so a fill the stream skipped beneath an already-acknowledged newer event is recovered only through the order-snapshot lane, which restores quantity at snapshot average-price attribution rather than exact per-fill economics; and a durably admitted fill replayed into a freshly restarted host is acknowledged without reaching the accounting handoff when the restarted OMS no longer tracks its order, leaving recovery to the brokerage activity-sync lane. These are acceptance-review inputs and follow-up candidates, not exit-criterion regressions.
+    current_summary: Implementation verified complete 2026-08-10; the 2026-07-21 premise that the order feedback loop was broken no longer matches source. The authenticated trade_updates stream (AlpacaTradeUpdatesClient) normalizes every broker event into an ExecutionReport and admits it to a durable content-hashed inbox that deduplicates broker event ids, survives restart, and replays unacknowledged envelopes; AlpacaBrokerageGateway exposes that stream as the execution-gateway report stream, blocks live submission while the stream is unhealthy, and after every authenticated reconnect reconciles the REST order snapshot plus exact FILL activities from the acknowledged watermark so fills missed during a disconnect backfill without polling. The OrderManagementSystem consumes the gateway stream from construction, applies partial fills, cancels, and rejects to tracked order state with monotonic cumulative-fill handling and terminal-state latching, converts cumulative broker quantities into deduplicated increments, and routes each genuine increment through the existing durable trade-fill posting and ledger handoff path with retained-failure replay; host composition wires the trade-updates client into the gateway and the trade-fill ledger posting scope. The 2026-08-10 acceptance candidate closes the exit-criterion evidence gap by adding out-of-order delivery tests at the stream client (admission without loss, backfill watermark never regresses, duplicate and out-of-order REST fill replay admits each exact fill once) and at the OMS (a stale lower cumulative publishes no increment and never regresses portfolio or accounting), plus an end-to-end loop suite driving raw Alpaca trade_updates JSON through the client into a real OMS asserting lifecycle transitions and exactly-once accounting handoff under duplicate, out-of-order, cancel, reject, and reconnect REST-replay delivery. Acceptance caveats recorded 2026-08-10 from automated review, all pre-existing rather than introduced by this candidate - the hosted submission health gate treats trade-update recency as stream liveness, so an idle or order-free live account blocks new submissions once the 30-second stale window lapses (submission-side only); reconnect FILL-activity backfill starts exactly at the acknowledged watermark with no overlap window, so a fill the stream skipped beneath an already-acknowledged newer event is recovered only through the order-snapshot lane, which restores quantity at snapshot average-price attribution rather than exact per-fill economics; and a durably admitted fill replayed into a freshly restarted host is acknowledged without reaching the accounting handoff when the restarted OMS no longer tracks its order, leaving recovery to the brokerage activity-sync lane. These are acceptance-review inputs and follow-up candidates, not exit-criterion regressions. Held at the 2026-08-29 acceptance review (DEC-W9-ACCEPTANCE-001) and deliberately NOT accepted while its five sibling W9 rows were. The three caveats recorded above sit on the path from broker fill to ledger, so accepting the row would put an operator signature on the very evidence chain those caveats qualify. They remain follow-up candidates rather than exit-criterion regressions, so the row is not failed either - it stays ready_for_acceptance and is accepted once the idle-account submission block, the absent reconnect backfill overlap window, and the restart accounting-handoff gap are closed or explicitly waived on the record. Reasoning in docs/product/w9-operator-acceptance-2026-08-29.md.
     exit_criteria:
       - Alpaca trade-update and fill events stream into the execution gateway and drive order lifecycle state, including partial fills, cancels, and rejects, without polling.
       - Streamed fills flow into the existing durable trade-fill posting and ledger handoff path.
@@ -996,7 +1002,7 @@ items:
         path: tests/Meridian.Tests/Execution/AlpacaStreamedFillLoopTests.cs
       - type: test
         path: tests/Meridian.Tests/Execution/OrderManagementSystemDurableHandoffOrderingTests.cs
-    last_reviewed: 2026-08-10
+    last_reviewed: 2026-08-29
 
   - id: W9-REPORT-005
     title: Client-grade PDF/XLSX exports and partners-capital statement
@@ -1007,11 +1013,11 @@ items:
       - Reporting
       - Accounting
     owner_lane: Accounting and Ledger
-    status: ready_for_acceptance
+    status: accepted
     health: green
     priority: high
-    evidence_posture: implementation_complete
-    current_summary: Implementation completed 2026-08-10. The phase-1 client-grade rendering lane had already merged - Meridian.Documents renders governed ledger report packs to deterministic client-presentable PDF (QuestPDF) and XLSX (ClosedXML) with fixed metadata and canonical zip ordering so re-rendering reproduces the bytes, the certified reporting path binds every primary document to an exact checkpoint-bound canonical ledger presentation and fails closed without one, and certified packages retain report-pack signatures and provenance manifests alongside the artifacts. This acceptance candidate completes the deferred presentation half by absorbing and validating the stalled bespoke partners-capital layout (supersedes PR 2525) against current main - PartnersCapitalStatementLayout classifies each capital account by partner role from stable ledger account names, computes ownership shares that foot to 100 percent while excluding non-partner equity, anchors the statement to the fund's ledger-backed net asset value with an explicit reconciliation flag, and never alters a ledger figure; the renderer emits a purpose-built PDF section (NAV context strip, role-labelled per-partner roll-forward, ownership column, reconciliation footnote) and a dedicated typed-numeric XLSX sheet with accounting/percent formats plus a NAV anchor block so operators can sum and pivot without retyping. Certification tests were updated to the bespoke sheet shape while keeping their governance intent - primary bytes must equal the canonical Documents renderer output and display-row rebuild fingerprints remain forbidden.
+    evidence_posture: complete
+    current_summary: Implementation completed 2026-08-10. The phase-1 client-grade rendering lane had already merged - Meridian.Documents renders governed ledger report packs to deterministic client-presentable PDF (QuestPDF) and XLSX (ClosedXML) with fixed metadata and canonical zip ordering so re-rendering reproduces the bytes, the certified reporting path binds every primary document to an exact checkpoint-bound canonical ledger presentation and fails closed without one, and certified packages retain report-pack signatures and provenance manifests alongside the artifacts. This acceptance candidate completes the deferred presentation half by absorbing and validating the stalled bespoke partners-capital layout (supersedes PR 2525) against current main - PartnersCapitalStatementLayout classifies each capital account by partner role from stable ledger account names, computes ownership shares that foot to 100 percent while excluding non-partner equity, anchors the statement to the fund's ledger-backed net asset value with an explicit reconciliation flag, and never alters a ledger figure; the renderer emits a purpose-built PDF section (NAV context strip, role-labelled per-partner roll-forward, ownership column, reconciliation footnote) and a dedicated typed-numeric XLSX sheet with accounting/percent formats plus a NAV anchor block so operators can sum and pivot without retyping. Certification tests were updated to the bespoke sheet shape while keeping their governance intent - primary bytes must equal the canonical Documents renderer output and display-row rebuild fingerprints remain forbidden. Accepted 2026-08-29 by operator decision DEC-W9-ACCEPTANCE-001; the acceptance evidence the status taxonomy requires is recorded in docs/product/w9-operator-acceptance-2026-08-29.md and linked from this row. Acceptance closes the governance gate on this row only - it does not move the row to done, which still needs the release or status documentation this lane owns, and it does not certify a release or close the P0 release-certification gate.
     exit_criteria:
       - Governed report packs export deterministic client-presentable PDF and XLSX artifacts with retained hash and provenance manifests.
       - A partners-capital statement covering opening balance, contributions, distributions, income/expense/gain allocations, fees, and closing balance renders per partner and per period from ledger-backed data.
@@ -1022,6 +1028,8 @@ items:
       - SRC-CONTRACTS
       - SRC-UI-SHARED
     evidence:
+      - type: doc
+        path: docs/product/w9-operator-acceptance-2026-08-29.md
       - type: source
         path: src/Meridian.Ledger/PartnersCapitalStatementLayout.cs
       - type: source
@@ -1036,7 +1044,7 @@ items:
         path: tests/Meridian.Tests/Ledger/PartnersCapitalBespokeRenderTests.cs
       - type: test
         path: tests/Meridian.Tests/Ui/ReportingRunCertificationServiceTests.cs
-    last_reviewed: 2026-08-10
+    last_reviewed: 2026-08-29
 
   - id: W9-NAV-006
     title: Unitized NAV and real fee, waterfall, and capital-call economics
@@ -1048,11 +1056,11 @@ items:
       - Accounting
       - Portfolio
     owner_lane: Accounting and Ledger
-    status: ready_for_acceptance
+    status: accepted
     health: green
     priority: high
-    evidence_posture: implementation_complete
-    current_summary: Implementation verified complete 2026-08-10; the calculation surface the 2026-07-21 summary said "still lives in Excel" has been ledger-backed source for some time and the missing piece was the exit-criterion golden-file evidence. Unitization - ShareClassUnitRegisterProjector folds dated subscriptions/redemptions into a pure, deterministic per-class unit register (units outstanding, per-investor holdings, NAV per unit via NavPerUnitCalculator, running high-water mark, and single-NAV equalisation credits/contingent redemptions via EqualizationCalculator for equalising classes), with the movement-level register as the auditable calculation trail and restatement handled by re-projection plus the report-pack restatement lifecycle. Fee economics - the Meridian.FSharp.Ledger FundEconomics kernels compute day-weighted management fees, straight-line expense accruals, and performance fees with hurdle, high-water mark, and crystallization treatment, and FundEconomicsJournalFactory converts fee, NAV, and waterfall outcomes into governed journal drafts. Waterfall and commitments - EuropeanDistributionWaterfall runs return-of-capital, preferred-return, solved GP catch-up (including sub-100 percent catch-up rates), and carried-interest tiers with cumulative threading across distributions; CapitalCallScheduleDraftBuilder, CapitalCallPlanBuilder, and CommitmentRollForwardCalculator maintain the net-called plus uncalled plus expired equals total invariant with recallable-distribution handling; and the ledger partners-capital reconciliation suite ties these to the W9-REPORT-005 statement. The 2026-08-10 acceptance candidate closes criterion four by adding a golden-file worked-example pack (tests/fixtures/fund-economics/golden) with hand-computed figures independent of the implementation - day-count fee and expense examples, a four-period threaded performance-fee cycle proving the high-water mark moves only on crystallization and only to post-fee NAV, a three-distribution threaded waterfall whose cumulative GP take is exactly its carry share of profit, a sub-100 percent catch-up example pinning the documented pool-rounding drift, equalisation credit/contingent cases, and a full-year unit-register scenario whose aggregate holding value ties to class NAV - all asserted step by step against the real kernels.
+    evidence_posture: complete
+    current_summary: Implementation verified complete 2026-08-10; the calculation surface the 2026-07-21 summary said "still lives in Excel" has been ledger-backed source for some time and the missing piece was the exit-criterion golden-file evidence. Unitization - ShareClassUnitRegisterProjector folds dated subscriptions/redemptions into a pure, deterministic per-class unit register (units outstanding, per-investor holdings, NAV per unit via NavPerUnitCalculator, running high-water mark, and single-NAV equalisation credits/contingent redemptions via EqualizationCalculator for equalising classes), with the movement-level register as the auditable calculation trail and restatement handled by re-projection plus the report-pack restatement lifecycle. Fee economics - the Meridian.FSharp.Ledger FundEconomics kernels compute day-weighted management fees, straight-line expense accruals, and performance fees with hurdle, high-water mark, and crystallization treatment, and FundEconomicsJournalFactory converts fee, NAV, and waterfall outcomes into governed journal drafts. Waterfall and commitments - EuropeanDistributionWaterfall runs return-of-capital, preferred-return, solved GP catch-up (including sub-100 percent catch-up rates), and carried-interest tiers with cumulative threading across distributions; CapitalCallScheduleDraftBuilder, CapitalCallPlanBuilder, and CommitmentRollForwardCalculator maintain the net-called plus uncalled plus expired equals total invariant with recallable-distribution handling; and the ledger partners-capital reconciliation suite ties these to the W9-REPORT-005 statement. The 2026-08-10 acceptance candidate closes criterion four by adding a golden-file worked-example pack (tests/fixtures/fund-economics/golden) with hand-computed figures independent of the implementation - day-count fee and expense examples, a four-period threaded performance-fee cycle proving the high-water mark moves only on crystallization and only to post-fee NAV, a three-distribution threaded waterfall whose cumulative GP take is exactly its carry share of profit, a sub-100 percent catch-up example pinning the documented pool-rounding drift, equalisation credit/contingent cases, and a full-year unit-register scenario whose aggregate holding value ties to class NAV - all asserted step by step against the real kernels. Accepted 2026-08-29 by operator decision DEC-W9-ACCEPTANCE-001; the acceptance evidence the status taxonomy requires is recorded in docs/product/w9-operator-acceptance-2026-08-29.md and linked from this row. Acceptance closes the governance gate on this row only - it does not move the row to done, which still needs the release or status documentation this lane owns, and it does not certify a release or close the P0 release-certification gate.
     exit_criteria:
       - Unitized NAV per share class is computed from ledger-backed valuations with an auditable calculation trail and restatement support.
       - Management fee, performance fee or carried interest with hurdle, high-water mark, and crystallization treatment, and expense accruals post governed ledger entries.
@@ -1064,6 +1072,8 @@ items:
       - SRC-DESIGN-FINANCIAL-OPERATIONS
       - SRC-CONTRACTS
     evidence:
+      - type: doc
+        path: docs/product/w9-operator-acceptance-2026-08-29.md
       - type: source
         path: src/Meridian.FSharp.Ledger/FundEconomics.fs
       - type: source
@@ -1090,7 +1100,7 @@ items:
         path: tests/Meridian.Tests/Ledger/LedgerPartnersCapitalReconciliationTests.cs
       - type: test
         path: tests/Meridian.Tests/FinancialOperations/PrivateCapital/CommitmentRollForwardCalculatorTests.cs
-    last_reviewed: 2026-08-10
+    last_reviewed: 2026-08-29
 
   - id: W9-SAFETY-007
     title: Kill-switch cancel-all and fat-finger, notional, and collar rules
@@ -1288,11 +1298,11 @@ items:
       - Portfolio
       - Data
     owner_lane: Accounting and Ledger
-    status: ready_for_acceptance
+    status: accepted
     health: green
     priority: high
-    evidence_posture: implementation_complete
-    current_summary: Registered 2026-08-29 to close a registry gap - durable corporate action processing shipped across PR 2852 (feat 647ed65a, hardening cbca3445) and the PR 2858 governance audit without a roadmap row, so a subsystem spanning roughly 280 source and test files carried no registry entry, no exit criteria, and no evidence posture. This row records what shipped rather than proposing new work. Delivered - the Corporate Action Case is a durable scoped operating record (docs/domain/corporate-action-case.md) that links one canonical Security Master source event to entitlement and election evidence, per-book and per-basis treatment decisions, projected consequences, approvals, posting, and correction lineage, keeping STAT, GAAP, tax, and configured management treatments independent so none overwrites another. CorporateActionIngestOrchestrator admits provider observations behind a persisted release gate that is rechecked at acceptance, so a ReviewOnly feed can be retained and compared but never accepted as canonical fact; CorporateActionOperationsService drives case transitions with actor attribution, optimistic concurrency, and idempotent replay, leaving a failed acceptance or posting recoverable in its prior state; CorporateActionAccountingProjectionService derives economic fingerprints and lot plans and maps them onto the W9-ASSET-010 Asset Accounting Event Spine, so journals and posted lot effects stay immutable and corrections add reversal, rebook, or restatement lineage instead of mutating the original; PostgresCorporateActionOperationsStore plus migration 030 provide the durable store; and SecurityMasterEndpoints.CorporateActionOperations exposes the operator surface with dedicated UserPermission entries. The PR 2858 audit closed an ungated term-amendment route, stopped alias edits rewriting recorded history, derived write provenance server-side rather than trusting the caller, and classified ingest failures by type instead of swallowing cancellation. Outstanding before acceptance - operator acceptance evidence is not recorded, and unsupported or policy-dependent action branches remain deliberate blocked outcomes rather than coerced generic sale or exchange treatments, so acceptance review must confirm that blocked-branch posture is the intended operating envelope.
+    evidence_posture: complete
+    current_summary: Registered 2026-08-29 to close a registry gap - durable corporate action processing shipped across PR 2852 (feat 647ed65a, hardening cbca3445) and the PR 2858 governance audit without a roadmap row, so a subsystem spanning roughly 280 source and test files carried no registry entry, no exit criteria, and no evidence posture. This row records what shipped rather than proposing new work. Delivered - the Corporate Action Case is a durable scoped operating record (docs/domain/corporate-action-case.md) that links one canonical Security Master source event to entitlement and election evidence, per-book and per-basis treatment decisions, projected consequences, approvals, posting, and correction lineage, keeping STAT, GAAP, tax, and configured management treatments independent so none overwrites another. CorporateActionIngestOrchestrator admits provider observations behind a persisted release gate that is rechecked at acceptance, so a ReviewOnly feed can be retained and compared but never accepted as canonical fact; CorporateActionOperationsService drives case transitions with actor attribution, optimistic concurrency, and idempotent replay, leaving a failed acceptance or posting recoverable in its prior state; CorporateActionAccountingProjectionService derives economic fingerprints and lot plans and maps them onto the W9-ASSET-010 Asset Accounting Event Spine, so journals and posted lot effects stay immutable and corrections add reversal, rebook, or restatement lineage instead of mutating the original; PostgresCorporateActionOperationsStore plus migration 030 provide the durable store; and SecurityMasterEndpoints.CorporateActionOperations exposes the operator surface with dedicated UserPermission entries. The PR 2858 audit closed an ungated term-amendment route, stopped alias edits rewriting recorded history, derived write provenance server-side rather than trusting the caller, and classified ingest failures by type instead of swallowing cancellation. Outstanding before acceptance - operator acceptance evidence is not recorded, and unsupported or policy-dependent action branches remain deliberate blocked outcomes rather than coerced generic sale or exchange treatments, so acceptance review must confirm that blocked-branch posture is the intended operating envelope. Accepted 2026-08-29 by operator decision DEC-W9-ACCEPTANCE-001; the acceptance evidence the status taxonomy requires is recorded in docs/product/w9-operator-acceptance-2026-08-29.md and linked from this row. Acceptance closes the governance gate on this row only - it does not move the row to done, which still needs the release or status documentation this lane owns, and it does not certify a release or close the P0 release-certification gate.
     exit_criteria:
       - A corporate action case binds one canonical Security Master source event to exact tenant, account, book, basis, period, and position scope, and keeps source facts, treatment decisions, and generated consequences as separate authoritative layers.
       - Provider observations carry a persisted release gate that is rechecked at acceptance, so a review-only feed can never be accepted as a canonical Security Master fact.
@@ -1307,6 +1317,8 @@ items:
       - SRC-STORAGE
       - SRC-UI-SHARED
     evidence:
+      - type: doc
+        path: docs/product/w9-operator-acceptance-2026-08-29.md
       - type: doc
         path: docs/domain/corporate-action-case.md
       - type: source
