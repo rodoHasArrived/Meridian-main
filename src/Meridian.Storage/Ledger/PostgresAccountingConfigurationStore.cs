@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Meridian.Contracts.Ledger;
 using Npgsql;
 using NpgsqlTypes;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
@@ -883,18 +884,16 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         AccountingActionAuditEventDto auditEvent)
         => auditEvent with
         {
-            Actor = NormalizeStored(auditEvent.Actor) ?? auditEvent.Actor,
-            Action = NormalizeStored(auditEvent.Action) ?? auditEvent.Action,
-            FundProfileId = NormalizeStored(auditEvent.FundProfileId),
-            CorrelationId = NormalizeStored(auditEvent.CorrelationId),
-            BeforeHash = NormalizeStored(auditEvent.BeforeHash) ?? auditEvent.BeforeHash,
-            AfterHash = NormalizeStored(auditEvent.AfterHash) ?? auditEvent.AfterHash,
-            TenantId = NormalizeStored(auditEvent.TenantId),
-            CompanyId = NormalizeStored(auditEvent.CompanyId),
+            Actor = NormalizeOptional(auditEvent.Actor) ?? auditEvent.Actor,
+            Action = NormalizeOptional(auditEvent.Action) ?? auditEvent.Action,
+            FundProfileId = NormalizeOptional(auditEvent.FundProfileId),
+            CorrelationId = NormalizeOptional(auditEvent.CorrelationId),
+            BeforeHash = NormalizeOptional(auditEvent.BeforeHash) ?? auditEvent.BeforeHash,
+            AfterHash = NormalizeOptional(auditEvent.AfterHash) ?? auditEvent.AfterHash,
+            TenantId = NormalizeOptional(auditEvent.TenantId),
+            CompanyId = NormalizeOptional(auditEvent.CompanyId),
         };
 
-    private static string? NormalizeStored(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void AddUuidOrNull(NpgsqlCommand command, string name, Guid? value)
         => command.Parameters.AddWithValue(name, value.HasValue ? value.Value : DBNull.Value);
