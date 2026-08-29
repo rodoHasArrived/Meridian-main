@@ -453,12 +453,13 @@ label alone will update this file.
 - **ID**: AI-20260828-pr-body-rewrite-drops-phase-marker
 - **Area**: ci/governance
 - **Symptoms**: `scope-gate` reds on a PR that has been passing it for many pushes, with `##[error]No phase declaration found. Provide --phase/--dispatch-phase, a 'phase:PRx' label, or a PR body marker like '<!-- phase:PR2 -->'.` Nothing in the diff touches roadmap tooling or workflows, and the immediately preceding pushes on the same branch passed the same check.
-- **Root cause**: The phase is declared by an HTML comment marker (`<!-- phase:PR1 -->`) in the pull-request body. HTML comments are invisible in every rendered view of the PR, so rewriting the body — to refresh a stale summary, say — silently drops the marker unless it is deliberately carried across. The check does not fail on the push that removed it if that was a body-only edit; it fails on the *next* code push, which makes the two events easy to disconnect.
+- **Root cause**: The phase is declared by an HTML comment marker (`<!-- phase:PRx -->`, `PR1` on the PR that produced this entry) in the pull-request body. HTML comments are invisible in every rendered view of the PR, so rewriting the body — to refresh a stale summary, say — silently drops the marker unless it is deliberately carried across. The check does not fail on the push that removed it if that was a body-only edit; it fails on the *next* code push, which makes the two events easy to disconnect.
 - **Prevention checklist**: the ordering matters — the first two items remove the need to detect the
   marker at all, which is what makes them reliable. Everything that tries to *read it back* has failed
   at least once; see the note under Verification commands.
-  - [ ] **Write the marker unconditionally.** When rewriting a PR body, always emit `<!-- phase:PR1 -->` as the first line, without first checking whether it is there. It is idempotent, it costs nothing when the marker already existed, and it removes the read-back entirely. This is the primary rule: construct, do not verify
-  - [ ] **Prefer a `phase:PRx` label.** It is visible in the PR UI, survives body rewrites, and is accepted by the gate (`PHASE_LABEL`), so it makes the body marker non-load-bearing. Where a label is available this whole failure mode goes away
+  - [ ] **Write the marker unconditionally — for *this PR's* phase, never a hardcoded one.** When rewriting a PR body, emit `<!-- phase:PRx -->` as the first line without first checking whether it is there, where `PRx` is the phase this pull request actually declares. It is idempotent and removes the read-back entirely. This is the primary rule: construct, do not verify. **Hardcoding a phase is worse than the bug it fixes** — `resolve_phase` prefers a label but otherwise takes the body value (`enforce_phase_scope.py:134-150`), so writing `PR1` onto a PR2–PR9 PR silently rejects in-scope changes against PR1's narrower allowlist, and writing it onto a PR0 PR silently *broadens* the allowed scope
+  - [ ] **Establish the phase from a source you can actually read**, in this order: an explicit `--phase`/dispatch input; the `phase:PRx` label; or the roadmap phase the change belongs to, which the author knows independently of the body. **If you cannot determine the phase and cannot read the body, do not rewrite the body at all** — a rewrite is exactly the operation that can silently downgrade or widen scope, and no summary refresh is worth that
+  - [ ] **Prefer a `phase:PRx` label.** It is visible in the PR UI, survives body rewrites, and outranks the body in `resolve_phase`, so it makes the body marker non-load-bearing and removes the guesswork above. Where a label is available this whole failure mode goes away
   - [ ] Do not expect a job re-run to clear a failure once it happens — see the recovery note below
   - [ ] Do not try to confirm the marker by reading the body through GitHub MCP `pull_request_read` (method `get`): it returns the body with HTML comments **stripped**, so a marker that is really there comes back invisible. This recurred on PR #2857 *after* this entry was written — the returned body began `\n\n## Summary`, the two leading newlines being exactly where `<!-- phase:PR1 -->` sat
   - [ ] Do not treat the latest `scope-gate` log as evidence about the *current* body either — see below for why it is a post-push confirmation only
@@ -466,7 +467,9 @@ label alone will update this file.
   attempts to write one were both unsound, so the entry now relies on constructing the marker rather
   than confirming it.
   - **Post-push confirmation** — the only sound read. After a push, read the `scope-gate` job log for
-    `Phase scope gate passed for PR1 (source: …)`. `source:` names the declaration the gate actually
+    `Phase scope gate passed for PRx (source: …)`. Check the phase it names is the one the PR intends —
+    a wrong phase passes the gate just as loudly as a right one, against the wrong allowlist.
+    `source:` names the declaration the gate actually
     resolved (`pr_body`, `labels`, or `dispatch`). This is valid evidence **about the commit that
     triggered that run, not about the body as it stands now**: `roadmap-source-docs.yml` declares
     `pull_request:` with a `paths:` filter and no `types:` (`:10-20`), so it takes the default activity
