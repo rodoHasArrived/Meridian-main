@@ -978,6 +978,58 @@ These are intended and stated rather than incidental:
 
 ---
 
+## Status of this pass's findings after the 2026-08-29 implementation merges
+
+> **Read this before the pass below.** Between the pass being written and this branch merging `main`
+> at `f6eea7bc`, PRs #2858, #2860, #2865 and #2868 landed implementation work against several of its
+> findings. The items below are left as written — they are the record of what was found and why — but
+> most no longer describe current `main`. What follows is a targeted re-check against the merged tree,
+> not a fresh review, and it is explicit about what was not re-verified.
+
+**Verified closed.**
+
+- **P1's legacy PATCH gate bypass** — this pass's second priority. `RequireGovernedTermAmendmentRoute`
+  now appears at **5** call sites in `SecurityMasterEndpoints.cs`, against the 3 the pass counted, and
+  the legacy `PATCH …/preferred-terms` route is among them.
+- **P1's import actor gap** — `ISecurityMasterImportService.ImportAsync` now takes `string actor`
+  (`:47-52`), where the pass recorded no actor parameter at all.
+- **P1's endpoint attribution, substantially** — `EndpointAuthorization.TryResolveActor` now appears at
+  **9** sites in `SecurityMasterEndpoints.cs`. The pass found exactly one path deriving the actor
+  server-side (governed workbench publish) and called it the reference implementation to extend; it has
+  been extended.
+- **P2** — the `UpdatedBy: "WpfImport"` constant is gone from `SecurityMasterCsvParser`.
+- **P4's classify-from-prose defect** — the `"already exists"` / `"duplicate"` substring tests are gone
+  from the import service and Edgar, replaced by `SecurityMasterIngestFailureClassifier`.
+
+**Verified partially closed — and in the specific way this item warned against.**
+
+- **P3b.** `PostgresSecurityMasterStore.Aliases.cs` now excludes `created_by` and `created_at` from the
+  on-conflict update, with a comment giving this item's own reasoning. That closes the *vanishing*
+  alias: a January view no longer loses an identifier corrected in June. But the conflict update still
+  sets `alias_value = excluded.alias_value` (`:34`) and there is no alias versioning or event backing
+  anywhere in the store, so a January view now shows **June's corrected value** instead. That is
+  precisely the trade this item identified — "freezing `created_at` would stop the alias vanishing
+  from a January view and instead show January June's corrected value… Both outcomes are historically
+  wrong; they differ only in which direction they lie" — and precisely the outcome it asked not to be
+  mistaken for closure. The interim state is defensible if chosen deliberately; what the item asks is
+  that recorded-as-of's promise for aliases then be narrowed explicitly, which has not happened.
+
+**Verified still open.**
+
+- **P5, this pass's top priority.** No Security Master view model calls
+  `DesktopAuthenticationSession.HasPermission`; the only desktop callers remain `MainWindowViewModel`
+  and `AccountingCloseViewModel`. The desktop lane still reaches `ISecurityMasterService` in process
+  with no authorization check, and the trading-parameter backfill command — which amends every active
+  security in one action — is still constructed with no `canExecute` predicate. P5 was filed late in
+  review (round 18), after the implementation work on the other items had likely been scoped, which
+  may explain why it was not picked up.
+
+**Not re-verified, and therefore unknown against the merged tree**: P4's cancellation half (the three
+backfill swallow points, Polygon's `FetchPageAsync`, Edgar's three broad catches); P1's remaining
+constraints (`SourceSystem` derived from trusted metadata rather than the actor, the valid-time gates,
+the nested identifier windows, the alias source-role decision); P3; and N4, N5, N6. Absence from this
+list means it was not checked, not that it is open.
+
 ## Scheduled institutional-requirements pass — 2026-08-28
 
 Re-read against `d3793290` (58 commits after `2917848a`, of which two touch Security Master — both
