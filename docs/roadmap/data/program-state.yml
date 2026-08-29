@@ -7,9 +7,9 @@ program:
   id: meridian-program
   title: Meridian Evidence-Backed Investment Operations
   owner: Core Team
-  snapshot_date: 2026-08-10
+  snapshot_date: 2026-08-29
   status: active
-  active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, connector-library, Financial Operations control-center, Evidence Vault, statement-onboarding, bounded W6 backtest-evidence, and bounded W7 live-readiness governance milestones; WPF parity and browser workstation screen consolidation remain in progress; the ranked W9 first-order improvement slate (W9-TRUTH-001 through W9-INGEST-009) is the accepted planned priority order for the next delivery decisions, followed by the W10 depth slate (W10-MARK-001 through W10-CONSOL-001) which deepens existing functionality and mostly wires already-built capability rather than adding surface
+  active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, connector-library, Financial Operations control-center, Evidence Vault, statement-onboarding, bounded W6 backtest-evidence, and bounded W7 live-readiness governance milestones; WPF parity and browser workstation screen consolidation remain in progress; six implemented W9 outcomes are operator-accepted while W9-SAFETY-007, W9-GOV-008, and W9-INGEST-009 remain active; the W10 depth slate follows those open controls, and W11-CACT-001 now owns the governed corporate-action case and exact accounting lifecycle that had reached main without a dedicated roadmap row
   scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, close support, retained evidence, workflow controls, or governed reporting before expanding research, live trading, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes. WPF desktop product/UI work is reactivated as an active co-equal lane whose immediate focus is web-UI parity over shared contracts.
   near_term_release_baseline:
     - W1-DATA-001
@@ -46,8 +46,9 @@ program:
     - Completed Evidence Vault and statement reconciliation onboarding over governed connector and production authority evidence
     - Bounded Covered Call evidence loop with scoped Evidence Vault authority, durable strategy lineage, governed Paper promotion, and fail-closed acceptance checklist projection
     - Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention
-    - Ranked W9 first-order improvement slate - truthful simulation posture, seeded demo evaluation, paper-trading realism, live fill streaming, client-grade reporting, fund economics, execution safety, governance hardening, and institutional statement ingestion
+    - Accepted W9 outcomes - truthful simulation posture, seeded demo evaluation, paper-trading realism, live fill streaming, client-grade reporting, and fund-economics kernels - with execution safety, governance hardening, and institutional statement ingestion still active
     - W10 depth slate - fail-closed valuation freshness, durable break lineage, amount-level provenance behind one shared proof drawer, one close-readiness projection consumed by both workstation lanes, reconciliation break economics, durable recurring journals, tax-character surfacing, return measurement, and consolidated-view elimination
+    - Governed corporate-action cases with exact scope, provider proof, basis-specific treatment, Asset Accounting Event Spine posting, reconciliation, reporting, and correction continuity under W11-CACT-001
   production_readiness:
     status: blocked
     reviewed: 2026-08-03

@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-08-10
+Snapshot date: 2026-08-29
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -563,12 +563,12 @@ Reactivated 2026-07-06. The WPF desktop workstation returns to the active produc
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | ready_for_acceptance |
+| Status | accepted |
 | Health | green |
 | Priority | critical |
 | Owner lane | Data Confidence and Validation |
-| Evidence posture | implementation_complete |
-| Last reviewed | 2026-08-09 |
+| Evidence posture | operator_accepted |
+| Last reviewed | 2026-08-29 |
 
 ### Current Summary
 
@@ -594,12 +594,12 @@ Implementation completed 2026-08-09; the three items that remained after the 202
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | ready_for_acceptance |
+| Status | accepted |
 | Health | green |
 | Priority | critical |
 | Owner lane | Workstation Shell and UX |
-| Evidence posture | implementation_complete |
-| Last reviewed | 2026-08-08 |
+| Evidence posture | operator_accepted |
+| Last reviewed | 2026-08-29 |
 
 ### Current Summary
 
@@ -623,12 +623,12 @@ Implementation completed 2026-08-08 on the pre-existing --seed-demo/--demo/--res
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | ready_for_acceptance |
+| Status | accepted |
 | Health | green |
 | Priority | critical |
 | Owner lane | Execution and Fund Accounts |
-| Evidence posture | implementation_complete |
-| Last reviewed | 2026-08-08 |
+| Evidence posture | operator_accepted |
+| Last reviewed | 2026-08-29 |
 
 ### Current Summary
 
@@ -652,12 +652,12 @@ Implementation completed 2026-08-08. Both paper gateways now match through the s
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | ready_for_acceptance |
+| Status | accepted |
 | Health | green |
 | Priority | high |
 | Owner lane | Execution and Fund Accounts |
-| Evidence posture | implementation_complete |
-| Last reviewed | 2026-08-10 |
+| Evidence posture | operator_accepted |
+| Last reviewed | 2026-08-29 |
 
 ### Current Summary
 
@@ -679,12 +679,12 @@ Implementation verified complete 2026-08-10; the 2026-07-21 premise that the ord
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | ready_for_acceptance |
+| Status | accepted |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | implementation_complete |
-| Last reviewed | 2026-08-10 |
+| Evidence posture | operator_accepted |
+| Last reviewed | 2026-08-29 |
 
 ### Current Summary
 
@@ -707,12 +707,12 @@ Implementation completed 2026-08-10. The phase-1 client-grade rendering lane had
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | ready_for_acceptance |
+| Status | accepted |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | implementation_complete |
-| Last reviewed | 2026-08-10 |
+| Evidence posture | operator_accepted |
+| Last reviewed | 2026-08-29 |
 
 ### Current Summary
 
@@ -765,12 +765,12 @@ Source-verified 2026-08-10 and substantially further along than the 2026-07-21 p
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | high |
 | Owner lane | Platform Security and Governance |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-08-24 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-08-29 |
 
 ### Current Summary
 
@@ -1207,3 +1207,36 @@ Rank 11 of the 2026-07 W10 depth slate. Consolidation elimination already exists
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
+
+## W11-CACT-001 - Govern corporate-action cases through exact accounting lifecycles
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | in_progress |
+| Health | yellow |
+| Priority | critical |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | partial_implementation |
+| Last reviewed | 2026-08-29 |
+
+### Current Summary
+
+Registered 2026-08-29 after the corporate-action foundation reached main without a dedicated roadmap row. Meridian now has canonical source identity, provider-revision lineage, scoped case contracts and persistence, fail-closed public source-decision boundaries, deterministic accounting projection, Asset Accounting Event Spine mapping, and browser review surfaces. The row remains in progress because authoritative tenant/company-to-case fan-out, immutable retained provider proof across every acceptance-eligible source, complete scope-integrity enforcement, and one exact Advance Refunding lifecycle through approved atomic posting, Schedule D treatment, reconciliation, restatement, and retained proof are not yet accepted end to end.
+
+### Exit Criteria
+
+- Canonical corporate-action facts retain stable provider identity, immutable raw evidence, economic fingerprints, and append-only amendment, cancellation, and supersession lineage; review-only observations cannot become accepted facts.
+- Each processing case resolves exact tenant, company, fund or structure node, financial and custody accounts, portfolio, ledger book, period, accounting basis, currency, jurisdiction, position population, and lot evidence, with missing, ambiguous, or cross-scope authority rejected before mutation.
+- Source facts, elections and allocations, basis-specific treatment decisions, economic recipes, lot plans, journal projections, approvals, posting, reconciliation, reporting, and correction lineage remain separate versioned authorities with optimistic concurrency and actor-attributed audit evidence.
+- The public source-decision boundary stays fail closed until one authoritative service can enumerate every affected scope and create or update all required cases without allowing one tenant to decide a global source event for another.
+- One Advance Refunding lifecycle preserves allocated book value and holding period across refunded and unrefunded successor positions, routes only the refunded leg to Schedule D, obtains maker-checker approval, commits lots and journals atomically through the Asset Accounting Event Spine, reconciles cash and positions, and retains governed reversal, rebook, or restatement proof.
+- Focused schema, data-integrity, migration-operations, security, and accounting-owner review is complete, and PostgreSQL concurrency and migration tests plus deterministic browser and repository validation pass on the accepted head.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-INSTRUMENTS`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`

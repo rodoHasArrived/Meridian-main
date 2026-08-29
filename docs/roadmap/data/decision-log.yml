@@ -84,3 +84,25 @@ decisions:
       - W9-SAFETY-007
       - W9-GOV-008
       - W9-INGEST-009
+  - id: DEC-W9-ACCEPTANCE-001
+    title: Accept the six completed W9 outcomes
+    status: accepted
+    decided_on: 2026-08-29
+    owner_lane: Core Team
+    summary: Operator acceptance advances W9-TRUTH-001, W9-DEMO-002, W9-PAPER-003, W9-ALPACA-004, W9-REPORT-005, and W9-NAV-006 from ready_for_acceptance to accepted on their linked implementation and test evidence. Acceptance is an explicit product-governance decision, not production certification and not a claim that separately recorded follow-ups are closed. In particular, the Alpaca recovery and liveness caveats and the NAV production-consumer gap remain follow-up work rather than being erased by this decision.
+    related_roadmap_items:
+      - W9-TRUTH-001
+      - W9-DEMO-002
+      - W9-PAPER-003
+      - W9-ALPACA-004
+      - W9-REPORT-005
+      - W9-NAV-006
+  - id: DEC-CORPORATE-ACTIONS-001
+    title: Register the governed corporate-action case outcome
+    status: accepted
+    decided_on: 2026-08-29
+    owner_lane: Core Team
+    summary: Corporate actions become a dedicated W11 roadmap outcome rather than remaining implicit inside the general Asset Accounting Event Spine. W11-CACT-001 owns canonical source and revision identity, exact scoped processing cases, provider-proof release gates, basis-specific treatment, governed posting through the existing spine, reconciliation, reporting, and correction continuity. The current partial implementation remains fail closed at public source acceptance until authoritative fan-out exists, and the first end-to-end acceptance target is Advance Refunding.
+    related_roadmap_items:
+      - W9-ASSET-010
+      - W11-CACT-001
