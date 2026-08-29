@@ -67,3 +67,28 @@ public sealed record TenantScopeEnforcementOptions(TenantScopeEnforcementMode Mo
         };
     }
 }
+
+/// <summary>
+/// Raised when a fund-scoped read is refused because the caller's tenant could not be resolved.
+/// </summary>
+/// <remarks>
+/// Distinct from returning no rows. Under
+/// <see cref="TenantScopeEnforcementMode.FailClosed"/> an unresolvable scope is <i>rejected rather
+/// than defaulted</i>, and an empty result set is a default: the caller cannot tell it apart from a
+/// genuinely empty ledger, and an operator reading the resulting support ticket cannot either. Every
+/// fund-scoped store throws this one type so the web layer has a single thing to map to 403.
+///
+/// <para>An out-of-request reader that legitimately holds retained authority avoids this by
+/// declaring it through <see cref="FundScopeTenantAuthority"/>, not by being exempted.</para>
+/// </remarks>
+public sealed class TenantScopeRejectedException : Exception
+{
+    public TenantScopeRejectedException(string readDescription)
+        : base($"A tenant-scoped caller is required to read {readDescription}.")
+    {
+        ReadDescription = readDescription;
+    }
+
+    /// <summary>What the caller was trying to read, for the operator-facing message.</summary>
+    public string ReadDescription { get; }
+}

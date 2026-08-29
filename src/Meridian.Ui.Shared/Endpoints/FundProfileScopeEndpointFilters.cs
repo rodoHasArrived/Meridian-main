@@ -1,3 +1,4 @@
+using Meridian.Contracts.Tenancy;
 using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -11,12 +12,21 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <see cref="IFundProfileTenantGuard"/> reports as owned by a different tenant, the route is refused with
 /// <c>403</c> before any fund-partitioned data is loaded.
 ///
-/// <para>This is the read-side counterpart to the governed-write guard already applied on the Security
-/// Master workbench field-edit route. It is read-only and <b>fail-open</b>: a blank fund, a caller with no
-/// tenant scope, a fund the registry does not positively attribute to another tenant, or an unavailable
-/// registry all pass through — the single-company-per-deployment boundary remains the control, and a
-/// legitimate read is never blocked. It only bites in a future multi-tenant, shared-datastore deployment.
-/// See <c>docs/security/security-remediation-backlog.md</c> (SEC-005).</para>
+/// <para>Read-side counterpart to the governed-write guard on the Security Master workbench field-edit
+/// route. Its strictness follows the deployment's <see cref="TenantScopeEnforcementOptions"/>.</para>
+///
+/// <para>Under <see cref="TenantScopeEnforcementMode.DeploymentBoundary"/> it is <b>fail-open</b>: a
+/// blank fund, a caller with no tenant scope, a fund the registry does not positively attribute to
+/// another tenant, or an unavailable registry all pass — the single-company-per-deployment boundary
+/// remains the control and a legitimate read is never blocked.</para>
+///
+/// <para>Under <see cref="TenantScopeEnforcementMode.FailClosed"/> each of those four becomes a
+/// refusal, because each is a scope that could not be resolved, and the exit criterion is categorical:
+/// an unresolvable scope is rejected rather than defaulted. The unavailable-registry case is the one
+/// most easily missed and the most important — a gate that cannot reach its authority has not decided
+/// that the caller is entitled, it has merely failed to ask.</para>
+///
+/// <para>See <c>docs/security/security-remediation-backlog.md</c> (SEC-005) and W9-GOV-008 criterion 2.</para>
 /// </summary>
 public static class FundProfileScopeEndpointFilters
 {
@@ -56,38 +66,97 @@ public static class FundProfileScopeEndpointFilters
             return await next(context).ConfigureAwait(false);
         }
 
+        var failClosed = (httpContext.RequestServices.GetService<TenantScopeEnforcementOptions>()
+                          ?? TenantScopeEnforcementOptions.DeploymentBoundary).IsFailClosed;
+
         var fundProfileIds = httpContext.Request.Query[FundProfileQueryKey];
-        if (fundProfileIds.Count > 0)
+        if (fundProfileIds.Count == 0)
         {
-            var guard = httpContext.RequestServices.GetService<IFundProfileTenantGuard>();
-            if (guard is not null)
+            // No fund scope was supplied, so there is none to resolve. Whether the route may be
+            // reached without one is the route's own tenant gate to decide, not this filter's.
+            return await next(context).ConfigureAwait(false);
+        }
+
+        var guard = httpContext.RequestServices.GetService<IFundProfileTenantGuard>();
+        if (guard is null)
+        {
+            // A gate that cannot reach its authority has not decided the caller is entitled; it has
+            // failed to ask. Under the boundary posture that is tolerated because the deployment is
+            // the control; under fail-closed it cannot be.
+            return failClosed
+                ? Refuse(httpContext, "Fund profile ownership cannot be verified.")
+                : await next(context).ConfigureAwait(false);
+        }
+
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
+        if (failClosed && !tenant.HasTenantScope)
+        {
+            return Refuse(httpContext, "A tenant-scoped session is required for fund-scoped reads.");
+        }
+
+        // Evaluate EVERY supplied fundProfileId value, not the joined StringValues: a polluted
+        // query such as ?fundProfileId=foreign&fundProfileId=mine would otherwise join to
+        // "foreign,mine" (which the guard fails open on) while the handler's string parameter binds
+        // to a single value — a gate bypass. Deny if any supplied scope is positively foreign.
+        foreach (var fundProfileId in fundProfileIds)
+        {
+            if (string.IsNullOrWhiteSpace(fundProfileId))
             {
-                var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
-
-                // Evaluate EVERY supplied fundProfileId value, not the joined StringValues: a polluted
-                // query such as ?fundProfileId=foreign&fundProfileId=mine would otherwise join to
-                // "foreign,mine" (which the guard fails open on) while the handler's string parameter binds
-                // to a single value — a gate bypass. Deny if any supplied scope is positively foreign.
-                foreach (var fundProfileId in fundProfileIds)
+                // A supplied-but-blank scope is an unresolvable scope, not an absent one.
+                if (failClosed)
                 {
-                    if (string.IsNullOrWhiteSpace(fundProfileId))
-                    {
-                        continue;
-                    }
-
-                    var decision = await guard
-                        .EvaluateAsync(tenant, fundProfileId, httpContext.RequestAborted)
-                        .ConfigureAwait(false);
-                    if (!decision.IsAllowed)
-                    {
-                        return Results.Problem(
-                            "The requested fund profile is not accessible to the current tenant.",
-                            statusCode: StatusCodes.Status403Forbidden);
-                    }
+                    return Refuse(httpContext, "A fund profile scope is required for this read.");
                 }
+
+                continue;
+            }
+
+            var decision = await guard
+                .EvaluateAsync(tenant, fundProfileId, httpContext.RequestAborted)
+                .ConfigureAwait(false);
+            if (!decision.IsAllowed)
+            {
+                return Refuse(httpContext, "The requested fund profile is not accessible to the current tenant.");
+            }
+
+            if (failClosed && !await IsOwnedByCallerAsync(httpContext, tenant, fundProfileId).ConfigureAwait(false))
+            {
+                // EvaluateAsync allows an unattributed fund by contract — it denies only a fund with
+                // history exclusively under other companies. Fail-closed needs positive ownership, so
+                // the registry is consulted directly: a fund nobody has claimed is refused rather than
+                // served on the strength of nobody having claimed it.
+                return Refuse(httpContext, "The requested fund profile is not attributed to the current tenant.");
             }
         }
 
         return await next(context).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Whether the authoritative registry attributes <paramref name="fundProfileId"/> to the caller.
+    /// </summary>
+    /// <remarks>
+    /// An absent registry returns false rather than true: under fail-closed, being unable to confirm
+    /// ownership is not the same as confirming it, and defaulting the other way would reopen the gap
+    /// on precisely the deployments whose tenancy wiring is incomplete.
+    /// </remarks>
+    private static async Task<bool> IsOwnedByCallerAsync(
+        HttpContext httpContext,
+        WorkstationTenantContext tenant,
+        string fundProfileId)
+    {
+        var registry = httpContext.RequestServices.GetService<IFundProfileTenancyRegistry>();
+        if (registry is null)
+        {
+            return false;
+        }
+
+        var ownership = await registry
+            .ResolveAsync(fundProfileId, httpContext.RequestAborted)
+            .ConfigureAwait(false);
+        return ownership?.IsHeldBy(tenant.TenantId) == true;
+    }
+
+    private static IResult Refuse(HttpContext httpContext, string detail)
+        => Results.Problem(detail, statusCode: StatusCodes.Status403Forbidden);
 }
