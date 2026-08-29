@@ -872,6 +872,13 @@ public static class WorkstationServiceCollectionExtensions
             new FileAccountingConfigurationStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "accounting-configuration.json")));
         services.TryAddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<FileAccountingConfigurationStore>());
+        // W9-GOV-008 criterion 3: the configuration store and the audit store are separate artifacts
+        // with no transaction to share, so the mutation and its audit append are made recoverable as a
+        // pair through a marker declared before the mutation and cleared after the append.
+        services.TryAddSingleton<IAccountingAuditPendingMarkerStore>(sp =>
+            new FileAccountingAuditPendingMarkerStore(
+                FileAccountingAuditPendingMarkerStore.MarkerPathFor(
+                    Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "accounting-configuration.json"))));
         services.TryAddSingleton<IAccountingActionAuditStore>(sp =>
             sp.GetRequiredService<IAccountingConfigurationStore>() is IAccountingActionAuditStore auditStore
                 ? auditStore
