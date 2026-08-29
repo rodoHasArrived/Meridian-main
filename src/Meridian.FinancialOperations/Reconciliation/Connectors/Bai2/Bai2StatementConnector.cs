@@ -74,6 +74,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
         string? account = null;
         var accountCurrency = groupCurrency;
         var rowNumber = 0;
+        var detailCandidates = 0;
 
         // Trailer bookkeeping. A truncated file drops its 49/98/99 trailers, so every opener must be
         // matched by its trailer and the file trailer's declared group count must agree; otherwise the
@@ -192,6 +193,19 @@ public sealed class Bai2StatementConnector : IStatementConnector
                     // Do not construct canonical rows under a shared placeholder account. The parse
                     // result is rejected below, but keeping malformed sections out of records also
                     // prevents a future validation-path change from accidentally exposing them.
+                    // Counted before the validation branches, not after them. A malformed 16 record takes
+                    // a warning branch and never reaches the record cap, so a file of them accumulated one
+                    // issue object per line without bound - and because the issues are warnings rather
+                    // than errors, the service could commit a valid closing balance while silently
+                    // dropping every transaction in the file. Bounding candidates rather than successes
+                    // refuses that document instead of half-importing it.
+                    detailCandidates++;
+                    if (detailCandidates > _limits.MaxRecords)
+                    {
+                        issues.Add(_limits.TooManyRecords());
+                        return Task.FromResult(EmptyResult(issues));
+                    }
+
                     if (account is not { } identifiedTransactionAccount)
                     {
                         hasBlankAccountId = true;

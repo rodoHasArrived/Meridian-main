@@ -399,18 +399,20 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Theory]
-    [InlineData("header\r\nrow1\rrow2\nrow3")]
-    [InlineData("a\nb\n")]
-    [InlineData("a\rb")]
-    [InlineData("")]
-    [InlineData("\n\n")]
-    public void BoundedSplitLines_MatchesTheUnboundedSplitterInsideTheBound(string content)
+    [InlineData("header\r\nrow1\rrow2\nrow3", new[] { "header", "row1", "row2", "row3" })]
+    [InlineData("a\nb\n", new[] { "a", "b", "" })]
+    [InlineData("a\rb", new[] { "a", "b" })]
+    [InlineData("", new[] { "" })]
+    [InlineData("\n\n", new[] { "", "", "" })]
+    [InlineData("\uFEFFa\nb", new[] { "a", "b" })]
+    public void BoundedSplitLines_ProducesTheExpectedLines(string content, string[] expected)
     {
-        // The bounded overload replaced two whole-content Replace passes plus a full Split. It has to
-        // reproduce them exactly for anything inside the bound - CRLF as one break, a lone CR as a
-        // break, blank lines preserved, and the trailing empty segment a terminating newline leaves.
-        CsvLineSplitter.SplitLines(content, maxLines: int.MaxValue)
-            .Should().Equal(CsvLineSplitter.SplitLines(content));
+        // This asserted equality against the parameterless overload, which now delegates to the bounded
+        // implementation - so both sides were the same code and the test would have passed on any
+        // mishandling of CRLF, a lone CR, the BOM, blank lines, or the trailing empty segment. It proved
+        // nothing. The expectations are now written out independently of the implementation.
+        CsvLineSplitter.SplitLines(content, maxLines: int.MaxValue).Should().Equal(expected);
+        CsvLineSplitter.SplitLines(content).Should().Equal(expected);
     }
 
     [Fact]
@@ -805,8 +807,44 @@ public sealed class StatementIngressLimitsTests : IDisposable
         var parsed = OfxDocumentParser.Parse(
             content, maxEntries: 4, maxDepth: 64, maxNodes: int.MaxValue, out var bound);
 
+        // The bound now fires while the tree is being built, so nothing is flattened at all. That is a
+        // stronger outcome than the earlier "one entry past the bound", which only told the caller it had
+        // overflowed after every node object already existed.
         bound.Should().Be(OfxParseBound.TooManyEntries);
-        parsed.Entries.Should().HaveCount(5, "one past the bound, so the caller distinguishes at-cap from over-cap");
+        parsed.Entries.Should().BeEmpty("the parse stops before entry flattening rather than after it");
+    }
+
+    [Fact]
+    public void BoundedOfxParse_RefusesBeforeRetainingTheWholeTree()
+    {
+        // A document of maxEntries + 1 compact entries fits under both the byte cap and the node budget,
+        // so counting entries only in CollectEntries let the whole tree be retained first. Counting them
+        // during construction is what makes the record bound actually bound allocation.
+        var content = Encoding.UTF8.GetString(BuildOfxStatement(transactionCount: 40));
+
+        var parsed = OfxDocumentParser.Parse(
+            content, maxEntries: 3, maxDepth: 64, maxNodes: int.MaxValue, out var bound);
+
+        bound.Should().Be(OfxParseBound.TooManyEntries);
+        parsed.Entries.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Bai2_MalformedDetailRows_AreBoundedRatherThanAccumulatingWarnings()
+    {
+        // Every malformed 16 record took a warning branch and returned before the record cap, so a file
+        // of them retained one issue object per line without bound. Worse, the issues are warnings: the
+        // service could commit a valid closing balance while silently dropping every transaction.
+        var connector = new Bai2StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 5, MaxLineBytes = 4096 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("malformed.bai", BuildBai2WithUnparseableAmounts(detailCount: 40)));
+
+        result.HasErrors.Should().BeTrue("an over-cap file is refused, not half-imported");
+        result.Records.Should().BeEmpty();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Issues.Count.Should().BeLessThan(40, "diagnostics are bounded, not one per malformed line");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -1165,6 +1203,26 @@ public sealed class StatementIngressLimitsTests : IDisposable
         }
 
         return Encoding.UTF8.GetBytes(builder.Append("</STMTRS>\n</STMTTRNRS>\n</BANKMSGSRSV1>\n</OFX>\n").ToString());
+    }
+
+
+    // Header and trailers identical to BuildBai2Statement, so the only difference under test is that
+    // every 16 record carries an amount that cannot parse.
+    private static byte[] BuildBai2WithUnparseableAmounts(int detailCount)
+    {
+        var builder = new StringBuilder()
+            .Append("01,CITIBANK,MERIDIAN,260531,0800,1,,,2/\n")
+            .Append("02,MERIDIAN,CITIBANK,1,260531,,USD,2/\n")
+            .Append("03,0975312468,USD,015,1234567,,/\n");
+
+        for (var index = 0; index < detailCount; index++)
+        {
+            builder.Append(
+                $"16,115,NOT-A-NUMBER,,BANKREF{index:D4},CUSTREF{index:D4},Incoming wire/\n");
+        }
+
+        builder.Append("49,1234567,3/\n98,1234567,1,3/\n99,1234567,1,5/\n");
+        return Encoding.UTF8.GetBytes(builder.ToString());
     }
 
 }
