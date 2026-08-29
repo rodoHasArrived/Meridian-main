@@ -1,9 +1,8 @@
 using System.Globalization;
 using System.Text;
 using Meridian.Contracts.Integrity;
-using Meridian.Contracts.Ledger;
 
-namespace Meridian.Ui.Shared.Services;
+namespace Meridian.Contracts.Ledger;
 
 /// <summary>
 /// One link of the accounting-action audit hash chain: the position an event was appended at, the
@@ -54,6 +53,26 @@ public sealed record AccountingAuditChainState(
     /// <summary>The last link appended, or null when the chain carries no events yet.</summary>
     public AccountingAuditChainLink? Head => Links.Count == 0 ? null : Links[^1];
 }
+
+/// <summary>Whether an anchored append had been confirmed against the snapshot.</summary>
+public enum AccountingAuditChainAnchorPhase
+{
+    /// <summary>The append was declared but the snapshot write had not yet been confirmed.</summary>
+    Pending,
+
+    /// <summary>The snapshot carrying the event was written.</summary>
+    Committed,
+}
+
+/// <summary>One record in the external head journal.</summary>
+public sealed record AccountingAuditChainAnchorRecord(
+    int SchemaVersion,
+    long Sequence,
+    string EntryHash,
+    AccountingAuditChainAnchorPhase Phase,
+    DateTimeOffset RecordedAtUtc,
+    string? PreviousAnchorHash,
+    string AnchorHash);
 
 /// <summary>Why a chain failed verification. <see cref="Valid"/> is the only passing value.</summary>
 public enum AccountingAuditChainStatus
@@ -146,8 +165,7 @@ public static class AccountingAuditChain
 
         var builder = new StringBuilder();
         Append(builder, auditEvent.AuditEventId.ToString("D", CultureInfo.InvariantCulture));
-        // Normalized to UTC so the same instant recorded behind a different offset digests alike.
-        Append(builder, auditEvent.RecordedAtUtc.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
+        Append(builder, NormalizeTimestamp(auditEvent.RecordedAtUtc));
         Append(builder, auditEvent.Actor);
         Append(builder, auditEvent.Action);
         Append(builder, auditEvent.FundProfileId);
@@ -418,6 +436,28 @@ public static class AccountingAuditChain
         long sequence,
         string detail)
         => new(status, state.Links.Count, state.PreChainEventCount, detail, sequence);
+
+    /// <summary>Ticks per microsecond — the finest resolution both retention postures preserve.</summary>
+    private const long TicksPerMicrosecond = 10;
+
+    /// <summary>
+    /// The canonical rendering of an audit timestamp: UTC, truncated to microseconds.
+    /// </summary>
+    /// <remarks>
+    /// UTC so the same instant recorded behind a different offset digests alike. Truncated because
+    /// <c>timestamptz</c> stores microseconds while <see cref="DateTimeOffset"/> carries 100ns ticks,
+    /// so a digest over the full tick would verify in memory and then fail the moment the same event
+    /// came back from PostgreSQL — reported as tampering, caused by rounding. Truncating to the
+    /// coarser of the two resolutions is what makes one digest scheme usable in both postures.
+    /// </remarks>
+    private static string NormalizeTimestamp(DateTimeOffset value)
+    {
+        var utc = value.ToUniversalTime();
+        var truncated = new DateTimeOffset(
+            utc.Ticks - (utc.Ticks % TicksPerMicrosecond),
+            TimeSpan.Zero);
+        return truncated.ToString("O", CultureInfo.InvariantCulture);
+    }
 
     // Length-prefixed so no combination of field values can be re-partitioned into a different
     // event that digests the same, and so null is distinct from empty.

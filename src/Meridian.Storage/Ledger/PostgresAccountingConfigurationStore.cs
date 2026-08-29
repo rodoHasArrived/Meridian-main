@@ -1,3 +1,5 @@
+using System.Data;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Ledger;
@@ -15,6 +17,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
+
+    private string HeadTable => Qualified("accounting_action_audit_chain_head");
 
     public async Task<AccountingConfigurationWorkspaceDto?> GetAsync(
         string fundProfileId,
@@ -103,12 +107,39 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Appends an audit event and extends the tamper-evident chain over it (W9-GOV-008 criterion 3).
+    /// </summary>
+    /// <remarks>
+    /// <para>The head is a locked row advanced in the same transaction as the insert, following
+    /// <c>PostgresReportingArtifactAuditStore</c> rather than inventing a second scheme: the digest
+    /// shape is the one <see cref="AccountingAuditChain"/> defines, so the file posture and this one
+    /// carry identical tamper-evidence and an operator does not have to learn two models depending
+    /// on which store a deployment happens to have configured.</para>
+    ///
+    /// <para>Fails closed. The head is verified against the final retained event before the append,
+    /// so a mutated, reordered or truncated history cannot acquire valid-looking successors — and
+    /// because the verification and the advance share one transaction, two concurrent appenders
+    /// cannot both chain off the same predecessor and fork the chain.</para>
+    /// </remarks>
+    /// <exception cref="AccountingAuditChainIntegrityException">The retained chain does not verify.</exception>
     public async Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(auditEvent);
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted, ct)
+            .ConfigureAwait(false);
+
+        var head = await LockAndReadChainHeadAsync(connection, transaction, ct).ConfigureAwait(false);
+        await VerifyChainHeadAsync(connection, transaction, head, ct).ConfigureAwait(false);
+
+        var payloadHash = AccountingAuditChain.ComputePayloadHash(auditEvent);
+        var entryHash = AccountingAuditChain.ComputeEntryHash(head.NextSequence, head.LastHash, payloadHash);
+
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             insert into {Qualified("accounting_action_audit_events")} (
@@ -125,7 +156,11 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 evidence_links,
                 tenant_id,
                 company_id,
-                report_group_principal_ids)
+                report_group_principal_ids,
+                chain_sequence,
+                payload_hash,
+                previous_hash,
+                entry_hash)
             values (
                 @audit_event_id,
                 @recorded_at_utc,
@@ -140,7 +175,11 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 @evidence_links,
                 @tenant_id,
                 @company_id,
-                @report_group_principal_ids);
+                @report_group_principal_ids,
+                @chain_sequence,
+                @payload_hash,
+                @previous_hash,
+                @entry_hash);
             """;
         command.Parameters.AddWithValue("audit_event_id", auditEvent.AuditEventId);
         command.Parameters.AddWithValue("recorded_at_utc", auditEvent.RecordedAtUtc.UtcDateTime);
@@ -156,8 +195,196 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         AddTextOrNull(command, "tenant_id", auditEvent.TenantId);
         AddTextOrNull(command, "company_id", auditEvent.CompanyId);
         AddJson(command, "report_group_principal_ids", auditEvent.ReportGroupPrincipalIds ?? []);
+        command.Parameters.AddWithValue("chain_sequence", NpgsqlDbType.Bigint, head.NextSequence);
+        command.Parameters.AddWithValue("payload_hash", NpgsqlDbType.Text, payloadHash);
+        command.Parameters.AddWithValue(
+            "previous_hash", NpgsqlDbType.Text, (object?)head.LastHash ?? DBNull.Value);
+        command.Parameters.AddWithValue("entry_hash", NpgsqlDbType.Text, entryHash);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+
+        await AdvanceChainHeadAsync(connection, transaction, head.NextSequence, entryHash, ct)
+            .ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
+
+    private sealed record AccountingAuditChainHead(
+        long NextSequence,
+        string? LastHash,
+        long GenesisSequence,
+        long PreChainEventCount);
+
+    private async Task<AccountingAuditChainHead> LockAndReadChainHeadAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select next_sequence,
+                   last_hash,
+                   genesis_sequence,
+                   pre_chain_event_count
+            from {HeadTable}
+            where chain_id = 1
+            for update;
+            """;
+        await using var reader = await command
+            .ExecuteReaderAsync(CommandBehavior.SingleRow, ct)
+            .ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            // A missing head is not an empty chain: it means the row that records where the chain
+            // starts is gone, so nothing can say which retained events were ever covered.
+            throw new AccountingAuditChainIntegrityException(new AccountingAuditChainVerification(
+                AccountingAuditChainStatus.AnchorMissing,
+                LinksChecked: 0,
+                PreChainEventCount: 0,
+                "The accounting audit chain head row is missing; append failed closed."));
+        }
+
+        return new AccountingAuditChainHead(
+            reader.GetInt64(0),
+            reader.IsDBNull(1) ? null : reader.GetString(1),
+            reader.GetInt64(2),
+            reader.GetInt64(3));
+    }
+
+    /// <summary>
+    /// Verifies the head against the final chained event before building on it.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately checks both directions. A head that claims events which are not there is a
+    /// truncated tail; chained events past the head are a forked or rewound chain. Either read as
+    /// "fine" if only one direction were checked.
+    /// </remarks>
+    private async Task VerifyChainHeadAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        AccountingAuditChainHead head,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select chain_sequence,
+                   payload_hash,
+                   previous_hash,
+                   entry_hash
+            from {Qualified("accounting_action_audit_events")}
+            where chain_sequence is not null
+            order by chain_sequence desc
+            limit 1;
+            """;
+
+        await using var reader = await command
+            .ExecuteReaderAsync(CommandBehavior.SingleRow, ct)
+            .ConfigureAwait(false);
+        var hasChainedEvent = await reader.ReadAsync(ct).ConfigureAwait(false);
+
+        if (head.NextSequence == head.GenesisSequence)
+        {
+            if (head.LastHash is not null)
+            {
+                throw ChainFailure(
+                    AccountingAuditChainStatus.BrokenLink, head,
+                    "An empty accounting audit chain carries a predecessor hash.");
+            }
+
+            if (hasChainedEvent)
+            {
+                throw ChainFailure(
+                    AccountingAuditChainStatus.AnchorMismatch, head,
+                    "Chained accounting audit events exist while the chain head records none.");
+            }
+
+            return;
+        }
+
+        if (!hasChainedEvent)
+        {
+            throw ChainFailure(
+                AccountingAuditChainStatus.MissingEvent, head,
+                "The accounting audit chain head points past every retained chained event.");
+        }
+
+        var sequence = reader.GetInt64(0);
+        var payloadHash = reader.GetString(1);
+        var previousHash = reader.IsDBNull(2) ? null : reader.GetString(2);
+        var retainedHash = reader.GetString(3);
+
+        if (sequence != head.NextSequence - 1)
+        {
+            throw ChainFailure(
+                AccountingAuditChainStatus.AnchorMismatch, head,
+                $"The chain head expects sequence {(head.NextSequence - 1).ToString(CultureInfo.InvariantCulture)} "
+                + $"but the final retained event is {sequence.ToString(CultureInfo.InvariantCulture)}.");
+        }
+
+        if (head.LastHash is null)
+        {
+            throw ChainFailure(
+                AccountingAuditChainStatus.BrokenLink, head,
+                "A non-empty accounting audit chain is missing its predecessor hash.");
+        }
+
+        var computed = AccountingAuditChain.ComputeEntryHash(sequence, previousHash, payloadHash);
+        if (!string.Equals(retainedHash, head.LastHash, StringComparison.Ordinal)
+            || !string.Equals(retainedHash, computed, StringComparison.Ordinal))
+        {
+            throw ChainFailure(
+                AccountingAuditChainStatus.BrokenLink, head,
+                "The accounting audit chain head or its final event failed hash verification.");
+        }
+    }
+
+    private async Task AdvanceChainHeadAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        long sequence,
+        string entryHash,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+
+        // Guarded by the sequence this append read under the row lock: if anything advanced the head
+        // in between, this updates nothing and the append fails rather than forking the chain.
+        command.CommandText =
+            $"""
+            update {HeadTable}
+            set next_sequence = @next_sequence,
+                last_hash = @last_hash
+            where chain_id = 1
+              and next_sequence = @expected_sequence;
+            """;
+        command.Parameters.AddWithValue("next_sequence", NpgsqlDbType.Bigint, sequence + 1);
+        command.Parameters.AddWithValue("last_hash", NpgsqlDbType.Text, entryHash);
+        command.Parameters.AddWithValue("expected_sequence", NpgsqlDbType.Bigint, sequence);
+
+        if (await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) != 1)
+        {
+            throw new AccountingAuditChainIntegrityException(new AccountingAuditChainVerification(
+                AccountingAuditChainStatus.AnchorMismatch,
+                LinksChecked: 0,
+                PreChainEventCount: 0,
+                "The accounting audit chain head could not be advanced atomically.",
+                sequence));
+        }
+    }
+
+    private static AccountingAuditChainIntegrityException ChainFailure(
+        AccountingAuditChainStatus status,
+        AccountingAuditChainHead head,
+        string detail)
+        => new(new AccountingAuditChainVerification(
+            status,
+            LinksChecked: (int)Math.Min(int.MaxValue, Math.Max(0, head.NextSequence - head.GenesisSequence)),
+            PreChainEventCount: (int)Math.Min(int.MaxValue, head.PreChainEventCount),
+            detail,
+            head.NextSequence));
 
     public async Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
         string? fundProfileId = null,

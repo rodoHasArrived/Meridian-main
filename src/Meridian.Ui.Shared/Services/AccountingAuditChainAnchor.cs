@@ -2,29 +2,10 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Ledger;
 using Meridian.Storage.Archival;
 
 namespace Meridian.Ui.Shared.Services;
-
-/// <summary>Whether an anchored append had been confirmed against the snapshot.</summary>
-public enum AccountingAuditChainAnchorPhase
-{
-    /// <summary>The append was declared but the snapshot write had not yet been confirmed.</summary>
-    Pending,
-
-    /// <summary>The snapshot carrying the event was written.</summary>
-    Committed,
-}
-
-/// <summary>One record in the external head journal.</summary>
-public sealed record AccountingAuditChainAnchorRecord(
-    int SchemaVersion,
-    long Sequence,
-    string EntryHash,
-    AccountingAuditChainAnchorPhase Phase,
-    DateTimeOffset RecordedAtUtc,
-    string? PreviousAnchorHash,
-    string AnchorHash);
 
 /// <summary>Raised when the external head journal is unreadable or internally inconsistent.</summary>
 public sealed class AccountingAuditChainAnchorException : Exception

@@ -258,6 +258,46 @@ public sealed class FileAccountingAuditChainTests : IDisposable
     }
 
     [Fact]
+    public void ComputePayloadHash_IsStableAcrossTheResolutionPostgresRetains()
+    {
+        // timestamptz stores microseconds; DateTimeOffset carries 100ns ticks. A digest over the full
+        // tick would verify in memory and then fail the moment the same event came back from
+        // PostgreSQL — reported as tampering, caused by rounding. One digest scheme has to survive
+        // both postures, so it is taken at the coarser resolution.
+        var recordedAt = new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero).AddTicks(1234567);
+        var withSubMicrosecondTicks = AuditEvent("close-period") with { RecordedAtUtc = recordedAt };
+        var asPostgresWouldReturnIt = withSubMicrosecondTicks with
+        {
+            RecordedAtUtc = new DateTimeOffset(recordedAt.Ticks - (recordedAt.Ticks % 10), TimeSpan.Zero),
+        };
+
+        AccountingAuditChain.ComputePayloadHash(withSubMicrosecondTicks).Should()
+            .Be(AccountingAuditChain.ComputePayloadHash(asPostgresWouldReturnIt));
+    }
+
+    [Fact]
+    public void ComputePayloadHash_StillDistinguishesInstantsPostgresCanTellApart()
+    {
+        var recordedAt = new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero);
+        var earlier = AuditEvent("close-period") with { RecordedAtUtc = recordedAt };
+        var oneMicrosecondLater = earlier with { RecordedAtUtc = recordedAt.AddTicks(10) };
+
+        AccountingAuditChain.ComputePayloadHash(earlier).Should()
+            .NotBe(AccountingAuditChain.ComputePayloadHash(oneMicrosecondLater));
+    }
+
+    [Fact]
+    public void ComputePayloadHash_NormalizesOffsetToUtc()
+    {
+        var instant = new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero);
+        var asUtc = AuditEvent("close-period") with { RecordedAtUtc = instant };
+        var sameInstantOtherOffset = asUtc with { RecordedAtUtc = instant.ToOffset(TimeSpan.FromHours(5)) };
+
+        AccountingAuditChain.ComputePayloadHash(asUtc).Should()
+            .Be(AccountingAuditChain.ComputePayloadHash(sameInstantOtherOffset));
+    }
+
+    [Fact]
     public async Task Anchor_RefusesAHeadThatDoesNotAdvance()
     {
         var anchor = new FileAccountingAuditChainAnchor(Path.Combine(_root, "head.log"));
