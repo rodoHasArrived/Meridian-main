@@ -30,20 +30,7 @@ public sealed class SecurityMasterPreferredEquityEndpointsTests
         var service = Substitute.For<ISecurityMasterService>();
         var request = BuildRequest();
         queryService.GetPreferredEquityTermsAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(new PreferredEquityTermsDto(
-                SecurityId: securityId,
-                Classification: "Preferred",
-                DividendRate: 5.75m,
-                DividendType: "Fixed",
-                IsCumulative: false,
-                RedemptionPrice: 25.00m,
-                RedemptionDate: null,
-                CallableDate: null,
-                ParticipatesInCommonDividends: false,
-                AdditionalDividendThreshold: null,
-                LiquidationPreferenceKind: "Pari",
-                LiquidationPreferenceMultiple: null,
-                Version: request.ExpectedVersion));
+            .Returns(CreatePreferredTerms(securityId, request.ExpectedVersion));
         service.AmendPreferredEquityTermsAsync(securityId, Arg.Any<AmendPreferredEquityTermsRequest>(), Arg.Any<CancellationToken>())
             .Returns(CreateDetail(securityId));
 
@@ -65,8 +52,40 @@ public sealed class SecurityMasterPreferredEquityEndpointsTests
             Arg.Is<AmendPreferredEquityTermsRequest>(candidate =>
                 candidate.ExpectedVersion == request.ExpectedVersion &&
                 candidate.DividendType == "Cumulative" &&
-                candidate.LiquidationPreferenceKind == "Senior"),
+                candidate.LiquidationPreferenceKind == "Senior" &&
+                // The audit actor comes from the session, not the body: the request said "codex".
+                candidate.UpdatedBy == SignedInOperator &&
+                // SourceSystem identifies the upstream source for conflict precedence, so it is
+                // left as the caller declared it rather than derived from the actor.
+                candidate.SourceSystem == "test" &&
+                candidate.Reason == "endpoint patch"),
             Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>
+    /// A mutation whose author cannot be established is refused rather than recorded against
+    /// whatever the request body claimed.
+    /// </summary>
+    [Fact]
+    public async Task PatchPreferredTermsRoute_IsRefused_WhenNoAuthenticatedActorCanBeResolved()
+    {
+        var securityId = Guid.NewGuid();
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        var service = Substitute.For<ISecurityMasterService>();
+        queryService.GetPreferredEquityTermsAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(CreatePreferredTerms(securityId, BuildRequest().ExpectedVersion));
+
+        await using var app = await CreateAppAsync(queryService, service, signedInAs: null);
+        var client = app.GetTestClient();
+
+        using var response = await client.SendAsync(
+            new HttpRequestMessage(HttpMethod.Patch, $"/api/security-master/equities/{securityId}/preferred-terms")
+            {
+                Content = CreateJsonContent(BuildRequest())
+            });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        await service.DidNotReceiveWithAnyArgs().AmendPreferredEquityTermsAsync(default, default!, default);
     }
 
     [Fact]
@@ -165,10 +184,13 @@ public sealed class SecurityMasterPreferredEquityEndpointsTests
         await queryService.DidNotReceiveWithAnyArgs().GetPreferredEquityTermsAsync(default, default);
     }
 
+    private const string SignedInOperator = "casey.doyle";
+
     private static async Task<WebApplication> CreateAppAsync(
         ISecurityMasterQueryService queryService,
         ISecurityMasterService service,
-        bool requireGovernedTermAmendments = false)
+        bool requireGovernedTermAmendments = false,
+        string? signedInAs = SignedInOperator)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -191,6 +213,15 @@ public sealed class SecurityMasterPreferredEquityEndpointsTests
         app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ModifySecurityMaster;
+
+            // Mutations stamp their audit actor from the session rather than the request body, so a
+            // request with permissions but no identifiable actor is refused. Establish one, as
+            // LoginSessionMiddleware would; signedInAs: null models the unauthenticated case.
+            if (signedInAs is not null)
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = signedInAs;
+            }
+
             await next();
         });
         app.MapSecurityMasterEndpoints(new JsonSerializerOptions
@@ -203,6 +234,22 @@ public sealed class SecurityMasterPreferredEquityEndpointsTests
     }
 
     private static readonly JsonSerializerOptions WebJson = new(JsonSerializerDefaults.Web);
+
+    private static PreferredEquityTermsDto CreatePreferredTerms(Guid securityId, long version)
+        => new(
+            SecurityId: securityId,
+            Classification: "Preferred",
+            DividendRate: 5.75m,
+            DividendType: "Fixed",
+            IsCumulative: false,
+            RedemptionPrice: 25.00m,
+            RedemptionDate: null,
+            CallableDate: null,
+            ParticipatesInCommonDividends: false,
+            AdditionalDividendThreshold: null,
+            LiquidationPreferenceKind: "Pari",
+            LiquidationPreferenceMultiple: null,
+            Version: version);
 
     private static JsonContent CreateJsonContent(AmendPreferredEquityTermsRequest request)
         => JsonContent.Create(request, options: WebJson);
