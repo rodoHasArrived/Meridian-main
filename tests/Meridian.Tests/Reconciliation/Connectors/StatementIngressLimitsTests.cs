@@ -4,6 +4,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
+using Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Bai2;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Camt;
 using Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex;
@@ -1183,6 +1184,106 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Bai2_OneDiagnosticPastTheBudget_IsStillRefused()
+    {
+        // The in-loop guard sits at the candidate charge, which runs before that row's own warning, so a
+        // file whose last row takes the count to MaxDiagnostics + 1 leaves the loop with no later
+        // iteration to catch it. Eleven malformed details against a budget of ten is exactly that case:
+        // without the post-loop check this returns eleven warnings and a valid balance, and the import
+        // service accepts it because it bounds retained rows and does not count issues.
+        var connector = new Bai2StatementConnector(
+            TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 1000,
+                MaxLineBytes = 4096,
+                MaxDiagnostics = 10
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("eleven-bad.bai", BuildBai2WithMalformedTransactions(count: 11)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyDiagnosticsCode);
+    }
+
+    [Fact]
+    public async Task Bai2_ExactlyTheDiagnosticBudget_IsAccepted()
+    {
+        // The other side of that boundary, and the guard against fixing the off-by-one by refusing one
+        // diagnostic too early: ten malformed details against a budget of ten must still import the
+        // valid closing balance.
+        var connector = new Bai2StatementConnector(
+            TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 1000,
+                MaxLineBytes = 4096,
+                MaxDiagnostics = 10
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("ten-bad.bai", BuildBai2WithMalformedTransactions(count: 10)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyDiagnosticsCode);
+        result.Records.Should().ContainSingle().Which.Kind.Should().Be(StatementRecordKind.CashBalance);
+    }
+
+    [Fact]
+    public async Task Alpaca_OverTheByteCap_IsRefusedBeforeDeserializing()
+    {
+        // This connector carried no ingress limits at all, so a direct in-process caller could hand it a
+        // document of any size and JsonSerializer.Deserialize would build the whole object graph.
+        var connector = new AlpacaActivityStatementConnector(
+            Catalog(), [], [], TightLimits with { MaxDocumentBytes = 64, MaxRecords = 1000 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("big.json", BuildAlpacaSnapshot(cashTransactionCount: 5)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.DocumentTooLargeCode);
+    }
+
+    [Fact]
+    public async Task Alpaca_ManyUnmappedActivityCodes_AreRefusedByTheDiagnosticBudget()
+    {
+        // ResolveActivity dedupes UNKNOWN_ACTIVITY_CODE per distinct code, so distinct transaction types
+        // defeat the dedupe and retain one warning each with nothing bounding them.
+        var connector = new AlpacaActivityStatementConnector(
+            Catalog(),
+            [],
+            [],
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxDiagnostics = 10 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("many-codes.json", BuildAlpacaSnapshot(cashTransactionCount: 40)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyDiagnosticsCode);
+    }
+
+    [Fact]
+    public async Task Alpaca_AFewUnmappedActivityCodes_AreNotRefused()
+    {
+        // The control at the same budget: a handful of unmapped codes is an ordinary mapping-profile gap
+        // the operator closes from these warnings, and the rows must still import. The INVALID_SNAPSHOT
+        // assertion is deliberate - it makes a malformed fixture report itself rather than surfacing as
+        // an empty record set that looks like a bound firing.
+        var connector = new AlpacaActivityStatementConnector(
+            Catalog(),
+            [],
+            [],
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxDiagnostics = 10 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("few-codes.json", BuildAlpacaSnapshot(cashTransactionCount: 3)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == "INVALID_SNAPSHOT");
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyDiagnosticsCode);
+        result.Records.Should().NotBeEmpty();
+    }
+
+    [Fact]
     public async Task Ofx_OverTheByteCap_IsRefusedBeforeDecoding()
     {
         // camt.053, BAI2 and IB Flex all refuse an oversize document at the top of ParseAsync; OFX
@@ -1220,8 +1321,10 @@ public sealed class StatementIngressLimitsTests : IDisposable
         // The same omission as OFX, in the sibling that shares its shape.
         var connector = new CsvStatementConnector(
             Catalog(),
-            TightLimits with { MaxDocumentBytes = 64, MaxRecords = 1000 });
-        var csv = "date,amount,description\n2026-05-01,10.00,one\n2026-05-02,20.00,two\n2026-05-03,30.00,three\n";
+            TightLimits with { MaxDocumentBytes = 64, MaxRecords = 1000, MaxLineBytes = 4096 });
+        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01\n"
+            + "ACC-1,AAPL,5,101.00,-505.00,trade,2026-05-02\n";
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("big.csv", Encoding.UTF8.GetBytes(csv)));
@@ -1234,10 +1337,17 @@ public sealed class StatementIngressLimitsTests : IDisposable
     public async Task Csv_UnderTheByteCap_StillParses()
     {
         // The control for the CSV half.
+        // The canonical CSV profile marks account, symbol, quantity, price, cashAmount, activityType and
+        // tradeDate all Required, so a header of only date/amount/description maps no row at all. The
+        // blank-line test upstream uses that shorter header and never notices, because it refuses during
+        // line discovery before any row is mapped - so its fixture cannot be borrowed for a control that
+        // has to produce records.
         var connector = new CsvStatementConnector(
             Catalog(),
-            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000 });
-        var csv = "date,amount,description\n2026-05-01,10.00,one\n2026-05-02,20.00,two\n";
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxLineBytes = 4096 });
+        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01\n"
+            + "ACC-1,AAPL,5,101.00,-505.00,trade,2026-05-02\n";
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("ok.csv", Encoding.UTF8.GetBytes(csv)));
@@ -1538,6 +1648,34 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
     // Valid BAI2 envelope carrying record types the switch does not recognize, which is what makes them
     // interesting: they never charge a balance or detail candidate.
+    private static byte[] BuildAlpacaSnapshot(int cashTransactionCount)
+    {
+        // AlpacaStatementSnapshotJsonContext uses JsonSerializerDefaults.Web, so the property names are
+        // camelCase. Every transaction type is distinct, so ResolveActivity's per-code dedupe cannot
+        // collapse the warnings into one.
+        var builder = new StringBuilder()
+            .Append("{\"providerId\":\"alpaca\",\"accountId\":\"ACC-1\",")
+            .Append("\"retrievedAt\":\"2026-06-30T00:00:00+00:00\",")
+            .Append("\"activity\":{\"providerId\":\"alpaca\",\"accountId\":\"ACC-1\",")
+            .Append("\"retrievedAt\":\"2026-06-30T00:00:00+00:00\",")
+            .Append("\"orders\":[],\"fills\":[],\"cashTransactions\":[");
+
+        for (var index = 0; index < cashTransactionCount; index++)
+        {
+            if (index > 0)
+            {
+                builder.Append(',');
+            }
+
+            builder
+                .Append($"{{\"transactionId\":\"T{index:D6}\",\"transactionType\":\"UNMAPPED-{index:D6}\",")
+                .Append("\"amount\":10.00,\"currency\":\"USD\",")
+                .Append("\"postedAt\":\"2026-06-01T00:00:00+00:00\"}");
+        }
+
+        return Encoding.UTF8.GetBytes(builder.Append("]},\"portfolio\":null}").ToString());
+    }
+
     private static byte[] BuildBai2WithMalformedTransactions(int count)
     {
         // Each 16 detail carries an unparseable amount, so it takes the BAI2_BAD_AMOUNT warning branch:

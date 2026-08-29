@@ -384,6 +384,18 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 fingerprint));
         }
 
+        // The in-loop guard sits at the candidate charge, which runs before that row's own diagnostic, so
+        // a file whose LAST row takes the count to MaxDiagnostics + 1 ends the loop with no later
+        // iteration to catch it - and that result would be returned and accepted, because the import
+        // service bounds retained rows and does not count issues. The two checks do different jobs: the
+        // in-loop one stops the parser walking a whole hostile file, and this one guarantees the returned
+        // result never carries an over-budget per-row diagnostic population.
+        if (issues.Count > _limits.MaxDiagnostics)
+        {
+            issues.Add(_limits.TooManyDiagnostics());
+            return Task.FromResult(EmptyResult(issues));
+        }
+
         // A BAI2 file can carry several 03 account-identifier records, but a statement run reconciles a
         // single account and the matcher normalizes every imported row to the run's one external account.
         // Committing a multi-account file would compare (and coincidentally match) one account's balances

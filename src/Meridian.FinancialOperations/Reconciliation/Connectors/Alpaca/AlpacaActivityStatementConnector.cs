@@ -20,15 +20,18 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
     private const string ProviderId = "alpaca";
 
     private readonly StatementMappingProfileCatalog _catalog;
+    private readonly StatementIngressLimits _limits;
     private readonly IBrokerageActivitySync? _activitySync;
     private readonly IBrokeragePortfolioSync? _portfolioSync;
 
     public AlpacaActivityStatementConnector(
         StatementMappingProfileCatalog catalog,
         IEnumerable<IBrokerageActivitySync> activitySyncs,
-        IEnumerable<IBrokeragePortfolioSync> portfolioSyncs)
+        IEnumerable<IBrokeragePortfolioSync> portfolioSyncs,
+        StatementIngressLimits? limits = null)
     {
         _catalog = catalog;
+        _limits = limits ?? StatementIngressLimits.Default;
         _activitySync = activitySyncs.FirstOrDefault(static sync =>
             string.Equals(sync.ProviderId, ProviderId, StringComparison.OrdinalIgnoreCase));
         _portfolioSync = portfolioSyncs.FirstOrDefault(static sync =>
@@ -125,6 +128,17 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
     public Task<StatementParseResult> ParseAsync(StatementSourceDocument document, CancellationToken ct = default)
     {
         var issues = new List<StatementParseIssue>();
+
+        // Refuse before deserializing, as every other statement connector does. This one carried no
+        // ingress limits at all: the Deserialize below builds the whole snapshot object graph from a
+        // caller-supplied document, so a direct in-process caller - one that never passes through
+        // StatementImportService, which does check the cap - could size the parse itself.
+        if (document.Content.Length > _limits.MaxDocumentBytes)
+        {
+            issues.Add(_limits.DocumentTooLarge(document.Content.Length));
+            return Task.FromResult(EmptyResult(document.MappingProfileId, issues));
+        }
+
         AlpacaStatementSnapshot? snapshot = null;
         try
         {
@@ -227,6 +241,14 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             {
                 rowNumber++;
                 var canonicalActivity = ResolveActivity(cash.TransactionType, activityCodeMap, profile, rowNumber, issues, reportedUnknownCodes);
+
+                // Checked after ResolveActivity, which is what appends the warning: checking before it
+                // would leave the last row's diagnostic uncounted, with no later iteration to catch it.
+                if (issues.Count > _limits.MaxDiagnostics)
+                {
+                    issues.Add(_limits.TooManyDiagnostics());
+                    return EmptyResult(document.MappingProfileId, issues);
+                }
                 records.Add(new StatementCanonicalRecord(
                     StatementRecordKindResolver.Resolve(canonicalActivity),
                     account,
@@ -251,6 +273,14 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
 
                 rowNumber++;
                 var canonicalActivity = ResolveActivity(corporateAction.EventType, activityCodeMap, profile, rowNumber, issues, reportedUnknownCodes);
+
+                // Checked after ResolveActivity, which is what appends the warning: checking before it
+                // would leave the last row's diagnostic uncounted, with no later iteration to catch it.
+                if (issues.Count > _limits.MaxDiagnostics)
+                {
+                    issues.Add(_limits.TooManyDiagnostics());
+                    return EmptyResult(document.MappingProfileId, issues);
+                }
                 var kind = StatementRecordKindResolver.Resolve(canonicalActivity);
                 records.Add(new StatementCanonicalRecord(
                     kind,
