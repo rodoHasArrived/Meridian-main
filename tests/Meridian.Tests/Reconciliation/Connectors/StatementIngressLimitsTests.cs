@@ -812,7 +812,7 @@ public sealed class StatementIngressLimitsTests : IDisposable
         // evidence shape rather than the claim under test, which is that the anchors are retained rows
         // the old Records.Count cap could not see.
         result.TotalRetainedRows.Should().BeGreaterThan(result.Records.Count);
-        result.TotalRetainedRows.Should().BeGreaterOrEqualTo(result.Records.Count + result.AccountSnapshots!.Count);
+        result.TotalRetainedRows.Should().BeGreaterThanOrEqualTo(result.Records.Count + result.AccountSnapshots!.Count);
     }
 
     // ---------------------------------------------------------------------------------------------
