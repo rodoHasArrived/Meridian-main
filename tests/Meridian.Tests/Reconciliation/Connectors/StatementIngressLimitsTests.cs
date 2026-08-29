@@ -343,6 +343,56 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Camt_AttributeHeavyEntry_IsCountedAgainstTheSubtreeBudget()
+    {
+        // The node budget counted one node per reader Read(), and attributes are not their own Read().
+        // An element carrying a large number of them therefore passed the budget on a single node while
+        // still allocating an XAttribute and a name-table entry for each.
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 4 * 1024 * 1024, MaxNestingDepth = 64, MaxSubtreeNodes = 500 });
+
+        var attributes = new StringBuilder("<Bulk");
+        for (var index = 0; index < 2_000; index++)
+        {
+            attributes.Append($" a{index}=\"v\"");
+        }
+
+        attributes.Append("/>");
+
+        var result = await connector.ParseAsync(new StatementSourceDocument(
+            "attrs.xml", BuildCamtStatement(entryCount: 1, extraEntryXml: attributes.ToString())));
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.SubtreeTooLargeCode);
+    }
+
+    [Fact]
+    public async Task Camt_DuplicateAccountElements_AreRefusedRatherThanRestatingIdentity()
+    {
+        // Pass one keeps the first Acct and the element-axis traversal this replaced took the first too,
+        // but pass two was overwriting with the last. A statement whose first account is unauthorized and
+        // whose second matches the requested account would then emit every row under the authorized
+        // identity and satisfy the import service's account-authority check.
+        var connector = new Camt053StatementConnector();
+        var payload = Encoding.UTF8.GetBytes(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:camt.053.001.02\"><BkToCstmrStmt><Stmt>" +
+            "<Id>STMT-1</Id>" +
+            "<Acct><Id><IBAN>GB33BUKB20201555555555</IBAN></Id><Ccy>EUR</Ccy></Acct>" +
+            "<Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>" +
+            "<Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy=\"EUR\">100.00</Amt>" +
+            "<CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-05-31</Dt></Dt></Bal>" +
+            "</Stmt></BkToCstmrStmt></Document>");
+
+        var result = await connector.ParseAsync(new StatementSourceDocument("two-accounts.xml", payload));
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("no row may be emitted under either candidate identity");
+        result.Issues.Should().Contain(issue => issue.Code == "CAMT_DUPLICATE_ACCOUNT");
+    }
+
+    [Fact]
     public async Task Camt_MalformedXml_StillReportsMalformedRatherThanThrowing()
     {
         var connector = new Camt053StatementConnector();

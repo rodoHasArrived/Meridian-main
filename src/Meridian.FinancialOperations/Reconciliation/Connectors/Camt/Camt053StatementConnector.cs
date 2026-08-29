@@ -111,6 +111,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
         var records = new List<StatementCanonicalRecord>();
         var rowNumber = 0;
         string? account = null;
+        var accountSeen = false;
         var accountCurrency = "USD";
 
         try
@@ -172,6 +173,21 @@ public sealed class Camt053StatementConnector : IStatementConnector
                                 return Task.FromResult(EmptyResult(issues));
                             }
 
+                            // camt.053 allows one Acct per Stmt. Pass one deliberately keeps the first, and
+                            // the element-axis traversal this replaced took the first too, so overwriting here
+                            // let a second Acct silently restate the statement's identity: a document whose
+                            // first account is unauthorized and whose second matches the requested account
+                            // would emit every row under the authorized identity and satisfy the import
+                            // service's account-authority check. Refuse the document instead of picking.
+                            if (accountSeen)
+                            {
+                                issues.Add(StatementParseIssue.Error(
+                                    "CAMT_DUPLICATE_ACCOUNT",
+                                    "The camt.053 statement carries more than one Acct element; a statement identifies exactly one account. Repair the file so the statement carries a single account id before importing."));
+                                return Task.FromResult(EmptyResult(issues));
+                            }
+
+                            accountSeen = true;
                             account = ResolveAccount(accountElement);
                             if (string.IsNullOrWhiteSpace(account))
                             {
@@ -477,6 +493,17 @@ public sealed class Camt053StatementConnector : IStatementConnector
                         var current = new XElement(XName.Get(subtree.LocalName, subtree.NamespaceURI));
                         if (subtree.HasAttributes)
                         {
+                            // Attributes are not their own Read() and so were not counted above, but each one
+                            // becomes an XAttribute and a name-table entry. An element carrying hundreds of
+                            // thousands of them would otherwise pass the budget on a single node. Charge them
+                            // before the copy, so an over-budget element is refused rather than allocated.
+                            nodes += subtree.AttributeCount;
+                            if (nodes > _limits.MaxSubtreeNodes)
+                            {
+                                refusal = _limits.SubtreeTooLarge();
+                                return false;
+                            }
+
                             for (var index = 0; index < subtree.AttributeCount; index++)
                             {
                                 subtree.MoveToAttribute(index);
