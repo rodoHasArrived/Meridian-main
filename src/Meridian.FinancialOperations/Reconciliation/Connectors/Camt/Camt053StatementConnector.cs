@@ -154,7 +154,12 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 // of uniquely named shallow elements outside the statement are read by both passes, and
                 // the reader's name table retains every distinct name string even though no XElement is
                 // built. This is the bound that was declared, documented, and never wired.
-                parseNodes++;
+                // Attributes are never their own Read(), so an element carrying hundreds of thousands of
+                // them advances this budget by exactly one. TryReadBoundedSubtree already charges them for
+                // the subtree it copies, but the walk that decides which subtrees to copy is the one that
+                // reads every element in the document - including all the ones it never materializes. Left
+                // uncharged here, the attribute axis stays unbounded on the majority of the document.
+                parseNodes += 1 + reader.AttributeCount;
                 if (parseNodes > _limits.MaxParseNodes)
                 {
                     issues.Add(_limits.TooManyNodes());
@@ -468,7 +473,12 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 // of uniquely named shallow elements outside the statement are read by both passes, and
                 // the reader's name table retains every distinct name string even though no XElement is
                 // built. This is the bound that was declared, documented, and never wired.
-                parseNodes++;
+                // Attributes are never their own Read(), so an element carrying hundreds of thousands of
+                // them advances this budget by exactly one. TryReadBoundedSubtree already charges them for
+                // the subtree it copies, but the walk that decides which subtrees to copy is the one that
+                // reads every element in the document - including all the ones it never materializes. Left
+                // uncharged here, the attribute axis stays unbounded on the majority of the document.
+                parseNodes += 1 + reader.AttributeCount;
                 if (parseNodes > _limits.MaxParseNodes)
                 {
                     issue = _limits.TooManyNodes();

@@ -922,6 +922,56 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Camt_ManyAttributesOutsideTheStatement_AreChargedToTheNodeBudget()
+    {
+        // Read() visits element nodes, never their attributes. TryReadBoundedSubtree charges attributes
+        // for the Acct, Bal, and Ntry subtrees it materializes, but those are the only elements handed to
+        // it - every other element in the document is read by the outer walk alone, which charged exactly
+        // one node per Read(). So an attribute flood parked outside the statement grew the reader's name
+        // table one uncounted XName and value string at a time while the budget saw three nodes.
+        var connector = new Camt053StatementConnector(
+            TightLimits with
+            {
+                MaxDocumentBytes = 4 * 1024 * 1024,
+                MaxRecords = 100,
+                MaxNestingDepth = 64,
+                MaxParseNodes = 300
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument(
+                "camt-attr-flood.xml", BuildCamtWithAttributeHeavyNoise(attributeCount: 600)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyNodesCode);
+    }
+
+    [Fact]
+    public async Task Camt_OrdinaryAttributeUse_IsNotRefusedByTheNodeBudget()
+    {
+        // The negative control for the charge above, under the same budget and the same document shape.
+        // Counting the attribute axis must not refuse a statement carrying the attributes a real camt
+        // document has - the namespace declaration, the XML declaration's pseudo-attributes, and Ccy on
+        // every amount. A charge that refuses ordinary attribute use is not a tighter bound, it is a
+        // parser that rejects valid statements.
+        var connector = new Camt053StatementConnector(
+            TightLimits with
+            {
+                MaxDocumentBytes = 4 * 1024 * 1024,
+                MaxRecords = 100,
+                MaxNestingDepth = 64,
+                MaxParseNodes = 300
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument(
+                "camt-ordinary-attrs.xml", BuildCamtWithAttributeHeavyNoise(attributeCount: 4)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyNodesCode);
+        result.Records.Should().NotBeEmpty();
+    }
+
+    [Fact]
     public async Task Bai2_UnknownRecordTypes_AreBoundedBeforeDecodingAndSplitting()
     {
         // Unknown record types fall through the switch without charging a candidate, so a file of compact
@@ -1249,6 +1299,28 @@ public sealed class StatementIngressLimitsTests : IDisposable
         }
 
         return Encoding.UTF8.GetBytes(builder.Append("</BkToCstmrStmt></Document>").ToString());
+    }
+
+    private static byte[] BuildCamtWithAttributeHeavyNoise(int attributeCount)
+    {
+        // The attribute-bearing element sits after Stmt closes, so only the outer walk ever reads it. A
+        // direct child of Stmt would be handed to TryReadBoundedSubtree, whose own attribute charge would
+        // mask whether the outer loop counts them at all.
+        var builder = new StringBuilder()
+            .Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+            .Append("<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:camt.053.001.02\">")
+            .Append("<BkToCstmrStmt>")
+            .Append("<GrpHdr><MsgId>MERIDIAN-CAMT-1</MsgId><CreDtTm>2026-05-31T23:59:00</CreDtTm></GrpHdr>")
+            .Append(StatementXml("DE89370400440532013000", entryCount: 1))
+            .Append("<Noise000000");
+
+        for (var index = 0; index < attributeCount; index++)
+        {
+            builder.Append($" pad{index:D6}=\"x\"");
+        }
+
+        return Encoding.UTF8.GetBytes(
+            builder.Append(" />").Append("</BkToCstmrStmt></Document>").ToString());
     }
 
     // Valid BAI2 envelope carrying record types the switch does not recognize, which is what makes them

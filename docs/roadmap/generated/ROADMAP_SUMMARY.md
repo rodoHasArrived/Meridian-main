@@ -50,7 +50,7 @@ Snapshot date: 2026-08-29
 | W9-GOV-008 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | in_progress | green | high | Platform Security and Governance |
 | W9-INGEST-009 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | in_progress | green | high | Accounting and Ledger |
 | W9-ASSET-010 | Asset Accounting Event Spine and atomic lot posting | done | green | critical | Accounting and Ledger |
-| W9-CORPACT-011 | Durable corporate action case processing and accounting projection | accepted | green | high | Accounting and Ledger |
+| W9-CORPACT-011 | Durable corporate action case processing and accounting projection | accepted | yellow | high | Accounting and Ledger |
 | W10-DEBT-001 | God-file burn-down against the file-size ratchet | planned | green | medium | Workstation Shell and UX |
 | W10-MARK-001 | Fail-closed stale-mark policy and mark-age surfacing | planned | green | high | Accounting and Ledger |
 | W10-RECON-001 | Durable break lineage identity and run-over-run break diff | planned | green | high | Accounting and Ledger |
