@@ -89,3 +89,6 @@ create table if not exists __SCHEMA__.fund_structure_tenant_quarantine (
 create index if not exists ix_fund_structure_tenant_quarantine_open
     on __SCHEMA__.fund_structure_tenant_quarantine (reason, detected_at_utc desc)
     where resolved_at_utc is null;
+
+comment on table __SCHEMA__.fund_structure_tenant_quarantine is
+    'Fund-structure nodes the W9-GOV-008 tenant attribution declined to attribute: MixedOwnership for a genuinely shared ancestor whose descendants resolve to more than one tenant, Underivable for a node the fund_profile_tenancy registry cannot reach in either direction. Rows here are an operator decision, not a defect - resolving one records the chosen tenant and the reason.';

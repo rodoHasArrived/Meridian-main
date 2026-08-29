@@ -113,3 +113,6 @@ select
     1,
     (select count(*) from __SCHEMA__.accounting_action_audit_events)
 on conflict (chain_id) do nothing;
+
+comment on table __SCHEMA__.accounting_action_audit_chain_head is
+    'Single-row head of the accounting-action audit hash chain: the next sequence, the last entry hash, and the declared genesis boundary separating chained events from the pre-chain history that was appended before V_ledger_032 and which nothing ever protected. Locked FOR UPDATE and advanced inside the append transaction so concurrent writers cannot fork the chain.';
