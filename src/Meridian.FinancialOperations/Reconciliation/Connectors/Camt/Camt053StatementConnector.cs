@@ -97,7 +97,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
         {
             var (code, message) = scan.DistinctAccounts.Count > 1
                 ? ("CAMT_MULTIPLE_ACCOUNTS",
-                    $"The camt.053 document contains statements for {scan.DistinctAccounts.Count} different accounts, but a statement run reconciles a single account. Split the file into one document per account before importing.")
+                    "The camt.053 document contains statements for more than one account, but a statement run reconciles a single account. Split the file into one document per account before importing.")
                 : ("CAMT_MULTIPLE_STATEMENTS",
                     $"The camt.053 document contains {scan.StatementCount} statements for one account, but a statement run reconciles a single statement period. Split the file into one document per statement before importing.");
             issues.Add(StatementParseIssue.Error(code, message));
@@ -116,7 +116,11 @@ public sealed class Camt053StatementConnector : IStatementConnector
         // itself when pass two reaches it.
         var account = scan.FirstAccount;
         var accountSeen = false;
-        var entryCandidates = 0;
+        // One budget for every candidate canonical row, Bal and Ntry alike, rather than a counter per
+        // case. Both kinds have skip branches that warn and continue without reaching the record cap, so
+        // bounding only the one that was reported would leave the other open - which is exactly how this
+        // shape survived from BAI2 to Ntry to Bal across three rounds.
+        var rowCandidates = 0;
         // Seeded alongside the identity, and for the same reason: a Bal or Ntry ahead of Acct whose Amt
         // omits Ccy would otherwise fall back to USD even when the account declares another currency.
         // Seeding only the identity last round left this half-done.
@@ -215,6 +219,17 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
                     case "Bal":
                         {
+                            // Counted before the subtree is materialized, for the same reason as Ntry below:
+                            // a closing balance with no parseable date is skipped with a warning and never
+                            // reaches the record cap, so a document of them accumulates issue objects
+                            // unbounded while one valid balance still lets the import succeed.
+                            rowCandidates++;
+                            if (rowCandidates > _limits.MaxRecords)
+                            {
+                                issues.Add(_limits.TooManyRecords());
+                                return Task.FromResult(EmptyResult(issues));
+                            }
+
                             if (!TryReadBoundedSubtree(reader, statementDepth, out var balance, out var balanceRefusal))
                             {
                                 issues.Add(balanceRefusal!);
@@ -279,8 +294,8 @@ public sealed class Camt053StatementConnector : IStatementConnector
                             // because they are warnings, the import still succeeds, committing the closing
                             // balance while silently dropping every movement that should reconcile against
                             // it. Bounding candidates rather than successes refuses such a file instead.
-                            entryCandidates++;
-                            if (entryCandidates > _limits.MaxRecords)
+                            rowCandidates++;
+                            if (rowCandidates > _limits.MaxRecords)
                             {
                                 issues.Add(_limits.TooManyRecords());
                                 return Task.FromResult(EmptyResult(issues));
@@ -445,7 +460,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
                     // placeholder, matching the null entry the previous per-statement list carried.
                     if (statementOpen && !accountSeenForStatement)
                     {
-                        distinctAccounts.Add(UnknownAccount);
+                        AddDistinctAccount(distinctAccounts, UnknownAccount);
                     }
 
                     // An empty <Stmt/> raises no end element, so it never opens a subtree to read.
@@ -480,12 +495,12 @@ public sealed class Camt053StatementConnector : IStatementConnector
                     firstAccountCurrency = Value(accountElement, "Ccy");
                 }
 
-                distinctAccounts.Add(resolvedAccount ?? UnknownAccount);
+                AddDistinctAccount(distinctAccounts, resolvedAccount ?? UnknownAccount);
             }
 
             if (statementOpen && !accountSeenForStatement)
             {
-                distinctAccounts.Add(UnknownAccount);
+                AddDistinctAccount(distinctAccounts, UnknownAccount);
             }
         }
         catch (XmlException ex)
@@ -500,6 +515,22 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
     /// <summary>Placeholder identity for a statement whose account could not be resolved.</summary>
     private const string UnknownAccount = "unknown-account";
+
+    /// <summary>
+    /// Retains at most the two distinct identifiers needed to choose between the multi-statement and
+    /// multi-account diagnostics. An uncapped set still grew with the document - a payload giving every
+    /// statement its own short account id retained a string and a hash entry per statement, which is the
+    /// allocation the per-statement list was replaced to avoid. The exact statement count is still
+    /// reported because counting is free; the account count is not, so that message no longer quotes a
+    /// number it cannot substantiate under the cap.
+    /// </summary>
+    private static void AddDistinctAccount(HashSet<string> distinctAccounts, string account)
+    {
+        if (distinctAccounts.Count < 2)
+        {
+            distinctAccounts.Add(account);
+        }
+    }
 
     /// <summary>
     /// What the first pass needs to choose between the multi-statement diagnostics, without retaining

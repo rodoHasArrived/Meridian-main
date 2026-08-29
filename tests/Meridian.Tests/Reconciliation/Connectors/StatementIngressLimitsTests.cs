@@ -886,7 +886,59 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
         var issue = result.Issues.Should().ContainSingle().Subject;
         issue.Code.Should().Be("CAMT_MULTIPLE_ACCOUNTS");
-        issue.Message.Should().Contain("for 3 different accounts");
+        issue.Message.Should().Contain("more than one account");
+        issue.Message.Should().NotContain("3 different", "the retained distinct state is capped at two, so the exact count is not substantiable");
+    }
+
+    [Fact]
+    public async Task Camt_ManyDistinctAccounts_StillChooseTheAccountDiagnosticUnderTheCap()
+    {
+        // The distinct-account state is capped at the two identifiers needed to pick the branch, so the
+        // scan must still select CAMT_MULTIPLE_ACCOUNTS rather than the multi-statement message when far
+        // more than two accounts appear.
+        var statements = new string[32];
+        for (var index = 0; index < statements.Length; index++)
+        {
+            statements[index] = StatementXml($"DE8937040044053201{index:D4}", entryCount: 0);
+        }
+
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 100, MaxNestingDepth = 64 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("many-accounts.xml", BuildCamtDocument(statements)));
+
+        result.Issues.Should().ContainSingle().Which.Code.Should().Be("CAMT_MULTIPLE_ACCOUNTS");
+    }
+
+    [Fact]
+    public async Task Camt_UndatedClosingBalances_AreBoundedRatherThanAccumulatingWarnings()
+    {
+        // The third instance of one shape: BAI2 detail rows, then Ntry, now Bal. A CLBD balance with no
+        // parseable date is skipped with a warning and never reaches the record cap, so a document of them
+        // accumulates issue objects unbounded while one valid balance still lets the import succeed. Both
+        // camt row kinds now share a single candidate budget so neither can drift open again.
+        var undated = new StringBuilder()
+            .Append("<Stmt><Id>STMT-1</Id>")
+            .Append("<Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>");
+
+        for (var index = 0; index < 40; index++)
+        {
+            undated
+                .Append("<Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp>")
+                .Append("<Amt Ccy=\"EUR\">12345.67</Amt><CdtDbtInd>CRDT</CdtDbtInd></Bal>");
+        }
+
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 5, MaxNestingDepth = 64 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("undated.xml", BuildCamtDocument(undated.Append("</Stmt>").ToString())));
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Issues.Count.Should().BeLessThan(40, "diagnostics are bounded, not one per skipped balance");
     }
 
     [Fact]
