@@ -9166,6 +9166,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasScope"
     },
     {
@@ -20801,6 +20807,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException"
     },
     {
       "kind": "contract-set-member",
@@ -45239,7 +45251,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "f09ce68da6d100a8b6b4e6b33b831375e46ae84b203e7ca47fd8cae8120a38d9",
+  "fingerprint": "d51ca2c65ca855ef26ca3da82c7e9aa95467969364622792684b96a38c28997b",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -54453,6 +54465,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityAliasDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException"
     },
     {
       "classification": "enum",
@@ -65921,10 +65939,10 @@
   ],
   "summary": {
     "contract_references": 3038,
-    "contract_set_memberships": 3567,
-    "edges": 7518,
+    "contract_set_memberships": 3569,
+    "edges": 7520,
     "foreign_keys": 114,
     "logical_references": 6,
-    "nodes": 3568
+    "nodes": 3569
   }
 }

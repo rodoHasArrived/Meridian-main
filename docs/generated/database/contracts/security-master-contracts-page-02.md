@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 4
 
-Objects 81-160 of 243. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 244. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -417,6 +417,9 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    class Meridian_Contracts_SecurityMaster_SecurityAliasHistoryConflictException["SecurityAliasHistoryConflictException"] {
+        +Guid AliasId
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAliasScope["SecurityAliasScope"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassCatalog["SecurityAssetClassCatalog"] {
@@ -540,11 +543,6 @@ classDiagram
         +SecurityIdentifierKind Kind
         +string Reason
     }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto["SecurityAssetProfileLineageDto"] {
-        +IReadOnlyList~SecurityAssetProfileGovernanceAuditEventDto~ AuditEvents
-        +string ProfileId
-        +IReadOnlyList~SecurityAssetProfileDefinitionDto~ Versions
-    }
     Meridian_Contracts_SecurityMaster_DataQualityRuleViolationDto --> Meridian_Contracts_SecurityMaster_DataQualityRuleCategory
     Meridian_Contracts_SecurityMaster_DataQualityRuleViolationDto --> Meridian_Contracts_SecurityMaster_DataQualityRuleSeverity
     Meridian_Contracts_SecurityMaster_DataVendorEntitlementDto --> Meridian_Contracts_SecurityMaster_DataVendorDataType
@@ -569,7 +567,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileFieldTypeDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceResultDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceResultDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceAuditEventDto
-    Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceResultDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto
-    Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto
-    Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceAuditEventDto
 ```

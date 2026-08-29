@@ -2,11 +2,16 @@
 
 # `security-master-contracts` data objects - page 3 of 4
 
-Objects 161-240 of 243. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 244. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto["SecurityAssetProfileLineageDto"] {
+        +IReadOnlyList~SecurityAssetProfileGovernanceAuditEventDto~ AuditEvents
+        +string ProfileId
+        +IReadOnlyList~SecurityAssetProfileDefinitionDto~ Versions
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionCandidateDto["SecurityAssetProfilePromotionCandidateDto"] {
         +string Category
         +IReadOnlyList~string~ DedicatedBehaviorNeeds
@@ -513,14 +518,6 @@ classDiagram
         +string Reason
         +string TenantId
     }
-    class Meridian_Contracts_SecurityMaster_UpsertCashFlowSourceRequest["UpsertCashFlowSourceRequest"] {
-        +string Actor
-        +string? ClientConfirmedBy
-        +bool Force
-        +bool IsClientOverride
-        +Guid SecurityId
-        +StructuredCashFlowSourceKind SourceKind
-    }
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionReadinessDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalSeverityDto
@@ -571,5 +568,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredStepCouponEntry
-    Meridian_Contracts_SecurityMaster_UpsertCashFlowSourceRequest --> Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind
 ```
