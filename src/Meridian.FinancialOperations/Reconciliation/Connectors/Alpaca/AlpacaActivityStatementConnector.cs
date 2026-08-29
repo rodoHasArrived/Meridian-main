@@ -227,12 +227,70 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
         var rowNumber = 0;
 
         var richActivities = snapshot.Activity?.Activities;
+
+        // The five evidence collections are hoisted here rather than composed at the return, because they
+        // count toward the same cap the canonical records do - StatementParseResult.TotalRetainedRows is
+        // records plus all five - and a bound has to see everything it bounds. Deserialize has already
+        // materialized them, so charging their real Count is charging what exists; nothing here predicts
+        // what an input will produce.
+        IReadOnlyList<BrokerageAccountSnapshotDto> accountSnapshots =
+            snapshot.Portfolio?.AccountSnapshot is { } accountSnapshot ? [accountSnapshot] : [];
+        IReadOnlyList<BrokerageActivityEventDto> activityEvents = richActivities ?? [];
+        IReadOnlyList<BrokerageActivityCursorDto> activityCursors =
+            snapshot.Activity?.Cursor is { } cursor ? [cursor] : [];
+        IReadOnlyList<BrokerageTaxLotSnapshotDto> taxLots = snapshot.Portfolio?.TaxLots ?? [];
+        IReadOnlyList<BrokerageBorrowPositionSnapshotDto> borrowPositions =
+            snapshot.Portfolio?.BorrowPositions ?? [];
+
+        // This connector had no record bound of its own. ScanForBoundBreach guards the token count and
+        // nesting depth, and the byte cap guards the payload, but neither is MaxRecords: a snapshot with
+        // a handful of rich activities sits far inside every one of those and still returns more retained
+        // rows than the configured limit, and only StatementImportService refused it - after the whole
+        // object graph was built, and not at all for a direct ParseAsync caller.
+        //
+        // The charge is taken on the append, never on a prediction of what the payload will yield. The
+        // review suggestion was to count collection elements and their output multiplicity during the
+        // pre-scan, and that cannot be made correct here: rich activities and fills are an either/or
+        // branch, a corporate action with no Amount is skipped entirely, and each rich activity is
+        // retained twice (once as a canonical record, once as an activity event). Any element count is
+        // therefore an estimate, and an estimate in a refusal bound refuses valid documents - which is
+        // how ten separate false refusals reached this branch already.
+        var retained = accountSnapshots.Count
+            + activityEvents.Count
+            + activityCursors.Count
+            + taxLots.Count
+            + borrowPositions.Count;
+
+        // One charge point for every canonical append. The alternative - a counter incremented at each of
+        // the six call sites - only ever bounds the row kinds someone remembered to add it to, which is
+        // the defect this same suite already corrected in IbFlexStatementConnector.
+        bool TryRetain(StatementCanonicalRecord record)
+        {
+            records.Add(record);
+            if (++retained > _limits.MaxRecords)
+            {
+                issues.Add(_limits.TooManyRecords());
+                return false;
+            }
+
+            return true;
+        }
+
+        if (retained > _limits.MaxRecords)
+        {
+            issues.Add(_limits.TooManyRecords());
+            return EmptyResult(profileId, issues);
+        }
+
         if (richActivities is not null)
         {
             foreach (var activity in richActivities)
             {
                 rowNumber++;
-                records.Add(MapRichActivity(account, activity));
+                if (!TryRetain(MapRichActivity(account, activity)))
+                {
+                    return EmptyResult(profileId, issues);
+                }
             }
         }
         else
@@ -241,7 +299,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             {
                 rowNumber++;
                 var signedQuantity = fill.Side == OrderSide.Sell ? -Math.Abs(fill.Quantity) : Math.Abs(fill.Quantity);
-                records.Add(new StatementCanonicalRecord(
+                if (!TryRetain(new StatementCanonicalRecord(
                     StatementRecordKind.Transaction,
                     account,
                     fill.Symbol,
@@ -255,7 +313,10 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                     ExternalTransactionId: fill.FillId,
                     ActivityCategory: BrokerageActivityCategory.Trade.ToString(),
                     ActivitySubtype: BrokerageActivitySubtype.TradeFill.ToString(),
-                    OrderId: fill.OrderId));
+                    OrderId: fill.OrderId)))
+                {
+                    return EmptyResult(profileId, issues);
+                }
             }
 
             foreach (var cash in snapshot.Activity?.CashTransactions ?? [])
@@ -270,7 +331,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                     issues.Add(_limits.TooManyDiagnostics());
                     return EmptyResult(document.MappingProfileId, issues);
                 }
-                records.Add(new StatementCanonicalRecord(
+                if (!TryRetain(new StatementCanonicalRecord(
                     StatementRecordKindResolver.Resolve(canonicalActivity),
                     account,
                     cash.Symbol ?? string.Empty,
@@ -282,7 +343,10 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                     Currency: string.IsNullOrWhiteSpace(cash.Currency) ? null : cash.Currency.ToUpperInvariant(),
                     ExternalTransactionId: cash.TransactionId,
                     ProviderActivityCode: cash.TransactionType,
-                    Description: cash.Description));
+                    Description: cash.Description)))
+                {
+                    return EmptyResult(profileId, issues);
+                }
             }
 
             foreach (var corporateAction in snapshot.Activity?.CorporateActions ?? [])
@@ -303,7 +367,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                     return EmptyResult(document.MappingProfileId, issues);
                 }
                 var kind = StatementRecordKindResolver.Resolve(canonicalActivity);
-                records.Add(new StatementCanonicalRecord(
+                if (!TryRetain(new StatementCanonicalRecord(
                     kind,
                     account,
                     corporateAction.Symbol ?? string.Empty,
@@ -316,7 +380,10 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                     ExternalTransactionId: corporateAction.EventId,
                     ActivityCategory: BrokerageActivityCategory.CorporateAction.ToString(),
                     ProviderActivityCode: corporateAction.EventType,
-                    Description: corporateAction.Description));
+                    Description: corporateAction.Description)))
+                {
+                    return EmptyResult(profileId, issues);
+                }
             }
         }
 
@@ -324,7 +391,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
         foreach (var position in snapshot.Portfolio?.Positions ?? [])
         {
             rowNumber++;
-            records.Add(new StatementCanonicalRecord(
+            if (!TryRetain(new StatementCanonicalRecord(
                 StatementRecordKind.Position,
                 account,
                 position.Symbol,
@@ -334,12 +401,15 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                 "position",
                 snapshotDate,
                 Currency: string.IsNullOrWhiteSpace(position.Currency) ? null : position.Currency!.ToUpperInvariant(),
-                ExternalTransactionId: position.PositionId));
+                ExternalTransactionId: position.PositionId)))
+            {
+                return EmptyResult(profileId, issues);
+            }
         }
 
         if (snapshot.Portfolio?.Balance is { } balance)
         {
-            records.Add(new StatementCanonicalRecord(
+            if (!TryRetain(new StatementCanonicalRecord(
                 StatementRecordKind.CashBalance,
                 account,
                 string.Empty,
@@ -348,7 +418,10 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                 balance.Cash,
                 "cash",
                 snapshotDate,
-                Currency: string.IsNullOrWhiteSpace(balance.Currency) ? null : balance.Currency.ToUpperInvariant()));
+                Currency: string.IsNullOrWhiteSpace(balance.Currency) ? null : balance.Currency.ToUpperInvariant())))
+            {
+                return EmptyResult(profileId, issues);
+            }
         }
 
         if (records.Count == 0)
@@ -379,11 +452,11 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                 Sha256Digest.Compute(document.Content.Span),
                 detectedColumns.Select(static column => column.ToLowerInvariant()).ToArray(),
                 "json"),
-            AccountSnapshots: snapshot.Portfolio?.AccountSnapshot is { } accountSnapshot ? [accountSnapshot] : [],
-            ActivityEvents: richActivities ?? [],
-            ActivityCursors: snapshot.Activity?.Cursor is { } cursor ? [cursor] : [],
-            TaxLots: snapshot.Portfolio?.TaxLots ?? [],
-            BorrowPositions: snapshot.Portfolio?.BorrowPositions ?? []);
+            AccountSnapshots: accountSnapshots,
+            ActivityEvents: activityEvents,
+            ActivityCursors: activityCursors,
+            TaxLots: taxLots,
+            BorrowPositions: borrowPositions);
     }
 
     private static StatementCanonicalRecord MapRichActivity(

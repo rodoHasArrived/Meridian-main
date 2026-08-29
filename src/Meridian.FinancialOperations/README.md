@@ -135,7 +135,7 @@ with a named code:
 | Code | Bound |
 | --- | --- |
 | `STATEMENT_DOCUMENT_TOO_LARGE` | `MaxDocumentBytes`, checked by the import service and by every connector before it decodes |
-| `STATEMENT_TOO_MANY_RECORDS` | `MaxRecords`, against total retained rows |
+| `STATEMENT_TOO_MANY_RECORDS` | `MaxRecords`, against total retained rows — charged on the append by the camt.053, BAI2, CSV, OFX and Alpaca connectors, and by the import service as the backstop. Alpaca charges its five evidence collections up front, since `Deserialize` has already materialized them, then one row per canonical append; nothing is charged against a prediction of what a payload will yield, because a rich activity is retained twice (record and activity event) while a corporate action with no amount is not retained at all |
 | `STATEMENT_LINE_TOO_LONG` | `MaxLineBytes`, measured in UTF-8 bytes |
 | `STATEMENT_TOO_MANY_LINES` | CSV's raw-line cap derived from `MaxRecords`, and BAI2's independent `MaxDocumentLines`; refused before mapping |
 | `STATEMENT_NESTING_TOO_DEEP` | `MaxNestingDepth`, inclusive — a document nested at exactly the limit is accepted and one level deeper is refused, identically in every connector that reads it |

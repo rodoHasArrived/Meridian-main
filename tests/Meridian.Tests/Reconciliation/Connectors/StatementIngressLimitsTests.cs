@@ -1403,6 +1403,77 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Alpaca_RetainedRowsOverTheCap_AreRefusedInsideTheConnector()
+    {
+        // This connector enforced no record cap of its own. The byte cap, the token budget and the depth
+        // bound all pass comfortably here - two small activities - and only StatementImportService
+        // refused the result afterwards, which left every direct ParseAsync caller with an over-limit
+        // parse and allocated the whole graph before the refusal either way.
+        //
+        // The count that matters is TotalRetainedRows, not Records.Count: two rich activities are two
+        // canonical records AND two retained activity events, so four retained rows. A cap of three
+        // separates the two readings - it passes if only records are counted, and refuses if evidence is
+        // counted too, which is what the service has always counted.
+        var connector = new AlpacaActivityStatementConnector(
+            Catalog(),
+            [],
+            [],
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 3 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("rows.json", BuildAlpacaSnapshotWithRichActivities(activityCount: 2)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Issues.Should().NotContain(issue => issue.Code == "INVALID_SNAPSHOT");
+    }
+
+    [Fact]
+    public async Task Alpaca_EvidenceAloneOverTheCap_IsRefusedBeforeAnyRecordIsBuilt()
+    {
+        // The five evidence collections are materialized by Deserialize, so their retention is already
+        // decided before the record loops run. Charging them up front means a snapshot whose evidence
+        // alone breaches the cap is refused without building a single canonical record.
+        var connector = new AlpacaActivityStatementConnector(
+            Catalog(),
+            [],
+            [],
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("evidence.json", BuildAlpacaSnapshotWithRichActivities(activityCount: 2)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Records.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Alpaca_ExactlyAtTheRetainedRowCap_StillParses()
+    {
+        // The boundary control, and the one that catches an off-by-one: a document retaining exactly the
+        // permitted number of rows must import. The service refuses on TotalRetainedRows > MaxRecords, so
+        // the connector has to use the same strict comparison or it refuses documents the seam accepts.
+        //
+        // The TotalRetainedRows assertion is the point of the test as much as the parse is: it pins the
+        // connector's running count to the property the service bounds, so the two cannot drift into
+        // meaning different things under the same limit.
+        var connector = new AlpacaActivityStatementConnector(
+            Catalog(),
+            [],
+            [],
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 4 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("exact.json", BuildAlpacaSnapshotWithRichActivities(activityCount: 2)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Issues.Should().NotContain(issue => issue.Code == "INVALID_SNAPSHOT");
+        result.Records.Should().HaveCount(2);
+        result.TotalRetainedRows.Should().Be(4);
+    }
+
+    [Fact]
     public async Task Ofx_OverTheByteCap_IsRefusedBeforeDecoding()
     {
         // camt.053, BAI2 and IB Flex all refuse an oversize document at the top of ParseAsync; OFX
@@ -1819,6 +1890,36 @@ public sealed class StatementIngressLimitsTests : IDisposable
         }
 
         return Encoding.UTF8.GetBytes(builder.Append("},\"portfolio\":null}").ToString());
+    }
+
+    private static byte[] BuildAlpacaSnapshotWithRichActivities(int activityCount)
+    {
+        // Rich activities are retained twice over: ParseSnapshotAsync appends one canonical record per
+        // activity, and the same list is returned as StatementParseResult.ActivityEvents. N activities
+        // are therefore 2N retained rows - the output multiplicity a pre-scan element count cannot know,
+        // which is why the cap is charged on the append rather than predicted from the payload.
+        var builder = new StringBuilder()
+            .Append("{\"providerId\":\"alpaca\",\"accountId\":\"ACC-1\",")
+            .Append("\"retrievedAt\":\"2026-06-30T00:00:00+00:00\",")
+            .Append("\"activity\":{\"providerId\":\"alpaca\",\"accountId\":\"ACC-1\",")
+            .Append("\"retrievedAt\":\"2026-06-30T00:00:00+00:00\",")
+            .Append("\"orders\":[],\"fills\":[],\"cashTransactions\":[],\"activities\":[");
+
+        for (var index = 0; index < activityCount; index++)
+        {
+            if (index > 0)
+            {
+                builder.Append(',');
+            }
+
+            builder
+                .Append($"{{\"eventId\":\"E{index:D6}\",\"providerCode\":\"CSD\",")
+                .Append("\"category\":\"Cash\",\"subtype\":\"CashDeposit\",")
+                .Append("\"effectiveAt\":\"2026-06-01T00:00:00+00:00\",")
+                .Append("\"currency\":\"USD\",\"netAmount\":10.00}");
+        }
+
+        return Encoding.UTF8.GetBytes(builder.Append("]},\"portfolio\":null}").ToString());
     }
 
     private static byte[] BuildBai2WithMalformedTransactions(int count)
