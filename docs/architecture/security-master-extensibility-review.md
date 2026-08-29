@@ -1444,10 +1444,15 @@ would assert something that cannot happen.
 
 **The substring test does not match the error the system actually raises, so the classification is
 already wrong at every site.** An earlier draft of this item called it fragile — something a reworded
-message *would* break. It is worse than that: for the real duplicate case, a repeated `SecurityId`,
+message *would* break. It is worse than that: when a create reuses an existing `SecurityId`,
 `PostgresSecurityMasterEventStore.AppendAsync` throws `"Security stream version conflict for {id}.
 Expected {x}, actual {y}."` (`:40`), which contains neither `"already exists"` nor `"duplicate"`. So
-the skip branch never fires for a true duplicate today. On the two counting sites that means the rows
+the skip branch never fires for a re-used stream today. **Note what that case is and is not**: the
+conflict establishes that a stream already exists, nothing more — it does not establish that the
+incoming row is a replay of the stored one, since the append compares versions and never payloads
+(detailed below). Calling it a "duplicate" here would prejudge exactly the question the remedy has to
+answer, so this item says "re-used stream" and reserves "duplicate" for a row whose equivalence has
+actually been established. On the two counting sites that means the rows
 are counted `Failed` — in import, the operator-facing summary built from those counts
 (`SecurityMasterViewModel.cs:4366-4374`) already misreports them; in the Polygon CLI, `failed` is also
 the exit code. On EDGAR it means the error list and the exit code, per the bullet above. Nothing
@@ -1505,8 +1510,19 @@ prose-classification defect but **not** the create-loop cancellation defect. Its
 cancellation lives in three *other* broad catches — around `SaveFactsAsync` (`:250-254`), around the
 provider fetch/store (`:286-290`), and in `CountOpenConflictsAsync` (`:627-641`), which wraps
 `GetOpenConflictsAsync(ct)` in a bare `catch (Exception)` returning `0`. Any of the three converts a
-cancellation into an ordinary error or a plausible-looking count, and the ingest returns normally.
+cancellation into an ordinary error or a plausible-looking count.
 `EdgarIngestOrchestrator` has five broad catches in total; only the create loop rethrows.
+
+**Say precisely when that produces a normal return, because it is not unconditional.** Each loop
+re-observes the token at the top of the next iteration — `ct.ThrowIfCancellationRequested()` at `:229`
+for fact groups and `:269` for filers — so a cancellation swallowed partway through a run surfaces on
+the following pass, late and at the wrong site but not silently. The normal-completion case needs the
+swallow to happen with no token-observing operation after it: the **final** fact group or filer, or
+the initial `CountOpenConflictsAsync` when nothing downstream awaits on the token. Those are the
+scenarios a regression test has to construct; asserting that any swallowed cancellation yields a
+normal result would assert something the loop structure prevents. The defect is still real — a
+cancelled ingest is reported as an ordinary error, and a cancelled conflict count silently becomes
+zero, which feeds `conflictsDetected` — but its blast radius is the tail of a run, not the whole of it.
 
 Edgar also carries the prose defect on **both** mutations, not just create: `CreateOrAmendSecurityAsync`
 calls `CreateAsync` when no security exists and `AmendTermsAsync` when one does (`:303-344`), with
