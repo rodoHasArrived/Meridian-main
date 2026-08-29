@@ -551,6 +551,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W3-CONT-001` | Research to paper continuity |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
 <!-- source-roadmap-traceability:end -->
 
