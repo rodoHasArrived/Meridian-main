@@ -145,10 +145,11 @@ aggregates. Every bound refuses with a named code:
 | `STATEMENT_TOO_MANY_DIAGNOSTICS` | `MaxDiagnostics`, retained parse issues; charged by every connector — the CSV, OFX, IB Flex and Alpaca row mappers, and the camt.053 and BAI2 per-row candidate charges, which also re-check after their parse loop so the final row's diagnostic cannot slip past |
 | `ROW_LIMIT_EXCEEDED` | `MaxRecords`, reported by the IB Flex connector against its retained rows |
 
-Preview and validate return these as issue objects, so a caller can branch on `issue.Code`. Commit
-reports by throwing `InvalidDataException`, and its message carries the code in brackets ahead of the
-prose for the same reason — otherwise the same document yields an actionable code from one path and an
-unclassifiable sentence from the other.
+Preview returns these as issue objects, so a caller can branch on `issue.Code` directly. The other two
+paths report as text — commit throws `InvalidDataException`, and `ValidateAsync` returns a
+`StatementImportValidationResult` whose `Errors` is a list of strings — so both carry the code in
+brackets ahead of the prose. Otherwise the same document yields an actionable code from one path and an
+unclassifiable sentence from the others.
 
 These messages advise raising the configured limit deliberately. A deployment does that by registering
 its own `StatementIngressLimits` before `AddReconciliationServices`, since registration uses

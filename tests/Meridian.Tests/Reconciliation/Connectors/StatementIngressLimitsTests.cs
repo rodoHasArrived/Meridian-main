@@ -724,6 +724,21 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Validate_OversizeDocument_CarriesTheStableCodeInItsErrorText()
+    {
+        // StatementImportValidationResult.Errors is a list of strings, not issue objects - so validate is
+        // lossy in exactly the way commit was, and fixing only commit left the CLI's validate path unable
+        // to identify the bound. Preview is the one path that returns the code as its own field.
+        var service = BuildService(TightLimits);
+        var document = new StatementSourceDocument("big.bai", BuildBai2Statement(transactionCount: 200));
+
+        var validation = await service.ValidateAsync(document, connectorId: null);
+
+        validation.Errors.Should().ContainSingle()
+            .Which.Should().Contain(StatementIngressLimits.DocumentTooLargeCode);
+    }
+
+    [Fact]
     public async Task Preview_OversizeDocument_ReportsTheBoundAsABlockingIssue()
     {
         var service = BuildService(TightLimits);

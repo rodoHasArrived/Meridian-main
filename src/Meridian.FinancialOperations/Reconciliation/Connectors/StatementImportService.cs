@@ -444,13 +444,13 @@ public sealed class StatementImportService(
             return new StatementImportValidationResult(
                 false,
                 0,
-                [_ingressLimits.DocumentTooLarge(document.Content.Length).Message]);
+                [Describe(_ingressLimits.DocumentTooLarge(document.Content.Length))]);
         }
 
         var (connector, resolutionIssue) = ResolveConnector(document, connectorId);
         if (connector is null)
         {
-            return new StatementImportValidationResult(false, 0, [resolutionIssue!.Message]);
+            return new StatementImportValidationResult(false, 0, [Describe(resolutionIssue!)]);
         }
 
         var parse = await connector.ParseAsync(document, ct).ConfigureAwait(false);
@@ -459,12 +459,15 @@ public sealed class StatementImportService(
             return new StatementImportValidationResult(
                 false,
                 parse.Records.Count,
-                [_ingressLimits.TooManyRecords().Message]);
+                [Describe(_ingressLimits.TooManyRecords())]);
         }
 
+        // StatementImportValidationResult.Errors is a string list, not issue objects, so the code has to
+        // travel inside the text here exactly as it does in the commit throws. Preview is the only path
+        // that returns StatementImportIssueDto with Code as its own field.
         var errors = parse.Issues
             .Where(static issue => string.Equals(issue.Severity, StatementParseIssue.ErrorSeverity, StringComparison.OrdinalIgnoreCase))
-            .Select(static issue => issue.RowNumber is { } row ? $"Row {row}: {issue.Message}" : issue.Message)
+            .Select(Describe)
             .ToArray();
 
         if (parse.HasErrors)
@@ -751,11 +754,13 @@ public sealed class StatementImportService(
     }
 
     /// <summary>
-    /// Renders an issue for an exception message with its stable code intact. Commit reports failures by
-    /// throwing, while preview and validate return the issue objects, so a caller that routed on
-    /// StatementIngressLimits codes could see STATEMENT_DOCUMENT_TOO_LARGE from one path and only prose
-    /// from the other for the very same document. The code is the part an operator or a client can act
-    /// on programmatically, so it belongs in the text when the text is all that survives.
+    /// Renders an issue with its stable code intact for the two paths that report as text. Preview is the
+    /// only one that returns the code as its own field, on StatementImportIssueDto; commit throws an
+    /// InvalidDataException carrying a message, and validate returns StatementImportValidationResult
+    /// whose Errors is a list of strings. Without this, the same document yielded an actionable
+    /// STATEMENT_DOCUMENT_TOO_LARGE from preview and prose a caller cannot branch on from either of the
+    /// others. The code is the part an operator or a client can act on programmatically, so it belongs in
+    /// the text wherever the text is all that survives.
     /// </summary>
     private static string Describe(StatementParseIssue issue)
         => issue.RowNumber is { } row
