@@ -95,9 +95,11 @@ risks that compound as new asset classes land.
 > [Scheduled institutional-requirements pass — 2026-08-28](#scheduled-institutional-requirements-pass--2026-08-28).
 >
 > **Its highest-severity finding (P5) is that the desktop lane mutates the golden record with no
-> authorization check at all.** Every HTTP mutation route requires `ModifySecurityMaster`; the WPF
-> edit, deactivate, import and trading-parameter backfill commands — the last of which amends every
-> active security at once — reach the same `ISecurityMasterService` in process and check
+> authorization check at all.** Every HTTP route that mutates the **golden record** requires
+> `ModifySecurityMaster` — other Security Master mutations deliberately use narrower capabilities, and
+> the parity asked for is with that boundary, not a collapse of them; the WPF
+> edit, deactivate, import and trading-parameter backfill commands — the last of which amends up to
+> 1,000 securities in one action — reach the same `ISecurityMasterService` in process and check
 > nothing, on a shell whose `HasPermission` fails closed for a configured host and is simply never
 > called here. So an operator holding only `ViewSecurityMaster` is refused every mutation over HTTP
 > and permitted every one of them through the workstation. It is filed apart from P1 because it is an
@@ -998,10 +1000,24 @@ These are intended and stated rather than incidental:
   server-side (governed workbench publish) and called it the reference implementation to extend; it has
   been extended.
 - **P2** — the `UpdatedBy: "WpfImport"` constant is gone from `SecurityMasterCsvParser`.
-- **P4's classify-from-prose defect** — the `"already exists"` / `"duplicate"` substring tests are gone
-  from the import service and Edgar, replaced by `SecurityMasterIngestFailureClassifier`.
+- **P4's classify-from-prose defect, mechanically** — the `"already exists"` / `"duplicate"` substring
+  tests are gone from the import service and Edgar, replaced by
+  `SecurityMasterIngestFailureClassifier`, which switches on exception type and SQLSTATE rather than
+  message text. That is the right shape and it closes the fragility half.
 
-**Verified partially closed — and in the specific way this item warned against.**
+**Verified partially closed — both in the specific way the item warned against.**
+
+- **P4's semantic defect survives the rewrite.** `SecurityMasterIngestFailureClassifier.IsAlreadyMastered`
+  returns `conflict.IsAlreadyCreated` for a create-time stream conflict and `true` for any PostgreSQL
+  `23505` unique violation (`:34-52`). Neither arm compares the incoming payload to the stored one. So a
+  create re-using a `SecurityId` with *different* terms is still classified as already-mastered and
+  reported `Skipped`, which is exactly what this item establishes must not happen: the conflict proves
+  a stream exists, never that the row is an equivalent replay, because the append compares versions and
+  not payloads. The rewrite retired the fragility (message text) and kept the semantics. **An earlier
+  draft of this status section listed P4 as verified closed; that was wrong, and wrong in an
+  instructive way** — it checked that the substring test was gone rather than that its replacement was
+  correct, which is the same narrowness this review was repeatedly caught by while it was being
+  written.
 
 - **P3b.** `PostgresSecurityMasterStore.Aliases.cs` now excludes `created_by` and `created_at` from the
   on-conflict update, with a comment giving this item's own reasoning. That closes the *vanishing*
@@ -1436,9 +1452,13 @@ calls `ImportAsync` (`:4358`). None of them — nor their parent — calls
 `BackfillTradingParamsCommand` is constructed as a plain `AsyncRelayCommand` with no `canExecute`
 predicate (`SecurityMasterViewModel.cs:1565`); `OnBackfillTradingParams` calls
 `_backfillService.BackfillAllAsync()` (`:2186-2193`), and `TradingParametersBackfillService`
-walks every active security calling `AmendTermsAsync` for each
-(`TradingParametersBackfillService.cs:213`). So the same unauthorized desktop operator can amend the
-entire master in one command, not merely one record at a time. Any gate that covers only the edit,
+walks the active-security search result calling `AmendTermsAsync` for each
+(`TradingParametersBackfillService.cs:213`). Bound that precisely rather than saying "every active
+security": the search requests `Take: 1000` (`:59`), and `BackfillTickerAsync` returns without
+amending when Polygon has no usable data or answers non-success. So one invocation attempts **up to
+1,000** securities — on a master larger than that it cannot even reach the remainder. Still by far the
+largest single mutation on the lane, and still one an unauthorized operator can trigger, but the
+number matters when sizing the work. Any gate that covers only the edit,
 deactivate and import commands leaves the largest-blast-radius mutation on the lane open — enumerate
 the desktop mutation *commands*, not the dialogs. (Note it also invokes `BackfillAllAsync()` with no
 cancellation token from the view model, which is why it recurs in P4 below.)
@@ -1758,10 +1778,12 @@ Read as a delta on the standing lists above.
 
 1. **Enforce mutation permissions on the desktop lane (P5).** The one item here that is an
    authorization failure rather than a governance or attribution one, and the only one that lets a
-   user perform a write the system is configured to refuse. Every HTTP mutation route requires
-   `ModifySecurityMaster`; the WPF edit, deactivate, import **and trading-parameter backfill**
+   user perform a write the system is configured to refuse. Every HTTP route that mutates the
+   **golden record** requires `ModifySecurityMaster` — the corporate-action and asset-profile routes
+   deliberately use narrower capabilities, and must keep them; the WPF edit, deactivate, import **and trading-parameter backfill**
    commands reach the same service in-process and check nothing. The backfill is the one to size the
-   work by: it amends *every* active security in a single command, so a gate covering only the
+   work by: one invocation attempts up to 1,000 active securities — `BackfillAllAsync` searches with
+   `Take: 1000` and skips rows with no usable Polygon data — so a gate covering only the
    per-record dialogs leaves the largest mutation open. Enumerate the desktop mutation commands rather
    than the dialogs. **Do not build the gate on `HasPermission` alone** — it returns true for
    everything on a credential-free host, so an `MDC_ANONYMOUS_ROLE=ReadOnly` deployment would stay
