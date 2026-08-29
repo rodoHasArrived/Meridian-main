@@ -64,12 +64,14 @@ public static class OfxDocumentParser
     public static OfxDocument Parse(string content, int maxEntries, int maxDepth, out OfxParseBound bound)
     {
         bound = OfxParseBound.None;
-        // Deliberately loose, and an allocation bound rather than an acceptance one: a spec-compliant
-        // investment entry is a wrapper plus up to three nested detail aggregates (BUYSTOCK > INVBUY >
-        // SECID/INVTRAN), so 8x the entry bound leaves roughly double the headroom a real statement
-        // needs. Acceptance is decided by maxEntries; this only stops the node tree growing without
-        // limit before any entry exists to count.
-        var maxNodes = maxEntries > (int.MaxValue - 64) / 8 ? int.MaxValue : (maxEntries * 8) + 64;
+        // Deliberately loose, and an allocation bound rather than an acceptance one. It charges both
+        // aggregates and retained leaf values, because both are what the parse actually holds. A
+        // spec-compliant investment entry is a wrapper plus up to three nested detail aggregates
+        // (BUYSTOCK > INVBUY > SECID/INVTRAN) carrying on the order of a dozen leaves between them, so
+        // 32x the entry bound leaves roughly double the headroom a real statement needs. Acceptance is
+        // decided by maxEntries; this only stops the tree growing without limit before any entry exists
+        // to count.
+        var maxNodes = maxEntries > (int.MaxValue - 64) / 32 ? int.MaxValue : (maxEntries * 32) + 64;
         var nodes = 0;
         var root = new OfxNode("OFX-ROOT", null);
         var stack = new Stack<OfxNode>();
@@ -124,6 +126,17 @@ public static class OfxDocumentParser
             var value = (valueEnd < 0 ? body[index..] : body[index..valueEnd]).Trim();
             if (value.Length > 0)
             {
+                // Leaves are charged too. They are not aggregates, so an earlier version of this budget
+                // never counted them - and a document of hundreds of thousands of uniquely named leaf
+                // tags built an arbitrarily large dictionary and string graph while the aggregate count
+                // stayed near zero. Same shape as attributes escaping the camt subtree budget: whatever
+                // the parse retains has to be charged, not just whatever the loop calls a node.
+                if (++nodes > maxNodes)
+                {
+                    bound = OfxParseBound.TooManyEntries;
+                    break;
+                }
+
                 stack.Peek().Leaves[name] = DecodeEntities(value);
             }
             else

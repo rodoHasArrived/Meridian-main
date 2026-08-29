@@ -79,6 +79,13 @@ public static class CsvLineSplitter
     /// A line count alone does not bound a CSV. One line can carry the entire document, and splitting its
     /// fields then materializes a list entry and a string per delimiter - a single-line exhaustion path
     /// that a row bound never sees.
+    ///
+    /// <paramref name="maxLineLength"/> is a bound on the line's UTF-8 <em>byte</em> length, not its
+    /// UTF-16 length. The two differ by up to 3x: a BMP character above U+07FF encodes to three bytes in
+    /// one UTF-16 unit, so a CJK line measured by character count slips 3x past a byte cap. The character
+    /// count is still used as a fast pre-filter, because UTF-8 bytes are never fewer than UTF-16 units -
+    /// a line over the bound in characters is certainly over it in bytes. Only a line long enough to
+    /// possibly breach the bound pays for an exact byte count.
     /// </remarks>
     public static IReadOnlyList<string> SplitLines(
         string content,
@@ -104,7 +111,7 @@ public static class CsvLineSplitter
                 continue;
             }
 
-            if (index - lineStart > maxLineLength)
+            if (ExceedsByteBound(content.AsSpan(lineStart, index - lineStart), maxLineLength))
             {
                 lineTooLong = true;
                 return lines;
@@ -121,7 +128,7 @@ public static class CsvLineSplitter
             lineStart = index;
         }
 
-        if (content.Length - lineStart > maxLineLength)
+        if (ExceedsByteBound(content.AsSpan(lineStart), maxLineLength))
         {
             lineTooLong = true;
             return lines;
@@ -130,5 +137,20 @@ public static class CsvLineSplitter
         // Split always yields a final segment, including the empty one a terminating newline leaves.
         lines.Add(content[lineStart..]);
         return lines;
+    }
+
+    /// <summary>
+    /// Whether a line exceeds a UTF-8 byte bound, counting bytes only when the character count leaves it
+    /// possible. A UTF-16 unit encodes to at most three UTF-8 bytes, so anything at or under a third of
+    /// the bound is certainly inside it, and anything over the bound in characters is certainly outside.
+    /// </summary>
+    private static bool ExceedsByteBound(ReadOnlySpan<char> line, int maxLineBytes)
+    {
+        if (line.Length > maxLineBytes)
+        {
+            return true;
+        }
+
+        return line.Length > maxLineBytes / 3 && Encoding.UTF8.GetByteCount(line) > maxLineBytes;
     }
 }

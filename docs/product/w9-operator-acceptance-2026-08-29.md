@@ -32,8 +32,11 @@ documentation each row's lane owns.
 | `W9-NAV-006` | high | Unitized NAV per share class with an auditable movement-level trail, the fee/waterfall/commitment kernels, and the golden-file worked-example pack computed independently of the implementation. |
 | `W9-CORPACT-011` | high | Durable corporate action case processing with a persisted provider release gate rechecked at acceptance, idempotent actor-attributed transitions, immutable journals with correction lineage, and golden ledger and price-adjustment coverage. **See the approval-lane limitation below, found after this decision was taken.** |
 
-Each accepted row links this file as acceptance evidence and moves to `status: accepted` with
-`evidence_posture: complete`.
+Each accepted row links this file as acceptance evidence and moves to `status: accepted`. Five of the
+six carry `evidence_posture: complete`. **`W9-CORPACT-011` carries `implementation_complete` instead**,
+because of the approval-lane limitation recorded below — found after this decision was taken. Any
+summary that reports a single posture for all six rows contradicts the registry, which owns live
+status.
 
 ### Accepted with a noted operating envelope
 

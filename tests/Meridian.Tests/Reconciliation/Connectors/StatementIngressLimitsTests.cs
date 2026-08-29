@@ -867,6 +867,103 @@ public sealed class StatementIngressLimitsTests : IDisposable
             "three unidentified statements are one unknown account, not three different ones");
     }
 
+    // ---------------------------------------------------------------------------------------------
+    // Round seven: bounds that were declared correctly but measured or reported wrongly
+    // ---------------------------------------------------------------------------------------------
+
+    [Fact]
+    public async Task Csv_BlankLinesOverTheAllocationCap_ReportLineOverflowNotRecordOverflow()
+    {
+        // Two different claims about a file. Blank lines produce no canonical row but still cost a list
+        // entry, so a document can breach the allocation bound while carrying almost no records -
+        // reporting that as STATEMENT_TOO_MANY_RECORDS told the operator something untrue. Row numbers
+        // are physical line indices, so the blanks cannot simply be dropped to dodge the bound.
+        var connector = new CsvStatementConnector(Catalog(), TightLimits with { MaxRecords = 2 });
+        var padded = "date,amount,description\n2026-05-01,10.00,one\n" + new string('\n', 32);
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("blanks.csv", Encoding.UTF8.GetBytes(padded)));
+
+        var issue = result.Issues.Should().ContainSingle().Subject;
+        issue.Code.Should().Be(StatementIngressLimits.TooManyLinesCode);
+        issue.Code.Should().NotBe(StatementIngressLimits.TooManyRecordsCode, "one record is not a record overflow");
+    }
+
+    [Fact]
+    public async Task Csv_MultibyteLineOverTheByteBound_IsRefusedEvenThoughItsCharacterCountIsUnder()
+    {
+        // MaxLineBytes is a byte bound enforced against a decoded string. A BMP character above U+07FF
+        // is three UTF-8 bytes in one UTF-16 unit, so a CJK line measured by character count slips up to
+        // 3x past the cap. This line is deliberately under the bound in characters and over it in bytes.
+        var connector = new CsvStatementConnector(
+            Catalog(),
+            TightLimits with { MaxRecords = 100, MaxLineBytes = 600 });
+        var wide = "date,amount,description\n2026-05-01,10.00," + new string('\u4e2d', 260) + "\n";
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("wide.csv", Encoding.UTF8.GetBytes(wide)));
+
+        Encoding.UTF8.GetByteCount(new string('\u4e2d', 260)).Should().BeGreaterThan(600, "the row is over the byte bound");
+        new string('\u4e2d', 260).Length.Should().BeLessThan(600, "but under it measured in characters");
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.LineTooLongCode);
+    }
+
+    [Fact]
+    public void BoundedSplitLines_AsciiLineAtTheByteBound_IsStillAccepted()
+    {
+        // The byte-accurate check must not tighten the ordinary ASCII case, where bytes and characters
+        // are the same number.
+        var line = new string('a', 64);
+
+        var lines = CsvLineSplitter.SplitLines(line + "\n", maxLines: 10, maxLineLength: 64, out var tooLong);
+
+        tooLong.Should().BeFalse();
+        lines.Should().Contain(line);
+    }
+
+    [Fact]
+    public async Task Ofx_LeafHeavyDocument_IsCountedAgainstTheAllocationBudget()
+    {
+        // Leaves are retained in a dictionary but were never charged, so a document of uniquely named
+        // leaf tags grew the graph without moving the aggregate count - the same hole attributes had in
+        // the camt subtree budget.
+        var connector = new OfxStatementConnector(
+            Catalog(),
+            TightLimits with { MaxDocumentBytes = 4 * 1024 * 1024, MaxRecords = 4, MaxNestingDepth = 64 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("leafy.ofx", BuildLeafHeavyOfx(leafCount: 4000)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+    }
+
+    [Fact]
+    public async Task Camt_BalanceBeforeAccount_StillCarriesTheStatementIdentity()
+    {
+        // A well-formed-but-malformed statement can place Bal before its own Acct. Pass two used to emit
+        // that row with an empty account and learn the identity afterwards, so ValidateAsync called the
+        // document valid while CommitAsync rejected the blank-account rows at EnsureParsedAccountAuthority.
+        // The identity is now seeded from the first pass, which already resolved it.
+        var outOfOrder = new StringBuilder()
+            .Append("<Stmt><Id>STMT-1</Id>")
+            .Append("<Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp>")
+            .Append("<Amt Ccy=\"EUR\">12345.67</Amt><CdtDbtInd>CRDT</CdtDbtInd>")
+            .Append("<Dt><Dt>2026-05-31</Dt></Dt></Bal>")
+            .Append("<Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>")
+            .Append("</Stmt>")
+            .ToString();
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 100, MaxNestingDepth = 64 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("outoforder.xml", BuildCamtDocument(outOfOrder)));
+
+        result.HasErrors.Should().BeFalse();
+        result.Records.Should().NotBeEmpty();
+        result.Records.Should().OnlyContain(record => record.Account == "DE89370400440532013000");
+    }
+
     private static StatementImportCommitRequest CommitRequest(StatementSourceDocument document)
         => new(
             document,
@@ -985,4 +1082,19 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
         return Encoding.UTF8.GetBytes(builder.Append("</OFX>\n").ToString());
     }
+
+    private static byte[] BuildLeafHeavyOfx(int leafCount)
+    {
+        var builder = new StringBuilder()
+            .Append("OFXHEADER:100\nDATA:OFXSGML\nVERSION:102\n\n")
+            .Append("<OFX>\n<BANKMSGSRSV1>\n<STMTTRNRS>\n<STMTRS>\n");
+
+        for (var index = 0; index < leafCount; index++)
+        {
+            builder.Append($"<LEAF{index:D6}>value-{index}\n");
+        }
+
+        return Encoding.UTF8.GetBytes(builder.Append("</STMTRS>\n</STMTTRNRS>\n</BANKMSGSRSV1>\n</OFX>\n").ToString());
+    }
+
 }

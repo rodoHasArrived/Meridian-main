@@ -106,7 +106,15 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
         var records = new List<StatementCanonicalRecord>();
         var rowNumber = 0;
-        string? account = null;
+
+        // Seeded from pass one rather than discovered in document order. A well-formed-but-malformed
+        // statement can place Bal or Ntry before its own Acct, and pass two would then emit those rows
+        // with an empty account and only learn the identity afterwards - so ValidateAsync reported the
+        // document valid while CommitAsync rejected the blank-account rows at EnsureParsedAccountAuthority.
+        // The element-axis parser this replaced resolved Acct first regardless of document order; seeding
+        // restores that. accountSeen stays false so the duplicate-Acct refusal still fires on the element
+        // itself when pass two reaches it.
+        var account = scan.FirstAccount;
         var accountSeen = false;
         var accountCurrency = "USD";
 
@@ -375,7 +383,8 @@ public sealed class Camt053StatementConnector : IStatementConnector
     {
         var statementCount = 0;
         var distinctAccounts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        scan = new StatementScan(0, distinctAccounts);
+        string? firstAccount = null;
+        scan = new StatementScan(0, distinctAccounts, null);
         issue = null;
 
         try
@@ -445,7 +454,13 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 }
 
                 accountSeenForStatement = true;
-                distinctAccounts.Add(ResolveAccount(accountElement) ?? UnknownAccount);
+                var resolvedAccount = ResolveAccount(accountElement);
+                if (statementCount == 1)
+                {
+                    firstAccount = resolvedAccount;
+                }
+
+                distinctAccounts.Add(resolvedAccount ?? UnknownAccount);
             }
 
             if (statementOpen && !accountSeenForStatement)
@@ -459,7 +474,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
             return false;
         }
 
-        scan = new StatementScan(statementCount, distinctAccounts);
+        scan = new StatementScan(statementCount, distinctAccounts, firstAccount);
         return true;
     }
 
@@ -474,7 +489,10 @@ public sealed class Camt053StatementConnector : IStatementConnector
     /// distinct account identifiers — each of which costs its own <c>Acct</c> subtree in a document that
     /// is already byte-capped. Both diagnostics keep their exact wording.
     /// </summary>
-    private readonly record struct StatementScan(int StatementCount, HashSet<string> DistinctAccounts);
+    private readonly record struct StatementScan(
+        int StatementCount,
+        HashSet<string> DistinctAccounts,
+        string? FirstAccount);
 
     // Materializes the element the reader is positioned on, and nothing else, enforcing the nesting bound
     // as it goes. XElement.Load over a subtree reader would copy the subtree without checking depth, so a

@@ -52,6 +52,14 @@ public sealed record StatementIngressLimits(
     /// <summary>Issue code for a line longer than the cap allows.</summary>
     public const string LineTooLongCode = "STATEMENT_LINE_TOO_LONG";
 
+    /// <summary>
+    /// Issue code for a document carrying more raw lines than the allocation bound allows. Distinct from
+    /// <see cref="TooManyRecordsCode"/> on purpose: blank lines map to no canonical row but still cost a
+    /// list entry, so a file can breach the line bound while being nowhere near the record bound.
+    /// Reporting that as record overflow told the operator something untrue about their file.
+    /// </summary>
+    public const string TooManyLinesCode = "STATEMENT_TOO_MANY_LINES";
+
     /// <summary>Issue code for a payload nested deeper than the cap allows.</summary>
     public const string NestingTooDeepCode = "STATEMENT_NESTING_TOO_DEEP";
 
@@ -72,6 +80,13 @@ public sealed record StatementIngressLimits(
         TooManyRecordsCode,
         $"The statement produced more than {MaxRecords} records, above the ingress limit. " +
         "Split the statement into smaller files, or raise the configured limit deliberately before importing.");
+
+    public StatementParseIssue TooManyLines(int lineBound) => StatementParseIssue.Error(
+        TooManyLinesCode,
+        $"The statement document contains more than {lineBound} lines, above the ingress allocation limit. " +
+        "Blank lines count toward this bound because each one still costs memory to discover, even though " +
+        "none of them produces a record. Split the statement into smaller files, or raise the configured " +
+        "limit deliberately before importing.");
 
     public StatementParseIssue LineTooLong(int rowNumber) => StatementParseIssue.Error(
         LineTooLongCode,

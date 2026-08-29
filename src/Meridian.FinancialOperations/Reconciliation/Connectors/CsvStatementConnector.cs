@@ -73,7 +73,8 @@ public sealed class CsvStatementConnector(
         // newline leaves, and an equal allowance for interspersed blank lines - because it exists to cap
         // allocation, not to decide acceptance. Acceptance is decided below on nonblank lines, so an
         // ordinary file carrying exactly the permitted rows plus a header and a trailing newline is not
-        // refused by an off-by-a-couple line count.
+        // refused by an off-by-a-couple line count. The two bounds report under different codes: they are
+        // different claims about the file, and conflating them misreports one as the other.
         var hardLineCap = _ingressLimits.MaxRecords * 2 + 4;
         var lines = CsvLineSplitter.SplitLines(
             content, hardLineCap, _ingressLimits.MaxLineBytes, out var lineTooLong);
@@ -95,9 +96,19 @@ public sealed class CsvStatementConnector(
             }
         }
 
-        if (nonBlankLines > _ingressLimits.MaxRecords + 1 || lines.Count > hardLineCap)
+        if (nonBlankLines > _ingressLimits.MaxRecords + 1)
         {
             return CsvIngressRefusal(_ingressLimits.TooManyRecords());
+        }
+
+        // Reported separately from the record bound, because they are not the same statement about the
+        // file. Blank lines produce no canonical row but still cost a list entry, so a document can breach
+        // the allocation bound while carrying only a handful of records - and calling that "too many
+        // records" told the operator something untrue about what they had submitted. Row numbers are
+        // physical line indices, so blank lines cannot simply be dropped to dodge the bound.
+        if (lines.Count > hardLineCap)
+        {
+            return CsvIngressRefusal(_ingressLimits.TooManyLines(hardLineCap));
         }
 
         var firstContentLine = lines.FirstOrDefault(static line => !string.IsNullOrWhiteSpace(line));
