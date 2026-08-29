@@ -32,6 +32,13 @@ record.
 Nothing here is a correctness emergency. The risks are extensibility and institutional-completeness
 risks that compound as new asset classes land.
 
+> **Superseded on 2026-08-28 — do not read the two sentences above as current.** They were accurate
+> for the findings that pass had. The 2026-08-28 scheduled pass filed three shipped-behaviour defects
+> that are correctness and access-control problems rather than extensibility ones: the desktop lane
+> mutates the golden record with no authorization check (P5), the legacy preferred-terms PATCH route
+> bypasses the governed-amendment gate (P1), and editing an alias erases it from earlier recorded-as-of
+> views (P3b). The architectural assessment below is unaffected.
+
 > **Verification pass, 2026-08-14.** Re-read against current source at `4b39e9da8`. The findings
 > below stand as written except where a **Status (2026-08-14)** note says otherwise; four of the ten
 > risk items have since closed or materially narrowed. See
@@ -64,9 +71,20 @@ risks that compound as new asset classes land.
 > behaviour deltas.
 >
 > **Scheduled institutional-requirements pass, 2026-08-28.** Re-read against `d3793290`, then
-> extended under review. The verdict stands. Every closure claimed by the 2026-08-26 resolution was
-> independently re-verified against source rather than taken on the resolution's word, and all of
-> them hold. N4, N5, N6 and the three deferred items are unchanged. Six new items are filed
+> extended under review.
+>
+> **The architectural verdict stands; the risk verdict above it does not, and is superseded here.**
+> The design assessment is unchanged — the asset model, extension points and cross-asset seams are
+> sound, and every closure claimed by the 2026-08-26 resolution was independently re-verified against
+> source rather than taken on the resolution's word, and all of them hold. But the opening line
+> "nothing here is a correctness emergency… the risks are extensibility and institutional-completeness
+> risks" was written before this pass, and three of the six items filed below are neither: an
+> authorization bypass on a configured desktop host (P5), an ungated maker-checker route (P1's legacy
+> PATCH), and recorded-history loss on alias edits (P3b). Those are shipped-behaviour defects in
+> correctness and access control. The 2026-08-13 wording is left in place as the record of what that
+> pass concluded; read it as superseded from here, not as current.
+>
+> N4, N5, N6 and the three deferred items are unchanged. Six new items are filed
 > (P1–P4 plus P3b and P5, which review surfaced). See
 > [Scheduled institutional-requirements pass — 2026-08-28](#scheduled-institutional-requirements-pass--2026-08-28).
 >
