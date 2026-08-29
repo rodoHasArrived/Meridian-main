@@ -142,7 +142,12 @@ public static class OfxDocumentParser
             }
             else
             {
-                if (stack.Count > maxDepth)
+                // stack carries the synthetic OFX-ROOT pushed before the walk, so its Count is one more
+                // than the aggregate depth the document actually declares. Comparing Count directly
+                // refused a document nested at exactly MaxNestingDepth, one level earlier than the camt
+                // and Flex guards, which accept reader.Depth == MaxNestingDepth. The same configured
+                // limit has to mean the same thing in every connector that reads it.
+                if (stack.Count - 1 > maxDepth)
                 {
                     bound = OfxParseBound.NestingTooDeep;
                     break;

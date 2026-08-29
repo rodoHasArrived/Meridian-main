@@ -95,22 +95,13 @@ public sealed class CsvStatementConnector(
             return CsvIngressRefusal(_ingressLimits.LineTooLong(lines.Count + 1));
         }
 
-        // Every canonical row comes from a nonblank line, and one of those is the header, so more than
-        // MaxRecords + 1 nonblank lines cannot yield a result inside the record cap. Blank lines are
-        // excluded: they map to no row, and counting them would refuse ordinary files.
-        var nonBlankLines = 0;
-        foreach (var line in lines)
-        {
-            if (!string.IsNullOrWhiteSpace(line))
-            {
-                nonBlankLines++;
-            }
-        }
-
-        if (nonBlankLines > _ingressLimits.MaxRecords + 1)
-        {
-            return CsvIngressRefusal(_ingressLimits.TooManyRecords());
-        }
+        // There is deliberately no "nonblank lines cannot exceed MaxRecords + 1" precheck here. It read as
+        // a cheap early refusal, but it predicted one canonical record per nonblank line, and MapRecord
+        // rejects rows: a file of one valid row and three malformed ones retains a single record and three
+        // diagnostics, both well inside their bounds, yet that precheck refused it as record overflow.
+        // Allocation is bounded without predicting anything - hardLineCap below bounds line discovery, the
+        // mapping loop bounds records as it appends them, and MaxDiagnostics bounds what rejected rows
+        // retain - so the bound that fires is the one whose message is true of the file.
 
         // Reported separately from the record bound, because they are not the same statement about the
         // file. Blank lines produce no canonical row but still cost a list entry, so a document can breach

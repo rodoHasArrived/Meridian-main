@@ -329,16 +329,17 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
-    public async Task Csv_RecordsOverCap_AreRefusedWithoutMappingAnyRow()
+    public async Task Csv_RecordsOverCap_AreRefused()
     {
         // The connector-side half: CSV received no limits at all before, so it decoded, split, and
         // accumulated every row. A compact CSV inside the byte cap can still carry millions of rows, and
         // the peak allocation is what the bound exists to avoid - rejecting afterwards is too late.
         //
-        // This asserted two surviving rows when the guard sat on the record-append loop. The bound now
-        // runs during line discovery, ahead of any mapping, so an over-cap file yields no rows at all -
-        // a stricter outcome than the one this test originally pinned, and the one the connector should
-        // have had from the start.
+        // This briefly asserted that an over-cap file yielded NO rows, because the guard was moved to line
+        // discovery on the argument that stricter was better. That guard predicted one record per nonblank
+        // line, which is false whenever MapRecord rejects a row, so it refused valid files; it is gone and
+        // the assertion is back to the bounded-append outcome. Allocation is still bounded - by the raw
+        // line cap and by the append loop - so nothing is given up by not predicting.
         var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
         var connector = new CsvStatementConnector(catalog, StatementIngressLimits.Default with { MaxRecords = 2 });
         var document = new StatementSourceDocument(
@@ -347,8 +348,30 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
         var result = await connector.ParseAsync(document);
 
-        result.Records.Should().BeEmpty("the bound refuses during line discovery, before a single row is mapped");
+        result.Records.Should().HaveCount(2, "the append loop stops at the cap rather than predicting from line count");
         result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+    }
+
+    [Fact]
+    public async Task Csv_MalformedRows_AreNotCountedAsRecordsTheyNeverBecome()
+    {
+        // One valid row and three malformed ones, against a cap of three: the parse retains a single
+        // record and three diagnostics, both inside their bounds. The removed precheck counted five
+        // nonblank lines - header included - against MaxRecords + 1 and refused the file outright.
+        var connector = new CsvStatementConnector(
+            Catalog(),
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 3, MaxLineBytes = 4096 });
+        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,not-a-date\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,also-bad\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,still-bad\n";
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("mixed.csv", Encoding.UTF8.GetBytes(csv)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Records.Should().ContainSingle("only the well-formed row becomes a canonical record");
     }
 
     [Fact]
@@ -2038,6 +2061,78 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
         result.HasErrors.Should().BeTrue();
         result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.NestingTooDeepCode);
+    }
+
+    [Fact]
+    public async Task Ofx_NestedExactlyAtTheDepthLimit_IsAccepted()
+    {
+        // The guard compared stack.Count directly, but the stack carries the synthetic OFX-ROOT pushed
+        // before the walk, so its Count is one more than the depth the document declares. That refused a
+        // document nested at exactly MaxNestingDepth - one level earlier than the camt and Flex guards,
+        // which accept reader.Depth == MaxNestingDepth. This test fails before that fix.
+        var connector = new OfxStatementConnector(
+            Catalog(),
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxNestingDepth = 8 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("exact-depth.ofx", BuildDeeplyNestedOfx(depth: 8)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.NestingTooDeepCode);
+    }
+
+    [Fact]
+    public async Task Ofx_NestedOneLevelPastTheDepthLimit_IsRefused()
+    {
+        // The other half of the boundary: correcting the off-by-one must not stop the bound biting.
+        var connector = new OfxStatementConnector(
+            Catalog(),
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxNestingDepth = 8 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("past-depth.ofx", BuildDeeplyNestedOfx(depth: 9)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.NestingTooDeepCode);
+    }
+
+    [Fact]
+    public async Task Alpaca_NestingOverTheConfiguredDepth_ReportsNestingRatherThanInvalidSnapshot()
+    {
+        // The scan reader was built with System.Text.Json's default 64-level ceiling rather than the
+        // configured one, so its own CurrentDepth check could never report the named diagnostic: the
+        // reader threw first, the catch deferred to Deserialize, and the operator saw INVALID_SNAPSHOT -
+        // which says nothing about a depth bound they can configure. Both the reader and the deserializer
+        // are now built from MaxNestingDepth.
+        var connector = new AlpacaActivityStatementConnector(
+            Catalog(),
+            [],
+            [],
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxNestingDepth = 3 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("deep.json", BuildAlpacaSnapshot(cashTransactionCount: 1)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.NestingTooDeepCode);
+        result.Issues.Should().NotContain(issue => issue.Code == "INVALID_SNAPSHOT");
+    }
+
+    [Fact]
+    public async Task Alpaca_OrdinaryNesting_IsNotRefusedByTheDepthLimit()
+    {
+        // The control: the same snapshot under the suite's ordinary depth allowance still parses.
+        var connector = new AlpacaActivityStatementConnector(
+            Catalog(),
+            [],
+            [],
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxNestingDepth = 8 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("ordinary-depth.json", BuildAlpacaSnapshot(cashTransactionCount: 1)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.NestingTooDeepCode);
+        result.Issues.Should().NotContain(issue => issue.Code == "INVALID_SNAPSHOT");
+        result.Records.Should().NotBeEmpty();
     }
 
     [Fact]

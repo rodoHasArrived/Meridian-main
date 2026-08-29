@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Meridian.Contracts.Integrity;
 using Meridian.Execution.Sdk;
 
@@ -21,6 +22,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
 
     private readonly StatementMappingProfileCatalog _catalog;
     private readonly StatementIngressLimits _limits;
+    private readonly JsonTypeInfo<AlpacaStatementSnapshot> _snapshotTypeInfo;
     private readonly IBrokerageActivitySync? _activitySync;
     private readonly IBrokeragePortfolioSync? _portfolioSync;
 
@@ -32,6 +34,19 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
     {
         _catalog = catalog;
         _limits = limits ?? StatementIngressLimits.Default;
+
+        // Both the pre-scan reader and the deserializer must be built from the configured depth, not from
+        // System.Text.Json's built-in 64-level default. Left at the default, a deployment that raises
+        // MaxNestingDepth above 64 cannot actually raise it here: the reader throws before the scan's own
+        // depth check can report STATEMENT_NESTING_TOO_DEEP, and the deserializer then fails at the same
+        // ceiling and reports INVALID_SNAPSHOT instead. One past the bound, so the named diagnostic wins.
+        // Copied from the source-generated context's options so the generated resolver is preserved.
+        var snapshotOptions = new JsonSerializerOptions(AlpacaStatementSnapshotJsonContext.Default.Options)
+        {
+            MaxDepth = _limits.MaxNestingDepth + 1
+        };
+        _snapshotTypeInfo = (JsonTypeInfo<AlpacaStatementSnapshot>)snapshotOptions.GetTypeInfo(
+            typeof(AlpacaStatementSnapshot));
         _activitySync = activitySyncs.FirstOrDefault(static sync =>
             string.Equals(sync.ProviderId, ProviderId, StringComparison.OrdinalIgnoreCase));
         _portfolioSync = portfolioSyncs.FirstOrDefault(static sync =>
@@ -150,9 +165,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
         AlpacaStatementSnapshot? snapshot = null;
         try
         {
-            snapshot = JsonSerializer.Deserialize(
-                document.Content.Span,
-                AlpacaStatementSnapshotJsonContext.Default.AlpacaStatementSnapshot);
+            snapshot = JsonSerializer.Deserialize(document.Content.Span, _snapshotTypeInfo);
         }
         catch (JsonException ex)
         {
@@ -494,7 +507,9 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
     /// </remarks>
     private StatementParseIssue? ScanForBoundBreach(ReadOnlySpan<byte> content)
     {
-        var reader = new Utf8JsonReader(content);
+        var reader = new Utf8JsonReader(
+            content,
+            new JsonReaderOptions { MaxDepth = _limits.MaxNestingDepth + 1 });
         var tokens = 0;
 
         try
