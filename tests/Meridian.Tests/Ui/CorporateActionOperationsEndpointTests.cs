@@ -389,9 +389,168 @@ public sealed class CorporateActionOperationsEndpointTests
         availability.AllowedTransitionTargets.Should().NotContain(CorporateActionCaseStates.Cancelled);
     }
 
+    [Fact]
+    public async Task Inbox_WhenTheScopeAuthorityIsComposed_StopsReportingTheFanOutBlocker()
+    {
+        var service = Substitute.For<ICorporateActionOperationsService>();
+        service.GetInboxAsync(Arg.Any<CorporateActionCaseScopeDto>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(CreateInbox());
+        await using var app = await CreateAppAsync(
+            service,
+            UserPermission.ViewCorporateActions |
+            UserPermission.ModifySecurityMaster |
+            UserPermission.ResolveCorporateActionTerms,
+            PermissiveScopeFanOut());
+
+        var response = await app.GetTestClient().GetAsync("/api/security-master/corporate-actions/inbox");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<CorporateActionDurableInboxDto>(JsonOptions);
+        var entry = payload!.Staged.Should().ContainSingle().Subject;
+        entry.ActionAvailability.Blockers.Should().NotContain(FanOutBlocker);
+        entry.ActionAvailability.CanAccept.Should().BeTrue();
+        entry.ActionAvailability.CanReject.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task RejectSourceProposal_WhenTheFactReachesSeveralScopes_RefusesWithoutCallingTheService()
+    {
+        var service = Substitute.For<ICorporateActionOperationsService>();
+        service.GetSourceProposalAsync(ProposalId, Arg.Any<CancellationToken>())
+            .Returns(ObservedProposal());
+        var gate = Substitute.For<ICorporateActionScopeFanOutGate>();
+        gate.ResolveDecisionScopeAsync(
+                Arg.Any<Guid>(), Arg.Any<DateOnly>(), Arg.Any<string>(), Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(CorporateActionScopeFanOutDecision.Refused(
+                CorporateActionScopeFanOutRefusal.MultiScope,
+                CorporateActionScopeFanOutGate.MultiScopeBlocker));
+        await using var app = await CreateAppAsync(
+            service,
+            UserPermission.ModifySecurityMaster | UserPermission.ResolveCorporateActionTerms,
+            gate);
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            $"/api/security-master/corporate-actions/source-proposals/{ProposalId:D}/reject",
+            RejectRequest(),
+            JsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        problem.RootElement.GetProperty("code").GetString()
+            .Should().Be(CorporateActionProblemCodes.DownstreamAuthorityRequired);
+        await service.DidNotReceive().RejectSourceProposalAsync(
+            Arg.Any<RejectCorporateActionSourceProposalRequestDto>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RejectSourceProposal_WhenTheFactReachesAnotherTenant_RefusesWithoutNamingIt()
+    {
+        var service = Substitute.For<ICorporateActionOperationsService>();
+        service.GetSourceProposalAsync(ProposalId, Arg.Any<CancellationToken>())
+            .Returns(ObservedProposal());
+        var gate = Substitute.For<ICorporateActionScopeFanOutGate>();
+        gate.ResolveDecisionScopeAsync(
+                Arg.Any<Guid>(), Arg.Any<DateOnly>(), Arg.Any<string>(), Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(CorporateActionScopeFanOutDecision.Refused(
+                CorporateActionScopeFanOutRefusal.ForeignScope,
+                CorporateActionScopeFanOutGate.ForeignScopeBlocker));
+        await using var app = await CreateAppAsync(
+            service,
+            UserPermission.ModifySecurityMaster | UserPermission.ResolveCorporateActionTerms,
+            gate);
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            $"/api/security-master/corporate-actions/source-proposals/{ProposalId:D}/reject",
+            RejectRequest(),
+            JsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        problem.RootElement.GetProperty("code").GetString()
+            .Should().Be(CorporateActionProblemCodes.ScopeMismatch);
+        await service.DidNotReceive().RejectSourceProposalAsync(
+            Arg.Any<RejectCorporateActionSourceProposalRequestDto>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RejectSourceProposal_WhenTheAffectedSetIsTheCallersOwnScope_ReachesTheService()
+    {
+        var service = Substitute.For<ICorporateActionOperationsService>();
+        service.GetSourceProposalAsync(ProposalId, Arg.Any<CancellationToken>())
+            .Returns(ObservedProposal());
+        service.RejectSourceProposalAsync(
+                Arg.Any<RejectCorporateActionSourceProposalRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(new CorporateActionSourceProposalDecisionResultDto(
+                ObservedProposal() with { State = CorporateActionSourceProposalStates.Rejected },
+                Replayed: false));
+        await using var app = await CreateAppAsync(
+            service,
+            UserPermission.ModifySecurityMaster | UserPermission.ResolveCorporateActionTerms,
+            PermissiveScopeFanOut());
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            $"/api/security-master/corporate-actions/source-proposals/{ProposalId:D}/reject",
+            RejectRequest(),
+            JsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        await service.Received(1).RejectSourceProposalAsync(
+            Arg.Is<RejectCorporateActionSourceProposalRequestDto>(rejected =>
+                rejected.ProposalId == ProposalId && rejected.Actor == "operations-user"),
+            Arg.Any<CancellationToken>());
+    }
+
+    private static ICorporateActionScopeFanOutGate PermissiveScopeFanOut()
+    {
+        var gate = Substitute.For<ICorporateActionScopeFanOutGate>();
+        gate.ResolveDecisionScopeAsync(
+                Arg.Any<Guid>(), Arg.Any<DateOnly>(), Arg.Any<string>(), Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => new CorporateActionScopeFanOutDecision(
+                true,
+                new CorporateActionCaseScopeDto(call.ArgAt<string>(2), call.ArgAt<string>(3)),
+                CorporateActionScopeFanOutRefusal.None,
+                []));
+        return gate;
+    }
+
+    private static RejectCorporateActionSourceProposalRequestDto RejectRequest() =>
+        new(
+            ProposalId,
+            ExpectedVersion: 7,
+            IdempotencyKey: "reject:proposal:v7",
+            Actor: "browser",
+            Reason: "Provider observation does not match retained evidence.");
+
+    private static CorporateActionSourceProposalDto ObservedProposal()
+    {
+        var now = new DateTimeOffset(2026, 8, 25, 12, 0, 0, TimeSpan.Zero);
+        var action = Dividend();
+        return new CorporateActionSourceProposalDto(
+            ProposalId,
+            SecurityId,
+            new CorporateActionProviderEventIdentityDto("provider-a", "event-1", "v1", now),
+            action,
+            action.PayloadSchemaVersion,
+            CorporateActionEconomicFingerprint.Compute(action),
+            CorporateActionSourceProposalStates.Observed,
+            Version: 7,
+            SupersedesProposalId: null,
+            AcceptedCorporateActionId: null,
+            InitialCaseId: null,
+            RecordedBy: "ingest",
+            RecordedAtUtc: now.AddMinutes(-10),
+            UpdatedAtUtc: now);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         ICorporateActionOperationsService service,
-        UserPermission permissions)
+        UserPermission permissions,
+        ICorporateActionScopeFanOutGate? scopeFanOut = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -401,6 +560,10 @@ public sealed class CorporateActionOperationsEndpointTests
         builder.Services.AddMutationRateLimiter();
         builder.Services.AddSingleton(service);
         builder.Services.AddSingleton(Substitute.For<ISecurityMasterQueryService>());
+        if (scopeFanOut is not null)
+        {
+            builder.Services.AddSingleton(scopeFanOut);
+        }
 
         var app = builder.Build();
         app.UseRateLimiter();

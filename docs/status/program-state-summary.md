@@ -30,10 +30,11 @@ Snapshot date: 2026-08-10
 | W9-ALPACA-004 | W9 | Alpaca fill streaming into order and ledger state | Trading | ready_for_acceptance | green | high | Execution and Fund Accounts | implementation_complete | 2026-08-10 |
 | W9-REPORT-005 | W9 | Client-grade PDF/XLSX exports and partners-capital statement | Reporting; Accounting | ready_for_acceptance | green | high | Accounting and Ledger | implementation_complete | 2026-08-10 |
 | W9-NAV-006 | W9 | Unitized NAV and real fee, waterfall, and capital-call economics | Accounting; Portfolio | ready_for_acceptance | green | high | Accounting and Ledger | implementation_complete | 2026-08-10 |
-| W9-SAFETY-007 | W9 | Kill-switch cancel-all and fat-finger, notional, and collar rules | Trading; Settings | in_progress | green | high | Execution and Fund Accounts | in_progress | 2026-08-24 |
-| W9-GOV-008 | W9 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | Settings; Accounting | planned | green | high | Platform Security and Governance | planned_evidence | 2026-08-24 |
+| W9-SAFETY-007 | W9 | Kill-switch cancel-all and fat-finger, notional, and collar rules | Trading; Settings | in_progress | green | high | Execution and Fund Accounts | in_progress | 2026-08-25 |
+| W9-GOV-008 | W9 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | Settings; Accounting | planned | green | high | Platform Security and Governance | planned_evidence | 2026-08-29 |
 | W9-INGEST-009 | W9 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | Accounting; Data | planned | green | high | Accounting and Ledger | planned_evidence | 2026-08-10 |
 | W9-ASSET-010 | W9 | Asset Accounting Event Spine and atomic lot posting | Accounting; Portfolio; Reporting | done | green | critical | Accounting and Ledger | complete | 2026-07-28 |
+| W10-DEBT-001 | W10 | God-file burn-down against the file-size ratchet | - | planned | green | medium | Workstation Shell and UX | planned_evidence | 2026-08-29 |
 | W10-MARK-001 | W10 | Fail-closed stale-mark policy and mark-age surfacing | Accounting; Portfolio | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
 | W10-RECON-001 | W10 | Durable break lineage identity and run-over-run break diff | Accounting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
 | W10-PROV-001 | W10 | Ledger-amount evidence subject and shared proof drawer | Accounting; Reporting; Portfolio | planned | green | high | Workstation Shell and UX | planned_evidence | 2026-07-31 |

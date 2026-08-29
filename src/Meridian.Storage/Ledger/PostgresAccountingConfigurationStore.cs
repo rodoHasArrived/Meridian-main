@@ -1,8 +1,11 @@
+using System.Data;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Ledger;
 using Npgsql;
 using NpgsqlTypes;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
@@ -15,6 +18,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
+
+    private string HeadTable => Qualified("accounting_action_audit_chain_head");
 
     public async Task<AccountingConfigurationWorkspaceDto?> GetAsync(
         string fundProfileId,
@@ -103,12 +108,47 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Appends an audit event and extends the tamper-evident chain over it (W9-GOV-008 criterion 3).
+    /// </summary>
+    /// <remarks>
+    /// <para>The head is a locked row advanced in the same transaction as the insert, following
+    /// <c>PostgresReportingArtifactAuditStore</c> rather than inventing a second scheme: the digest
+    /// shape is the one <see cref="AccountingAuditChain"/> defines, so the file posture and this one
+    /// carry identical tamper-evidence and an operator does not have to learn two models depending
+    /// on which store a deployment happens to have configured.</para>
+    ///
+    /// <para>Fails closed. The head is verified against the final retained event before the append,
+    /// so a mutated, reordered or truncated history cannot acquire valid-looking successors — and
+    /// because the verification and the advance share one transaction, two concurrent appenders
+    /// cannot both chain off the same predecessor and fork the chain.</para>
+    /// </remarks>
+    /// <exception cref="AccountingAuditChainIntegrityException">The retained chain does not verify.</exception>
     public async Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(auditEvent);
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted, ct)
+            .ConfigureAwait(false);
+
+        var head = await LockAndReadChainHeadAsync(connection, transaction, ct).ConfigureAwait(false);
+        await VerifyChainHeadAsync(connection, transaction, head, ct).ConfigureAwait(false);
+
+        // Digest the event as it will actually be stored, not as it arrived. AddTextOrNull trims and
+        // nulls blank text, so hashing the raw DTO records a digest of a value the row does not hold:
+        // the append commits, and the next append -- which recomputes the payload digest from the
+        // retained row -- reports EventMutated and refuses, permanently stopping the chain over an
+        // event nobody touched. Normalizing once, here, is what keeps "what was hashed" and "what was
+        // written" the same string.
+        var normalized = NormalizeForPersistence(auditEvent);
+        var payloadHash = AccountingAuditChain.ComputePayloadHash(normalized);
+        var entryHash = AccountingAuditChain.ComputeEntryHash(head.NextSequence, head.LastHash, payloadHash);
+        auditEvent = normalized;
+
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             insert into {Qualified("accounting_action_audit_events")} (
@@ -125,7 +165,11 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 evidence_links,
                 tenant_id,
                 company_id,
-                report_group_principal_ids)
+                report_group_principal_ids,
+                chain_sequence,
+                payload_hash,
+                previous_hash,
+                entry_hash)
             values (
                 @audit_event_id,
                 @recorded_at_utc,
@@ -140,7 +184,11 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 @evidence_links,
                 @tenant_id,
                 @company_id,
-                @report_group_principal_ids);
+                @report_group_principal_ids,
+                @chain_sequence,
+                @payload_hash,
+                @previous_hash,
+                @entry_hash);
             """;
         command.Parameters.AddWithValue("audit_event_id", auditEvent.AuditEventId);
         command.Parameters.AddWithValue("recorded_at_utc", auditEvent.RecordedAtUtc.UtcDateTime);
@@ -156,8 +204,214 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         AddTextOrNull(command, "tenant_id", auditEvent.TenantId);
         AddTextOrNull(command, "company_id", auditEvent.CompanyId);
         AddJson(command, "report_group_principal_ids", auditEvent.ReportGroupPrincipalIds ?? []);
+        command.Parameters.AddWithValue("chain_sequence", NpgsqlDbType.Bigint, head.NextSequence);
+        command.Parameters.AddWithValue("payload_hash", NpgsqlDbType.Text, payloadHash);
+        command.Parameters.AddWithValue(
+            "previous_hash", NpgsqlDbType.Text, (object?)head.LastHash ?? DBNull.Value);
+        command.Parameters.AddWithValue("entry_hash", NpgsqlDbType.Text, entryHash);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+
+        await AdvanceChainHeadAsync(connection, transaction, head.NextSequence, entryHash, ct)
+            .ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
+
+    private sealed record AccountingAuditChainHead(
+        long NextSequence,
+        string? LastHash,
+        long GenesisSequence,
+        long PreChainEventCount);
+
+    private async Task<AccountingAuditChainHead> LockAndReadChainHeadAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select next_sequence,
+                   last_hash,
+                   genesis_sequence,
+                   pre_chain_event_count
+            from {HeadTable}
+            where chain_id = 1
+            for update;
+            """;
+        await using var reader = await command
+            .ExecuteReaderAsync(CommandBehavior.SingleRow, ct)
+            .ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            // A missing head is not an empty chain: it means the row that records where the chain
+            // starts is gone, so nothing can say which retained events were ever covered.
+            throw new AccountingAuditChainIntegrityException(new AccountingAuditChainVerification(
+                AccountingAuditChainStatus.AnchorMissing,
+                LinksChecked: 0,
+                PreChainEventCount: 0,
+                "The accounting audit chain head row is missing; append failed closed."));
+        }
+
+        return new AccountingAuditChainHead(
+            reader.GetInt64(0),
+            reader.IsDBNull(1) ? null : reader.GetString(1),
+            reader.GetInt64(2),
+            reader.GetInt64(3));
+    }
+
+    /// <summary>
+    /// Verifies the head against the final chained event before building on it.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately checks both directions. A head that claims events which are not there is a
+    /// truncated tail; chained events past the head are a forked or rewound chain. Either read as
+    /// "fine" if only one direction were checked.
+    /// </remarks>
+    private async Task VerifyChainHeadAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        AccountingAuditChainHead head,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select {AuditEventColumns},
+                   chain_sequence,
+                   payload_hash,
+                   previous_hash,
+                   entry_hash
+            from {Qualified("accounting_action_audit_events")}
+            where chain_sequence is not null
+            order by chain_sequence desc
+            limit 1;
+            """;
+
+        await using var reader = await command
+            .ExecuteReaderAsync(CommandBehavior.SingleRow, ct)
+            .ConfigureAwait(false);
+        var hasChainedEvent = await reader.ReadAsync(ct).ConfigureAwait(false);
+
+        if (head.NextSequence == head.GenesisSequence)
+        {
+            if (head.LastHash is not null)
+            {
+                throw ChainFailure(
+                    AccountingAuditChainStatus.BrokenLink, head,
+                    "An empty accounting audit chain carries a predecessor hash.");
+            }
+
+            if (hasChainedEvent)
+            {
+                throw ChainFailure(
+                    AccountingAuditChainStatus.AnchorMismatch, head,
+                    "Chained accounting audit events exist while the chain head records none.");
+            }
+
+            return;
+        }
+
+        if (!hasChainedEvent)
+        {
+            throw ChainFailure(
+                AccountingAuditChainStatus.MissingEvent, head,
+                "The accounting audit chain head points past every retained chained event.");
+        }
+
+        var finalEvent = ReadAuditEvent(reader);
+        var sequence = reader.GetInt64(14);
+        var payloadHash = reader.GetString(15);
+        var previousHash = reader.IsDBNull(16) ? null : reader.GetString(16);
+        var retainedHash = reader.GetString(17);
+
+        if (sequence != head.NextSequence - 1)
+        {
+            throw ChainFailure(
+                AccountingAuditChainStatus.AnchorMismatch, head,
+                $"The chain head expects sequence {(head.NextSequence - 1).ToString(CultureInfo.InvariantCulture)} "
+                + $"but the final retained event is {sequence.ToString(CultureInfo.InvariantCulture)}.");
+        }
+
+        if (head.LastHash is null)
+        {
+            throw ChainFailure(
+                AccountingAuditChainStatus.BrokenLink, head,
+                "A non-empty accounting audit chain is missing its predecessor hash.");
+        }
+
+        // Recomputed from the retained event, not taken from the stored payload_hash. Deriving the
+        // entry hash from a column the same edit could have rewritten checks only that the row is
+        // self-consistent: an actor, action or evidence list edited together with nothing else would
+        // still satisfy it, and this append would then extend tampered history while reporting that
+        // it had verified the chain.
+        if (!string.Equals(
+                AccountingAuditChain.ComputePayloadHash(finalEvent),
+                payloadHash,
+                StringComparison.Ordinal))
+        {
+            throw ChainFailure(
+                AccountingAuditChainStatus.EventMutated, head,
+                $"The final chained accounting audit event at sequence "
+                + $"{sequence.ToString(CultureInfo.InvariantCulture)} no longer matches its recorded digest.");
+        }
+
+        var computed = AccountingAuditChain.ComputeEntryHash(sequence, previousHash, payloadHash);
+        if (!string.Equals(retainedHash, head.LastHash, StringComparison.Ordinal)
+            || !string.Equals(retainedHash, computed, StringComparison.Ordinal))
+        {
+            throw ChainFailure(
+                AccountingAuditChainStatus.BrokenLink, head,
+                "The accounting audit chain head or its final event failed hash verification.");
+        }
+    }
+
+    private async Task AdvanceChainHeadAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        long sequence,
+        string entryHash,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+
+        // Guarded by the sequence this append read under the row lock: if anything advanced the head
+        // in between, this updates nothing and the append fails rather than forking the chain.
+        command.CommandText =
+            $"""
+            update {HeadTable}
+            set next_sequence = @next_sequence,
+                last_hash = @last_hash
+            where chain_id = 1
+              and next_sequence = @expected_sequence;
+            """;
+        command.Parameters.AddWithValue("next_sequence", NpgsqlDbType.Bigint, sequence + 1);
+        command.Parameters.AddWithValue("last_hash", NpgsqlDbType.Text, entryHash);
+        command.Parameters.AddWithValue("expected_sequence", NpgsqlDbType.Bigint, sequence);
+
+        if (await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) != 1)
+        {
+            throw new AccountingAuditChainIntegrityException(new AccountingAuditChainVerification(
+                AccountingAuditChainStatus.AnchorMismatch,
+                LinksChecked: 0,
+                PreChainEventCount: 0,
+                "The accounting audit chain head could not be advanced atomically.",
+                sequence));
+        }
+    }
+
+    private static AccountingAuditChainIntegrityException ChainFailure(
+        AccountingAuditChainStatus status,
+        AccountingAuditChainHead head,
+        string detail)
+        => new(new AccountingAuditChainVerification(
+            status,
+            LinksChecked: (int)Math.Min(int.MaxValue, Math.Max(0, head.NextSequence - head.GenesisSequence)),
+            PreChainEventCount: (int)Math.Min(int.MaxValue, head.PreChainEventCount),
+            detail,
+            head.NextSequence));
 
     public async Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
         string? fundProfileId = null,
@@ -224,25 +478,58 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            events.Add(new AccountingActionAuditEventDto(
-                reader.GetGuid(0),
-                new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(1), DateTimeKind.Utc)),
-                reader.GetString(2),
-                reader.GetString(3),
-                reader.IsDBNull(4) ? null : reader.GetString(4),
-                reader.IsDBNull(5) ? null : reader.GetGuid(5),
-                reader.IsDBNull(6) ? null : reader.GetString(6),
-                reader.GetString(7),
-                reader.GetString(8),
-                Deserialize<IReadOnlyList<AccountingConfigurationValidationIssueDto>>(reader.GetString(9)) ?? [],
-                Deserialize<IReadOnlyList<string>>(reader.GetString(10)) ?? [],
-                reader.IsDBNull(12) ? null : reader.GetString(12),
-                Deserialize<IReadOnlyList<string>>(reader.GetString(13)) ?? [],
-                reader.IsDBNull(11) ? null : reader.GetString(11)));
+            events.Add(ReadAuditEvent(reader));
         }
 
         return events;
     }
+
+    /// <summary>
+    /// The audit-event column list, in the order <see cref="ReadAuditEvent"/> expects.
+    /// </summary>
+    private const string AuditEventColumns =
+        """
+        audit_event_id,
+        recorded_at_utc,
+        actor,
+        action,
+        fund_profile_id,
+        ledger_book_id,
+        correlation_id,
+        before_hash,
+        after_hash,
+        validation_issues,
+        evidence_links,
+        tenant_id,
+        company_id,
+        report_group_principal_ids
+        """;
+
+    /// <summary>
+    /// Materializes one audit event from <see cref="AuditEventColumns"/>.
+    /// </summary>
+    /// <remarks>
+    /// Shared with the chain verification paths deliberately. Recomputing a payload digest is only
+    /// meaningful if the event it digests was read exactly the way the reading path reads it, so a
+    /// second hand-rolled projection here would be a way for verification and retrieval to disagree
+    /// about the same row.
+    /// </remarks>
+    private static AccountingActionAuditEventDto ReadAuditEvent(NpgsqlDataReader reader)
+        => new(
+            reader.GetGuid(0),
+            new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(1), DateTimeKind.Utc)),
+            reader.GetString(2),
+            reader.GetString(3),
+            reader.IsDBNull(4) ? null : reader.GetString(4),
+            reader.IsDBNull(5) ? null : reader.GetGuid(5),
+            reader.IsDBNull(6) ? null : reader.GetString(6),
+            reader.GetString(7),
+            reader.GetString(8),
+            Deserialize<IReadOnlyList<AccountingConfigurationValidationIssueDto>>(reader.GetString(9)) ?? [],
+            Deserialize<IReadOnlyList<string>>(reader.GetString(10)) ?? [],
+            reader.IsDBNull(12) ? null : reader.GetString(12),
+            Deserialize<IReadOnlyList<string>>(reader.GetString(13)) ?? [],
+            reader.IsDBNull(11) ? null : reader.GetString(11));
 
     private async Task<IReadOnlyList<ChartOfAccountsNodeDto>> LoadChartAsync(
         NpgsqlConnection connection,
@@ -583,6 +870,30 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
     private static void AddTextOrNull(NpgsqlCommand command, string name, string? value)
         => command.Parameters.AddWithValue(name, string.IsNullOrWhiteSpace(value) ? DBNull.Value : value.Trim());
+
+    /// <summary>
+    /// Applies <see cref="AddTextOrNull"/>'s rule to the event itself, so the payload digest covers
+    /// the values the row will hold.
+    /// </summary>
+    /// <remarks>
+    /// The chain digest and the parameter binding must agree on every field, or an event stored with
+    /// a trimmed actor is read back as mutated. The collections need no equivalent: the digest
+    /// already folds null and empty together, which is how <c>ReadAuditEvent</c> materializes them.
+    /// </remarks>
+    private static AccountingActionAuditEventDto NormalizeForPersistence(
+        AccountingActionAuditEventDto auditEvent)
+        => auditEvent with
+        {
+            Actor = NormalizeOptional(auditEvent.Actor) ?? auditEvent.Actor,
+            Action = NormalizeOptional(auditEvent.Action) ?? auditEvent.Action,
+            FundProfileId = NormalizeOptional(auditEvent.FundProfileId),
+            CorrelationId = NormalizeOptional(auditEvent.CorrelationId),
+            BeforeHash = NormalizeOptional(auditEvent.BeforeHash) ?? auditEvent.BeforeHash,
+            AfterHash = NormalizeOptional(auditEvent.AfterHash) ?? auditEvent.AfterHash,
+            TenantId = NormalizeOptional(auditEvent.TenantId),
+            CompanyId = NormalizeOptional(auditEvent.CompanyId),
+        };
+
 
     private static void AddUuidOrNull(NpgsqlCommand command, string name, Guid? value)
         => command.Parameters.AddWithValue(name, value.HasValue ? value.Value : DBNull.Value);

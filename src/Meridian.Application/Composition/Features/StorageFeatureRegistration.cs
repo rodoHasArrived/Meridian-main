@@ -20,6 +20,7 @@ using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.SecurityMaster.CashFlow;
+using Meridian.Application.Tenancy;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.DirectLending;
@@ -262,7 +263,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IValidateOptions<SecurityMasterOptions>, SecurityMasterOptionsValidator>();
             services.AddSingleton<ISecurityMasterEventStore, PostgresSecurityMasterEventStore>();
             services.AddSingleton<ICorporateActionOperationsStore, PostgresCorporateActionOperationsStore>();
-            services.AddSingleton<ICorporateActionOperationsService, CorporateActionOperationsService>();
+            services.AddSingleton<ICorporateActionOperationsService>(sp => new CorporateActionOperationsService(
+                sp.GetRequiredService<ICorporateActionOperationsStore>(),
+                sp.GetRequiredService<ISecurityMasterEventStore>(),
+                sp.GetRequiredService<ISecurityMasterStore>(),
+                sp.GetRequiredService<ICorporateActionRestatementTrigger>(),
+                // Resolved optionally on purpose: the scope authority is composed only where the
+                // holdings and tenancy stores exist, and acceptance fails closed without it.
+                sp.GetService<ICorporateActionScopeFanOutGate>()));
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
             services.AddSingleton<IBondReferenceProjectionStore, PostgresBondReferenceProjectionStore>();
@@ -466,6 +474,26 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
         var useInMemoryGovernanceServices = IsInMemoryGovernanceProfileEnabled();
         EnsureGovernancePersistenceProfile(useInMemoryGovernanceServices);
+
+        // Authoritative multi-tenant scope fan-out. Composed only where every input authority is:
+        // custodied holdings say who holds the security, the fund-profile tenancy registry says who
+        // owns the holding fund, and the security master supplies the identifiers the two are joined
+        // on. A deployment missing any of them cannot enumerate an affected set, so the gate is left
+        // unregistered rather than registered in a state where it could only ever refuse — that
+        // keeps the read-side decision posture honest instead of offering controls that never work.
+        if (SecurityMasterStartup.IsConfigured()
+            && FundAccountsStartup.IsConfigured()
+            && LedgerStartup.IsConfigured())
+        {
+            services.AddSingleton<IScopeAssignmentProvider>(sp => new FundAccountHoldingScopeAssignmentProvider(
+                sp.GetService<IFundAccountStore>(),
+                sp.GetService<IFundProfileTenancyRegistry>(),
+                sp.GetRequiredService<ILogger<FundAccountHoldingScopeAssignmentProvider>>()));
+            services.TryAddSingleton<IAuthoritativeScopeFanOutService, AuthoritativeScopeFanOutService>();
+            services.TryAddSingleton<ICorporateActionScopeFanOutGate>(sp => new CorporateActionScopeFanOutGate(
+                sp.GetRequiredService<IAuthoritativeScopeFanOutService>(),
+                sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>()));
+        }
 
         // Fund accounts and governance structure.
         if (FundAccountsStartup.IsConfigured())

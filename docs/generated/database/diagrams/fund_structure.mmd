@@ -14,6 +14,7 @@ erDiagram
         jsonb investment_portfolio_ids
         text description
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_client {
         uuid client_id PK
@@ -28,6 +29,7 @@ erDiagram
         text description
         text client_segment_kind
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_fund {
         uuid fund_id PK
@@ -45,6 +47,7 @@ erDiagram
         jsonb account_ids
         text description
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_fund_structure_assignment {
         uuid assignment_id PK
@@ -55,6 +58,7 @@ erDiagram
         timestamp_with_time_zone effective_to
         boolean is_primary
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_fund_structure_legacy_import_receipt {
         text source_hash PK
@@ -64,11 +68,22 @@ erDiagram
     fund_structure_fund_structure_linked_account {
         uuid account_id PK
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_fund_structure_schema_migrations {
         text filename PK
         text checksum
         timestamp_with_time_zone applied_at
+    }
+    fund_structure_fund_structure_tenant_quarantine {
+        uuid node_id PK
+        text node_kind
+        text reason
+        jsonb candidate_tenant_ids
+        timestamp_with_time_zone detected_at_utc
+        timestamp_with_time_zone resolved_at_utc
+        text resolved_tenant_id
+        text resolution_note
     }
     fund_structure_investment_portfolio {
         uuid investment_portfolio_id PK
@@ -87,6 +102,7 @@ erDiagram
         jsonb account_ids
         text description
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_legal_entity {
         uuid entity_id PK
@@ -105,6 +121,7 @@ erDiagram
         jsonb lifecycle_events
         text description
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_organization {
         uuid organization_id PK
@@ -117,6 +134,7 @@ erDiagram
         jsonb business_ids
         text description
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_ownership_link {
         uuid ownership_link_id PK
@@ -129,6 +147,7 @@ erDiagram
         timestamp_with_time_zone effective_to
         text notes
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_sleeve {
         uuid sleeve_id PK
@@ -143,6 +162,7 @@ erDiagram
         jsonb investment_portfolio_ids
         jsonb account_ids
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_vehicle {
         uuid vehicle_id PK
@@ -158,4 +178,5 @@ erDiagram
         jsonb account_ids
         text description
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
