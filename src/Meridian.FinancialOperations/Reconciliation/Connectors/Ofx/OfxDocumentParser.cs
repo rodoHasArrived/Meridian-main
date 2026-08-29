@@ -53,13 +53,16 @@ public static class OfxDocumentParser
     /// Parses an OFX document, refusing one that exceeds the ingress bounds instead of building it first.
     /// </summary>
     /// <remarks>
-    /// Two bounds, because the parse has two allocation phases and a check after the second cannot undo
+    /// Three bounds, because the parse has two allocation phases and a check after the second cannot undo
     /// the first. <paramref name="maxDepth"/> caps aggregate nesting, which also caps the recursion in
     /// <see cref="CollectEntries"/>: without it a deeply nested document overflows the stack, which no
-    /// caller can catch. <paramref name="maxEntries"/> stops entry discovery at the bound. Aggregate
-    /// nodes carry a separate, deliberately loose allocation cap derived from
-    /// <paramref name="maxEntries"/>: entries are built from aggregates, so the node tree is materialized
-    /// before any entry exists, and bounding only entries would let the tree grow unbounded first.
+    /// caller can catch. <paramref name="maxEntries"/> stops entry discovery at the bound.
+    /// <paramref name="maxNodes"/> caps everything the parse retains - aggregates and leaf values alike -
+    /// because entries are built from the node tree, so the tree is complete before any entry exists to
+    /// count. It is passed in as an absolute figure rather than derived from
+    /// <paramref name="maxEntries"/>: an earlier form multiplied the record allowance, which tied a
+    /// memory ceiling to an unrelated knob and, at the default allowance, put the cap above the node
+    /// count the document byte limit can produce at all - a bound that cannot be reached is not a bound.
     /// </remarks>
     public static OfxDocument Parse(
         string content,

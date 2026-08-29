@@ -802,7 +802,8 @@ public sealed class StatementIngressLimitsTests : IDisposable
     {
         var content = Encoding.UTF8.GetString(BuildOfxStatement(transactionCount: 50));
 
-        var parsed = OfxDocumentParser.Parse(content, maxEntries: 4, maxDepth: 64, out var bound);
+        var parsed = OfxDocumentParser.Parse(
+            content, maxEntries: 4, maxDepth: 64, maxNodes: int.MaxValue, out var bound);
 
         bound.Should().Be(OfxParseBound.TooManyEntries);
         parsed.Entries.Should().HaveCount(5, "one past the bound, so the caller distinguishes at-cap from over-cap");
