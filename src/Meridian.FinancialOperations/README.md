@@ -139,7 +139,7 @@ subtree, and 500,000 parsed nodes per document. Every bound refuses with a named
 | `STATEMENT_TOO_MANY_LINES` | the CSV raw-line cap derived from `MaxRecords`, refused before mapping |
 | `STATEMENT_NESTING_TOO_DEEP` | `MaxNestingDepth` |
 | `STATEMENT_SUBTREE_TOO_LARGE` | `MaxSubtreeNodes`, one materialized XML subtree |
-| `STATEMENT_TOO_MANY_NODES` | `MaxParseNodes`, the whole-document node budget |
+| `STATEMENT_TOO_MANY_NODES` | `MaxParseNodes`, the whole-document node budget, charged by the camt.053 and OFX parsers |
 | `ROW_LIMIT_EXCEEDED` | `MaxRecords`, reported by the IB Flex connector against its retained rows |
 
 These messages advise raising the configured limit deliberately. A deployment does that by registering
@@ -154,12 +154,21 @@ services.AddStatementReconciliationServices();
 Raise only the bound that actually refused, and record why: the defaults sit well above any real bank
 statement, so a breach is far more often a malformed or hostile payload than a large one.
 
-`IbFlexStatementConnector` reads `MaxRecords` like every other connector. It previously held a private
+`MaxParseNodes` bounds how many nodes a parse walks, not how deep it goes or how large one subtree
+is. It was defined for the XML connectors and, until this change, only OFX charged it: camt.053 could
+walk hundreds of thousands of uniquely named shallow elements outside the single valid statement, with
+the reader's name table retaining every distinct name string, and no bound fired. Both camt passes now
+charge it.
+
+`IbFlexStatementConnector` reads `MaxRecords` and `MaxDocumentBytes` like every other connector. It previously held a private
 100,000-row ceiling, which made the paragraph above false for Flex imports: a deployment could raise
 `MaxRecords` and still have a legitimate Flex report refused at row 100,001 by a number it had no way
 to configure. Both bounds counted the same thing - retained rows - so they are now one bound. This
 raises the default Flex ceiling from 100,000 to the shared 250,000; a deployment that wants the old
-ceiling sets `MaxRecords` to 100,000.
+ceiling sets `MaxRecords` to 100,000. The same applied to document size, which kept a private 32 MiB
+ceiling for one more round: it now reads `MaxDocumentBytes`, moving the Flex default the other way,
+32 MiB down to 20 MiB. On the import path the service already refused above 20 MiB before the connector
+saw the document, so that tightening binds only the direct fetch path.
 
 The shared Margin Control Center reads retained canonical evidence across providers, accounts, and
 prime brokers. Provider-reported buying power, maintenance margin, excess liquidity, and restriction

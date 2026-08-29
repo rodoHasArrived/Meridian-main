@@ -20,7 +20,6 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
     public const string ConnectorId = "ib-flex";
 
     private const string FlexRootElement = "FlexQueryResponse";
-    private const int MaximumStatementBytes = 32 * 1024 * 1024;
 
     private readonly StatementMappingProfileCatalog _catalog;
     private readonly IProviderCredentialStore? _credentialStore;
@@ -107,11 +106,11 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             return EmptyResult(profileId, issues);
         }
 
-        if (document.Content.Length > MaximumStatementBytes)
+        if (document.Content.Length > _limits.MaxDocumentBytes)
         {
             issues.Add(StatementParseIssue.Error(
                 "STATEMENT_TOO_LARGE",
-                $"The Flex report exceeds the {MaximumStatementBytes}-byte limit."));
+                $"The Flex report exceeds the {_limits.MaxDocumentBytes}-byte limit."));
             return EmptyResult(profileId, issues);
         }
 
@@ -123,7 +122,7 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                 DtdProcessing = DtdProcessing.Prohibit,
                 XmlResolver = null,
                 Async = true,
-                MaxCharactersInDocument = MaximumStatementBytes,
+                MaxCharactersInDocument = _limits.MaxDocumentBytes,
                 MaxCharactersFromEntities = 0
             };
             await using var stream = new MemoryStream(document.Content.ToArray(), writable: false);
@@ -160,7 +159,14 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         var taxLots = new List<BrokerageTaxLotSnapshotDto>();
         var borrowPositions = new List<BrokerageBorrowPositionSnapshotDto>();
         var rowNumber = 0;
-        var evidenceRows = 0;
+        // Every object this parse retains, charged before it is materialized. rowNumber stays as the row
+        // ordinal AddRecord needs, but it cannot be the bound: seven of these loops append BOTH a
+        // canonical record and an activity event per iteration while charging one, so the in-parser guard
+        // passed at roughly half the real retention and left the service's TotalRetainedRows to catch it -
+        // after every object had already been allocated, which is exactly what an in-parser guard exists
+        // to prevent. One counter charged per append replaces the earlier two-counter split, which could
+        // only ever bound the row kinds someone remembered to add to it.
+        var retained = 0;
         var sectionCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var statement in statements)
@@ -171,7 +177,8 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var trade in Section(statement, "Trades", "Trade"))
             {
                 rowNumber++;
-                if (rowNumber > _limits.MaxRecords)
+                retained += 2;
+                if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
@@ -199,7 +206,8 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var cash in Section(statement, "CashTransactions", "CashTransaction"))
             {
                 rowNumber++;
-                if (rowNumber > _limits.MaxRecords)
+                retained += 2;
+                if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
@@ -223,7 +231,8 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var position in Section(statement, "OpenPositions", "OpenPosition"))
             {
                 rowNumber++;
-                if (rowNumber > _limits.MaxRecords)
+                retained += 1;
+                if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
@@ -267,11 +276,10 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             {
                 // Snapshots are retained evidence too, and BuildAccountSnapshot rescans the statement's
                 // descendants for cash and margin evidence on every call - so an unbounded snapshot count
-                // is quadratic in CPU as well as linear in retained DTOs. Charging them to the shared
-                // budget bounds both. My previous sweep covered commission, open-lot and borrow rows and
-                // missed this one because it accumulates into yet another collection.
-                evidenceRows++;
-                if (rowNumber + evidenceRows > _limits.MaxRecords)
+                // is quadratic in CPU as well as linear in retained DTOs. Charging them before the call
+                // bounds both.
+                retained += 1;
+                if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
@@ -291,7 +299,8 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var cashReport in cashReportElements)
             {
                 rowNumber++;
-                if (rowNumber > _limits.MaxRecords)
+                retained += 1;
+                if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
@@ -306,7 +315,8 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var interest in Descendants(statement, "InterestDetail", "InterestAccrual"))
             {
                 rowNumber++;
-                if (rowNumber > _limits.MaxRecords)
+                retained += 2;
+                if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
@@ -324,7 +334,8 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var borrowFee in Descendants(statement, "BorrowFeeDetail"))
             {
                 rowNumber++;
-                if (rowNumber > _limits.MaxRecords)
+                retained += 2;
+                if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
@@ -339,12 +350,11 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
 
             foreach (var commission in Descendants(statement, "CommissionDetail"))
             {
-                // Commission, open-lot and securities-borrow rows never touch rowNumber, so a guard keyed
-                // on that counter could not see them - they retain an activity or position DTO each and
-                // are serialized into canonical-evidence.json regardless. The budget is shared with
-                // rowNumber so total retained evidence is bounded, not each kind separately.
-                evidenceRows++;
-                if (rowNumber + evidenceRows > _limits.MaxRecords)
+                // Commission, open-lot and securities-borrow rows retain an activity or position DTO each
+                // and are serialized into canonical-evidence.json regardless of never producing a
+                // canonical record.
+                retained += 1;
+                if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
@@ -358,7 +368,8 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var corporateAction in Descendants(statement, "CorporateAction"))
             {
                 rowNumber++;
-                if (rowNumber > _limits.MaxRecords)
+                retained += 2;
+                if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
@@ -374,7 +385,8 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var transfer in Descendants(statement, "Transfer"))
             {
                 rowNumber++;
-                if (rowNumber > _limits.MaxRecords)
+                retained += 2;
+                if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
@@ -392,7 +404,8 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                 if (!optionEae.HasAttributes)
                     continue;
                 rowNumber++;
-                if (rowNumber > _limits.MaxRecords)
+                retained += 2;
+                if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
@@ -407,8 +420,8 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
 
             foreach (var openLot in Descendants(statement, "OpenLot"))
             {
-                evidenceRows++;
-                if (rowNumber + evidenceRows > _limits.MaxRecords)
+                retained += 1;
+                if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
@@ -425,8 +438,8 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                 if (!borrowed.HasAttributes)
                     continue;
 
-                evidenceRows++;
-                if (rowNumber + evidenceRows > _limits.MaxRecords)
+                retained += 1;
+                if (retained > _limits.MaxRecords)
                 {
                     issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
                     return EmptyResult(profileId, issues);
@@ -477,6 +490,19 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                 .Where(static value => value != DateTimeOffset.UnixEpoch))
             .DefaultIfEmpty()
             .Max();
+        // The cursor is retained evidence like everything else and was appended after the loops without
+        // ever being charged. It is exactly one row when any statement parsed, so reserve it here rather
+        // than let the budget be off by one at the boundary.
+        if (statements.Length > 0)
+        {
+            retained += 1;
+            if (retained > _limits.MaxRecords)
+            {
+                issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                return EmptyResult(profileId, issues);
+            }
+        }
+
         var activityCursors = statements.Length == 0
             ? []
             : new[]

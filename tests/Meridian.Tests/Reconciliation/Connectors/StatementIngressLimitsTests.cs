@@ -880,6 +880,87 @@ public sealed class StatementIngressLimitsTests : IDisposable
         result.Issues.Should().NotContain(issue => issue.Code == "ROW_LIMIT_EXCEEDED");
     }
 
+    [Fact]
+    public async Task Camt_ManyShallowElementsOutsideTheStatement_BreachTheNodeBudget()
+    {
+        // MaxParseNodes existed from the start and only OFX ever charged it. Depth bounds how deep the
+        // document goes and MaxSubtreeNodes bounds one materialized subtree, but neither bounds how many
+        // nodes the scan walks - so uniquely named shallow elements outside the statement were read by
+        // both passes, with the reader's name table retaining every distinct name string.
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 4 * 1024 * 1024, MaxNestingDepth = 64, MaxParseNodes = 200 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("node-flood.xml", BuildCamtWithTrailingNoise(elementCount: 400)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyNodesCode);
+    }
+
+    [Fact]
+    public async Task Camt_DocumentInsideTheNodeBudget_StillParses()
+    {
+        // The node bound must not refuse an ordinary statement: the golden fixture parses under a budget
+        // far below the 500,000 default but comfortably above what one real statement walks.
+        var connector = new Camt053StatementConnector(
+            TightLimits with { MaxDocumentBytes = 4 * 1024 * 1024, MaxNestingDepth = 64, MaxParseNodes = 10_000 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("camt.xml", BuildCamtStatement(entryCount: 3)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyNodesCode);
+        result.Records.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task Bai2_UnknownRecordTypes_AreBoundedBeforeDecodingAndSplitting()
+    {
+        // Unknown record types fall through the switch without charging a candidate, so a file of compact
+        // unknown lines allocated one string and one string[] per line with nothing to stop it. The raw
+        // budget is MaxRecords * 2 + 4, so a cap of two allows eight lines; forty must refuse.
+        var connector = new Bai2StatementConnector(
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 2, MaxLineBytes = 4096 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("unknown.bai", BuildBai2WithUnknownRecordTypes(unknownCount: 40)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyLinesCode);
+    }
+
+    [Fact]
+    public async Task IbFlex_TradesChargeBothTheRecordAndTheActivityEvent()
+    {
+        // Each trade appends a canonical record AND an activity event, but the guard charged one. Two
+        // trades retain four rows plus the cursor, so a cap of three must refuse - under the previous
+        // one-charge-per-iteration counter this document passed at two.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 3 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("ib-flex-trades.xml", BuildIbFlexWithTrades(tradeCount: 2)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == "ROW_LIMIT_EXCEEDED");
+    }
+
+    [Fact]
+    public async Task IbFlex_DocumentSize_ComesFromTheConfiguredLimits()
+    {
+        // The byte ceiling was a private 32 MiB constant three lines from the row ceiling I had already
+        // converted. A configured cap below the document size must now refuse it.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with { MaxDocumentBytes = 64, MaxRecords = 1000 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("ib-flex-big.xml", BuildIbFlexWithTrades(tradeCount: 2)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == "STATEMENT_TOO_LARGE");
+    }
+
     // ---------------------------------------------------------------------------------------------
     // Harness
     // ---------------------------------------------------------------------------------------------
@@ -952,6 +1033,63 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
     // A Flex report whose bulk is AccountInformation anchors rather than trades: one canonical record
     // and accountCount retained snapshots, which is the shape the record cap used to miss entirely.
+    // A camt document whose single valid statement is followed by many uniquely named shallow elements.
+    // Unique names matter: the reader's name table retains each distinct string.
+    private static byte[] BuildCamtWithTrailingNoise(int elementCount)
+    {
+        var builder = new StringBuilder()
+            .Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+            .Append("<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:camt.053.001.02\">")
+            .Append("<BkToCstmrStmt>")
+            .Append("<GrpHdr><MsgId>MERIDIAN-CAMT-1</MsgId><CreDtTm>2026-05-31T23:59:00</CreDtTm></GrpHdr>")
+            .Append(StatementXml("DE89370400440532013000", entryCount: 1));
+
+        for (var index = 0; index < elementCount; index++)
+        {
+            builder.Append($"<Noise{index:D6}>x</Noise{index:D6}>");
+        }
+
+        return Encoding.UTF8.GetBytes(builder.Append("</BkToCstmrStmt></Document>").ToString());
+    }
+
+    // Valid BAI2 envelope carrying record types the switch does not recognize, which is what makes them
+    // interesting: they never charge a balance or detail candidate.
+    private static byte[] BuildBai2WithUnknownRecordTypes(int unknownCount)
+    {
+        var builder = new StringBuilder()
+            .Append("01,CITIBANK,MERIDIAN,260531,0800,1,,,2/\n")
+            .Append("02,MERIDIAN,CITIBANK,1,260531,,USD,2/\n")
+            .Append("03,0975312468,USD,015,1234567,,/\n");
+
+        for (var index = 0; index < unknownCount; index++)
+        {
+            builder.Append("88,continuation/\n");
+        }
+
+        builder.Append("49,1234567,3/\n98,1234567,1,3/\n99,1234567,1,5/\n");
+        return Encoding.UTF8.GetBytes(builder.ToString());
+    }
+
+    // A Flex report of nothing but trades, so the retained count is exactly two per trade plus the cursor.
+    private static byte[] BuildIbFlexWithTrades(int tradeCount)
+    {
+        var builder = new StringBuilder()
+            .Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+            .Append("<FlexQueryResponse queryName=\"Meridian Daily Statement\" type=\"AF\"><FlexStatements count=\"1\">")
+            .Append("<FlexStatement accountId=\"U1234567\" fromDate=\"2026-06-01\" toDate=\"2026-06-30\"><Trades>");
+
+        for (var index = 0; index < tradeCount; index++)
+        {
+            builder.Append(
+                $"<Trade accountId=\"U1234567\" symbol=\"AAPL\" quantity=\"100\" tradePrice=\"187.25\" " +
+                $"netCash=\"-18725\" tradeDate=\"20260602\" settleDateTarget=\"20260604\" ibCommission=\"-1.05\" " +
+                $"tradeID=\"700100{index}\" currency=\"USD\" buySell=\"BUY\" />");
+        }
+
+        return Encoding.UTF8.GetBytes(
+            builder.Append("</Trades></FlexStatement></FlexStatements></FlexQueryResponse>").ToString());
+    }
+
     private static byte[] BuildIbFlexWithAccountInformation(int accountCount)
     {
         var builder = new StringBuilder()

@@ -82,6 +82,10 @@ public sealed class Bai2StatementConnector : IStatementConnector
         // Records and the evidence collections, not Issues. Camt053StatementConnector already shares one
         // rowCandidates budget across Ntry and Bal; this is the sibling that never got the same fix.
         var rowCandidates = 0;
+        // Matches the CSV derivation: envelope records (01/02/03/49/98/99) sit above the balance and
+        // detail rows, so the raw-line ceiling has to be looser than MaxRecords itself.
+        var rawLineCap = _limits.MaxRecords * 2 + 4;
+        var rawLines = 0;
 
         // Trailer bookkeeping. A truncated file drops its 49/98/99 trailers, so every opener must be
         // matched by its trailer and the file trailer's declared group count must agree; otherwise the
@@ -125,6 +129,18 @@ public sealed class Bai2StatementConnector : IStatementConnector
             if (rawLine.Length > _limits.MaxLineBytes)
             {
                 issues.Add(_limits.LineTooLong(lineIndex));
+                return Task.FromResult(EmptyResult(issues));
+            }
+
+            // Charged before the decode and the split, and independently of rowCandidates. An unknown
+            // record type falls through the switch below without ever charging a candidate, so a file
+            // of compact unknown lines allocated one string and one string[] per line with no bound
+            // firing at all. CsvStatementConnector derives the same cap from MaxRecords; this is the
+            // sibling that never got it.
+            rawLines++;
+            if (rawLines > rawLineCap)
+            {
+                issues.Add(_limits.TooManyLines(rawLineCap));
                 return Task.FromResult(EmptyResult(issues));
             }
 

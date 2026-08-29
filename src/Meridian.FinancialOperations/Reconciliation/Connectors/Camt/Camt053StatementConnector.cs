@@ -139,6 +139,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
             using var stream = AsStream(document);
             using var reader = XmlReader.Create(stream, SecureSettings());
             var statementDepth = -1;
+            var parseNodes = 0;
 
             // Pass two walks the single statement once, materializing one Acct, Bal, or Ntry subtree at a
             // time. Only direct children of Stmt are significant, mirroring the element-axis navigation
@@ -147,6 +148,19 @@ public sealed class Camt053StatementConnector : IStatementConnector
             while (reader.Read())
             {
                 ct.ThrowIfCancellationRequested();
+                // MaxParseNodes was defined for this connector's benefit and only OFX ever charged it.
+                // Depth bounds how deep the document goes and MaxSubtreeNodes bounds one materialized
+                // subtree, but neither bounds how many nodes the scan itself walks: hundreds of thousands
+                // of uniquely named shallow elements outside the statement are read by both passes, and
+                // the reader's name table retains every distinct name string even though no XElement is
+                // built. This is the bound that was declared, documented, and never wired.
+                parseNodes++;
+                if (parseNodes > _limits.MaxParseNodes)
+                {
+                    issues.Add(_limits.TooManyNodes());
+                    return Task.FromResult(EmptyResult(issues));
+                }
+
                 if (reader.Depth > _limits.MaxNestingDepth)
                 {
                     issues.Add(_limits.NestingTooDeep());
@@ -441,12 +455,26 @@ public sealed class Camt053StatementConnector : IStatementConnector
             using var stream = AsStream(document);
             using var reader = XmlReader.Create(stream, SecureSettings());
             var statementDepth = -1;
+            var parseNodes = 0;
             var accountSeenForStatement = false;
             var statementOpen = false;
 
             while (reader.Read())
             {
                 ct.ThrowIfCancellationRequested();
+                // MaxParseNodes was defined for this connector's benefit and only OFX ever charged it.
+                // Depth bounds how deep the document goes and MaxSubtreeNodes bounds one materialized
+                // subtree, but neither bounds how many nodes the scan itself walks: hundreds of thousands
+                // of uniquely named shallow elements outside the statement are read by both passes, and
+                // the reader's name table retains every distinct name string even though no XElement is
+                // built. This is the bound that was declared, documented, and never wired.
+                parseNodes++;
+                if (parseNodes > _limits.MaxParseNodes)
+                {
+                    issue = _limits.TooManyNodes();
+                    return false;
+                }
+
                 if (reader.Depth > _limits.MaxNestingDepth)
                 {
                     issue = _limits.NestingTooDeep();
