@@ -185,6 +185,34 @@ public sealed class AccountingAuditAtomicityTests : IDisposable
         (await audit.ListAsync("fund-alpha")).Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task ConcurrentMutations_DoNotOverwriteEachOthersPendingMarker()
+    {
+        // Codex review finding on PR #2866. The marker is a single slot, so overlapping mutations do
+        // not merely race -- they destroy each other's evidence. Both callers could finish recovery
+        // before either declared, the second declaration overwrote the first, and a crash in the
+        // first was then left with no marker at all: permanently unaudited, with nothing recording
+        // that it had been interrupted. That is the exact gap the marker exists to close.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            FileAccountingAuditPendingMarkerStore.MarkerPathFor(SnapshotPath));
+        var audit = new FailableAuditStore(store);
+        var service = CreateService(store, audit, markers);
+
+        await Task.WhenAll(Enumerable
+            .Range(0, 8)
+            .Select(index => service.UpsertChartNodeAsync(ChartRequest($"node-{index.ToString()}"))));
+
+        // Every mutation is audited exactly once, and none leaves an unresolved marker behind.
+        var retained = await audit.ListAsync("fund-alpha");
+        retained.Should().HaveCount(8);
+        retained.Select(item => item.AuditEventId).Should().OnlyHaveUniqueItems();
+        (await markers.ReadAsync()).Should().BeNull();
+
+        // And the chain the appends built is intact, which a torn interleaving would not leave.
+        (await store.VerifyAuditChainAsync()).IsValid.Should().BeTrue();
+    }
+
     private static AccountingConfigurationService CreateService(
         FileAccountingConfigurationStore store,
         IAccountingActionAuditStore audit,

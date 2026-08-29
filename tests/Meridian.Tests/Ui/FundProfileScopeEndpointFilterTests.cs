@@ -274,6 +274,53 @@ public sealed class FundProfileScopeEndpointFilterTests
         return registry;
     }
 
+    [Fact]
+    public async Task FailClosed_RefusesATenantlessCallerEvenWhenNoFundProfileIsSupplied()
+    {
+        // Codex review finding on PR #2866. Omitting the query entirely used to skip every check in
+        // this filter, because the absent-fund short circuit ran before the tenant-scope refusal.
+        // The routes behind this filter have no separate tenant gate -- ListAccountingConfigurationAudit
+        // is the clearest -- and their stores read a null tenant with no fund as no filter at all, so
+        // the omission served every tenant's audit history instead of being rejected.
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        await using var app = await CreateAppAsync(
+            guard,
+            tenantScope: TenantScopeEnforcementOptions.FailClosed,
+            callerTenantId: null);
+
+        using var response = await app.GetTestClient().GetAsync("/probe");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task FailClosed_AllowsATenantScopedCallerWhoSuppliesNoFundProfile()
+    {
+        // The refusal above must not become "fail-closed forbids every unscoped route": a caller who
+        // has a tenant is asking within it, and the stores narrow by that tenant.
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        await using var app = await CreateAppAsync(
+            guard,
+            tenantScope: TenantScopeEnforcementOptions.FailClosed,
+            callerTenantId: "tenant-test");
+
+        using var response = await app.GetTestClient().GetAsync("/probe");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task DeploymentBoundary_StillAllowsATenantlessCallerWithNoFundProfile()
+    {
+        // The default posture is unchanged: single-company deployments keep working.
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        await using var app = await CreateAppAsync(guard, callerTenantId: null);
+
+        using var response = await app.GetTestClient().GetAsync("/probe");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         IFundProfileTenantGuard? guard,
         UserPermission? callerPermission = null,

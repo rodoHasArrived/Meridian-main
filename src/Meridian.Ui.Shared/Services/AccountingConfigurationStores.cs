@@ -215,7 +215,22 @@ public sealed class FileAccountingConfigurationStore :
                     snapshot.AuditChain,
                     snapshot.AuditEvents,
                     anchor);
-                if (!verification.IsValid)
+
+                // An interrupted append is resumed here rather than refused. Write-ahead ordering
+                // means InterruptedAppend can only mean "sequence N was declared and its snapshot
+                // write never landed", so no event occupies N and abandoning that declaration
+                // discards nothing -- the mutation it would have audited is the pending marker's
+                // business, not the chain's. Refusing instead would be far worse than the crash it
+                // reports: this append would throw, and so would every append after it, leaving one
+                // power cut to permanently stop the audit log of the posture that runs whenever
+                // PostgreSQL is not configured.
+                //
+                // This is narrow on purpose. InterruptedAppend is only returned when the declared
+                // sequence is exactly the slot this append will take, and only once VerifyLinks has
+                // already passed, so accepting it relaxes the anchor divergence alone and never
+                // chain integrity: a rollback or truncated tail is AnchorMismatch and still throws.
+                if (!verification.IsValid
+                    && verification.Status != AccountingAuditChainStatus.InterruptedAppend)
                 {
                     throw new AccountingAuditChainIntegrityException(verification);
                 }

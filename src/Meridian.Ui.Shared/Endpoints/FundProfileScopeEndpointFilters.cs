@@ -26,6 +26,11 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// most easily missed and the most important — a gate that cannot reach its authority has not decided
 /// that the caller is entitled, it has merely failed to ask.</para>
 ///
+/// <para>The tenantless-caller refusal is evaluated <b>before</b> the absent-fund short circuit, so
+/// omitting <c>fundProfileId</c> entirely is not a way past it. The routes attached to this filter
+/// have no separate tenant gate behind it, and their stores treat a null tenant with no fund as no
+/// filter at all — so under fail-closed the omission has to be refused here or nowhere.</para>
+///
 /// <para>See <c>docs/security/security-remediation-backlog.md</c> (SEC-005) and W9-GOV-008 criterion 2.</para>
 /// </summary>
 public static class FundProfileScopeEndpointFilters
@@ -69,11 +74,26 @@ public static class FundProfileScopeEndpointFilters
         var failClosed = (httpContext.RequestServices.GetService<TenantScopeEnforcementOptions>()
                           ?? TenantScopeEnforcementOptions.DeploymentBoundary).IsFailClosed;
 
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
+        if (failClosed && !tenant.HasTenantScope)
+        {
+            // Deliberately checked BEFORE the absent-fund branch below. An unresolved caller is an
+            // unresolved scope whether or not they name a fund, and leaving this until after would
+            // let omitting the query string skip every check in this filter. The routes attached
+            // here have no separate tenant gate to fall back on -- ListAccountingConfigurationAudit
+            // is the clearest case -- and their stores read a null tenant with no fund as "no
+            // filter at all", so the omission served every tenant's audit history rather than
+            // being rejected. The criterion is categorical: an unresolvable scope is refused, not
+            // defaulted.
+            return Refuse(httpContext, "A tenant-scoped session is required for fund-scoped reads.");
+        }
+
         var fundProfileIds = httpContext.Request.Query[FundProfileQueryKey];
         if (fundProfileIds.Count == 0)
         {
-            // No fund scope was supplied, so there is none to resolve. Whether the route may be
-            // reached without one is the route's own tenant gate to decide, not this filter's.
+            // A caller who names no fund is asking within their own scope, which the stores narrow
+            // by the tenant resolved above. There is no fund ownership left for this filter to
+            // resolve. (Under the boundary posture this is reached unscoped, as before.)
             return await next(context).ConfigureAwait(false);
         }
 
@@ -86,12 +106,6 @@ public static class FundProfileScopeEndpointFilters
             return failClosed
                 ? Refuse(httpContext, "Fund profile ownership cannot be verified.")
                 : await next(context).ConfigureAwait(false);
-        }
-
-        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
-        if (failClosed && !tenant.HasTenantScope)
-        {
-            return Refuse(httpContext, "A tenant-scoped session is required for fund-scoped reads.");
         }
 
         // Evaluate EVERY supplied fundProfileId value, not the joined StringValues: a polluted

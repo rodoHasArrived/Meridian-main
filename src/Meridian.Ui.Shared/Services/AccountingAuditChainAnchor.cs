@@ -161,7 +161,17 @@ public sealed class FileAccountingAuditChainAnchor
             && head.Phase == AccountingAuditChainAnchorPhase.Pending
             && head.Sequence == sequence;
 
-        if (confirmsPendingHead || sequence > head.Sequence)
+        // A re-declaration at a still-pending sequence supersedes a declaration whose snapshot write
+        // never landed. Pending means exactly that -- the commit is what records a landed write --
+        // so no event holds that sequence and nothing is overwritten by claiming it again. Without
+        // this the monotonic rule turns one crash between declare and write into a permanent refusal
+        // of every later append, since the retry needs the very sequence the abandoned line holds.
+        // The journal keeps both lines, so the abandoned declaration stays visible to an operator.
+        var supersedesAbandonedDeclaration = phase == AccountingAuditChainAnchorPhase.Pending
+            && head.Phase == AccountingAuditChainAnchorPhase.Pending
+            && head.Sequence == sequence;
+
+        if (confirmsPendingHead || supersedesAbandonedDeclaration || sequence > head.Sequence)
         {
             return;
         }

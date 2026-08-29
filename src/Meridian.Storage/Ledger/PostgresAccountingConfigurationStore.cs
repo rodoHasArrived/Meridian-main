@@ -269,7 +269,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            select chain_sequence,
+            select {AuditEventColumns},
+                   chain_sequence,
                    payload_hash,
                    previous_hash,
                    entry_hash
@@ -310,10 +311,11 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 "The accounting audit chain head points past every retained chained event.");
         }
 
-        var sequence = reader.GetInt64(0);
-        var payloadHash = reader.GetString(1);
-        var previousHash = reader.IsDBNull(2) ? null : reader.GetString(2);
-        var retainedHash = reader.GetString(3);
+        var finalEvent = ReadAuditEvent(reader);
+        var sequence = reader.GetInt64(14);
+        var payloadHash = reader.GetString(15);
+        var previousHash = reader.IsDBNull(16) ? null : reader.GetString(16);
+        var retainedHash = reader.GetString(17);
 
         if (sequence != head.NextSequence - 1)
         {
@@ -328,6 +330,22 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             throw ChainFailure(
                 AccountingAuditChainStatus.BrokenLink, head,
                 "A non-empty accounting audit chain is missing its predecessor hash.");
+        }
+
+        // Recomputed from the retained event, not taken from the stored payload_hash. Deriving the
+        // entry hash from a column the same edit could have rewritten checks only that the row is
+        // self-consistent: an actor, action or evidence list edited together with nothing else would
+        // still satisfy it, and this append would then extend tampered history while reporting that
+        // it had verified the chain.
+        if (!string.Equals(
+                AccountingAuditChain.ComputePayloadHash(finalEvent),
+                payloadHash,
+                StringComparison.Ordinal))
+        {
+            throw ChainFailure(
+                AccountingAuditChainStatus.EventMutated, head,
+                $"The final chained accounting audit event at sequence "
+                + $"{sequence.ToString(CultureInfo.InvariantCulture)} no longer matches its recorded digest.");
         }
 
         var computed = AccountingAuditChain.ComputeEntryHash(sequence, previousHash, payloadHash);
@@ -451,25 +469,58 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            events.Add(new AccountingActionAuditEventDto(
-                reader.GetGuid(0),
-                new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(1), DateTimeKind.Utc)),
-                reader.GetString(2),
-                reader.GetString(3),
-                reader.IsDBNull(4) ? null : reader.GetString(4),
-                reader.IsDBNull(5) ? null : reader.GetGuid(5),
-                reader.IsDBNull(6) ? null : reader.GetString(6),
-                reader.GetString(7),
-                reader.GetString(8),
-                Deserialize<IReadOnlyList<AccountingConfigurationValidationIssueDto>>(reader.GetString(9)) ?? [],
-                Deserialize<IReadOnlyList<string>>(reader.GetString(10)) ?? [],
-                reader.IsDBNull(12) ? null : reader.GetString(12),
-                Deserialize<IReadOnlyList<string>>(reader.GetString(13)) ?? [],
-                reader.IsDBNull(11) ? null : reader.GetString(11)));
+            events.Add(ReadAuditEvent(reader));
         }
 
         return events;
     }
+
+    /// <summary>
+    /// The audit-event column list, in the order <see cref="ReadAuditEvent"/> expects.
+    /// </summary>
+    private const string AuditEventColumns =
+        """
+        audit_event_id,
+        recorded_at_utc,
+        actor,
+        action,
+        fund_profile_id,
+        ledger_book_id,
+        correlation_id,
+        before_hash,
+        after_hash,
+        validation_issues,
+        evidence_links,
+        tenant_id,
+        company_id,
+        report_group_principal_ids
+        """;
+
+    /// <summary>
+    /// Materializes one audit event from <see cref="AuditEventColumns"/>.
+    /// </summary>
+    /// <remarks>
+    /// Shared with the chain verification paths deliberately. Recomputing a payload digest is only
+    /// meaningful if the event it digests was read exactly the way the reading path reads it, so a
+    /// second hand-rolled projection here would be a way for verification and retrieval to disagree
+    /// about the same row.
+    /// </remarks>
+    private static AccountingActionAuditEventDto ReadAuditEvent(NpgsqlDataReader reader)
+        => new(
+            reader.GetGuid(0),
+            new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(1), DateTimeKind.Utc)),
+            reader.GetString(2),
+            reader.GetString(3),
+            reader.IsDBNull(4) ? null : reader.GetString(4),
+            reader.IsDBNull(5) ? null : reader.GetGuid(5),
+            reader.IsDBNull(6) ? null : reader.GetString(6),
+            reader.GetString(7),
+            reader.GetString(8),
+            Deserialize<IReadOnlyList<AccountingConfigurationValidationIssueDto>>(reader.GetString(9)) ?? [],
+            Deserialize<IReadOnlyList<string>>(reader.GetString(10)) ?? [],
+            reader.IsDBNull(12) ? null : reader.GetString(12),
+            Deserialize<IReadOnlyList<string>>(reader.GetString(13)) ?? [],
+            reader.IsDBNull(11) ? null : reader.GetString(11));
 
     private async Task<IReadOnlyList<ChartOfAccountsNodeDto>> LoadChartAsync(
         NpgsqlConnection connection,

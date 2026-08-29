@@ -349,6 +349,82 @@ public sealed class FileAccountingAuditChainTests : IDisposable
         chain.Links.Select(link => link.AuditEventId).Should().OnlyHaveUniqueItems();
     }
 
+    [Fact]
+    public async Task AnEventAddedWithoutAChainLink_IsReportedRatherThanServedAsHistory()
+    {
+        // Codex review finding on PR #2866. Every link binding to a real, unmutated event says
+        // nothing about an event that no link points at -- and ListAsync serves such an event as
+        // ordinary audit history, so without the count check this is a way past tamper detection
+        // that leaves both the chain and its external anchor reporting Valid.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        await store.AppendAsync(AuditEvent("post-journal"));
+        await store.AppendAsync(AuditEvent("close-period"));
+
+        MutateSnapshot(snapshot =>
+        {
+            var events = snapshot["auditEvents"]!.AsArray();
+            events.Add(SerializeEvent(AuditEvent("fabricated-approval")));
+        });
+
+        var verification = await store.VerifyAuditChainAsync();
+
+        verification.IsValid.Should().BeFalse();
+        verification.Status.Should().Be(AccountingAuditChainStatus.UnlinkedEvent);
+    }
+
+    [Fact]
+    public async Task AnAppendInterruptedAfterItsDeclaration_DoesNotBlockEveryLaterAppend()
+    {
+        // Codex review finding on PR #2866. Write-ahead ordering means a crash between DeclareAsync
+        // and the snapshot write leaves the journal one declared append ahead. Refusing that state
+        // forever would let one power cut permanently stop the audit log of the posture that runs
+        // whenever PostgreSQL is not configured -- far worse than the crash it reports.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        await store.AppendAsync(AuditEvent("post-journal"));
+
+        var anchor = new FileAccountingAuditChainAnchor(store.AuditChainAnchorPath);
+        await anchor.DeclareAsync(2, new string('a', 64));
+
+        (await store.VerifyAuditChainAsync()).Status
+            .Should().Be(AccountingAuditChainStatus.InterruptedAppend, "the declared write never landed");
+
+        // The store must be able to carry on: the abandoned declaration holds no event.
+        await store.AppendAsync(AuditEvent("close-period"));
+
+        var verification = await store.VerifyAuditChainAsync();
+        verification.IsValid.Should().BeTrue();
+        verification.LinksChecked.Should().Be(2);
+        (await store.ListAsync("fund-alpha")).Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task ARolledBackSnapshot_IsStillRefusedRatherThanResumed()
+    {
+        // The resume above must stay narrow: it accepts a *pending* declaration at the slot the next
+        // append will take, and nothing else. A committed head the snapshot has fallen behind is the
+        // rollback signature and must still fail closed.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        await store.AppendAsync(AuditEvent("post-journal"));
+        await store.AppendAsync(AuditEvent("close-period"));
+
+        // Roll back to the first append: keep only the event its surviving link references, so the
+        // chain is internally perfect and ONLY the external head can tell that anything is missing.
+        // (Retained events are ordered newest-first, so this must select by id rather than position.)
+        var chain = ReadChain()!;
+        var survivor = ReadEvents().Single(item => item.AuditEventId == chain.Links[0].AuditEventId);
+        MutateSnapshot(snapshot =>
+        {
+            snapshot["auditEvents"] = new JsonArray(SerializeEvent(survivor));
+            snapshot["auditChain"] = JsonSerializer.SerializeToNode(
+                chain with { Links = [chain.Links[0]] }, WebJson);
+        });
+
+        var append = async () => await store.AppendAsync(AuditEvent("reopen-period"));
+
+        (await append.Should().ThrowAsync<AccountingAuditChainIntegrityException>())
+            .Which.Verification.Status.Should().Be(AccountingAuditChainStatus.AnchorMismatch);
+    }
+
     private static AccountingActionAuditEventDto AuditEvent(string action)
         => new(
             Guid.NewGuid(),

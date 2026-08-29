@@ -108,6 +108,14 @@ public enum AccountingAuditChainStatus
     /// this is a crash between the two writes, not tampering.
     /// </summary>
     InterruptedAppend,
+
+    /// <summary>
+    /// More events are retained than the genesis boundary and the chain account for: a record was
+    /// added without a link. Every link binding to a real, unmutated event says nothing about an
+    /// event that no link points at, and such an event is served by
+    /// <c>ListAsync</c> as ordinary audit history.
+    /// </summary>
+    UnlinkedEvent,
 }
 
 /// <summary>Outcome of verifying an accounting audit chain.</summary>
@@ -308,6 +316,7 @@ public static class AccountingAuditChain
             eventsById[auditEvent.AuditEventId] = auditEvent;
         }
 
+        var linkedEventIds = new HashSet<Guid>();
         string? previousHash = null;
         var expectedSequence = state.GenesisSequence;
         foreach (var link in state.Links)
@@ -329,6 +338,17 @@ public static class AccountingAuditChain
                     state,
                     link.Sequence,
                     $"Audit event '{link.AuditEventId.ToString("D", CultureInfo.InvariantCulture)}' is no longer retained.");
+            }
+
+            // Each link must claim a distinct event. Two links sharing one event would otherwise
+            // satisfy the count check below while leaving a second event unlinked.
+            if (!linkedEventIds.Add(link.AuditEventId))
+            {
+                return Fail(
+                    AccountingAuditChainStatus.UnlinkedEvent,
+                    state,
+                    link.Sequence,
+                    $"Audit event '{link.AuditEventId.ToString("D", CultureInfo.InvariantCulture)}' is claimed by more than one link.");
             }
 
             if (!string.Equals(ComputePayloadHash(auditEvent), link.PayloadHash, StringComparison.Ordinal))
@@ -355,6 +375,29 @@ public static class AccountingAuditChain
 
             previousHash = link.EntryHash;
             expectedSequence++;
+        }
+
+        // The loop above proves every LINK points at a real, unmutated event. It says nothing about
+        // an EVENT that no link points at -- and an unlinked event is served by ListAsync as
+        // ordinary audit history, so without this check appending a fabricated record is a way past
+        // tamper detection that leaves the chain and its anchor both reporting Valid.
+        //
+        // The declared genesis is what makes the count checkable: pre_chain_event_count fixed how
+        // many unprotected rows were retained when chaining began, so everything beyond that must be
+        // matched one-for-one by a link. Note this bounds the pre-chain history rather than
+        // protecting it -- swapping one pre-chain event for another keeps the count and stays
+        // outside the guarantee, which is what "outside the chain" has meant throughout.
+        var expectedEventCount = state.PreChainEventCount + state.Links.Count;
+        if (auditEvents.Count != expectedEventCount)
+        {
+            return Fail(
+                AccountingAuditChainStatus.UnlinkedEvent,
+                state,
+                state.Head?.Sequence ?? state.GenesisSequence,
+                $"{auditEvents.Count.ToString(CultureInfo.InvariantCulture)} events are retained but "
+                + $"{expectedEventCount.ToString(CultureInfo.InvariantCulture)} are accounted for "
+                + $"({state.PreChainEventCount.ToString(CultureInfo.InvariantCulture)} before the genesis "
+                + $"and {state.Links.Count.ToString(CultureInfo.InvariantCulture)} chained).");
         }
 
         return new AccountingAuditChainVerification(

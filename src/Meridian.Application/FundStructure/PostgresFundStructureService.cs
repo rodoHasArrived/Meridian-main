@@ -327,6 +327,12 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 NormalizeLifecycleEvents(request.LifecycleEvents));
 
             await _store.UpsertLegalEntityAsync(summary, ct).ConfigureAwait(false);
+
+            // This path writes the entity directly instead of going through PersistChangedAsync, so
+            // it has to stamp for itself -- the same reason CreateOrganizationAsync does. Without it
+            // the new entity stays unattributed: its creator loses sight of it the moment the
+            // deployment goes fail-closed, and until then it reads as a legacy unowned row.
+            await StampCreatedNodesAsync(snap, ct).ConfigureAwait(false);
             return summary;
         }
         finally { _writeLock.Release(); }
@@ -342,8 +348,14 @@ public sealed class PostgresFundStructureService : IFundStructureService
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var existing = await _store.GetLegalEntityAsync(request.EntityId, ct).ConfigureAwait(false);
-            if (existing is null)
+            // Resolved from the scoped snapshot rather than from the store directly. Tenant filtering
+            // lives in LoadSnapshotAsync, so a read that goes straight to _store.GetLegalEntityAsync
+            // is outside the gate: a tenant-A caller who knows tenant B's entity id could read it here
+            // and overwrite it through the upsert below. A node the caller cannot see must be a node
+            // their existence check cannot find, which is what every other mutation on this service
+            // already relies on.
+            var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
+            if (!snap.Entities.TryGetValue(request.EntityId, out var existing))
             {
                 throw new InvalidOperationException($"LegalEntity {request.EntityId} was not found.");
             }

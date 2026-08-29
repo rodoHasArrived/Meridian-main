@@ -241,6 +241,55 @@ public sealed class FundStructureTenantScopeTests
         return seeded;
     }
 
+    [Fact]
+    public async Task LegalEntityUpdate_CannotReachAnotherTenantsEntity()
+    {
+        // Codex review finding on PR #2866. UpdateLegalEntityProfileAsync read and wrote the entity
+        // straight through the store, never through LoadSnapshotAsync -- which is where the tenant
+        // filtering lives. So the one mutation that skipped the snapshot also skipped the gate, and
+        // a tenant-A caller holding tenant B's entity id could overwrite it in fail-closed mode.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var betaEntityId = Guid.NewGuid();
+
+        var betaService = CreateService(store, TenantBeta);
+        await betaService.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            betaEntityId, LegalEntityTypeDto.ManagementCompany, "ENT-BETA", "Beta Entity",
+            "US", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        var alphaService = CreateService(store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed);
+        var hijack = async () => await alphaService.UpdateLegalEntityProfileAsync(
+            new UpdateLegalEntityProfileRequest(betaEntityId, "attacker", Name: "Renamed By Alpha"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(hijack);
+
+        var retained = await store.GetLegalEntityAsync(betaEntityId);
+        Assert.Equal("Beta Entity", retained!.Name);
+    }
+
+    [Fact]
+    public async Task ANewlyCreatedLegalEntity_IsStampedWithItsCreatorsTenant()
+    {
+        // Codex review finding on PR #2866. This create path writes the entity directly rather than
+        // through PersistChangedAsync, so it never reached the stamping the other creates get: the
+        // entity stayed unattributed, and its own creator would lose sight of it the moment the
+        // deployment went fail-closed.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var entityId = Guid.NewGuid();
+
+        var service = CreateService(store, TenantAlpha);
+        await service.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            entityId, LegalEntityTypeDto.ManagementCompany, "ENT-ALPHA", "Alpha Entity",
+            "US", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        Assert.Equal(TenantAlpha, store.TenantOf(entityId));
+
+        // And its creator can still reach it once the deployment tightens.
+        var failClosed = CreateService(store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed);
+        var updated = await failClosed.UpdateLegalEntityProfileAsync(
+            new UpdateLegalEntityProfileRequest(entityId, "owner", Name: "Alpha Entity Renamed"));
+        Assert.Equal("Alpha Entity Renamed", updated.Name);
+    }
+
     private static PostgresFundStructureService CreateService(
         FakeFundStructureStore store,
         string? callerTenantId,
