@@ -77,8 +77,11 @@ public sealed class StatementImportService(
     StatementConnectorRegistry connectors,
     StatementMappingProfileCatalog catalog,
     IStatementRunWorkflowService workflow,
-    string dataRoot) : IStatementImportCommitService
+    string dataRoot,
+    StatementIngressLimits? ingressLimits = null) : IStatementImportCommitService
 {
+    private readonly StatementIngressLimits _ingressLimits = ingressLimits ?? StatementIngressLimits.Default;
+
     private const int SamplesPerKind = 5;
     private const int MaxProfileSuggestions = 3;
     private const string ReadyStatus = "ReadyToImport";
@@ -98,6 +101,18 @@ public sealed class StatementImportService(
         string? connectorId,
         CancellationToken ct = default)
     {
+        if (document.Content.Length > _ingressLimits.MaxDocumentBytes)
+        {
+            return BuildPreview(
+                connectorId ?? "unknown",
+                connectorId ?? "Unknown connector",
+                profileId: document.MappingProfileId,
+                document,
+                parse: null,
+                extraIssues: [_ingressLimits.DocumentTooLarge(document.Content.Length)],
+                suggestions: []);
+        }
+
         var (connector, resolutionIssue) = ResolveConnector(document, connectorId);
         if (connector is null)
         {
@@ -135,6 +150,17 @@ public sealed class StatementImportService(
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        // The byte cap has to be checked before this copy, not after. Every connector enforces the same
+        // bound, but the copy below is what actually doubles an oversize payload in memory, and it happens
+        // before the connector is even resolved — so a check that lived only in the connector would run
+        // after the allocation it exists to prevent.
+        if (request.Document.Content.Length > _ingressLimits.MaxDocumentBytes)
+        {
+            throw new InvalidDataException(
+                $"Statement cannot be imported: {_ingressLimits.DocumentTooLarge(request.Document.Content.Length).Message}");
+        }
+
         var capturedSourceBytes = request.Document.Content.ToArray();
         var capturedDocument = request.Document with { Content = capturedSourceBytes };
         var sourceKind = NormalizeSourceKind(request.SourceKind);
@@ -379,6 +405,14 @@ public sealed class StatementImportService(
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(document);
+
+        if (document.Content.Length > _ingressLimits.MaxDocumentBytes)
+        {
+            return new StatementImportValidationResult(
+                false,
+                0,
+                [_ingressLimits.DocumentTooLarge(document.Content.Length).Message]);
+        }
 
         var (connector, resolutionIssue) = ResolveConnector(document, connectorId);
         if (connector is null)

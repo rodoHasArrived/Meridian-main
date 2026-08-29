@@ -11,11 +11,31 @@ namespace Meridian.FinancialOperations.Reconciliation.Connectors.Bai2;
 /// the currency's minor units (cents) per the BAI2 convention and scaled to major units. This lets
 /// institutional bank cash statements reconcile without hand-conversion to CSV.
 /// </summary>
+/// <remarks>
+/// Parsing is streamed and bounded (PRD-010). The payload is never decoded to one string and split into
+/// a whole-file line array; the reader walks the bytes once and decodes a single line at a time, so peak
+/// memory tracks the longest line rather than the file. The byte, record, and line-length bounds in
+/// <see cref="StatementIngressLimits"/> are enforced during that walk, so a hostile payload is refused
+/// partway through rather than after it has already been expanded in memory.
+/// </remarks>
 public sealed class Bai2StatementConnector : IStatementConnector
 {
     public const string ConnectorId = "bai2";
     private const string ClosingLedgerStatusCode = "015";
     private const string ClosingAvailableStatusCode = "045";
+
+    private readonly StatementIngressLimits _limits;
+
+    public Bai2StatementConnector()
+        : this(StatementIngressLimits.Default)
+    {
+    }
+
+    public Bai2StatementConnector(StatementIngressLimits limits)
+    {
+        ArgumentNullException.ThrowIfNull(limits);
+        _limits = limits;
+    }
 
     public StatementConnectorDescriptor Descriptor { get; } = new(
         ConnectorId,
@@ -37,7 +57,16 @@ public sealed class Bai2StatementConnector : IStatementConnector
     public Task<StatementParseResult> ParseAsync(StatementSourceDocument document, CancellationToken ct = default)
     {
         var issues = new List<StatementParseIssue>();
-        var content = Encoding.UTF8.GetString(document.Content.Span);
+
+        // Byte cap before anything else. The workstation upload endpoint and the CLI each cap their own
+        // input, but a StatementSourceDocument also reaches this connector from a scheduled fetch and from
+        // in-process callers, so the connector cannot assume an earlier gate ran.
+        if (document.Content.Length > _limits.MaxDocumentBytes)
+        {
+            issues.Add(_limits.DocumentTooLarge(document.Content.Length));
+            return Task.FromResult(EmptyResult(issues));
+        }
+
         var records = new List<StatementCanonicalRecord>();
 
         var groupCurrency = "USD";
@@ -59,10 +88,31 @@ public sealed class Bai2StatementConnector : IStatementConnector
         var inAccountSection = false;
         var transactionOutsideAccount = false;
 
-        foreach (var rawLine in content.Split('\n'))
+        // One pass over the bytes, decoding a single line at a time. The previous implementation decoded
+        // the whole payload and then split it into a line array, so a caller-supplied document sized the
+        // allocation; here the longest line does.
+        var payload = document.Content.Span;
+        var lineStart = 0;
+        var lineIndex = 0;
+        for (var cursor = 0; cursor <= payload.Length; cursor++)
         {
+            if (cursor < payload.Length && payload[cursor] != (byte)'\n')
+            {
+                continue;
+            }
+
             ct.ThrowIfCancellationRequested();
-            var line = rawLine.Trim().TrimEnd('/').Trim();
+            var rawLine = payload[lineStart..cursor];
+            lineStart = cursor + 1;
+            lineIndex++;
+
+            if (rawLine.Length > _limits.MaxLineBytes)
+            {
+                issues.Add(_limits.LineTooLong(lineIndex));
+                return Task.FromResult(EmptyResult(issues));
+            }
+
+            var line = Encoding.UTF8.GetString(rawLine).Trim().TrimEnd('/').Trim();
             if (line.Length == 0)
             {
                 continue;
@@ -97,6 +147,12 @@ public sealed class Bai2StatementConnector : IStatementConnector
                         TryResolveClosingBalance(fields, out var balanceMinorUnits) &&
                         asOfDate is { } balanceDate)
                     {
+                        if (records.Count >= _limits.MaxRecords)
+                        {
+                            issues.Add(_limits.TooManyRecords());
+                            return Task.FromResult(EmptyResult(issues));
+                        }
+
                         rowNumber++;
                         records.Add(new StatementCanonicalRecord(
                             StatementRecordKind.CashBalance,
@@ -145,6 +201,12 @@ public sealed class Bai2StatementConnector : IStatementConnector
                     {
                         issues.Add(StatementParseIssue.Warning("BAI2_BAD_AMOUNT", "Transaction detail has no parseable amount; skipped.", rowNumber + 1));
                         break;
+                    }
+
+                    if (records.Count >= _limits.MaxRecords)
+                    {
+                        issues.Add(_limits.TooManyRecords());
+                        return Task.FromResult(EmptyResult(issues));
                     }
 
                     rowNumber++;
@@ -451,6 +513,9 @@ public sealed class Bai2StatementConnector : IStatementConnector
         => string.IsNullOrWhiteSpace(value) ? fallback : value.Trim().ToUpperInvariant();
 
     private static string? FieldAt(string[] fields, int index) => index < fields.Length ? fields[index] : null;
+
+    private static StatementParseResult EmptyResult(IReadOnlyList<StatementParseIssue> issues)
+        => new(ConnectorId, null, [], [], [], issues, new StatementFormatFingerprint(string.Empty, [], "bai2"));
 
     private static string Sniff(StatementSourceDocument document)
     {

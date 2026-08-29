@@ -352,34 +352,34 @@
       "Priority": "high",
       "Owner Lane": "Execution and Fund Accounts",
       "Evidence Posture": "in_progress",
-      "Evidence": "src/Meridian.Execution/Services/ExecutionOperatorControlService.cs; src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs; src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs; src/Meridian.Risk/CompositeRiskValidator.cs; src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs; src/Meridian.Wpf/Services/ExecutionSafetyControlClient.cs; src/Meridian.Wpf/Services/TradingSafetyCommandService.cs; src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs; src/Meridian.Risk/Rules/FatFingerRule.cs; src/Meridian.Risk/Rules/PriceCollarRule.cs; src/Meridian.Risk/Rules/OrderPriceLimbs.cs; src/Meridian.FSharp/Risk/RiskRules.fs; tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs; tests/Meridian.Tests/Risk/FatFingerRuleTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimeFatFingerStatusTests.cs; tests/Meridian.Tests/Risk/PriceCollarRuleTests.cs; tests/Meridian.Tests/Execution/KillSwitchCloseOnlyTests.cs; tests/Meridian.Wpf.Tests/Services/TradingSafetyCommandTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimePriceCollarConfigTests.cs; tests/Meridian.Tests/Execution/FixedIncomeFillBookingTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimeFirstRunDefaultsTests.cs",
-      "Last Reviewed": "2026-08-24"
+      "Evidence": "src/Meridian.Execution/Services/ExecutionOperatorControlService.cs; src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs; src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs; src/Meridian.Risk/CompositeRiskValidator.cs; src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs; src/Meridian.Wpf/Services/ExecutionSafetyControlClient.cs; src/Meridian.Wpf/Services/TradingSafetyCommandService.cs; src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs; src/Meridian.Risk/Rules/FatFingerRule.cs; src/Meridian.Risk/Rules/PriceCollarRule.cs; src/Meridian.Risk/Rules/OrderPriceLimbs.cs; src/Meridian.Risk/Rules/BracketChildLimbRule.cs; src/Meridian.Execution.Sdk/BracketOrderMetadata.cs; src/Meridian.FSharp/Risk/RiskRules.fs; tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs; tests/Meridian.Tests/Risk/FatFingerRuleTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimeFatFingerStatusTests.cs; tests/Meridian.Tests/Risk/PriceCollarRuleTests.cs; tests/Meridian.Tests/Risk/BracketChildLimbRuleTests.cs; tests/Meridian.Tests/Execution/KillSwitchCloseOnlyTests.cs; tests/Meridian.Wpf.Tests/Services/TradingSafetyCommandTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimePriceCollarConfigTests.cs; tests/Meridian.Tests/Execution/FixedIncomeFillBookingTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimeFirstRunDefaultsTests.cs",
+      "Last Reviewed": "2026-08-25"
     },
     {
       "ID": "W9-GOV-008",
       "Wave": "W9",
       "Title": "Route-level authorization, fail-closed tenancy, and hash-chained accounting audit",
       "Workspaces": "Settings; Accounting",
-      "Status": "planned",
+      "Status": "in_progress",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Platform Security and Governance",
-      "Evidence Posture": "planned_evidence",
+      "Evidence Posture": "in_progress",
       "Evidence": "",
-      "Last Reviewed": "2026-08-24"
+      "Last Reviewed": "2026-08-29"
     },
     {
       "ID": "W9-INGEST-009",
       "Wave": "W9",
       "Title": "Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher",
       "Workspaces": "Accounting; Data",
-      "Status": "planned",
+      "Status": "in_progress",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
-      "Evidence Posture": "planned_evidence",
+      "Evidence Posture": "in_progress",
       "Evidence": "",
-      "Last Reviewed": "2026-08-10"
+      "Last Reviewed": "2026-08-29"
     },
     {
       "ID": "W9-ASSET-010",
@@ -393,6 +393,19 @@
       "Evidence Posture": "complete",
       "Evidence": "docs/architecture/event-accounting-architecture.md; src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.cs; tests/Meridian.Tests/Storage/AssetAccountingPostingEvidenceValidatorTests.cs; tests/Meridian.Tests/AssetOperations/AssetAccountingEventSpineContractTests.cs; tests/Meridian.Tests/AssetOperations/InMemoryAssetAccountingEventProjectionStoreTests.cs; tests/Meridian.Tests/FinancialOperations/Ledger/AssetAccountingEventSpineServiceTests.cs; tests/Meridian.Tests/FinancialOperations/Ledger/AssetAccountingLifecycleSeparationTests.cs; tests/Meridian.Tests/Ui/WorkstationEndpointsTests.AccountingConfiguration.cs; tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs",
       "Last Reviewed": "2026-07-28"
+    },
+    {
+      "ID": "W9-CORPACT-011",
+      "Wave": "W9",
+      "Title": "Durable corporate action case processing and accounting projection",
+      "Workspaces": "Accounting; Portfolio; Data",
+      "Status": "ready_for_acceptance",
+      "Health": "green",
+      "Priority": "high",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "implementation_complete",
+      "Evidence": "docs/domain/corporate-action-case.md; src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs; src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs; src/Meridian.Instruments/AssetOperations/CorporateActionAccountingProjectionService.cs; src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs; src/Meridian.Storage/SecurityMaster/Migrations/030_security_master_corporate_action_operations.sql; src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsServiceTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionIngestOrchestratorTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionGoldenLedgerTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsContractTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsMigrationTests.cs; tests/Meridian.Backtesting.Tests/CorporateActionGoldenAdjustmentTests.cs",
+      "Last Reviewed": "2026-08-29"
     },
     {
       "ID": "W10-MARK-001",

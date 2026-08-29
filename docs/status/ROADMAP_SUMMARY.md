@@ -47,9 +47,10 @@ Snapshot date: 2026-08-10
 | W9-REPORT-005 | Client-grade PDF/XLSX exports and partners-capital statement | ready_for_acceptance | green | high | Accounting and Ledger |
 | W9-NAV-006 | Unitized NAV and real fee, waterfall, and capital-call economics | ready_for_acceptance | green | high | Accounting and Ledger |
 | W9-SAFETY-007 | Kill-switch cancel-all and fat-finger, notional, and collar rules | in_progress | green | high | Execution and Fund Accounts |
-| W9-GOV-008 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | planned | green | high | Platform Security and Governance |
-| W9-INGEST-009 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | planned | green | high | Accounting and Ledger |
+| W9-GOV-008 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | in_progress | green | high | Platform Security and Governance |
+| W9-INGEST-009 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | in_progress | green | high | Accounting and Ledger |
 | W9-ASSET-010 | Asset Accounting Event Spine and atomic lot posting | done | green | critical | Accounting and Ledger |
+| W9-CORPACT-011 | Durable corporate action case processing and accounting projection | ready_for_acceptance | green | high | Accounting and Ledger |
 | W10-MARK-001 | Fail-closed stale-mark policy and mark-age surfacing | planned | green | high | Accounting and Ledger |
 | W10-RECON-001 | Durable break lineage identity and run-over-run break diff | planned | green | high | Accounting and Ledger |
 | W10-PROV-001 | Ledger-amount evidence subject and shared proof drawer | planned | green | high | Workstation Shell and UX |
