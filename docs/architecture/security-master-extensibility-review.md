@@ -993,8 +993,9 @@ These are intended and stated rather than incidental:
 - **P1's legacy PATCH gate bypass** — this pass's second priority. `RequireGovernedTermAmendmentRoute`
   now appears at **5** call sites in `SecurityMasterEndpoints.cs`, against the 3 the pass counted, and
   the legacy `PATCH …/preferred-terms` route is among them.
-- **P1's import actor gap** — `ISecurityMasterImportService.ImportAsync` now takes `string actor`
-  (`:47-52`), where the pass recorded no actor parameter at all.
+- **P1's import actor gap, for callers that pass a resolved identity** — `ImportAsync` now takes
+  `string actor` (`:47-52`), where the pass recorded no actor parameter at all. That closes the
+  structural half: the parameter exists and the HTTP path fills it from the resolved principal.
 - **P1's endpoint attribution, substantially** — `EndpointAuthorization.TryResolveActor` now appears at
   **9** sites in `SecurityMasterEndpoints.cs`. The pass found exactly one path deriving the actor
   server-side (governed workbench publish) and called it the reference implementation to extend; it has
@@ -1005,7 +1006,18 @@ These are intended and stated rather than incidental:
   `SecurityMasterIngestFailureClassifier`, which switches on exception type and SQLSTATE rather than
   message text. That is the right shape and it closes the fragility half.
 
-**Verified partially closed — both in the specific way the item warned against.**
+**Verified partially closed — each in the specific way the item warned against.**
+
+- **P1 on the CLI import path.** `SecurityMasterCommands` fills the new `actor` parameter from
+  `--imported-by` when supplied, falling back to `Environment.UserName` and then to `"meridian-cli"`
+  (`:364-370`). The fallback chain is deliberate and its comment reasons well — an unattended run is a
+  workload and should say so. But the first branch stamps an **arbitrary caller-supplied string** onto
+  every imported security, which is the self-asserted attribution P1 exists to remove. Be fair about
+  what is in dispute: a CLI is run by someone with shell access, the OS-user fallback is sound, and a
+  named override is defensible on a trusted host in the way `git commit --author` is. What it is not is
+  *derived or validated against trusted workflow metadata*, which is the bar this item sets. Either the
+  path validates the override against a known identity, or the document records the CLI as a deliberate
+  exception with its trust assumption stated. Neither has happened, so the item is not closed here.
 
 - **P4's semantic defect survives the rewrite.** `SecurityMasterIngestFailureClassifier.IsAlreadyMastered`
   returns `conflict.IsAlreadyCreated` for a create-time stream conflict and `true` for any PostgreSQL
@@ -1039,6 +1051,17 @@ These are intended and stated rather than incidental:
   security in one action — is still constructed with no `canExecute` predicate. P5 was filed late in
   review (round 18), after the implementation work on the other items had likely been scoped, which
   may explain why it was not picked up.
+
+**The pattern across those three is worth more than the three entries.** P3b froze the creation fields
+while still overwriting `alias_value`; P4 replaced the message-sniffing classifier while still equating
+a stream conflict with a duplicate; P1's import path gained an `actor` parameter that the CLI fills
+with an unvalidated string. In each case the *named artefact* of the finding was removed and the
+property the finding was about was not established. That is the same failure mode this document
+records itself committing while it was written — checking that a defect's visible marker is gone
+rather than that the replacement makes the distinction required — and it is worth a reviewer's
+attention as a systematic risk in how these items are being closed, not as three unlucky details. A
+useful test when closing any of the remaining items: name the property the finding requires, then find
+the code that establishes it. If the answer is "the old code is gone", the item is not closed.
 
 **Not re-verified, and therefore unknown against the merged tree**: P4's cancellation half (the three
 backfill swallow points, Polygon's `FetchPageAsync`, Edgar's three broad catches); P1's remaining
