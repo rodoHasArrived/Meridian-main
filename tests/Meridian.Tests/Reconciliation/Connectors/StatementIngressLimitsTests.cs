@@ -1048,6 +1048,13 @@ public sealed class StatementIngressLimitsTests : IDisposable
         StatementIngressLimits.Default.MaxParseNodes.Should().BeLessThan(
             (int)(StatementIngressLimits.Default.MaxDocumentBytes / 4),
             "the budget has to sit below the node count the byte cap alone permits, or it never binds");
+
+        // Below the byte cap is necessary but not sufficient: node count cannot separate one fat hostile
+        // entry from many ordinary ones, so the ceiling is set below the legitimate maximum rather than
+        // above it. A ceiling above what a real large statement produces is a ceiling that never fires.
+        StatementIngressLimits.Default.MaxParseNodes.Should().BeLessThan(
+            1_000_000,
+            "a ceiling above the legitimate maximum never fires, so this one sits deliberately below it");
     }
 
     [Fact]

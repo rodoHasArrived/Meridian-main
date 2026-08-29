@@ -149,6 +149,7 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         var taxLots = new List<BrokerageTaxLotSnapshotDto>();
         var borrowPositions = new List<BrokerageBorrowPositionSnapshotDto>();
         var rowNumber = 0;
+        var evidenceRows = 0;
         var sectionCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var statement in statements)
@@ -315,6 +316,17 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
 
             foreach (var commission in Descendants(statement, "CommissionDetail"))
             {
+                // Commission, open-lot and securities-borrow rows never touch rowNumber, so a guard keyed
+                // on that counter could not see them - they retain an activity or position DTO each and
+                // are serialized into canonical-evidence.json regardless. The budget is shared with
+                // rowNumber so total retained evidence is bounded, not each kind separately.
+                evidenceRows++;
+                if (rowNumber + evidenceRows > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "CommissionDetails");
                 CollectAttributeNames(commission, detectedColumns);
                 activities.Add(BuildCommissionActivity(commission, statementAccountId, profile));
@@ -372,6 +384,13 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
 
             foreach (var openLot in Descendants(statement, "OpenLot"))
             {
+                evidenceRows++;
+                if (rowNumber + evidenceRows > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "OpenLots");
                 CollectAttributeNames(openLot, detectedColumns);
                 if (BuildTaxLot(openLot, statementAccountId, profile) is { } taxLot)
@@ -382,6 +401,14 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             {
                 if (!borrowed.HasAttributes)
                     continue;
+
+                evidenceRows++;
+                if (rowNumber + evidenceRows > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "SecuritiesBorrowedLent");
                 CollectAttributeNames(borrowed, detectedColumns);
                 if (BuildBorrowPosition(borrowed, statementAccountId, profile) is { } borrowPosition)

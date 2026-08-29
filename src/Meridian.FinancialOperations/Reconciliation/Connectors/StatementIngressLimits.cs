@@ -24,7 +24,7 @@ public sealed record StatementIngressLimits(
     int MaxLineBytes,
     int MaxNestingDepth,
     int MaxSubtreeNodes = 50_000,
-    int MaxParseNodes = 2_000_000)
+    int MaxParseNodes = 500_000)
 {
     /// <summary>
     /// Default bounds. <see cref="MaxDocumentBytes"/> is <see cref="StatementConnectorLimits.MaxFileBytes"/>,
@@ -69,11 +69,20 @@ public sealed record StatementIngressLimits(
 
     /// <summary>
     /// Whole-document retained-node cap, deliberately <b>not</b> derived from <see cref="MaxRecords"/>.
-    /// Deriving it made the bound vary with an unrelated knob and, at the default record allowance, put
-    /// it above what <see cref="MaxDocumentBytes"/> can even produce - a bound that cannot be reached is
-    /// not a bound. The document byte cap is the primary limit here; this is the secondary guard against
-    /// a tag-dense payload whose retained object graph costs far more than its bytes, since each node
-    /// carries string and dictionary overhead the source text does not.
+    /// Deriving it made the bound vary with an unrelated knob and, at the default record allowance, put it
+    /// above what <see cref="MaxDocumentBytes"/> can even produce - a bound that cannot be reached is not
+    /// a bound.
+    ///
+    /// The value is a deliberate trade, and worth stating plainly. Node count alone cannot separate a
+    /// hostile payload from a very large legitimate one: a single entry carrying a million uniquely named
+    /// compact leaves and a hundred thousand ordinary entries of ten leaves each reach a similar total.
+    /// Each retained leaf costs a name string, a value string, a slot in <c>OfxNode.Leaves</c>, another
+    /// slot once <c>FlattenLeaves</c> copies it into the entry dictionary, and an entry in the
+    /// detected-column set - on the order of a couple of hundred bytes for a few bytes of source. A
+    /// ceiling set above the legitimate maximum therefore never fires, so this one is set below it: a
+    /// statement above roughly fifty thousand rich entries is refused rather than expanded, with a message
+    /// that names the two remedies. Refusing an enormous-but-honest file, actionably, is the better error
+    /// than expanding a hostile one silently.
     /// </summary>
     public const string TooManyNodesCode = "STATEMENT_TOO_MANY_NODES";
 
