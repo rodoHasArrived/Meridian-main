@@ -15,7 +15,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task GetProjectionAsync_CalculatedBullet_ShouldGenerateCouponAndMaturityScheduleFromRetainedTerms()
     {
         var securityId = Guid.Parse("11111111-aaaa-aaaa-aaaa-111111111111");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
             .Returns(new SecurityCashFlowSourceDto(
@@ -675,7 +675,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task BuildLedgerPostingsAsync_FreshBaseProjection_ShouldProduceBalancedCouponAccruals()
     {
         var securityId = Guid.Parse("55555555-eeee-eeee-eeee-555555555555");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
             .Returns(new SecurityCashFlowSourceDto(
@@ -753,7 +753,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task GetProjectionAsync_SwapLegsWithDirections_ShouldNetReceiveMinusPay()
     {
         var securityId = Guid.Parse("66666666-ffff-ffff-ffff-666666666666");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var service = BuildService(
             StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
             QueryWith(securityId, JsonSerializer.SerializeToElement(new
@@ -788,7 +788,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task GetProjectionAsync_SingleFloatingLeg_ProjectsFloatingRateNoteWithPrincipalExchange()
     {
         var securityId = Guid.Parse("77777777-aaaa-bbbb-cccc-777777777777");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var terms = JsonSerializer.SerializeToElement(new
         {
             issueDate = asOf,
@@ -820,7 +820,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task GetProjectionAsync_FloatingLeg_AppliesScenarioShiftToFloatingRatesOnly()
     {
         var securityId = Guid.Parse("88888888-aaaa-bbbb-cccc-888888888888");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var service = BuildService(
             StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
             QueryWith(securityId, JsonSerializer.SerializeToElement(new
@@ -873,6 +873,58 @@ public sealed class SecurityMasterCashFlowServiceTests
         projection!.Schedule.Should().BeEmpty();
         projection.LegSchedules.Should().HaveCount(2);
         projection.LegSchedules![0].Schedule.Should().NotBeEmpty();
+    }
+
+    /// <summary>
+    /// A regular 30/360 period is a whole period even when the schedule roll clamps it.
+    /// </summary>
+    /// <remarks>
+    /// Payment dates are anchored on the issue date, and <c>AddMonths</c> clamps an anchor on the
+    /// 29th–31st into a shorter month — 31 Aug plus six months is 28 February. Accrual used to
+    /// re-derive the day count from those clamped endpoints, so 30/360 counted 178 days for that
+    /// period and 182 for the next: the year still totalled 360, but the two regular coupons were
+    /// unequal, which is the property 30/360 exists to guarantee. The other tests here anchor on the
+    /// 1st, where the roll never clamps and this cannot regress, so this one anchors on a month end
+    /// on purpose.
+    /// </remarks>
+    [Fact]
+    public async Task GetProjectionAsync_MonthEndAnchorCrossingFebruary_ShouldPayEqualWholeCoupons()
+    {
+        var securityId = Guid.Parse("99999999-aaaa-bbbb-cccc-999999999999");
+
+        // 31 August of next year: always a real date, always ahead of the service's cutoff, and its
+        // semiannual roll always lands on the last day of February — the case that used to clamp.
+        var issueDate = new DateOnly(DateOnly.FromDateTime(DateTime.UtcNow.Date).Year + 1, 8, 31);
+        var maturityDate = issueDate.AddMonths(12);
+
+        var service = BuildService(
+            StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
+            QueryWith(securityId, JsonSerializer.SerializeToElement(new
+            {
+                issueDate,
+                maturityDate,
+                par = 100m,
+                couponRate = 6m,
+                paymentFrequency = "SemiAnnual",
+                dayCountConvention = "30/360"
+            })));
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Should().HaveCount(2);
+
+        // Half a year of a 6% coupon on par 100, on both coupons — not 2.97 and 3.03.
+        projection.Schedule.Should().OnlyContain(static row => row.InterestAmount == 3m);
+        projection.Schedule.Last().PrincipalAmount.Should().Be(100m);
+    }
+
+    private static DateOnly WholePeriodIssueDate()
+    {
+        // Exact coupon assertions require whole 30/360 periods. The first of the current UTC month
+        // keeps every payment ahead of the service's real-time cutoff and avoids month-end clamping.
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        return new DateOnly(today.Year, today.Month, 1);
     }
 
     private static ISecurityMasterCashFlowStore StoreWith(Guid securityId, StructuredCashFlowSourceKind sourceKind)

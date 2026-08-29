@@ -36,8 +36,7 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
         var currentVersion = await LoadCurrentVersionAsync(connection, transaction, securityId, ct).ConfigureAwait(false);
         if (currentVersion != expectedVersion)
         {
-            throw new InvalidOperationException(
-                $"Security stream version conflict for {securityId}. Expected {expectedVersion}, actual {currentVersion}.");
+            throw new SecurityMasterStreamVersionConflictException(securityId, expectedVersion, currentVersion);
         }
 
         foreach (var @event in events)

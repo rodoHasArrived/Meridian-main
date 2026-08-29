@@ -748,4 +748,117 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
         command.Parameters.AddWithValue("proposal_id", proposalId);
         return (long)(await command.ExecuteScalarAsync() ?? 0L);
     }
+
+    /// <summary>
+    /// Correcting an alias must update its value but leave the recording facts alone. As-of rebuilds
+    /// retain aliases with created_at at or before the cutoff, so an edit that advanced created_at
+    /// would retroactively drop the identifier out of every view older than the correction.
+    /// </summary>
+    [SecurityMasterDatabaseFact]
+    public async Task UpsertAliasAsync_PreservesCreationFacts_WhenAliasIsCorrected()
+    {
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+        var aliasId = Guid.NewGuid();
+        var recordedAt = new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero);
+        var effectiveFrom = recordedAt.AddDays(-1);
+
+        await CreateMinimalSecurityAsync(store, securityId, effectiveFrom);
+
+        var original = new SecurityAliasDto(
+            aliasId,
+            securityId,
+            SecurityIdentifierKind.Ric.ToString(),
+            "ACME.O",
+            "refinitiv",
+            SecurityAliasScope.Collector,
+            "recorded in January",
+            "january.operator",
+            recordedAt,
+            effectiveFrom,
+            null,
+            true);
+
+        var inserted = await store.UpsertAliasAsync(original);
+        inserted.Should().NotBeNull();
+        inserted!.CreatedAt.Should().Be(recordedAt);
+
+        // The June correction supplies a new value AND a new creation stamp, as the service does.
+        var corrected = original with
+        {
+            AliasValue = "ACME.OQ",
+            Reason = "corrected in June",
+            CreatedBy = "june.operator",
+            CreatedAt = new DateTimeOffset(2026, 6, 20, 0, 0, 0, TimeSpan.Zero)
+        };
+
+        var afterCorrection = await store.UpsertAliasAsync(corrected);
+
+        afterCorrection.Should().NotBeNull();
+        afterCorrection!.CreatedAt.Should().Be(
+            recordedAt,
+            "the alias was recorded in January; correcting it in June must not restate that");
+        afterCorrection.CreatedBy.Should().Be("january.operator");
+
+        // The correction itself must still have landed.
+        var storedValue = await ReadAliasColumnAsync(aliasId, "alias_value");
+        storedValue.Should().Be("ACME.OQ");
+        var storedReason = await ReadAliasColumnAsync(aliasId, "reason");
+        storedReason.Should().Be("corrected in June");
+
+        var storedCreatedAt = await ReadAliasColumnAsync(aliasId, "created_at");
+        Convert.ToDateTime(storedCreatedAt, System.Globalization.CultureInfo.InvariantCulture)
+            .Should().Be(recordedAt.UtcDateTime, "the durable column, not just the returned DTO, must be unchanged");
+    }
+
+    private Task<SecurityDetailDto> CreateMinimalSecurityAsync(
+        PostgresSecurityMasterStore store,
+        Guid securityId,
+        DateTimeOffset effectiveFrom)
+    {
+        var eventStore = new PostgresSecurityMasterEventStore(_fixture.Options, NullLogger<PostgresSecurityMasterEventStore>.Instance);
+        var snapshotStore = new PostgresSecurityMasterSnapshotStore(_fixture.Options);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            new SecurityMasterAggregateRebuilder(eventStore, snapshotStore),
+            _fixture.Options,
+            NullLogger<SecurityMasterService>.Instance);
+
+        return service.CreateAsync(new CreateSecurityRequest(
+            securityId,
+            "Equity",
+            JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Alias History Fixture",
+                currency = "USD",
+                countryOfRisk = "US",
+                issuerName = "Acme Corp",
+                exchange = "XNYS",
+                lotSize = 1,
+                tickSize = 0.01m
+            }),
+            JsonSerializer.SerializeToElement(new { shareClass = "Common" }),
+            new[]
+            {
+                new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, $"AH{securityId:N}"[..8], true, effectiveFrom, null, null)
+            },
+            effectiveFrom,
+            "test",
+            "codex",
+            null,
+            "alias history fixture"));
+    }
+
+    private async Task<object?> ReadAliasColumnAsync(Guid aliasId, string column)
+    {
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"select {column} from {_fixture.Options.Schema}.security_aliases where alias_id = @alias_id;";
+        command.Parameters.AddWithValue("alias_id", aliasId);
+        return await command.ExecuteScalarAsync();
+    }
 }

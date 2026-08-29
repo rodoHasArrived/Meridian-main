@@ -292,6 +292,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             request.Scope,
             request.Reason,
             request.CreatedBy,
+            // Proposed creation stamp. It is applied only when this upsert inserts a new alias; for an
+            // edit the store keeps the alias's original created_at/created_by and returns those.
             DateTimeOffset.UtcNow,
             request.ValidFrom,
             request.ValidTo,
@@ -1052,8 +1054,12 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
     private async Task<SecurityAliasDto> UpsertAliasAsyncCore(SecurityAliasDto alias, CancellationToken ct)
     {
-        await _store.UpsertAliasAsync(alias, ct).ConfigureAwait(false);
-        return alias;
+        // The store retains the original created_at/created_by when the alias already exists, so the
+        // persisted row is authoritative: returning the locally stamped `alias` would report a
+        // corrected identifier as created at the moment of the correction. Fall back to the proposed
+        // value only when the store cannot read the row back.
+        var persisted = await _store.UpsertAliasAsync(alias, ct).ConfigureAwait(false);
+        return persisted ?? alias;
     }
 
     private Task SaveSnapshotIfNeededAsync(SecurityEconomicDefinitionRecord definition, CancellationToken ct)
