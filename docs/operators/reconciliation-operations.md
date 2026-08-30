@@ -52,6 +52,23 @@ This lane is the canonical operator procedure page for reconciliation exception 
 6. Open the returned Evidence Vault route to inspect retained source/canonical proof and open the
    returned reconciliation route for break or case review.
 
+Statement ingress is bounded, and a breach is refused rather than truncated — no partially imported
+statement is ever committed. A refusal surfaces as a blocking issue on preview and validate, and as a
+failed commit, carrying one of `STATEMENT_DOCUMENT_TOO_LARGE` (over 20 MiB),
+`STATEMENT_TOO_MANY_RECORDS` (over 250,000 retained rows, counting the retained margin, activity,
+tax-lot, and borrow evidence alongside canonical rows), `STATEMENT_LINE_TOO_LONG`,
+`STATEMENT_TOO_MANY_LINES`, `STATEMENT_NESTING_TOO_DEEP`, `STATEMENT_SUBTREE_TOO_LARGE`,
+`STATEMENT_TOO_MANY_NODES`, or `STATEMENT_TOO_MANY_DIAGNOSTICS` (over 25,000 retained parse issues —
+a file failing that many rows is malformed at a scale no operator can reconcile row by row, so correct
+the export or the mapping profile rather than reviewing the diagnostics). An IB Flex import reports
+the same retained-row ceiling as
+`ROW_LIMIT_EXCEEDED`. The defaults sit well above any real bank or broker statement, so treat a
+breach first as a malformed or hostile file — check the source with the institution before assuming it
+is merely large. If the statement is genuinely legitimate, split it into shorter periods and import
+each; that needs no configuration change. Raising a bound is a deployment change, not an operator
+setting: it is a single registration documented in `src/Meridian.FinancialOperations/README.md`, and
+it should be raised only for the bound that actually refused, with the reason recorded.
+
 Scheduled-fetch credentials remain in the existing provider credential vault. The statement screen
 never asks for, displays, or persists API keys. A transient fetch failure advances the schedule
 watermark, so the next automatic retry respects the configured cadence; the schedule row shows a
