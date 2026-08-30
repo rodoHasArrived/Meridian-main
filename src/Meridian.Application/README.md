@@ -476,6 +476,13 @@ and UI presentation concerns in their owning layers.
   `InvalidOperationException`, so existing catches and assertions naming that type keep matching; the
   added type only lets a host that wants to escalate do so. Hosts decide through
   `Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal`.
+  `IStartupRefusalGuard` marks the hosted services that can raise such a refusal, so a host with a UI
+  can decide every refusal before it shows anything without also waiting on the ordinary hosted
+  services registered beside them -- `IHost.StartAsync` returns only when all of them have started,
+  and one reading a slow data root would otherwise gate the shell. Implementations must be safe to
+  run twice, because such a host still starts them again as ordinary hosted services; both current
+  implementations only ask a question about the composition. `Meridian.Ui.Shared.Services.StartupRefusalPreflight`
+  runs them.
   Headless collector, backfill, ETL, and utility profiles build and start a Generic Host so the
   final production-registration guard, database initialization, coordination, and other registered
   hosted services enter the normal start/stop lifecycle. The guard starts first, database

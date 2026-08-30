@@ -292,11 +292,15 @@ public sealed class AppServiceRegistrationTests
         // interactive until teardown finishes -- and checking the refusal flag afterwards only
         // suppresses the later visibility recovery, it cannot un-serve what was already on screen.
         //
+        // Eighth round narrowed it to the guards alone: host startup stays behind the window, so a
+        // slow hosted service can no longer hold the shell back indefinitely. Hence the preflight
+        // call, not StartHostServicesAsync, is what has to precede the window here.
+        //
         // Asserted over the source, like the host-ordering test above, because OnStartup owns
         // process lifetime and ends in Shutdown(): there is no way to drive it from a test host.
         var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\App.xaml.cs"));
 
-        var guards = source.IndexOf("await RunStartupGuardsAsync();", StringComparison.Ordinal);
+        var guards = source.IndexOf("await RunStartupRefusalPreflightAsync();", StringComparison.Ordinal);
         var resolveWindow = source.IndexOf("Services.GetRequiredService<MainWindow>();", StringComparison.Ordinal);
         var showWindow = source.IndexOf("mainWindow.Show();", StringComparison.Ordinal);
 
@@ -309,9 +313,9 @@ public sealed class AppServiceRegistrationTests
         guards.Should().BeLessThan(
             showWindow, "a composition a guard refuses must never be shown to an operator");
 
-        // Only call sites are compared. StartHostServicesAsync -- where the guards actually run --
-        // is invoked from RunStartupGuardsAsync, whose body sits further down the file than
-        // OnStartup, so its source offset says nothing about when it runs.
+        // Only call sites in OnStartup are compared. Callee bodies sit further down the file than
+        // OnStartup, so their source offsets say nothing about when they run -- which is why the
+        // window is NOT asserted against StartHostServicesAsync here.
     }
 
     private static ServiceProvider BuildServiceProvider()

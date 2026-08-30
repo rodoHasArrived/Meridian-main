@@ -30,7 +30,7 @@ namespace Meridian.Ui.Shared.Services;
 /// <para>Single-company deployments — the overwhelming majority of this posture — are unaffected, as
 /// are deployments that configure no company at all.</para>
 /// </remarks>
-public sealed class InMemoryFundStructureTenancyGuard : IHostedService
+public sealed class InMemoryFundStructureTenancyGuard : IStartupRefusalGuard
 {
     private readonly IFundStructureService _fundStructureService;
     private readonly IUserAccountStore _userAccountStore;

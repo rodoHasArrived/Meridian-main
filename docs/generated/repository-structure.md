@@ -3411,6 +3411,7 @@ Meridian-main
 │   │   │   ├── FundStructureStartup.cs
 │   │   │   ├── HostAdapters.cs
 │   │   │   ├── HostStartup.cs
+│   │   │   ├── IStartupRefusalGuard.cs
 │   │   │   ├── LedgerStartup.cs
 │   │   │   ├── LegacySnapshotArchiver.cs
 │   │   │   ├── MeridianDeploymentPosture.cs
@@ -7378,6 +7379,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── SensitiveActionGovernance.cs
 │   │   │   ├── SpreadsheetFormulaGuard.cs
+│   │   │   ├── StartupRefusalPreflight.cs
 │   │   │   ├── StatementFetchSchedulerService.cs
 │   │   │   ├── StatementReconciliationCaseworkHandoffService.cs
 │   │   │   ├── StatementReconciliationIntakeAuthority.cs
@@ -9003,6 +9005,7 @@ Meridian-main
 │   │   │   │   ├── ProviderCapabilityContractRegistrationTests.cs
 │   │   │   │   ├── ProviderFeatureRegistrationTests.cs
 │   │   │   │   ├── SecurityMasterStartupTests.cs
+│   │   │   │   ├── StartupRefusalPreflightTests.cs
 │   │   │   │   └── StorageFeatureRegistrationTests.cs
 │   │   │   ├── Config
 │   │   │   │   ├── AppSettingsSampleTests.cs

@@ -52,6 +52,15 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
   inline predicate there would be reviewed and never executed.
 - `Services/InMemoryFundStructureTenancyGuard` - refuses to start a multi-company deployment on the
   unpartitioned in-memory fund structure (W9-GOV-008 criterion 2), raising the same refusal type.
+- `Services/StartupRefusalPreflight` - runs the composition's
+  `Meridian.Application.Composition.IStartupRefusalGuard`s on their own, for a host that must decide
+  every refusal before it shows a shell. Deliberately not the same as starting the host:
+  `IHost.StartAsync` returns only once every hosted service has started, and one that reads a slow or
+  unreachable data root would gate the window indefinitely -- an operator who never gets a shell is
+  not better off than one who briefly gets the wrong one. It catches nothing, because the caller owns
+  what a refusal means for its lifetime and swallowing one in a shared helper is how a guard comes to
+  have no effect at all. Lives here, like `HostStartupEscalation`, so the behaviour the WPF shell
+  depends on is covered by tests that run off Windows.
 - `Endpoints/` - shared workstation endpoint mapping and projection helpers, including
   host liveness/readiness/startup probes, fund-structure ownership lifecycle, portable packaging,
   archive-maintenance, and data-quality monitoring routes.

@@ -233,7 +233,12 @@ public partial class App : System.Windows.Application
         // MainWindow.OnWindowLoaded navigates to the fund-profile page and loads workspaces as soon
         // as the window is shown, so showing first would put the very posture a guard rejects in
         // front of the operator until teardown finished.
-        await RunStartupGuardsAsync();
+        //
+        // Only the guards, though -- not the whole host. StartAsync does not return until every
+        // hosted service has started, including the symbol-registry initializer and migration that
+        // read the configured data root, so gating the window on all of it would trade a shell
+        // shown too early for one that may never appear. The guards answer immediately.
+        await RunStartupRefusalPreflightAsync();
         if (_startupRefused)
         {
             return;
@@ -417,7 +422,15 @@ public partial class App : System.Windows.Application
         // reads IUserAccountStore -- registered here, a few lines up -- and the module is
         // constructed standalone by its own tests. Putting it there made resolving IHostedService
         // throw for want of an account store the module never owned.
-        services.AddHostedService<Meridian.Ui.Shared.Services.InMemoryFundStructureTenancyGuard>();
+        //
+        // Registered as a singleton and mapped to both roles, so the copy the refusal preflight
+        // runs before the shell and the copy host startup runs behind it are one object rather
+        // than two independent constructions.
+        services.AddSingleton<Meridian.Ui.Shared.Services.InMemoryFundStructureTenancyGuard>();
+        services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService>(
+            sp => sp.GetRequiredService<Meridian.Ui.Shared.Services.InMemoryFundStructureTenancyGuard>());
+        services.AddSingleton<Meridian.Application.Composition.IStartupRefusalGuard>(
+            sp => sp.GetRequiredService<Meridian.Ui.Shared.Services.InMemoryFundStructureTenancyGuard>());
         services.AddSingleton<LoginSessionService>();
         services.AddSingleton<WpfServices.DesktopAuthenticationSession>();
         services.AddTransient<StartupWindowViewModel>();
@@ -540,32 +553,34 @@ public partial class App : System.Windows.Application
     }
 
     /// <summary>
-    /// Runs the startup work that can refuse this composition, before any shell exists.
+    /// Decides every startup refusal before any shell exists, without starting the rest of the host.
     /// </summary>
     /// <remarks>
-    /// Separated from <see cref="SafeOnStartupAsync"/> so the guards run ahead of
-    /// <c>MainWindow.Show()</c> rather than behind it. A refusal decides that this composition may
-    /// serve nothing at all, and a shell shown first is a shell the operator can use:
-    /// <c>MainWindow.OnWindowLoaded</c> navigates to the fund-profile page, starts the shell view
-    /// model and loads workspaces as soon as the window is shown, so the prohibited posture would
-    /// be live and interactive for however long the guard and the teardown behind it take. Checking
-    /// the refusal flag after the fact only prevents the later visibility recovery; it cannot
-    /// un-serve what was already on screen.
+    /// <para>A refusal decides that this composition may serve nothing at all, and a shell shown
+    /// first is a shell the operator can use: <c>MainWindow.OnWindowLoaded</c> navigates to the
+    /// fund-profile page, starts the shell view model and loads workspaces as soon as the window is
+    /// shown, so the prohibited posture would be live and interactive for however long the guard
+    /// and the teardown behind it take. Checking the refusal flag afterwards only prevents the
+    /// later visibility recovery; it cannot un-serve what was already on screen.</para>
+    ///
+    /// <para>The guards run <i>alone</i> here rather than as part of host startup. Awaiting the
+    /// whole host would block the window on every ordinary hosted service too -- the symbol-registry
+    /// initializer and the canonical-registry migration both read the configured data root, which
+    /// may be slow or unreachable -- and an operator who never gets a window is not better off than
+    /// one who briefly gets the wrong one. The guards themselves resolve immediately, and
+    /// <see cref="StartHostServicesAsync"/> still starts them with everything else once the shell
+    /// is up; <c>IStartupRefusalGuard</c> requires them to be safe to run twice.</para>
     /// </remarks>
-    private async Task RunStartupGuardsAsync(CancellationToken ct = default)
+    private async Task RunStartupRefusalPreflightAsync(CancellationToken ct = default)
     {
+        if (_host is null)
+        {
+            return;
+        }
+
         try
         {
-            // Run first-time setup before showing window
-            await InitializeFirstRunAsync();
-
-            // Initialize and validate configuration
-            await InitializeConfigurationAsync();
-
-            // Start hosted services registered through shared composition, including
-            // database-backed projection, outbox, and worker services. The startup guards run
-            // here, which is why this phase precedes the window.
-            await StartHostServicesAsync(ct);
+            await Meridian.Ui.Shared.Services.StartupRefusalPreflight.RunAsync(_host.Services, ct);
         }
         catch (Exception ex) when (Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal(ex))
         {
@@ -573,6 +588,9 @@ public partial class App : System.Windows.Application
         }
         catch (Exception ex)
         {
+            // A guard that failed for some other reason is not a refusal, and the shell still
+            // starts -- StartHostServicesAsync runs the same guard again behind the window and
+            // applies the usual tolerance there.
             await HandleStartupFailureAsync(ex);
         }
     }
@@ -580,10 +598,22 @@ public partial class App : System.Windows.Application
     /// <summary>
     /// Performs async initialization with proper exception handling.
     /// </summary>
-    private async Task SafeOnStartupAsync()
+    private async Task SafeOnStartupAsync(CancellationToken ct = default)
     {
         try
         {
+            // Run first-time setup
+            await InitializeFirstRunAsync();
+
+            // Initialize and validate configuration
+            await InitializeConfigurationAsync();
+
+            // Start hosted services registered through shared composition, including
+            // database-backed projection, outbox, and worker services. Behind the window on
+            // purpose: the refusals were already decided by RunStartupRefusalPreflightAsync, and
+            // what remains here is the ordinary startup a shell can wait on.
+            await StartHostServicesAsync(ct);
+
             // Initialize theme service
             if (Current.MainWindow is MainWindow mainWindow)
             {

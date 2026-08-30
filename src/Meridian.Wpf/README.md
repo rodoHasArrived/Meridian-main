@@ -54,16 +54,26 @@ application that is closing does not show one. The guards that reach this path t
 `ProductionRegistrationGuardService` and W9-GOV-008's `InMemoryFundStructureTenancyGuard`; do not
 reintroduce a blanket catch around host startup that swallows them.
 
-**The guard phase runs before the shell exists.** `App.RunStartupGuardsAsync` -- first-run setup,
-configuration, and host start, which is where the guards run -- is awaited in `OnStartup` *before*
-`MainWindow` is resolved or shown, and a refusal returns without constructing it. Keep that order.
+**Refusals are decided before the shell exists, and only refusals.**
+`App.RunStartupRefusalPreflightAsync` runs every registered
+`Meridian.Application.Composition.IStartupRefusalGuard` in `OnStartup` *before* `MainWindow` is
+resolved or shown, and a refusal returns without constructing it. Keep that order.
 `MainWindow.OnWindowLoaded` navigates to the fund-profile page, starts the shell view model, and
 loads workspaces as soon as the window is shown, so showing first would leave the operator an
 interactive shell backed by exactly the posture the guard rejects for as long as the guard and the
 teardown behind it take. Checking the refusal flag afterwards only suppresses the later visibility
-recovery; it cannot un-serve what was already on screen. `SafeOnStartupAsync` keeps the phase that
-genuinely needs a window -- theme, tray, connection monitoring, background services -- and its own
-refusal catch as defence in depth.
+recovery; it cannot un-serve what was already on screen.
+
+The preflight deliberately does **not** start the host. `IHost.StartAsync` returns only once every
+hosted service has started, and this composition starts a symbol-registry initializer and a
+canonical-registry migration that read the configured data root -- a slow or unreachable root would
+then hold the shell back indefinitely, which is a worse outcome than the one the preflight exists to
+prevent. Host startup therefore stays in `SafeOnStartupAsync`, behind the window, alongside theme,
+tray, connection monitoring, and background services; that method keeps its own refusal catch as
+defence in depth. The guards run in both places, which is why `IStartupRefusalGuard` requires
+implementations to be safe to run twice: a guard must ask a question about the composition, never
+act on it. Register a new guard against that interface as well as `IHostedService` -- mapping one
+singleton to both -- and the preflight picks it up without this shell being edited.
 
 Application startup now shows `StartupWindow` before the main shell. After authentication, the main shell defaults to `HomeWorkspace`, a source-backed WPF launch checkpoint that groups provider health, data freshness, reconciliation, approvals, accounting/reporting readiness, and recent activity before operators enter deeper task workspaces. The startup view model validates
 credentials through the Identity-owned `UserProfileRegistry` and `LoginSessionService`, keeps the

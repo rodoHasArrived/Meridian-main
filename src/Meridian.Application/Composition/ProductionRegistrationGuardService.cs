@@ -12,7 +12,7 @@ namespace Meridian.Application.Composition;
 /// factory descriptors so factory-hidden implementations are checked by their actual runtime
 /// type; any violation aborts startup with the full list of prohibited bindings.
 /// </summary>
-public sealed class ProductionRegistrationGuardService : IHostedService
+public sealed class ProductionRegistrationGuardService : IStartupRefusalGuard
 {
     private readonly IServiceCollection _services;
     private readonly IServiceProvider _provider;
@@ -123,6 +123,12 @@ public static class ProductionRegistrationGuardServiceCollectionExtensions
         services.AddSingleton(sp => new ProductionRegistrationGuardService(services, sp));
         services.Insert(0, ServiceDescriptor.Singleton<IHostedService>(
             sp => sp.GetRequiredService<ProductionRegistrationGuardService>()));
+
+        // Also reachable as a refusal guard, so a host that must decide refusals before it shows
+        // anything can run this one without starting every other hosted service behind it. Same
+        // singleton either way, so pre-running it and starting it are the same object's work.
+        services.AddSingleton<IStartupRefusalGuard>(
+            sp => sp.GetRequiredService<ProductionRegistrationGuardService>());
         return services;
     }
 }
