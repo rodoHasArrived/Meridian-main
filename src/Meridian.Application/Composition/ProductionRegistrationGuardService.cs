@@ -12,7 +12,7 @@ namespace Meridian.Application.Composition;
 /// factory descriptors so factory-hidden implementations are checked by their actual runtime
 /// type; any violation aborts startup with the full list of prohibited bindings.
 /// </summary>
-public sealed class ProductionRegistrationGuardService : IStartupRefusalGuard
+public sealed class ProductionRegistrationGuardService : IHostedService
 {
     private readonly IServiceCollection _services;
     private readonly IServiceProvider _provider;
@@ -124,11 +124,12 @@ public static class ProductionRegistrationGuardServiceCollectionExtensions
         services.Insert(0, ServiceDescriptor.Singleton<IHostedService>(
             sp => sp.GetRequiredService<ProductionRegistrationGuardService>()));
 
-        // Also reachable as a refusal guard, so a host that must decide refusals before it shows
-        // anything can run this one without starting every other hosted service behind it. Same
-        // singleton either way, so pre-running it and starting it are the same object's work.
-        services.AddSingleton<IStartupRefusalGuard>(
-            sp => sp.GetRequiredService<ProductionRegistrationGuardService>());
+        // Deliberately NOT registered as an IStartupRefusalGuard. In a production composition this
+        // guard resolves every singleton registered by factory, to prove the graph is constructible
+        // -- eager validation that is the whole point of it, and far too much work to put in front
+        // of a shell. A blocked constructor there would leave an authenticated operator with no
+        // window at all, which is the failure the preflight exists to avoid rather than cause.
+        // It keeps running as an ordinary hosted service, first in the chain, as it always has.
         return services;
     }
 }

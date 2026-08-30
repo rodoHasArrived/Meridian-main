@@ -72,8 +72,12 @@ prevent. Host startup therefore stays in `SafeOnStartupAsync`, behind the window
 tray, connection monitoring, and background services; that method keeps its own refusal catch as
 defence in depth. The guards run in both places, which is why `IStartupRefusalGuard` requires
 implementations to be safe to run twice: a guard must ask a question about the composition, never
-act on it. Register a new guard against that interface as well as `IHostedService` -- mapping one
-singleton to both -- and the preflight picks it up without this shell being edited.
+act on it. It also requires them to answer without unbounded work, since they run with nothing on
+screen -- which is why ADR-019's `ProductionRegistrationGuardService` is *not* marked, despite being
+a refusal guard: in a production posture it resolves every factory-registered singleton, and that
+belongs behind the window. Register a new guard against the interface as well as `IHostedService`
+-- mapping one singleton to both -- and the preflight picks it up without this shell being edited;
+if the guard cannot answer cheaply, leave it an ordinary hosted service instead.
 
 Application startup now shows `StartupWindow` before the main shell. After authentication, the main shell defaults to `HomeWorkspace`, a source-backed WPF launch checkpoint that groups provider health, data freshness, reconciliation, approvals, accounting/reporting readiness, and recent activity before operators enter deeper task workspaces. The startup view model validates
 credentials through the Identity-owned `UserProfileRegistry` and `LoginSessionService`, keeps the

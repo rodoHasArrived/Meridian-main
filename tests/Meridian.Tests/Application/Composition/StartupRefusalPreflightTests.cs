@@ -99,6 +99,29 @@ public sealed class StartupRefusalPreflightTests
         guard.Started.Should().Be(2, "the same singleton serves both roles");
     }
 
+    [Fact]
+    public void TheProductionRegistrationGuard_IsNotAPreflightGuard()
+    {
+        // Ninth Codex review round. Marking it in the eighth was a mistake: in a production
+        // composition it resolves every factory-registered singleton to prove the graph is
+        // constructible, so running it in the preflight would build the application graph with no
+        // window on screen and a blocked constructor would leave the operator nothing at all --
+        // exactly the failure the preflight was introduced to remove. A desktop reaches that branch
+        // whenever MERIDIAN_MODE, DOTNET_ENVIRONMENT or the other posture variables say production,
+        // so this is a real configuration rather than a hypothetical one.
+        //
+        // It still runs, first in the chain, as an ordinary hosted service behind the shell.
+        var services = new ServiceCollection();
+        services.AddProductionRegistrationGuard();
+
+        services.Should().NotContain(
+            descriptor => descriptor.ServiceType == typeof(IStartupRefusalGuard),
+            "eager factory validation must not run in front of the shell");
+        services.Should().Contain(
+            descriptor => descriptor.ServiceType == typeof(IHostedService),
+            "it still validates the final graph during host startup");
+    }
+
     private sealed class RecordingRefusalGuard : IStartupRefusalGuard
     {
         public int Started { get; private set; }

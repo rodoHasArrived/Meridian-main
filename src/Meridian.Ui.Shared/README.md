@@ -60,7 +60,9 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
   not better off than one who briefly gets the wrong one. It catches nothing, because the caller owns
   what a refusal means for its lifetime and swallowing one in a shared helper is how a guard comes to
   have no effect at all. Lives here, like `HostStartupEscalation`, so the behaviour the WPF shell
-  depends on is covered by tests that run off Windows.
+  depends on is covered by tests that run off Windows. Only guards that answer cheaply belong in it:
+  ADR-019's `ProductionRegistrationGuardService` is a refusal guard but stays unmarked, because in a
+  production posture it resolves every factory-registered singleton.
 - `Endpoints/` - shared workstation endpoint mapping and projection helpers, including
   host liveness/readiness/startup probes, fund-structure ownership lifecycle, portable packaging,
   archive-maintenance, and data-quality monitoring routes.
