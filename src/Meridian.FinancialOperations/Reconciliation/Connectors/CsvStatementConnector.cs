@@ -95,8 +95,14 @@ public sealed class CsvStatementConnector(
         // One more than the bound, so a truncation *at* the bound cannot be mistaken for the synthetic
         // trailing segment below. Asking for exactly hardLineCap makes the two indistinguishable at
         // hardLineCap + 1 returned lines.
+        //
+        // Saturating, because int.MaxValue is the natural value for a deployment that wants this ceiling
+        // effectively off, and hardLineCap + 1 would wrap to int.MinValue - SplitLines guards maxLines
+        // with ThrowIfNegative, so every CSV document would throw instead of parsing. A bound configured
+        // to permit everything must permit everything, not fail closed on arithmetic.
+        var discoveryAllowance = hardLineCap == int.MaxValue ? int.MaxValue : hardLineCap + 1;
         var lines = CsvLineSplitter.SplitLines(
-            content, hardLineCap + 1, _ingressLimits.MaxLineBytes, out var lineTooLong);
+            content, discoveryAllowance, _ingressLimits.MaxLineBytes, out var lineTooLong);
 
         if (lineTooLong)
         {

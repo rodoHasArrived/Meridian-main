@@ -429,6 +429,31 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Csv_LineBudgetAtIntMaxValue_ParsesRatherThanThrowing()
+    {
+        // int.MaxValue is the natural value for a deployment that wants this optional ceiling effectively
+        // off. Asking SplitLines for hardLineCap + 1 wrapped it to int.MinValue, and SplitLines guards
+        // maxLines with ThrowIfNegative - so every CSV document threw instead of parsing. A bound
+        // configured to permit everything must permit everything.
+        var connector = new CsvStatementConnector(
+            Catalog(),
+            TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 100,
+                MaxDocumentLines = int.MaxValue
+            });
+        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01\n";
+
+        var act = async () => await connector.ParseAsync(
+            new StatementSourceDocument("unbounded.csv", Encoding.UTF8.GetBytes(csv)));
+
+        var result = await act.Should().NotThrowAsync();
+        result.Subject.Records.Should().ContainSingle();
+    }
+
+    [Fact]
     public void CsvLineBudget_IsItsOwnLimitRatherThanARecordMultiple()
     {
         // Pins the separation itself, the way the BAI2 twin does: the line budget must not move when the
@@ -2380,6 +2405,40 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("deep.ofx", BuildDeeplyNestedOfx(depth: 200)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.NestingTooDeepCode);
+    }
+
+    [Fact]
+    public async Task Ofx_LeafInsideTheDeepestAggregate_IsCheckedAgainstTheNestingLimit()
+    {
+        // Only aggregates were depth-checked, so a value-bearing leaf inside an aggregate nested at the
+        // limit was retained one level past it - the shared nesting ceiling ineffective at its own
+        // boundary for OFX alone, while the camt and Flex readers check every retained element. The leaf
+        // branch now makes the identical comparison the aggregate branch makes, so a leaf is refused
+        // exactly where a child aggregate in its place would be.
+        var deepLeaf = new StringBuilder()
+            .Append("OFXHEADER:100\nDATA:OFXSGML\nVERSION:102\n\n<OFX>\n");
+        for (var level = 0; level < 10; level++)
+        {
+            deepLeaf.Append("<WRAPPER>\n");
+        }
+
+        deepLeaf.Append("<TRNAMT>100.00\n");
+        for (var level = 0; level < 10; level++)
+        {
+            deepLeaf.Append("</WRAPPER>\n");
+        }
+
+        var connector = new OfxStatementConnector(
+            Catalog(),
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxNestingDepth = 4 });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument(
+                "deep-leaf.ofx",
+                Encoding.UTF8.GetBytes(deepLeaf.Append("</OFX>\n").ToString())));
 
         result.HasErrors.Should().BeTrue();
         result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.NestingTooDeepCode);

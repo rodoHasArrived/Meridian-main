@@ -127,6 +127,18 @@ public static class OfxDocumentParser
             var value = (valueEnd < 0 ? body[index..] : body[index..valueEnd]).Trim();
             if (value.Length > 0)
             {
+                // The same depth comparison the aggregate branch below makes, so a leaf is refused exactly
+                // where a child aggregate in its place would be. Only aggregates were checked, so a leaf
+                // inside an aggregate nested at the limit was retained one level past it - the shared
+                // nesting ceiling being ineffective at its own boundary for OFX alone, while the camt and
+                // Flex readers check every retained element. Whatever the parse retains is checked, not
+                // just whatever the loop calls a node.
+                if (stack.Count - 1 > maxDepth)
+                {
+                    bound = OfxParseBound.NestingTooDeep;
+                    break;
+                }
+
                 // Leaves are charged too. They are not aggregates, so an earlier version of this budget
                 // never counted them - and a document of hundreds of thousands of uniquely named leaf
                 // tags built an arbitrarily large dictionary and string graph while the aggregate count
