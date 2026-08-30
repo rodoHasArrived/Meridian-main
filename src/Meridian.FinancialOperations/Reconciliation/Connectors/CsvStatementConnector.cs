@@ -92,8 +92,11 @@ public sealed class CsvStatementConnector(
         // the budget that owns raw lines, set far above any real statement and biting only on abuse - and
         // it reports STATEMENT_TOO_MANY_LINES, a different claim about the file than record overflow.
         var hardLineCap = _ingressLimits.MaxDocumentLines;
+        // One more than the bound, so a truncation *at* the bound cannot be mistaken for the synthetic
+        // trailing segment below. Asking for exactly hardLineCap makes the two indistinguishable at
+        // hardLineCap + 1 returned lines.
         var lines = CsvLineSplitter.SplitLines(
-            content, hardLineCap, _ingressLimits.MaxLineBytes, out var lineTooLong);
+            content, hardLineCap + 1, _ingressLimits.MaxLineBytes, out var lineTooLong);
 
         if (lineTooLong)
         {
@@ -113,7 +116,14 @@ public sealed class CsvStatementConnector(
         // the allocation bound while carrying only a handful of records - and calling that "too many
         // records" told the operator something untrue about what they had submitted. Row numbers are
         // physical line indices, so blank lines cannot simply be dropped to dodge the bound.
-        if (lines.Count > hardLineCap)
+        // An empty final segment can only mean the content ended with a newline, so it is synthetic and
+        // must not be billed. Without this a file of exactly MaxDocumentLines lines was refused when it
+        // ended with a newline and accepted when it did not - acceptance turning on newline convention,
+        // which is the defect the BAI2 path exempts the same segment to avoid. The old MaxRecords * 2 + 4
+        // cap carried enough slack to absorb it; replacing that derivation with the real line budget
+        // removed the slack and left the segment charged.
+        var discoveredLines = lines.Count > 0 && lines[^1].Length == 0 ? lines.Count - 1 : lines.Count;
+        if (discoveredLines > hardLineCap)
         {
             return CsvIngressRefusal(_ingressLimits.TooManyLines(hardLineCap));
         }

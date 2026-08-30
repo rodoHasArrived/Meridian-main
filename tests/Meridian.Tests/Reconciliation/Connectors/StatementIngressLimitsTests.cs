@@ -403,6 +403,32 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Csv_ExactlyTheLineBudgetWithTrailingNewline_IsAcceptedEitherWay()
+    {
+        // SplitLines returns the empty segment a terminating newline leaves, so a file of exactly
+        // MaxDocumentLines physical lines produced MaxDocumentLines + 1 segments and was refused - while
+        // the identical file without the terminal newline was accepted. Acceptance must not turn on
+        // newline convention. Both forms are asserted here because only the pair proves it.
+        var header = "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n";
+        var rows = string.Join(
+            "\n",
+            Enumerable.Range(0, 3).Select(static row => $"ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-0{row + 1}"));
+        var connector = new CsvStatementConnector(
+            Catalog(),
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 100, MaxDocumentLines = 4 });
+
+        var withNewline = await connector.ParseAsync(
+            new StatementSourceDocument("trailing.csv", Encoding.UTF8.GetBytes(header + rows + "\n")));
+        var withoutNewline = await connector.ParseAsync(
+            new StatementSourceDocument("bare.csv", Encoding.UTF8.GetBytes(header + rows)));
+
+        withNewline.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyLinesCode);
+        withoutNewline.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyLinesCode);
+        withNewline.Records.Should().HaveCount(3);
+        withoutNewline.Records.Should().HaveCount(withNewline.Records.Count, "newline convention must not change the parse");
+    }
+
+    [Fact]
     public void CsvLineBudget_IsItsOwnLimitRatherThanARecordMultiple()
     {
         // Pins the separation itself, the way the BAI2 twin does: the line budget must not move when the
