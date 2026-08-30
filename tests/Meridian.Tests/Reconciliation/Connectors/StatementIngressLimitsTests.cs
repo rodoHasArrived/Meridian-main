@@ -1973,7 +1973,9 @@ public sealed class StatementIngressLimitsTests : IDisposable
         var result = await connector.ParseAsync(new StatementSourceDocument(
             "ib-flex-unidentified.xml", BuildIbFlexWithUnidentifiedAccount()));
 
-        result.AccountSnapshots.Should().ContainSingle();
+        result.AccountSnapshots.Should().ContainSingle(
+            "the parse should succeed; issues were [{0}]",
+            string.Join(", ", result.Issues.Select(issue => issue.Code)));
         result.AccountSnapshots![0].Cash.Should().Be(33m, "the first cash element in document order");
     }
 
@@ -2288,6 +2290,13 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
     // A Flex report that identifies no account anywhere - neither the statement nor the anchor - so the
     // snapshot's account id is blank and MatchesAccount admits every evidence element.
+    //
+    // Both cash elements deliberately carry the SAME account id. Giving them different ones makes
+    // BuildCashReportRecord emit records for two accounts, which trips the IBFLEX_MULTIPLE_ACCOUNTS
+    // guard - a real rule, since a statement run reconciles one account - and that returns EmptyResult,
+    // discarding the snapshots this test is about. Keying them identically also makes the test sharper:
+    // the anchor is blank while the elements are keyed, so a lookup of the empty key would find nothing
+    // and only the whole-section arm returns them.
     private static byte[] BuildIbFlexWithUnidentifiedAccount()
         => Encoding.UTF8.GetBytes(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -2296,7 +2305,7 @@ public sealed class StatementIngressLimitsTests : IDisposable
             + "<AccountInformation currency=\"USD\" />"
             + "<CashReport>"
             + "<CashReportCurrency accountId=\"U9\" currency=\"USD\" endingCash=\"33\" />"
-            + "<CashReportCurrency accountId=\"U8\" currency=\"USD\" endingCash=\"44\" />"
+            + "<CashReportCurrency accountId=\"U9\" currency=\"USD\" endingCash=\"44\" />"
             + "</CashReport>"
             + "</FlexStatement></FlexStatements></FlexQueryResponse>");
 
