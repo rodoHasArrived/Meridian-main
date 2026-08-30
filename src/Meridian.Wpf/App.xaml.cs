@@ -61,6 +61,9 @@ public partial class App : System.Windows.Application
 {
     private static bool _isFirstRun;
     private static bool _isFixtureMode;
+
+    /// <summary>Set when a startup guard refused this composition and shutdown has begun.</summary>
+    private static bool _startupRefused;
     private static string[] _launchArgs = [];
     private IHost? _host;
     private ApiClientService? _apiClientService;
@@ -243,6 +246,13 @@ public partial class App : System.Windows.Application
 
         // Fire-and-forget async initialization with proper exception handling
         await SafeOnStartupAsync();
+        if (_startupRefused)
+        {
+            // Shutdown is already in flight; re-showing the window would put a usable shell in
+            // front of the operator for however long teardown takes.
+            return;
+        }
+
         WpfServices.LoggingService.Instance.LogInfo("WPF async startup completed");
         EnsureMainWindowVisible(mainWindow);
         _ = RestoreMainWindowVisibilityAsync(mainWindow);
@@ -574,6 +584,23 @@ public partial class App : System.Windows.Application
             // Log successful startup
             WpfServices.LoggingService.Instance.LogInfo("Application started successfully");
         }
+        catch (Exception ex) when (Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal(ex))
+        {
+            // A guard refused this composition. Every other startup fault below is recoverable
+            // enough to carry on with a degraded shell; this one is not, because carrying on is
+            // precisely what the guard forbade. Reported through a modal dialog rather than the
+            // notification service: a toast on an application that is closing is not seen, and the
+            // operator needs the remediation text.
+            _startupRefused = true;
+            WpfServices.LoggingService.Instance.LogError(
+                "Application startup refused by a startup guard; shutting down", ex);
+            System.Windows.MessageBox.Show(
+                ex.Message,
+                "Meridian cannot start",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            Shutdown();
+        }
         catch (Exception ex)
         {
             WpfServices.LoggingService.Instance.LogError("Error during application startup", ex);
@@ -604,6 +631,16 @@ public partial class App : System.Windows.Application
         {
             await _host.StartAsync(ct).ConfigureAwait(false);
             WpfServices.LoggingService.Instance.LogInfo("WPF hosted services started");
+        }
+        catch (Exception ex) when (Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal(ex))
+        {
+            // Deliberately ahead of the tolerant catch below, and deliberately not swallowed. The
+            // catch that follows exists for a worker that could not reach its database — degrading
+            // to reduced processing beats taking the desktop down over it. A startup guard is the
+            // opposite: it has decided this composition must not serve anything. Continuing past
+            // one runs exactly the posture the guard was written to reject, which is how the
+            // W9-GOV-008 multi-company refusal came to have no effect on this lane at all.
+            throw;
         }
         catch (Exception ex)
         {
