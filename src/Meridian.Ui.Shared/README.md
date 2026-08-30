@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-08-11
+last_reviewed: 2026-08-30
 ---
 
 # src/Meridian.Ui.Shared
@@ -42,6 +42,16 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Key folders and files
 
+- `Services/HostStartupEscalation` - the rule a host uses to decide whether a fault raised while
+  starting hosted services must take the application down or may be degraded past. A component that
+  fails to start is degradable; a guard raising `Meridian.Application.Composition.StartupRefusedException`
+  has refused the composition, and continuing past it runs exactly the posture the guard exists to
+  reject. It unwraps aggregates and inner exceptions, since hosts may start services concurrently and
+  a wrapped refusal is still a refusal. It lives here, rather than inline in each shell's catch
+  clause, so the rule is exercised by tests: the WPF startup path cannot be run off Windows, and an
+  inline predicate there would be reviewed and never executed.
+- `Services/InMemoryFundStructureTenancyGuard` - refuses to start a multi-company deployment on the
+  unpartitioned in-memory fund structure (W9-GOV-008 criterion 2), raising the same refusal type.
 - `Endpoints/` - shared workstation endpoint mapping and projection helpers, including
   host liveness/readiness/startup probes, fund-structure ownership lifecycle, portable packaging,
   archive-maintenance, and data-quality monitoring routes.

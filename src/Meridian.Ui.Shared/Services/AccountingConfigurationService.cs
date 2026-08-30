@@ -127,7 +127,25 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
             .ConfigureAwait(false);
         if (workspace is null)
         {
-            // Nothing is retained for this scope, so no save landed and there is nothing to audit.
+            // Nothing is retained for this scope. What that means depends on what was retained when
+            // the intent was declared, which is why the marker records it (Codex review finding on
+            // PR #2871): SaveAsync only ever inserts or replaces, so it cannot produce absence.
+            if (marker.BeforeStateRetained)
+            {
+                // A workspace existed before the mutation and is gone now. The save did not do that,
+                // so retained state was destroyed -- an incident, and reporting it as a discarded
+                // mutation would clear the one marker recording both the loss and the unaudited
+                // mutation.
+                throw new AccountingAuditRecoveryException(
+                    auditEvent.AuditEventId,
+                    "An interrupted accounting mutation cannot be reconciled: a workspace was "
+                    + "retained for this scope when the mutation was declared and none is retained "
+                    + "now. A save never removes a workspace, so the retained state was lost by "
+                    + "something else; the pending marker is kept so the incident stays visible.");
+            }
+
+            // Nothing was retained before either, so absence now is consistent with a save that
+            // never landed, and there is nothing to audit.
             //
             // Established from the store rather than by comparing a digest, because the digest of
             // "absent" is not stable: LoadWorkspaceAsync synthesizes an empty workspace stamped with
@@ -826,8 +844,24 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
             // "the append silently didn't happen" into a recorded, decidable incident.
             if (_pendingAuditMarkers is not null)
             {
+                // Whether anything is retained for this scope right now. Recovery cannot infer it
+                // afterwards: absence then reads the same whether the save never landed or the
+                // retained state was destroyed, and those call for opposite actions. Read inside the
+                // cycle lock, immediately before the save, so it describes the state the save is
+                // about to act on.
+                var beforeStateRetained = await TryLoadRetainedWorkspaceAsync(
+                        finalWorkspace.FundProfileId,
+                        ledgerBookId ?? finalWorkspace.LedgerBookId,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false) is not null;
+
                 await _pendingAuditMarkers
-                    .WriteAsync(new AccountingAuditPendingMarker(auditEvent, DateTimeOffset.UtcNow), ct)
+                    .WriteAsync(
+                        new AccountingAuditPendingMarker(
+                            auditEvent, DateTimeOffset.UtcNow, beforeStateRetained),
+                        ct)
                     .ConfigureAwait(false);
             }
 

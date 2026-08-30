@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-08-04
+last_reviewed: 2026-08-30
 ---
 
 # src/Meridian.Application
@@ -465,7 +465,17 @@ and UI presentation concerns in their owning layers.
   generation. ASP.NET endpoint adapter extensions for packaging, archive maintenance, and
   data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`. `BackfillCoordinator` lives
   in `Backfill/` alongside the rest of the backfill pipeline.
-- `Composition/` - application feature registration and service wiring.
+- `Composition/` - application feature registration and service wiring. `StartupRefusedException`
+  is the shared contract for a guard that has decided a composition must not run at all, as distinct
+  from a component that failed to start. Hosts routinely tolerate the latter -- a projection or
+  outbox pump that cannot reach its database is a degraded feature, not a reason to take the
+  application down -- so a governance refusal raised as a bare `InvalidOperationException` is
+  indistinguishable from it and gets swallowed by the same tolerance. `ProductionRegistrationGuardService`
+  and `ProductionServiceRegistrationPolicy` raise this type for every ADR-019 refusal, including the
+  unconstructible-singleton case found during final-graph validation. It derives from
+  `InvalidOperationException`, so existing catches and assertions naming that type keep matching; the
+  added type only lets a host that wants to escalate do so. Hosts decide through
+  `Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal`.
   Headless collector, backfill, ETL, and utility profiles build and start a Generic Host so the
   final production-registration guard, database initialization, coordination, and other registered
   hosted services enter the normal start/stop lifecycle. The guard starts first, database

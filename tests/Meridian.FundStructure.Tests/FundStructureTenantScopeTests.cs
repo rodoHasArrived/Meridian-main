@@ -400,7 +400,12 @@ public sealed class FundStructureTenantScopeTests
             "USD", EffectiveFrom, "tenant-scope-test", FundId: alpha.FundId));
 
         var linkId = Guid.NewGuid();
-        var alphaService = CreateService(store, TenantAlpha, accountService: accountService);
+
+        // Fail-closed, because that is the posture whose account-store predicate is
+        // "tenant_id = caller" -- so resolving the account is positive proof the caller owns it, and
+        // stamping the node merely restates what the account store already says.
+        var alphaService = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService);
         await alphaService.LinkNodesAsync(new LinkFundStructureNodesRequest(
             linkId, alpha.FundId, account.AccountId,
             OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
@@ -412,6 +417,32 @@ public sealed class FundStructureTenantScopeTests
         var graph = await failClosed.GetFundStructureGraphAsync(new FundStructureQuery());
         Assert.Contains(graph.OwnershipLinks, link => link.OwnershipLinkId == linkId);
         Assert.Contains(graph.Nodes, node => node.NodeId == account.AccountId);
+    }
+
+    [Fact]
+    public async Task UnderTheBoundaryPosture_LinkingAnUnattributedAccount_DoesNotClaimIt()
+    {
+        // Codex review finding on PR #2871. Reaching MaterializeLinkedAccount means the account store
+        // resolved the account, and what that proves depends on the posture. Under the boundary
+        // posture the store's predicate also admits tenant_id is null, so an unattributed account
+        // resolves for anyone -- and claiming it would hand a shared account to whichever tenant
+        // linked it first, the judgement this codebase quarantines rather than makes. Nothing is lost
+        // by declining: unattributed nodes are visible to everyone under that posture.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+
+        var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-UNATTRIBUTED", "Unattributed Account",
+            "USD", EffectiveFrom, "tenant-scope-test", FundId: alpha.FundId));
+
+        var boundaryService = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.DeploymentBoundary, accountService);
+        await boundaryService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(), alpha.FundId, account.AccountId,
+            OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
+
+        Assert.Null(store.TenantOf(account.AccountId));
     }
 
     [Fact]
@@ -429,14 +460,14 @@ public sealed class FundStructureTenantScopeTests
             Guid.NewGuid(), AccountTypeDto.Custody, "ACC-SHARED", "Shared Custody Account",
             "USD", EffectiveFrom, "tenant-scope-test", FundId: beta.FundId));
 
-        await CreateService(store, TenantBeta, accountService: accountService).LinkNodesAsync(
-            new LinkFundStructureNodesRequest(
+        await CreateService(store, TenantBeta, TenantScopeEnforcementOptions.FailClosed, accountService)
+            .LinkNodesAsync(new LinkFundStructureNodesRequest(
                 Guid.NewGuid(), beta.FundId, account.AccountId,
                 OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
 
         var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
-        await CreateService(store, TenantAlpha, accountService: accountService).LinkNodesAsync(
-            new LinkFundStructureNodesRequest(
+        await CreateService(store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService)
+            .LinkNodesAsync(new LinkFundStructureNodesRequest(
                 Guid.NewGuid(), alpha.FundId, account.AccountId,
                 OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
 

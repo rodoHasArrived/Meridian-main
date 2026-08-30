@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-27
+last_reviewed: 2026-08-30
 ---
 
 # src/Meridian.Wpf
@@ -42,6 +42,18 @@ scope fails before any provider rows are read.
 - `Shell/` and `Services/` - navigation, route, launch, and desktop service seams.
 
 ## Important workflows
+
+**Startup refusals are fatal.** `App.StartHostServicesAsync` deliberately tolerates a hosted service
+that fails to start -- a database-backed projection or worker that cannot reach its store leaves the
+desktop running with reduced processing rather than not running at all. That tolerance does not
+extend to a governance guard. When `Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal`
+matches the fault -- any `Meridian.Application.Composition.StartupRefusedException`, including one
+wrapped in an aggregate -- the shell reports it in a modal dialog carrying the guard's remediation
+text and shuts down, because continuing is precisely what the guard forbade. A toast is not used: an
+application that is closing does not show one. `OnStartup` stops short of re-showing the main window
+once a refusal has begun teardown. The guards that reach this path today are ADR-019's
+`ProductionRegistrationGuardService` and W9-GOV-008's `InMemoryFundStructureTenancyGuard`; do not
+reintroduce a blanket catch around host startup that swallows them.
 
 Application startup now shows `StartupWindow` before the main shell. After authentication, the main shell defaults to `HomeWorkspace`, a source-backed WPF launch checkpoint that groups provider health, data freshness, reconciliation, approvals, accounting/reporting readiness, and recent activity before operators enter deeper task workspaces. The startup view model validates
 credentials through the Identity-owned `UserProfileRegistry` and `LoginSessionService`, keeps the

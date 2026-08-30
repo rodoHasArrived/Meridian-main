@@ -617,6 +617,7 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_AccountingAuditPendingMarker["AccountingAuditPendingMarker"] {
         +AccountingActionAuditEventDto AuditEvent
+        +bool BeforeStateRetained
         +DateTimeOffset DeclaredAtUtc
     }
     class Meridian_Contracts_Ledger_AccountingAuditRecoveryException["AccountingAuditRecoveryException"] {

@@ -1605,25 +1605,41 @@ public sealed class PostgresFundStructureService : IFundStructureService
     }
 
     /// <summary>
-    /// Records an account as a fund-structure node the first time an edge draws it in, so the
-    /// caller's tenant is stamped on it once the write lands.
+    /// Records an account as a fund-structure node the first time an edge draws it in, stamping the
+    /// caller's tenant on it only where the account store has already proved the caller owns it.
     /// </summary>
     /// <remarks>
     /// Account ids are minted by the accounts store rather than here, so unlike
     /// <see cref="ClaimNewNode"/> a repeat is not a collision — an account may legitimately be linked
-    /// or assigned more than once. Only the first materialization claims it, and only when the id is
-    /// not already a node anywhere in the store: taking one another tenant has already drawn in would
-    /// be exactly the incidental-write claim <see cref="StampCreatedNodesAsync"/> refuses to make.
+    /// or assigned more than once. Only the first materialization is a candidate to claim, and only
+    /// when the id is not already a node anywhere in the store: taking one another tenant has already
+    /// drawn in would be exactly the incidental-write claim <see cref="StampCreatedNodesAsync"/>
+    /// refuses to make.
     ///
-    /// <para>Stamping matters here because an account that stays unattributed is hidden from its own
+    /// <para>Stamping matters at all because an account that stays unattributed is hidden from its own
     /// creator on the next read under the fail-closed posture — and hiding it takes the edge with it,
     /// since an edge is served only when both endpoints are visible. The caller would have written a
     /// link that vanished from their own graph.</para>
+    ///
+    /// <para><b>Why the claim is gated on the posture</b> (Codex review finding on PR #2871). Reaching
+    /// this method means <c>ResolveNodeKindAsync</c> resolved the account through the account store,
+    /// and what that proves differs by posture. Under
+    /// <see cref="TenantScopeEnforcementMode.FailClosed"/> the store's predicate is
+    /// <c>tenant_id = caller</c>, so resolution is positive proof the caller already owns the account
+    /// and stamping the node merely restates it. Under
+    /// <see cref="TenantScopeEnforcementMode.DeploymentBoundary"/> the predicate also admits
+    /// <c>tenant_id is null</c>, so an <i>unattributed</i> account resolves for anyone — and claiming
+    /// it would hand a shared account to whichever tenant happened to link it first, which is the
+    /// judgement this codebase quarantines rather than makes. Nothing is lost by declining: under that
+    /// posture an unattributed node is visible to everyone anyway, so no edge vanishes. Deployments
+    /// that later tighten resolve their accumulated unattributed nodes through the attribution runner,
+    /// exactly as they do for every other unattributed node.</para>
     /// </remarks>
-    private static void MaterializeLinkedAccount(Guid accountId, MutableSnapshot snap)
+    private void MaterializeLinkedAccount(Guid accountId, MutableSnapshot snap)
     {
         snap.LinkedAccountIds.Add(accountId);
-        if (snap.AllNodeIds.Add(accountId))
+        if (snap.AllNodeIds.Add(accountId)
+            && _tenantScope.Mode == TenantScopeEnforcementMode.FailClosed)
         {
             snap.CreatedNodeIds.Add(accountId);
         }

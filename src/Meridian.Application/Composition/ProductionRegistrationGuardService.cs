@@ -80,7 +80,12 @@ public sealed class ProductionRegistrationGuardService : IHostedService
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(
+                // A refusal, not a component failure: production policy has decided this composition
+                // must not run. Raised as StartupRefusedException so a host that escalates refusals
+                // -- see HostStartupEscalation.IsRefusal -- does not degrade past it. The other
+                // refusal sites moved to the type; this one is inside the guard rather than the
+                // policy, and leaving it bare kept the WPF shell's tolerant catch swallowing it.
+                throw new StartupRefusedException(
                     $"Production startup policy could not construct singleton service '{serviceType.FullName}' " +
                     "during final-graph validation; production postures require every registered binding to be constructible.",
                     ex);

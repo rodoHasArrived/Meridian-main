@@ -163,7 +163,8 @@ public sealed class AccountingAuditAtomicityTests : IDisposable
         // retained for this fund profile, and the hashes are the unreproducible ones.
         await markers.WriteAsync(new AccountingAuditPendingMarker(
             AuditEvent(beforeHash: new string('8', 64), afterHash: new string('9', 64)),
-            DateTimeOffset.UtcNow));
+            DateTimeOffset.UtcNow,
+            BeforeStateRetained: false));
 
         var recovery = await service.RecoverPendingAuditAsync();
 
@@ -175,6 +176,46 @@ public sealed class AccountingAuditAtomicityTests : IDisposable
         // The part that matters: the service still works.
         await service.UpsertChartNodeAsync(ChartRequest());
         (await audit.ListAsync("fund-alpha")).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task AWorkspaceThatVanishedAfterItsMutation_IsAnIncidentRatherThanADiscard()
+    {
+        // Codex review finding on PR #2871. Absence at recovery time is ambiguous: it reads the same
+        // whether the save never landed or the retained state was destroyed afterwards. Treating
+        // both as "never landed" clears the one marker recording the loss AND the unaudited
+        // mutation. SaveAsync only inserts or replaces, so it cannot produce absence -- which is why
+        // the marker records what was retained when the intent was declared.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            FileAccountingAuditPendingMarkerStore.MarkerPathFor(SnapshotPath));
+        var audit = new FailableAuditStore(store);
+        var service = CreateService(store, audit, markers);
+
+        await markers.WriteAsync(new AccountingAuditPendingMarker(
+            AuditEvent(), DateTimeOffset.UtcNow, BeforeStateRetained: true));
+
+        var recover = async () => await service.RecoverPendingAuditAsync();
+
+        await recover.Should().ThrowAsync<AccountingAuditRecoveryException>();
+        (await markers.ReadAsync()).Should().NotBeNull("an unresolved incident must stay visible");
+    }
+
+    [Fact]
+    public async Task AMarkerFromAnOlderBuild_TakesTheConservativeBranch()
+    {
+        // BeforeStateRetained defaults to true, so a marker written before the field existed raises
+        // rather than silently discarding a mutation whose retained state may have been lost.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            FileAccountingAuditPendingMarkerStore.MarkerPathFor(SnapshotPath));
+        var service = CreateService(store, new FailableAuditStore(store), markers);
+
+        await markers.WriteAsync(new AccountingAuditPendingMarker(AuditEvent(), DateTimeOffset.UtcNow));
+
+        var recover = async () => await service.RecoverPendingAuditAsync();
+
+        await recover.Should().ThrowAsync<AccountingAuditRecoveryException>();
     }
 
     [Fact]

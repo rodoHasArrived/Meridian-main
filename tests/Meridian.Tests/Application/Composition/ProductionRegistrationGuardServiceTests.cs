@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Contracts.Operations;
+using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -24,6 +25,29 @@ public sealed class ProductionRegistrationGuardServiceTests
 
         (await act.Should().ThrowAsync<InvalidOperationException>())
             .WithMessage("*rejected non-production DI registrations*InMemoryTestStore*");
+    }
+
+    [Fact]
+    public async Task StartAsync_UnconstructibleSingleton_RaisesARefusalAHostCannotDegradePast()
+    {
+        // Codex review finding on PR #2871. The three refusal sites in
+        // ProductionServiceRegistrationPolicy took StartupRefusedException, but this one -- raised
+        // when final-graph validation cannot construct a registered singleton -- stayed a bare
+        // InvalidOperationException. HostStartupEscalation.IsRefusal therefore did not match it, so
+        // the WPF shell's tolerant catch went on swallowing exactly the bypass that change closes.
+        using var host = BuildHost(services =>
+        {
+            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            services.AddProductionRegistrationGuard();
+            services.AddSingleton<ITestStore>(_ => throw new InvalidOperationException("cannot construct"));
+        });
+
+        Func<Task> act = () => host.StartAsync();
+
+        var refusal = await act.Should().ThrowAsync<StartupRefusedException>();
+        refusal.Which.Message.Should().Contain("could not construct singleton service");
+        HostStartupEscalation.IsRefusal(refusal.Which).Should().BeTrue(
+            "a host that escalates refusals must be able to tell this apart from a worker failing");
     }
 
     [Fact]
