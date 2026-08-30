@@ -15,7 +15,7 @@ namespace Meridian.Application.FundStructure;
 /// On each mutation the full snapshot is loaded from the store, updated in-memory,
 /// and the changed rows are written back.
 /// </summary>
-public sealed class PostgresFundStructureService : IFundStructureService
+public sealed partial class PostgresFundStructureService : IFundStructureService
 {
     private readonly IFundStructureStore _store;
     private readonly IFundAccountService _fundAccountService;
@@ -498,9 +498,9 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 nodeKinds);
 
             if (parentKind == FundStructureNodeKindDto.Account)
-                MaterializeLinkedAccount(request.ParentNodeId, snap);
+                await MaterializeLinkedAccountAsync(request.ParentNodeId, snap, ct).ConfigureAwait(false);
             if (childKind == FundStructureNodeKindDto.Account)
-                MaterializeLinkedAccount(request.ChildNodeId, snap);
+                await MaterializeLinkedAccountAsync(request.ChildNodeId, snap, ct).ConfigureAwait(false);
 
             snap.OwnershipLinks[link.OwnershipLinkId] = link;
             ApplyOwnershipLink(link, snap);
@@ -625,9 +625,9 @@ public sealed class PostgresFundStructureService : IFundStructureService
 
             snap.OwnershipLinks[existing.OwnershipLinkId] = expiredExisting;
             if (parentKind == FundStructureNodeKindDto.Account)
-                MaterializeLinkedAccount(request.ParentNodeId, snap);
+                await MaterializeLinkedAccountAsync(request.ParentNodeId, snap, ct).ConfigureAwait(false);
             if (childKind == FundStructureNodeKindDto.Account)
-                MaterializeLinkedAccount(request.ChildNodeId, snap);
+                await MaterializeLinkedAccountAsync(request.ChildNodeId, snap, ct).ConfigureAwait(false);
 
             snap.OwnershipLinks[replacement.OwnershipLinkId] = replacement;
             RebuildOwnershipProjections(snap);
@@ -678,7 +678,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
             ClaimNewAssignment(request.AssignmentId, snap);
             if (kind == FundStructureNodeKindDto.Account)
-                MaterializeLinkedAccount(request.NodeId, snap);
+                await MaterializeLinkedAccountAsync(request.NodeId, snap, ct).ConfigureAwait(false);
             await _store.UpsertAssignmentAsync(assignment, ct).ConfigureAwait(false);
             if (kind == FundStructureNodeKindDto.Account)
                 await _store.UpsertLinkedAccountIdAsync(request.NodeId, ct).ConfigureAwait(false);
@@ -1153,102 +1153,6 @@ public sealed class PostgresFundStructureService : IFundStructureService
         return snap;
     }
 
-    /// <summary>
-    /// Restricts the loaded snapshot to what the calling session's tenant may see (W9-GOV-008
-    /// criterion 2).
-    /// </summary>
-    /// <remarks>
-    /// Scoping happens here rather than in the store because every mutation resolves its parent
-    /// nodes from this same snapshot. Filtering one shared view therefore closes the read on
-    /// <c>/api/fund-structure/graph</c> and the link-or-mutate-by-id write in the same stroke: a node
-    /// the caller cannot see is a node their <c>EnsureExistsInDict</c> check cannot find.
-    /// </remarks>
-    private async Task ScopeToCallerTenantAsync(MutableSnapshot snap, CancellationToken ct)
-    {
-        var tenants = await _store.GetNodeTenantsAsync(ct).ConfigureAwait(false);
-        if (!tenants.IsPartitioned)
-        {
-            return;
-        }
-
-        var callerTenant = _tenantAccessor?.ResolveCallerTenant();
-        var mode = _tenantScope.Mode;
-
-        if (!FundStructureTenantScope.IsCallerAdmissible(tenants, callerTenant, mode))
-        {
-            // Refused, not emptied: an empty graph is indistinguishable from a genuinely empty
-            // structure, so defaulting to it would hide the very rejection the criterion requires.
-            throw new FundStructureTenantScopeException(
-                "A tenant-scoped session is required to read the fund structure.");
-        }
-
-        bool IsVisible(Guid nodeId)
-            => FundStructureTenantScope.IsVisible(tenants, callerTenant, nodeId, mode);
-
-        RemoveHidden(snap.Organizations, IsVisible);
-        RemoveHidden(snap.Businesses, IsVisible);
-        RemoveHidden(snap.Clients, IsVisible);
-        RemoveHidden(snap.Funds, IsVisible);
-        RemoveHidden(snap.Sleeves, IsVisible);
-        RemoveHidden(snap.Vehicles, IsVisible);
-        RemoveHidden(snap.Entities, IsVisible);
-        RemoveHidden(snap.InvestmentPortfolios, IsVisible);
-        snap.LinkedAccountIds.RemoveWhere(nodeId => !IsVisible(nodeId));
-
-        // An edge needs both endpoints: serving a link whose other end is hidden would disclose
-        // that the node exists and what it hangs off, which is the ownership fact being withheld.
-        RemoveHiddenBy(
-            snap.OwnershipLinks,
-            link => IsVisible(link.ParentNodeId) && IsVisible(link.ChildNodeId));
-        RemoveHiddenBy(snap.Assignments, assignment => IsVisible(assignment.NodeId));
-    }
-
-    private static void RemoveHidden<T>(Dictionary<Guid, T> nodes, Func<Guid, bool> isVisible)
-    {
-        foreach (var nodeId in nodes.Keys.Where(nodeId => !isVisible(nodeId)).ToList())
-        {
-            nodes.Remove(nodeId);
-        }
-    }
-
-    private static void RemoveHiddenBy<T>(Dictionary<Guid, T> items, Func<T, bool> isVisible)
-    {
-        foreach (var key in items.Where(pair => !isVisible(pair.Value)).Select(pair => pair.Key).ToList())
-        {
-            items.Remove(key);
-        }
-    }
-
-    /// <summary>
-    /// Records the calling tenant's ownership of a node this service just created.
-    /// </summary>
-    /// <remarks>
-    /// Only newly created nodes are stamped. Claiming pre-existing unattributed nodes on an
-    /// incidental write would let whichever tenant happens to write next take a shared ancestor —
-    /// which is exactly the judgement <see cref="FundStructureTenantAttribution"/> refuses to make
-    /// and quarantines instead.
-    /// </remarks>
-    private async Task StampCreatedNodesAsync(MutableSnapshot snap, CancellationToken ct)
-    {
-        if (snap.CreatedNodeIds.Count == 0)
-        {
-            return;
-        }
-
-        var callerTenant = _tenantAccessor?.ResolveCallerTenant();
-        if (string.IsNullOrWhiteSpace(callerTenant))
-        {
-            return;
-        }
-
-        foreach (var nodeId in snap.CreatedNodeIds)
-        {
-            await _store.StampNodeTenantAsync(nodeId, callerTenant, ct).ConfigureAwait(false);
-        }
-
-        snap.CreatedNodeIds.Clear();
-    }
-
     private async Task PersistChangedAsync(MutableSnapshot snap, CancellationToken ct)
     {
         foreach (var o in snap.Organizations.Values)
@@ -1555,95 +1459,6 @@ public sealed class PostgresFundStructureService : IFundStructureService
 
     private static OwnershipLinkDto MakeAutoLink(Guid parentId, Guid childId, OwnershipRelationshipTypeDto rel, DateTimeOffset from, string? notes) =>
         new(Guid.NewGuid(), parentId, childId, rel, OwnershipPercent: null, IsPrimary: true, from, EffectiveTo: null, notes);
-
-    /// <summary>
-    /// Reserves a node id for a create: rejects one already in use anywhere in the store, and
-    /// records the node so the caller's tenant is stamped on it once the write lands.
-    /// </summary>
-    /// <remarks>
-    /// Uniqueness is checked against <see cref="MutableSnapshot.AllNodeIds"/> — the unscoped set —
-    /// not the tenant-filtered dictionaries. Scoping the uniqueness check would make an id held by
-    /// another tenant look free, and the create that followed would upsert over their node, so the
-    /// read gate would have become a write leak.
-    /// </remarks>
-    private static void ClaimNewNode(Guid nodeId, MutableSnapshot snap)
-    {
-        if (!snap.AllNodeIds.Add(nodeId))
-            throw new InvalidOperationException($"Node {nodeId} already exists.");
-
-        snap.CreatedNodeIds.Add(nodeId);
-    }
-
-    /// <summary>
-    /// Reserves an ownership-link id for a create, rejecting one already in use anywhere in the store.
-    /// </summary>
-    /// <remarks>
-    /// Checked against <see cref="MutableSnapshot.AllOwnershipLinkIds"/> for the same reason
-    /// <see cref="ClaimNewNode"/> uses the unscoped node set: <c>UpsertOwnershipLinkAsync</c> is an
-    /// unconditional <c>ON CONFLICT (ownership_link_id) DO UPDATE</c>, so an id that looked free only
-    /// because scoping had filtered the row out would be written straight over another tenant's edge.
-    /// </remarks>
-    private static void ClaimNewOwnershipLink(Guid ownershipLinkId, MutableSnapshot snap)
-    {
-        if (!snap.AllOwnershipLinkIds.Add(ownershipLinkId))
-            throw new InvalidOperationException($"Ownership link {ownershipLinkId} already exists.");
-    }
-
-    /// <summary>
-    /// Reserves an assignment id for a create, rejecting one already in use anywhere in the store.
-    /// </summary>
-    /// <remarks>
-    /// The <see cref="ClaimNewOwnershipLink"/> argument applies unchanged —
-    /// <c>UpsertAssignmentAsync</c> is likewise an unconditional
-    /// <c>ON CONFLICT (assignment_id) DO UPDATE</c>. An assignment carries the ledger grouping a node
-    /// posts under, so overwriting one silently re-points another tenant's postings.
-    /// </remarks>
-    private static void ClaimNewAssignment(Guid assignmentId, MutableSnapshot snap)
-    {
-        if (!snap.AllAssignmentIds.Add(assignmentId))
-            throw new InvalidOperationException($"Assignment {assignmentId} already exists.");
-    }
-
-    /// <summary>
-    /// Records an account as a fund-structure node the first time an edge draws it in, stamping the
-    /// caller's tenant on it only where the account store has already proved the caller owns it.
-    /// </summary>
-    /// <remarks>
-    /// Account ids are minted by the accounts store rather than here, so unlike
-    /// <see cref="ClaimNewNode"/> a repeat is not a collision — an account may legitimately be linked
-    /// or assigned more than once. Only the first materialization is a candidate to claim, and only
-    /// when the id is not already a node anywhere in the store: taking one another tenant has already
-    /// drawn in would be exactly the incidental-write claim <see cref="StampCreatedNodesAsync"/>
-    /// refuses to make.
-    ///
-    /// <para>Stamping matters at all because an account that stays unattributed is hidden from its own
-    /// creator on the next read under the fail-closed posture — and hiding it takes the edge with it,
-    /// since an edge is served only when both endpoints are visible. The caller would have written a
-    /// link that vanished from their own graph.</para>
-    ///
-    /// <para><b>Why the claim is gated on the posture</b> (Codex review finding on PR #2871). Reaching
-    /// this method means <c>ResolveNodeKindAsync</c> resolved the account through the account store,
-    /// and what that proves differs by posture. Under
-    /// <see cref="TenantScopeEnforcementMode.FailClosed"/> the store's predicate is
-    /// <c>tenant_id = caller</c>, so resolution is positive proof the caller already owns the account
-    /// and stamping the node merely restates it. Under
-    /// <see cref="TenantScopeEnforcementMode.DeploymentBoundary"/> the predicate also admits
-    /// <c>tenant_id is null</c>, so an <i>unattributed</i> account resolves for anyone — and claiming
-    /// it would hand a shared account to whichever tenant happened to link it first, which is the
-    /// judgement this codebase quarantines rather than makes. Nothing is lost by declining: under that
-    /// posture an unattributed node is visible to everyone anyway, so no edge vanishes. Deployments
-    /// that later tighten resolve their accumulated unattributed nodes through the attribution runner,
-    /// exactly as they do for every other unattributed node.</para>
-    /// </remarks>
-    private void MaterializeLinkedAccount(Guid accountId, MutableSnapshot snap)
-    {
-        snap.LinkedAccountIds.Add(accountId);
-        if (snap.AllNodeIds.Add(accountId)
-            && _tenantScope.Mode == TenantScopeEnforcementMode.FailClosed)
-        {
-            snap.CreatedNodeIds.Add(accountId);
-        }
-    }
 
     private static void EnsureExistsInDict<T>(Dictionary<Guid, T> dict, Guid id, string typeName)
     {

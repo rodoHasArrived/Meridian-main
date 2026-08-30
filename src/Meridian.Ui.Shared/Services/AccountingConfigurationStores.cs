@@ -291,22 +291,17 @@ public sealed class FileAccountingConfigurationStore :
                     },
                     link);
             },
-            // Skipped for a no-op repeat: there is no new sequence to declare or commit, and
-            // declaring one would advance the journal past a slot no event occupies.
             beforeWrite: async (_, link, token) =>
-            {
-                if (link is not null)
-                {
-                    await _auditChainAnchor.DeclareAsync(link.Sequence, link.EntryHash, token).ConfigureAwait(false);
-                }
-            },
+                await _auditChainAnchor.DeclareAsync(link!.Sequence, link.EntryHash, token).ConfigureAwait(false),
             afterWrite: async (_, link, token) =>
-            {
-                if (link is not null)
-                {
-                    await _auditChainAnchor.CommitAsync(link.Sequence, link.EntryHash, token).ConfigureAwait(false);
-                }
-            },
+                await _auditChainAnchor.CommitAsync(link!.Sequence, link.EntryHash, token).ConfigureAwait(false),
+            // A repeat produces no link, and must therefore write nothing at all. Returning the
+            // unchanged snapshot through the write path would replace the retained file with this
+            // cycle's copy of it -- losing any event another process appended in between, while the
+            // external anchor stayed ahead of the chain. Skipping the write also skips the anchor
+            // hooks, which is right on its own terms: there is no sequence to declare or commit, and
+            // declaring one would advance the journal past a slot no event occupies.
+            shouldWrite: link => link is not null,
             ct).ConfigureAwait(false);
     }
 

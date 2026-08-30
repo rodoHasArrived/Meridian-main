@@ -523,6 +523,36 @@ public sealed class FileAccountingAuditChainTests : IDisposable
     }
 
     [Fact]
+    public async Task AppendAsync_WritesNothingAtAllWhenTheEventIsAlreadyRetained()
+    {
+        // Second Codex review finding on PR #2871. The repeat returned the snapshot unchanged, but
+        // it still went through the write path -- and this store replaces the whole document, while
+        // its gate is a per-instance semaphore that two stores on one path do not share. Rewriting
+        // an unchanged snapshot is therefore a chance to lose data rather than a no-op: a record
+        // another writer appended between this cycle's read and its write would be replaced by this
+        // cycle's stale copy, while the external anchor stayed ahead of the chain.
+        //
+        // Asserted as "no write happened" rather than by reconstructing the race, which is not
+        // deterministic in-process: the retained bytes would be identical either way, so only the
+        // absence of the write itself distinguishes the two.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var auditEvent = AuditEvent("post-journal");
+        await store.AppendAsync(auditEvent);
+
+        var untouched = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        File.SetLastWriteTimeUtc(SnapshotPath, untouched);
+
+        await store.AppendAsync(auditEvent);
+
+        File.GetLastWriteTimeUtc(SnapshotPath).Should().Be(untouched,
+            "a repeat has nothing to say and must not replace the retained document");
+
+        // And a genuine append still does write, so the skip is narrow.
+        await store.AppendAsync(AuditEvent("close-period"));
+        File.GetLastWriteTimeUtc(SnapshotPath).Should().NotBe(untouched);
+    }
+
+    [Fact]
     public async Task AppendAsync_RefusesTwoDifferentEventsSharingOneId()
     {
         // Not a retry. Appending would break verification permanently and dropping it would lose an

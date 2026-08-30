@@ -446,6 +446,35 @@ public sealed class FundStructureTenantScopeTests
     }
 
     [Fact]
+    public async Task FailClosed_DoesNotClaimAnAccountWhoseParentTheCallerCannotSee()
+    {
+        // Second Codex review finding on PR #2871. Gating the claim on the fail-closed posture
+        // assumed resolution had already proved ownership -- true of PostgresFundAccountStore, whose
+        // read carries the tenant predicate, and false of InMemoryFundAccountService, which filters
+        // nothing. IFundAccountService promises neither, so ownership is established from the
+        // account's own parents against the caller's scoped snapshot instead.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var betaAccount = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-BETA", "Beta Custody Account",
+            "USD", EffectiveFrom, "tenant-scope-test", FundId: beta.FundId));
+
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+        var alphaService = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService);
+
+        // The account service hands the account over -- it has no tenant predicate -- so the link
+        // itself proceeds. What must not happen is tenant-alpha taking ownership of it.
+        await alphaService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(), alpha.FundId, betaAccount.AccountId,
+            OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
+
+        Assert.Null(store.TenantOf(betaAccount.AccountId));
+    }
+
+    [Fact]
     public async Task LinkingAnAccountAnotherTenantAlreadyHolds_DoesNotClaimItForTheCaller()
     {
         // The mirror of Create_DoesNotClaimAPreExistingUnattributedNode, for accounts: an account is

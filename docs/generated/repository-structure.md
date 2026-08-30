@@ -3460,7 +3460,8 @@ Meridian-main
 │   │   │   ├── InMemoryFundStructureService.cs
 │   │   │   ├── InMemoryFundStructureService.Persistence.cs
 │   │   │   ├── OwnershipGraphValidation.cs
-│   │   │   └── PostgresFundStructureService.cs
+│   │   │   ├── PostgresFundStructureService.cs
+│   │   │   └── PostgresFundStructureService.Tenancy.cs
 │   │   ├── Http
 │   │   │   ├── Endpoints
 │   │   │   │   └── StatusEndpointHandlers.cs
