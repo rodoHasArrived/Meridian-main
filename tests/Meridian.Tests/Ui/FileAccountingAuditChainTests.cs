@@ -462,6 +462,64 @@ public sealed class FileAccountingAuditChainTests : IDisposable
             .NotBe(AccountingAuditChain.ComputePayloadHash(nulled));
     }
 
+    [Fact]
+    public async Task AppendAsync_IsIdempotentOnTheEventIdSoARetryDoesNotBreakTheChain()
+    {
+        // The chain requires each link to claim a distinct event, so a second append of one id
+        // leaves a history that can never verify again -- and every append after it throws. A retry
+        // is not hypothetical: it is exactly what RecoverPendingAuditAsync does after a crash
+        // between a mutation and its audit.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var auditEvent = AuditEvent("post-journal");
+
+        await store.AppendAsync(auditEvent);
+        await store.AppendAsync(auditEvent);
+
+        var verification = await store.VerifyAuditChainAsync();
+        verification.IsValid.Should().BeTrue();
+        verification.LinksChecked.Should().Be(1);
+
+        (await store.ListAsync("fund-alpha", null)).Should().ContainSingle();
+
+        // And the chain keeps growing afterwards, which is the part a broken chain would deny.
+        await store.AppendAsync(AuditEvent("close-period"));
+        (await store.VerifyAuditChainAsync()).LinksChecked.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task AppendAsync_LeavesTheAnchorOnTheLandedSequenceWhenARepeatIsIgnored()
+    {
+        // The write-ahead anchor must not be advanced for an append that produced no link: a
+        // declared sequence no event occupies is what InterruptedAppend means, and manufacturing
+        // one out of a retry would report a crash that never happened.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var auditEvent = AuditEvent("post-journal");
+
+        await store.AppendAsync(auditEvent);
+        await store.AppendAsync(auditEvent);
+
+        var head = await new FileAccountingAuditChainAnchor(store.AuditChainAnchorPath).ReadHeadAsync();
+        head!.Sequence.Should().Be(1);
+        head.Phase.Should().Be(AccountingAuditChainAnchorPhase.Committed);
+    }
+
+    [Fact]
+    public async Task AppendAsync_RefusesTwoDifferentEventsSharingOneId()
+    {
+        // Not a retry. Appending would break verification permanently and dropping it would lose an
+        // audit record, so neither is done silently.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var first = AuditEvent("post-journal");
+        await store.AppendAsync(first);
+
+        var collision = async () => await store.AppendAsync(first with { Action = "close-period" });
+
+        (await collision.Should().ThrowAsync<InvalidOperationException>())
+            .Which.Message.Should().Contain("different content");
+
+        (await store.VerifyAuditChainAsync()).IsValid.Should().BeTrue();
+    }
+
     private static AccountingActionAuditEventDto AuditEvent(string action)
         => new(
             Guid.NewGuid(),

@@ -144,6 +144,28 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         // written" the same string.
         var normalized = NormalizeForPersistence(auditEvent);
         var payloadHash = AccountingAuditChain.ComputePayloadHash(normalized);
+
+        // Idempotent on the event id, matching the file posture. audit_event_id is the primary key,
+        // so a repeat would raise a unique violation rather than corrupt anything here -- but the
+        // repeat is what RecoverPendingAuditAsync does after a crash between a mutation and its
+        // audit, and letting it throw makes recovery fail on the one path written to complete it.
+        // Read under the head lock taken above, so a concurrent append cannot slip in behind it.
+        var retainedHash = await ReadRetainedPayloadHashAsync(
+            connection, transaction, normalized.AuditEventId, ct).ConfigureAwait(false);
+        if (retainedHash is not null)
+        {
+            if (!string.Equals(retainedHash, payloadHash, StringComparison.Ordinal))
+            {
+                // Two distinct events claiming one identity. Appending is impossible (the key is
+                // taken) and ignoring it would drop an audit record, so it is named instead.
+                throw new InvalidOperationException(
+                    $"Audit event '{normalized.AuditEventId.ToString("D", CultureInfo.InvariantCulture)}' "
+                    + "is already retained with different content.");
+            }
+
+            return;
+        }
+
         var entryHash = AccountingAuditChain.ComputeEntryHash(head.NextSequence, head.LastHash, payloadHash);
         auditEvent = normalized;
 
@@ -214,6 +236,39 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         await AdvanceChainHeadAsync(connection, transaction, head.NextSequence, entryHash, ct)
             .ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// The payload digest of a retained audit event, or <c>null</c> when the id is not yet taken.
+    /// </summary>
+    /// <remarks>
+    /// Recomputed from the retained row rather than read from its <c>payload_hash</c> column, so an
+    /// event written before chaining -- which has no stored digest -- is compared on the same terms
+    /// as a chained one.
+    /// </remarks>
+    private async Task<string?> ReadRetainedPayloadHashAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid auditEventId,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select {AuditEventColumns}
+            from {Qualified("accounting_action_audit_events")}
+            where audit_event_id = @audit_event_id;
+            """;
+        command.Parameters.AddWithValue("audit_event_id", auditEventId);
+
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            return null;
+        }
+
+        return AccountingAuditChain.ComputePayloadHash(ReadAuditEvent(reader));
     }
 
     private sealed record AccountingAuditChainHead(

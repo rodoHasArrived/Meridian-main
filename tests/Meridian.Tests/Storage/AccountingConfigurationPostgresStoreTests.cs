@@ -284,6 +284,57 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    public async Task AuditStore_AppendIsIdempotentOnTheEventId()
+    {
+        // audit_event_id is the primary key, so a repeat raised a unique violation and the append
+        // threw. That matters because the repeat is what RecoverPendingAuditAsync does after a
+        // crash between a mutation and its audit -- so the one path written to complete an
+        // interrupted audit was the path that could not run twice.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var auditEvent = AuditEvent("configuration.activate");
+
+        await database.AccountingConfigurationStore.AppendAsync(auditEvent);
+        await database.AccountingConfigurationStore.AppendAsync(auditEvent);
+
+        (await database.AccountingConfigurationStore.ListAsync("fund-alpha")).Should().ContainSingle();
+
+        // The chain still advances afterwards: the repeat consumed no sequence.
+        await database.AccountingConfigurationStore.AppendAsync(AuditEvent("chart.upsert"));
+        (await database.AccountingConfigurationStore.ListAsync("fund-alpha")).Should().HaveCount(2);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AuditStore_RefusesTwoDifferentEventsSharingOneId()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var first = AuditEvent("configuration.activate");
+        await database.AccountingConfigurationStore.AppendAsync(first);
+
+        var collision = async () => await database.AccountingConfigurationStore
+            .AppendAsync(first with { Action = "chart.upsert" });
+
+        (await collision.Should().ThrowAsync<InvalidOperationException>())
+            .Which.Message.Should().Contain("different content");
+    }
+
+    private static AccountingActionAuditEventDto AuditEvent(string action)
+        => new(
+            AuditEventId: Guid.NewGuid(),
+            RecordedAtUtc: DateTimeOffset.Parse("2026-06-01T12:00:00Z"),
+            Actor: "ops-user",
+            Action: action,
+            FundProfileId: "fund-alpha",
+            LedgerBookId: null,
+            CorrelationId: "postgres-audit-test",
+            BeforeHash: "before",
+            AfterHash: "after",
+            ValidationIssues: [],
+            EvidenceLinks: ["wpf://accounting/configure"],
+            CompanyId: "company-alpha",
+            ReportGroupPrincipalIds: ["Accounting"],
+            TenantId: "tenant-alpha");
+
+    [LedgerDatabaseFact]
     public async Task AuditStore_FiltersAccountingActionEventsByTenantAndCompany()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
