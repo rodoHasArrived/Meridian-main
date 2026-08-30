@@ -1769,6 +1769,32 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Bai2_NewlinePadding_IsChargedToTheLineBudget()
+    {
+        // Every empty segment was skipped before the charge, so a document of newlines walked past
+        // MaxDocumentLines entirely - the dedicated work budget could not fire on the one payload shape
+        // made entirely of work it is meant to bound. Only the synthetic final segment after a
+        // terminating newline is exempt now. CsvStatementConnector already counted blank lines against
+        // this same limit, so the two connectors disagreed about what one shared bound meant.
+        var padded = Encoding.UTF8.GetBytes(
+            Encoding.UTF8.GetString(BuildBai2Statement(transactionCount: 1)) + new string('\n', 40));
+        var connector = new Bai2StatementConnector(
+            TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 1000,
+                MaxLineBytes = 4096,
+                MaxDocumentLines = 12
+            });
+
+        var result = await connector.ParseAsync(new StatementSourceDocument("padded.bai", padded));
+
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyLinesCode);
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+    }
+
+    [Fact]
     public async Task Bai2_LineBudget_IsItsOwnLimitRatherThanARecordMultiple()
     {
         // The bound still exists and still bites: it is MaxDocumentLines, not a MaxRecords derivation.

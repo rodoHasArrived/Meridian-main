@@ -128,24 +128,36 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 return Task.FromResult(EmptyResult(issues));
             }
 
-            // An empty segment costs nothing to skip and must not be billed. The cursor walk visits one
-            // final zero-length segment when the payload ends with a newline, which every conventional
-            // BAI2 file does - charging it made acceptance depend on the trailing newline and refused a
-            // minimal valid file whose substantive records exactly filled the cap.
-            if (rawLine.Length == 0)
-            {
-                continue;
-            }
+            // Exactly one zero-length segment is synthetic: the cursor walk visits a final empty slice when
+            // the payload ends with a newline, which every conventional BAI2 file does. Charging that one
+            // made acceptance depend on the trailing newline and refused a minimal valid file whose
+            // substantive records exactly filled the cap, so it stays exempt - identified precisely, at
+            // the end of the payload, rather than by exempting every empty line.
+            //
+            // Every other empty line is real padding and is charged. Skipping them all let a document of
+            // newlines walk past MaxDocumentLines entirely: each one costs an iteration to discover, and
+            // the byte cap alone permits twenty million of them. CsvStatementConnector already counts
+            // blank lines against this same limit, with a test pinning it, so exempting them here made
+            // one shared bound mean two different things in two connectors.
+            var isSyntheticTrailingSegment = cursor == payload.Length && rawLine.Length == 0;
 
             // Charged before the decode and the split, and independently of the record cap. An unknown
             // record type falls through the switch below and appends nothing, so a file of compact
             // unknown lines allocated one string and one string[] per line with no bound firing at all.
             // This is the budget that owns work producing no record; the record cap owns retained rows.
-            rawLines++;
-            if (rawLines > rawLineCap)
+            if (!isSyntheticTrailingSegment)
             {
-                issues.Add(_limits.TooManyLines(rawLineCap));
-                return Task.FromResult(EmptyResult(issues));
+                rawLines++;
+                if (rawLines > rawLineCap)
+                {
+                    issues.Add(_limits.TooManyLines(rawLineCap));
+                    return Task.FromResult(EmptyResult(issues));
+                }
+            }
+
+            if (rawLine.Length == 0)
+            {
+                continue;
             }
 
             var line = Encoding.UTF8.GetString(rawLine).Trim().TrimEnd('/').Trim();
