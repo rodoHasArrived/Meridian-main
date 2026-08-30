@@ -474,8 +474,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
         try
         {
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
-            if (snap.OwnershipLinks.ContainsKey(request.OwnershipLinkId))
-                throw new InvalidOperationException($"Ownership link {request.OwnershipLinkId} already exists.");
+            ClaimNewOwnershipLink(request.OwnershipLinkId, snap);
 
             var link = new OwnershipLinkDto(
                 request.OwnershipLinkId,
@@ -499,9 +498,9 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 nodeKinds);
 
             if (parentKind == FundStructureNodeKindDto.Account)
-                snap.LinkedAccountIds.Add(request.ParentNodeId);
+                MaterializeLinkedAccount(request.ParentNodeId, snap);
             if (childKind == FundStructureNodeKindDto.Account)
-                snap.LinkedAccountIds.Add(request.ChildNodeId);
+                MaterializeLinkedAccount(request.ChildNodeId, snap);
 
             snap.OwnershipLinks[link.OwnershipLinkId] = link;
             ApplyOwnershipLink(link, snap);
@@ -598,8 +597,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
             if (!snap.OwnershipLinks.TryGetValue(request.OwnershipLinkId, out var existing))
                 throw new InvalidOperationException($"Ownership link {request.OwnershipLinkId} was not found.");
-            if (snap.OwnershipLinks.ContainsKey(request.ReplacementOwnershipLinkId))
-                throw new InvalidOperationException($"Ownership link {request.ReplacementOwnershipLinkId} already exists.");
+            ClaimNewOwnershipLink(request.ReplacementOwnershipLinkId, snap);
 
             var replacedEffectiveTo = request.ReplacedEffectiveTo ?? request.EffectiveFrom;
             var expiredExisting = existing with { EffectiveTo = replacedEffectiveTo };
@@ -627,9 +625,9 @@ public sealed class PostgresFundStructureService : IFundStructureService
 
             snap.OwnershipLinks[existing.OwnershipLinkId] = expiredExisting;
             if (parentKind == FundStructureNodeKindDto.Account)
-                snap.LinkedAccountIds.Add(request.ParentNodeId);
+                MaterializeLinkedAccount(request.ParentNodeId, snap);
             if (childKind == FundStructureNodeKindDto.Account)
-                snap.LinkedAccountIds.Add(request.ChildNodeId);
+                MaterializeLinkedAccount(request.ChildNodeId, snap);
 
             snap.OwnershipLinks[replacement.OwnershipLinkId] = replacement;
             RebuildOwnershipProjections(snap);
@@ -678,13 +676,16 @@ public sealed class PostgresFundStructureService : IFundStructureService
         try
         {
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
-            if (snap.Assignments.ContainsKey(request.AssignmentId))
-                throw new InvalidOperationException($"Assignment {request.AssignmentId} already exists.");
+            ClaimNewAssignment(request.AssignmentId, snap);
             if (kind == FundStructureNodeKindDto.Account)
-                snap.LinkedAccountIds.Add(request.NodeId);
+                MaterializeLinkedAccount(request.NodeId, snap);
             await _store.UpsertAssignmentAsync(assignment, ct).ConfigureAwait(false);
             if (kind == FundStructureNodeKindDto.Account)
                 await _store.UpsertLinkedAccountIdAsync(request.NodeId, ct).ConfigureAwait(false);
+
+            // This path writes through the store rather than PersistChangedAsync, so it carries the
+            // stamp itself; without it an account first materialized here stays unattributed.
+            await StampCreatedNodesAsync(snap, ct).ConfigureAwait(false);
             return assignment;
         }
         finally { _writeLock.Release(); }
@@ -1079,6 +1080,16 @@ public sealed class PostgresFundStructureService : IFundStructureService
         /// </summary>
         public HashSet<Guid> AllNodeIds = [];
 
+        /// <summary>
+        /// Every ownership-link id in the store, across all tenants, captured before tenant scoping.
+        /// </summary>
+        public HashSet<Guid> AllOwnershipLinkIds = [];
+
+        /// <summary>
+        /// Every assignment id in the store, across all tenants, captured before tenant scoping.
+        /// </summary>
+        public HashSet<Guid> AllAssignmentIds = [];
+
         /// <summary>Nodes created during this mutation, to be stamped with the caller's tenant.</summary>
         public HashSet<Guid> CreatedNodeIds = [];
 
@@ -1131,6 +1142,12 @@ public sealed class PostgresFundStructureService : IFundStructureService
         // uniqueness against only the caller's own view would pass on an id another tenant already
         // holds and then upsert straight over their node — turning the read gate into a write leak.
         snap.AllNodeIds = [.. structureNodeIds, .. snap.LinkedAccountIds];
+
+        // Edges carry identity on exactly the same terms, and every store write for them is an
+        // unconditional ON CONFLICT DO UPDATE. The dictionaries below are about to be filtered, so
+        // the id sets are taken first or the same write leak reopens one level down.
+        snap.AllOwnershipLinkIds = [.. snap.OwnershipLinks.Keys];
+        snap.AllAssignmentIds = [.. snap.Assignments.Keys];
 
         await ScopeToCallerTenantAsync(snap, ct).ConfigureAwait(false);
         return snap;
@@ -1555,6 +1572,61 @@ public sealed class PostgresFundStructureService : IFundStructureService
             throw new InvalidOperationException($"Node {nodeId} already exists.");
 
         snap.CreatedNodeIds.Add(nodeId);
+    }
+
+    /// <summary>
+    /// Reserves an ownership-link id for a create, rejecting one already in use anywhere in the store.
+    /// </summary>
+    /// <remarks>
+    /// Checked against <see cref="MutableSnapshot.AllOwnershipLinkIds"/> for the same reason
+    /// <see cref="ClaimNewNode"/> uses the unscoped node set: <c>UpsertOwnershipLinkAsync</c> is an
+    /// unconditional <c>ON CONFLICT (ownership_link_id) DO UPDATE</c>, so an id that looked free only
+    /// because scoping had filtered the row out would be written straight over another tenant's edge.
+    /// </remarks>
+    private static void ClaimNewOwnershipLink(Guid ownershipLinkId, MutableSnapshot snap)
+    {
+        if (!snap.AllOwnershipLinkIds.Add(ownershipLinkId))
+            throw new InvalidOperationException($"Ownership link {ownershipLinkId} already exists.");
+    }
+
+    /// <summary>
+    /// Reserves an assignment id for a create, rejecting one already in use anywhere in the store.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="ClaimNewOwnershipLink"/> argument applies unchanged —
+    /// <c>UpsertAssignmentAsync</c> is likewise an unconditional
+    /// <c>ON CONFLICT (assignment_id) DO UPDATE</c>. An assignment carries the ledger grouping a node
+    /// posts under, so overwriting one silently re-points another tenant's postings.
+    /// </remarks>
+    private static void ClaimNewAssignment(Guid assignmentId, MutableSnapshot snap)
+    {
+        if (!snap.AllAssignmentIds.Add(assignmentId))
+            throw new InvalidOperationException($"Assignment {assignmentId} already exists.");
+    }
+
+    /// <summary>
+    /// Records an account as a fund-structure node the first time an edge draws it in, so the
+    /// caller's tenant is stamped on it once the write lands.
+    /// </summary>
+    /// <remarks>
+    /// Account ids are minted by the accounts store rather than here, so unlike
+    /// <see cref="ClaimNewNode"/> a repeat is not a collision — an account may legitimately be linked
+    /// or assigned more than once. Only the first materialization claims it, and only when the id is
+    /// not already a node anywhere in the store: taking one another tenant has already drawn in would
+    /// be exactly the incidental-write claim <see cref="StampCreatedNodesAsync"/> refuses to make.
+    ///
+    /// <para>Stamping matters here because an account that stays unattributed is hidden from its own
+    /// creator on the next read under the fail-closed posture — and hiding it takes the edge with it,
+    /// since an edge is served only when both endpoints are visible. The caller would have written a
+    /// link that vanished from their own graph.</para>
+    /// </remarks>
+    private static void MaterializeLinkedAccount(Guid accountId, MutableSnapshot snap)
+    {
+        snap.LinkedAccountIds.Add(accountId);
+        if (snap.AllNodeIds.Add(accountId))
+        {
+            snap.CreatedNodeIds.Add(accountId);
+        }
     }
 
     private static void EnsureExistsInDict<T>(Dictionary<Guid, T> dict, Guid id, string typeName)

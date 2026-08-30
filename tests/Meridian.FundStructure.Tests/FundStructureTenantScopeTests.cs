@@ -290,13 +290,191 @@ public sealed class FundStructureTenantScopeTests
         Assert.Equal("Alpha Entity Renamed", updated.Name);
     }
 
+    [Fact]
+    public async Task LinkCreate_CannotOverwriteAnotherTenantsOwnershipLinkByReusingItsId()
+    {
+        // Nodes were given cross-tenant uniqueness on PR #2866; edges were not. LinkNodesAsync
+        // checked the id against the SCOPED snapshot, and UpsertOwnershipLinkAsync is an
+        // unconditional ON CONFLICT (ownership_link_id) DO UPDATE — so a foreign link id looked free
+        // precisely because scoping had filtered the row out, and the create rewrote another
+        // tenant's edge to point at the caller's own nodes.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var betaLinkId = Guid.NewGuid();
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var betaEntityId = await SeedOwnedEntityAsync(store, TenantBeta, beta.FundId, betaLinkId, "BETA");
+
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+        var alphaService = CreateService(store, TenantAlpha);
+        var alphaEntity = await alphaService.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            Guid.NewGuid(), LegalEntityTypeDto.LimitedPartner, "LP-ALPHA", "Alpha Limited Partner",
+            "US", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        // A link that is valid in every respect except its identifier, so the refusal below can only
+        // be the collision and not an ownership-policy rejection standing in for one.
+        var reuseForeignLinkId = () => alphaService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            betaLinkId, alpha.FundId, alphaEntity.EntityId,
+            OwnershipRelationshipTypeDto.Owns, EffectiveFrom, "tenant-scope-test",
+            OwnershipPercent: 60m));
+
+        var refusal = await Assert.ThrowsAsync<InvalidOperationException>(reuseForeignLinkId);
+        Assert.Contains("already exists", refusal.Message, StringComparison.Ordinal);
+
+        var retained = Assert.Single(
+            await store.GetAllOwnershipLinksAsync(),
+            link => link.OwnershipLinkId == betaLinkId);
+        Assert.Equal(beta.FundId, retained.ParentNodeId);
+        Assert.Equal(betaEntityId, retained.ChildNodeId);
+    }
+
+    [Fact]
+    public async Task OwnershipReplacement_CannotOverwriteAnotherTenantsLinkByReusingItsIdAsTheReplacement()
+    {
+        // Same leak through the other door: the replacement identifier is a create, and it was
+        // checked against the scoped snapshot too. The existing-link lookup beside it stays scoped —
+        // not finding another tenant's link is the correct answer for that one.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var betaLinkId = Guid.NewGuid();
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var betaEntityId = await SeedOwnedEntityAsync(store, TenantBeta, beta.FundId, betaLinkId, "BETA");
+
+        var alphaLinkId = Guid.NewGuid();
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+        var alphaEntityId = await SeedOwnedEntityAsync(store, TenantAlpha, alpha.FundId, alphaLinkId, "ALPHA");
+
+        var alphaService = CreateService(store, TenantAlpha);
+        var reuseForeignLinkId = () => alphaService.ReplaceOwnershipLinkAsync(new ReplaceOwnershipLinkRequest(
+            alphaLinkId, betaLinkId, alpha.FundId, alphaEntityId,
+            OwnershipRelationshipTypeDto.Owns, EffectiveFrom.AddDays(1), "tenant-scope-test",
+            OwnershipPercent: 60m));
+
+        var refusal = await Assert.ThrowsAsync<InvalidOperationException>(reuseForeignLinkId);
+        Assert.Contains("already exists", refusal.Message, StringComparison.Ordinal);
+
+        var retained = Assert.Single(
+            await store.GetAllOwnershipLinksAsync(),
+            link => link.OwnershipLinkId == betaLinkId);
+        Assert.Equal(betaEntityId, retained.ChildNodeId);
+    }
+
+    [Fact]
+    public async Task AssignmentCreate_CannotOverwriteAnotherTenantsAssignmentByReusingItsId()
+    {
+        // An assignment carries the ledger grouping a node posts under, and UpsertAssignmentAsync is
+        // likewise an unconditional ON CONFLICT DO UPDATE — so the scoped uniqueness check let one
+        // tenant silently re-point another tenant's postings at their own node.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var assignmentId = Guid.NewGuid();
+
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        await CreateService(store, TenantBeta).AssignNodeAsync(new AssignFundStructureNodeRequest(
+            assignmentId, beta.FundId, LedgerGroupingRules.LedgerGroupAssignmentType,
+            "BETA.OPS:PRIMARY", EffectiveFrom, "tenant-scope-test"));
+
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+        var alphaService = CreateService(store, TenantAlpha);
+        var reuseForeignAssignmentId = () => alphaService.AssignNodeAsync(new AssignFundStructureNodeRequest(
+            assignmentId, alpha.FundId, LedgerGroupingRules.LedgerGroupAssignmentType,
+            "ALPHA.OPS:PRIMARY", EffectiveFrom, "tenant-scope-test"));
+
+        var refusal = await Assert.ThrowsAsync<InvalidOperationException>(reuseForeignAssignmentId);
+        Assert.Contains("already exists", refusal.Message, StringComparison.Ordinal);
+
+        var retained = Assert.Single(await store.GetAllAssignmentsAsync());
+        Assert.Equal(beta.FundId, retained.NodeId);
+        Assert.Equal("BETA.OPS:PRIMARY", retained.AssignmentReference);
+    }
+
+    [Fact]
+    public async Task LinkingAnAccount_StampsItSoTheEdgeSurvivesTheFailClosedPosture()
+    {
+        // An account only becomes a fund-structure node when an edge draws it in, and that
+        // materialization was never stamped. Under fail-closed the unattributed account is hidden
+        // from its own creator on the next read — and an edge is served only when both endpoints are
+        // visible, so the link the caller had just written vanished from their own graph.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+
+        var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-ALPHA", "Alpha Custody Account",
+            "USD", EffectiveFrom, "tenant-scope-test", FundId: alpha.FundId));
+
+        var linkId = Guid.NewGuid();
+        var alphaService = CreateService(store, TenantAlpha, accountService: accountService);
+        await alphaService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            linkId, alpha.FundId, account.AccountId,
+            OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
+
+        Assert.Equal(TenantAlpha, store.TenantOf(account.AccountId));
+
+        var failClosed = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService);
+        var graph = await failClosed.GetFundStructureGraphAsync(new FundStructureQuery());
+        Assert.Contains(graph.OwnershipLinks, link => link.OwnershipLinkId == linkId);
+        Assert.Contains(graph.Nodes, node => node.NodeId == account.AccountId);
+    }
+
+    [Fact]
+    public async Task LinkingAnAccountAnotherTenantAlreadyHolds_DoesNotClaimItForTheCaller()
+    {
+        // The mirror of Create_DoesNotClaimAPreExistingUnattributedNode, for accounts: an account is
+        // minted elsewhere and may legitimately be linked more than once, so a repeat is not a
+        // collision. Only the first materialization claims it — taking one another tenant already
+        // drew in would be exactly the incidental-write claim the stamping refuses to make.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-SHARED", "Shared Custody Account",
+            "USD", EffectiveFrom, "tenant-scope-test", FundId: beta.FundId));
+
+        await CreateService(store, TenantBeta, accountService: accountService).LinkNodesAsync(
+            new LinkFundStructureNodesRequest(
+                Guid.NewGuid(), beta.FundId, account.AccountId,
+                OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
+
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+        await CreateService(store, TenantAlpha, accountService: accountService).LinkNodesAsync(
+            new LinkFundStructureNodesRequest(
+                Guid.NewGuid(), alpha.FundId, account.AccountId,
+                OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
+
+        Assert.Equal(TenantBeta, store.TenantOf(account.AccountId));
+    }
+
+    /// <summary>
+    /// Creates a legal entity owned by <paramref name="fundId"/> under a caller in
+    /// <paramref name="tenantId"/>, using <paramref name="ownershipLinkId"/> for the edge.
+    /// </summary>
+    private static async Task<Guid> SeedOwnedEntityAsync(
+        FakeFundStructureStore store,
+        string tenantId,
+        Guid fundId,
+        Guid ownershipLinkId,
+        string tag)
+    {
+        var service = CreateService(store, tenantId);
+        var entity = await service.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            Guid.NewGuid(), LegalEntityTypeDto.LimitedPartner, $"LP-{tag}", $"{tag} Limited Partner",
+            "US", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        await service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            ownershipLinkId, fundId, entity.EntityId,
+            OwnershipRelationshipTypeDto.Owns, EffectiveFrom, "tenant-scope-test",
+            OwnershipPercent: 60m));
+
+        return entity.EntityId;
+    }
+
     private static PostgresFundStructureService CreateService(
         FakeFundStructureStore store,
         string? callerTenantId,
-        TenantScopeEnforcementOptions? tenantScope = null)
+        TenantScopeEnforcementOptions? tenantScope = null,
+        InMemoryFundAccountService? accountService = null)
         => new(
             store,
-            new InMemoryFundAccountService(),
+            accountService ?? new InMemoryFundAccountService(),
             new FundStructurePolicyService(),
             tenantAccessor: new StubTenantAccessor(callerTenantId),
             tenantScope: tenantScope);
