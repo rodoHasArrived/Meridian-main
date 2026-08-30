@@ -29,11 +29,25 @@ public static class HostStartupEscalation
     /// refusal among several faults decides the whole batch, because there is no such thing as
     /// partially declining to serve.
     /// </remarks>
-    public static bool IsRefusal(Exception? exception) => exception switch
+    public static bool IsRefusal(Exception? exception) => TryFindRefusal(exception) is not null;
+
+    /// <summary>
+    /// The refusal within <paramref name="exception"/>, or <c>null</c> when it is not one.
+    /// </summary>
+    /// <remarks>
+    /// Returns the matched exception rather than a bool so a caller reporting the fault can show the
+    /// guard's own message. The wrapper's message is not a substitute: an
+    /// <see cref="AggregateException"/> reads "One or more errors occurred", and an ordinary wrapper
+    /// carries whatever the wrapping layer said — neither is the remediation text the operator needs
+    /// to act on. Keep logging the outer exception, which holds the context.
+    /// </remarks>
+    public static StartupRefusedException? TryFindRefusal(Exception? exception) => exception switch
     {
-        null => false,
-        StartupRefusedException => true,
-        AggregateException aggregate => aggregate.InnerExceptions.Any(IsRefusal),
-        _ => IsRefusal(exception.InnerException),
+        null => null,
+        StartupRefusedException refusal => refusal,
+        AggregateException aggregate => aggregate.InnerExceptions
+            .Select(TryFindRefusal)
+            .FirstOrDefault(found => found is not null),
+        _ => TryFindRefusal(exception.InnerException),
     };
 }

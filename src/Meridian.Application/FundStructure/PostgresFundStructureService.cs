@@ -679,13 +679,22 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
             ClaimNewAssignment(request.AssignmentId, snap);
             if (kind == FundStructureNodeKindDto.Account)
                 await MaterializeLinkedAccountAsync(request.NodeId, snap, ct).ConfigureAwait(false);
+            // Stamped before the rows it attributes, not after. This path writes through the store
+            // rather than PersistChangedAsync, so it carries the stamp itself -- and the store has
+            // no transaction seam, so the three writes cannot be made one commit here.
+            //
+            // Given that, the order decides what a crash between them leaves behind. Stamping last
+            // left the bad shape: a committed assignment on an unattributed account, which the next
+            // read hides while the assignment id is already taken, so the retry that would repair it
+            // is refused as a duplicate. Stamping first inverts it -- a failure after the stamp
+            // leaves an attributed account and no assignment, which is inert and fully retryable,
+            // because the stamp is first-owner-wins and the assignment id was never persisted.
+            await StampCreatedNodesAsync(snap, ct).ConfigureAwait(false);
+
             await _store.UpsertAssignmentAsync(assignment, ct).ConfigureAwait(false);
             if (kind == FundStructureNodeKindDto.Account)
                 await _store.UpsertLinkedAccountIdAsync(request.NodeId, ct).ConfigureAwait(false);
 
-            // This path writes through the store rather than PersistChangedAsync, so it carries the
-            // stamp itself; without it an account first materialized here stays unattributed.
-            await StampCreatedNodesAsync(snap, ct).ConfigureAwait(false);
             return assignment;
         }
         finally { _writeLock.Release(); }

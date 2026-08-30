@@ -92,6 +92,18 @@ public sealed class InMemoryFundStructureTenancyGuardTests
         HostStartupEscalation.IsRefusal(
             new InvalidOperationException("outer", new StartupRefusedException("refused")))
             .Should().BeTrue();
+
+        // And the refusal itself is recoverable, not just detectable: a caller reporting the fault
+        // to an operator needs the guard's remediation text, which no wrapper's message carries.
+        HostStartupEscalation.TryFindRefusal(
+                new InvalidOperationException("outer", new StartupRefusedException("remediate me")))!
+            .Message.Should().Be("remediate me");
+        HostStartupEscalation.TryFindRefusal(new AggregateException(
+                new InvalidOperationException("database unreachable"),
+                new StartupRefusedException("remediate me")))!
+            .Message.Should().Be("remediate me");
+        HostStartupEscalation.TryFindRefusal(new InvalidOperationException("just a failure"))
+            .Should().BeNull();
         HostStartupEscalation.IsRefusal(new AggregateException(
             new InvalidOperationException("database unreachable"),
             new StartupRefusedException("refused")))

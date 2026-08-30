@@ -594,8 +594,14 @@ public partial class App : System.Windows.Application
             _startupRefused = true;
             WpfServices.LoggingService.Instance.LogError(
                 "Application startup refused by a startup guard; shutting down", ex);
+
+            // The guard's own message, not the wrapper's. A refusal reaching here inside an
+            // AggregateException would otherwise put "One or more errors occurred" in front of the
+            // operator instead of the remediation text, which is the one thing the dialog is for.
+            // The outer exception is still what gets logged, because it carries the context.
+            var refusal = Meridian.Ui.Shared.Services.HostStartupEscalation.TryFindRefusal(ex);
             System.Windows.MessageBox.Show(
-                ex.Message,
+                refusal?.Message ?? ex.Message,
                 "Meridian cannot start",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
