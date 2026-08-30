@@ -1525,6 +1525,62 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Alpaca_ObjectsOverTheEntryBudget_AreRefusedBeforeDeserializing()
+    {
+        // The row cap is charged after Deserialize has already built the object graph, and the token
+        // budget cannot stand in for it: an empty JSON object costs two tokens, so a hundred thousand of
+        // them fit inside a 500,000-token budget and inside the byte cap while still materializing a
+        // hundred thousand DTOs. One JSON object is at most one materialized object, so counting them
+        // during the pre-scan bounds exactly what the deserializer will allocate.
+        //
+        // The record allowance is left wide open so only the entry budget can fire - proving the two are
+        // separate knobs. A snapshot of two rich activities carries four objects: the root, the activity
+        // wrapper, and one per activity.
+        var connector = new AlpacaActivityStatementConnector(
+            Catalog(),
+            [],
+            [],
+            TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 1000,
+                MaxDocumentEntries = 3
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("objects.json", BuildAlpacaSnapshotWithRichActivities(activityCount: 2)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a refused document yields no partial canonical rows");
+        result.Issues.Should().Contain(issue => issue.Code == StatementIngressLimits.TooManyEntriesCode);
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+    }
+
+    [Fact]
+    public async Task Alpaca_OrdinaryObjectCount_IsNotRefusedByTheEntryBudget()
+    {
+        // The control at the same shape: an ordinary snapshot is a handful of objects and must not be
+        // mistaken for a flood, the same way ordinary metadata is not a token flood.
+        var connector = new AlpacaActivityStatementConnector(
+            Catalog(),
+            [],
+            [],
+            TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 1000,
+                MaxDocumentEntries = 10
+            });
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("ordinary.json", BuildAlpacaSnapshotWithRichActivities(activityCount: 2)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyEntriesCode);
+        result.Issues.Should().NotContain(issue => issue.Code == "INVALID_SNAPSHOT");
+        result.Records.Should().HaveCount(2);
+    }
+
+    [Fact]
     public async Task Alpaca_ExactlyAtTheRetainedRowCap_StillParses()
     {
         // The boundary control, and the one that catches an off-by-one: a document retaining exactly the

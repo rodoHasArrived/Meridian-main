@@ -584,6 +584,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             content,
             new JsonReaderOptions { MaxDepth = _limits.MaxNestingDepth + 1 });
         var tokens = 0;
+        var objects = 0;
 
         try
         {
@@ -592,6 +593,25 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                 if (++tokens > _limits.MaxParseNodes)
                 {
                     return _limits.TooManyNodes();
+                }
+
+                // One JSON object is at most one materialized object once Deserialize runs, so this
+                // counts exactly what the deserializer will allocate rather than predicting what the
+                // payload will yield. It is the allocation bound the token budget alone cannot be: a
+                // compact activities array of empty objects costs two tokens each, so a hundred thousand
+                // of them sit inside a 500,000-token budget and inside the byte cap while still
+                // materializing a hundred thousand DTOs before any row bound is consulted.
+                //
+                // Deliberately MaxDocumentEntries and not MaxRecords. MaxRecords bounds retained rows,
+                // and rows and materialized objects are different counts in both directions here: three
+                // rich activities retain six rows, while corporate actions with no Amount retain their
+                // events and no records at all. Deriving an allocation ceiling from the record allowance
+                // is the mistake that produced every false refusal on this branch. This is the same
+                // budget, and the same code, OfxDocumentParser uses for the identical shape - one
+                // materialized object per array element, built before anything is mapped.
+                if (reader.TokenType == JsonTokenType.StartObject && ++objects > _limits.MaxDocumentEntries)
+                {
+                    return _limits.TooManyEntries();
                 }
 
                 if (reader.CurrentDepth > _limits.MaxNestingDepth)

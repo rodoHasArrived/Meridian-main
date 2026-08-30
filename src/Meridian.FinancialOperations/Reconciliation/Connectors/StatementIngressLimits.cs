@@ -34,7 +34,8 @@ namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 /// it is set far above any real statement and only bites on abuse.
 /// </param>
 /// <param name="MaxDocumentEntries">
-/// Raw aggregates an OFX document may flatten into entry dictionaries. Its own bound rather than
+/// Objects a document may materialize before anything is mapped: OFX aggregates flattened into entry
+/// dictionaries, and Alpaca JSON objects the deserializer turns into DTOs. Its own bound rather than
 /// MaxRecords for the third time the same reason applies: an aggregate is not a record. OfxDocumentParser
 /// materializes an entry dictionary per aggregate before any of them is mapped, and StatementRecordMapper
 /// rejects some of what it is given - so a file can flatten far more aggregates than it retains records,
