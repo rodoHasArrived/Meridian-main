@@ -123,6 +123,13 @@ public sealed class AccountingAuditAtomicityTests : IDisposable
         var audit = new FailableAuditStore(store);
         var service = CreateService(store, audit, markers);
 
+        // A retained workspace is what makes this the unreconcilable case. Without one the scope has
+        // nothing saved in it, which is decidable -- no save landed -- and is answered by discarding.
+        // This test previously omitted the mutation and reached the incident path only because the
+        // hash of an absent workspace was unstable, which is the defect the recovery no longer
+        // depends on.
+        await service.UpsertChartNodeAsync(ChartRequest());
+
         await markers.WriteAsync(new AccountingAuditPendingMarker(
             AuditEvent(beforeHash: new string('8', 64), afterHash: new string('9', 64)),
             DateTimeOffset.UtcNow));
@@ -134,6 +141,40 @@ public sealed class AccountingAuditAtomicityTests : IDisposable
 
         await recover.Should().ThrowAsync<AccountingAuditRecoveryException>();
         (await markers.ReadAsync()).Should().NotBeNull("an unresolved incident must stay visible");
+    }
+
+    [Fact]
+    public async Task ACrashDuringTheFirstMutationOnAFundProfile_DoesNotBlockEveryMutationAfterIt()
+    {
+        // The recovery decided whether an interrupted mutation had landed by hashing the workspace
+        // and comparing. For a scope with nothing retained, LoadWorkspaceAsync synthesizes an empty
+        // workspace stamped with the current instant, so the hash written into the marker and the
+        // hash taken during recovery were different values for the same absence. It matched neither
+        // BeforeHash nor AfterHash, so recovery raised the unreconcilable incident -- and because
+        // every mutation runs recovery first, one crash during the first mutation on a fund profile
+        // stopped all of them, permanently, with no way to clear the marker.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            FileAccountingAuditPendingMarkerStore.MarkerPathFor(SnapshotPath));
+        var audit = new FailableAuditStore(store);
+        var service = CreateService(store, audit, markers);
+
+        // The marker a crash between the marker write and the save would leave behind: nothing is
+        // retained for this fund profile, and the hashes are the unreproducible ones.
+        await markers.WriteAsync(new AccountingAuditPendingMarker(
+            AuditEvent(beforeHash: new string('8', 64), afterHash: new string('9', 64)),
+            DateTimeOffset.UtcNow));
+
+        var recovery = await service.RecoverPendingAuditAsync();
+
+        recovery.Outcome.Should().Be(AccountingAuditRecoveryOutcome.MutationDiscarded);
+        (await markers.ReadAsync()).Should().BeNull();
+        (await audit.ListAsync("fund-alpha")).Should().BeEmpty(
+            "a mutation that never landed is not audited");
+
+        // The part that matters: the service still works.
+        await service.UpsertChartNodeAsync(ChartRequest());
+        (await audit.ListAsync("fund-alpha")).Should().ContainSingle();
     }
 
     [Fact]

@@ -122,9 +122,25 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
                 AccountingAuditRecoveryOutcome.AlreadyAudited, auditEvent.AuditEventId);
         }
 
-        var workspace = await LoadWorkspaceAsync(
+        var workspace = await TryLoadRetainedWorkspaceAsync(
                 fundProfileId, auditEvent.LedgerBookId, ct, auditEvent.TenantId, auditEvent.CompanyId)
             .ConfigureAwait(false);
+        if (workspace is null)
+        {
+            // Nothing is retained for this scope, so no save landed and there is nothing to audit.
+            //
+            // Established from the store rather than by comparing a digest, because the digest of
+            // "absent" is not stable: LoadWorkspaceAsync synthesizes an empty workspace stamped with
+            // the current instant, so the hash taken when the marker was written and the hash taken
+            // here are different values for the same absence. It matched neither BeforeHash nor
+            // AfterHash and fell through to the unreconcilable case below -- which is raised inside
+            // the recovery that every mutation runs first, so one crash during the first mutation on
+            // a fund profile stopped every mutation after it, permanently.
+            await _pendingAuditMarkers.ClearAsync(auditEvent.AuditEventId, ct).ConfigureAwait(false);
+            return new AccountingAuditRecoveryResult(
+                AccountingAuditRecoveryOutcome.MutationDiscarded, auditEvent.AuditEventId);
+        }
+
         var currentHash = Hash(workspace);
 
         if (string.Equals(currentHash, auditEvent.AfterHash, StringComparison.Ordinal))
@@ -837,6 +853,26 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
         CancellationToken ct,
         string? tenantId = null,
         string? companyId = null)
+        => await TryLoadRetainedWorkspaceAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId)
+               .ConfigureAwait(false)
+           ?? EmptyWorkspace(fundProfileId, ledgerBookId, tenantId, companyId);
+
+    /// <summary>
+    /// The retained workspace, or <c>null</c> when nothing has been saved for this scope.
+    /// </summary>
+    /// <remarks>
+    /// Split out of <see cref="LoadWorkspaceAsync"/> so a caller can tell "nothing is retained"
+    /// apart from "here is an empty starting point". The two are the same document to a caller
+    /// composing a mutation, and completely different to
+    /// <see cref="RecoverPendingAuditCoreAsync"/>, which has to decide whether an interrupted
+    /// mutation landed.
+    /// </remarks>
+    private async Task<AccountingConfigurationWorkspaceDto?> TryLoadRetainedWorkspaceAsync(
+        string fundProfileId,
+        Guid? ledgerBookId,
+        CancellationToken ct,
+        string? tenantId = null,
+        string? companyId = null)
     {
         var workspace = await _store.GetAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
         if (workspace is not null)
@@ -863,7 +899,25 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
             }
         }
 
-        return new AccountingConfigurationWorkspaceDto(
+        return null;
+    }
+
+    /// <summary>
+    /// The empty starting point served when a scope has no retained workspace.
+    /// </summary>
+    /// <remarks>
+    /// <c>UpdatedAtUtc</c> is the current instant, which makes this document different on every
+    /// call. Nothing may compare a digest of it across calls: the digest of "absent" would differ
+    /// from itself, and a caller asking "is the retained state still what I read?" would always be
+    /// told no. Absence is established by <see cref="TryLoadRetainedWorkspaceAsync"/> returning
+    /// null instead.
+    /// </remarks>
+    private static AccountingConfigurationWorkspaceDto EmptyWorkspace(
+        string fundProfileId,
+        Guid? ledgerBookId,
+        string? tenantId,
+        string? companyId)
+        => new(
             fundProfileId,
             ledgerBookId,
             AccountingConfigurationStatusDto.Draft,
@@ -878,7 +932,6 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
             RuleTestCases: [],
             TenantId: NormalizeOptional(tenantId),
             CompanyId: NormalizeOptional(companyId));
-    }
 
     private async Task<IReadOnlyList<LedgerBookDto>> LoadLedgerBooksAsync(string fundProfileId, Guid? ledgerBookId, CancellationToken ct)
     {
