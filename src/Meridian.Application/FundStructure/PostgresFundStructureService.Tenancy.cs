@@ -234,16 +234,41 @@ public sealed partial class PostgresFundStructureService
     }
 
     /// <summary>
-    /// Whether any node the account hangs off is visible in <paramref name="snap"/>, which has
-    /// already been narrowed to the caller's tenant.
+    /// Whether <b>every</b> node the account hangs off is visible in <paramref name="snap"/>, which
+    /// has already been narrowed to the caller's tenant, and at least one is populated.
     /// </summary>
     /// <remarks>
-    /// An account with no parent at all is not within anyone's scope: there is nothing to derive
-    /// ownership from, and inventing it is the judgement this service quarantines rather than makes.
+    /// <para>Every populated parent, not any of them. An account may carry a fund, an entity, a
+    /// sleeve and a vehicle at once, and a caller-visible entity does not make a foreign fund
+    /// theirs: accepting on the first visible parent would let an account that belongs to another
+    /// tenant's fund through on the strength of an unrelated reference the caller happens to
+    /// share.</para>
+    ///
+    /// <para>An account with no parent at all is not within anyone's scope either: there is nothing
+    /// to derive ownership from, and inventing it is the judgement this service quarantines rather
+    /// than makes.</para>
     /// </remarks>
     private static bool IsAccountParentVisible(AccountSummaryDto account, MutableSnapshot snap)
-        => (account.FundId is { } fundId && snap.Funds.ContainsKey(fundId))
-            || (account.EntityId is { } entityId && snap.Entities.ContainsKey(entityId))
-            || (account.SleeveId is { } sleeveId && snap.Sleeves.ContainsKey(sleeveId))
-            || (account.VehicleId is { } vehicleId && snap.Vehicles.ContainsKey(vehicleId));
+    {
+        var populated = 0;
+
+        bool ParentInScope<T>(Guid? parentId, Dictionary<Guid, T> visible)
+        {
+            if (parentId is not { } id)
+            {
+                return true;
+            }
+
+            populated++;
+            return visible.ContainsKey(id);
+        }
+
+        var allInScope =
+            ParentInScope(account.FundId, snap.Funds)
+            & ParentInScope(account.EntityId, snap.Entities)
+            & ParentInScope(account.SleeveId, snap.Sleeves)
+            & ParentInScope(account.VehicleId, snap.Vehicles);
+
+        return allInScope && populated > 0;
+    }
 }

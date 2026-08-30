@@ -420,6 +420,39 @@ public sealed class FundStructureTenantScopeTests
     }
 
     [Fact]
+    public async Task FailClosed_RefusesAnAccountWhoseOtherParentIsForeign()
+    {
+        // Sixth Codex review round. CreateAccountRequest lets fund, entity, sleeve and vehicle be
+        // populated at once, and the visibility check accepted the account as soon as ANY parent was
+        // visible. So an account belonging to tenant-beta's fund passed for tenant-alpha on the
+        // strength of an entity alpha happened to share. Every populated parent must be in scope.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+
+        var alphaService = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService);
+        var alphaEntity = await alphaService.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            Guid.NewGuid(), LegalEntityTypeDto.LimitedPartner, "LP-ALPHA-2", "Alpha Limited Partner",
+            "US", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        // Beta's fund, alpha's entity: visible on one reference, foreign on another.
+        var straddling = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-STRADDLE", "Straddling Account",
+            "USD", EffectiveFrom, "tenant-scope-test",
+            FundId: beta.FundId, EntityId: alphaEntity.EntityId));
+
+        var hijack = () => alphaService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(), alpha.FundId, straddling.AccountId,
+            OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
+
+        await Assert.ThrowsAsync<FundStructureTenantScopeException>(hijack);
+        Assert.Null(store.TenantOf(straddling.AccountId));
+    }
+
+    [Fact]
     public async Task AssignNodeAsync_StampsAnAccountItMaterializes()
     {
         // Fifth Codex review round, catching a regression I introduced in the fourth: I reordered
