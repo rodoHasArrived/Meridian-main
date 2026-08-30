@@ -3419,7 +3419,8 @@ Meridian-main
 │   │   │   ├── ProductionRegistrationGuardService.cs
 │   │   │   ├── ProductionServiceRegistrationPolicy.cs
 │   │   │   ├── SecurityMasterStartup.cs
-│   │   │   └── ServiceCompositionRoot.cs
+│   │   │   ├── ServiceCompositionRoot.cs
+│   │   │   └── StartupRefusedException.cs
 │   │   ├── Config
 │   │   │   ├── Credentials
 │   │   │   │   ├── CredentialTestingService.cs
@@ -7274,6 +7275,7 @@ Meridian-main
 │   │   │   ├── FundStructureSetupWorkflowService.cs
 │   │   │   ├── GovernanceReportPackRepository.cs
 │   │   │   ├── GovernedReportingTemplateCatalog.cs
+│   │   │   ├── HostStartupEscalation.cs
 │   │   │   ├── IBackfillProviderConfigAuditReader.cs
 │   │   │   ├── IBResultQueryService.cs
 │   │   │   ├── IngestionOperationsService.cs
