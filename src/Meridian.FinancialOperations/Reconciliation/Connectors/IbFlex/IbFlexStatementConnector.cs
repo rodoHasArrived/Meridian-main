@@ -340,6 +340,12 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                 .Where(IsMarginEvidenceElement)
                 .ToArray();
 
+            // Built once, ahead of the anchor loop. BuildAccountSnapshot used to re-walk the whole
+            // statement for cash and margin evidence on every anchor, so N anchors cost N full-document
+            // descendant walks - work the row cap bounds the count of but not the cost of.
+            var cashEvidence = new AccountEvidenceIndex(cashReportElements);
+            var marginEvidence = new AccountEvidenceIndex(marginReportElements);
+
             var accountSnapshotAnchors = accountInformationElements.Length > 0
                 ? accountInformationElements
                 : marginReportElements.Length > 0
@@ -362,7 +368,8 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
 
                 CountSection(sectionCounts, "AccountInformation");
                 CollectAttributeNames(accountInformation, detectedColumns);
-                accountSnapshots.Add(BuildAccountSnapshot(statement, accountInformation, statementAccountId, profile));
+                accountSnapshots.Add(BuildAccountSnapshot(
+                    statement, accountInformation, statementAccountId, profile, cashEvidence, marginEvidence));
             }
 
             foreach (var marginReport in marginReportElements)
@@ -682,22 +689,19 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         XElement statement,
         XElement account,
         string? statementAccountId,
-        StatementMappingProfileDocument profile)
+        StatementMappingProfileDocument profile,
+        AccountEvidenceIndex cashEvidence,
+        AccountEvidenceIndex marginEvidence)
     {
         var accountId = Attribute(account, "accountId") ?? statementAccountId ?? string.Empty;
         var baseCurrency = AttributeAny(account, "baseCurrency", "currency") ?? "USD";
-        var cashReport = Descendants(statement, "CashReportCurrency")
-            .Where(element => MatchesAccount(element, accountId))
+        // Both sections come from the index rather than a fresh walk of the statement. Same elements,
+        // same document order, same MatchesAccount semantics. The IsMarginEvidenceElement conjunct still
+        // applies because the margin index is built from the array that was already filtered by it.
+        var cashReport = cashEvidence.Matching(accountId)
             .OrderByDescending(element => string.Equals(Attribute(element, "currency"), baseCurrency, StringComparison.OrdinalIgnoreCase))
             .FirstOrDefault();
-        var marginReport = Descendants(
-                statement,
-                "MarginReport",
-                "MarginReportCurrency",
-                "MarginReportData",
-                "MarginSummary",
-                "MarginRequirement")
-            .Where(element => MatchesAccount(element, accountId) && IsMarginEvidenceElement(element))
+        var marginReport = marginEvidence.Matching(accountId)
             .FirstOrDefault();
         var accountType = AttributeAny(account, "accountType", "type")
             ?? (marginReport is null ? null : AttributeAny(marginReport, "accountType", "type"))
@@ -1083,6 +1087,95 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         out DateOnly value,
         params string[] names)
         => StatementValueParser.TryParseDate(AttributeAny(element, names), profile, out value);
+
+    /// <summary>
+    /// Account-keyed index over one evidence section, built once per statement so snapshot construction
+    /// does not re-walk the document for every account anchor.
+    /// </summary>
+    /// <remarks>
+    /// This cannot be a plain dictionary keyed by account id, because <see cref="MatchesAccount"/> is not
+    /// equality. An element carrying no accountId matches every anchor, and an anchor carrying no
+    /// accountId matches every element. Both wildcards are preserved exactly: unkeyed elements are held
+    /// aside and merged back into each lookup, and a blank anchor id returns the whole section.
+    ///
+    /// The merge restores document order, which is load-bearing rather than cosmetic - both callers take
+    /// FirstOrDefault, one of them after a stable OrderByDescending, so relative order decides which
+    /// element is selected. Keying alone would silently change which evidence a snapshot reports.
+    /// </remarks>
+    private sealed class AccountEvidenceIndex
+    {
+        private static readonly List<(int Index, XElement Element)> NoEntries = [];
+
+        private readonly List<(int Index, XElement Element)> _all = [];
+        private readonly List<(int Index, XElement Element)> _unkeyed = [];
+        private readonly Dictionary<string, List<(int Index, XElement Element)>> _byAccount =
+            new(StringComparer.OrdinalIgnoreCase);
+
+        public AccountEvidenceIndex(IReadOnlyList<XElement> elements)
+        {
+            for (var i = 0; i < elements.Count; i++)
+            {
+                var entry = (i, elements[i]);
+                _all.Add(entry);
+
+                // Attribute() returns null rather than a blank string, so this is exactly the
+                // IsNullOrWhiteSpace(candidate) arm of MatchesAccount.
+                var accountId = Attribute(elements[i], "accountId");
+                if (accountId is null)
+                {
+                    _unkeyed.Add(entry);
+                    continue;
+                }
+
+                if (!_byAccount.TryGetValue(accountId, out var bucket))
+                {
+                    bucket = [];
+                    _byAccount[accountId] = bucket;
+                }
+
+                bucket.Add(entry);
+            }
+        }
+
+        /// <summary>
+        /// The elements <see cref="MatchesAccount"/> accepts for this account, in document order.
+        /// </summary>
+        public IEnumerable<XElement> Matching(string accountId)
+        {
+            if (string.IsNullOrWhiteSpace(accountId))
+            {
+                return _all.Select(static entry => entry.Element);
+            }
+
+            var keyed = _byAccount.TryGetValue(accountId, out var bucket) ? bucket : NoEntries;
+            return _unkeyed.Count == 0
+                ? keyed.Select(static entry => entry.Element)
+                : Merge(keyed, _unkeyed);
+        }
+
+        private static IEnumerable<XElement> Merge(
+            List<(int Index, XElement Element)> keyed,
+            List<(int Index, XElement Element)> unkeyed)
+        {
+            int i = 0, j = 0;
+            while (i < keyed.Count && j < unkeyed.Count)
+            {
+                yield return keyed[i].Index < unkeyed[j].Index
+                    ? keyed[i++].Element
+                    : unkeyed[j++].Element;
+            }
+
+            while (i < keyed.Count)
+            {
+                yield return keyed[i++].Element;
+            }
+
+            while (j < unkeyed.Count)
+            {
+                yield return unkeyed[j++].Element;
+            }
+        }
+    }
 
     private static bool MatchesAccount(XElement element, string accountId)
     {

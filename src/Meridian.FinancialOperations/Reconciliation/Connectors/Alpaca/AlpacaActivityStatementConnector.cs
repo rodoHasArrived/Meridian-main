@@ -611,12 +611,20 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                     return _limits.TooManyNodes();
                 }
 
-                // One JSON object is at most one materialized object once Deserialize runs, so this
-                // counts exactly what the deserializer will allocate rather than predicting what the
-                // payload will yield. It is the allocation bound the token budget alone cannot be: a
-                // compact activities array of empty objects costs two tokens each, so a hundred thousand
-                // of them sit inside a 500,000-token budget and inside the byte cap while still
-                // materializing a hundred thousand DTOs before any row bound is consulted.
+                // An UPPER bound, not an exact count. One JSON object is at most one materialized
+                // object once Deserialize runs, but unknown properties are skipped by the deserializer,
+                // so objects underneath them are charged here and never allocated. The conservatism is
+                // structural rather than sloppy - a pre-scan must refuse before the allocation it
+                // prevents, so it can only bound what the payload contains, not what the deserializer
+                // decides to keep. It is still a prediction, and this comment used to claim it counted
+                // "exactly what the deserializer will allocate", which was not true.
+                //
+                // It also cannot fire at the default limits. Every object costs at least two tokens, so
+                // MaxParseNodes (500,000) is reached at roughly 250,000 objects, well before
+                // MaxDocumentEntries (500,000) - which means the compact-array case below is caught by
+                // the token budget, not by this one. This is an operator knob for deployments wanting a
+                // materialization ceiling stricter than the traversal budget, and only bites when set
+                // below about half of MaxParseNodes.
                 //
                 // Deliberately MaxDocumentEntries and not MaxRecords. MaxRecords bounds retained rows,
                 // and rows and materialized objects are different counts in both directions here: three

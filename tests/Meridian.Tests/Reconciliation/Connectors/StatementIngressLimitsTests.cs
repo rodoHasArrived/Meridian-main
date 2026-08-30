@@ -1930,6 +1930,54 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task IbFlex_UnkeyedEvidenceEarlierInTheDocument_StillWinsForAKeyedAccount()
+    {
+        // Guards the account-evidence index against the obvious wrong implementation. MatchesAccount is
+        // not equality: an element carrying no accountId matches every anchor. So indexing by account id
+        // has to keep those wildcards AND keep them in document order, because both callers take
+        // FirstOrDefault and the first match wins.
+        //
+        // The fixture puts the unkeyed element FIRST and a U1-keyed element second. Rescanning the
+        // statement (what this replaced) yields 111/11; a keyed-bucket-then-unkeyed concatenation - the
+        // natural shortcut - yields 222/22. Only preserving document order gives the old answer.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000 });
+
+        var result = await connector.ParseAsync(new StatementSourceDocument(
+            "ib-flex-mixed-evidence.xml", BuildIbFlexWithMixedAccountEvidence()));
+
+        result.AccountSnapshots.Should().HaveCount(2);
+
+        var keyed = result.AccountSnapshots!.Single(snapshot => snapshot.AccountId == "U1");
+        keyed.Equity.Should().Be(111m, "the unkeyed margin element comes first in document order");
+        keyed.Cash.Should().Be(11m, "the unkeyed cash element comes first and both currencies tie");
+
+        // U2 has no keyed evidence at all, so it sees only the wildcards - the other half of
+        // MatchesAccount, and the half a plain dictionary lookup would drop entirely.
+        var unkeyedOnly = result.AccountSnapshots!.Single(snapshot => snapshot.AccountId == "U2");
+        unkeyedOnly.Equity.Should().Be(111m);
+        unkeyedOnly.Cash.Should().Be(11m);
+    }
+
+    [Fact]
+    public async Task IbFlex_AnchorWithoutAnAccountId_SeesEveryEvidenceElement()
+    {
+        // The third arm of MatchesAccount: a blank anchor id matches every element, whatever they are
+        // keyed to. The index returns the whole section for that case rather than an empty bucket, so a
+        // statement that identifies no account still resolves its evidence in document order.
+        var connector = new IbFlexStatementConnector(
+            Catalog(),
+            limits: TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000 });
+
+        var result = await connector.ParseAsync(new StatementSourceDocument(
+            "ib-flex-unidentified.xml", BuildIbFlexWithUnidentifiedAccount()));
+
+        result.AccountSnapshots.Should().ContainSingle();
+        result.AccountSnapshots![0].Cash.Should().Be(33m, "the first cash element in document order");
+    }
+
+    [Fact]
     public async Task Camt_ManySubtreesEachInsideTheSubtreeBound_BreachTheDocumentBudget()
     {
         // TryReadBoundedSubtree consumes a subtree while the outer reader advances to its end element, so
@@ -2215,6 +2263,42 @@ public sealed class StatementIngressLimitsTests : IDisposable
             + "03,0975312468,USD,,,,/\n"
             + "16,115,250000,,BANKREF0001,CUSTREF0001,Incoming wire/\n"
             + "49,250000,2/\n98,250000,1,3/\n99,250000,1,5/\n");
+
+    // A Flex report whose cash and margin evidence mixes unkeyed elements - no accountId, which
+    // MatchesAccount treats as matching every anchor - with keyed ones, and deliberately places the
+    // unkeyed element FIRST in document order so that order and keying disagree.
+    // The AccountInformation anchors carry no value attributes of their own, so the snapshot has to fall
+    // back to the margin and cash elements for equity and cash.
+    private static byte[] BuildIbFlexWithMixedAccountEvidence()
+        => Encoding.UTF8.GetBytes(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            + "<FlexQueryResponse queryName=\"Meridian Daily Statement\" type=\"AF\"><FlexStatements count=\"1\">"
+            + "<FlexStatement accountId=\"U1\" fromDate=\"2026-06-01\" toDate=\"2026-06-30\">"
+            + "<AccountInformation accountId=\"U1\" currency=\"USD\" />"
+            + "<AccountInformation accountId=\"U2\" currency=\"USD\" />"
+            + "<MarginReport>"
+            + "<MarginRequirement netLiquidationValue=\"111\" />"
+            + "<MarginRequirement accountId=\"U1\" netLiquidationValue=\"222\" />"
+            + "</MarginReport>"
+            + "<CashReport>"
+            + "<CashReportCurrency currency=\"USD\" endingCash=\"11\" />"
+            + "<CashReportCurrency accountId=\"U1\" currency=\"USD\" endingCash=\"22\" />"
+            + "</CashReport>"
+            + "</FlexStatement></FlexStatements></FlexQueryResponse>");
+
+    // A Flex report that identifies no account anywhere - neither the statement nor the anchor - so the
+    // snapshot's account id is blank and MatchesAccount admits every evidence element.
+    private static byte[] BuildIbFlexWithUnidentifiedAccount()
+        => Encoding.UTF8.GetBytes(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            + "<FlexQueryResponse queryName=\"Meridian Daily Statement\" type=\"AF\"><FlexStatements count=\"1\">"
+            + "<FlexStatement fromDate=\"2026-06-01\" toDate=\"2026-06-30\">"
+            + "<AccountInformation currency=\"USD\" />"
+            + "<CashReport>"
+            + "<CashReportCurrency accountId=\"U9\" currency=\"USD\" endingCash=\"33\" />"
+            + "<CashReportCurrency accountId=\"U8\" currency=\"USD\" endingCash=\"44\" />"
+            + "</CashReport>"
+            + "</FlexStatement></FlexStatements></FlexQueryResponse>");
 
     // A Flex report whose OpenLot elements carry no attributes, so BuildTaxLot returns null for each and
     // nothing is retained by them.
