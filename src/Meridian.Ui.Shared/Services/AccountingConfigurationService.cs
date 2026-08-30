@@ -184,6 +184,24 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
                 AccountingAuditRecoveryOutcome.AuditReplayed, auditEvent.AuditEventId);
         }
 
+        if (marker.Phase == AccountingAuditPendingMarkerPhase.Saved)
+        {
+            // A Saved marker means the store reported this mutation written, so the only state that
+            // reconciles is the one it wrote -- handled above. Anything else, including a workspace
+            // back at its exact before-state, is retained state that was rolled back or lost after
+            // the fact, not a mutation that never happened. Discarding it would clear the one record
+            // of both the loss and the unaudited mutation.
+            //
+            // Checked here rather than only on the absent-workspace path: absence is not the only
+            // shape a rollback takes, and a book-scoped row lost behind a surviving fund-level
+            // fallback presents as a retained workspace at the before-hash.
+            throw new AccountingAuditRecoveryException(
+                auditEvent.AuditEventId,
+                "An interrupted accounting mutation cannot be reconciled: the store reported it "
+                + "saved, but the retained workspace is not the one it saved. The pending marker is "
+                + "kept so the unaudited mutation and the altered state both stay visible.");
+        }
+
         if (string.Equals(currentHash, auditEvent.BeforeHash, StringComparison.Ordinal))
         {
             // The mutation never landed, so auditing it would record something that did not happen.

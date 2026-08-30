@@ -420,6 +420,41 @@ public sealed class FundStructureTenantScopeTests
     }
 
     [Fact]
+    public async Task AssignNodeAsync_StampsAnAccountItMaterializes()
+    {
+        // Fifth Codex review round, catching a regression I introduced in the fourth: I reordered
+        // the stamp ahead of the writes to shrink a crash window, without checking that
+        // StampNodeTenantAsync is an UPDATE guarded by "tenant_id IS NULL". Stamping first affected
+        // zero rows, so the account was inserted unattributed and hidden from its own creator --
+        // exactly the defect the stamping call was added to prevent.
+        //
+        // The whole suite passed on that reorder, because FakeFundStructureStore stamped into a
+        // free-standing dictionary rather than modelling the existence precondition. It now models
+        // it, and this asserts the outcome that divergence was hiding.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+
+        var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-ASSIGNED", "Assigned Custody Account",
+            "USD", EffectiveFrom, "tenant-scope-test", FundId: alpha.FundId));
+
+        await CreateService(store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService)
+            .AssignNodeAsync(new AssignFundStructureNodeRequest(
+                Guid.NewGuid(), account.AccountId, LedgerGroupingRules.LedgerGroupAssignmentType,
+                "ALPHA.OPS:PRIMARY", EffectiveFrom, "tenant-scope-test"));
+
+        Assert.Equal(TenantAlpha, store.TenantOf(account.AccountId));
+
+        // And the assignment survives the caller's own next read under the posture that hides
+        // unattributed nodes, which is the point of stamping it at all.
+        var graph = await CreateService(
+                store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService)
+            .GetFundStructureGraphAsync(new FundStructureQuery());
+        Assert.Contains(graph.Assignments, item => item.NodeId == account.AccountId);
+    }
+
+    [Fact]
     public async Task UnderTheBoundaryPosture_LinkingAnUnattributedAccount_DoesNotClaimIt()
     {
         // Codex review finding on PR #2871. Reaching MaterializeLinkedAccount means the account store

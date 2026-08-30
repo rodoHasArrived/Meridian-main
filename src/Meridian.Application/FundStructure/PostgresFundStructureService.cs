@@ -679,22 +679,21 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
             ClaimNewAssignment(request.AssignmentId, snap);
             if (kind == FundStructureNodeKindDto.Account)
                 await MaterializeLinkedAccountAsync(request.NodeId, snap, ct).ConfigureAwait(false);
-            // Stamped before the rows it attributes, not after. This path writes through the store
-            // rather than PersistChangedAsync, so it carries the stamp itself -- and the store has
-            // no transaction seam, so the three writes cannot be made one commit here.
-            //
-            // Given that, the order decides what a crash between them leaves behind. Stamping last
-            // left the bad shape: a committed assignment on an unattributed account, which the next
-            // read hides while the assignment id is already taken, so the retry that would repair it
-            // is refused as a duplicate. Stamping first inverts it -- a failure after the stamp
-            // leaves an attributed account and no assignment, which is inert and fully retryable,
-            // because the stamp is first-owner-wins and the assignment id was never persisted.
-            await StampCreatedNodesAsync(snap, ct).ConfigureAwait(false);
-
             await _store.UpsertAssignmentAsync(assignment, ct).ConfigureAwait(false);
             if (kind == FundStructureNodeKindDto.Account)
                 await _store.UpsertLinkedAccountIdAsync(request.NodeId, ct).ConfigureAwait(false);
 
+            // Stamped last, and it has to be: StampNodeTenantAsync is an UPDATE guarded by
+            // "tenant_id IS NULL", so it attributes a row that already exists and silently affects
+            // nothing when the row does not. Stamping first therefore loses the stamp for exactly
+            // the case this call is here for -- an account materialized by this assignment -- and
+            // the account is then inserted unattributed and hidden from its own creator.
+            //
+            // That leaves the crash window between these writes genuinely open: this path writes
+            // through the store rather than PersistChangedAsync, and IFundStructureStore has no
+            // transaction seam, so the three writes cannot be one commit. Closing it needs that
+            // seam; reordering cannot substitute for it.
+            await StampCreatedNodesAsync(snap, ct).ConfigureAwait(false);
             return assignment;
         }
         finally { _writeLock.Release(); }

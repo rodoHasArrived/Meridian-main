@@ -244,6 +244,36 @@ public sealed class AccountingAuditAtomicityTests : IDisposable
     }
 
     [Fact]
+    public async Task AWorkspaceRolledBackToItsBeforeStateAfterASavedMarker_IsAnIncident()
+    {
+        // Fifth Codex review round. The Saved phase was consulted only when nothing was retained,
+        // but absence is not the only shape a rollback takes: a workspace restored to its exact
+        // before-state hashes to BeforeHash, and recovery discarded it as a mutation that never
+        // happened. Saved proves it did happen, so that is state loss plus an unaudited mutation.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            FileAccountingAuditPendingMarkerStore.MarkerPathFor(SnapshotPath));
+        var audit = new FailableAuditStore(store);
+        var service = CreateService(store, audit, markers);
+
+        // One completed mutation, so the retained workspace hash is the service's own record of it.
+        await service.UpsertChartNodeAsync(ChartRequest());
+        var retainedHash = (await audit.ListAsync("fund-alpha")).Single().AfterHash;
+
+        // A marker whose before-hash the workspace now matches -- but which says the save landed.
+        await markers.WriteAsync(new AccountingAuditPendingMarker(
+            AuditEvent(beforeHash: retainedHash, afterHash: new string('9', 64)),
+            DateTimeOffset.UtcNow,
+            BeforeStateRetained: true,
+            Phase: AccountingAuditPendingMarkerPhase.Saved));
+
+        var recover = async () => await service.RecoverPendingAuditAsync();
+
+        await recover.Should().ThrowAsync<AccountingAuditRecoveryException>();
+        (await markers.ReadAsync()).Should().NotBeNull("the rolled-back state must stay visible");
+    }
+
+    [Fact]
     public async Task ACompletedPair_LeavesNoMarkerBehind()
     {
         var store = new FileAccountingConfigurationStore(SnapshotPath);
