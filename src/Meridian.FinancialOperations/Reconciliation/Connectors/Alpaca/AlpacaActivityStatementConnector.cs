@@ -23,6 +23,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
     private readonly StatementMappingProfileCatalog _catalog;
     private readonly StatementIngressLimits _limits;
     private readonly JsonTypeInfo<AlpacaStatementSnapshot> _snapshotTypeInfo;
+    private readonly int _jsonDepthCeiling;
     private readonly IBrokerageActivitySync? _activitySync;
     private readonly IBrokeragePortfolioSync? _portfolioSync;
 
@@ -40,10 +41,25 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
         // MaxNestingDepth above 64 cannot actually raise it here: the reader throws before the scan's own
         // depth check can report STATEMENT_NESTING_TOO_DEEP, and the deserializer then fails at the same
         // ceiling and reports INVALID_SNAPSHOT instead. One past the bound, so the named diagnostic wins.
+        //
+        // Saturating, for the reason CsvStatementConnector saturates its line allowance: int.MaxValue is
+        // the natural value for a deployment that wants this ceiling effectively off, and + 1 wraps it to
+        // int.MinValue. Both JsonSerializerOptions.MaxDepth and JsonReaderOptions.MaxDepth reject a
+        // negative, so the wrap threw out of this constructor - such a deployment could not compose the
+        // connector at all, let alone parse with it. A bound configured to permit everything must permit
+        // everything rather than fail closed on arithmetic.
+        //
+        // Computed once and shared with the pre-scan reader rather than written out at both sites: the
+        // reader and the deserializer disagreeing about the ceiling is precisely the divergence that
+        // building both from the configured depth exists to prevent.
+        _jsonDepthCeiling = _limits.MaxNestingDepth == int.MaxValue
+            ? int.MaxValue
+            : _limits.MaxNestingDepth + 1;
+
         // Copied from the source-generated context's options so the generated resolver is preserved.
         var snapshotOptions = new JsonSerializerOptions(AlpacaStatementSnapshotJsonContext.Default.Options)
         {
-            MaxDepth = _limits.MaxNestingDepth + 1
+            MaxDepth = _jsonDepthCeiling
         };
         _snapshotTypeInfo = (JsonTypeInfo<AlpacaStatementSnapshot>)snapshotOptions.GetTypeInfo(
             typeof(AlpacaStatementSnapshot));
@@ -582,7 +598,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
     {
         var reader = new Utf8JsonReader(
             content,
-            new JsonReaderOptions { MaxDepth = _limits.MaxNestingDepth + 1 });
+            new JsonReaderOptions { MaxDepth = _jsonDepthCeiling });
         var tokens = 0;
         var objects = 0;
 

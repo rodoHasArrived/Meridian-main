@@ -1632,6 +1632,43 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Alpaca_NestingDepthAtIntMaxValue_ConstructsAndParsesRatherThanThrowing()
+    {
+        // The Alpaca twin of Csv_LineBudgetAtIntMaxValue_ParsesRatherThanThrowing, found by sweeping the
+        // siblings for the same shape rather than by waiting for the next round to file it.
+        //
+        // Both the deserializer and the pre-scan reader are built one past MaxNestingDepth so the named
+        // STATEMENT_NESTING_TOO_DEEP diagnostic wins over System.Text.Json's own ceiling. That + 1 wrapped
+        // int.MaxValue to int.MinValue, and JsonSerializerOptions.MaxDepth and JsonReaderOptions.MaxDepth
+        // both reject a negative - so a deployment that turned this ceiling off could not construct the
+        // connector at all. That is strictly worse than the CSV case, which failed per document: this one
+        // failed at composition.
+        //
+        // Construction is asserted separately from the parse because the two sites fail independently -
+        // the constructor builds the deserializer options, ScanForBoundBreach builds the reader options -
+        // and a fix applied to only one of them would still pass a parse-only test.
+        var construct = () => new AlpacaActivityStatementConnector(
+            Catalog(),
+            [],
+            [],
+            TightLimits with
+            {
+                MaxDocumentBytes = 1024 * 1024,
+                MaxRecords = 1000,
+                MaxNestingDepth = int.MaxValue
+            });
+
+        var connector = construct.Should().NotThrow().Subject;
+
+        var act = async () => await connector.ParseAsync(new StatementSourceDocument(
+            "unbounded.json", BuildAlpacaSnapshotWithRichActivities(activityCount: 2)));
+
+        var result = await act.Should().NotThrowAsync();
+        result.Subject.Records.Should().HaveCount(2);
+        result.Subject.Issues.Should().NotContain(issue => issue.Code == "INVALID_SNAPSHOT");
+    }
+
+    [Fact]
     public async Task Alpaca_ExactlyAtTheRetainedRowCap_StillParses()
     {
         // The boundary control, and the one that catches an off-by-one: a document retaining exactly the
