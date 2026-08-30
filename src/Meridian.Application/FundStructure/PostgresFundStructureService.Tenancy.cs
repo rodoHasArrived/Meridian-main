@@ -195,21 +195,39 @@ public sealed partial class PostgresFundStructureService
         MutableSnapshot snap,
         CancellationToken ct)
     {
-        snap.LinkedAccountIds.Add(accountId);
-        if (!snap.AllNodeIds.Add(accountId)
-            || _tenantScope.Mode != TenantScopeEnforcementMode.FailClosed)
+        if (_tenantScope.Mode == TenantScopeEnforcementMode.FailClosed)
         {
-            return;
+            // Ownership is established from the account's own parents against this caller's already
+            // scoped snapshot, not from the fact that the account service returned it. Which service
+            // is composed decides what that return means: PostgresFundAccountStore applies the
+            // tenant predicate, InMemoryFundAccountService applies nothing at all, and
+            // IFundAccountService promises neither.
+            //
+            // Checked before anything is recorded, and for every link rather than only a first
+            // materialization: an account already standing as another tenant's node fails the
+            // AllNodeIds reservation below, so a check that ran only on first materialization would
+            // wave exactly the foreign account through.
+            var account = await _fundAccountService.GetAccountAsync(accountId, ct).ConfigureAwait(false);
+            if (account is null || !IsAccountParentVisible(account, snap))
+            {
+                // Refused rather than merely left unstamped. Declining the stamp alone still wrote
+                // the edge or assignment and the linked-account id, so the relationship survived
+                // unattributed -- and whenever the account was later attributed to its rightful
+                // tenant, that tenant inherited a relationship a stranger had authored.
+                throw new FundStructureTenantScopeException(
+                    $"Account {accountId} is not within the calling tenant's scope: no fund, entity, "
+                    + "sleeve or vehicle it belongs to is visible to this caller.");
+            }
         }
 
-        // Ownership is established from the account's own parents against this caller's already
-        // scoped snapshot, not from the fact that the account service returned it. Which service is
-        // composed decides what that return means: PostgresFundAccountStore applies the tenant
-        // predicate, InMemoryFundAccountService applies nothing at all, and IFundAccountService
-        // promises neither. An account whose fund, entity, sleeve or vehicle this caller cannot see
-        // is not theirs to claim, whichever implementation answered.
-        var account = await _fundAccountService.GetAccountAsync(accountId, ct).ConfigureAwait(false);
-        if (account is not null && IsAccountParentVisible(account, snap))
+        snap.LinkedAccountIds.Add(accountId);
+
+        // Only a first materialization claims, and only under the posture that established
+        // ownership above. Under the deployment boundary an unattributed account is deliberately
+        // visible to everyone, and taking it would hand a shared account to whichever tenant linked
+        // it first -- the incidental-write claim StampCreatedNodesAsync refuses to make.
+        if (snap.AllNodeIds.Add(accountId)
+            && _tenantScope.Mode == TenantScopeEnforcementMode.FailClosed)
         {
             snap.CreatedNodeIds.Add(accountId);
         }
@@ -220,8 +238,8 @@ public sealed partial class PostgresFundStructureService
     /// already been narrowed to the caller's tenant.
     /// </summary>
     /// <remarks>
-    /// An account with no parent at all is not claimed: there is nothing to derive ownership from,
-    /// and inventing it is the judgement this service quarantines rather than makes.
+    /// An account with no parent at all is not within anyone's scope: there is nothing to derive
+    /// ownership from, and inventing it is the judgement this service quarantines rather than makes.
     /// </remarks>
     private static bool IsAccountParentVisible(AccountSummaryDto account, MutableSnapshot snap)
         => (account.FundId is { } fundId && snap.Funds.ContainsKey(fundId))

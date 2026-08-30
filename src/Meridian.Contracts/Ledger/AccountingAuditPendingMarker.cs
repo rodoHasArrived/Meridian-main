@@ -33,10 +33,42 @@ namespace Meridian.Contracts.Ledger;
 /// <para>Defaults to <c>true</c> so a marker written by an older build, which has no such field,
 /// takes the conservative branch and raises rather than silently discarding.</para>
 /// </param>
+/// <param name="Phase">
+/// How far the mutation-and-audit cycle had got when this marker was last written.
+///
+/// <para>Needed because <paramref name="BeforeStateRetained"/> alone cannot settle the first
+/// mutation in a scope. There, nothing was retained beforehand, so absence at recovery reads the
+/// same whether the save never ran or it completed and the retained state was destroyed afterwards
+/// — and only one of those is a discardable mutation. Recording that the save returned turns the
+/// second into something recovery can see.</para>
+///
+/// <para>Defaults to <see cref="AccountingAuditPendingMarkerPhase.Declared"/>, which is safe for a
+/// marker written by a build without the field: such a marker also carries the default
+/// <paramref name="BeforeStateRetained"/> of <c>true</c>, so it still takes the conservative
+/// branch.</para>
+/// </param>
 public sealed record AccountingAuditPendingMarker(
     AccountingActionAuditEventDto AuditEvent,
     DateTimeOffset DeclaredAtUtc,
-    bool BeforeStateRetained = true);
+    bool BeforeStateRetained = true,
+    AccountingAuditPendingMarkerPhase Phase = AccountingAuditPendingMarkerPhase.Declared);
+
+/// <summary>How far an interrupted mutation-and-audit cycle had progressed.</summary>
+public enum AccountingAuditPendingMarkerPhase
+{
+    /// <summary>
+    /// The intent was recorded and the mutation had not been observed to complete. A crash here may
+    /// have preceded the save entirely.
+    /// </summary>
+    Declared,
+
+    /// <summary>
+    /// The store reported the mutation saved; only the audit append is unconfirmed. Retained state
+    /// existing is therefore expected, and its absence is a loss rather than a mutation that never
+    /// happened.
+    /// </summary>
+    Saved,
+}
 
 /// <summary>How an outstanding marker was resolved.</summary>
 public enum AccountingAuditRecoveryOutcome

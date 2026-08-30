@@ -465,22 +465,67 @@ public sealed class FundStructureTenantScopeTests
         var alphaService = CreateService(
             store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService);
 
-        // The account service hands the account over -- it has no tenant predicate -- so the link
-        // itself proceeds. What must not happen is tenant-alpha taking ownership of it.
-        await alphaService.LinkNodesAsync(new LinkFundStructureNodesRequest(
-            Guid.NewGuid(), alpha.FundId, betaAccount.AccountId,
+        // Third Codex review round: declining the stamp was not enough. The link and the
+        // linked-account id were still written, so the relationship survived unattributed -- and
+        // whenever the account was later attributed to tenant-beta, beta inherited a relationship
+        // tenant-alpha had authored. The mutation is refused outright.
+        var hijackLinkId = Guid.NewGuid();
+        var hijack = () => alphaService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            hijackLinkId, alpha.FundId, betaAccount.AccountId,
             OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
 
+        await Assert.ThrowsAsync<FundStructureTenantScopeException>(hijack);
+
         Assert.Null(store.TenantOf(betaAccount.AccountId));
+        Assert.DoesNotContain(
+            await store.GetAllOwnershipLinksAsync(), link => link.OwnershipLinkId == hijackLinkId);
+        Assert.DoesNotContain(betaAccount.AccountId, await store.GetAllLinkedAccountIdsAsync());
     }
 
     [Fact]
-    public async Task LinkingAnAccountAnotherTenantAlreadyHolds_DoesNotClaimItForTheCaller()
+    public async Task FailClosed_RefusesAnAccountAlreadyStandingAsAnotherTenantsNode()
     {
-        // The mirror of Create_DoesNotClaimAPreExistingUnattributedNode, for accounts: an account is
-        // minted elsewhere and may legitimately be linked more than once, so a repeat is not a
-        // collision. Only the first materialization claims it — taking one another tenant already
-        // drew in would be exactly the incidental-write claim the stamping refuses to make.
+        // The same check has to run for every link, not only a first materialization: an account
+        // already materialized as tenant-beta's node fails the AllNodeIds reservation, so a check
+        // gated on that reservation would wave exactly the foreign account through.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var betaAccount = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-BETA2", "Beta Custody Account",
+            "USD", EffectiveFrom, "tenant-scope-test", FundId: beta.FundId));
+
+        await CreateService(store, TenantBeta, TenantScopeEnforcementOptions.FailClosed, accountService)
+            .LinkNodesAsync(new LinkFundStructureNodesRequest(
+                Guid.NewGuid(), beta.FundId, betaAccount.AccountId,
+                OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
+
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+        var alphaService = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService);
+
+        var hijackLinkId = Guid.NewGuid();
+        var hijack = () => alphaService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            hijackLinkId, alpha.FundId, betaAccount.AccountId,
+            OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
+
+        await Assert.ThrowsAsync<FundStructureTenantScopeException>(hijack);
+
+        Assert.Equal(TenantBeta, store.TenantOf(betaAccount.AccountId));
+        Assert.DoesNotContain(
+            await store.GetAllOwnershipLinksAsync(), link => link.OwnershipLinkId == hijackLinkId);
+    }
+
+    [Fact]
+    public async Task UnderTheBoundaryPosture_AnAccountAnotherTenantHolds_IsSharedButNotReclaimed()
+    {
+        // The mirror of Create_DoesNotClaimAPreExistingUnattributedNode, for accounts. Under the
+        // deployment boundary the shared link is still permitted — that posture's whole premise is
+        // that the deployment is the control — but ownership must not move to whoever links next,
+        // which is the incidental-write claim the stamping refuses to make. (Under fail-closed the
+        // same attempt is refused outright; see
+        // FailClosed_RefusesAnAccountAlreadyStandingAsAnotherTenantsNode.)
         var store = new FakeFundStructureStore(isTenantPartitioned: true);
         var accountService = new InMemoryFundAccountService();
 
@@ -495,7 +540,8 @@ public sealed class FundStructureTenantScopeTests
                 OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
 
         var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
-        await CreateService(store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService)
+        await CreateService(
+                store, TenantAlpha, TenantScopeEnforcementOptions.DeploymentBoundary, accountService)
             .LinkNodesAsync(new LinkFundStructureNodesRequest(
                 Guid.NewGuid(), alpha.FundId, account.AccountId,
                 OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));

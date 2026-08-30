@@ -130,6 +130,19 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
             // Nothing is retained for this scope. What that means depends on what was retained when
             // the intent was declared, which is why the marker records it (Codex review finding on
             // PR #2871): SaveAsync only ever inserts or replaces, so it cannot produce absence.
+            if (marker.Phase == AccountingAuditPendingMarkerPhase.Saved)
+            {
+                // The store reported this mutation saved, and nothing is retained now. That cannot
+                // be a mutation which never landed, so the retained state was lost -- including for
+                // a first mutation, where BeforeStateRetained is false and absence would otherwise
+                // look exactly like a save that never ran.
+                throw new AccountingAuditRecoveryException(
+                    auditEvent.AuditEventId,
+                    "An interrupted accounting mutation cannot be reconciled: the store reported it "
+                    + "saved and no workspace is retained for this scope. The pending marker is kept "
+                    + "so the unaudited mutation and the lost state both stay visible.");
+            }
+
             if (marker.BeforeStateRetained)
             {
                 // A workspace existed before the mutation and is gone now. The save did not do that,
@@ -842,6 +855,7 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
             // Declared before the mutation, cleared after the append. The two stores are separate
             // interfaces over separate artifacts, so there is no transaction to share; this is what turns
             // "the append silently didn't happen" into a recorded, decidable incident.
+            var beforeStateRetained = false;
             if (_pendingAuditMarkers is not null)
             {
                 // Whether anything is retained for this scope right now. Recovery cannot infer it
@@ -849,7 +863,7 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
                 // retained state was destroyed, and those call for opposite actions. Read inside the
                 // cycle lock, immediately before the save, so it describes the state the save is
                 // about to act on.
-                var beforeStateRetained = await TryLoadRetainedWorkspaceAsync(
+                beforeStateRetained = await TryLoadRetainedWorkspaceAsync(
                         finalWorkspace.FundProfileId,
                         ledgerBookId ?? finalWorkspace.LedgerBookId,
                         ct,
@@ -866,6 +880,23 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
             }
 
             await _store.SaveAsync(finalWorkspace, ct).ConfigureAwait(false);
+
+            // The save returned, so retained state exists from here on and its later absence is a
+            // loss rather than a mutation that never happened. Recorded before the append, because
+            // the append is the step that may not complete.
+            if (_pendingAuditMarkers is not null)
+            {
+                await _pendingAuditMarkers
+                    .WriteAsync(
+                        new AccountingAuditPendingMarker(
+                            auditEvent,
+                            DateTimeOffset.UtcNow,
+                            beforeStateRetained,
+                            AccountingAuditPendingMarkerPhase.Saved),
+                        ct)
+                    .ConfigureAwait(false);
+            }
+
             await _auditStore.AppendAsync(auditEvent, ct).ConfigureAwait(false);
 
             if (_pendingAuditMarkers is not null)

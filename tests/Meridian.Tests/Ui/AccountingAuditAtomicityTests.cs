@@ -219,6 +219,31 @@ public sealed class AccountingAuditAtomicityTests : IDisposable
     }
 
     [Fact]
+    public async Task AFirstMutationWhoseSaveLandedAndWasThenLost_IsAnIncidentRatherThanADiscard()
+    {
+        // Third Codex review round. BeforeStateRetained alone cannot settle the first mutation in a
+        // scope: nothing was retained beforehand, so absence at recovery reads the same whether the
+        // save never ran or it completed and the state was destroyed afterwards. The marker now
+        // records that the save returned, which distinguishes them -- without reintroducing the
+        // permanent block that treating every first-mutation crash as an incident would cause.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            FileAccountingAuditPendingMarkerStore.MarkerPathFor(SnapshotPath));
+        var service = CreateService(store, new FailableAuditStore(store), markers);
+
+        await markers.WriteAsync(new AccountingAuditPendingMarker(
+            AuditEvent(),
+            DateTimeOffset.UtcNow,
+            BeforeStateRetained: false,
+            Phase: AccountingAuditPendingMarkerPhase.Saved));
+
+        var recover = async () => await service.RecoverPendingAuditAsync();
+
+        await recover.Should().ThrowAsync<AccountingAuditRecoveryException>();
+        (await markers.ReadAsync()).Should().NotBeNull("the lost state must stay visible");
+    }
+
+    [Fact]
     public async Task ACompletedPair_LeavesNoMarkerBehind()
     {
         var store = new FileAccountingConfigurationStore(SnapshotPath);

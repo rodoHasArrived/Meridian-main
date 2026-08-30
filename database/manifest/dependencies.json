@@ -6226,6 +6226,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditPendingMarkerPhase"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AccountingAuditRecoveryException"
     },
     {
@@ -18700,6 +18706,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditPendingMarkerPhase"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AccountingAuditRecoveryException"
     },
     {
@@ -27785,6 +27797,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.AccountingAuditPendingMarker",
       "target": "contract:Meridian.Contracts.Ledger.AccountingActionAuditEventDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AccountingAuditPendingMarker",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingAuditPendingMarkerPhase"
     },
     {
       "kind": "contract-reference",
@@ -45581,7 +45599,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "c9a16376ea756a647bc8af7b48d41653d29db015ddb8df4e87a8928f10f38742",
+  "fingerprint": "18959208b3d8a03e6f250cc7c1ef019bc87c8ba2158be9d34f179380126f9d85",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -51855,6 +51873,12 @@
       "id": "contract:Meridian.Contracts.Ledger.AccountingAuditPendingMarker",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.AccountingAuditPendingMarker"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.AccountingAuditPendingMarkerPhase",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AccountingAuditPendingMarkerPhase"
     },
     {
       "classification": "class",
@@ -66488,11 +66512,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3048,
-    "contract_set_memberships": 3604,
-    "edges": 7575,
+    "contract_references": 3049,
+    "contract_set_memberships": 3606,
+    "edges": 7578,
     "foreign_keys": 114,
     "logical_references": 6,
-    "nodes": 3608
+    "nodes": 3609
   }
 }

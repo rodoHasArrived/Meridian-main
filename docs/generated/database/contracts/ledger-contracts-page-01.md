@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 1 of 4
 
-Objects 1-80 of 297. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 298. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -619,6 +619,9 @@ classDiagram
         +AccountingActionAuditEventDto AuditEvent
         +bool BeforeStateRetained
         +DateTimeOffset DeclaredAtUtc
+        +AccountingAuditPendingMarkerPhase Phase
+    }
+    class Meridian_Contracts_Ledger_AccountingAuditPendingMarkerPhase["AccountingAuditPendingMarkerPhase"] {
     }
     class Meridian_Contracts_Ledger_AccountingAuditRecoveryException["AccountingAuditRecoveryException"] {
         +Guid AuditEventId
@@ -631,14 +634,6 @@ classDiagram
         +AccountingAuditRecoveryOutcome Outcome
     }
     class Meridian_Contracts_Ledger_AccountingBasisKindDto["AccountingBasisKindDto"] {
-    }
-    class Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto["AccountingBasisProjectionItemDto"] {
-        +AccountingBasisKindDto AccountingBasis
-        +PostingRuleJournalCandidateResultDto Candidate
-        +string? DisabledReason
-        +Guid LedgerBookId
-        +Guid PeriodId
-        +string Status
     }
     Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationArtifactDto --> Meridian_Contracts_AccountingSystem_AccountingCertificationArtifactIssueDto
     Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationArtifactDto --> Meridian_Contracts_AccountingSystem_AccountingCertificationArtifactStatusDto
@@ -726,6 +721,6 @@ classDiagram
     Meridian_Contracts_Ledger_AccountingAuditChainState --> Meridian_Contracts_Ledger_AccountingAuditChainLink
     Meridian_Contracts_Ledger_AccountingAuditChainVerification --> Meridian_Contracts_Ledger_AccountingAuditChainStatus
     Meridian_Contracts_Ledger_AccountingAuditPendingMarker --> Meridian_Contracts_Ledger_AccountingActionAuditEventDto
+    Meridian_Contracts_Ledger_AccountingAuditPendingMarker --> Meridian_Contracts_Ledger_AccountingAuditPendingMarkerPhase
     Meridian_Contracts_Ledger_AccountingAuditRecoveryResult --> Meridian_Contracts_Ledger_AccountingAuditRecoveryOutcome
-    Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto --> Meridian_Contracts_Ledger_AccountingBasisKindDto
 ```
