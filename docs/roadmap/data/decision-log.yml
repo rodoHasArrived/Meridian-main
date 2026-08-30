@@ -98,3 +98,11 @@ decisions:
       - W9-REPORT-005
       - W9-NAV-006
       - W9-CORPACT-011
+  - id: DEC-W9-ACCEPTANCE-002
+    title: Reopen W9-CORPACT-011 on corrected approval-lane evidence
+    status: accepted
+    decided_on: 2026-08-30
+    owner_lane: Core Team
+    summary: Operator reassessment on corrected evidence supersedes DEC-W9-ACCEPTANCE-001 only for W9-CORPACT-011. DEC-W9-ACCEPTANCE-001 remains the historical acceptance record and remains operative for W9-TRUTH-001, W9-DEMO-002, W9-PAPER-003, W9-REPORT-005, and W9-NAV-006; its hold on W9-ALPACA-004 is unchanged. W9-CORPACT-011 returns to in_progress with evidence_posture in_progress and health red because the universal approval lane is unreachable and exit criterion four is unmet. Exit criterion four remains unchanged, and acceptance may be reconsidered only after the approval and posting lane is reachable and the criterion is implemented and evidenced. This decision does not certify a release, move any row to done, or close the P0 release-certification gate in docs/product/implementation-todo-list.md.
+    related_roadmap_items:
+      - W9-CORPACT-011

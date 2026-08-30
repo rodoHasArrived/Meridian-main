@@ -162,7 +162,7 @@ means the capability exists in source with tests but is not the wired operator p
 | Dormant capability (source evidence) | Status | Activation lane |
 | --- | --- | --- |
 | Sided statement-vs-ledger reconciliation matching (`StatementMatchingEngine`, `src/Meridian.FinancialOperations/`) | Supported foundation; live path still uses a weaker per-row check | `W9-INGEST-009` |
-| Institutional bank formats (`Bai2StatementConnector`, `Camt053StatementConnector`, `src/Meridian.FinancialOperations/Reconciliation/Connectors/`) | Supported foundation in source; registry acceptance planned | `W9-INGEST-009` |
+| Institutional bank formats (`Bai2StatementConnector`, `Camt053StatementConnector`, `src/Meridian.FinancialOperations/Reconciliation/Connectors/`) | Supported foundation in source; activation remains `in_progress` in the registry | `W9-INGEST-009` |
 | Client-grade PDF/XLSX rendering (`ClientGradeReportRenderer`, `FinancialReportDocumentRenderer`, `src/Meridian.Documents/`) | Activated; deterministic PDF/XLSX is the certified reporting path, with the bespoke partners-capital layout delivered. Accepted 2026-08-29 (`DEC-W9-ACCEPTANCE-001`) | `W9-REPORT-005` |
 | Unitized NAV, fee accruals with hurdles, European waterfall, preferred return, clawback, equalization (`NavPerUnitCalculator`, `EuropeanDistributionWaterfall`, `PreferredReturnCalculator`, `CarriedInterestClawbackCalculator`, `EqualizationCalculator`, `src/Meridian.Ledger/`) | Activated; ledger-backed economics with golden-file worked examples. Accepted 2026-08-29 (`DEC-W9-ACCEPTANCE-001`) | `W9-NAV-006` |
 | Broker fill streaming into order and ledger state (`AlpacaBrokerageGateway`, `src/Meridian.Execution/`) | Implementation verified complete; held at the 2026-08-29 acceptance review over three recorded caveats on the fill-to-ledger path | `W9-ALPACA-004` |
@@ -170,7 +170,7 @@ means the capability exists in source with tests but is not the wired operator p
 | Kill-switch, cancel-all, and pre-trade notional/collar controls | Partial foundation; WPF safety surfaces must be wired or visibly demoted | `W9-SAFETY-007` |
 | Hash-chained audit for the accounting ledger; route-level authorization; fail-closed tenancy (`AuditChainService` exists for storage; the journal ledger chain and blanket route coverage do not) | Partial foundation | `W9-GOV-008` |
 | Asset accounting event spine with atomic lot posting (`AssetAccountingEventSpineService`, `src/Meridian.FinancialOperations/Ledger/`) | Complete | `W9-ASSET-010` |
-| Corporate action approval and posting lane (`CorporateActionOperationsService` in `src/Meridian.Application/SecurityMaster/CorporateActions/`, `CorporateActionAccountingProjectionService` in `src/Meridian.Instruments/AssetOperations/`, `PostgresCorporateActionOperationsStore` in `src/Meridian.Storage/SecurityMaster/`) | Ingest, case operations, and accounting projection are delivered and accepted; the approval lane is modelled in the contract but unreachable in the shipped implementation, so no case can reach `ReadyForApproval` or any later state | `W9-CORPACT-011` |
+| Corporate action approval and posting lane (`CorporateActionOperationsService` in `src/Meridian.Application/SecurityMaster/CorporateActions/`, `CorporateActionAccountingProjectionService` in `src/Meridian.Instruments/AssetOperations/`, `PostgresCorporateActionOperationsStore` in `src/Meridian.Storage/SecurityMaster/`) | Delivered foundation; acceptance reopened under `DEC-W9-ACCEPTANCE-002` because the approval lane is unreachable and unchanged exit criterion four remains unmet | `W9-CORPACT-011` |
 | Operational Evidence Graph as a shared product surface | Planned; explorer, proof-drawer, and manifest primitives exist | `W5X-OEG-001` |
 
 Rules of the doctrine:
@@ -443,21 +443,30 @@ operational record baseline:
 | --- | --- |
 | `W8-WPF-PARITY-001` | WPF desktop workstation web-UI parity over shared contracts (`docs/development/wpf-web-ui-alignment-plan.md`) |
 | `W8-UX-CONSOL-001` | Browser workstation screen consolidation behind the seven charter roots (retired routes remain redirects) |
+| `W9-SAFETY-007` | Execution-safety controls and visible WPF safety posture |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting and ledger audit |
+| `W9-INGEST-009` | Institutional statement ingestion and deterministic split matching on the live path |
+| `W9-CORPACT-011` | Corporate-action approval and posting completion against unchanged exit criterion four; acceptance reopened by `DEC-W9-ACCEPTANCE-002` |
 
-**Planned** (registry status `planned`): `W5X-OEG-001` (Operational Evidence Graph product
-surface) and the ranked W9 slate:
+**Planned** (registry status `planned`): `W5X-OEG-001` (Operational Evidence Graph product surface).
 
-| Rank | ID | Improvement |
-| --- | --- | --- |
-| 1 | `W9-TRUTH-001` | Loud, fail-closed handling of simulated data and in-memory persistence |
-| 2 | `W9-DEMO-002` | One-command seeded demo on durable storage |
-| 3 | `W9-PAPER-003` | Paper-trading realism: limit/stop matching and trading costs |
-| 4 | `W9-ALPACA-004` | Broker fill streaming into order and ledger state |
-| 5 | `W9-REPORT-005` | Client-grade PDF/XLSX exports and partners-capital statement |
-| 6 | `W9-NAV-006` | Unitized NAV and real fee, waterfall, and capital-call economics |
-| 7 | `W9-SAFETY-007` | Kill-switch cancel-all; fat-finger, notional, and collar rules |
-| 8 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, hash-chained accounting audit |
-| 9 | `W9-INGEST-009` | Institutional file ingestion (CAMT.053/BAI2) and the sided reconciliation matcher on the live path |
+The original ranked W9 first-order slate keeps its adopted order below; the status column records
+current registry state rather than presenting the slate as still planned:
+
+| Rank | ID | Status | Improvement |
+| --- | --- | --- | --- |
+| 1 | `W9-TRUTH-001` | `accepted` | Loud, fail-closed handling of simulated data and in-memory persistence |
+| 2 | `W9-DEMO-002` | `accepted` | One-command seeded demo on durable storage |
+| 3 | `W9-PAPER-003` | `accepted` | Paper-trading realism: limit/stop matching and trading costs |
+| 4 | `W9-ALPACA-004` | `ready_for_acceptance` | Broker fill streaming into order and ledger state |
+| 5 | `W9-REPORT-005` | `accepted` | Client-grade PDF/XLSX exports and partners-capital statement |
+| 6 | `W9-NAV-006` | `accepted` | Unitized NAV and real fee, waterfall, and capital-call economics |
+| 7 | `W9-SAFETY-007` | `in_progress` | Kill-switch cancel-all; fat-finger, notional, and collar rules |
+| 8 | `W9-GOV-008` | `in_progress` | Route-level authorization, fail-closed tenancy, hash-chained accounting audit |
+| 9 | `W9-INGEST-009` | `in_progress` | Institutional file ingestion (CAMT.053/BAI2) and the sided reconciliation matcher on the live path |
+
+`W9-ASSET-010` is `done`. The later-registered `W9-CORPACT-011` is `in_progress` after
+`DEC-W9-ACCEPTANCE-002` reopened its acceptance on corrected evidence.
 
 The W9 ordering is strategy, not backlog trivia: truth before demonstration, honest gates before
 surface, deliverables before breadth, safety and governance never overpromised, trusted intake

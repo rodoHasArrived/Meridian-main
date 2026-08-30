@@ -4,24 +4,27 @@
 **Owner:** Core Team
 **Accepting operator:** `rodoHasArrived` (repository owner)
 **Decided on:** 2026-08-29
-**Registry decision:** `DEC-W9-ACCEPTANCE-001` in
+**Original registry decision:** `DEC-W9-ACCEPTANCE-001` in
 [`docs/roadmap/data/decision-log.yml`](../roadmap/data/decision-log.yml)
+**Reassessment decision:** `DEC-W9-ACCEPTANCE-002` in the same decision log
 
 ## What this record is
 
 The roadmap [status taxonomy](../roadmap/status-taxonomy.md) separates `ready_for_acceptance`
 ("implementation evidence exists, but operator or governance acceptance is not complete") from
-`accepted` ("acceptance evidence exists and is linked from the roadmap item"). Six W9 rows carried
-implementation evidence and had been waiting on an operator decision. This file **is** that
-acceptance evidence: it records the decision, who made it, what was accepted, and what was
-deliberately held back.
+`accepted` ("acceptance evidence exists and is linked from the roadmap item"). On 2026-08-29, six
+W9 rows were accepted under `DEC-W9-ACCEPTANCE-001` and `W9-ALPACA-004` was deliberately held.
+Corrected evidence later showed that `W9-CORPACT-011` had an unmet exit criterion, so the operator
+reopened that row on 2026-08-30 under `DEC-W9-ACCEPTANCE-002`. This file preserves both the original
+decision and the later reassessment: five rows remain accepted, `W9-CORPACT-011` is reopened, and
+the Alpaca hold is unchanged.
 
 It is not a release certification. Acceptance of a bounded roadmap row does not close the P0
 release-certification gate in [`implementation-todo-list.md`](implementation-todo-list.md), and none
 of these rows moves to `done` here — `done` additionally requires the release or status
 documentation each row's lane owns.
 
-## Accepted
+## Currently accepted (five)
 
 | Row | Priority | Accepted on the evidence of |
 | --- | --- | --- |
@@ -30,22 +33,19 @@ documentation each row's lane owns.
 | `W9-PAPER-003` | critical | Shared documented `paper-match/1` matching policy and `paper-cost/1` cost model, the FsCheck-backed envelope regression suite, and promotion evidence recording both model versions. |
 | `W9-REPORT-005` | high | Deterministic client-presentable PDF/XLSX with retained hash and provenance manifests, plus the bespoke partners-capital layout tied to ledger-backed NAV. |
 | `W9-NAV-006` | high | Unitized NAV per share class with an auditable movement-level trail, the fee/waterfall/commitment kernels, and the golden-file worked-example pack computed independently of the implementation. |
-| `W9-CORPACT-011` | high | Durable corporate action case processing with a persisted provider release gate rechecked at acceptance, idempotent actor-attributed transitions, immutable journals with correction lineage, and golden ledger and price-adjustment coverage. **See the approval-lane limitation below, found after this decision was taken.** |
 
-Each accepted row links this file as acceptance evidence and moves to `status: accepted`. Five of the
-six carry `evidence_posture: complete` and `health: green`. **`W9-CORPACT-011` carries
-`implementation_complete` and `health: yellow` instead**, because of the approval-lane limitation
-recorded below — found after this decision was taken. `yellow` is the taxonomy's value for an
-unresolved acceptance gap; `green` asserts no known blocker for the current target, which an unmet
-exit criterion contradicts. Any summary that reports a single posture or a single health value for
-all six rows contradicts the registry, which owns live status.
+Each of these five accepted rows links this file as acceptance evidence and carries
+`evidence_posture: complete` and `health: green`. `DEC-W9-ACCEPTANCE-001` originally accepted
+`W9-CORPACT-011` as a sixth row, but `DEC-W9-ACCEPTANCE-002` supersedes that disposition for that row
+only after the corrected approval-lane evidence described below. The registry remains live status.
 
-### Accepted with a noted operating envelope
+### Original operating envelope recorded with `DEC-W9-ACCEPTANCE-001`
 
-`W9-CORPACT-011` is accepted on the explicit understanding that **unsupported and policy-dependent
-corporate-action branches remain deliberate blocked outcomes**. Meridian does not coerce them into a
-generic sale or exchange, and a blocked case is a valid terminal state rather than a defect. That
-posture is the intended operating envelope, not a gap to be closed by widening the taxonomy.
+`DEC-W9-ACCEPTANCE-001` originally accepted `W9-CORPACT-011` on the explicit understanding that
+**unsupported and policy-dependent corporate-action branches remain deliberate blocked outcomes**.
+Meridian does not coerce them into a generic sale or exchange, and a blocked case is a valid terminal
+state rather than a defect. That posture remains the intended operating envelope, but it did not
+cover the universal approval-lane gap found after the decision.
 
 ### Correction — approval lane unreachable, found after this decision
 
@@ -68,19 +68,25 @@ posting half of that is modelled in the contract but is not reachable in the shi
 No case can therefore reach `ReadyForApproval`, `Approved`, `Scheduled`, `Posted`, `Reconciled`,
 `Reported`, or `Closed`. Exit criterion four — which describes posting refused without approved
 policy coverage, an open period, balanced journals, and required maker-checker approval — is not met
-by the shipped implementation, since posting cannot occur at all. The row's `evidence_posture` is
-therefore corrected from `complete` to `implementation_complete`.
+by the shipped implementation, since posting cannot occur at all. The initial post-decision
+correction lowered the row from `complete` to `implementation_complete`; the operator reassessment
+below reopens the row because the missing lane is implementation work, not acceptance paperwork.
 
 This is a **universal workflow gap**, categorically different from the unsupported-branch reservation
 above: that one reserves specific action types as blocked outcomes by design, whereas this blocks the
 approval lane for every case regardless of action type. The reservation above does not cover it.
 
-The block itself is deliberate and defensively implemented — it is honest engineering, not a bug. What
-was wrong was the roadmap summary presenting the lane as delivered. **The operator may wish to revisit
-this acceptance**, since the caveat is closer in kind to the ones that led `W9-ALPACA-004` to be held
-than to the branch reservation on which this row was accepted. The status is left at `accepted`
-because reversing a recorded operator decision is not the reviewer's call; the record is corrected so
-that the decision can be revisited on accurate information.
+The block itself is deliberate and defensively implemented — it is honest engineering, not a bug.
+What was wrong was the roadmap summary presenting the lane as delivered.
+
+## Reopened on corrected evidence
+
+On 2026-08-30, the operator adopted `DEC-W9-ACCEPTANCE-002`, which supersedes
+`DEC-W9-ACCEPTANCE-001` **only for `W9-CORPACT-011`**. The row returns to `status: in_progress`,
+`evidence_posture: in_progress`, and `health: red`. Exit criterion four remains unchanged, and
+acceptance remains open until the approval and posting lane is reachable and the criterion is
+implemented and evidenced. The other five acceptances recorded above remain in force, and the
+`W9-ALPACA-004` hold below is unchanged.
 
 ## Held back
 

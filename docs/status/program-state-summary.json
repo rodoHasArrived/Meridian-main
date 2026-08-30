@@ -2,7 +2,7 @@
   "schemaVersion": "program-state-summary/v3",
   "programSource": "docs/roadmap/data/program-state.yml",
   "roadmapSource": "docs/roadmap/data/roadmap-items.yml",
-  "snapshotDate": "2026-08-29",
+  "snapshotDate": "2026-08-30",
   "program": {
     "id": "meridian-program",
     "title": "Meridian Evidence-Backed Investment Operations",
@@ -13,6 +13,7 @@
       "Portfolio and accounting reconciliation",
       "Accounting records",
       "Approvals",
+      "Corporate-action approval and posting completion against unchanged W9-CORPACT-011 exit criterion four",
       "Governed report packs",
       "Operational record workflow backed by shared services and contracts, delivered across both the browser workstation and the reactivated WPF desktop workstation",
       "WPF desktop workstation reactivation and web-UI parity over shared contracts and read models",
@@ -399,13 +400,13 @@
       "Wave": "W9",
       "Title": "Durable corporate action case processing and accounting projection",
       "Workspaces": "Accounting; Portfolio; Data",
-      "Status": "accepted",
-      "Health": "yellow",
+      "Status": "in_progress",
+      "Health": "red",
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
-      "Evidence Posture": "implementation_complete",
+      "Evidence Posture": "in_progress",
       "Evidence": "docs/product/w9-operator-acceptance-2026-08-29.md; docs/domain/corporate-action-case.md; src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs; src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs; src/Meridian.Instruments/AssetOperations/CorporateActionAccountingProjectionService.cs; src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs; src/Meridian.Storage/SecurityMaster/Migrations/030_security_master_corporate_action_operations.sql; src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsServiceTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionIngestOrchestratorTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionGoldenLedgerTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsContractTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsMigrationTests.cs; tests/Meridian.Backtesting.Tests/CorporateActionGoldenAdjustmentTests.cs",
-      "Last Reviewed": "2026-08-29"
+      "Last Reviewed": "2026-08-30"
     },
     {
       "ID": "W10-DEBT-001",
