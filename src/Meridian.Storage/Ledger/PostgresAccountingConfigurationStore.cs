@@ -272,6 +272,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
     }
 
     private sealed record AccountingAuditChainHead(
+        int SchemaVersion,
         long NextSequence,
         string? LastHash,
         long GenesisSequence,
@@ -286,7 +287,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            select next_sequence,
+            select schema_version,
+                   next_sequence,
                    last_hash,
                    genesis_sequence,
                    pre_chain_event_count
@@ -309,10 +311,11 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         }
 
         return new AccountingAuditChainHead(
-            reader.GetInt64(0),
-            reader.IsDBNull(1) ? null : reader.GetString(1),
-            reader.GetInt64(2),
-            reader.GetInt64(3));
+            reader.GetInt32(0),
+            reader.GetInt64(1),
+            reader.IsDBNull(2) ? null : reader.GetString(2),
+            reader.GetInt64(3),
+            reader.GetInt64(4));
     }
 
     /// <summary>
@@ -329,6 +332,21 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         AccountingAuditChainHead head,
         CancellationToken ct)
     {
+        // Before anything is compared: a chain written under hashing rules this build does not
+        // implement cannot be checked by it. The head records schema_version for exactly this, and
+        // the file posture already refuses on it -- here it was selected by nobody, so a v2 chain
+        // would have been verified with v1 rules, reported EventMutated over events nobody touched,
+        // and, had it passed, taken a v1 link on top of a v2 history that no build could verify
+        // again. Refusing is the whole purpose of the column.
+        if (head.SchemaVersion != AccountingAuditChainState.CurrentSchemaVersion)
+        {
+            throw ChainFailure(
+                AccountingAuditChainStatus.UnsupportedSchemaVersion,
+                head,
+                $"Chain schema version {head.SchemaVersion.ToString(CultureInfo.InvariantCulture)} "
+                + $"is not version {AccountingAuditChainState.CurrentSchemaVersion.ToString(CultureInfo.InvariantCulture)}.");
+        }
+
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =

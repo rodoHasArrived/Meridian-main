@@ -317,6 +317,36 @@ public sealed class AccountingConfigurationPostgresStoreTests
             .Which.Message.Should().Contain("different content");
     }
 
+    [LedgerDatabaseFact]
+    public async Task AuditStore_RefusesToAppendOntoAChainWrittenByANewerSchema()
+    {
+        // The head records schema_version so a build that cannot implement a chain's hashing rules
+        // refuses rather than guesses. The file posture already did; here the column was selected by
+        // nobody, so a v2 chain would have been checked with v1 rules -- reporting EventMutated over
+        // events nobody touched, or, worse, accepting and laying a v1 link on a v2 history that no
+        // build could ever verify again.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        await database.AccountingConfigurationStore.AppendAsync(AuditEvent("configuration.activate"));
+
+        await database.SetAuditChainSchemaVersionAsync(AccountingAuditChainState.CurrentSchemaVersion + 1);
+
+        var append = async () => await database.AccountingConfigurationStore
+            .AppendAsync(AuditEvent("chart.upsert"));
+
+        var refusal = await append.Should().ThrowAsync<AccountingAuditChainIntegrityException>();
+        refusal.Which.Verification.Status.Should()
+            .Be(AccountingAuditChainStatus.UnsupportedSchemaVersion);
+
+        // Nothing was written, and the events that were already there are untouched.
+        (await database.AccountingConfigurationStore.ListAsync("fund-alpha")).Should().ContainSingle();
+
+        // Restoring the supported version lets the chain continue, so the refusal is a gate rather
+        // than a permanent stop.
+        await database.SetAuditChainSchemaVersionAsync(AccountingAuditChainState.CurrentSchemaVersion);
+        await database.AccountingConfigurationStore.AppendAsync(AuditEvent("chart.upsert"));
+        (await database.AccountingConfigurationStore.ListAsync("fund-alpha")).Should().HaveCount(2);
+    }
+
     private static AccountingActionAuditEventDto AuditEvent(string action)
         => new(
             AuditEventId: Guid.NewGuid(),
