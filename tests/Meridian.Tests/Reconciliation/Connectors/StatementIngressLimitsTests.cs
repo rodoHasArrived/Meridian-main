@@ -375,6 +375,45 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
+    public async Task Csv_MalformedRows_AreNotChargedToTheLineBudgetThroughTheRecordCap()
+    {
+        // The sibling above proved rejected rows are not charged to MaxRecords directly. They were still
+        // charged to it indirectly: the line budget was MaxRecords * 2 + 4, so at MaxRecords = 1 a header,
+        // one valid row and five unparseable ones is seven lines against a cap of six and the file was
+        // refused as STATEMENT_TOO_MANY_LINES - while the parse it would have produced retains exactly one
+        // record and five diagnostics, both inside their own bounds. The line budget is MaxDocumentLines
+        // now, so nothing about a rejected row reaches the record allowance by any route.
+        var connector = new CsvStatementConnector(
+            Catalog(),
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1, MaxLineBytes = 4096 });
+        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,not-a-date\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,also-bad\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,still-bad\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,bad-again\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,worse-yet\n";
+
+        var result = await connector.ParseAsync(
+            new StatementSourceDocument("mixed-tight.csv", Encoding.UTF8.GetBytes(csv)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyLinesCode);
+        result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.Records.Should().ContainSingle("only the well-formed row becomes a canonical record");
+    }
+
+    [Fact]
+    public void CsvLineBudget_IsItsOwnLimitRatherThanARecordMultiple()
+    {
+        // Pins the separation itself, the way the BAI2 twin does: the line budget must not move when the
+        // record allowance does, or the derivation creeps back in.
+        var tightRecords = StatementIngressLimits.Default with { MaxRecords = 10 };
+        var looseRecords = StatementIngressLimits.Default with { MaxRecords = 1_000_000 };
+
+        tightRecords.MaxDocumentLines.Should().Be(looseRecords.MaxDocumentLines);
+    }
+
+    [Fact]
     public async Task Camt_AttributeHeavyEntry_IsCountedAgainstTheSubtreeBudget()
     {
         // The node budget counted one node per reader Read(), and attributes are not their own Read().
@@ -466,8 +505,11 @@ public sealed class StatementIngressLimitsTests : IDisposable
         // does not dominate, which is the ordinary case at real limits - Csv_RecordsOverCap_AreRefused
         // covers exactly that, and at the default cap a 300,000-row file stays far inside hardLineCap.
         var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
-        var connector = new CsvStatementConnector(catalog, StatementIngressLimits.Default with { MaxRecords = 3 });
-        // 40 data rows against a cap of 3 - well past the bound on nonblank lines, header included.
+        var connector = new CsvStatementConnector(
+            catalog,
+            StatementIngressLimits.Default with { MaxRecords = 3, MaxDocumentLines = 10 });
+        // 41 lines against a line budget of 10. The budget is set explicitly because it is no longer
+        // derived from MaxRecords - deriving it charged rows the mapper rejects to the record allowance.
         var rows = string.Join("\n", Enumerable.Range(0, 40).Select(row =>
             $"FUND-A,AAPL,1,1.00,-1.00,BUY,2026-06-02,2026-06-04,USD,0,T-{row}"));
         var payload = Encoding.UTF8.GetBytes(
@@ -2572,7 +2614,9 @@ public sealed class StatementIngressLimitsTests : IDisposable
         // entry, so a document can breach the allocation bound while carrying almost no records -
         // reporting that as STATEMENT_TOO_MANY_RECORDS told the operator something untrue. Row numbers
         // are physical line indices, so the blanks cannot simply be dropped to dodge the bound.
-        var connector = new CsvStatementConnector(Catalog(), TightLimits with { MaxRecords = 2 });
+        var connector = new CsvStatementConnector(
+            Catalog(),
+            TightLimits with { MaxRecords = 2, MaxDocumentLines = 8 });
         var padded = "date,amount,description\n2026-05-01,10.00,one\n" + new string('\n', 32);
 
         var result = await connector.ParseAsync(

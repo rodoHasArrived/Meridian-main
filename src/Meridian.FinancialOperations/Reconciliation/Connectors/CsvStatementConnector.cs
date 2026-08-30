@@ -79,14 +79,19 @@ public sealed class CsvStatementConnector(
         }
 
         var content = Encoding.UTF8.GetString(document.Content.Span);
-        // Bound line discovery itself, not just the rows mapped from it, on both axes. The hard line cap
-        // is deliberately loose - the record bound, a header, the terminal empty segment a trailing
-        // newline leaves, and an equal allowance for interspersed blank lines - because it exists to cap
-        // allocation, not to decide acceptance. Acceptance is decided below on nonblank lines, so an
-        // ordinary file carrying exactly the permitted rows plus a header and a trailing newline is not
-        // refused by an off-by-a-couple line count. The two bounds report under different codes: they are
-        // different claims about the file, and conflating them misreports one as the other.
-        var hardLineCap = _ingressLimits.MaxRecords * 2 + 4;
+        // Its own bound, not a MaxRecords derivation. This was MaxRecords * 2 + 4, and the allowance was
+        // built to cover a header, the terminal empty segment a trailing newline leaves, and an equal
+        // number of blank lines - but it still scaled with the record cap, so rejected rows were charged
+        // to the record allowance one step removed. MapRecord rejects rows: a header, one valid row and
+        // five unparseable ones is seven lines against a cap of six at MaxRecords = 1, refused, though the
+        // parse retains one record and five diagnostics and both sit well inside their bounds.
+        //
+        // No multiplier fixes that, for the reason the BAI2 path already records: lines-per-record has no
+        // upper bound, because a legal file may hold any number of rows that map to nothing. Deriving from
+        // MaxRecords + MaxDiagnostics fails too, since a blank line is neither. So this is MaxDocumentLines,
+        // the budget that owns raw lines, set far above any real statement and biting only on abuse - and
+        // it reports STATEMENT_TOO_MANY_LINES, a different claim about the file than record overflow.
+        var hardLineCap = _ingressLimits.MaxDocumentLines;
         var lines = CsvLineSplitter.SplitLines(
             content, hardLineCap, _ingressLimits.MaxLineBytes, out var lineTooLong);
 
@@ -99,8 +104,8 @@ public sealed class CsvStatementConnector(
         // a cheap early refusal, but it predicted one canonical record per nonblank line, and MapRecord
         // rejects rows: a file of one valid row and three malformed ones retains a single record and three
         // diagnostics, both well inside their bounds, yet that precheck refused it as record overflow.
-        // Allocation is bounded without predicting anything - hardLineCap below bounds line discovery, the
-        // mapping loop bounds records as it appends them, and MaxDiagnostics bounds what rejected rows
+        // Allocation is bounded without predicting anything - MaxDocumentLines above bounds line discovery,
+        // the mapping loop bounds records as it appends them, and MaxDiagnostics bounds what rejected rows
         // retain - so the bound that fires is the one whose message is true of the file.
 
         // Reported separately from the record bound, because they are not the same statement about the
