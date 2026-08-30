@@ -196,7 +196,6 @@ public sealed class FileAccountingConfigurationStore :
     /// held outside the snapshot, because this store replaces the whole document on every write: a
     /// head stored inside it would be removed by the same replacement that removed the events, and
     /// what remained would verify perfectly. See <see cref="FileAccountingAuditChainAnchor"/>.</para>
-    /// </remarks>
     /// <para>Idempotent on <see cref="AccountingActionAuditEventDto.AuditEventId"/>: an append whose
     /// event is already retained does nothing. This is not a convenience. The chain requires each
     /// link to claim a distinct event, so a second append of one id produces a history that can
@@ -204,6 +203,7 @@ public sealed class FileAccountingConfigurationStore :
     /// <c>RecoverPendingAuditAsync</c> does after a crash between the mutation and its audit. That
     /// recovery has a pre-check of its own, but it asks a filtered read, so a normalization or scope
     /// difference makes it miss; only the store sees the whole history.</para>
+    /// </remarks>
     /// <exception cref="AccountingAuditChainIntegrityException">The retained chain does not verify.</exception>
     public async Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default)
     {
@@ -214,30 +214,6 @@ public sealed class FileAccountingConfigurationStore :
         await UpdateSnapshotAsync<AccountingAuditChainLink?>(
             async (snapshot, token) =>
             {
-                var retained = snapshot.AuditEvents
-                    .FirstOrDefault(item => item.AuditEventId == normalized.AuditEventId);
-                if (retained is not null)
-                {
-                    // Same id, same content: a repeat of an append that already landed. Returning
-                    // the snapshot unchanged leaves the chain exactly as it was, which is what a
-                    // retry of a completed operation should do.
-                    if (string.Equals(
-                            AccountingAuditChain.ComputePayloadHash(retained),
-                            AccountingAuditChain.ComputePayloadHash(normalized),
-                            StringComparison.Ordinal))
-                    {
-                        return (snapshot, null);
-                    }
-
-                    // Same id, different content: two distinct events claiming one identity. Both
-                    // available answers are bad — appending breaks verification permanently, and
-                    // dropping it loses an audit record — so neither is taken silently.
-                    throw new InvalidOperationException(
-                        $"Audit event '{normalized.AuditEventId.ToString("D", CultureInfo.InvariantCulture)}' "
-                        + "is already retained with different content. Appending it would leave two links "
-                        + "claiming one event and the chain could never verify again.");
-                }
-
                 // Read the head under the store gate: reading it beforehand would race this store's
                 // own write. A concurrent writer in another process is caught by the anchor itself,
                 // which refuses a sequence that does not advance the journal.
@@ -264,6 +240,34 @@ public sealed class FileAccountingConfigurationStore :
                     && verification.Status != AccountingAuditChainStatus.InterruptedAppend)
                 {
                     throw new AccountingAuditChainIntegrityException(verification);
+                }
+
+                // Deliberately after the verification above, matching the PostgreSQL posture. A
+                // repeat is a no-op, but reporting success for one on a chain that does not verify
+                // would answer "appended" about a store whose history is broken -- and this method
+                // fails closed, which has to mean before every outcome, not just the writing ones.
+                var retained = snapshot.AuditEvents
+                    .FirstOrDefault(item => item.AuditEventId == normalized.AuditEventId);
+                if (retained is not null)
+                {
+                    // Same id, same content: a repeat of an append that already landed. Returning
+                    // the snapshot unchanged leaves the chain exactly as it was, which is what a
+                    // retry of a completed operation should do.
+                    if (string.Equals(
+                            AccountingAuditChain.ComputePayloadHash(retained),
+                            AccountingAuditChain.ComputePayloadHash(normalized),
+                            StringComparison.Ordinal))
+                    {
+                        return (snapshot, null);
+                    }
+
+                    // Same id, different content: two distinct events claiming one identity. Both
+                    // available answers are bad -- appending breaks verification permanently, and
+                    // dropping it loses an audit record -- so neither is taken silently.
+                    throw new InvalidOperationException(
+                        $"Audit event '{normalized.AuditEventId.ToString("D", CultureInfo.InvariantCulture)}' "
+                        + "is already retained with different content. Appending it would leave two links "
+                        + "claiming one event and the chain could never verify again.");
                 }
 
                 // First chained append on a history that predates chaining: record how many events

@@ -504,6 +504,25 @@ public sealed class FileAccountingAuditChainTests : IDisposable
     }
 
     [Fact]
+    public async Task AppendAsync_StillRefusesARepeatWhenTheRetainedChainDoesNotVerify()
+    {
+        // The idempotency check sits after verification on purpose. A repeat writes nothing, but
+        // answering "appended" for one on a history that no longer verifies would report success
+        // about a broken store -- and this method fails closed, which has to hold for every outcome
+        // rather than only the writing ones.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var auditEvent = AuditEvent("post-journal");
+        await store.AppendAsync(auditEvent);
+        await store.AppendAsync(AuditEvent("close-period"));
+
+        MutateSnapshot(snapshot => snapshot["auditEvents"]!.AsArray()[0]!["actor"] = "someone-else");
+
+        var repeat = async () => await store.AppendAsync(auditEvent);
+
+        await repeat.Should().ThrowAsync<AccountingAuditChainIntegrityException>();
+    }
+
+    [Fact]
     public async Task AppendAsync_RefusesTwoDifferentEventsSharingOneId()
     {
         // Not a retry. Appending would break verification permanently and dropping it would lose an
