@@ -229,6 +229,16 @@ public partial class App : System.Windows.Application
             return;
         }
 
+        // Guards that can refuse this composition run before the shell exists, not behind it.
+        // MainWindow.OnWindowLoaded navigates to the fund-profile page and loads workspaces as soon
+        // as the window is shown, so showing first would put the very posture a guard rejects in
+        // front of the operator until teardown finished.
+        await RunStartupGuardsAsync();
+        if (_startupRefused)
+        {
+            return;
+        }
+
         // Create and show MainWindow from DI (replaces StartupUri)
         var mainWindow = Services.GetRequiredService<MainWindow>();
         Current.MainWindow = mainWindow;
@@ -530,9 +540,19 @@ public partial class App : System.Windows.Application
     }
 
     /// <summary>
-    /// Performs async initialization with proper exception handling.
+    /// Runs the startup work that can refuse this composition, before any shell exists.
     /// </summary>
-    private async Task SafeOnStartupAsync(CancellationToken ct = default)
+    /// <remarks>
+    /// Separated from <see cref="SafeOnStartupAsync"/> so the guards run ahead of
+    /// <c>MainWindow.Show()</c> rather than behind it. A refusal decides that this composition may
+    /// serve nothing at all, and a shell shown first is a shell the operator can use:
+    /// <c>MainWindow.OnWindowLoaded</c> navigates to the fund-profile page, starts the shell view
+    /// model and loads workspaces as soon as the window is shown, so the prohibited posture would
+    /// be live and interactive for however long the guard and the teardown behind it take. Checking
+    /// the refusal flag after the fact only prevents the later visibility recovery; it cannot
+    /// un-serve what was already on screen.
+    /// </remarks>
+    private async Task RunStartupGuardsAsync(CancellationToken ct = default)
     {
         try
         {
@@ -543,9 +563,27 @@ public partial class App : System.Windows.Application
             await InitializeConfigurationAsync();
 
             // Start hosted services registered through shared composition, including
-            // database-backed projection, outbox, and worker services.
+            // database-backed projection, outbox, and worker services. The startup guards run
+            // here, which is why this phase precedes the window.
             await StartHostServicesAsync(ct);
+        }
+        catch (Exception ex) when (Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal(ex))
+        {
+            HandleStartupRefusal(ex);
+        }
+        catch (Exception ex)
+        {
+            await HandleStartupFailureAsync(ex);
+        }
+    }
 
+    /// <summary>
+    /// Performs async initialization with proper exception handling.
+    /// </summary>
+    private async Task SafeOnStartupAsync()
+    {
+        try
+        {
             // Initialize theme service
             if (Current.MainWindow is MainWindow mainWindow)
             {
@@ -586,43 +624,58 @@ public partial class App : System.Windows.Application
         }
         catch (Exception ex) when (Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal(ex))
         {
-            // A guard refused this composition. Every other startup fault below is recoverable
-            // enough to carry on with a degraded shell; this one is not, because carrying on is
-            // precisely what the guard forbade. Reported through a modal dialog rather than the
-            // notification service: a toast on an application that is closing is not seen, and the
-            // operator needs the remediation text.
-            _startupRefused = true;
-            WpfServices.LoggingService.Instance.LogError(
-                "Application startup refused by a startup guard; shutting down", ex);
-
-            // The guard's own message, not the wrapper's. A refusal reaching here inside an
-            // AggregateException would otherwise put "One or more errors occurred" in front of the
-            // operator instead of the remediation text, which is the one thing the dialog is for.
-            // The outer exception is still what gets logged, because it carries the context.
-            var refusal = Meridian.Ui.Shared.Services.HostStartupEscalation.TryFindRefusal(ex);
-            System.Windows.MessageBox.Show(
-                refusal?.Message ?? ex.Message,
-                "Meridian cannot start",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-            Shutdown();
+            HandleStartupRefusal(ex);
         }
         catch (Exception ex)
         {
-            WpfServices.LoggingService.Instance.LogError("Error during application startup", ex);
+            await HandleStartupFailureAsync(ex);
+        }
+    }
 
-            try
-            {
-                await WpfServices.NotificationService.Instance.NotifyErrorAsync(
-                    "Startup Error",
-                    ex.Message);
-            }
-            catch (Exception notificationEx)
-            {
-                WpfServices.LoggingService.Instance.LogError(
-                    "Failed to display startup error notification",
-                    notificationEx);
-            }
+    /// <summary>
+    /// Records a startup refusal, tells the operator why, and takes the shell down.
+    /// </summary>
+    /// <remarks>
+    /// A guard refused this composition. Every other startup fault is recoverable enough to carry
+    /// on with a degraded shell; this one is not, because carrying on is precisely what the guard
+    /// forbade. Reported through a modal dialog rather than the notification service: a toast on an
+    /// application that is closing is not seen, and the operator needs the remediation text.
+    /// </remarks>
+    private void HandleStartupRefusal(Exception ex)
+    {
+        _startupRefused = true;
+        WpfServices.LoggingService.Instance.LogError(
+            "Application startup refused by a startup guard; shutting down", ex);
+
+        // The guard's own message, not the wrapper's. A refusal reaching here inside an
+        // AggregateException would otherwise put "One or more errors occurred" in front of the
+        // operator instead of the remediation text, which is the one thing the dialog is for.
+        // The outer exception is still what gets logged, because it carries the context.
+        var refusal = Meridian.Ui.Shared.Services.HostStartupEscalation.TryFindRefusal(ex);
+        System.Windows.MessageBox.Show(
+            refusal?.Message ?? ex.Message,
+            "Meridian cannot start",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+        Shutdown();
+    }
+
+    /// <summary>Reports a recoverable startup fault and carries on with a degraded shell.</summary>
+    private static async Task HandleStartupFailureAsync(Exception ex)
+    {
+        WpfServices.LoggingService.Instance.LogError("Error during application startup", ex);
+
+        try
+        {
+            await WpfServices.NotificationService.Instance.NotifyErrorAsync(
+                "Startup Error",
+                ex.Message);
+        }
+        catch (Exception notificationEx)
+        {
+            WpfServices.LoggingService.Instance.LogError(
+                "Failed to display startup error notification",
+                notificationEx);
         }
     }
 

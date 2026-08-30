@@ -116,7 +116,19 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
             .ConfigureAwait(false);
         if (retainedAudit.Any(item => item.AuditEventId == auditEvent.AuditEventId))
         {
-            // Both sides landed; only the clear was lost.
+            // Both sides landed; only the clear was lost -- but "an event with this id is retained"
+            // is not the same claim as "this event is retained". Sharing an id with a different
+            // payload means two distinct events claim one identity, and the marker holds the only
+            // copy of the one that was actually declared, so clearing on the id alone would discard
+            // it and report success (Codex review finding on PR #2871).
+            //
+            // Established by replaying the append rather than by comparing here: both postures
+            // already decide equivalence over the event as they normalize and store it, which
+            // trims and nulls blank text. A digest taken in this service would differ from theirs
+            // for events they consider identical, and would raise incidents over whitespace. The
+            // append writes nothing when the payloads match and names the collision when they do
+            // not, which is exactly the check this branch was missing.
+            await _auditStore.AppendAsync(auditEvent, ct).ConfigureAwait(false);
             await _pendingAuditMarkers.ClearAsync(auditEvent.AuditEventId, ct).ConfigureAwait(false);
             return new AccountingAuditRecoveryResult(
                 AccountingAuditRecoveryOutcome.AlreadyAudited, auditEvent.AuditEventId);

@@ -50,10 +50,20 @@ extend to a governance guard. When `Meridian.Ui.Shared.Services.HostStartupEscal
 matches the fault -- any `Meridian.Application.Composition.StartupRefusedException`, including one
 wrapped in an aggregate -- the shell reports it in a modal dialog carrying the guard's remediation
 text and shuts down, because continuing is precisely what the guard forbade. A toast is not used: an
-application that is closing does not show one. `OnStartup` stops short of re-showing the main window
-once a refusal has begun teardown. The guards that reach this path today are ADR-019's
+application that is closing does not show one. The guards that reach this path today are ADR-019's
 `ProductionRegistrationGuardService` and W9-GOV-008's `InMemoryFundStructureTenancyGuard`; do not
 reintroduce a blanket catch around host startup that swallows them.
+
+**The guard phase runs before the shell exists.** `App.RunStartupGuardsAsync` -- first-run setup,
+configuration, and host start, which is where the guards run -- is awaited in `OnStartup` *before*
+`MainWindow` is resolved or shown, and a refusal returns without constructing it. Keep that order.
+`MainWindow.OnWindowLoaded` navigates to the fund-profile page, starts the shell view model, and
+loads workspaces as soon as the window is shown, so showing first would leave the operator an
+interactive shell backed by exactly the posture the guard rejects for as long as the guard and the
+teardown behind it take. Checking the refusal flag afterwards only suppresses the later visibility
+recovery; it cannot un-serve what was already on screen. `SafeOnStartupAsync` keeps the phase that
+genuinely needs a window -- theme, tray, connection monitoring, background services -- and its own
+refusal catch as defence in depth.
 
 Application startup now shows `StartupWindow` before the main shell. After authentication, the main shell defaults to `HomeWorkspace`, a source-backed WPF launch checkpoint that groups provider health, data freshness, reconciliation, approvals, accounting/reporting readiness, and recent activity before operators enter deeper task workspaces. The startup view model validates
 credentials through the Identity-owned `UserProfileRegistry` and `LoginSessionService`, keeps the

@@ -283,6 +283,37 @@ public sealed class AppServiceRegistrationTests
         source.Should().Contain("host.StopAsync(cts.Token)");
     }
 
+    [Fact]
+    public void AppStartup_ShouldRunRefusalGuardsBeforeShowingTheMainWindow()
+    {
+        // Seventh Codex review round on PR #2871. MainWindow.OnWindowLoaded navigates to the
+        // fund-profile page, starts the shell view model and loads workspaces as soon as the window
+        // is shown, so a guard that runs after Show() leaves the very posture it rejects live and
+        // interactive until teardown finishes -- and checking the refusal flag afterwards only
+        // suppresses the later visibility recovery, it cannot un-serve what was already on screen.
+        //
+        // Asserted over the source, like the host-ordering test above, because OnStartup owns
+        // process lifetime and ends in Shutdown(): there is no way to drive it from a test host.
+        var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\App.xaml.cs"));
+
+        var guards = source.IndexOf("await RunStartupGuardsAsync();", StringComparison.Ordinal);
+        var resolveWindow = source.IndexOf("Services.GetRequiredService<MainWindow>();", StringComparison.Ordinal);
+        var showWindow = source.IndexOf("mainWindow.Show();", StringComparison.Ordinal);
+
+        guards.Should().BeGreaterThanOrEqualTo(0, "the guard phase must be its own awaited step in OnStartup");
+        resolveWindow.Should().BeGreaterThanOrEqualTo(0);
+        showWindow.Should().BeGreaterThanOrEqualTo(0);
+
+        guards.Should().BeLessThan(
+            resolveWindow, "a composition a guard refuses must not even construct the shell");
+        guards.Should().BeLessThan(
+            showWindow, "a composition a guard refuses must never be shown to an operator");
+
+        // Only call sites are compared. StartHostServicesAsync -- where the guards actually run --
+        // is invoked from RunStartupGuardsAsync, whose body sits further down the file than
+        // OnStartup, so its source offset says nothing about when it runs.
+    }
+
     private static ServiceProvider BuildServiceProvider()
     {
         RunMatUiAutomationFacade.EnsureApplicationResources();

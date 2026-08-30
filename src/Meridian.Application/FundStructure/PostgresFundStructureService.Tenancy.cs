@@ -239,10 +239,17 @@ public sealed partial class PostgresFundStructureService
     /// </summary>
     /// <remarks>
     /// <para>Every populated parent, not any of them. An account may carry a fund, an entity, a
-    /// sleeve and a vehicle at once, and a caller-visible entity does not make a foreign fund
-    /// theirs: accepting on the first visible parent would let an account that belongs to another
-    /// tenant's fund through on the strength of an unrelated reference the caller happens to
-    /// share.</para>
+    /// sleeve, a vehicle and an investment portfolio at once, and a caller-visible entity does not
+    /// make a foreign fund theirs: accepting on the first visible parent would let an account that
+    /// belongs to another tenant's fund through on the strength of an unrelated reference the
+    /// caller happens to share.</para>
+    ///
+    /// <para><b>The portfolio counts as a parent.</b> It is the one reference that is not a
+    /// <see cref="Guid"/> on the DTO, and leaving it out made this refuse accounts whose only
+    /// structural reference is a portfolio the caller can see -- a shape
+    /// <c>CreateAccountRequest</c> supports and <c>FilterAccountsByScope</c> already resolves
+    /// alongside the other four. A blank or non-GUID <c>PortfolioId</c> is a free-text reference
+    /// rather than a node, so it neither counts as populated nor has to resolve.</para>
     ///
     /// <para>An account with no parent at all is not within anyone's scope either: there is nothing
     /// to derive ownership from, and inventing it is the judgement this service quarantines rather
@@ -267,7 +274,10 @@ public sealed partial class PostgresFundStructureService
             ParentInScope(account.FundId, snap.Funds)
             & ParentInScope(account.EntityId, snap.Entities)
             & ParentInScope(account.SleeveId, snap.Sleeves)
-            & ParentInScope(account.VehicleId, snap.Vehicles);
+            & ParentInScope(account.VehicleId, snap.Vehicles)
+            & ParentInScope(
+                TryParseGuid(account.PortfolioId, out var portfolioId) ? portfolioId : null,
+                snap.InvestmentPortfolios);
 
         return allInScope && populated > 0;
     }

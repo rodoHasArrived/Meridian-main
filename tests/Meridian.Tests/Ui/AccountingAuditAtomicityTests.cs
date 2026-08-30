@@ -350,6 +350,52 @@ public sealed class AccountingAuditAtomicityTests : IDisposable
         (await store.VerifyAuditChainAsync()).IsValid.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task AMarkerWhoseEventIsAlreadyRetained_IsClearedAsAlreadyAudited()
+    {
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            FileAccountingAuditPendingMarkerStore.MarkerPathFor(SnapshotPath));
+
+        // Both sides landed and only the clear was lost: the retained event is the declared one.
+        var declared = AuditEvent();
+        await store.AppendAsync(declared);
+        await markers.WriteAsync(new AccountingAuditPendingMarker(declared, DateTimeOffset.UtcNow));
+
+        var recovery = await CreateService(store, store, markers).RecoverPendingAuditAsync();
+
+        recovery.Outcome.Should().Be(AccountingAuditRecoveryOutcome.AlreadyAudited);
+        recovery.AuditEventId.Should().Be(declared.AuditEventId);
+        (await markers.ReadAsync()).Should().BeNull("a resolved marker must not re-fire");
+        (await store.ListAsync("fund-alpha")).Should().ContainSingle(
+            "replaying an event that is already retained must not duplicate it");
+        (await store.VerifyAuditChainAsync()).IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AnEventRetainedUnderThePendingIdWithDifferentContent_IsNotClearedAsAlreadyAudited()
+    {
+        // Seventh Codex review round. Recovery decided "already audited" from the event id alone,
+        // so a retained event that shared the id but not the content cleared the marker and
+        // reported success -- discarding the marker's copy of the event that was actually declared,
+        // which is the only copy there is, and leaving the collision unreported.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            FileAccountingAuditPendingMarkerStore.MarkerPathFor(SnapshotPath));
+
+        var declared = AuditEvent(afterHash: new string('a', 64));
+        var impostor = declared with { Action = "chart.delete", AfterHash = new string('b', 64) };
+        await store.AppendAsync(impostor);
+        await markers.WriteAsync(new AccountingAuditPendingMarker(declared, DateTimeOffset.UtcNow));
+
+        var recover = async () => await CreateService(store, store, markers).RecoverPendingAuditAsync();
+
+        await recover.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*already retained with different content*");
+        (await markers.ReadAsync()).Should().NotBeNull(
+            "the marker holds the only copy of the event that was actually declared");
+    }
+
     private static AccountingConfigurationService CreateService(
         FileAccountingConfigurationStore store,
         IAccountingActionAuditStore audit,

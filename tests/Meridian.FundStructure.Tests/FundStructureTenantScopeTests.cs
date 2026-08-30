@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Tenancy;
@@ -450,6 +451,70 @@ public sealed class FundStructureTenantScopeTests
 
         await Assert.ThrowsAsync<FundStructureTenantScopeException>(hijack);
         Assert.Null(store.TenantOf(straddling.AccountId));
+    }
+
+    [Fact]
+    public async Task FailClosed_AcceptsAnAccountWhoseOnlyParentIsAVisiblePortfolio()
+    {
+        // Seventh Codex review round. The visibility check covered the four Guid parents and missed
+        // PortfolioId, which is a string on the DTO but resolves to an investment-portfolio node
+        // everywhere else in this service. An account whose only structural reference was a
+        // portfolio therefore had no populated parent at all and was refused -- even when the
+        // caller owned the portfolio. A fail-closed posture that refuses its own tenant's accounts
+        // is not closed, it is broken.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+        var alphaService = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService);
+
+        var portfolioId = Guid.NewGuid();
+        await alphaService.CreateInvestmentPortfolioAsync(new CreateInvestmentPortfolioRequest(
+            portfolioId, alpha.BusinessId, "PF-ALPHA", "Alpha Portfolio", "USD",
+            EffectiveFrom, "tenant-scope-test"));
+
+        var portfolioAccount = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-PF-ALPHA", "Alpha Portfolio Account",
+            "USD", EffectiveFrom, "tenant-scope-test",
+            PortfolioId: portfolioId.ToString("D", CultureInfo.InvariantCulture)));
+
+        await alphaService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(), alpha.FundId, portfolioAccount.AccountId,
+            OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
+
+        Assert.Equal(TenantAlpha, store.TenantOf(portfolioAccount.AccountId));
+    }
+
+    [Fact]
+    public async Task FailClosed_RefusesAnAccountWhoseOnlyParentIsAForeignPortfolio()
+    {
+        // The other half of the same fix: counting the portfolio as a parent has to gate on it too,
+        // or adding it would turn a refusal into a way in.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var betaPortfolioId = Guid.NewGuid();
+        await CreateService(store, TenantBeta, TenantScopeEnforcementOptions.FailClosed, accountService)
+            .CreateInvestmentPortfolioAsync(new CreateInvestmentPortfolioRequest(
+                betaPortfolioId, beta.BusinessId, "PF-BETA", "Beta Portfolio", "USD",
+                EffectiveFrom, "tenant-scope-test"));
+
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+        var betaAccount = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-PF-BETA", "Beta Portfolio Account",
+            "USD", EffectiveFrom, "tenant-scope-test",
+            PortfolioId: betaPortfolioId.ToString("D", CultureInfo.InvariantCulture)));
+
+        var hijack = () => CreateService(
+                store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService)
+            .LinkNodesAsync(new LinkFundStructureNodesRequest(
+                Guid.NewGuid(), alpha.FundId, betaAccount.AccountId,
+                OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
+
+        await Assert.ThrowsAsync<FundStructureTenantScopeException>(hijack);
+        Assert.Null(store.TenantOf(betaAccount.AccountId));
     }
 
     [Fact]
