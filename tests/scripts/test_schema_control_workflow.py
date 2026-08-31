@@ -12,7 +12,7 @@ class SchemaControlWorkflowTests(unittest.TestCase):
         cls.workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
 
     def test_workflow_uses_repository_pinned_actions(self) -> None:
-        self.assertIn("uses: actions/checkout@v6.0.2", self.workflow)
+        self.assertIn("uses: actions/checkout@v7.0.1", self.workflow)
         self.assertIn("persist-credentials: false", self.workflow)
         self.assertIn("fetch-depth: 0", self.workflow)
         self.assertIn("uses: actions/setup-python@v7.0.0", self.workflow)
