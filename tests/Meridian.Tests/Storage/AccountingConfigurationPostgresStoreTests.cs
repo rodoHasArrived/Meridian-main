@@ -689,6 +689,45 @@ public sealed class AccountingConfigurationPostgresStoreTests
         (await markers.ReadAsync()).Should().BeNull("a resolved marker must not re-fire");
     }
 
+    [Fact]
+    public async Task AMarkerFromAMutationCarryingNoncanonicalDimensionKeys_IsClearedRatherThanRaised()
+    {
+        // Codex review finding on PR #2871. ReplaceRulesAsync persists rule payloads as jsonb,
+        // which canonicalizes object key order (length first, then bytewise), so a rule scoped by
+        // ExternalGlDimensions inserted in any other order reloads with its dictionary enumerated
+        // differently than the digest hashed -- and recovery raised on it forever. Same
+        // permanent-block shape as the padded-text divergence above, reached through key order
+        // inside a nested map the top-level collection ordering cannot see.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+        using var markerRoot = new TempDirectory();
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            Path.Combine(markerRoot.Path, "pending-audit.json"));
+
+        await CreateService(store, markers).UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+            "fund-alpha",
+            new PostingRuleDto(
+                "rule-dimensions",
+                "Dimension-scoped rule",
+                "InterestAccrual",
+                "template-interest",
+                Scope: new LedgerDimensionSetDto(ExternalGlDimensions: new Dictionary<string, string>
+                {
+                    // jsonb stores these as "cc", "book", "region"; insertion order deliberately differs.
+                    ["region"] = "emea",
+                    ["cc"] = "cc-100",
+                    ["book"] = "primary",
+                })),
+            Actor: "operator@example.test"));
+        var declared = (await store.ListAsync("fund-alpha")).Should().ContainSingle().Subject;
+        await markers.WriteAsync(new AccountingAuditPendingMarker(declared, DateTimeOffset.UtcNow));
+
+        var recovery = await CreateService(store, markers).RecoverPendingAuditAsync();
+
+        recovery.Outcome.Should().Be(AccountingAuditRecoveryOutcome.AlreadyAudited);
+        (await markers.ReadAsync()).Should().BeNull("a resolved marker must not re-fire");
+    }
+
     private static async Task ExecuteAsync(
         LedgerPostgresTestDatabase database,
         string commandTemplate,
