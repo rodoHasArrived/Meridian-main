@@ -258,7 +258,7 @@ jobs:
 
     steps:
       - name: Check out pull request head
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@v6.0.2
         with:
           # The pull request's own commit, not the merge ref. This job answers
           # "does this change still render", and the merge ref would fold in
