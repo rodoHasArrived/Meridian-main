@@ -107,6 +107,25 @@ public sealed class DataConfidenceIndicatorModelTests
     }
 
     [Fact]
+    public void FromProviderStatus_ConnectionTimeAlone_IsNotAFreshnessSignal()
+    {
+        // A provider that just connected but has never delivered a message or heartbeat
+        // must not present as Current on the strength of its connection time.
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(new ProviderStatusInfo
+        {
+            Name = "polygon",
+            DisplayName = "Polygon.io",
+            IsEnabled = true,
+            IsConnected = true,
+            Status = "Connected",
+            LastConnectedAt = DateTime.UtcNow
+        });
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Unknown);
+        model.FreshnessLabel.Should().Be("As of unavailable");
+    }
+
+    [Fact]
     public void FromProviderStatus_WithAFreshnessWindow_MarksOldDataStaleWhileConnected()
     {
         var model = DataConfidenceIndicatorModel.FromProviderStatus(

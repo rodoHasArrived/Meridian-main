@@ -104,9 +104,10 @@ public sealed record DataConfidenceIndicatorModel(
             || ContainsAny(status, "degraded", "unhealthy", "error", "failed", "blocked", "disconnected")
             || !string.IsNullOrWhiteSpace(provider.LastError)
             || !string.IsNullOrWhiteSpace(provider.LastFailureKind);
-        var asOf = provider.LastMessageReceivedAt
-            ?? provider.LastHeartbeatReceivedAt
-            ?? (provider.LastConnectedAt.HasValue ? new DateTimeOffset(DateTime.SpecifyKind(provider.LastConnectedAt.Value, DateTimeKind.Utc)) : null);
+        // Connection time is not a data-delivery signal: a newly connected provider that
+        // has never delivered anything must stay Unknown, so only received-at timestamps
+        // feed the freshness instant.
+        var asOf = provider.LastMessageReceivedAt ?? provider.LastHeartbeatReceivedAt;
 
         return FromProviderCore(
             Normalize(provider.DisplayName, provider.Name, "Provider"),
