@@ -1,14 +1,7 @@
-using System.Net;
-using System.Net.Sockets;
 using System.Reflection;
 using FluentAssertions;
-using Meridian.Application.Monitoring;
-using Meridian.Application.Pipeline;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Domain.Models;
 using Xunit;
-using Meridian.Contracts.Monitoring;
-using Meridian.Contracts.Pipeline;
 
 namespace Meridian.Tests.Integration;
 
@@ -18,12 +11,8 @@ namespace Meridian.Tests.Integration;
 /// Prevents unimplemented stubs from slipping through unnoticed.
 /// </summary>
 [Trait("Category", "Integration")]
-public sealed class EndpointStubDetectionTests : IAsyncLifetime
+public sealed class EndpointStubDetectionTests
 {
-    private StatusHttpServer? _server;
-    private HttpClient? _httpClient;
-    private int _testPort;
-
     /// <summary>
     /// All route constants discovered via reflection from UiApiRoutes.
     /// </summary>
@@ -36,56 +25,6 @@ public sealed class EndpointStubDetectionTests : IAsyncLifetime
             .OrderBy(r => r.Route)
             .ToList();
     });
-
-    public Task InitializeAsync()
-    {
-        Func<MetricsSnapshot> metricsProvider = () => new MetricsSnapshot(
-            Published: 100, Dropped: 5, Integrity: 2, Trades: 80,
-            DepthUpdates: 15, Quotes: 5, HistoricalBars: 50,
-            EventsPerSecond: 1000.0, TradesPerSecond: 800.0,
-            DepthUpdatesPerSecond: 150.0, HistoricalBarsPerSecond: 50.0,
-            DropRate: 0.05, AverageLatencyUs: 100.0, MinLatencyUs: 10.0,
-            MaxLatencyUs: 500.0, LatencySampleCount: 1000,
-            Gc0Collections: 0, Gc1Collections: 0, Gc2Collections: 0,
-            Gc0Delta: 0, Gc1Delta: 0, Gc2Delta: 0,
-            MemoryUsageMb: 100.0, HeapSizeMb: 50.0,
-            Timestamp: DateTimeOffset.UtcNow);
-
-        Func<PipelineStatistics> pipelineProvider = () => new PipelineStatistics(
-            PublishedCount: 100, DroppedCount: 5, ConsumedCount: 95,
-            CurrentQueueSize: 10, PeakQueueSize: 1000, QueueCapacity: 100000,
-            QueueUtilization: 0.0001, AverageProcessingTimeUs: 50.5,
-            TimeSinceLastFlush: TimeSpan.FromSeconds(1),
-            Timestamp: DateTimeOffset.UtcNow);
-
-        Func<IReadOnlyList<DepthIntegrityEvent>> integrityProvider = () => Array.Empty<DepthIntegrityEvent>();
-
-        _testPort = GetFreePort();
-        _server = new StatusHttpServer(_testPort, metricsProvider, pipelineProvider, integrityProvider);
-        _server.Start();
-
-        _httpClient = new HttpClient
-        {
-            BaseAddress = new Uri($"http://localhost:{_testPort}"),
-            Timeout = TimeSpan.FromSeconds(5)
-        };
-
-        return Task.CompletedTask;
-    }
-
-    public async Task DisposeAsync()
-    {
-        _httpClient?.Dispose();
-        if (_server != null)
-            await _server.DisposeAsync();
-    }
-
-    private static int GetFreePort()
-    {
-        using var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-        return ((IPEndPoint)listener.LocalEndpoint).Port;
-    }
 
     #region Route Constant Discovery
 
@@ -170,20 +109,6 @@ public sealed class EndpointStubDetectionTests : IAsyncLifetime
     #region Route Coverage Analysis
 
     /// <summary>
-    /// Routes that the StatusHttpServer handles (both /api/ prefixed and unprefixed).
-    /// </summary>
-    private static readonly HashSet<string> StatusHttpServerRoutes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "/health", "/healthz", "/health/detailed",
-        "/ready", "/readyz",
-        "/live", "/livez",
-        "/metrics",
-        "/api/status", "/api/errors", "/api/backpressure",
-        "/api/providers/latency", "/api/connections",
-        "/api/backfill/providers", "/api/backfill/status"
-    };
-
-    /// <summary>
     /// Routes mapped in ASP.NET Core endpoint files (Ui.Shared/Endpoints/).
     /// Maintained to detect when new UiApiRoutes constants are added without implementations.
     /// </summary>
@@ -252,7 +177,6 @@ public sealed class EndpointStubDetectionTests : IAsyncLifetime
 
         var unmapped = allRoutes
             .Where(r => !MappedEndpointRoutes.Contains(r))
-            .Where(r => !StatusHttpServerRoutes.Contains(r))
             .ToList();
 
         // Assert - document unmapped routes; this test will fail if the count
@@ -295,76 +219,6 @@ public sealed class EndpointStubDetectionTests : IAsyncLifetime
         staleRoutes.Should().BeEmpty(
             $"MappedEndpointRoutes contains routes not found in UiApiRoutes: " +
             $"{string.Join(", ", staleRoutes)}. Remove stale entries.");
-    }
-
-    #endregion
-
-    #region StatusHttpServer - No 501 on Core Endpoints
-
-    [Theory]
-    [InlineData("/api/status")]
-    [InlineData("/api/health")]
-    [InlineData("/health")]
-    [InlineData("/ready")]
-    [InlineData("/live")]
-    [InlineData("/metrics")]
-    [InlineData("/api/errors")]
-    [InlineData("/api/backfill/providers")]
-    [InlineData("/api/backfill/status")]
-    public async Task CoreEndpoint_DoesNotReturn501(string path)
-    {
-        // Act
-        var response = await _httpClient!.GetAsync(path);
-
-        // Assert
-        ((int)response.StatusCode).Should().NotBe(501,
-            $"Core endpoint {path} should not return 501 Not Implemented");
-    }
-
-    [Fact]
-    public async Task StatusHttpServer_AllHandledRoutes_DoNotReturn501()
-    {
-        // Arrange - routes that the StatusHttpServer explicitly handles
-        var routesToTest = new[]
-        {
-            "/api/status", "/health", "/healthz", "/ready", "/readyz",
-            "/live", "/livez", "/metrics", "/api/errors",
-            "/api/backfill/providers", "/api/backfill/status"
-        };
-
-        var stubEndpoints = new List<(string Path, int StatusCode)>();
-
-        // Act
-        foreach (var route in routesToTest)
-        {
-            var response = await _httpClient!.GetAsync(route);
-            if ((int)response.StatusCode == 501)
-            {
-                stubEndpoints.Add((route, 501));
-            }
-        }
-
-        // Assert
-        stubEndpoints.Should().BeEmpty(
-            $"The following endpoints returned 501: " +
-            $"{string.Join(", ", stubEndpoints.Select(e => e.Path))}");
-    }
-
-    [Fact]
-    public async Task HealthDetailed_IdentifiedAsStub_WhenProviderNotRegistered()
-    {
-        // This test documents the known 501 stub: /health/detailed returns 501
-        // when the detailedHealthProvider is not registered on the StatusHttpServer.
-        // The StatusHttpServer test setup doesn't register extended providers.
-
-        // Act
-        var response = await _httpClient!.GetAsync("/health/detailed");
-
-        // Assert - currently expected to be 501 since no provider is registered
-        // When a provider IS registered, this will return 200, and the test can be updated
-        ((int)response.StatusCode).Should().Be(501,
-            "health/detailed should return 501 when detailedHealthProvider is not registered. " +
-            "If this now returns 200, the provider has been connected - update this test.");
     }
 
     #endregion

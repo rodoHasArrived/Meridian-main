@@ -17,12 +17,12 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 WORKFLOW_DIR = REPO_ROOT / ".github" / "workflows"
 
 CURRENT_ACTION_REFS = {
-    "actions/checkout": "v6.0.2",
+    "actions/checkout": "v7.0.1",
     "actions/setup-dotnet": "v5.4.0",
     "actions/cache": "v6.1.0",
     "actions/upload-artifact": "v7.0.1",
     "actions/setup-node": "v6.4.0",
-    "actions/setup-python": "v6.3.0",
+    "actions/setup-python": "v7.0.0",
 }
 
 ACTIVE_DOC_ROOTS = [
