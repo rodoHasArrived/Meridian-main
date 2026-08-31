@@ -3493,7 +3493,6 @@ Meridian-main
 │   │   ├── Monitoring
 │   │   │   ├── DetailedHealthCheck.cs
 │   │   │   ├── PrometheusMetrics.cs
-│   │   │   ├── StatusHttpServer.cs
 │   │   │   ├── StatusSnapshot.cs
 │   │   │   └── StatusWriter.cs
 │   │   ├── Pipeline
@@ -7083,6 +7082,7 @@ Meridian-main
 │   │   │   ├── MessagingEndpoints.cs
 │   │   │   ├── MoneyMarketFundEndpoints.cs
 │   │   │   ├── MoneyMarketFundReferenceEndpoints.cs
+│   │   │   ├── MonitoringEndpointExemptions.cs
 │   │   │   ├── MutationAuthorizationGuardMiddleware.cs
 │   │   │   ├── OmsIntegrationEndpoints.cs
 │   │   │   ├── OptionChainEndpoints.cs
