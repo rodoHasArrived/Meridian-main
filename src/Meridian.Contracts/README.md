@@ -11,6 +11,10 @@ last_reviewed: 2026-08-03
 
 # src/Meridian.Contracts
 
+Lifecycle route contracts distinguish sanitized unauthenticated readiness/liveness probes from
+authenticated comprehensive health and status payloads. The ASP.NET Core workstation host is the
+single monitoring transport owner.
+
 ## Purpose
 
 Meridian contracts contains shared DTOs and cross-layer contracts used by host, services,
